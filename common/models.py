@@ -23,7 +23,7 @@ class User(AbstractBaseUser):
 
     email = models.EmailField('이메일', max_length=255, unique=True)
     username = models.CharField('ID', max_length=150, unique=True)
-    joined_at = models.DateTimeField('가입일', auto_created=True)
+    joined_at = models.DateTimeField('가입일', auto_now_add=True)
     is_active = models.BooleanField('활동 회원', default=True)
     is_admin = models.BooleanField('운영자 여부', default=False)
 
