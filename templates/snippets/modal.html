@@ -1,0 +1,102 @@
+<!-- Login Modal Start -->
+<article class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="loginModalLabel">로그인이 필요합니다.</h6>
+                <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">취소</button>
+                <a class="btn btn-primary" href="{% url 'account_login' %}">로그인</a>
+            </div>
+        </div>
+    </div>
+</article>
+<!-- Login Modal End -->
+
+<!-- Logout Modal Start -->
+<article class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="logoutModalLabel">로그아웃 하시겠습니까?</h6>
+                <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">취소</button>
+                <a id="accountLogout" class="btn btn-primary" href="{% url 'account_logout' %}">로그아웃</a>
+            </div>
+        </div>
+    </div>
+</article>
+<!-- Logout Modal End -->
+
+<!-- Rate Modal Start -->
+<article class="modal fade" id="rateModal" tabindex="-1" aria-labelledby="rateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="rateModalLabel">
+                    문제 난이도를 선택해주세요.
+                </h6>
+                <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-footer mx-auto">
+                <form class="rateButton" id="rateButton" method="post">
+                {% csrf_token %}
+                    <fieldset>
+                        <label for="star1">
+                            <i class="fa fa-star"></i>
+                            <input type="radio" name="difficulty" value="5" id="star1">
+                        </label>
+                        <label for="star2">
+                            <i class="fa fa-star"></i>
+                            <input type="radio" name="difficulty" value="4" id="star2">
+                        </label>
+                        <label for="star3">
+                            <i class="fa fa-star"></i>
+                            <input type="radio" name="difficulty" value="3" id="star3">
+                        </label>
+                        <label for="star4">
+                            <i class="fa fa-star"></i>
+                            <input type="radio" name="difficulty" value="2" id="star4">
+                        </label>
+                        <label for="star5">
+                            <i class="fa fa-star"></i>
+                            <input type="radio" name="difficulty" value="1" id="star5">
+                        </label>
+                    </fieldset>
+                </form>
+                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+</article>
+<!-- Rate Modal End -->
+
+<!-- Answer Modal Start -->
+<article class="modal fade" id="answerModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title font-weight-bold text-primary">정답 확인</h6>
+                <button class="close" type="button" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <h5 class="modal-title mx-auto font-weight-bold" id="answerModalLabel"></h5>
+            </div>
+        </div>
+    </div>
+</article>
+<!-- Answer Modal End -->

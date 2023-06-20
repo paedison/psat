@@ -1,0 +1,14 @@
+<h1>Hashtag Detail</h1>
+
+<h2>Hashtag Information</h2>
+<p>ID: {{ hashtag.id }}</p>
+<p>Tag: {{ hashtag.tag }}</p>
+
+<h2>Linked Problems</h2>
+<ul>
+  {% for problem in hashtag.problems.all %}
+    <li>{{ problem.question }}</li>
+  {% empty %}
+    <li>No problems linked to this hashtag.</li>
+  {% endfor %}
+</ul>

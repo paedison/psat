@@ -1,0 +1,28 @@
+{% load static %}
+{% load psat_filter %}
+
+{% if info.type == 'dashboardLike' %}
+    <tr class="table-warning align-middle text-center text-nowrap">
+        <td class="px-1" colspan="7">
+            <span role="textbox" aria-label="date" class="text-primary">
+                {{ problem.liked_at|date:'Y.m.d' }}({{ problem.liked_at|date:'w'|int2kor }})
+            </span>
+        </td>
+    </tr>
+{% elif info.type == 'dashboardRate' %}
+    <tr class="table-warning align-middle text-center text-nowrap">
+        <td class="px-1" colspan="7">
+            <span role="textbox" aria-label="date" class="text-primary">
+                {{ problem.rated_at|date:'Y.m.d' }}({{ problem.rated_at|date:'w'|int2kor }})
+            </span>
+        </td>
+    </tr>
+{% elif info.type == 'dashboardAnswer' %}
+    <tr class="table-warning align-middle text-center text-nowrap">
+        <td class="px-1" colspan="7">
+            <span role="textbox" aria-label="date" class="text-primary">
+                {{ problem.answered_at|date:'Y.m.d' }}({{ problem.answered_at|date:'w'|int2kor }})
+            </span>
+        </td>
+    </tr>
+{% endif %}

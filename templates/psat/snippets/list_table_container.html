@@ -1,0 +1,65 @@
+{% load static %}
+
+<table class="table small my-4">
+    <thead>
+        <tr class="align-middle text-center text-nowrap">
+            <th class="col-1 px-1">번호</th>
+            <th class="col-1 px-1">{{ SOLID_HEART_ICON|safe }}</th>
+            <th class="col-1 px-1">난이도</th>
+            <th class="col-1 px-1">{{ SOLID_CHECK_ICON|safe }}</th>
+            <th class="px-1 d-none d-sm-table-cell d-md-none">문제</th>
+            <th class="px-1 d-none d-md-table-cell d-lg-none">문제</th>
+            <th class="px-1 d-none d-lg-table-cell">문제</th>
+        </tr>
+    </thead>
+    <tbody>
+{% if page_obj %}
+    {% for problem in page_obj %}
+        {% ifchanged %}
+        <tr class="table-warning align-middle text-center text-nowrap">
+            <td class="px-1" colspan="7">
+                <span role="textbox" aria-label="reference">
+                    <a class="text-decoration-none link" href="{% url 'psat:problem_list' problem.year problem.ex problem.sub %}">
+                        {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
+                    </a>
+                </span>
+            </td>
+        </tr>
+        {% endifchanged %}
+        <tr class="align-middle text-center text-nowrap">
+            <td class="px-1">
+                <div role="textbox" aria-label="problem-number">
+                    {{ problem.problem_number }}
+                </div>
+            </td>
+            <td class="px-1">
+                {% include 'psat/snippets/icon_like.html' %}
+            </td>
+            <td class="px-1">
+                {% include 'psat/snippets/icon_rate.html' %}
+            </td>
+            <td class="px-1">
+                {% include 'psat/snippets/icon_answer.html' %}
+            </td>
+            <td class="text-justify px-1 d-none d-sm-table-cell d-md-none">
+                {% include 'psat/snippets/list_table_problem.html' %}
+            </td>
+            <td class="text-justify px-1 d-none d-md-table-cell d-lg-none">
+                {% include 'psat/snippets/list_table_problem.html' %}
+            </td>
+            <td class="text-justify px-1 d-none d-lg-table-cell">
+                {% include 'psat/snippets/list_table_problem.html' %}
+            </td>
+        </tr>
+    {% endfor %}
+{% else %}
+        <tr class="text-center">
+            <td colspan="8">
+                <span role="textbox" aria-label="empty-data">
+                    추가된 자료가 없습니다.
+                </span>
+            </td>
+        </tr>
+{% endif %}
+    </tbody>
+</table>

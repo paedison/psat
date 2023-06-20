@@ -1,0 +1,30 @@
+{% load static %}
+{% load psat_filter %}
+
+{% if info.type == 'problemList' %}
+    <section class="container col-12 p-0 mb-4">
+        <div class="d-flex flex-column align-items-center justify-content-start" role="textbox">
+            <h6 class="font-weight-bold text-primary col-12 m-0 p-0">
+                {{ info.icon|safe }} {{ info.title }}
+            </h6>
+            <div class="col-12 col-sm-8 col-lg-5 col-xl-3 ml-auto mt-2">
+                {% include 'psat/snippets/list_filter_container.html' %}
+            </div>
+        </div>
+    </section>
+{% else %}
+    <section class="container col-12 p-0 mb-4">
+        <div class="d-flex align-items-center justify-content-between" role="textbox">
+            <h6 class="d-inline-block font-weight-bold text-primary col-6 m-0 p-0">
+                <div class="d-inline-block text-center mr-1" style="width: 1rem;">
+                    {{ info.icon|safe }}
+                </div>
+                {{ info.title }}
+            </h6>
+            <div class="d-inline-block ml-auto dropdown">
+                {% include 'psat/snippets/list_filter_container.html' %}
+            </div>
+        </div>
+    </section>
+{% endif %}
+

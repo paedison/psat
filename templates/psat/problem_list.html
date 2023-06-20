@@ -1,0 +1,17 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load psat_filter %}
+
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% block main %} {# [05] Main Content #}
+<!-- Main Content Start -->
+    {% include 'psat/problem_list_content.html' %}
+<!-- Main Content End -->
+{% endblock %}
+
+{% block page_script %}
+    {% if info.type == 'problemList' %}
+    <script src="{% static 'js/list.js' %}"></script>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,53 @@
+{% load static %}
+{% load psat_filter %}
+
+        <select id="yearChoice" name="yearChoice" class="form-control form-control-sm border border-primary">
+            <option value="전체" class="text-center">전체 연도</option>
+        {% if year != '전체' %}
+            <option id="{{ url.year }}" value="{{ url.year }}" class="text-center" selected>{{ url.year }}년</option>
+        {% elif url.year == '전체' and url.ex == '전체' and url.sub == '전체' %}
+            {% for t in TOTAL.year_list %}
+            <option id="{{ t }}" value="{{ t }}" class="text-center">{{ t }}년</option>
+            {% endfor %}
+        {% else %}
+            {% for u in url.year_list %}
+            <option id="{{ u }}" value="{{ u }}" class="text-center">{{ u }}년</option>
+            {% endfor %}
+        {% endif %}
+        </select>
+
+        <select id="examChoice" name="examChoice" class="form-control form-control-sm border border-primary">
+            <option value="전체" class="text-center">전체 시험</option>
+        {% if url.ex != '전체' %}
+            <option id="{{ url.ex }}" value="{{ url.ex }}" class="text-center" selected>{{ url.exam2 }}</option>
+        {% elif url.year == '전체' and url.ex == '전체' and url.sub == '전체' %}
+            {% for t in TOTAL.exam_list %}
+            <option id="{{ t.ex }}" value="{{ t.ex }}" class="text-center">{{ t.exam2 }}</option>
+            {% endfor %}
+        {% else %}
+            {% for u in url.exam_list %}
+            <option id="{{ u.ex }}" value="{{ u.ex }}" class="text-center">{{ u.exam2 }}</option>
+            {% endfor %}
+        {% endif %}
+        </select>
+
+        <select id="subjectChoice" name="subjectChoice" class="form-control form-control-sm border border-primary">
+            <option value="전체" class="text-center">전체 과목</option>
+        {% if url.sub != '전체' %}
+            <option id="{{ url.sub }}" value="{{ url.sub }}"  class="text-center" selected>{{ url.subject }}</option>
+        {% elif url.year == '전체' and url.ex == '전체' and url.sub == '전체' %}
+            {% for t in TOTAL.subject_list %}
+            <option id="{{ t.sub }}" value="{{ t.sub }}" class="text-center">{{ t.subject }}</option>
+            {% endfor %}
+        {% else %}
+            {% for u in url.subject_list %}
+            <option id="{{ u.sub }}" value="{{ u.sub }}" class="text-center">{{ u.subject }}</option>
+            {% endfor %}
+        {% endif %}
+        </select>
+
+        <div class="input-group-append">
+            <button id="selectButton" class="btn btn-primary btn-sm">
+                {{ FILTER_ICON|safe }}
+            </button>
+        </div>

@@ -1,0 +1,8 @@
+{% load static %}
+{% load psat_filter %}
+
+        {% if data.problem_id == problem.problem_id %}
+            <option value="{{ data.problem_id }}" selected>{{ problem.year_ex_sub_hyphen }} {{ data.problem_number }}번</option>
+        {% else %}
+            <option value="{{ data.problem_id }}">{{ data.year_ex_sub_hyphen }} {{ data.problem_number }}번</option>
+        {% endif %}

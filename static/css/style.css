@@ -1,0 +1,127 @@
+.no-scroll {
+    -ms-overflow-style: none; /* IE, Edge */
+    scrollbar-width: none; /* Firefox */
+}
+.no-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+div.prev_problem, div.next_problem{
+    visibility:hidden;
+    position:absolute;
+    z-index:100;
+    height:100%;
+    width:20%;
+    transition: all 1s linear;
+}
+
+div.prev_problem{
+    left: 0;
+}
+
+div.next_problem{
+    right: 0;
+}
+
+div.prev_problem:hover, div.next_problem:hover{
+    visibility: visible;
+    background-color: gray;
+    opacity: 0.2;
+}
+
+/* Empty Heart */
+.fa-regular.fa-heart {
+    color: #ddd;
+    cursor: pointer;
+}
+
+/* Solid Red Heart */
+.fa-solid.fa-heart {
+    --bs-text-opacity: 1;
+    color: #e74a3b;  /* Danger */
+    cursor: pointer;
+}
+
+/* Empty Star */
+.fa-regular.fa-star {
+    color: #ddd;
+    cursor: pointer;
+}
+
+/* Solid Yellow Star */
+.fa-solid.fa-star {
+    color: #f6c23e;  /* Warning */
+    cursor: pointer;
+}
+
+/* Solid Yellow Crown */
+.fa-solid.fa-crown {
+    color: #f6c23e;  /* Warning */
+    cursor: pointer;
+}
+
+/* Solid Blue File */
+.fa-solid.fa-file-lines {
+    color: #4e73df;  /* Primary */
+    cursor: pointer;
+}
+
+/* Solid Green Check */
+.fa-solid.fa-circle-check {
+    color: #1cc88a;  /* Success */
+}
+
+/* Solid Red Xmark */
+.fa-solid.fa-circle-xmark {
+    color: #e74a3b;  /* Danger */
+}
+
+
+.rateButton fieldset{
+    display: inline-block; /* 하위 별점 이미지들이 있는 영역만 자리를 차지함.*/
+    direction: rtl; /* 이모지 순서 반전 */
+    border: 0; /* 필드셋 테두리 제거 */
+}
+.rateButton fieldset legend{
+    text-align: left;
+}
+.rateButton input[type=radio]{
+    display: none; /* 라디오박스 감춤 */
+}
+.rateButton label{
+    color: transparent; /* 기존 이모지 컬러 제거 */
+    text-shadow: 0 0 0 #ddd; /* 새 이모지 색상 부여 */
+}
+.rateButton label:hover{
+    text-shadow: 0 0 0 #f1c40f; /* 마우스 호버 */
+}
+.rateButton label:hover ~ label{
+    text-shadow: 0 0 0 #f1c40f; /* 마우스 호버 뒤에오는 이모지들 */
+}
+.rateButton input[type=radio]:checked ~ label{
+    text-shadow: 0 0 0 #f1c40f; /* 마우스 클릭 체크 */
+}
+
+
+.question-sentence{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+img.problem-image{
+    max-width:100%;
+    cursor:pointer;
+}
+.problem-box{
+	display:flex;
+}
+.problem-number{
+	display:inline-block;
+	width:3rem;
+	margin-right:0.3rem;
+}
+.problem-question{
+	display:inline-block;
+	width:100%;
+	word-break:keep-all;
+}

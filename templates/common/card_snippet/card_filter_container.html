@@ -1,0 +1,12 @@
+{% load static %}
+{% load psat_filter %}
+
+<div class="input-group" data-target=".main-container">
+    {% if info.type == 'dashboard_like' %}
+        {% include 'psat/snippets/list_filter_for_like.html' %}
+    {% elif info.type == 'dashboard_rate' %}
+        {% include 'psat/snippets/list_filter_for_rate.html' %}
+    {% elif info.type == 'dashboard_answer' %}
+        {% include 'psat/snippets/list_filter_for_answer.html' %}
+    {% endif %}
+</div>

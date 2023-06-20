@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head_title %}
+    일정 추가
+{% endblock head_title %}
+
+{% block header %}
+    {% include 'psat/../snippets/header.html' %}
+{% endblock %}
+
+{% block aside %}
+    {% include 'psat/../snippets/aside.html' %}
+{% endblock %}
+
+{% block main %}
+    {# Section Header #}
+    <section class="container px-3 mb-4">
+        <div class="row d-flex align-items-center justify-content-between justify-content-md-start">
+            <h5 class="font-weight-bold text-primary py-2 m-0">일정 추가</h5>
+        </div>
+    </section>
+
+    {# Section Detail #}
+    <article class="mx-0 main-article">
+        <section class="col-12 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="col mr-2">
+                        <div class="row no-gutters align-items-center justify-content-end">
+                            <form method="post">
+                                {% csrf_token %}
+                                <table class="form form-table table table-borderless table-sm align-middle" style="max-width:400px;">
+                                    <thead>
+                                        <tr>
+                                            <td style="width:100px;"></td>
+                                            <td></td>
+                                        </tr>
+                                    </thead>
+                                    {{ form }}
+                                </table>
+                                <div class="container py-3 px-0" style="max-width:400px;">
+                                    <a class="btn btn-outline-primary left" href="{% url 'schedule:base' %}">뒤로</a>
+                                    <button type="submit" class="btn btn-outline-primary float-right">제출</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </article>
+{% endblock %}
+
+{% block footer %}
+    {% include "psat/../snippets/footer.html" %}
+{% endblock %}
+
+{% block page_script %}
+    <script>
+        $('#schedule').addClass('active');
+    </script>
+{% endblock %}

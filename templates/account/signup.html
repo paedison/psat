@@ -1,0 +1,67 @@
+{% extends "account/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+{% block main_image %}<div class="col-lg-6 d-none d-lg-block bg-login-image"></div>{% endblock %}
+
+{% block content %}
+    <div class="text-center">
+        <h1 class="h4 text-gray-900 mb-4">{% trans "Sign Up" %}</h1>
+    </div>
+    <form class="user">
+        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
+            {% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}
+        </div>
+    </form>
+
+    <form method="post" action="{% url 'account_signup' %}" class="signup user">
+        {% csrf_token %}
+
+    {% if form.errors.email %}
+        {% for error in form.errors.email %}
+        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.errors.username %}
+        {% for error in form.errors.username %}
+        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.errors.password1 %}
+        {% for error in form.errors.password1 %}
+        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.errors.password2 %}
+        {% for error in form.errors.password2 %}
+        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+        {% with WIDGET_REQUIRED_CLASS='form-group form-control form-control-user' %}
+        {% render_field form.email placeholder='이메일을 입력해주세요' %}
+        {% render_field form.username placeholder='ID를 입력해주세요' %}
+        {% render_field form.password1 placeholder='비밀번호를 입력해주세요' %}
+        {% render_field form.password2 placeholder='비밀번호를 입력해주세요(확인)' %}
+    {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    {% endif %}
+        <button type="submit" class="btn btn-primary btn-user btn-block">
+            {% trans "Sign Up" %}
+        </button>
+        {% endwith %}
+    </form>
+{% endblock %}

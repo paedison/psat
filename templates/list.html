@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load psat_filter %}
+
+{% block head_title %}{% endblock head_title %}
+
+{% block aside %} {# [02] Sidebar #}
+    {% include 'snippets/aside.html' %}
+{% endblock %}
+
+{% block header %} {# [04] Main Header #}
+    {% include 'snippets/header.html' %}
+{% endblock %}
+
+{% block main %}{% endblock %} {# [05] Main Content #}
+
+{% block footer %} {# [03] Footer #}
+    {% include 'snippets/footer.html' %}
+{% endblock %}
+
+{% block page_script %}{% endblock %}

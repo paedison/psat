@@ -1,0 +1,53 @@
+{# Answer Form 템플릿 #}
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+답변 작성
+{% endblock %}
+
+{% block header %}
+    {% include 'psat/../snippets/header.html' %}
+{% endblock %}
+
+{% block navigation %}
+{% endblock %}
+
+{% block aside %}
+    {% include 'psat/../snippets/aside.html' %}
+{% endblock %}
+
+{% block section_header %}
+<div class="d-flex align-items-center justify-content-between ">
+    <h6 class="m-0 font-weight-bold text-primary ">
+        <script>document.write(document.title);</script>
+    </h6>
+</div>
+{% endblock %}
+
+{% block section_detail %}
+{# 답변 수정 #}
+<div class="container my-3">
+    <form method="post">
+        {% csrf_token %}
+        {% include "community/form_errors.html" %}
+        <div class="mb-3">
+            <label for="content" class="form-label">답변 내용</label>
+            <textarea class="form-control" name="content"
+                      id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block footer %}
+    {% include "psat/../snippets/footer.html" %}
+{% endblock %}
+
+{% block page_script %}
+    <script type="text/javascript">
+        $('#psat_qna').addClass('active');
+    </script>
+{% endblock %}

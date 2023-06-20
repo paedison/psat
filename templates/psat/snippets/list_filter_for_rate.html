@@ -1,0 +1,38 @@
+{% load static %}
+{% load psat_filter %}
+
+        <a class="btn btn-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownRateLink" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ FILTER_ICON|safe }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu" aria-labelledby="dropdownRateLink">
+            <li>
+                <a class="list-filter dropdown-item text-center{% if info.star_count is None %} active{% endif %}" href="{{ info.url_rate_all }}">
+                    <i class="fa-regular fa-file-lines mr-2"></i>전체 문제
+                </a>
+            </li>
+            <li>
+                <a class="list-filter dropdown-item text-center{% if info.star_count == 1 %} active{% endif %}" href="{{ info.url_rate_1star }}">
+                    <i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
+                </a>
+            </li>
+            <li>
+                <a class="list-filter dropdown-item text-center{% if info.star_count == 2 %} active{% endif %}" href="{{ info.url_rate_2star }}">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
+                </a>
+            </li>
+            <li>
+                <a class="list-filter dropdown-item text-center{% if info.star_count == 3 %} active{% endif %}" href="{{ info.url_rate_3star }}">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
+                </a>
+            </li>
+            <li>
+                <a class="list-filter dropdown-item text-center{% if info.star_count == 4 %} active{% endif %}" href="{{ info.url_rate_4star }}">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
+                </a>
+            </li>
+            <li>
+                <a class="list-filter dropdown-item text-center{% if info.star_count == 5 %} active{% endif %}" href="{{ info.url_rate_5star }}">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </a>
+            </li>
+        </ul>

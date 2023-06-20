@@ -1,0 +1,110 @@
+{% load static %}
+
+<!-- Main Header Start -->
+<header>
+    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+        {# Side-bar Toggle Button #}
+        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+        </button>
+
+        {% comment %}
+        <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+            <div class="input-group">
+                <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                    aria-label="Search" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fas fa-search fa-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% endcomment %}
+
+        {# Header Menu #}
+        <ul class="navbar-nav ml-auto">
+
+    {# Menu (Login only) #}
+    {% if user.is_authenticated %}
+
+        {% if user.is_admin %}
+            <li class="nav-item dropdown no-arrow">
+                <div role="button" aria-label="admin-button">
+                    <a class="nav-link px-1" href="{% url 'admin:index' %}" target="admin">{{ MENU_ADMIN_ICON|safe }}</a>
+                </div>
+            </li>
+        {% endif %}
+            <li class="nav-item dropdown no-arrow">
+                <div role="button" aria-label="problem-button">
+                    <a class="nav-link px-1" href="{% url 'psat:base' %}">{{ MENU_PROBLEM_ICON|safe }}</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown no-arrow">
+                <div role="button" aria-label="like-button">
+                    <a class="nav-link px-1" href="{% url 'psat:like_list' 1 %}">{{ MENU_LIKE_ICON|safe }}</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown no-arrow">
+                <div role="button" aria-label="rate-button">
+                    <a class="nav-link px-1" href="{% url 'psat:rate_base' %}">{{ MENU_RATE_ICON|safe }}</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown no-arrow">
+                <div role="button" aria-label="answer-button">
+                    <a class="nav-link px-1" href="{% url 'psat:answer_base' %}">{{ MENU_ANSWER_ICON|safe }}</a>
+                </div>
+            </li>
+    {% endif %}
+
+            {# Divider #}
+            <div class="topbar-divider d-none d-sm-block"></div>
+
+            {# Dropdown menu #}
+            <li class="nav-item dropdown no-arrow">
+
+                {# Profile Image #}
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                   data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user.username }}</span>
+                    <img class="img-profile rounded-circle" src="{% static 'image/undraw_profile.svg' %}" alt="Profile Image"/>
+                </a>
+
+            {# User Info Dropdown (Login) #}
+            {% if user.is_authenticated %}
+                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                    {% comment %}
+                    <a class="dropdown-item" href="{% url 'profile' %}">
+                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Profile
+                    </a>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>설정
+                    </a>
+                    {% endcomment %}
+                    <a class="dropdown-item" href="{% url 'dashboard:main' %}">
+                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>Dashboard
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>Logout
+                    </a>
+                </div>
+
+            {# User Info Dropdown (Logout) #}
+            {% else %}
+                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="{% url 'account_login' %}">
+                        <i class="fas fa-sign-in-alt fa-sm fa-fw mr-2 text-gray-400"></i>Login
+                    </a>
+                    <a class="dropdown-item" href="{% url 'account_signup' %}">
+                        <i class="fas fa-sign-in-alt fa-sm fa-fw mr-2 text-gray-400"></i>Signup
+                    </a>
+                </div>
+            {% endif %}
+
+            </li> {# End of Dropdown Menu #}
+        </ul> {# End of Header Menu #}
+    </nav>
+</header>
+<!-- Main Header End -->

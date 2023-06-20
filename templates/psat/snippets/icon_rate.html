@@ -1,0 +1,12 @@
+{% load static %}
+{% load psat_filter %}
+
+{% if user.is_authenticated %}
+    <a class="rate-button" href="{% url 'psat:rate_detail' problem.problem_id %}" data-bs-toggle="modal" id="psatRate{{ problem.problem_id }}" data-bs-target="#rateModal">
+        <span role="button" aria-label="rate-button">{{ problem.rate_icon|safe }}</span>
+    </a>
+{% else %}
+    <a href="" data-bs-toggle="modal" data-bs-target="#loginModal">
+        <span role="button" aria-label="rate-button">{{ STAR0_ICON|safe }}</span>
+    </a>
+{% endif %}
