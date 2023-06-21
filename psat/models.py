@@ -95,7 +95,6 @@ class AddInfo:
         filename = f'PSAT{year_ex_sub}{number}.png'
         problem_image = static(f'image/PSAT/{year}/{filename}')
 
-        static_path = settings.STATICFILES_DIRS[0]
         image_os_path = os.path.join(static_path, 'image', 'PSAT', str(year), filename)
         exists = os.path.exists(image_os_path)
 
