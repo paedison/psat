@@ -9,6 +9,7 @@ from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 
+from _config.settings.base import BASE_DIR
 # Custom App Import
 from common.models import User
 from common.constants.icon import *
@@ -18,8 +19,8 @@ from taggit.managers import TaggableManager
 
 now = make_aware(datetime.now())
 
-static_path = settings.STATICFILES_DIRS[0]
-static_url = settings.STATIC_URL
+static_path = [BASE_DIR / 'static']
+static_url = '/static/'
 preparing_image_path = os.path.join(static_path, f'image/preparing.png')
 
 DIFFICULTY_CHOICES = [
