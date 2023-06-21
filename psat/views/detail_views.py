@@ -37,13 +37,13 @@ class BaseDetailView(DetailView):
         self.problem_id = kwargs.get('problem_id')
         self.object = problem.get(id=self.problem_id)
 
-        self.like_data = problem.filter(evaluation__user=self.request.user, evaluation__is_liked=True)
-        self.rate_data = problem.filter(evaluation__user=self.request.user, evaluation__difficulty_rated__gte=1)
-        self.answer_data = problem.filter(evaluation__user=self.request.user, evaluation__is_correct__gte=0)
-
-        self.like_list = self.like_data.values_list('id', flat=True)
-        self.rate_list = self.rate_data.values_list('id', flat=True)
-        self.answer_list = self.answer_data.values_list('id', flat=True)
+        if self.request.user.is_authenticated:
+            self.like_data = problem.filter(evaluation__user=self.request.user, evaluation__is_liked=True)
+            self.rate_data = problem.filter(evaluation__user=self.request.user, evaluation__difficulty_rated__gte=1)
+            self.answer_data = problem.filter(evaluation__user=self.request.user, evaluation__is_correct__gte=0)
+            self.like_list = self.like_data.values_list('id', flat=True)
+            self.rate_list = self.rate_data.values_list('id', flat=True)
+            self.answer_list = self.answer_data.values_list('id', flat=True)
 
         self.title = self.object.full_title()
 
@@ -58,7 +58,8 @@ class BaseDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        self.update_open_status_in_evaluation_model()
+        if request.user.is_authenticated:
+            self.update_open_status_in_evaluation_model()
 
         from log.views import create_request_log, create_problem_log
         create_request_log(self.request, self.info)
