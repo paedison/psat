@@ -3,7 +3,7 @@
 
         <select id="yearChoice" name="yearChoice" class="form-control form-control-sm border border-primary">
             <option value="전체" class="text-center">전체 연도</option>
-        {% if year != '전체' %}
+        {% if url.year != '전체' %}
             <option id="{{ url.year }}" value="{{ url.year }}" class="text-center" selected>{{ url.year }}년</option>
         {% elif url.year == '전체' and url.ex == '전체' and url.sub == '전체' %}
             {% for t in TOTAL.year_list %}
