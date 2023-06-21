@@ -19,7 +19,7 @@ from taggit.managers import TaggableManager
 
 now = make_aware(datetime.now())
 
-static_path = [BASE_DIR / 'static']
+static_path = BASE_DIR / 'static'
 static_url = '/static/'
 preparing_image_path = os.path.join(static_path, f'image/preparing.png')
 
