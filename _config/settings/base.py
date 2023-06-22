@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     # 'quiz',
     'schedule',
     'log',
+    'notice',
 ]
 
 MIDDLEWARE = [
