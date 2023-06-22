@@ -1,0 +1,13 @@
+{% extends 'list.html' %}
+{% load static %}
+
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% block main %} {# [05] Main Content #}
+<!-- Main Content Start -->
+    {% include 'board/post_create_content.html' %}
+<!-- Main Content End -->
+{% endblock %}
+
+{% block page_script %}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% load static %}
+
+<table class="table small my-4">
+    <thead>
+        <tr class="align-middle text-center text-nowrap">
+            <th class="col-1 px-1">&nbsp;</th>
+            <th class="col-1 px-1">구분</th>
+            <th class="px-1 d-none d-sm-table-cell d-md-none">제목</th>
+            <th class="px-1 d-none d-md-table-cell d-lg-none">제목</th>
+            <th class="px-1 d-none d-lg-table-cell">제목</th>
+            <th class="col-1 px-1">글쓴이</th>
+            <th class="col-1 px-1">작성일</th>
+            <th class="col-1 px-1">조회수</th>
+            <th class="col-1 px-1">댓글수</th>
+        </tr>
+    </thead>
+    <tbody>
+{% if page_obj %}
+    {% for post in page_obj %}
+        <tr class="align-middle text-center text-nowrap">
+            <td class="px-1">
+                <span role="textbox" aria-label="post-number">{{ post.id }}</span>
+            </td>
+            <td class="px-1">
+                <span role="textbox" aria-label="post-category">{{ post.category }}</span>
+            </td>
+            <td class="text-justify px-1 d-none d-sm-table-cell d-md-none">
+                <span role="textbox" aria-label="post-title">{{ post.title }}</span>
+            </td>
+            <td class="text-justify px-1 d-none d-md-table-cell d-lg-none">
+                <span role="textbox" aria-label="post-title">{{ post.title }}</span>
+            </td>
+            <td class="text-justify px-1 d-none d-lg-table-cell">
+                <span role="textbox" aria-label="post-title">{{ post.title }}</span>
+            </td>
+            <td class="px-1">
+                <span role="textbox" aria-label="post-writer">{{ post.user.username }}</span>
+            </td>
+            <td class="px-1">
+                <span role="textbox" aria-label="post-create-datetime">{{ post.created_at }}</span>
+            </td>
+            <td class="px-1">
+                <span role="textbox" aria-label="post-hit-count">{{ post.hit }}</span>
+            </td>
+            <td class="px-1">
+                <span role="textbox" aria-label="post-comment-count">{{ post.comment_count }}</span>
+            </td>
+        </tr>
+    {% endfor %}
+{% else %}
+        <tr class="text-center">
+            <td colspan="8">
+                <span role="textbox" aria-label="empty-data">
+                    추가된 자료가 없습니다.
+                </span>
+            </td>
+        </tr>
+{% endif %}
+    </tbody>
+</table>

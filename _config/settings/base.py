@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'taggit',
     'taggit_templatetags2',
+    'django_summernote',
 
     # My Apps
     'common',
@@ -89,8 +90,7 @@ ROOT_URLCONF = '_config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

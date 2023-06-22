@@ -10,6 +10,14 @@
             </div>
             <div class="sidebar-brand-text mx-3">paedison.com</div>
         </a>
+        {% comment %}
+        <hr class="sidebar-divider my-0">
+        <li class="nav-item" id="dashboardList">
+            <a class="nav-link" href="{% url 'notice:post_list' %}">
+                {{ MENU_NOTICE_ICON|safe }} Notice
+            </a>
+        </li>
+        {% endcomment %}
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="dashboardList">
             <a class="nav-link" href="{% url 'dashboard:main' %}">

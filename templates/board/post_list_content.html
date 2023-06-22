@@ -1,0 +1,31 @@
+{% load static %}
+
+<section id="{{ info.target_id }}">
+    <div id="info" style="display: none;">{{ info|json_script:info }}</div>
+    <section class="container col-12 p-0 mb-4">
+        <div class="d-flex flex-column align-items-center justify-content-start" role="textbox">
+            <h6 class="font-weight-bold text-primary col-12 m-0 p-0">
+                {{ info.icon|safe }} {{ info.title }}
+            </h6>
+        </div>
+    </section>
+    <article class="mx-0 main-article">
+        <div class="row">
+            <section class="col-12 mb-4">
+                <div class="card border-left-{{ info.color }} shadow h-100 py-0">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center justify-content-end">
+                            <div class="col mx-1">
+                                {% include 'board/snippets/list_table_container.html' %}
+                                {% include 'board/snippets/list_pagination.html' %}
+                                <div class="d-flex">
+                                    <a class="btn btn-sm btn-outline-primary ml-auto" href="{{ info.create_url }}">글쓰기</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </article>
+</section>

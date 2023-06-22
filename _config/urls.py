@@ -24,6 +24,7 @@ from psat.views.list_views import index
 urlpatterns = [
     path('', index),
     path('admin/', admin.site.urls, name='admin'),  # 관리자 페이지
+    path('notice/', include('notice.urls')),  # 공지사항
     path('common/', include('common.urls.base')),  # 공용 페이지
     path('dashboard/', include('common.urls.dashboard')),  # 공용 페이지
     path('account/', include('common.urls.account')),  # 로그인, 로그아웃, 회원가입, 비밀번호 변경 등

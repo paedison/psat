@@ -17,6 +17,7 @@ EMPTY_XMARK_ICON = '<i class="fa-solid fa-circle-xmark"></i>'
 SITE_LOGO_ICON = '<i class="fa-solid fa-pen-to-square"></i>'
 MENU_ADMIN_ICON = '<i class="fa-solid fa-crown fa-fw"></i>'
 
+MENU_NOTICE_ICON = '<i class="fa-solid fa-bullhorn fa-fw"></i>'
 MENU_DASHBOARD_ICON = '<i class="fa-solid fa-tachometer-alt fa-fw"></i>'
 MENU_PROFILE_ICON = '<i class="fa-solid fa-user fa-fw"></i>'
 MENU_PSAT_ICON = '<i class="fa-solid fa-file-lines fa-fw"></i>'
@@ -32,3 +33,29 @@ RIGHT_ARROW_ICON = '<i class="fa-solid fa-arrow-right"></i>'
 UP_ARROW_ICON = '<i class="fa-solid fa-arrow-up"></i>'
 DOWN_ARROW_ICON = '<i class="fa-solid fa-arrow-down"></i>'
 CHECK_ICON = '<i class="fa-solid fa-check"></i>'
+
+ICON_LIST = {
+    'notice': MENU_NOTICE_ICON,
+    'dashboard': MENU_DASHBOARD_ICON,
+    'profile': MENU_PROFILE_ICON,
+    'psat': MENU_PSAT_ICON,
+    'problem': MENU_PROBLEM_ICON,
+    'like': MENU_LIKE_ICON,
+    'rate': MENU_RATE_ICON,
+    'answer': MENU_ANSWER_ICON,
+    'qna': MENU_QNA_ICON,
+    'schedule': MENU_SCHEDULE_ICON,
+}
+
+COLOR_LIST = {
+    'notice': 'primary',
+    'dashboard': 'primary',
+    'profile': 'primary',
+    'psat': 'primary',
+    'problem': 'primary',
+    'like': 'danger',
+    'rate': 'warning',
+    'answer': 'success',
+    'qna': 'primary',
+    'schedule': 'primary',
+}
