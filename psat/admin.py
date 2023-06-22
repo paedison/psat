@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Exam, Problem, Evaluation
+from psat.models import Exam, Problem, Evaluation
 
 
 class ExamAdmin(admin.ModelAdmin):
