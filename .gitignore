@@ -8,6 +8,7 @@ secrets.json
 static/vendor/datatables
 static/vendor/fontawesome-free_old
 **/demo/
+_config/settings/dev.py
 
 
 ### Django ###
