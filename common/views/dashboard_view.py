@@ -9,7 +9,10 @@ from django.views import View
 # Custom App Import
 from common.constants.icon import *
 from common.constants.psat import *
-from psat.views.list_views import LikeListView, RateListView, AnswerListView
+from psat.models import Problem
+from psat.views.list_views import BaseListView
+
+problem = Problem.objects
 
 
 @method_decorator(login_required, name='dispatch')
@@ -65,7 +68,9 @@ class CardBaseView:
         return HttpResponse(html)
 
 
-class DashboardLikeView(CardBaseView, LikeListView):
+class DashboardLikeView(CardBaseView, BaseListView):
+    is_liked = None
+
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
 
@@ -90,8 +95,20 @@ class DashboardLikeView(CardBaseView, LikeListView):
             'is_liked': self.is_liked,
         }
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        user = self.request.user
+        queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
+        if self.is_liked is not None:
+            queryset = problem.filter(evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
+        context = super().get_context_data(object_list=queryset, **kwargs)
+        self.update_context(context)
 
-class DashboardRateView(CardBaseView, RateListView):
+        return context
+
+
+class DashboardRateView(CardBaseView, BaseListView):
+    star_count = None
+
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
 
@@ -119,8 +136,20 @@ class DashboardRateView(CardBaseView, RateListView):
             'star_count': self.star_count,
         }
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        user = self.request.user
+        queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
+        if self.star_count is not None:
+            queryset = problem.filter(evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
+        context = super().get_context_data(object_list=queryset, **kwargs)
+        self.update_context(context)
 
-class DashboardAnswerView(CardBaseView, AnswerListView):
+        return context
+
+
+class DashboardAnswerView(CardBaseView, BaseListView):
+    is_correct = None
+
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
 
@@ -144,3 +173,13 @@ class DashboardAnswerView(CardBaseView, AnswerListView):
             'color': 'success',
             'is_correct': self.is_correct,
         }
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        user = self.request.user
+        queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
+        if self.is_correct is not None:
+            queryset = problem.filter(evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
+        context = super().get_context_data(object_list=queryset, **kwargs)
+        self.update_context(context)
+
+        return context
