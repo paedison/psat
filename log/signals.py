@@ -38,5 +38,5 @@ def account_log_login_failed(sender, credentials, request, **kwargs):
     user, session_key, ip, url = get_user_info(request)
     email = credentials['email']
     log_content = f'Login Failed(E-mail: {email}, IP: {ip})'
-    account_log = AccountLog(user=user, session_key=session_key, log_url=url, log_content=log_content)
+    account_log = AccountLog(session_key=session_key, log_url=url, log_content=log_content)
     account_log.save()

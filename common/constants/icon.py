@@ -34,6 +34,11 @@ UP_ARROW_ICON = '<i class="fa-solid fa-arrow-up"></i>'
 DOWN_ARROW_ICON = '<i class="fa-solid fa-arrow-down"></i>'
 CHECK_ICON = '<i class="fa-solid fa-check"></i>'
 
+LIST_ICON = '<i class="fa-solid fa-list"></i>'
+REPLY_ICON = '<i class="fa-solid fa-reply"></i>'
+PEN_ICON = '<i class="fa-solid fa-pen"></i>'
+TRASH_ICON = '<i class="fa-solid fa-trash"></i>'
+
 ICON_LIST = {
     'notice': MENU_NOTICE_ICON,
     'dashboard': MENU_DASHBOARD_ICON,

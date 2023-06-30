@@ -158,6 +158,9 @@ LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
@@ -205,3 +208,28 @@ ACCOUNT_FORMS = {
 
 # Session Setting
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+
+# Summernote Settings
+# SUMMERNOTE_THEME = 'lite'
+SUMMERNOTE_CONFIG = {
+    # 'iframe': False,
+    'summernote': {
+        'width': '100%',
+        'height': '480',
+        'lang': 'ko-KR',
+        'toolbar': [
+            ['fontname', ['fontname']],
+            ['fontsize', ['fontsize']],
+            ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
+            ['color', ['forecolor','color']],
+            ['table', ['table']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['insert',['picture','link','video']],
+            ['view', ['fullscreen', 'help']],
+        ],
+        'fontNames': ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
+        'fontSizes': ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72'],
+    },
+}

@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 
 <section id="{{ info.target_id }}">
     <div id="info" style="display: none;">{{ info|json_script:info }}</div>
@@ -14,6 +15,32 @@
             <section class="col-12 mb-4">
                 <div class="card border-left-{{ info.color }} shadow h-100 py-0">
                     <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            {% if form.non_field_errors %}
+                                {% for error in form.non_field_erros %}
+                            <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
+                                {{ error }}
+                            </div>
+                                {% endfor %}
+                            {% endif %}
+                            <div class="d-flex form-group">
+                                {% render_field form.category class='col-2 form-select ' %}
+                                {% render_field form.title class='col-10 form-control' placeholder='제목을 입력해주세요' %}
+                            </div>
+                            {% render_field form.content placeholder='내용을 입력해주세요' %}
+
+                            <div class="d-flex form-group align-items-center justify-content-end">
+                                <div class="custom-control custom-checkbox mr-2">
+                                    <input type="checkbox" name="top_fixed" class="custom-control-input" id="id_top_fixed">
+                                    <label class="custom-control-label" for="id_top_fixed">상단 고정</label>
+                                </div>
+                                <button type="submit" class="btn btn-outline-primary">
+                                    글쓰기
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </section>

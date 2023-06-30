@@ -1,0 +1,11 @@
+{% load widget_tweaks %}
+
+<div class="comment-create p-2 mt-3 bg-white">
+    <form method="post" action="{{ info.comment_url }}">
+        {% csrf_token %}
+        {% render_field comment_form.content class='comment-form' rows='3' placeholder='댓글을 입력해주세요' %}
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-sm btn-outline-primary">등록</button>
+        </div>
+    </form>
+</div>

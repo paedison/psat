@@ -33,5 +33,10 @@ urlpatterns = [
     path('schedule/', include('schedule.urls')),  # 시험 일정
     # path('quiz/', include('quiz.urls')),  # 연산연습 등
     path('log/', include('log.urls')),  # 로그 관리
-    path('__debug__/', include('debug_toolbar.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
+    path('summernote/', include('django_summernote.urls'))
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

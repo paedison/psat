@@ -1,50 +1,32 @@
 {% load static %}
+{% load psat_filter %}
 
 <table class="table small my-4">
     <thead>
         <tr class="align-middle text-center text-nowrap">
-            <th class="col-1 px-1">&nbsp;</th>
+            <th class="col-1 px-1">번호</th>
             <th class="col-1 px-1">구분</th>
             <th class="px-1 d-none d-sm-table-cell d-md-none">제목</th>
             <th class="px-1 d-none d-md-table-cell d-lg-none">제목</th>
             <th class="px-1 d-none d-lg-table-cell">제목</th>
             <th class="col-1 px-1">글쓴이</th>
             <th class="col-1 px-1">작성일</th>
-            <th class="col-1 px-1">조회수</th>
-            <th class="col-1 px-1">댓글수</th>
+            <th class="col-1 px-1">조회</th>
+            <th class="col-1 px-1">댓글</th>
         </tr>
     </thead>
     <tbody>
+{% if top_fixed %}
+    {% for post in top_fixed %}
+        <tr class="table-warning align-middle text-center text-nowrap">
+        {% include 'board/snippets/list_table_content.html' %}
+        </tr>
+    {% endfor %}
+{% endif %}
 {% if page_obj %}
     {% for post in page_obj %}
         <tr class="align-middle text-center text-nowrap">
-            <td class="px-1">
-                <span role="textbox" aria-label="post-number">{{ post.id }}</span>
-            </td>
-            <td class="px-1">
-                <span role="textbox" aria-label="post-category">{{ post.category }}</span>
-            </td>
-            <td class="text-justify px-1 d-none d-sm-table-cell d-md-none">
-                <span role="textbox" aria-label="post-title">{{ post.title }}</span>
-            </td>
-            <td class="text-justify px-1 d-none d-md-table-cell d-lg-none">
-                <span role="textbox" aria-label="post-title">{{ post.title }}</span>
-            </td>
-            <td class="text-justify px-1 d-none d-lg-table-cell">
-                <span role="textbox" aria-label="post-title">{{ post.title }}</span>
-            </td>
-            <td class="px-1">
-                <span role="textbox" aria-label="post-writer">{{ post.user.username }}</span>
-            </td>
-            <td class="px-1">
-                <span role="textbox" aria-label="post-create-datetime">{{ post.created_at }}</span>
-            </td>
-            <td class="px-1">
-                <span role="textbox" aria-label="post-hit-count">{{ post.hit }}</span>
-            </td>
-            <td class="px-1">
-                <span role="textbox" aria-label="post-comment-count">{{ post.comment_count }}</span>
-            </td>
+        {% include 'board/snippets/list_table_content.html' %}
         </tr>
     {% endfor %}
 {% else %}

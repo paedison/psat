@@ -1,91 +1,42 @@
-{% extends 'detail.html' %}
 {% load static %}
+{% load widget_tweaks %}
 {% load psat_filter %}
 
-{% block head_title %}
-    {{ info.title }}
-{% endblock head_title %}
-
-{% block main %}
-    <!-- Main Content Start -->
+<section id="{{ info.target_id }}" class="">
     <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    <section class="container-fluid mb-0 my-4">
-        <div class="row d-flex align-items-center flex-wrap justify-content-between">
-            <div class="col-auto d-flex flex-nowrap align-content-center">
-                <div class="font-weight-bold text-primary text-nowrap m-0">{{ info.title }}</div>
-                <div class="d-flex justify-content-between">
-                    <div class="px-1">
-                        {% include 'psat/snippets/icon_like.html' %}
-                    </div>
-                    <div class="px-1 text-nowrap">
-                        {% include 'psat/snippets/icon_rate.html' %}
-                    </div>
-                    <div class="px-1">
-                        {% include 'psat/snippets/icon_answer.html' %}
-                    </div>
-                </div>
-            </div>
-<div class="col-auto ml-auto d-flex justify-content-end align-content-center px-0">
-    <div role="form" aria-label="detail-filter" class="form-inline-block mr-1">
-        {% include 'psat/snippets/detail_filter_container.html' %}
-    </div>
-    <div role="navigation" aria-label="detail-navigation">
-        {% include 'psat/snippets/detail_navigation.html' %}
-    </div>
-</div>
+    <section class="container col-12 p-0 mb-4">
+        <div class="d-flex flex-column align-items-center justify-content-start" role="textbox">
+            <h6 class="font-weight-bold text-primary col-12 m-0 p-0">
+                {{ info.icon|safe }} {{ info.title }}
+            </h6>
         </div>
     </section>
     <article class="mx-0 main-article">
-        <section class="col-12 mb-4">
-            <div class="card border-left-{{ info.color }} shadow h-100 py-0">
-                <div class="card-body">
-                    <table class="table mb-0">
-                    {% if problem %}
-                        <thead>
-                            <tr>
-                                <th class="px-0">
-                                    <div class="problem-box" role="textbox" aria-label="question">
-                                        <div class="problem-number">
-                                            <h6 class="font-weight-bold m-0" style="line-height:1.5rem;">
-                                                문&nbsp;{{ problem.problem_number|add_space }}.
-                                            </h6>
-                                        </div>
-                                        <div class="problem-question">
-                                            <h6 class="font-weight-bold m-0" style="line-height:1.5rem;">
-                                                {{ problem.problem_question }}
-                                            </h6>
-                                        </div>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-center">
-                            <tr>
-                                <td class="px-0">
-                                    <div class="d-flex justify-content-end">
-                                        {% include 'psat/snippets/detail_answer_button.html' %}
-                                    </div>
-                                    <div role="figure" aria-label="problem-image">
-                                        <img class="problem-image" src="{{ problem.image_file.name }}" alt="{{ problem.image_file.tag }}"/>
-                                        {% csrf_token %}
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    {% endif %}
-                    </table>
-{#                    {% include 'psat/problem_tags.html' %}#}
+        <div class="row">
+            <section class="col-12 mb-4">
+                <div class="card border-left-{{ info.color }} shadow h-100 py-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between" role="button" aria-label="button-group">
+                            {% include 'board/snippets/detail_button_group.html' %}
+                        </div>
+                        <hr class="sidebar-divider my-2">
+                        <div role="textbox" aria-label="post-title">
+                            {% include 'board/snippets/detail_post_title.html' %}
+                        </div>
+                        <div role="textbox" aria-label="post-content">
+                            {{ post.content|safe }}
+                        </div>
+                        <div class="bg-gray-200 small p-3">
+                        {% if comments %}
+                            {% for comment in comments %}
+                                {% include 'board/comment_content.html' %}
+                            {% endfor %}
+                        {% endif %}
+                            {% include 'board/comment_create.html' %}
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </article>
-    <!-- Main Content End -->
-{% endblock %}
-
-{% block footer %}
-    {% include 'psat/../snippets/footer.html' %}
-{% endblock %}
-
-{% block page_script %}
-    <script src="{% static 'js/list.js' %}"></script>
-{% endblock %}
+</section>

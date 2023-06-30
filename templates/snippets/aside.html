@@ -10,14 +10,12 @@
             </div>
             <div class="sidebar-brand-text mx-3">paedison.com</div>
         </a>
-        {% comment %}
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="dashboardList">
-            <a class="nav-link" href="{% url 'notice:post_list' %}">
+            <a class="nav-link" href="{% url 'notice:list' %}">
                 {{ MENU_NOTICE_ICON|safe }} Notice
             </a>
         </li>
-        {% endcomment %}
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="dashboardList">
             <a class="nav-link" href="{% url 'dashboard:main' %}">
@@ -73,6 +71,12 @@
             </div>
             <div class="sidebar-brand-text mx-3">paedison.com</div>
         </a>
+        <hr class="sidebar-divider my-0">
+        <li class="nav-item" id="dashboardList">
+            <a class="nav-link" href="{% url 'notice:list' %}">
+                {{ MENU_NOTICE_ICON|safe }} Notice
+            </a>
+        </li>
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="problemList">
             <a class="nav-link" href="{% url 'psat:base' %}">

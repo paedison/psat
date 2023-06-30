@@ -29,7 +29,6 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/schedule.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/sb-admin-2/css/sb-admin-2.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/summernote/summernote.css' %}">
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3543306443016219" crossorigin="anonymous"></script>
 
@@ -74,11 +73,11 @@
 
     {# Plugin JS #}
     <script src="{% static 'vendor/jquery-easing/jquery.easing.js' %}"></script>
-    <script src="{% static 'vendor/chart.js/chart.js' %}"></script>
+{#    <script type="module" src="{% static 'vendor/chart.js/chart.js' %}"></script>#}
 
     {# Common JS #}
     <script src="{% static 'vendor/sb-admin-2/js/sb-admin-2.js' %}"></script>
-    <script src="{% static 'js/common.js' %}"></script>
+    <script type="module" src="{% static 'js/common.js' %}"></script>
 
     {# Page JS #}
     {% block page_script %}

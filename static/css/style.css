@@ -125,3 +125,15 @@ img.problem-image{
 	width:100%;
 	word-break:keep-all;
 }
+
+.comment-form {
+    margin:0;
+    padding:0;
+    width:100%;
+    border:none;
+    resize:none;
+}
+
+.comment-form:focus {
+    outline:none;
+}
