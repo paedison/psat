@@ -1,3 +1,5 @@
+import { urls } from './common.js'
+
 const yearChoice = $('#yearChoice');
 const examChoice = $('#examChoice');
 const subjectChoice = $('#subjectChoice');

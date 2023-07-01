@@ -66,9 +66,14 @@
                                     <div class="d-flex justify-content-end">
                                         {% include 'psat/snippets/detail_answer_button.html' %}
                                     </div>
-                                    <div role="figure" aria-label="problem-image">
-                                        <img class="problem-image" src="{{ problem.image_file.name }}" alt="{{ problem.image_file.tag }}"/>
+                                    <div class="d-flex flex-wrap align-items-start" role="figure" aria-label="problem-image">
                                         {% csrf_token %}
+                                        <div class="col-12 col-lg-6 p-0">
+                                            <img class="problem-image" src="{{ problem.image_file.name1 }}" alt="{{ problem.image_file.tag1 }}"/>
+                                        </div>
+                                        <div class="col-12 col-lg-6 p-0">
+                                            <img class="problem-image" src="{{ problem.image_file.name2 }}" alt="{{ problem.image_file.tag2 }}"/>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>

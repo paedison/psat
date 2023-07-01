@@ -1,22 +1,7 @@
+import { csrf_token } from './common.js'
+
 let rateButton = $('#rateButton');
-let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 
-
-/* Image Click to Close */
-$(document).on('click', '.problem-image', function() {
-    $.ajax({
-        url: '/log/request/',
-        type: 'POST',
-        data: {
-            'info': info,
-            'extra': '(Close)',
-        },
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function() {
-            window.close();
-        }
-    });
-});
 
 /* Ajax for '.list-page' (Problem / Like / Rate / Answer List Pagination) */
 $(document).on('click', '.list-page', function(event) {
@@ -35,6 +20,7 @@ $(document).on('click', '.list-page', function(event) {
     });
 });
 
+
 /* Ajax for '.list-filter' (Like / Rate / Answer List Filter) */
 $(document).on('click', '.list-filter', function(event) {
     event.preventDefault();
@@ -51,9 +37,6 @@ $(document).on('click', '.list-filter', function(event) {
 });
 
 
-///////////////////////////////////////////
-///////////////////////////////////////////
-///////////////////////////////////////////
 /* Ajax for '.like-button' (Like Button) */
 $(document).on('click', '.like-button', function(event) {
     event.preventDefault();
@@ -68,6 +51,7 @@ $(document).on('click', '.like-button', function(event) {
         }
     });
 });
+
 
 /* Transmitting Data for '.rate-button' (Open Rate Modal) */
 $(document).on('click', '.rate-button', function(){
@@ -95,6 +79,7 @@ $(document).on('click', 'input[name="difficulty"]', function(event) {
         }
     });
 });
+
 
 /* Ajax for '.answer-button' (Answer Button) */
 $(document).on('click', '.answer-button', function(event) {

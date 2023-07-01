@@ -1,4 +1,4 @@
-export let urls = {
+export const urls = {
     /* Category */
     'dashboard': '/dashboard/',
     'profile': '/account/profile/',
@@ -28,7 +28,7 @@ export let urls = {
 let collapseProblem = $('#collapseProblem');
 let info = JSON.parse($('#info').text());
 let infoCategory = info['category'];
-let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
+export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 
 
 /* Collapse & Activate Menu */

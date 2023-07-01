@@ -23,7 +23,6 @@ secrets = json.loads(open(SECRET_BASE_FILE).read())
 for key, value in secrets.items():
     setattr(sys.modules[__name__], key, value)
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -34,7 +33,6 @@ for key, value in secrets.items():
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -106,7 +104,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = '_config.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -116,7 +113,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -135,7 +131,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -166,7 +161,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 # DJANGO-Debug-Toolbar
 INTERNAL_IPS = [
     '127.0.0.1',
@@ -176,10 +170,9 @@ INTERNAL_IPS = [
 TAGGIT_CASE_INSENSITIVE = True
 TAGGIT_LIMIT = 50
 
-
 # DJango-allauth Package Settings
 AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
+    # Needed to log in by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',  # Default Model Backend
 
     # `allauth` specific authentication methods, such as login by e-mail
@@ -197,7 +190,6 @@ SITE_ID = 1  # 사이트 아이디 기본값
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-
 # Custom User Model
 AUTH_USER_MODEL = "common.User"
 
@@ -205,10 +197,8 @@ ACCOUNT_FORMS = {
     # 'login': 'common.forms.CustomLoginForm',
 }
 
-
 # Session Setting
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
-
 
 # Summernote Settings
 # SUMMERNOTE_THEME = 'lite'
@@ -221,15 +211,15 @@ SUMMERNOTE_CONFIG = {
         'toolbar': [
             ['fontname', ['fontname']],
             ['fontsize', ['fontsize']],
-            ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
-            ['color', ['forecolor','color']],
+            ['style', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+            ['color', ['forecolor', 'color']],
             ['table', ['table']],
             ['para', ['ul', 'ol', 'paragraph']],
             ['height', ['height']],
-            ['insert',['picture','link','video']],
+            ['insert', ['picture', 'link', 'video']],
             ['view', ['fullscreen', 'help']],
         ],
-        'fontNames': ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
-        'fontSizes': ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72'],
+        'fontNames': ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', '맑은 고딕', '궁서', '굴림체', '굴림', '돋움체', '바탕체'],
+        'fontSizes': ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '50', '72'],
     },
 }

@@ -27,7 +27,6 @@ class BaseDetailView(DetailView):
     pk_url_kwarg = 'problem_id'
     object = title = None
     problem_id = None
-    prev_prob = next_prob = None
     info = {}
     like_data = like_list = rate_data = rate_list = answer_data = answer_list = None
 
@@ -70,10 +69,11 @@ class BaseDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         self.object = get_evaluation_info(self.request, self.object)
+        prev_prob, next_prob = self.get_prev_next_prob()
         context['problem'] = self.object
         context['info'] = self.info
-        context['prev_prob'] = self.prev_prob
-        context['next_prob'] = self.next_prob
+        context['prev_prob'] = prev_prob
+        context['next_prob'] = next_prob
 
         return context
 

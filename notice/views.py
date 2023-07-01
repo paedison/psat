@@ -2,10 +2,12 @@ import inspect
 import os
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.middleware.csrf import get_token
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView, FormView
 
 from common.constants.icon import *
 from log.views import create_request_log
@@ -225,14 +227,15 @@ class CommentDeleteView(LoginRequiredMixin, DeleteView):
     # success_url = list_url
 
     def get_success_url(self):
-        post_id = self.kwargs['post_id']
-        return reverse_lazy(f'{app_name}:detail', args=[post_id])
+        self.object = self.get_object()
+        print(self.object)
+        return reverse_lazy(f'{app_name}:detail', args=[self.object.post.id])
 
 
 class CommentUpdateView(LoginRequiredMixin, UpdateView):
     model = comment_model
     form_class = comment_form
-    template_name = create_template
+    template_name = comment_template
 
     view_info = info.copy()
     view_info['type'] = app_name + 'CommentUpdate'
@@ -244,13 +247,25 @@ class CommentUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy(f'{app_name}:detail', args=[self.object.pk])
+        self.object = self.get_object()
+        return reverse_lazy(f'{app_name}:detail', args=[self.object.post.pk])
+
+    def get_context_data(self, **kwargs):
+        self.object = self.get_object()
+        context = super().get_context_data(object=self.object, original=self.object.content, **kwargs)
+        context['info']['comment_url'] = reverse_lazy(f'{app_name}:comment_update', args=[self.object.pk])
+        return context
 
     def get(self, request, *args, **kwargs):
         extra = f"(Update Attempt)"
         create_request_log(self.request, self.view_info, extra)
 
-        return super().get(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        html = render_to_string(self.template_name, context)
+        return JsonResponse({
+            'html': html,
+            'csrf_token': get_token(self.request)
+        })
 
     def post(self, request, *args, **kwargs):
         extra = f"(Updated Successfully)"
@@ -259,3 +274,5 @@ class CommentUpdateView(LoginRequiredMixin, UpdateView):
         return super().post(request, *args, **kwargs)
 
 
+# def comment_update(request):
+#

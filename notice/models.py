@@ -10,6 +10,7 @@ CATEGORY_CHOICES = [
 
 app_name = 'notice'
 
+
 class Post(models.Model):
     objects = models.Manager()
 
@@ -29,7 +30,8 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse_lazy(f'{app_name}:detail', args=[self.id])
 
-    def get_list_url(self):
+    @staticmethod
+    def get_list_url():
         return reverse_lazy(f'{app_name}:list')
 
     def get_update_url(self):
@@ -50,7 +52,8 @@ class Comment(models.Model):
 
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="사용자 ID", db_column="user_id")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name="게시글", db_column="post_id", related_name="comment")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name="게시글", db_column="post_id",
+                             related_name="comment")
     content = models.TextField("내용")
     created_at = models.DateTimeField("작성일", auto_now_add=True)
     modified_at = models.DateTimeField("수정일", auto_now=True)
@@ -59,8 +62,7 @@ class Comment(models.Model):
         ordering = ["-id"]
 
     def get_comment_update_url(self):
-        return reverse_lazy(f'{app_name}:comment_update', kwargs={'post_id': self.post.id, 'pk': self.id})
+        return reverse_lazy(f'{app_name}:comment_update', args=[self.id])
 
     def get_comment_delete_url(self):
-        return reverse_lazy(f'{app_name}:comment_delete', kwargs={'post_id': self.post.id, 'pk': self.id})
-
+        return reverse_lazy(f'{app_name}:comment_delete', args=[self.id])

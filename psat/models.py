@@ -92,15 +92,25 @@ class AddInfo:
         number = f'{self.problem_number():02}'
 
         preparing_image = static('image/preparing.png')
-        filename = f'PSAT{year_ex_sub}{number}.png'
-        problem_image = static(f'image/PSAT/{year}/{filename}')
+        # filename = f'PSAT{year_ex_sub}{number}.png'
+        # problem_image = static(f'image/PSAT/{year}/{filename}')
+        file1 = f'PSAT{year_ex_sub}{number}-1.png'
+        file2 = f'PSAT{year_ex_sub}{number}-2.png'
+        problem_image1 = static(f'image/PSAT/{year}/{file1}')
+        problem_image2 = static(f'image/PSAT/{year}/{file2}')
 
-        image_os_path = os.path.join(static_path, 'image', 'PSAT', str(year), filename)
-        exists = os.path.exists(image_os_path)
+        # image_os_path = os.path.join(static_path, 'image', 'PSAT', str(year), filename)
+        # exists = os.path.exists(image_os_path)
+        image1_os_path = os.path.join(static_path, 'image', 'PSAT', str(year), file1)
+        image1_exists = os.path.exists(image1_os_path)
+        image2_os_path = os.path.join(static_path, 'image', 'PSAT', str(year), file2)
+        image2_exists = os.path.exists(image2_os_path)
 
         image_file = {
-            'name': problem_image if exists else preparing_image,
-            'tag': 'Problem Image' if exists else 'Preparing Image'
+            'name1': problem_image1 if image1_exists else preparing_image,
+            'tag1': 'Problem Image 1' if image1_exists else 'Preparing Image',
+            'name2': problem_image2 if image2_exists else preparing_image,
+            'tag2': 'Problem Image 2' if image2_exists else 'Preparing Image',
         }
         return image_file
 

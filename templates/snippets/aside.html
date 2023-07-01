@@ -13,13 +13,15 @@
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="dashboardList">
             <a class="nav-link" href="{% url 'notice:list' %}">
-                {{ MENU_NOTICE_ICON|safe }} Notice
+                {{ MENU_NOTICE_ICON|safe }}
+                <span>Notice</span>
             </a>
         </li>
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="dashboardList">
             <a class="nav-link" href="{% url 'dashboard:main' %}">
-                {{ MENU_DASHBOARD_ICON|safe }} Dashboard
+                {{ MENU_DASHBOARD_ICON|safe }}
+                <span>Dashboard</span>
             </a>
         </li>
         {% comment %}
@@ -33,21 +35,26 @@
         <hr class="sidebar-divider my-0">
         <li class="nav-item" role="menuitem" aria-label="PSAT Collapse Menu">
             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProblem" aria-expanded="false" aria-controls="collapseProblem">
-                {{ MENU_PSAT_ICON|safe }} PSAT
+                {{ MENU_PSAT_ICON|safe }}
+                <span>PSAT</span>
             </a>
             <div id="collapseProblem" class="collapse" aria-labelledby="headingProblem" data-bs-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
                     <a class="collapse-item" id="problemList" href="{% url 'psat:base' %}">
-                        {{ MENU_PROBLEM_ICON|safe }} 기출문제
+                        {{ MENU_PROBLEM_ICON|safe }}
+                        <span>기출문제</span>
                     </a>
                     <a class="collapse-item" id="likeList" href="{% url 'psat:like_list' 1 %}">
-                        {{ MENU_LIKE_ICON|safe }} 즐겨찾기
+                        {{ MENU_LIKE_ICON|safe }}
+                        <span>즐겨찾기</span>
                     </a>
                     <a class="collapse-item" id="rateList" href="{% url 'psat:rate_base' %}">
-                        {{ MENU_RATE_ICON|safe }} 난이도
+                        {{ MENU_RATE_ICON|safe }}
+                        <span>난이도</span>
                     </a>
                     <a class="collapse-item" id="answerList" href="{% url 'psat:answer_base' %}">
-                        {{ MENU_ANSWER_ICON|safe }} 정답확인
+                        {{ MENU_ANSWER_ICON|safe }}
+                        <span>정답확인</span>
                     </a>
                     {% comment %}
                     <a class="collapse-item" id="communityList" href="#">
@@ -60,7 +67,8 @@
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="scheduleList">
             <a class="nav-link" href="{% url 'schedule:base' %}">
-                {{ MENU_SCHEDULE_ICON|safe }} Schedule
+                {{ MENU_SCHEDULE_ICON|safe }}
+                <span>Schedule</span>
             </a>
         </li>
     {% else %}
@@ -74,19 +82,22 @@
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="dashboardList">
             <a class="nav-link" href="{% url 'notice:list' %}">
-                {{ MENU_NOTICE_ICON|safe }} Notice
+                {{ MENU_NOTICE_ICON|safe }}
+                <span>Notice</span>
             </a>
         </li>
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="problemList">
             <a class="nav-link" href="{% url 'psat:base' %}">
-                {{ MENU_PSAT_ICON|safe }} PSAT
+                {{ MENU_PSAT_ICON|safe }}
+                <span>PSAT</span>
             </a>
         </li>
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="scheduleList">
             <a class="nav-link" href="{% url 'schedule:base' %}">
-                {{ MENU_SCHEDULE_ICON|safe }} Schedule
+                {{ MENU_SCHEDULE_ICON|safe }}
+                <span>Schedule</span>
             </a>
         </li>
     {% endif %}

@@ -1,18 +1,20 @@
 {% load psat_filter %}
 
-<div class="comment-list p-2 mb-1">
-    <div class="d-flex justify-content-between">
-        <div>
-            <span class="text-gray-900 mr-1">{{ comment.user.username }}</span>
-            <span class="mr-1">{{ comment.created_at|date:'Y.m.d' }}({{ comment.created_at|date:'w'|int2kor }}) {{ comment.created_at|time:'H:i' }}</span>
+<div class="comment-box">
+    <div id="comment{{ comment.id }}" class="p-2">
+        <div class="d-flex justify-content-between">
+            <div>
+                <span class="text-gray-900 mr-1">{{ comment.user.username }}</span>
+                <span class="mr-1">{{ comment.created_at|date:'Y.m.d' }}({{ comment.created_at|date:'w'|int2kor }}) {{ comment.created_at|time:'H:i' }}</span>
+            </div>
+        {%  if comment.user == user %}
+            <div>
+                <a class="text-gray-600 mr-2 update-comment" href="{{ comment.get_comment_update_url }}" data-url="{{ comment.post.get_absolute_url }}" data-comment-id="{{ comment.id }}" title="Delete">{{ PEN_ICON|safe }}</a>
+                <a class="text-danger delete-instance" href="{{ comment.get_comment_delete_url }}" data-url="{{ comment.post.get_absolute_url }}" data-text="댓글을 삭제하시겠습니까?" data-bs-toggle="modal" data-bs-target="#deleteInstanceModal" title="Delete">{{ TRASH_ICON|safe }}</a>
+            </div>
+        {% endif %}
         </div>
-    {%  if comment.user == user %}
-        <div>
-            <a href="{{ comment.get_comment_update_url }}" class="text-gray-600 mr-2">{{ PEN_ICON|safe }}</a>
-            <a id="deleteInstance" class="text-danger" href="{{ comment.get_comment_delete_url }}" data-url="{{ comment.post.get_absolute_url }}" data-text="댓글을 삭제하시겠습니까?" data-bs-toggle="modal" data-bs-target="#deleteInstanceModal" title="Delete">{{ TRASH_ICON|safe }}</a>
-        </div>
-    {% endif %}
+        <div class="comment text-gray-900">{{ comment.content }}</div>
     </div>
-    <div class="text-gray-900">{{ comment.content }}</div>
 </div>
-<hr class="my-1">
+<hr class="my-2">
