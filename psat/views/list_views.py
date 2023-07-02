@@ -170,7 +170,7 @@ class LikeListView(BaseListView):
         user = self.request.user
         queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0)
         if self.is_liked is not None:
-            queryset = problem.filter(evaluation__is_liked=self.is_liked)
+            queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked)
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 
@@ -210,7 +210,7 @@ class RateListView(BaseListView):
         user = self.request.user
         queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1)
         if self.star_count is not None:
-            queryset = problem.filter(evaluation__difficulty_rated=self.star_count)
+            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count)
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 
@@ -247,7 +247,7 @@ class AnswerListView(BaseListView):
         user = self.request.user
         queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0)
         if self.is_correct is not None:
-            queryset = problem.filter(evaluation__is_correct=self.is_correct)
+            queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct)
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 

@@ -74,7 +74,7 @@ class DashboardLikeView(CardBaseView, BaseListView):
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
 
-        self.is_liked = kwargs.get('is_liked') or 1
+        self.is_liked = kwargs.get('is_liked')
         if self.is_liked is None:
             pagination_url = reverse_lazy('dashboard:like')
         else:
@@ -99,7 +99,7 @@ class DashboardLikeView(CardBaseView, BaseListView):
         user = self.request.user
         queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
         if self.is_liked is not None:
-            queryset = problem.filter(evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
+            queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 
@@ -140,7 +140,7 @@ class DashboardRateView(CardBaseView, BaseListView):
         user = self.request.user
         queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
         if self.star_count is not None:
-            queryset = problem.filter(evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
+            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 
@@ -178,7 +178,7 @@ class DashboardAnswerView(CardBaseView, BaseListView):
         user = self.request.user
         queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
         if self.is_correct is not None:
-            queryset = problem.filter(evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
+            queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 
