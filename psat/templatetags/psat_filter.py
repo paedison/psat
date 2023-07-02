@@ -1,10 +1,8 @@
 # Python Standard Function Import
-import re
 
 # Django Core Import
 from django.template import Library, Node
-from django.utils.translation import gettext as _
-from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 # Custom App Import
 from psat.models import Exam, Problem
@@ -29,7 +27,7 @@ def add_space(content):  # Add Space before 1-Digit Number
 
 @register.filter()
 def int2kor(value):  # Convert Integer to Korean Alphabet
-    nums = [_('SUN'), _('MON'), _('TUE'), _('WED'), _('THU'), _('FRI'), _('SAT')]
+    nums = [_('Sun'), _('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat')]
     s = str(value)
     result = ''
     for c in s:

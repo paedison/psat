@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-02 14:27+0900\n"
+"POT-Creation-Date: 2023-07-02 17:18+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,36 +18,43 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: .\_config\settings\base.py:150
+#: .\_config\settings\base.py:158
 msgid "Korean"
 msgstr ""
 
-#: .\psat\templatetags\psat_filter.py:32
-msgid "SUN"
+#: .\psat\templatetags\psat_filter.py:30
+#: .\venv\Lib\site-packages\django\utils\dates.py:11
+msgid "Sun"
 msgstr "일"
 
-#: .\psat\templatetags\psat_filter.py:32
-msgid "MON"
+#: .\psat\templatetags\psat_filter.py:30
+#: .\venv\Lib\site-packages\django\utils\dates.py:10
+msgid "Mon"
 msgstr "월"
 
-#: .\psat\templatetags\psat_filter.py:32
-msgid "TUE"
+#: .\psat\templatetags\psat_filter.py:30
+#: .\venv\Lib\site-packages\django\utils\dates.py:10
+msgid "Tue"
 msgstr "화"
 
-#: .\psat\templatetags\psat_filter.py:32
-msgid "WED"
+#: .\psat\templatetags\psat_filter.py:30
+#: .\venv\Lib\site-packages\django\utils\dates.py:10
+msgid "Wed"
 msgstr "수"
 
-#: .\psat\templatetags\psat_filter.py:32
-msgid "THU"
+#: .\psat\templatetags\psat_filter.py:30
+#: .\venv\Lib\site-packages\django\utils\dates.py:10
+msgid "Thu"
 msgstr "목"
 
-#: .\psat\templatetags\psat_filter.py:32
-msgid "FRI"
+#: .\psat\templatetags\psat_filter.py:30
+#: .\venv\Lib\site-packages\django\utils\dates.py:10
+msgid "Fri"
 msgstr "금"
 
-#: .\psat\templatetags\psat_filter.py:32
-msgid "SAT"
+#: .\psat\templatetags\psat_filter.py:30
+#: .\venv\Lib\site-packages\django\utils\dates.py:11
+msgid "Sat"
 msgstr "토"
 
 #: .\templates\account\account_inactive.html:5
@@ -120,8 +127,8 @@ msgid ""
 "You currently do not have any e-mail address set up. You should really add "
 "an e-mail address so you can receive notifications, reset your password, etc."
 msgstr ""
-"등록된 이메일이 없습니다. 알림, 비밀번호 초기화 등을 위해 "
-"이메일을 등록해야 합니다."
+"등록된 이메일이 없습니다. 알림, 비밀번호 초기화 등을 위해 이메일을 등록해야 "
+"합니다."
 
 #: .\templates\account\email.html:48
 msgid "Add E-mail Address"
@@ -179,8 +186,8 @@ msgid ""
 "\n"
 "To confirm this is correct, go to %(activate_url)s"
 msgstr ""
-"%(user_display)s 에 대해 %(site_domain)s 으로부터"
-"이메일 인증이 전송되었습니다.\n"
+"%(user_display)s 에 대해 %(site_domain)s 으로부터이메일 인증이 전송되었습니"
+"다.\n"
 "\n"
 "%(activate_url)s 에서 인증을 완료하세요."
 
@@ -196,8 +203,8 @@ msgid ""
 "link below to reset your password."
 msgstr ""
 "회원님의 계정에 대한 암호 변경 요청이 접수되었습니다.\n"
-"패스워드 초기화를 원치 않는 경우 본 메일을 무시해 주십시요."
-"변경을 요청할 경우 아래 링크를 클릭하세요."
+"패스워드 초기화를 원치 않는 경우 본 메일을 무시해 주십시요.변경을 요청할 경"
+"우 아래 링크를 클릭하세요."
 
 #: .\templates\account\email\password_reset_key_message.txt:9
 #, python-format
@@ -222,8 +229,8 @@ msgid ""
 "If it was you, you can sign up for an account using the link below."
 msgstr ""
 "회원님의 계정에 대한 암호 변경 요청이 접수되었습니다.\n"
-"패스워드 초기화를 원치 않는 경우 본 메일을 무시해 주십시요."
-"변경을 요청할 경우 아래 링크를 클릭하세요."
+"패스워드 초기화를 원치 않는 경우 본 메일을 무시해 주십시요.변경을 요청할 경"
+"우 아래 링크를 클릭하세요."
 
 #: .\templates\account\email_confirm.html:6
 #: .\templates\account\email_confirm.html:10
@@ -236,8 +243,8 @@ msgid ""
 "Please confirm that <a href=\"mailto:%(email)s\">%(email)s</a> is an e-mail "
 "address for user %(user_display)s."
 msgstr ""
-"<a href=\"mailto:%(email)s\">%(email)s</a>이 사용자 %(user_display)s의 이메일이"
-"맞는지 확인해 주세요."
+"<a href=\"mailto:%(email)s\">%(email)s</a>이 사용자 %(user_display)s의 이메일"
+"이맞는지 확인해 주세요."
 
 #: .\templates\account\email_confirm.html:20
 msgid "Confirm"
@@ -249,8 +256,8 @@ msgid ""
 "This e-mail confirmation link expired or is invalid. Please <a href="
 "\"%(email_url)s\">issue a new e-mail confirmation request</a>."
 msgstr ""
-"이 이메일 확인 링크는 만료되었거나 유효하지 않습니다."
-"<a href=\"%(email_url)s\">새로운 이메일 확인 요청</a>을 해주세요."
+"이 이메일 확인 링크는 만료되었거나 유효하지 않습니다.<a href=\"%(email_url)s"
+"\">새로운 이메일 확인 요청</a>을 해주세요."
 
 #: .\templates\account\login.html:9 .\templates\account\login.html:15
 msgid "Welcome!"
@@ -335,8 +342,8 @@ msgid ""
 "Forgotten your password? Enter your e-mail address below, and we'll send you "
 "an e-mail allowing you to reset it."
 msgstr ""
-"비밀번호를 잊으셨나요? 아래에 당신의 이메일을 입력하시면,"
-"비밀번호 초기화 이메일을 전송해 드리겠습니다."
+"비밀번호를 잊으셨나요? 아래에 당신의 이메일을 입력하시면,비밀번호 초기화 이메"
+"일을 전송해 드리겠습니다."
 
 #: .\templates\account\password_reset.html:26
 msgid "Reset My Password"
@@ -424,8 +431,8 @@ msgid ""
 "your main inbox, check your spam folder. Please contact us if you do not "
 "receive the verification e-mail within a few minutes."
 msgstr ""
-"이메일 인증 메일이 전송되었습니다.회원가입 완료를 위해 전송된 메일의 링크를 클릭하세요."
-"몇 분 후에도 메일이 전송되지 않으면 저희에게 연락주세요."
+"이메일 인증 메일이 전송되었습니다.회원가입 완료를 위해 전송된 메일의 링크를 "
+"클릭하세요.몇 분 후에도 메일이 전송되지 않으면 저희에게 연락주세요."
 
 #: .\templates\account\verified_email_required.html:12
 msgid ""
@@ -454,7 +461,8 @@ msgid ""
 "<strong>Note:</strong> you can still <a href=\"%(email_url)s\">change your e-"
 "mail address</a>."
 msgstr ""
-"<strong>메모:</strong> <a href=\"%(email_url)s\">이메일 변경</a>이 가능합니다."
+"<strong>메모:</strong> <a href=\"%(email_url)s\">이메일 변경</a>이 가능합니"
+"다."
 
 #: .\templates\admin\base_site.html:3
 msgid "Django site admin"
@@ -530,8 +538,8 @@ msgid ""
 "accounts. If this was a mistake, please proceed to <a href=\"%(login_url)s"
 "\">sign in</a>."
 msgstr ""
-"기존 계정중 하나를 사용한 로그인을 취소하였습니다."
-"실수로 인한 경우, <a href=\"%(login_url)s\">로그인</a>을 진행해 주세요."
+"기존 계정중 하나를 사용한 로그인을 취소하였습니다.실수로 인한 경우, <a href="
+"\"%(login_url)s\">로그인</a>을 진행해 주세요."
 
 #: .\templates\socialaccount\messages\account_connected.txt:2
 msgid "The social account has been connected."
@@ -1272,34 +1280,6 @@ msgstr "토요일"
 #: .\venv\Lib\site-packages\django\utils\dates.py:7
 msgid "Sunday"
 msgstr "일요일"
-
-#: .\venv\Lib\site-packages\django\utils\dates.py:10
-msgid "Mon"
-msgstr "월"
-
-#: .\venv\Lib\site-packages\django\utils\dates.py:10
-msgid "Tue"
-msgstr "화"
-
-#: .\venv\Lib\site-packages\django\utils\dates.py:10
-msgid "Wed"
-msgstr "수"
-
-#: .\venv\Lib\site-packages\django\utils\dates.py:10
-msgid "Thu"
-msgstr "목"
-
-#: .\venv\Lib\site-packages\django\utils\dates.py:10
-msgid "Fri"
-msgstr "금"
-
-#: .\venv\Lib\site-packages\django\utils\dates.py:11
-msgid "Sat"
-msgstr "토"
-
-#: .\venv\Lib\site-packages\django\utils\dates.py:11
-msgid "Sun"
-msgstr "일"
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:14
 msgid "January"
