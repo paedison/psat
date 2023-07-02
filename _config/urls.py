@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from common.views.test_view import test1
 from psat.views.list_views import index
 
 urlpatterns = [
@@ -34,7 +35,7 @@ urlpatterns = [
     # path('quiz/', include('quiz.urls')),  # 연산연습 등
     path('log/', include('log.urls')),  # 로그 관리
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
-    path('summernote/', include('django_summernote.urls'))
+    path('summernote/', include('django_summernote.urls')),
 ]
 
 if settings.DEBUG:

@@ -10,10 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
-import os
 import json
+import os
 import sys
+from pathlib import Path
+from environ import Env
+
+from django.utils.translation import ugettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -22,6 +25,12 @@ SECRET_BASE_FILE = os.path.join(BASE_DIR, 'secrets.json')
 secrets = json.loads(open(SECRET_BASE_FILE).read())
 for key, value in secrets.items():
     setattr(sys.modules[__name__], key, value)
+
+env = Env()
+env_path = BASE_DIR / ".env"
+if env_path.exists():
+    with env_path.open("rt", encoding="utf8") as f:
+        env.read_env(f, overwrite=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -145,6 +154,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+LANGUAGES = [
+    ('ko', _('Korean')),
+]
 LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 
 # Static files (CSS, JavaScript, Images)
@@ -166,9 +178,11 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
+
 # DJANGO-Taggit
 TAGGIT_CASE_INSENSITIVE = True
 TAGGIT_LIMIT = 50
+
 
 # DJango-allauth Package Settings
 AUTHENTICATION_BACKENDS = [
@@ -182,6 +196,11 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'None'
+# ACCOUNT_EMAIL_VERIFICATION = 'Mandatory'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+ACCOUNT_EMAIL_SUBJECT_PREFIX = '이메일 인증'
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = None
 ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300
 
@@ -190,6 +209,9 @@ SITE_ID = 1  # 사이트 아이디 기본값
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
 # Custom User Model
 AUTH_USER_MODEL = "common.User"
 
@@ -197,8 +219,10 @@ ACCOUNT_FORMS = {
     # 'login': 'common.forms.CustomLoginForm',
 }
 
+
 # Session Setting
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
 
 # Summernote Settings
 # SUMMERNOTE_THEME = 'lite'

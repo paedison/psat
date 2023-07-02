@@ -13,43 +13,46 @@
                 <div class="card o-hidden border-0 shadow-lg my-5">
                     <div class="card-body p-0">
                         <div class="row">
-{% block main_image %}{% endblock %}
-<div class="col-lg-6">
-    <div class="p-5">
-{% block body %}
-    {% if messages %}
-        <form class="user">
-            {% for message in messages %}
-            <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
-                {{message}}
-            </div>
-            {% endfor %}
-        </form>
-    {% endif %}
+                            {% block main_image %}{% endblock %}
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                            {% block body %}
+                                {% if messages %}
+                                    <form class="user">
+                                        {% for message in messages %}
+                                        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
+                                            {{message}}
+                                        </div>
+                                        {% endfor %}
+                                    </form>
+                                {% endif %}
 
-    {% block content %}{% endblock %}
+                                {% block content %}{% endblock %}
 
-    {% if user.is_authenticated %}
-        <div class="text-center">
-            <a class="small" href="{% url 'account_email' %}">{% trans "Change E-mail" %}</a>
-        </div>
-        <div class="text-center">
-            <a class="small" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
-        </div>
-    {% else %}
-        <div class="text-center">
-            <a class="button secondaryAction small" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
-        </div>
-        <div class="text-center">
-            <a class="small" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
-        </div>
-    {% endif %}
-{% endblock body %}
+                                {% block footer %}
+                                    {% if user.is_authenticated %}
+                                    <div class="text-center">
+                                        <a class="small" href="{% url 'account_email' %}">{% trans "Change E-mail" %}</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center">
+                                        <a class="button secondaryAction small" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
+                                    </div>
+                                    {% endif %}
+                                {% endblock footer %}
 
-{% block extra_body %}{% endblock %}
+                            {% endblock body %}
 
-    </div>
-</div>
+                            {% block extra_body %}{% endblock %}
+
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
