@@ -1,6 +1,10 @@
+# Django Core Import
 from django.urls import path
 
-from common.views.dashboard_view import MainView, DashboardLikeView, DashboardRateView, DashboardAnswerView
+# Custom App Import
+from common.views.dashboard_view import (
+    MainView, DashboardLikeView, DashboardRateView, DashboardAnswerView
+)
 
 app_name = 'dashboard'
 

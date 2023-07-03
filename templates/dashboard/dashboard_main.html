@@ -16,26 +16,59 @@
     <article class="mx-0 main-article">
     <!-- Content Row Start -->
     <div class="row">
+        <section class="col-12 mb-4">
+            <div class="card h-100 py-2">
+                <div class="card-body">
+                    <!-- Navigation Tab Start -->
+                    <nav>
+                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                            <button class="nav-link active text-primary font-weight-bold small p-2" id="nav-like-tab" data-bs-toggle="tab" data-bs-target="#nav-like" type="button" role="tab" aria-controls="nav-like" aria-selected="true">
+                                {{ MENU_LIKE_ICON|safe }} 즐겨찾기
+                            </button>
+                            <button class="nav-link text-primary font-weight-bold small p-2" id="nav-rate-tab" data-bs-toggle="tab" data-bs-target="#nav-rate" type="button" role="tab" aria-controls="nav-rate" aria-selected="false">
+                                {{ MENU_RATE_ICON|safe }} 난이도
+                            </button>
+                            <button class="nav-link text-primary font-weight-bold small p-2" id="nav-answer-tab" data-bs-toggle="tab" data-bs-target="#nav-answer" type="button" role="tab" aria-controls="nav-answer" aria-selected="false">
+                                {{ MENU_ANSWER_ICON|safe }} 정답확인
+                            </button>
+                            <button class="nav-link text-primary font-weight-bold small p-2" id="nav-problem-tab" data-bs-toggle="tab" data-bs-target="#nav-problem" type="button" role="tab" aria-controls="nav-problem" aria-selected="false">
+                                {{ MENU_ANSWER_ICON|safe }} 기출문제
+                            </button>
+                        </div>
+                    </nav>
+                    <!-- Navigation Tab End -->
 
-    <!-- Like Card Start -->
-        {{ dashboard_like|safe }}
-    <!-- Like Card End -->
+                    <div class="tab-content" id="nav-tabContent">
+                        <!-- Like Tab Start -->
+                        <div class="tab-pane fade show active" id="nav-like" role="tabpanel" aria-labelledby="nav-like-tab">
+                            {{ dashboard_like|safe }}
+                        </div>
+                        <!-- Like Tab End -->
 
-    <!-- Rate Card Start -->
-        {{ dashboard_rate|safe }}
-    <!-- Rate Card End -->
+                        <!-- Rate Tab Start -->
+                        <div class="tab-pane fade" id="nav-rate" role="tabpanel" aria-labelledby="nav-rate-tab">
+                            {{ dashboard_rate|safe }}
+                        </div>
+                        <!-- Rate Tab End -->
 
-    <!-- Answer Card Start -->
-        {{ dashboard_answer|safe }}
-    <!-- Answer Card End -->
+                        <!-- Answer Tab Start -->
+                        <div class="tab-pane fade" id="nav-answer" role="tabpanel" aria-labelledby="nav-answer-tab">
+                            {{ dashboard_answer|safe }}
+                        </div>
+                        <!-- Answer Tab End -->
 
-    <!-- Problem Card Start -->
-    {% include 'dashboard/dashboard_card_problem.html' %}
-    <!-- Problem Card End -->
-
+                        <!-- Problem Tab Start -->
+                        <div class="tab-pane fade" id="nav-problem" role="tabpanel" aria-labelledby="nav-problem-tab">
+                            {% include 'dashboard/dashboard_card_problem.html' %}
+                        </div>
+                        <!-- Problem Tab End -->
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
-    {# Content Row End #}
     <!-- Content Row End -->
     </article>
 </section>
+<!-- Main Content End -->
 {% endblock %}

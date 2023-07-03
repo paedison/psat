@@ -34,12 +34,13 @@ class MainView(View):
 
     def get(self, request):
         dashboard_like_view = DashboardLikeView.as_view()
-        dashboard_rate_view = DashboardRateView.as_view()
-        dashboard_answer_view = DashboardAnswerView.as_view()
+        dashboard_like = dashboard_like_view(request, is_liked=1).content.decode('utf-8')
 
-        dashboard_like = dashboard_like_view(self.request).content.decode('utf-8')
-        dashboard_rate = dashboard_rate_view(self.request).content.decode('utf-8')
-        dashboard_answer = dashboard_answer_view(self.request).content.decode('utf-8')
+        dashboard_rate_view = DashboardRateView.as_view()
+        dashboard_rate = dashboard_rate_view(request).content.decode('utf-8')
+
+        dashboard_answer_view = DashboardAnswerView.as_view()
+        dashboard_answer = dashboard_answer_view(request).content.decode('utf-8')
 
         context = {
             'info': self.info,
@@ -49,7 +50,7 @@ class MainView(View):
             'dashboard_answer': dashboard_answer,
         }
 
-        return render(request, 'dashboard/dashboard_main.html', context)
+        return render(request, self.template_name, context)
 
 
 class CardBaseView:
@@ -67,6 +68,30 @@ class CardBaseView:
         html = render(request, self.content_template, context).content.decode('utf-8')
         return HttpResponse(html)
 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = problem.filter(evaluation__user=user)
+        if self.info['menu'] == 'like':
+            queryset = queryset.filter(evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
+            if self.is_liked is not None:
+                queryset = queryset.filter(evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
+        elif self.info['menu'] == 'rate':
+            queryset = queryset.filter(evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
+            if self.star_count is not None:
+                queryset = queryset.filter(evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
+        elif self.info['menu'] == 'answer':
+            queryset = queryset.filter(evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
+            if self.is_correct is not None:
+                queryset = queryset.filter(evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
+        return queryset
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        queryset = self.get_queryset()
+        context = super().get_context_data(object_list=queryset, **kwargs)
+        self.update_context(context)
+
+        return context
+
 
 class DashboardLikeView(CardBaseView, BaseListView):
     is_liked = None
@@ -82,6 +107,7 @@ class DashboardLikeView(CardBaseView, BaseListView):
 
         self.info = {
             'category': 'dashboard',
+            'menu': 'like',
             'type': 'dashboardLike',
             'title': 'PSAT 즐겨찾기',
             'url': reverse_lazy('psat:like_base'),
@@ -94,16 +120,6 @@ class DashboardLikeView(CardBaseView, BaseListView):
             'color': 'danger',
             'is_liked': self.is_liked,
         }
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        user = self.request.user
-        queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
-        if self.is_liked is not None:
-            queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
-        context = super().get_context_data(object_list=queryset, **kwargs)
-        self.update_context(context)
-
-        return context
 
 
 class DashboardRateView(CardBaseView, BaseListView):
@@ -120,6 +136,7 @@ class DashboardRateView(CardBaseView, BaseListView):
 
         self.info = {
             'category': 'dashboard',
+            'menu': 'rate',
             'type': 'dashboardRate',
             'title': 'PSAT 난이도',
             'url': reverse_lazy('psat:rate_base'),
@@ -136,16 +153,6 @@ class DashboardRateView(CardBaseView, BaseListView):
             'star_count': self.star_count,
         }
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        user = self.request.user
-        queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
-        if self.star_count is not None:
-            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
-        context = super().get_context_data(object_list=queryset, **kwargs)
-        self.update_context(context)
-
-        return context
-
 
 class DashboardAnswerView(CardBaseView, BaseListView):
     is_correct = None
@@ -161,6 +168,7 @@ class DashboardAnswerView(CardBaseView, BaseListView):
 
         self.info = {
             'category': 'dashboard',
+            'menu': 'answer',
             'type': 'dashboardAnswer',
             'title': 'PSAT 정답확인',
             'url': reverse_lazy('psat:answer_base'),
@@ -173,13 +181,3 @@ class DashboardAnswerView(CardBaseView, BaseListView):
             'color': 'success',
             'is_correct': self.is_correct,
         }
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        user = self.request.user
-        queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
-        if self.is_correct is not None:
-            queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
-        context = super().get_context_data(object_list=queryset, **kwargs)
-        self.update_context(context)
-
-        return context
