@@ -70,19 +70,19 @@ class CardBaseView:
 
     def get_queryset(self):
         user = self.request.user
-        queryset = problem.filter(evaluation__user=user)
+        queryset = None
         if self.info['menu'] == 'like':
-            queryset = queryset.filter(evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
+            queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
             if self.is_liked is not None:
-                queryset = queryset.filter(evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
+                queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
         elif self.info['menu'] == 'rate':
-            queryset = queryset.filter(evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
+            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
             if self.star_count is not None:
-                queryset = queryset.filter(evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
+                queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
         elif self.info['menu'] == 'answer':
-            queryset = queryset.filter(evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
+            queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
             if self.is_correct is not None:
-                queryset = queryset.filter(evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
+                queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
         return queryset
 
     def get_context_data(self, *, object_list=None, **kwargs):
