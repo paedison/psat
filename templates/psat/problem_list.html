@@ -6,7 +6,54 @@
 
 {% block main %} {# [05] Main Content #}
 <!-- Main Content Start -->
-    {% include 'psat/problem_list_content.html' %}
+<section id="{{ info.target_id }}">
+    <div id="info" style="display: none;">{{ info|json_script:info }}</div>
+    <section class="container col-12 px-3 mb-4">
+        <div class="row d-flex align-items-center justify-content-between">
+            <h6 class="d-inline-block font-weight-bold text-primary col-12 col-sm-6 py-2 m-0">
+                {{ info.icon|safe }} {{ info.title }}
+            </h6>
+        </div>
+    </section>
+    <article class="mx-0 main-article">
+    <!-- Content Row Start -->
+    <div class="row">
+        <section class="col-12 mb-4">
+            <div class="card h-100 py-2">
+                <div class="card-body">
+                    {% include 'psat/snippets/list_nav_tab.html' %}
+                    <div class="tab-content" id="nav-tabContent">
+                        <!-- Like Tab Start -->
+                        <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
+                            {{ subject_all|safe }}
+                        </div>
+                        <!-- Like Tab End -->
+
+                        <!-- Rate Tab Start -->
+                        <div class="tab-pane fade" id="nav-eoneo" role="tabpanel" aria-labelledby="nav-eoneo-tab">
+                            {{ subject_eoneo|safe }}
+                        </div>
+                        <!-- Rate Tab End -->
+
+                        <!-- Answer Tab Start -->
+                        <div class="tab-pane fade" id="nav-jaryo" role="tabpanel" aria-labelledby="nav-jaryo-tab">
+                            {{ subject_jaryo|safe }}
+                        </div>
+                        <!-- Answer Tab End -->
+
+                        <!-- Problem Tab Start -->
+                        <div class="tab-pane fade" id="nav-sanghwang" role="tabpanel" aria-labelledby="nav-sanghwang-tab">
+                            {{ subject_sanghwang|safe }}
+                        </div>
+                        <!-- Problem Tab End -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Content Row End -->
+    </article>
+</section>
 <!-- Main Content End -->
 {% endblock %}
 

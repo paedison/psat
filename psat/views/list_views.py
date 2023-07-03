@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import ListView
 
 # Custom App Import
@@ -19,6 +20,102 @@ def index(request):
     return redirect('psat:base')
 
 
+class MainView(View):
+    template_name = 'psat/problem_list.html'
+    main_list_view = None
+    info = {}
+
+    def get(self, request):
+        list_view = self.main_list_view.as_view()
+        subject_all = list_view(request).content.decode('utf-8')
+        subject_eoneo = list_view(request, sub='언어').content.decode('utf-8')
+        subject_jaryo = list_view(request, sub='자료').content.decode('utf-8')
+        subject_sanghwang = list_view(request, sub='상황').content.decode('utf-8')
+
+        context = {
+            'info': self.info,
+            'total': TOTAL,
+            'subject_all': subject_all,
+            'subject_eoneo': subject_eoneo,
+            'subject_jaryo': subject_jaryo,
+            'subject_sanghwang': subject_sanghwang,
+        }
+
+        return render(request, self.template_name, context)
+
+
+class MainProblemView(MainView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.main_list_view = ProblemListView
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+
+        self.info = {
+            'category': 'problem',
+            'type': 'problemList',
+            'title': 'PSAT 기출문제',
+            'target_id': 'problemList',
+            'icon': MENU_PROBLEM_ICON,
+            'color': 'primary',
+        }
+
+
+class MainLikeView(MainView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.main_list_view = LikeListView
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+
+        self.info = {
+            'category': 'like',
+            'type': 'likeList',
+            'title': 'PSAT 즐겨찾기',
+            'target_id': 'likeList',
+            'icon': MENU_LIKE_ICON,
+            'color': 'danger',
+        }
+
+
+class MainRateView(MainView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.main_list_view = RateListView
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+
+        self.info = {
+            'category': 'rate',
+            'type': 'rateList',
+            'title': 'PSAT 난이도',
+            'target_id': 'rateList',
+            'icon': MENU_RATE_ICON,
+            'color': 'warning',
+        }
+
+
+class MainAnswerView(MainView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.main_list_view = AnswerListView
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+
+        self.info = {
+            'category': 'answer',
+            'type': 'answerList',
+            'title': 'PSAT 정답확인',
+            'target_id': 'answerList',
+            'icon': MENU_ANSWER_ICON,
+            'color': 'success',
+        }
+
+
 class BaseListView(ListView):
     model = Problem
     template_name = 'psat/problem_list.html'
@@ -32,9 +129,13 @@ class BaseListView(ListView):
         context = self.get_context_data()
 
         from log.views import create_request_log
-        create_request_log(self.request, self.info)
+        extra = f"({self.sub})"
+        create_request_log(self.request, self.info, extra)
 
-        return self.render_to_response(context)
+        # return self.render_to_response(context)
+        html = render(request, self.content_template, context)
+        return html
+
 
     def post(self, request, *args, **kwargs):
         page = self.kwargs['page'] = request.POST.get('page', '1')
@@ -42,7 +143,7 @@ class BaseListView(ListView):
         html = render(request, self.content_template, context).content.decode('utf-8')
 
         from log.views import create_request_log
-        extra = f"(p.{page})"
+        extra = f"({self.sub} p.{page})"
         create_request_log(self.request, self.info, extra)
 
         return HttpResponse(html)
@@ -58,6 +159,7 @@ class BaseListView(ListView):
 
 class ProblemListView(BaseListView):
     year = ex = exam2 = sub = subject = '전체'
+    sub_code = None
     main_title = exam_data = problem_data = year_list = exam_list = subject_list = None
 
     def setup(self, request, *args, **kwargs):
@@ -68,6 +170,7 @@ class ProblemListView(BaseListView):
         self.exam2 = next((instance['exam2'] for instance in TOTAL['exam_list'] if instance['ex'] == self.ex), None)
         self.sub = kwargs.get('sub', '전체')
         self.subject = next((instance['subject'] for instance in TOTAL['subject_list'] if instance['sub'] == self.sub), None)
+        self.sub_code = next((instance['sub_code'] for instance in TOTAL['subject_list'] if instance['sub'] == self.sub), '')
 
         self.main_title = self.get_main_title()
         self.exam_data = self.get_exam_data()
@@ -78,9 +181,10 @@ class ProblemListView(BaseListView):
         self.info ={
             'category': 'problem',
             'type': 'problemList',
+            'tab': self.sub,
             'title': self.main_title,
             'pagination_url': pagination_url,
-            'target_id': 'problemListContent',
+            'target_id': f'problemListContent{self.sub_code}',
             'icon': MENU_PROBLEM_ICON,
             'color': 'primary',
         }
@@ -145,6 +249,9 @@ class LikeListView(BaseListView):
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
+        self.sub = kwargs.get('sub', '전체')
+        self.subject = next((instance['subject'] for instance in TOTAL['subject_list'] if instance['sub'] == self.sub), None)
+        self.sub_code = next((instance['sub_code'] for instance in TOTAL['subject_list'] if instance['sub'] == self.sub), '')
 
         self.is_liked = kwargs.get('is_liked')
         if self.is_liked is None:
@@ -155,12 +262,13 @@ class LikeListView(BaseListView):
         self.info = {
             'category': 'like',
             'type': 'likeList',
+            'tab': self.sub,
             'title': 'PSAT 즐겨찾기',
             'pagination_url': pagination_url,
             'url_like_all': reverse_lazy('psat:like_base'),
             'url_like_liked': reverse_lazy('psat:like_list', args=[1]),
             'url_like_unliked': reverse_lazy('psat:like_list', args=[0]),
-            'target_id': 'likeListContent',
+            'target_id': f'likeListContent{self.sub_code}',
             'icon': MENU_LIKE_ICON,
             'color': 'danger',
             'is_liked': self.is_liked,
@@ -168,9 +276,14 @@ class LikeListView(BaseListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         user = self.request.user
-        queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0)
-        if self.is_liked is not None:
-            queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked)
+        if self.sub == '전체':
+            queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0)
+            if self.is_liked is not None:
+                queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked)
+        else:
+            queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0, exam__sub=self.sub)
+            if self.is_liked is not None:
+                queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked, exam__sub=self.sub)
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 
@@ -182,6 +295,9 @@ class RateListView(BaseListView):
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
+        self.sub = kwargs.get('sub', '전체')
+        self.subject = next((instance['subject'] for instance in TOTAL['subject_list'] if instance['sub'] == self.sub), None)
+        self.sub_code = next((instance['sub_code'] for instance in TOTAL['subject_list'] if instance['sub'] == self.sub), '')
 
         self.star_count = kwargs.get('star_count')
         if self.star_count is None:
@@ -192,6 +308,7 @@ class RateListView(BaseListView):
         self.info = {
             'category': 'rate',
             'type': 'rateList',
+            'tab': self.sub,
             'title': 'PSAT 난이도',
             'pagination_url': pagination_url,
             'url_rate_all': reverse_lazy('psat:rate_base'),
@@ -200,7 +317,7 @@ class RateListView(BaseListView):
             'url_rate_3star': reverse_lazy('psat:rate_list', args=[3]),
             'url_rate_4star': reverse_lazy('psat:rate_list', args=[4]),
             'url_rate_5star': reverse_lazy('psat:rate_list', args=[5]),
-            'target_id': 'rateListContent',
+            'target_id': f'rateListContent{self.sub_code}',
             'icon': MENU_RATE_ICON,
             'color': 'warning',
             'star_count': self.star_count,
@@ -208,9 +325,14 @@ class RateListView(BaseListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         user = self.request.user
-        queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1)
-        if self.star_count is not None:
-            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count)
+        if self.sub == '전체':
+            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1)
+            if self.star_count is not None:
+                queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count)
+        else:
+            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1, exam__sub=self.sub)
+            if self.star_count is not None:
+                queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count, exam__sub=self.sub)
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 
@@ -222,6 +344,9 @@ class AnswerListView(BaseListView):
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
+        self.sub = kwargs.get('sub', '전체')
+        self.subject = next((instance['subject'] for instance in TOTAL['subject_list'] if instance['sub'] == self.sub), None)
+        self.sub_code = next((instance['sub_code'] for instance in TOTAL['subject_list'] if instance['sub'] == self.sub), '')
 
         self.is_correct = kwargs.get('is_correct')
         if self.is_correct is None:
@@ -232,12 +357,13 @@ class AnswerListView(BaseListView):
         self.info = {
             'category': 'answer',
             'type': 'answerList',
+            'tab': self.sub,
             'title': 'PSAT 정답확인',
             'pagination_url': pagination_url,
             'url_answer_all': reverse_lazy('psat:answer_base'),
             'url_answer_correct': reverse_lazy('psat:answer_list', args=[1]),
             'url_answer_wrong': reverse_lazy('psat:answer_list', args=[0]),
-            'target_id': 'answerListContent',
+            'target_id': f'answerListContent{self.sub_code}',
             'icon': MENU_ANSWER_ICON,
             'color': 'success',
             'is_correct': self.is_correct,
@@ -245,9 +371,14 @@ class AnswerListView(BaseListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         user = self.request.user
-        queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0)
-        if self.is_correct is not None:
-            queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct)
+        if self.sub == '전체':
+            queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0)
+            if self.is_correct is not None:
+                queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct)
+        else:
+            queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0, exam__sub=self.sub)
+            if self.is_correct is not None:
+                queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct, exam__sub=self.sub)
         context = super().get_context_data(object_list=queryset, **kwargs)
         self.update_context(context)
 

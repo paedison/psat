@@ -32,22 +32,15 @@
         </select>
 
         <select id="subjectChoice" name="subjectChoice" class="form-control form-control-sm border border-primary">
-            <option value="전체" class="text-center">전체 과목</option>
-        {% if url.sub != '전체' %}
-            <option id="{{ url.sub }}" value="{{ url.sub }}"  class="text-center" selected>{{ url.subject }}</option>
-        {% elif url.year == '전체' and url.ex == '전체' and url.sub == '전체' %}
-            {% for t in TOTAL.subject_list %}
-            <option id="{{ t.sub }}" value="{{ t.sub }}" class="text-center">{{ t.subject }}</option>
-            {% endfor %}
+        {% if url.sub == '전체' %}
+            <option id="전체" value="전체" class="text-center" selected>전체 과목</option>
         {% else %}
-            {% for u in url.subject_list %}
-            <option id="{{ u.sub }}" value="{{ u.sub }}" class="text-center">{{ u.subject }}</option>
-            {% endfor %}
+            <option id="{{ url.sub }}" value="{{ url.sub }}" class="text-center" selected>{{ url.subject }}</option>
         {% endif %}
         </select>
 
         <div class="input-group-append">
-            <button id="selectButton" class="btn btn-primary btn-sm">
+            <button id="selectButton" class="btn btn-primary btn-sm select-button">
                 {{ FILTER_ICON|safe }}
             </button>
         </div>

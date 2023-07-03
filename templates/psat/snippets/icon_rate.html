@@ -2,7 +2,7 @@
 {% load psat_filter %}
 
 {% if user.is_authenticated %}
-    <a class="rate-button" href="{% url 'psat:rate_detail' problem.problem_id %}" data-bs-toggle="modal" id="psatRate{{ problem.problem_id }}" data-bs-target="#rateModal">
+    <a class="rate-button" href="{% url 'psat:rate_detail' problem.problem_id %}" data-bs-toggle="modal" id="psatRate{{ problem.problem_id }}{{ info.sub_code }}" data-bs-target="#rateModal">
         <span role="button" aria-label="rate-button">{{ problem.rate_icon|safe }}</span>
     </a>
 {% else %}

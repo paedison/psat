@@ -44,15 +44,15 @@
                         {{ MENU_PROBLEM_ICON|safe }}
                         <span>기출문제</span>
                     </a>
-                    <a class="collapse-item" id="likeList" href="{% url 'psat:like_list' 1 %}">
+                    <a class="collapse-item" id="likeList" href="{% url 'psat:like' %}">
                         {{ MENU_LIKE_ICON|safe }}
                         <span>즐겨찾기</span>
                     </a>
-                    <a class="collapse-item" id="rateList" href="{% url 'psat:rate_base' %}">
+                    <a class="collapse-item" id="rateList" href="{% url 'psat:rate' %}">
                         {{ MENU_RATE_ICON|safe }}
                         <span>난이도</span>
                     </a>
-                    <a class="collapse-item" id="answerList" href="{% url 'psat:answer_base' %}">
+                    <a class="collapse-item" id="answerList" href="{% url 'psat:answer' %}">
                         {{ MENU_ANSWER_ICON|safe }}
                         <span>정답확인</span>
                     </a>

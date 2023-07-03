@@ -9,9 +9,9 @@ TOTAL = {
         {'ex': '입시', 'exam2': '입법고시'},
     ],
     'subject_list': [
-        {'sub': '언어', 'subject': '언어논리'},
-        {'sub': '자료', 'subject': '자료해석'},
-        {'sub': '상황', 'subject': '상황판단'},
+        {'sub': '언어', 'subject': '언어논리', 'sub_code': 'A', 'sub2': 'eoneo'},
+        {'sub': '자료', 'subject': '자료해석', 'sub_code': 'B', 'sub2': 'jaryo'},
+        {'sub': '상황', 'subject': '상황판단', 'sub_code': 'C', 'sub2': 'sanghwang'},
     ],
     'nums25': range(1, 26),
     'nums40': range(1, 41),

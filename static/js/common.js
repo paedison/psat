@@ -26,7 +26,7 @@ export const urls = {
 }
 
 let collapseProblem = $('#collapseProblem');
-let info = JSON.parse($('#info').text());
+export let info = JSON.parse($('#info').text());
 let infoCategory = info['category'];
 export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 

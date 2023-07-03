@@ -1,10 +1,10 @@
 {% load static %}
 {% load psat_filter %}
 
-        <a class="btn btn-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownLikeLink" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="btn btn-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownLikeLink{{ info.sub_code }}" data-bs-toggle="dropdown" aria-expanded="false">
             {{ FILTER_ICON|safe }}
         </a>
-        <ul class="dropdown-menu dropdown-menu" aria-labelledby="dropdownLikeLink">
+        <ul class="dropdown-menu dropdown-menu" aria-labelledby="dropdownLikeLink{{ info.sub_code }}">
             <li>
                 <a class="list-filter dropdown-item text-center{% if info.is_liked is None %} active{% endif %}" href="{{ info.url_like_all }}">
                     <i class="fa-regular fa-file-lines mr-2"></i>즐겨찾기 전체 문제

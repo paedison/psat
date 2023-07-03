@@ -7,22 +7,26 @@ app_name = 'psat'
 
 urlpatterns = [
     # Problem
-    path('', ProblemListView.as_view(), name='base'),
+    # path('', ProblemListView.as_view(), name='base'),
+    path('', MainProblemView.as_view(), name='base'),
     re_path(r'(?P<year>\d{4}|전체)/(?P<ex>행시|칠급|견습|민경|외시|입시|전체)/(?P<sub>언어|자료|상황|전체)/$',
             ProblemListView.as_view(), name='problem_list'),
     path('detail/<int:problem_id>/', ProblemDetailView.as_view(), name='problem_detail'),
 
     # Like
+    path('like/list/', MainLikeView.as_view(), name='like'),
     path('like/', LikeListView.as_view(), name='like_base'),
     path('like/<int:is_liked>liked/', LikeListView.as_view(), name='like_list'),
     path('like/<int:problem_id>/', LikeDetailView.as_view(), name='like_detail'),
 
     # Rate
+    path('rate/list', MainRateView.as_view(), name='rate'),
     path('rate/', RateListView.as_view(), name='rate_base'),
     path('rate/<int:star_count>star/', RateListView.as_view(), name='rate_list'),
     path('rate/<int:problem_id>/', RateDetailView.as_view(), name='rate_detail'),
 
     # Answer
+    path('answer/', MainAnswerView.as_view(), name='answer'),
     path('answer/', AnswerListView.as_view(), name='answer_base'),
     path('answer/<int:is_correct>correct/', AnswerListView.as_view(), name='answer_list'),
     path('answer/<int:problem_id>/', AnswerDetailView.as_view(), name='answer_detail'),

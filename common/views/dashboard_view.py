@@ -71,15 +71,15 @@ class CardBaseView:
     def get_queryset(self):
         user = self.request.user
         queryset = None
-        if self.info['menu'] == 'like':
+        if self.info['tab'] == 'like':
             queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
             if self.is_liked is not None:
                 queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
-        elif self.info['menu'] == 'rate':
+        elif self.info['tab'] == 'rate':
             queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
             if self.star_count is not None:
                 queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
-        elif self.info['menu'] == 'answer':
+        elif self.info['tab'] == 'answer':
             queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
             if self.is_correct is not None:
                 queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
@@ -107,8 +107,8 @@ class DashboardLikeView(CardBaseView, BaseListView):
 
         self.info = {
             'category': 'dashboard',
-            'menu': 'like',
             'type': 'dashboardLike',
+            'tab': 'like',
             'title': 'PSAT 즐겨찾기',
             'url': reverse_lazy('psat:like_base'),
             'pagination_url': pagination_url,
@@ -136,8 +136,8 @@ class DashboardRateView(CardBaseView, BaseListView):
 
         self.info = {
             'category': 'dashboard',
-            'menu': 'rate',
             'type': 'dashboardRate',
+            'tab': 'rate',
             'title': 'PSAT 난이도',
             'url': reverse_lazy('psat:rate_base'),
             'pagination_url': pagination_url,
@@ -168,8 +168,8 @@ class DashboardAnswerView(CardBaseView, BaseListView):
 
         self.info = {
             'category': 'dashboard',
-            'menu': 'answer',
             'type': 'dashboardAnswer',
+            'tab': 'answer',
             'title': 'PSAT 정답확인',
             'url': reverse_lazy('psat:answer_base'),
             'pagination_url': pagination_url,

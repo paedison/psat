@@ -1,4 +1,7 @@
-import { urls } from './common.js'
+import { info, urls, csrf_token } from './common.js'
+
+let infoType = info['type'];
+let typeUrl = urls[infoType];
 
 const yearChoice = $('#yearChoice');
 const examChoice = $('#examChoice');
@@ -137,11 +140,30 @@ subjectChoice.on('input', () => {
     subFn(subjectChoice);
 });
 
-selectButton.on('click', () => {
-    if (problemChoice.val()) {
-        location.href = `${typeUrl}${problemChoice.val()}/`;
-    } else {
-        location.href = `${urls['list']}${yearChoice.val()}/${examChoice.val()}/${subjectChoice.val()}/`;
-    }
-});
+// selectButton.on('click', () => {
+//     if (problemChoice.val()) {
+//         location.href = `${typeUrl}${problemChoice.val()}/`;
+//     } else {
+//         location.href = `${urls['list']}${yearChoice.val()}/${examChoice.val()}/${subjectChoice.val()}/`;
+//     }
+// });
 
+/* Ajax for '.select-button' (Problem List Filter) */
+$(document).on('click', '.select-button', function(event) {
+    event.preventDefault();
+    let url = '';
+    if (problemChoice.val()) {
+        url = `${typeUrl}${problemChoice.val()}/`;
+    } else {
+        url = `${urls['list']}${yearChoice.val()}/${examChoice.val()}/${subjectChoice.val()}/`;
+    }
+    let target = $(this).closest('div').data('target');
+    $.ajax({
+        url: url,
+        type: 'POST',
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $(target).replaceWith(data);
+        }
+    });
+});

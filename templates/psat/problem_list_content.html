@@ -2,21 +2,78 @@
 
 <section id="{{ info.target_id }}">
     <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    {% include 'psat/snippets/list_header.html' %}
-    <article class="mx-0 main-article">
-        <div class="row">
-            <section class="col-12 mb-4">
-                <div class="card border-left-{{ info.color }} shadow h-100 py-0">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center justify-content-end">
-                            <div class="col mx-1">
-                                {% include 'psat/snippets/list_table_container.html' %}
-                                {% include 'board/snippets/list_pagination.html' %}
-                            </div>
-                        </div>
+    <table class="table small mb-4">
+        <thead>
+            <tr class="align-middle text-center text-nowrap">
+                <th class="col-1 px-1">번호</th>
+                <th class="col-1 px-1">{{ SOLID_HEART_ICON|safe }}</th>
+                <th class="col-1 px-1">난이도</th>
+                <th class="col-1 px-1">{{ SOLID_CHECK_ICON|safe }}</th>
+                <th class="px-1 d-none d-sm-table-cell d-md-none">문제</th>
+                <th class="px-1 d-none d-md-table-cell d-lg-none">문제</th>
+                <th class="px-1 d-none d-lg-table-cell">문제</th>
+            </tr>
+        </thead>
+        <tbody>
+    {% if page_obj %}
+        {% for problem in page_obj %}
+            {% ifchanged %}
+            <tr class="table-warning align-middle text-center text-nowrap">
+                <td class="px-1" colspan="7">
+                    <span role="textbox" aria-label="reference">
+                        <a class="text-decoration-none link" href="{% url 'psat:problem_list' problem.year problem.ex problem.sub %}">
+                            {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
+                        </a>
+                    </span>
+                </td>
+            </tr>
+            {% endifchanged %}
+            <tr class="align-middle text-center text-nowrap">
+                <td class="px-1">
+                    <div role="textbox" aria-label="problem-number">
+                        {{ problem.problem_number }}
                     </div>
-                </div>
-            </section>
-        </div>
-    </article>
+                </td>
+                <td class="px-1">
+                    {% include 'psat/snippets/icon_like.html' %}
+                </td>
+                <td class="px-1">
+                    {% include 'psat/snippets/icon_rate.html' %}
+                </td>
+                <td class="px-1">
+                    {% include 'psat/snippets/icon_answer.html' %}
+                </td>
+                <td class="text-justify px-1 d-none d-sm-table-cell d-md-none">
+                    {% include 'psat/snippets/list_table_problem.html' %}
+                </td>
+                <td class="text-justify px-1 d-none d-md-table-cell d-lg-none">
+                    {% include 'psat/snippets/list_table_problem.html' %}
+                </td>
+                <td class="text-justify px-1 d-none d-lg-table-cell">
+                    {% include 'psat/snippets/list_table_problem.html' %}
+                </td>
+            </tr>
+            <tr class="align-middle text-center text-nowrap">
+                <td class="px-1 d-sm-none" colspan="4" style="border-top:none;">
+                    {% include 'psat/snippets/list_table_problem.html' %}
+                </td>
+            </tr>
+        {% endfor %}
+    {% else %}
+            <tr class="text-center">
+                <td colspan="8">
+                    <span role="textbox" aria-label="empty-data">
+                        추가된 자료가 없습니다.
+                    </span>
+                </td>
+            </tr>
+    {% endif %}
+        </tbody>
+    </table>
+    <div class="d-flex align-items-center justify-content-center text-sm">
+        {% include 'board/snippets/list_pagination.html' %}
+{#        <div class="d-inline-block ml-auto dropdown" role="option">#}
+{#            {% include 'psat/snippets/list_filter_container.html' %}#}
+{#        </div>#}
+    </div>
 </section>

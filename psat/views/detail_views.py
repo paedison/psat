@@ -79,11 +79,13 @@ class BaseDetailView(DetailView):
 
     def get_prev_next_prob(self, prob_data=None, prob_list=None):
         page_list = list(prob_list)
-        curr_index = page_list.index(self.problem_id)
-        last_index = len(page_list) - 1
-        prev_prob = prob_data.get(id=page_list[curr_index - 1]) if curr_index != 0 else ''
-        next_prob = prob_data.get(id=page_list[curr_index + 1]) if curr_index != last_index else ''
-
+        try:
+            curr_index = page_list.index(self.problem_id)
+            last_index = len(page_list) - 1
+            prev_prob = prob_data.get(id=page_list[curr_index - 1]) if curr_index != 0 else ''
+            next_prob = prob_data.get(id=page_list[curr_index + 1]) if curr_index != last_index else ''
+        except ValueError:
+            prev_prob = next_prob = None
         return prev_prob, next_prob
 
     def update_open_status_in_evaluation_model(self):
