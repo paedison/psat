@@ -1,0 +1,14 @@
+{% load static %}
+{% load psat_filter %}
+
+<!-- List Filter Start -->
+<div class="input-group dropdown" role="option">
+    {% if info.type == 'dashboardLike' %}
+        {% include 'dashboard/snippets/list_filter_for_like.html' %}
+    {% elif info.type == 'dashboardRate' %}
+        {% include 'dashboard/snippets/list_filter_for_rate.html' %}
+    {% elif info.type == 'dashboardAnswer' %}
+        {% include 'dashboard/snippets/list_filter_for_answer.html' %}
+    {% endif %}
+</div>
+<!-- List Filter End -->

@@ -68,12 +68,18 @@
                                     </div>
                                     <div class="d-flex flex-wrap align-items-start" role="figure" aria-label="problem-image">
                                         {% csrf_token %}
+                                    {% if problem.image_file.tag1 == 'Preparing Image' %}
+                                        <div class="col-12 p-0">
+                                            <img class="problem-image" src="{{ problem.image_file.name1 }}" alt="{{ problem.image_file.tag1 }}"/>
+                                        </div>
+                                    {% else %}
                                         <div class="col-12 col-lg-6 p-0">
                                             <img class="problem-image" src="{{ problem.image_file.name1 }}" alt="{{ problem.image_file.tag1 }}"/>
                                         </div>
                                         <div class="col-12 col-lg-6 p-0">
                                             <img class="problem-image" src="{{ problem.image_file.name2 }}" alt="{{ problem.image_file.tag2 }}"/>
                                         </div>
+                                    {% endif %}
                                     </div>
                                 </td>
                             </tr>

@@ -136,7 +136,6 @@ class BaseListView(ListView):
         html = render(request, self.content_template, context)
         return html
 
-
     def post(self, request, *args, **kwargs):
         page = self.kwargs['page'] = request.POST.get('page', '1')
         context = self.get_context_data(**kwargs)
@@ -153,8 +152,8 @@ class BaseListView(ListView):
         paginator = context['paginator']
         for obj in page_obj:
             obj = get_evaluation_info(self.request, obj)
-        context['info'] = self.info
         context['page_range'] = paginator.get_elided_page_range(page_obj.number, on_ends=1)
+        context['info'] = self.info
 
 
 class ProblemListView(BaseListView):
@@ -166,6 +165,8 @@ class ProblemListView(BaseListView):
         super().setup(request, *args, **kwargs)
 
         self.year = kwargs.get('year', '전체')
+        if self.year != '전체':
+            self.year = int(self.year)
         self.ex = kwargs.get('ex', '전체')
         self.exam2 = next((instance['exam2'] for instance in TOTAL['exam_list'] if instance['ex'] == self.ex), None)
         self.sub = kwargs.get('sub', '전체')
@@ -181,7 +182,7 @@ class ProblemListView(BaseListView):
         self.info ={
             'category': 'problem',
             'type': 'problemList',
-            'tab': self.sub,
+            'sub': self.sub,
             'title': self.main_title,
             'pagination_url': pagination_url,
             'target_id': f'problemListContent{self.sub_code}',
@@ -255,19 +256,17 @@ class LikeListView(BaseListView):
 
         self.is_liked = kwargs.get('is_liked')
         if self.is_liked is None:
-            pagination_url = reverse_lazy('psat:like_base')
+            pagination_url = reverse_lazy('psat:like_list')
         else:
-            pagination_url = reverse_lazy('psat:like_list', args=[self.is_liked])
+            pagination_url = reverse_lazy('psat:like_list_opt', args=[self.is_liked])
 
         self.info = {
             'category': 'like',
             'type': 'likeList',
-            'tab': self.sub,
+            'sub': self.sub,
+            'sub_code': self.sub_code,
             'title': 'PSAT 즐겨찾기',
             'pagination_url': pagination_url,
-            'url_like_all': reverse_lazy('psat:like_base'),
-            'url_like_liked': reverse_lazy('psat:like_list', args=[1]),
-            'url_like_unliked': reverse_lazy('psat:like_list', args=[0]),
             'target_id': f'likeListContent{self.sub_code}',
             'icon': MENU_LIKE_ICON,
             'color': 'danger',
@@ -301,22 +300,16 @@ class RateListView(BaseListView):
 
         self.star_count = kwargs.get('star_count')
         if self.star_count is None:
-            pagination_url = reverse_lazy('psat:rate_base')
+            pagination_url = reverse_lazy('psat:rate_list')
         else:
-            pagination_url = reverse_lazy('psat:rate_list', args=[self.star_count])
+            pagination_url = reverse_lazy('psat:rate_list_opt', args=[self.star_count])
 
         self.info = {
             'category': 'rate',
             'type': 'rateList',
-            'tab': self.sub,
+            'sub': self.sub,
             'title': 'PSAT 난이도',
             'pagination_url': pagination_url,
-            'url_rate_all': reverse_lazy('psat:rate_base'),
-            'url_rate_1star': reverse_lazy('psat:rate_list', args=[1]),
-            'url_rate_2star': reverse_lazy('psat:rate_list', args=[2]),
-            'url_rate_3star': reverse_lazy('psat:rate_list', args=[3]),
-            'url_rate_4star': reverse_lazy('psat:rate_list', args=[4]),
-            'url_rate_5star': reverse_lazy('psat:rate_list', args=[5]),
             'target_id': f'rateListContent{self.sub_code}',
             'icon': MENU_RATE_ICON,
             'color': 'warning',
@@ -350,19 +343,16 @@ class AnswerListView(BaseListView):
 
         self.is_correct = kwargs.get('is_correct')
         if self.is_correct is None:
-            pagination_url = reverse_lazy('psat:answer_base')
+            pagination_url = reverse_lazy('psat:answer_list')
         else:
-            pagination_url = reverse_lazy('psat:answer_list', args=[self.is_correct])
+            pagination_url = reverse_lazy('psat:answer_list_opt', args=[self.is_correct])
 
         self.info = {
             'category': 'answer',
             'type': 'answerList',
-            'tab': self.sub,
+            'sub': self.sub,
             'title': 'PSAT 정답확인',
             'pagination_url': pagination_url,
-            'url_answer_all': reverse_lazy('psat:answer_base'),
-            'url_answer_correct': reverse_lazy('psat:answer_list', args=[1]),
-            'url_answer_wrong': reverse_lazy('psat:answer_list', args=[0]),
             'target_id': f'answerListContent{self.sub_code}',
             'icon': MENU_ANSWER_ICON,
             'color': 'success',

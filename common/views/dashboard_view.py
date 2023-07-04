@@ -69,21 +69,7 @@ class CardBaseView:
         return HttpResponse(html)
 
     def get_queryset(self):
-        user = self.request.user
-        queryset = None
-        if self.info['tab'] == 'like':
-            queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
-            if self.is_liked is not None:
-                queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
-        elif self.info['tab'] == 'rate':
-            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
-            if self.star_count is not None:
-                queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
-        elif self.info['tab'] == 'answer':
-            queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
-            if self.is_correct is not None:
-                queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
-        return queryset
+        pass
 
     def get_context_data(self, *, object_list=None, **kwargs):
         queryset = self.get_queryset()
@@ -108,18 +94,21 @@ class DashboardLikeView(CardBaseView, BaseListView):
         self.info = {
             'category': 'dashboard',
             'type': 'dashboardLike',
-            'tab': 'like',
             'title': 'PSAT 즐겨찾기',
-            'url': reverse_lazy('psat:like_base'),
+            'url': reverse_lazy('psat:like_list'),
             'pagination_url': pagination_url,
-            'url_like_all': reverse_lazy('dashboard:like'),
-            'url_like_liked': reverse_lazy('dashboard:like', args=[1]),
-            'url_like_unliked': reverse_lazy('dashboard:like', args=[0]),
             'target_id': 'dashboardLikeContent',
             'icon': MENU_LIKE_ICON,
             'color': 'danger',
             'is_liked': self.is_liked,
         }
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = problem.filter(evaluation__user=user, evaluation__is_liked__gte=0).order_by('-evaluation__liked_at')
+        if self.is_liked is not None:
+            queryset = problem.filter(evaluation__user=user, evaluation__is_liked=self.is_liked).order_by('-evaluation__liked_at')
+        return queryset
 
 
 class DashboardRateView(CardBaseView, BaseListView):
@@ -137,21 +126,21 @@ class DashboardRateView(CardBaseView, BaseListView):
         self.info = {
             'category': 'dashboard',
             'type': 'dashboardRate',
-            'tab': 'rate',
             'title': 'PSAT 난이도',
-            'url': reverse_lazy('psat:rate_base'),
+            'url': reverse_lazy('psat:rate_list'),
             'pagination_url': pagination_url,
-            'url_rate_all': reverse_lazy('dashboard:rate'),
-            'url_rate_1star': reverse_lazy('dashboard:rate', args=[1]),
-            'url_rate_2star': reverse_lazy('dashboard:rate', args=[2]),
-            'url_rate_3star': reverse_lazy('dashboard:rate', args=[3]),
-            'url_rate_4star': reverse_lazy('dashboard:rate', args=[4]),
-            'url_rate_5star': reverse_lazy('dashboard:rate', args=[5]),
             'target_id': 'dashboardRateContent',
             'icon': MENU_RATE_ICON,
             'color': 'warning',
             'star_count': self.star_count,
         }
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated__gte=1).order_by('-evaluation__rated_at')
+        if self.star_count is not None:
+            queryset = problem.filter(evaluation__user=user, evaluation__difficulty_rated=self.star_count).order_by('-evaluation__rated_at')
+        return queryset
 
 
 class DashboardAnswerView(CardBaseView, BaseListView):
@@ -169,15 +158,18 @@ class DashboardAnswerView(CardBaseView, BaseListView):
         self.info = {
             'category': 'dashboard',
             'type': 'dashboardAnswer',
-            'tab': 'answer',
             'title': 'PSAT 정답확인',
-            'url': reverse_lazy('psat:answer_base'),
+            'url': reverse_lazy('psat:answer_list'),
             'pagination_url': pagination_url,
-            'url_answer_all': reverse_lazy('dashboard:answer'),
-            'url_answer_correct': reverse_lazy('dashboard:answer', args=[1]),
-            'url_answer_wrong': reverse_lazy('dashboard:answer', args=[0]),
             'target_id': 'dashboardAnswerContent',
             'icon': MENU_ANSWER_ICON,
             'color': 'success',
             'is_correct': self.is_correct,
         }
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = problem.filter(evaluation__user=user, evaluation__is_correct__gte=0).order_by('-evaluation__answered_at')
+        if self.is_correct is not None:
+            queryset = problem.filter(evaluation__user=user, evaluation__is_correct=self.is_correct).order_by('-evaluation__answered_at')
+        return queryset

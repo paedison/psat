@@ -7,29 +7,34 @@ app_name = 'psat'
 
 urlpatterns = [
     # Problem
-    # path('', ProblemListView.as_view(), name='base'),
     path('', MainProblemView.as_view(), name='base'),
-    re_path(r'(?P<year>\d{4}|전체)/(?P<ex>행시|칠급|견습|민경|외시|입시|전체)/(?P<sub>언어|자료|상황|전체)/$',
-            ProblemListView.as_view(), name='problem_list'),
+    path('list/', ProblemListView.as_view(), name='problem'),
+    re_path(r'list/(?P<year>\d{4}|전체)/(?P<ex>행시|칠급|견습|민경|외시|입시|전체)/(?P<sub>언어|자료|상황|전체)/$', ProblemListView.as_view(), name='problem_list'),
     path('detail/<int:problem_id>/', ProblemDetailView.as_view(), name='problem_detail'),
 
     # Like
-    path('like/list/', MainLikeView.as_view(), name='like'),
-    path('like/', LikeListView.as_view(), name='like_base'),
-    path('like/<int:is_liked>liked/', LikeListView.as_view(), name='like_list'),
-    path('like/<int:problem_id>/', LikeDetailView.as_view(), name='like_detail'),
+    path('like/', MainLikeView.as_view(), name='like'),
+    path('like/list/', LikeListView.as_view(), name='like_list'),
+    re_path(r'like/list/(?P<sub>언어|자료|상황|전체)/$', LikeListView.as_view(), name='like_list_sub'),
+    path('like/list/<int:is_liked>liked/', LikeListView.as_view(), name='like_list_opt'),
+    re_path(r'like/list/(?P<is_liked>[01])liked/(?P<sub>언어|자료|상황|전체)/$', LikeListView.as_view(), name='like_list_opt_sub'),
+    path('like/detail/<int:problem_id>/', LikeDetailView.as_view(), name='like_detail'),
 
     # Rate
-    path('rate/list', MainRateView.as_view(), name='rate'),
-    path('rate/', RateListView.as_view(), name='rate_base'),
-    path('rate/<int:star_count>star/', RateListView.as_view(), name='rate_list'),
-    path('rate/<int:problem_id>/', RateDetailView.as_view(), name='rate_detail'),
+    path('rate/', MainRateView.as_view(), name='rate'),
+    path('rate/list/', RateListView.as_view(), name='rate_list'),
+    re_path(r'rate/list/(?P<sub>언어|자료|상황|전체)/$', RateListView.as_view(), name='rate_list_sub'),
+    path('rate/list/<int:star_count>star/', RateListView.as_view(), name='rate_list_opt'),
+    re_path(r'rate/list/(?P<star_count>[12345])star/(?P<sub>언어|자료|상황|전체)/$', RateListView.as_view(), name='rate_list_opt_sub'),
+    path('rate/detail/<int:problem_id>/', RateDetailView.as_view(), name='rate_detail'),
 
     # Answer
     path('answer/', MainAnswerView.as_view(), name='answer'),
-    path('answer/', AnswerListView.as_view(), name='answer_base'),
-    path('answer/<int:is_correct>correct/', AnswerListView.as_view(), name='answer_list'),
-    path('answer/<int:problem_id>/', AnswerDetailView.as_view(), name='answer_detail'),
+    path('answer/list/', AnswerListView.as_view(), name='answer_list'),
+    re_path(r'answer/list/(?P<sub>언어|자료|상황|전체)/$', AnswerListView.as_view(), name='answer_list_sub'),
+    path('answer/list/<int:is_correct>correct/', AnswerListView.as_view(), name='answer_list_opt'),
+    re_path(r'answer/list/(?P<is_correct>[01])correct/(?P<sub>언어|자료|상황|전체)/$', AnswerListView.as_view(), name='answer_list_opt_sub'),
+    path('answer/detail/<int:problem_id>/', AnswerDetailView.as_view(), name='answer_detail'),
     #
     # # Tag: Tag_views
     # path('detail/<int:problem_id>/tags/', ProblemTagsView.as_view(), name='problem_tags'),

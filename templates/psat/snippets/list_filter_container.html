@@ -2,17 +2,15 @@
 {% load psat_filter %}
 
 <!-- List Filter Start -->
-<div class="input-group" data-target="#{{ info.target_id }}" role="option">
+<div class="input-group dropdown" role="option">
 {% if info.type == 'problemList' %}
     {% include 'psat/snippets/list_filter_for_problem.html' %}
-{% else %}
-    {% if info.type == 'likeList' or info.type == 'dashboardLike' %}
-        {% include 'psat/snippets/list_filter_for_like.html' %}
-    {% elif info.type == 'rateList' or info.type == 'dashboardRate' %}
-        {% include 'psat/snippets/list_filter_for_rate.html' %}
-    {% elif info.type == 'answerList' or info.type == 'dashboardAnswer' %}
-        {% include 'psat/snippets/list_filter_for_answer.html' %}
-    {% endif %}
+{% elif info.type == 'likeList' %}
+    {% include 'psat/snippets/list_filter_for_like.html' %}
+{% elif info.type == 'rateList' %}
+    {% include 'psat/snippets/list_filter_for_rate.html' %}
+{% elif info.type == 'answerList' %}
+    {% include 'psat/snippets/list_filter_for_answer.html' %}
 {% endif %}
 </div>
 <!-- List Filter End -->

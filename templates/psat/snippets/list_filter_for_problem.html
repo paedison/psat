@@ -1,46 +1,58 @@
 {% load static %}
 {% load psat_filter %}
 
-        <select id="yearChoice" name="yearChoice" class="form-control form-control-sm border border-primary">
-            <option value="전체" class="text-center">전체 연도</option>
-        {% if url.year != '전체' %}
-            <option id="{{ url.year }}" value="{{ url.year }}" class="text-center" selected>{{ url.year }}년</option>
-        {% elif url.year == '전체' and url.ex == '전체' and url.sub == '전체' %}
-            {% for t in TOTAL.year_list %}
-            <option id="{{ t }}" value="{{ t }}" class="text-center">{{ t }}년</option>
-            {% endfor %}
+    <a class="btn btn-outline-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownYearLink{{ info.sub_code }}" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ FILTER_ICON|safe }}
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="dropdownYearLink{{ info.sub_code }}">
+        <div class="d-flex col-12 col-lg-4 flex-wrap justify-content-start" style="min-width: 300px;">
+        {% if url.year == '전체' %}
+            <li class="col-3 p-0">
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center active" href="{% url 'psat:problem_list' year='전체' ex='전체' sub=url.sub %}">전체 연도</a>
+            </li>
         {% else %}
-            {% for u in url.year_list %}
-            <option id="{{ u }}" value="{{ u }}" class="text-center">{{ u }}년</option>
-            {% endfor %}
+            <li class="col-3 p-0">
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center" href="{% url 'psat:problem_list' year='전체' ex='전체' sub=url.sub %}">전체 연도</a>
+            </li>
         {% endif %}
-        </select>
-
-        <select id="examChoice" name="examChoice" class="form-control form-control-sm border border-primary">
-            <option value="전체" class="text-center">전체 시험</option>
-        {% if url.ex != '전체' %}
-            <option id="{{ url.ex }}" value="{{ url.ex }}" class="text-center" selected>{{ url.exam2 }}</option>
-        {% elif url.year == '전체' and url.ex == '전체' and url.sub == '전체' %}
-            {% for t in TOTAL.exam_list %}
-            <option id="{{ t.ex }}" value="{{ t.ex }}" class="text-center">{{ t.exam2 }}</option>
-            {% endfor %}
-        {% else %}
-            {% for u in url.exam_list %}
-            <option id="{{ u.ex }}" value="{{ u.ex }}" class="text-center">{{ u.exam2 }}</option>
-            {% endfor %}
-        {% endif %}
-        </select>
-
-        <select id="subjectChoice" name="subjectChoice" class="form-control form-control-sm border border-primary">
-        {% if url.sub == '전체' %}
-            <option id="전체" value="전체" class="text-center" selected>전체 과목</option>
-        {% else %}
-            <option id="{{ url.sub }}" value="{{ url.sub }}" class="text-center" selected>{{ url.subject }}</option>
-        {% endif %}
-        </select>
-
-        <div class="input-group-append">
-            <button id="selectButton" class="btn btn-primary btn-sm select-button">
-                {{ FILTER_ICON|safe }}
-            </button>
+        {% for t in TOTAL.year_list %}
+            {% if t == url.year %}
+            <li class="col-3 p-0">
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center active" href="{% url 'psat:problem_list' year=t ex='전체' sub=url.sub %}">{{ t }}년</a>
+            </li>
+            {% else %}
+            <li class="col-3 p-0">
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center" href="{% url 'psat:problem_list' year=t ex='전체' sub=url.sub %}">{{ t }}년</a>
+            </li>
+            {% endif %}
+        {% endfor %}
         </div>
+    </ul>
+
+    <a class="btn btn-outline-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownExamLink{{ info.sub_code }}" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ FILTER_ICON|safe }}
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="dropdownExamLink{{ info.sub_code }}">
+        <div class="d-flex col-12 col-lg-4 flex-wrap justify-content-start" style="min-width: 300px;">
+        {% if url.ex == '전체' %}
+            <li class="col-6 p-0">
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center active" href="{% url  'psat:problem_list' year='전체' ex='전체' sub=url.sub %}">전체 연도</a>
+            </li>
+        {% else %}
+            <li class="col-6 p-0">
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center" href="{% url  'psat:problem_list' year='전체' ex='전체' sub=url.sub %}">전체 연도</a>
+            </li>
+        {% endif %}
+        {% for t in TOTAL.exam_list %}
+            {% if t.ex == url.ex %}
+            <li class="col-6 p-0">
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center active" href="{% url 'psat:problem_list' year='전체' ex=t.ex sub=url.sub %}">{{ t.exam2 }}</a>
+            </li>
+            {% else %}
+            <li class="col-6 p-0">
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center" href="{% url 'psat:problem_list' year='전체' ex=t.ex sub=url.sub %}">{{ t.exam2 }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        </div>
+    </ul>

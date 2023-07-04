@@ -1,6 +1,17 @@
-import { csrf_token } from './common.js'
+import { info, urls, csrf_token } from './common.js'
 
+let infoType = info['type'];
+let typeUrl = urls[infoType];
 let rateButton = $('#rateButton');
+
+let problemChoice = $('#problemChoice');
+let selectButton = $('#selectButton');
+
+
+/* */
+selectButton.on('click', () => {
+    location.href = `${typeUrl}${problemChoice.val()}/`;
+});
 
 
 /* Ajax for '.list-page' (Problem / Like / Rate / Answer List Pagination) */
@@ -8,7 +19,7 @@ $(document).on('click', '.list-page', function(event) {
     event.preventDefault();
     let url = $(this).attr('href');
     let page = $(this).data('value');
-    let target = $(this).closest('div').data('target');
+    let target = $(this).closest('section').data('target');
     $.ajax({
         url: url,
         type: 'POST',
@@ -25,7 +36,7 @@ $(document).on('click', '.list-page', function(event) {
 $(document).on('click', '.list-filter', function(event) {
     event.preventDefault();
     let url = $(this).attr('href');
-    let target = $(this).closest('div').data('target');
+    let target = $(this).closest('section').data('target');
     $.ajax({
         url: url,
         type: 'POST',

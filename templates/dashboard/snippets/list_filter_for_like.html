@@ -6,17 +6,17 @@
         </a>
         <ul class="dropdown-menu" aria-labelledby="dropdownLikeLink{{ info.sub_code }}">
             <li>
-                <a class="list-filter dropdown-item text-center{% if info.is_liked is None %} active{% endif %}" href="{% url 'psat:like_list_sub' sub=info.sub %}">
+                <a class="list-filter dropdown-item text-center{% if info.is_liked is None %} active{% endif %}" href="{% url 'dashboard:like' %}">
                     <i class="fa-regular fa-file-lines mr-2"></i>즐겨찾기 전체 문제
                 </a>
             </li>
             <li>
-                <a class="list-filter dropdown-item text-center{% if info.is_liked == '1' %} active{% endif %}" href="{% url 'psat:like_list_opt_sub' is_liked=1 sub=info.sub %}">
+                <a class="list-filter dropdown-item text-center{% if info.is_liked == 1 %} active{% endif %}" href="{% url 'dashboard:like' is_liked=1 %}">
                     <i class="fa-solid fa-heart mr-2"></i>즐겨찾기 추가 문제
                 </a>
             </li>
             <li>
-                <a class="list-filter dropdown-item text-center{% if info.is_liked == '0' %} active{% endif %}" href="{% url 'psat:like_list_opt_sub' is_liked=0 sub=info.sub %}">
+                <a class="list-filter dropdown-item text-center{% if info.is_liked == 0 %} active{% endif %}" href="{% url 'dashboard:like' is_liked=0 %}">
                     <i class="fa-regular fa-heart mr-2"></i>즐겨찾기 제외 문제
                 </a>
             </li>

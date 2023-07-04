@@ -36,6 +36,6 @@ class CustomLogoutView(LogoutView):
             return reverse_lazy('psat:base')
 
     def logout(self, *args, **kwargs):
-        response = super().logout(*args, **kwargs)
+        super().logout(*args, **kwargs)
         next_page = self.get_next_page()
         return redirect(next_page)

@@ -65,10 +65,10 @@
     {% endif %}
         </tbody>
     </table>
-    <div class="d-flex align-items-center justify-content-center text-sm">
+    <section class="d-flex align-items-center justify-content-center text-sm" data-target="#{{ info.target_id }}">
         {% include 'board/snippets/list_pagination.html' %}
-        <div class="d-inline-block ml-auto dropdown" role="option">
-            {% include 'psat/snippets/list_filter_container.html' %}
+        <div class="d-inline-block ml-auto">
+            {% include 'dashboard/snippets/list_filter_container.html' %}
         </div>
-    </div>
+    </section>
 </section>

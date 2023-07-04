@@ -6,17 +6,17 @@
         </a>
         <ul class="dropdown-menu" aria-labelledby="dropdownAnswerLink">
             <li>
-                <a class="list-filter dropdown-item text-center{% if info.is_correct is None %} active{% endif %}" href="{% url 'psat:answer_list_sub' sub=info.sub %}">
+                <a class="list-filter dropdown-item text-center{% if info.is_correct is None %} active{% endif %}" href="{% url 'dashboard:answer' %}">
                     <i class="fa-regular fa-file-lines mr-2"></i>전체 문제
                 </a>
             </li>
             <li>
-                <a class="list-filter dropdown-item text-center{% if info.is_correct == '1' %} active{% endif %}" href="{% url 'psat:answer_list_opt_sub' is_correct=1 sub=info.sub %}">
+                <a class="list-filter dropdown-item text-center{% if info.is_correct == 1 %} active{% endif %}" href="{% url 'dashboard:answer' is_correct=1 %}">
                     <i class="fa-solid fa-circle-check mr-2"></i>맞힌 문제
                 </a>
             </li>
             <li>
-                <a class="list-filter dropdown-item text-center{% if info.is_correct == '0' %} active{% endif %}" href="{% url 'psat:answer_list_opt_sub' is_correct=0 sub=info.sub %}">
+                <a class="list-filter dropdown-item text-center{% if info.is_correct == 0 %} active{% endif %}" href="{% url 'dashboard:answer' is_correct=0 %}">
                     <i class="fa-solid fa-circle-xmark mr-2"></i>틀린 문제
                 </a>
             </li>

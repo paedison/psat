@@ -109,8 +109,8 @@ class AddInfo:
         image_file = {
             'name1': problem_image1 if image1_exists else preparing_image,
             'tag1': 'Problem Image 1' if image1_exists else 'Preparing Image',
-            'name2': problem_image2 if image2_exists else preparing_image,
-            'tag2': 'Problem Image 2' if image2_exists else 'Preparing Image',
+            'name2': problem_image2 if image2_exists else '',
+            'tag2': 'Problem Image 2' if image2_exists else '',
         }
         return image_file
 

@@ -1,57 +1,47 @@
-{% extends 'base.html' %}
+{% extends 'list.html' %}
 {% load static %}
 {% load psat_filter %}
 
 {% block head_title %}시험 일정{% endblock head_title %}
 
-{% block aside %} {# [02] Sidebar #}
-    {% include 'psat/../snippets/aside.html' %}
-{% endblock %}
-
-{% block header %} {# [04] Main Header #}
-    {% include 'psat/../snippets/header.html' %}
-{% endblock %}
-
 {% block main %} {# [05] Main Content #}
+<!-- Main Content Start -->
+<section id="{{ info.target_id }}">
     <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    <section class="container col-12 p-0 mb-4">
-        <div class="row d-flex align-items-center justify-content-between">
-            <h6 class="d-inline-block font-weight-bold text-primary col-12 col-sm-6 py-2 m-0">{{ info.icon|safe }}{{ info.title }}</h6>
+    <section class="container col-12 px-3 mb-4">
+        <div class="row d-flex align-items-center justify-content-between" role="textbox">
+            <h6 class="font-weight-bold text-primary m-0">
+                {{ info.icon|safe }}{{ info.title }}
+            </h6>
         </div>
     </section>
-
-    <article class="mx-0">
+    <article class="mx-0 main-article">
+        <!-- Content Row Start -->
         <div class="row">
             <section class="col-12 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card h-100">
                     <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="p-0 m-2 d-flex justify-content-between">
-                                    <a class="btn btn-outline-primary" href="{% url 'schedule:base' %}?{{ prev_month }}">
-                                        이전 달
-                                    </a>
-                                {% if user.is_admin %}
-                                    <a class="btn btn-outline-primary" href="{% url 'schedule:new' %}">
-                                        새 일정
-                                    </a>
-                                {% endif %}
-                                    <a class="btn btn-outline-primary" href="{% url 'schedule:base' %}?{{ next_month }}">
-                                        다음 달
-                                    </a>
-                                </div>
-                                {{ calendar }}
-                            </div>
+                        <div class="p-0 my-2 d-flex justify-content-between">
+                            <a class="btn btn-outline-primary" href="{% url 'schedule:base' %}?{{ prev_month }}">
+                                이전 달
+                            </a>
+                        {% if user.is_admin %}
+                            <a class="btn btn-outline-primary" href="{% url 'schedule:new' %}">
+                                새 일정
+                            </a>
+                        {% endif %}
+                            <a class="btn btn-outline-primary" href="{% url 'schedule:base' %}?{{ next_month }}">
+                                다음 달
+                            </a>
                         </div>
+                        {{ calendar }}
                     </div>
                 </div>
             </section>
         </div>
+        <!-- Content Row End -->
     </article>
-{% endblock %}
-
-{% block footer %} {# [03] Footer #}
-    {% include "psat/../snippets/footer.html" %}
+</section>
 {% endblock %}
 
 {% block page_script %}
