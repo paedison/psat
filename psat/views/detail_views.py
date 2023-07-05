@@ -5,6 +5,7 @@ from datetime import datetime
 # Django Core Import
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 from django.views.generic import DetailView
 
@@ -139,6 +140,9 @@ class LikeDetailView(BaseDetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        list_by_exam = list(self.like_data.values_list('exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
+        list_by_exam_organized = organize_list(list_by_exam, 'like')
+        context['list_data'] = list_by_exam_organized
         context['like_data'] = self.like_data
         return context
 
@@ -181,6 +185,9 @@ class RateDetailView(BaseDetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['rate_data'] = self.rate_data
+        list_by_exam = list(self.rate_data.values_list('exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
+        list_by_exam_organized = organize_list(list_by_exam, 'rate')
+        context['list_data'] = list_by_exam_organized
         return context
 
     def update_rate_status_in_evaluation_model(self, difficulty):
@@ -232,6 +239,9 @@ class AnswerDetailView(BaseDetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['answer_data'] = self.answer_data
+        list_by_exam = list(self.answer_data.values_list('exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
+        list_by_exam_organized = organize_list(list_by_exam, 'answer')
+        context['list_data'] = list_by_exam_organized
         return context
 
     def update_answer_status_in_evaluation_model(self, answer):
@@ -246,3 +256,31 @@ class AnswerDetailView(BaseDetailView):
 
     def get_prev_next_prob(self, **kwargs):
         return super().get_prev_next_prob(self.answer_data, self.answer_list)
+
+
+def organize_list(input_list, detail_type):
+    # Create a dictionary to store instances based on the first value
+    organized_dict = {}
+    for item in input_list:
+        key = item[0]
+        if key not in organized_dict:
+            organized_dict[key] = []
+        list_item = {
+            'exam_name': f"{item[1]}년 '{item[2]} {item[3]}'",
+            'problem_number': int(item[4]),
+            'problem_id': int(item[5]),
+            'problem_url': reverse_lazy(f'psat:{detail_type}_detail', args=[int(item[5])])
+        }
+        organized_dict[key].append(list_item)
+
+    # Create a list to store the final organized result
+    organized_list = []
+    for key, items in organized_dict.items():
+        num_empty_instances = 5 - (len(items) % 5)
+        if num_empty_instances < 5:
+            items.extend([None] * num_empty_instances)
+        for i in range(0, len(items), 5):
+            row = items[i:i+5]
+            organized_list.extend(row)
+
+    return organized_list

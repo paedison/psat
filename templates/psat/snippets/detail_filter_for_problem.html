@@ -1,19 +1,33 @@
 {% load static %}
 {% load psat_filter %}
 
-{#            {% if num == problem.problem_number %}#}
-{#            <option value="{{ problem_id }}" selected>{{ problem.year_ex_sub_hyphen }} {{ num }}번</option>#}
-{#            {% else %}#}
-{#            <option value="{{ anchor_id|add:num }}">{{ problem.year_ex_sub_hyphen }} {{ num }}번</option>#}
-{#            {% endif %}#}
-
-            {% if num == problem.problem_number %}
-                <li><a class="dropdown-item" value="{{ problem_id }}" selected>{{ problem.year_ex_sub_hyphen }} {{ num }}번</a></li>
-            {% else %}
-            <li value="{{ anchor_id|add:num }}">{{ problem.year_ex_sub_hyphen }} {{ num }}번</li>
-            {% endif %}
-            <li>
-                <a class="dropdown-item{% if num == problem.problem_number %} active{% endif %}" href="{{ problem.get_like_url }}">
-                    {{ problem.year_ex_sub_hyphen }} {{ num }}번
-                </a>
-            </li>
+            <div class="container p-0" style="min-width: 300px;">
+                <div class="row justify-content-center p-2 text-primary font-weight-bold">
+                    {{ problem.year }}년 '{{ problem.exam2 }}' {{ problem.subject }}
+                </div>
+        {% if problem.ex == '민경' or problem.ex == '칠급' %}
+                <div class="row justify-content-center">
+            {% for num in TOTAL.nums25 %}
+                {% if forloop.counter0|divisibleby:5 %}
+                </div>
+                <div class="row justify-content-center">
+                {% endif %}
+                    <div class="col-2 p-0">
+                        <a class="p-1 dropdown-item text-nowrap text-center{% if num == problem.problem_number %} active{% endif %}" href="{% url 'psat:problem_detail' anchor_id|add:num %}">{{ num }}번</a>
+                    </div>
+            {% endfor %}
+                </div>
+        {% else %}
+                <div class="row justify-content-center">
+            {% for num in TOTAL.nums40 %}
+                {% if forloop.counter0|divisibleby:5 %}
+                </div>
+                <div class="row justify-content-center">
+                {% endif %}
+                    <div class="col-2 p-0">
+                        <a class="p-1 dropdown-item text-nowrap text-center{% if num == problem.problem_number %} active{% endif %}" href="{% url 'psat:problem_detail' anchor_id|add:num %}">{{ num }}번</a>
+                    </div>
+            {% endfor %}
+                </div>
+            </div>
+        {% endif %}
