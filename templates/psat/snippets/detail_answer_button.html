@@ -15,7 +15,7 @@
         <input type="radio" class="btn-check" name="answer" id="answer5" value="5">
         <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer5">5</label>
     {% if user.is_authenticated %}
-        <a class="answer-button" href="{% url 'psat:answer_detail' problem.problem_id %}" data-bs-toggle="modal" data-bs-target="#answerModal" data-target="#psatAnswer{{ problem.problem_id }}">
+        <a class="answer-button" href="{% url 'psat:answer_detail' problem.prob_id %}" data-bs-toggle="modal" data-bs-target="#answerModal" data-target="#psatAnswer{{ problem.prob_id }}">
             <button class="btn btn-circle btn-success btn-sm fs-6">
                 {{ CHECK_ICON|safe }}
             </button>

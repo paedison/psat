@@ -75,7 +75,7 @@ class AddInfo:
         number = self.number if isinstance(self, Problem) else self.problem.number
         return f"{year}년 '{exam2}' {subject} {number}번"
 
-    def problem_id(self):
+    def prob_id(self):
         return self.id if isinstance(self, Problem) else self.problem.id
 
     def problem_number(self):
@@ -92,15 +92,11 @@ class AddInfo:
         number = f'{self.problem_number():02}'
 
         preparing_image = static('image/preparing.png')
-        # filename = f'PSAT{year_ex_sub}{number}.png'
-        # problem_image = static(f'image/PSAT/{year}/{filename}')
         file1 = f'PSAT{year_ex_sub}{number}-1.png'
         file2 = f'PSAT{year_ex_sub}{number}-2.png'
         problem_image1 = static(f'image/PSAT/{year}/{file1}')
         problem_image2 = static(f'image/PSAT/{year}/{file2}')
 
-        # image_os_path = os.path.join(static_path, 'image', 'PSAT', str(year), filename)
-        # exists = os.path.exists(image_os_path)
         image1_os_path = os.path.join(static_path, 'image', 'PSAT', str(year), file1)
         image1_exists = os.path.exists(image1_os_path)
         image2_os_path = os.path.join(static_path, 'image', 'PSAT', str(year), file2)
@@ -145,32 +141,29 @@ class AddInfo:
 
 class UpdateInfo:
     def update_open_status(self):
-        self.opened_at = now
         opened_times = self.opened_times or 0
+        self.opened_at = now
         self.opened_times = opened_times + 1
         self.save()
 
     def update_like_status(self):
-        self.liked_at = now
         liked_times = self.liked_times or 0
+        is_liked = self.is_liked or False
+        self.liked_at = now
         self.liked_times = liked_times + 1
-        is_liked = self.is_liked
-        if is_liked:
-            self.is_liked = False
-        else:
-            self.is_liked = True
+        self.is_liked = not is_liked
         self.save()
 
     def update_rate_status(self, difficulty):
-        self.rated_at = now
         rated_times = self.rated_times or 0
+        self.rated_at = now
         self.rated_times = rated_times + 1
         self.difficulty_rated = difficulty
         self.save()
 
     def update_answer_status(self, answer):
-        self.answered_at = now
         answered_times = self.answered_times or 0
+        self.answered_at = now
         self.answered_times = answered_times + 1
         self.submitted_answer = answer
         if answer == self.correct_answer():

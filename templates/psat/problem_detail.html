@@ -13,7 +13,7 @@
     <section class="container-fluid mb-0 my-4">
         <div class="row d-flex align-items-center flex-wrap justify-content-between">
             <div class="col-auto d-flex flex-wrap align-content-center justify-content-center">
-                <div class="font-weight-bold text-primary text-nowrap m-0">{{ info.title }}</div>
+                <div class="font-weight-bold text-primary text-nowrap m-0">{{ info.title }}</div>{{ problem.id }}
                 <div class="d-flex justify-content-between">
                     <div class="px-1">
                         {% include 'psat/snippets/icon_like.html' %}
@@ -27,69 +27,75 @@
                 </div>
             </div>
             <div class="col-auto ml-auto d-flex justify-content-end align-content-center px-0">
-                <div role="form" aria-label="detail-filter" class="form-inline-block mr-1">
-                    {% include 'psat/snippets/detail_filter_container.html' %}
-                </div>
-                <div role="navigation" aria-label="detail-navigation">
+                <div role="navigation" aria-label="detail-navigation" class="mr-1">
                     {% include 'psat/snippets/detail_navigation.html' %}
+                </div>
+                <div role="form" aria-label="detail-filter">
+                    {% include 'psat/snippets/detail_filter_container.html' %}
                 </div>
             </div>
         </div>
     </section>
     <article class="mx-0 main-article">
-        <section class="col-12 mb-4">
-            <div class="card border-left-{{ info.color }} h-100 py-0">
-                <div class="card-body">
-                    <table class="table mb-0">
-                    {% if problem %}
-                        <thead>
-                            <tr>
-                                <th class="px-0">
-                                    <div class="problem-box" role="textbox" aria-label="question">
-                                        <div class="problem-number">
-                                            <h6 class="font-weight-bold m-0" style="line-height:1.5rem;">
-                                                문&nbsp;{{ problem.problem_number|add_space }}.
-                                            </h6>
+        <!-- Content Row Start -->
+        <div class="row">
+            <section class="col-12 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <table class="table mb-4">
+                        {% if problem %}
+                            <thead>
+                                <tr>
+                                    <th class="px-0">
+                                        <div class="problem-box" role="textbox" aria-label="question">
+                                            <div class="problem-number">
+                                                <h6 class="font-weight-bold m-0" style="line-height:1.5rem;">
+                                                    문&nbsp;{{ problem.problem_number|add_space }}.
+                                                </h6>
+                                            </div>
+                                            <div class="problem-question">
+                                                <h6 class="font-weight-bold m-0" style="line-height:1.5rem;">
+                                                    {{ problem.problem_question }}
+                                                </h6>
+                                            </div>
                                         </div>
-                                        <div class="problem-question">
-                                            <h6 class="font-weight-bold m-0" style="line-height:1.5rem;">
-                                                {{ problem.problem_question }}
-                                            </h6>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                <tr>
+                                    <td class="px-0">
+                                        <div class="d-flex justify-content-end">
+                                            {% include 'psat/snippets/detail_answer_button.html' %}
                                         </div>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-center">
-                            <tr>
-                                <td class="px-0">
-                                    <div class="d-flex justify-content-end">
-                                        {% include 'psat/snippets/detail_answer_button.html' %}
-                                    </div>
-                                    <div class="d-flex flex-wrap align-items-start" role="figure" aria-label="problem-image">
-                                        {% csrf_token %}
-                                    {% if problem.image_file.tag1 == 'Preparing Image' %}
-                                        <div class="col-12 p-0">
-                                            <img class="problem-image" src="{{ problem.image_file.name1 }}" alt="{{ problem.image_file.tag1 }}"/>
+                                        <div class="d-flex flex-wrap align-items-start" role="figure" aria-label="problem-image">
+                                            {% csrf_token %}
+                                        {% if problem.image_file.tag1 == 'Preparing Image' %}
+                                            <div class="col-12 p-0">
+                                                <img class="problem-image" src="{{ problem.image_file.name1 }}" alt="{{ problem.image_file.tag1 }}"/>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-12 col-lg-6 p-0">
+                                                <img class="problem-image" src="{{ problem.image_file.name1 }}" alt="{{ problem.image_file.tag1 }}"/>
+                                            </div>
+                                        {% if problem.image_file.name2 %}
+                                            <div class="col-12 col-lg-6 p-0">
+                                                <img class="problem-image" src="{{ problem.image_file.name2 }}" alt="{{ problem.image_file.tag2 }}"/>
+                                            </div>
+                                        {% endif %}
+                                        {% endif %}
                                         </div>
-                                    {% else %}
-                                        <div class="col-12 col-lg-6 p-0">
-                                            <img class="problem-image" src="{{ problem.image_file.name1 }}" alt="{{ problem.image_file.tag1 }}"/>
-                                        </div>
-                                        <div class="col-12 col-lg-6 p-0">
-                                            <img class="problem-image" src="{{ problem.image_file.name2 }}" alt="{{ problem.image_file.tag2 }}"/>
-                                        </div>
-                                    {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    {% endif %}
-                    </table>
-{#                    {% include 'psat/problem_tags.html' %}#}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        {% endif %}
+                        </table>
+    {#                    {% include 'psat/problem_tags.html' %}#}
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
+        <!-- Content Row End -->
     </article>
 </section>
 <!-- Main Content End -->
@@ -100,6 +106,5 @@
 {% endblock %}
 
 {% block page_script %}
-    <script type="module" src="{% static 'js/list.js' %}"></script>
     <script type="module" src="{% static 'js/psat.js' %}"></script>
 {% endblock %}

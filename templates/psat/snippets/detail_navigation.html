@@ -3,38 +3,38 @@
 
 {% if prev_prob %}
     {% if info.type == 'problemDetail' %}
-        <a href="{{ prev_prob.get_problem_url }}" id="prev-page" class="btn btn-circle btn-{{info.color}} btn-sm">
+        <a href="{{ prev_prob.get_problem_url }}" id="prev-page" class="btn btn-circle btn-sm btn-{{info.color}}">
             {{ UP_ARROW_ICON|safe }}
         </a>
     {% elif info.type == 'likeDetail' %}
-        <a href="{{ prev_prob.get_like_url }}" id="prev-page" class="btn btn-circle btn-{{info.color}} btn-sm">
+        <a href="{{ prev_prob.get_like_url }}" id="prev-page" class="btn btn-circle btn-sm btn-{{info.color}}">
             {{ UP_ARROW_ICON|safe }}
         </a>
     {% elif info.type == 'rateDetail' %}
-        <a href="{{ prev_prob.get_rate_url }}" id="prev-page" class="btn btn-circle btn-{{info.color}} btn-sm">
+        <a href="{{ prev_prob.get_rate_url }}" id="prev-page" class="btn btn-circle btn-sm btn-{{info.color}}">
             {{ UP_ARROW_ICON|safe }}
         </a>
     {% elif info.type == 'answerDetail' %}
-        <a href="{{ prev_prob.get_answer_url }}" id="prev-page" class="btn btn-circle btn-{{info.color}} btn-sm">
+        <a href="{{ prev_prob.get_answer_url }}" id="prev-page" class="btn btn-circle btn-sm btn-{{info.color}}">
             {{ UP_ARROW_ICON|safe }}
         </a>
     {% endif %}
 {% endif %}
 {% if next_prob %}
     {% if info.type == 'problemDetail' %}
-        <a href="{{ next_prob.get_problem_url }}" id="next-page" class="btn btn-circle btn-{{info.color}} btn-sm">
+        <a href="{{ next_prob.get_problem_url }}" id="next-page" class="btn btn-circle btn-sm btn-{{info.color}}">
             {{ DOWN_ARROW_ICON|safe }}
         </a>
     {% elif info.type == 'likeDetail' %}
-        <a href="{{ next_prob.get_like_url }}" id="next-page" class="btn btn-circle btn-{{info.color}} btn-sm">
+        <a href="{{ next_prob.get_like_url }}" id="next-page" class="btn btn-circle btn-sm btn-{{info.color}}">
             {{ DOWN_ARROW_ICON|safe }}
         </a>
     {% elif info.type == 'rateDetail' %}
-        <a href="{{ next_prob.get_rate_url }}" id="next-page" class="btn btn-circle btn-{{info.color}} btn-sm">
+        <a href="{{ next_prob.get_rate_url }}" id="next-page" class="btn btn-circle btn-sm btn-{{info.color}}">
             {{ DOWN_ARROW_ICON|safe }}
         </a>
     {% elif info.type == 'answerDetail' %}
-        <a href="{{ next_prob.get_answer_url }}" id="next-page" class="btn btn-circle btn-{{info.color}} btn-sm">
+        <a href="{{ next_prob.get_answer_url }}" id="next-page" class="btn btn-circle btn-sm btn-{{info.color}}">
             {{ DOWN_ARROW_ICON|safe }}
         </a>
     {% endif %}

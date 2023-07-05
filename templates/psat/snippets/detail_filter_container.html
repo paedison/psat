@@ -1,9 +1,46 @@
 {% load static %}
 {% load psat_filter %}
 
-    <div class="input-group">
-        <label for="problemChoice"></label>
-        <select id="problemChoice" name="problemChoice" class="form-control form-control-sm border border-{{ info.color }}">
+{#    <div class="input-group">#}
+{#        <label for="problemChoice"></label>#}
+{#        <select id="problemChoice" name="problemChoice" class="form-control form-control-sm border border-{{ info.color }}">#}
+{#            {% if info.type == 'problemDetail' %}#}
+{#                {% if problem.ex == '민경' or problem.ex == '칠급' %}#}
+{#                    {% for num in TOTAL.nums25 %}#}
+{#                        {% include 'psat/snippets/detail_filter_for_problem.html' %}#}
+{#                    {% endfor %}#}
+{#                {% else %}#}
+{#                    {% for num in TOTAL.nums40 %}#}
+{#                        {% include 'psat/snippets/detail_filter_for_problem.html' %}#}
+{#                    {% endfor %}#}
+{#                {% endif %}#}
+{#            {% elif info.type == 'likeDetail' %}#}
+{#                {% for data in like_data %}#}
+{#                    {% include 'psat/snippets/detail_filter_for_others.html' %}#}
+{#                {% endfor %}#}
+{#            {% elif info.type == 'rateDetail' %}#}
+{#                {% for data in rate_data %}#}
+{#                    {% include 'psat/snippets/detail_filter_for_others.html' %}#}
+{#                {% endfor %}#}
+{#            {% elif info.type == 'answerDetail' %}#}
+{#                {% for data in answer_data %}#}
+{#                    {% include 'psat/snippets/detail_filter_for_others.html' %}#}
+{#                {% endfor %}#}
+{#            {% endif %}#}
+{#        </select>#}
+{##}
+{#        <div class="input-group-append">#}
+{#            <button id="selectButton" class="btn btn-{{ info.color }} btn-sm">#}
+{#                {{ RIGHT_ARROW_ICON|safe }}#}
+{#            </button>#}
+{#        </div>#}
+{#    </div>#}
+
+    <div class="dropdown">
+        <a class="btn btn-circle btn-sm btn-{{ info.color }} dropdown-toggle" href="#" role="button" id="problemChoiceLink" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ LIST_ICON|safe }}
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="problemChoiceLink">
             {% if info.type == 'problemDetail' %}
                 {% if problem.ex == '민경' or problem.ex == '칠급' %}
                     {% for num in TOTAL.nums25 %}
@@ -16,22 +53,28 @@
                 {% endif %}
             {% elif info.type == 'likeDetail' %}
                 {% for data in like_data %}
-                    {% include 'psat/snippets/detail_filter_for_others.html' %}
+            <li>
+                <a class="dropdown-item{% if num == data.problem_number %} active{% endif %}" href="{{ data.get_like_url }}">
+                    {{ data.year_ex_sub_hyphen }} {{ data.problem_number }}번
+                </a>
+            </li>
                 {% endfor %}
             {% elif info.type == 'rateDetail' %}
                 {% for data in rate_data %}
-                    {% include 'psat/snippets/detail_filter_for_others.html' %}
+            <li>
+                <a class="dropdown-item{% if num == problem.problem_number %} active{% endif %}" href="{{ data.get_rate_url }}">
+                    {{ data.year_ex_sub_hyphen }} {{ data.problem_number }}번
+                </a>
+            </li>
                 {% endfor %}
             {% elif info.type == 'answerDetail' %}
                 {% for data in answer_data %}
-                    {% include 'psat/snippets/detail_filter_for_others.html' %}
+            <li>
+                <a class="dropdown-item{% if num == data.problem_number %} active{% endif %}" href="{{ data.get_answer_url }}">
+                    {{ data.year_ex_sub_hyphen }} {{ data.problem_number }}번
+                </a>
+            </li>
                 {% endfor %}
             {% endif %}
-        </select>
-
-        <div class="input-group-append">
-            <button id="selectButton" class="btn btn-{{ info.color }} btn-sm">
-                {{ RIGHT_ARROW_ICON|safe }}
-            </button>
-        </div>
+        </ul>
     </div>

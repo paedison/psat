@@ -3,7 +3,6 @@ import json
 from datetime import datetime
 
 # Django Core Import
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.timezone import make_aware
@@ -11,6 +10,13 @@ from django.views.generic import DetailView
 
 # Custom App Import
 from common.constants.icon import *
+from log.views import (
+    create_request_log,
+    create_problem_log,
+    create_like_log,
+    create_rate_log,
+    create_answer_log
+)
 from psat.models import Exam, Problem, Evaluation
 from psat.views.common_views import get_evaluation_info
 
@@ -19,14 +25,17 @@ exam = Exam.objects
 problem = Problem.objects
 evaluation = Evaluation.objects
 
+icon_like_template = 'psat/snippets/icon_like.html'
+icon_rate_template = 'psat/snippets/icon_rate.html'
+icon_answer_template = 'psat/snippets/icon_answer.html'
+
 
 class BaseDetailView(DetailView):
     model = Problem
     template_name = 'psat/problem_detail.html'
     context_object_name = 'problem'
     pk_url_kwarg = 'problem_id'
-    object = title = None
-    problem_id = None
+    object = title = problem_id = None
     info = {}
     like_data = like_list = rate_data = rate_list = answer_data = answer_list = None
 
@@ -45,7 +54,6 @@ class BaseDetailView(DetailView):
             self.answer_list = self.answer_data.values_list('id', flat=True)
 
         self.title = self.object.full_title()
-
         self.info = {
             'category': 'problem',
             'type': 'problemDetail',
@@ -59,11 +67,8 @@ class BaseDetailView(DetailView):
         context = self.get_context_data(**kwargs)
         if request.user.is_authenticated:
             self.update_open_status_in_evaluation_model()
-
-        from log.views import create_request_log, create_problem_log
         create_request_log(self.request, self.info)
         create_problem_log(self.request, self.problem_id)
-
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
@@ -74,7 +79,6 @@ class BaseDetailView(DetailView):
         context['info'] = self.info
         context['prev_prob'] = prev_prob
         context['next_prob'] = next_prob
-
         return context
 
     def get_prev_next_prob(self, prob_data=None, prob_list=None):
@@ -89,32 +93,22 @@ class BaseDetailView(DetailView):
         return prev_prob, next_prob
 
     def update_open_status_in_evaluation_model(self):
-        user = self.request.user
-        problem_id = self.problem_id
-        try:
-            obj = evaluation.get(user=user, problem_id=problem_id)
-            obj.update_open_status()
-        except ObjectDoesNotExist:
-            obj = evaluation.create(user=user, problem_id=problem_id, liked_at=now, liked_times=1, is_liked=True)
+        user, problem_id = self.request.user, self.problem_id
+        obj, created = evaluation.get_or_create(user=user, problem_id=problem_id)
+        obj.update_open_status()
         return obj
 
 
 class ProblemDetailView(BaseDetailView):
     def get_prev_next_prob(self, **kwargs):
-        prev_prob = next_prob = None
         max_id = problem.order_by('-id')[0].id
-        if self.problem_id != 1:
-            prev_prob = problem.get(id=self.problem_id - 1)
-        if self.problem_id != max_id:
-            next_prob = problem.get(id=self.problem_id + 1)
-
+        prev_prob = problem.get(id=self.problem_id - 1) if self.problem_id != 1 else ''
+        next_prob = problem.get(id=self.problem_id + 1) if self.problem_id != max_id else ''
         return prev_prob, next_prob
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        anchor_id = self.problem_id - self.object.number
-        context['anchor_id'] = anchor_id
-
+        context['anchor_id'] = self.problem_id - self.object.number
         return context
 
 
@@ -132,16 +126,14 @@ class LikeDetailView(BaseDetailView):
         }
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         obj = self.update_like_status_in_evaluation_model()
         context = self.get_context_data(**kwargs)
-        html = render(request, 'psat/snippets/icon_like.html', context).content.decode('utf-8')
+        html = render(request, icon_like_template, context).content.decode('utf-8')
 
-        from log.views import create_request_log
         extra = f"(Liked Times: {obj.liked_times}, Is Liked: {obj.is_liked})"
         create_request_log(request, self.info, extra)
-
-        from log.models import LikeLog
-        LikeLog.objects.create(user=request.user, problem_id=obj.problem_id, is_liked=obj.is_liked)
+        create_like_log(request, obj)
 
         return HttpResponse(html)
 
@@ -151,13 +143,9 @@ class LikeDetailView(BaseDetailView):
         return context
 
     def update_like_status_in_evaluation_model(self):
-        user = self.request.user
-        problem_id = self.problem_id
-        try:
-            obj = evaluation.get(user=user, problem_id=problem_id)
-            obj.update_like_status()
-        except ObjectDoesNotExist:
-            obj = evaluation.create(user=user, problem_id=problem_id, liked_at=now, liked_times=1, is_liked=True)
+        user, problem_id = self.request.user, self.problem_id
+        obj, created = evaluation.get_or_create(user=user, problem_id=problem_id)
+        obj.update_like_status()
         return obj
 
     def get_prev_next_prob(self, **kwargs):
@@ -178,17 +166,15 @@ class RateDetailView(BaseDetailView):
         }
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         difficulty = self.request.POST.get('difficulty')
         obj = self.update_rate_status_in_evaluation_model(difficulty)
         context = self.get_context_data(**kwargs)
-        html = render(request, 'psat/snippets/icon_rate.html', context).content.decode('utf-8')
+        html = render(request, icon_rate_template, context).content.decode('utf-8')
 
-        from log.views import create_request_log
         extra = f"(Rated Times: {obj.rated_times}, Difficulty Rated: {obj.difficulty_rated})"
         create_request_log(request, self.info, extra)
-
-        from log.models import RateLog
-        RateLog.objects.create(user=request.user, problem_id=obj.problem_id, difficulty_rated=obj.difficulty_rated)
+        create_rate_log(request, obj)
 
         return HttpResponse(html)
 
@@ -198,13 +184,9 @@ class RateDetailView(BaseDetailView):
         return context
 
     def update_rate_status_in_evaluation_model(self, difficulty):
-        user = self.request.user
-        problem_id = self.problem_id
-        try:
-            obj = evaluation.get(user=user, problem_id=problem_id)
-            obj.update_rate_status(difficulty)
-        except ObjectDoesNotExist:
-            obj = evaluation.create(user=user, problem_id=problem_id, rated_at=now, rated_times=1, difficulty_rated=difficulty)
+        user, problem_id = self.request.user, self.problem_id
+        obj, created = evaluation.get_or_create(user=user, problem_id=problem_id)
+        obj.update_rate_status(difficulty)
         return obj
 
     def get_prev_next_prob(self, **kwargs):
@@ -225,23 +207,26 @@ class AnswerDetailView(BaseDetailView):
         }
 
     def post(self, request, *args, **kwargs):
-        answer = int(self.request.POST.get('answer'))
-        obj, message = self.update_answer_status_in_evaluation_model(answer)
-        context = self.get_context_data(**kwargs)
-        html = render(request, 'psat/snippets/icon_answer.html', context).content.decode('utf-8')
+        self.object = self.get_object()
+        answer = self.request.POST.get('answer')
+        if answer is None:
+            message, html = '<div class="text-danger">정답을 선택해주세요.</div>', ''
+            extra = f"(Answer Trial Failed)"
+            create_request_log(request, self.info, extra)
+        else:
+            obj, message = self.update_answer_status_in_evaluation_model(int(answer))
+            context = self.get_context_data(**kwargs)
+            html = render(request, icon_answer_template, context).content.decode('utf-8')
+
+            extra = f"(Answered Times: {obj.answered_times}, Submitted Answer: {obj.submitted_answer}, Is Correct: {obj.is_correct})"
+            create_request_log(request, self.info, extra)
+            create_answer_log(request, obj)
+
         response_data = {
             'message': message,
             'html': html,
         }
         json_data = json.dumps(response_data)
-
-        from log.views import create_request_log
-        extra = f"(Answered Times: {obj.answered_times}, Submitted Answer: {obj.submitted_answer}, Is Correct: {obj.is_correct})"
-        create_request_log(request, self.info, extra)
-
-        from log.models import AnswerLog
-        AnswerLog.objects.create(user=request.user, problem_id=obj.problem_id, submitted_answer=obj.submitted_answer, is_correct=obj.is_correct)
-
         return HttpResponse(json_data, content_type='application/json')
 
     def get_context_data(self, **kwargs):
@@ -250,27 +235,13 @@ class AnswerDetailView(BaseDetailView):
         return context
 
     def update_answer_status_in_evaluation_model(self, answer):
-        user = self.request.user
-        problem_id = self.problem_id
-        obj = ''
-        correct_message = '<div class="text-success">정답입니다.</div>'
-        wrong_message = '<div class="text-danger">오답입니다.</div>'
-        warning_message = '<div class="text-danger">정답을 선택해주세요.</div>'
+        user, problem_id = self.request.user, self.problem_id
+        obj, created = evaluation.get_or_create(user=user, problem_id=problem_id)
+        obj.update_answer_status(answer)
 
-        if answer:
-            try:
-                obj = evaluation.get(user=user, problem_id=problem_id)
-                obj.update_answer_status(answer)
-            except ObjectDoesNotExist:
-                obj = evaluation.create(user=user, problem_id=problem_id, answered_at=now, answered_times=1, submitted_answer=answer)
-                obj.save()
-            if obj.submitted_answer == obj.correct_answer():
-                message = correct_message
-            else:
-                message = wrong_message
-        else:
-            message = warning_message
-
+        is_correct = obj.submitted_answer == obj.correct_answer()
+        text = ['success', '정답'] if is_correct else ['danger', '오답']
+        message = f'<div class="text-{text[0]}">{text[1]}입니다.</div>'
         return obj, message
 
     def get_prev_next_prob(self, **kwargs):

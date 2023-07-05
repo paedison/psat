@@ -14,6 +14,25 @@ selectButton.on('click', () => {
 });
 
 
+/* Ajax for '#rateButton' (Rate Button) */
+$(document).on('click', '#problemChoice input[name="difficulty"]', function(event) {
+    event.preventDefault();
+    let difficulty = $(this).attr('value');
+    let url = rateButton.data('url');
+    let target = '#' + rateButton.data('target');
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: { 'difficulty': difficulty },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $('.close').click();
+            $(target).replaceWith(data);
+        }
+    });
+});
+
+
 /* Ajax for '.list-filter' (Like / Rate / Answer List Filter) */
 $(document).on('click', '.list-filter', function(event) {
     event.preventDefault();
@@ -41,6 +60,7 @@ $(document).on('click', '.like-button', function(event) {
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
             $(target).replaceWith(data);
+            console.log(data);
         }
     });
 });

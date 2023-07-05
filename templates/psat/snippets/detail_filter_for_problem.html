@@ -1,8 +1,19 @@
 {% load static %}
 {% load psat_filter %}
 
+{#            {% if num == problem.problem_number %}#}
+{#            <option value="{{ problem_id }}" selected>{{ problem.year_ex_sub_hyphen }} {{ num }}번</option>#}
+{#            {% else %}#}
+{#            <option value="{{ anchor_id|add:num }}">{{ problem.year_ex_sub_hyphen }} {{ num }}번</option>#}
+{#            {% endif %}#}
+
             {% if num == problem.problem_number %}
-            <option value="{{ problem_id }}" selected>{{ problem.year_ex_sub_hyphen }} {{ num }}번</option>
+                <li><a class="dropdown-item" value="{{ problem_id }}" selected>{{ problem.year_ex_sub_hyphen }} {{ num }}번</a></li>
             {% else %}
-            <option value="{{ anchor_id|add:num }}">{{ problem.year_ex_sub_hyphen }} {{ num }}번</option>
+            <li value="{{ anchor_id|add:num }}">{{ problem.year_ex_sub_hyphen }} {{ num }}번</li>
             {% endif %}
+            <li>
+                <a class="dropdown-item{% if num == problem.problem_number %} active{% endif %}" href="{{ problem.get_like_url }}">
+                    {{ problem.year_ex_sub_hyphen }} {{ num }}번
+                </a>
+            </li>

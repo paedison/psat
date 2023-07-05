@@ -14,7 +14,7 @@ def get_evaluation_info(request, obj):
 
     if user.is_authenticated:
         try:
-            target = Evaluation.objects.get(user=user, problem_id=obj.problem_id())
+            target = Evaluation.objects.get(user=user, problem_id=obj.prob_id())
 
             obj.opened_at = target.opened_at
             obj.opened_times = target.opened_times
@@ -49,4 +49,3 @@ def get_evaluation_info(request, obj):
             obj.is_correct = None
             obj.answer_icon = ''
     return obj
-
