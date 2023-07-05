@@ -20,7 +20,7 @@ class AccountLog(models.Model):
     id = models.AutoField(primary_key=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name="사용자 ID", db_column="user_id", blank=True, null=True)
-    session_key = models.CharField(max_length=32, blank=True, null=True)
+    session_key = models.TextField(blank=True, null=True)
     log_url = models.URLField()
     log_content = models.TextField()
 
@@ -34,7 +34,7 @@ class RequestLog(models.Model):
     id = models.AutoField(primary_key=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name="사용자 ID", db_column="user_id", blank=True, null=True)
-    session_key = models.CharField(max_length=32, blank=True, null=True)
+    session_key = models.TextField(blank=True, null=True)
     log_url = models.URLField()
     log_content = models.TextField()
 
@@ -48,7 +48,7 @@ class ProblemLog(models.Model):
     id = models.AutoField(primary_key=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name="사용자 ID", db_column="user_id", blank=True, null=True)
-    session_key = models.CharField(max_length=32, blank=True, null=True)
+    session_key = models.TextField(blank=True, null=True)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name="문제 ID", db_column="problem_id")
 
     def __str__(self):
