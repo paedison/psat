@@ -20,7 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = Env(
-    ALLOWED_HOSTS=(tuple, 'ALLOWED_HOSTS'),
+    ALLOWED_HOSTS=(list, 'ALLOWED_HOSTS'),
     SECRET_KEY=(str, 'SECRET_KEY'),
 
     # Database Settings
