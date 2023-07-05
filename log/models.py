@@ -35,7 +35,7 @@ class RequestLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name="사용자 ID", db_column="user_id", blank=True, null=True)
     session_key = models.TextField(blank=True, null=True)
-    log_url = models.URLField()
+    log_url = models.TextField()
     log_content = models.TextField()
 
     def __str__(self):
