@@ -1,6 +1,9 @@
 from .base import *
 
 DEBUG = True
-ALLOWED_HOSTS = []
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS').split(" ")
+# DJANGO-Debug-Toolbar
+INTERNAL_IPS = [
+    '127.0.0.1',
+]

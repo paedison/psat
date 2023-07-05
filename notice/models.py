@@ -34,6 +34,10 @@ class Post(models.Model):
     def get_list_url():
         return reverse_lazy(f'{app_name}:list')
 
+    @staticmethod
+    def get_create_url():
+        return reverse_lazy(f'{app_name}:create')
+
     def get_update_url(self):
         return reverse_lazy(f'{app_name}:update', args=[self.id])
 

@@ -40,7 +40,7 @@ $(document).on('click', '.update-comment', function(event) {
         url: updateUrl,
         type: 'GET',
         dataType: 'json',
-        // headers: { 'X-CSRFToken': csrf_token },
+        headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
             // let modifiedHtml = data.html.replace('{{ original }}', data.original);
             console.log(data.html);

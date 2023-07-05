@@ -9,7 +9,7 @@
 {%  endif %}
 </div>
 <div class="right-button">
-    <a class="btn btn-circle btn-sm btn-outline-warning" href="{{ info.list_url }}" title="Reply">{{ REPLY_ICON|safe }}</a>
+    <a class="btn btn-circle btn-sm btn-outline-warning" href="{{ post.get_list_url }}" title="Reply">{{ REPLY_ICON|safe }}</a>
 {% if post.user == user %}
     <a class="btn btn-circle btn-sm btn-outline-success" href="{{ post.get_update_url }}" title="Edit">{{ PEN_ICON|safe }}</a>
     <a class="btn btn-circle btn-sm btn-outline-danger delete-instance" href="{{ post.get_delete_url }}" data-url="{{ post.get_list_url }}" data-text="글을 삭제하시겠습니까?" data-bs-toggle="modal" data-bs-target="#deleteInstanceModal" title="Delete">{{ TRASH_ICON|safe }}</a>

@@ -10,9 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-import json
 import os
-import sys
 from pathlib import Path
 from environ import Env
 
@@ -20,13 +18,34 @@ from django.utils.translation import ugettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-SECRET_BASE_FILE = os.path.join(BASE_DIR, 'secrets.json')
 
-secrets = json.loads(open(SECRET_BASE_FILE).read())
-for key, value in secrets.items():
-    setattr(sys.modules[__name__], key, value)
+env = Env(
+    ALLOWED_HOSTS=(tuple, 'ALLOWED_HOSTS'),
+    SECRET_KEY=(str, 'SECRET_KEY'),
 
-env = Env()
+    # Database Settings
+    DB_ENGINE=(str, 'DB_ENGINE'),
+    DB_NAME=(str, 'DB_NAME'),
+    DB_USER=(str, 'DB_USER'),
+    DB_PASSWORD=(str, 'DB_PASSWORD'),
+    DB_HOST=(str, 'DB_HOST'),
+    DB_PORT=(str, 'DB_PORT'),
+
+    # Mail Settings
+    EMAIL_HOST=(str, 'EMAIL_HOST'),
+    EMAIL_PORT=(str, 'EMAIL_PORT'),
+    EMAIL_HOST_USER=(str, 'EMAIL_HOST_USER'),
+    EMAIL_HOST_PASSWORD=(str, 'EMAIL_HOST_PASSWORD'),
+    EMAIL_USE_SSL=(bool, 'EMAIL_USE_SSL'),
+    EMAIL_USE_TLS=(bool, 'EMAIL_USE_TLS'),
+
+    # SOCIALACCOUNT_PROVIDERS
+    VERIFIED_EMAIL=(str, 'VERIFIED_EMAIL'),
+    APP_client_id=(str, 'APP_client_id'),
+    APP_secret=(str, 'APP_secret'),
+    APP_key=(str, 'APP_key'),
+    AUTH_PARAMS_access_type=(str, 'AUTH_PARAMS_access_type'),
+)
 env_path = BASE_DIR / ".env"
 if env_path.exists():
     with env_path.open("rt", encoding="utf8") as f:
@@ -36,15 +55,10 @@ if env_path.exists():
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = ''  # Separated into SECRET_BASE_FILE
-
+SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
 
 # Application definition
-
 INSTALLED_APPS = [
     # Default  //  Django Apps
     'django.contrib.admin',
@@ -118,8 +132,12 @@ WSGI_APPLICATION = '_config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': env('DB_ENGINE', default='django.db.backends.sqlite3'),
+        'NAME': env('DB_NAME', default=os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': env('DB_USER', default='user'),
+        'PASSWORD': env('DB_PASSWORD', default='password'),
+        'HOST': env('DB_HOST', default='localhost'),
+        'PORT': env('DB_PORT', default=''),
     }
 }
 
@@ -145,38 +163,26 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = 'ko-KR'
-
 TIME_ZONE = 'Asia/Seoul'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
-
 LANGUAGES = [
     ('ko', _('Korean')),
 ]
-LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = BASE_DIR / 'media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# DJANGO-Debug-Toolbar
-INTERNAL_IPS = [
-    '127.0.0.1',
-]
 
 
 # DJANGO-Taggit
@@ -193,6 +199,20 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'VERIFIED_EMAIL': env('VERIFIED_EMAIL'),
+        'APP': {
+            'client_id': env('APP_client_id'),
+            'secret': env('APP_secret'),
+            'key': env('APP_key'),
+        },
+        'AUTH_PARAMS': {
+            'access_type': env('AUTH_PARAMS_access_type'),
+        }
+    }
+}
+
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'None'
@@ -200,6 +220,13 @@ ACCOUNT_EMAIL_VERIFICATION = 'None'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '이메일 인증'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER')
 
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = None
 ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300
@@ -225,9 +252,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 
 # Summernote Settings
-# SUMMERNOTE_THEME = 'lite'
 SUMMERNOTE_CONFIG = {
-    # 'iframe': False,
     'summernote': {
         'width': '100%',
         'height': '480',

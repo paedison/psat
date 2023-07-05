@@ -65,3 +65,21 @@ $(document).on('click', '#accountLogout', function(event) {
         }
     });
 });
+
+
+/* Ajax for '.list-page' (List Pagination) */
+$(document).on('click', '.list-page', function(event) {
+    event.preventDefault();
+    let url = $(this).attr('href');
+    let page = $(this).data('value');
+    let target = $(this).closest('section').data('target');
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: { 'page': page },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $(target).replaceWith(data);
+        }
+    });
+});

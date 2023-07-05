@@ -2,7 +2,7 @@
 from django.urls import path
 
 # Custom App Import
-from common.views.dashboard_view import (
+from common.views.dashboard_views import (
     MainView, DashboardLikeView, DashboardRateView, DashboardAnswerView
 )
 

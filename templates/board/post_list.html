@@ -5,37 +5,7 @@
 
 {% block main %} {# [05] Main Content #}
 <!-- Main Content Start -->
-<section id="{{ info.target_id }}">
-    <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    <section class="container col-12 px-3 mb-4">
-        <div class="row d-flex align-items-center justify-content-between" role="textbox">
-            <h6 class="font-weight-bold text-primary m-0">
-                {{ info.icon|safe }} {{ info.title }}
-            </h6>
-        </div>
-    </section>
-    <article class="mx-0 main-article">
-        <!-- Content Row Start -->
-        <div class="row">
-            <section class="col-12 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        {% include 'board/post_list_content.html' %}
-                        <section class="d-flex align-items-center justify-content-center text-sm" data-target="#{{ info.target_id }}">
-                            {% include 'board/snippets/list_pagination.html' %}
-                        </section>
-                        {% if user.is_admin %}
-                            <div class="d-flex">
-                                <a class="btn btn-sm btn-outline-primary ml-auto" href="{{ info.create_url }}">글쓰기</a>
-                            </div>
-                        {%  endif %}
-                    </div>
-                </div>
-            </section>
-        </div>
-        <!-- Content Row End -->
-    </article>
-</section>
+    {% include 'board/post_list_content.html' %}
 <!-- Main Content End -->
 {% endblock %}
 

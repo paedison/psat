@@ -1,9 +1,0 @@
-{% load psat_filter %}
-
-<h6 class="text-primary font-weight-bold">{{ post.title }}</h6>
-<div class="small mb-3" role="textbox" aria-label="post-title">
-    <span class="mr-1">{{ post.user.username }}</span>
-    <span class="mr-1">조회 <span class="text-danger font-weight-bold">{{ post.hit }}</span></span>
-    <span class="mr-1">{{ post.created_at|date:'Y.m.d' }}({{ post.created_at|date:'w'|int2kor }}) {{ post.created_at|time:'H:i' }}</span>
-    <span class="mr-1">댓글 <span class="text-danger font-weight-bold">{{ post.get_comment_count }}</span></span>
-</div>
