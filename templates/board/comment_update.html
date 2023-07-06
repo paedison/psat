@@ -1,0 +1,15 @@
+{% load widget_tweaks %}
+
+<div id="commentUpdateForm{{ comment.id }}" class="p-2 bg-white">
+    <form method="post" action="{{ comment.get_comment_update_url }}" class="comment-update-form" data-comment-id="{{ comment.id }}">
+        {% csrf_token %}
+        <textarea name="content" cols="40" rows="3" placeholder="댓글을 입력해주세요" class="comment-form" required id="id_content">{{ comment.content }}</textarea>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-sm btn-outline-primary comment-update-button"
+                    data-url="{{ comment.get_comment_update_url }}"
+                    data-comment-id="{{ comment.id }}">
+                수정
+            </button>
+        </div>
+    </form>
+</div>

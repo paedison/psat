@@ -11,13 +11,7 @@ from django.views.generic import DetailView
 
 # Custom App Import
 from common.constants.icon import *
-from log.views import (
-    create_request_log,
-    create_problem_log,
-    create_like_log,
-    create_rate_log,
-    create_answer_log
-)
+from log.views import create_log
 from psat.models import Exam, Problem, Evaluation
 from psat.views.common_views import get_evaluation_info
 
@@ -62,14 +56,14 @@ class BaseDetailView(DetailView):
             'target_id': 'problemDetailContent',
             'icon': MENU_PROBLEM_ICON,
             'color': 'primary',
+            'problem_id': self.problem_id,
         }
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         if request.user.is_authenticated:
             self.update_open_status_in_evaluation_model()
-        create_request_log(self.request, self.info)
-        create_problem_log(self.request, self.problem_id)
+        create_log(self.request, self.info)
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
@@ -124,18 +118,15 @@ class LikeDetailView(BaseDetailView):
             'target_id': 'likeDetailContent',
             'icon': SOLID_HEART_ICON,
             'color': 'danger',
+            'problem_id': self.problem_id,
         }
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        obj = self.update_like_status_in_evaluation_model()
+        self.update_like_status_in_evaluation_model()
         context = self.get_context_data(**kwargs)
         html = render(request, icon_like_template, context).content.decode('utf-8')
-
-        extra = f"(Liked Times: {obj.liked_times}, Is Liked: {obj.is_liked})"
-        create_request_log(request, self.info, extra)
-        create_like_log(request, obj)
-
+        create_log(self.request, self.info)
         return HttpResponse(html)
 
     def get_context_data(self, **kwargs):
@@ -167,19 +158,16 @@ class RateDetailView(BaseDetailView):
             'target_id': 'rateDetailContent',
             'icon': SOLID_STAR_ICON,
             'color': 'warning',
+            'problem_id': self.problem_id,
         }
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         difficulty = self.request.POST.get('difficulty')
-        obj = self.update_rate_status_in_evaluation_model(difficulty)
+        self.update_rate_status_in_evaluation_model(difficulty)
         context = self.get_context_data(**kwargs)
         html = render(request, icon_rate_template, context).content.decode('utf-8')
-
-        extra = f"(Rated Times: {obj.rated_times}, Difficulty Rated: {obj.difficulty_rated})"
-        create_request_log(request, self.info, extra)
-        create_rate_log(request, obj)
-
+        create_log(self.request, self.info)
         return HttpResponse(html)
 
     def get_context_data(self, **kwargs):
@@ -211,30 +199,24 @@ class AnswerDetailView(BaseDetailView):
             'target_id': 'answerDetailContent',
             'icon': SOLID_CHECK_ICON,
             'color': 'success',
+            'problem_id': self.problem_id,
         }
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        answer = self.request.POST.get('answer')
+        answer = self.info['answer'] = self.request.POST.get('answer')
         if answer is None:
             message, html = '<div class="text-danger">정답을 선택해주세요.</div>', ''
-            extra = f"(Answer Trial Failed)"
-            create_request_log(request, self.info, extra)
         else:
             obj, message = self.update_answer_status_in_evaluation_model(int(answer))
             context = self.get_context_data(**kwargs)
             html = render(request, icon_answer_template, context).content.decode('utf-8')
-
-            extra = f"(Answered Times: {obj.answered_times}, Submitted Answer: {obj.submitted_answer}, Is Correct: {obj.is_correct})"
-            create_request_log(request, self.info, extra)
-            create_answer_log(request, obj)
-
-        response_data = {
+        create_log(self.request, self.info)
+        response = json.dumps({
             'message': message,
             'html': html,
-        }
-        json_data = json.dumps(response_data)
-        return HttpResponse(json_data, content_type='application/json')
+        })
+        return HttpResponse(response, content_type='application/json')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

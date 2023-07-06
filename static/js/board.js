@@ -1,11 +1,11 @@
 import { csrf_token } from './common.js'
 
-let deleteHeader = $('#deleteInstanceModalHeader');
-let deleteFooter = $('#deleteInstanceModalFooter');
+let deleteHeader = $('#instanceDeleteModalHeader');
+let deleteFooter = $('#instanceDeleteModalFooter');
 
 
-/* Delete Instance(Post, Comment) */
-$(document).on('click', '.delete-instance', function(){
+/* Instance(Post, Comment) Delete */
+$(document).on('click', '.instance-delete', function(){
     let text = $(this).data('text');
     let deleteUrl = $(this).attr('href');
     let redirectUrl = $(this).data('url');
@@ -14,7 +14,7 @@ $(document).on('click', '.delete-instance', function(){
     deleteFooter.data('url', redirectUrl);
 });
 
-$(document).on('click', '#deleteInstanceModalFooter', function(event) {
+$(document).on('click', '#instanceDeleteModalFooter', function(event) {
     event.preventDefault();
     let deleteUrl = $(this).attr('href');
     let redirectUrl = $(this).data('url');
@@ -30,28 +30,43 @@ $(document).on('click', '#deleteInstanceModalFooter', function(event) {
 });
 
 
-/* Update Comment */
-$(document).on('click', '.update-comment', function(event) {
+/* Load Comment Update Form */
+$(document).on('click', '.comment-update', function(event) {
     event.preventDefault();
     let updateUrl = $(this).attr('href');
     let commentId = $(this).data('commentId');
-    let target = $(`#comment${commentId}`);
+    let originalComment = $(`#comment${commentId}`)
     $.ajax({
         url: updateUrl,
         type: 'GET',
         dataType: 'json',
-        headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
-            // let modifiedHtml = data.html.replace('{{ original }}', data.original);
-            console.log(data.html);
-            if (target.is(':nth-last-child(2)')) {
-                target.next().replaceWith(data.html);
-                target.next().children('form').append('<input type="hidden" name="csrfmiddlewaretoken" value="' + data.csrf_token + '">');
+            if (originalComment.is(':nth-last-child(2)')) {
+                originalComment.next().replaceWith(data.html);
             } else {
-                target.after(data.html);
-                target.next().children('form').append('<input type="hidden" name="csrfmiddlewaretoken" value="' + data.csrf_token + '">');
+                originalComment.after(data.html);
             }
         }
     });
 });
 
+
+/* Comment Update */
+$(document).on('click', '.comment-update-button', function(event) {
+    event.preventDefault();
+    let updateUrl = $(this).data('url');
+    let commentId = $(this).data('commentId');
+    let content = $('#id_content').val();
+    let originalComment = $(`#comment${commentId}`)
+    let commentUpdateForm = $(`#commentUpdateForm${commentId}`);
+    $.ajax({
+        url: updateUrl,
+        type: 'POST',
+        data: { 'content': content },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            originalComment.replaceWith(data);
+            commentUpdateForm.remove();
+        }
+    });
+});

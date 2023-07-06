@@ -9,6 +9,7 @@ from django.views.generic import ListView
 # Custom App Import
 from common.constants.icon import *
 from common.constants.psat import *
+from log.views import create_log
 from psat.models import Exam, Problem
 from psat.views.common_views import get_evaluation_info
 
@@ -122,29 +123,21 @@ class BaseListView(ListView):
     content_template = 'psat/problem_list_content.html'
     context_object_name = 'problem'
     paginate_by = 10
+    sub = subject = sub_code = None
     info = {}
 
     def get(self, request, *args, **kwargs):
-        self.object_list = self.get_queryset()
+        super().get(request, *args, **kwargs)
         context = self.get_context_data()
-
-        from log.views import create_request_log
-        extra = f"({self.sub})"
-        create_request_log(self.request, self.info, extra)
-
-        # return self.render_to_response(context)
+        create_log(self.request, self.info)
         html = render(request, self.content_template, context)
         return html
 
     def post(self, request, *args, **kwargs):
-        page = self.kwargs['page'] = request.POST.get('page', '1')
+        self.kwargs['page'] = request.POST.get('page', '1')
         context = self.get_context_data(**kwargs)
         html = render(request, self.content_template, context).content.decode('utf-8')
-
-        from log.views import create_request_log
-        extra = f"({self.sub} p.{page})"
-        create_request_log(self.request, self.info, extra)
-
+        create_log(self.request, self.info)
         return HttpResponse(html)
 
     def update_context(self, context):
@@ -154,6 +147,7 @@ class BaseListView(ListView):
             obj = get_evaluation_info(self.request, obj)
         context['page_range'] = paginator.get_elided_page_range(page_obj.number, on_ends=1)
         context['info'] = self.info
+        context['info']['page'] = page_obj.number
 
 
 class ProblemListView(BaseListView):
@@ -179,7 +173,7 @@ class ProblemListView(BaseListView):
         self.year_list, self.exam_list, self.subject_list = self.get_year_exam_subject_list()
         pagination_url = reverse_lazy('psat:problem_list', args=[self.year, self.ex, self.sub])
 
-        self.info ={
+        self.info = {
             'category': 'problem',
             'type': 'problemList',
             'sub': self.sub,

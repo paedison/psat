@@ -56,8 +56,7 @@ class Comment(models.Model):
 
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="사용자 ID", db_column="user_id")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name="게시글", db_column="post_id",
-                             related_name="comment")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name="게시글", db_column="post_id", related_name="comment")
     content = models.TextField("내용")
     created_at = models.DateTimeField("작성일", auto_now_add=True)
     modified_at = models.DateTimeField("수정일", auto_now=True)

@@ -1,6 +1,5 @@
 {% load psat_filter %}
 
-<div class="comment-box">
     <div id="comment{{ comment.id }}" class="p-2">
         <div class="d-flex justify-content-between">
             <div>
@@ -9,12 +8,10 @@
             </div>
         {%  if comment.user == user %}
             <div>
-                <a class="text-gray-600 mr-2 update-comment" href="{{ comment.get_comment_update_url }}" data-url="{{ comment.post.get_absolute_url }}" data-comment-id="{{ comment.id }}" title="Update">{{ PEN_ICON|safe }}</a>
-                <a class="text-danger delete-instance" href="{{ comment.get_comment_delete_url }}" data-url="{{ comment.post.get_absolute_url }}" data-text="댓글을 삭제하시겠습니까?" data-bs-toggle="modal" data-bs-target="#deleteInstanceModal" title="Delete">{{ TRASH_ICON|safe }}</a>
+                <a class="text-gray-600 mr-2 comment-update" href="{{ comment.get_comment_update_url }}" data-url="{{ comment.post.get_absolute_url }}" data-comment-id="{{ comment.id }}" title="Update">{{ PEN_ICON|safe }}</a>
+                <a class="text-danger instance-delete" href="{{ comment.get_comment_delete_url }}" data-url="{{ comment.post.get_absolute_url }}" data-text="댓글을 삭제하시겠습니까?" data-bs-toggle="modal" data-bs-target="#instanceDeleteModal" title="Delete">{{ TRASH_ICON|safe }}</a>
             </div>
         {% endif %}
         </div>
         <div class="comment text-gray-900">{{ comment.content }}</div>
     </div>
-</div>
-<hr class="my-2">
