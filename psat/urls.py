@@ -15,24 +15,24 @@ urlpatterns = [
     # Like
     path('like/', MainLikeView.as_view(), name='like'),
     path('like/list/', LikeListView.as_view(), name='like_list'),
-    re_path(r'like/list/(?P<sub>언어|자료|상황|전체)/$', LikeListView.as_view(), name='like_list_sub'),
     path('like/list/<int:is_liked>liked/', LikeListView.as_view(), name='like_list_opt'),
+    re_path(r'like/list/(?P<sub>언어|자료|상황|전체)/$', LikeListView.as_view(), name='like_list_sub'),
     re_path(r'like/list/(?P<is_liked>[01])liked/(?P<sub>언어|자료|상황|전체)/$', LikeListView.as_view(), name='like_list_opt_sub'),
     path('like/detail/<int:problem_id>/', LikeDetailView.as_view(), name='like_detail'),
 
     # Rate
     path('rate/', MainRateView.as_view(), name='rate'),
     path('rate/list/', RateListView.as_view(), name='rate_list'),
-    re_path(r'rate/list/(?P<sub>언어|자료|상황|전체)/$', RateListView.as_view(), name='rate_list_sub'),
     path('rate/list/<int:star_count>star/', RateListView.as_view(), name='rate_list_opt'),
+    re_path(r'rate/list/(?P<sub>언어|자료|상황|전체)/$', RateListView.as_view(), name='rate_list_sub'),
     re_path(r'rate/list/(?P<star_count>[12345])star/(?P<sub>언어|자료|상황|전체)/$', RateListView.as_view(), name='rate_list_opt_sub'),
     path('rate/detail/<int:problem_id>/', RateDetailView.as_view(), name='rate_detail'),
 
     # Answer
     path('answer/', MainAnswerView.as_view(), name='answer'),
     path('answer/list/', AnswerListView.as_view(), name='answer_list'),
-    re_path(r'answer/list/(?P<sub>언어|자료|상황|전체)/$', AnswerListView.as_view(), name='answer_list_sub'),
     path('answer/list/<int:is_correct>correct/', AnswerListView.as_view(), name='answer_list_opt'),
+    re_path(r'answer/list/(?P<sub>언어|자료|상황|전체)/$', AnswerListView.as_view(), name='answer_list_sub'),
     re_path(r'answer/list/(?P<is_correct>[01])correct/(?P<sub>언어|자료|상황|전체)/$', AnswerListView.as_view(), name='answer_list_opt_sub'),
     path('answer/detail/<int:problem_id>/', AnswerDetailView.as_view(), name='answer_detail'),
     #
