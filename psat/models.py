@@ -140,13 +140,13 @@ class AddInfo:
 
 
 class UpdateInfo:
-    def update_open_status(self):
+    def update_open(self):
         opened_times = self.opened_times or 0
         self.opened_at = now
         self.opened_times = opened_times + 1
         self.save()
 
-    def update_like_status(self):
+    def update_like(self):
         liked_times = self.liked_times or 0
         is_liked = self.is_liked or False
         self.liked_at = now
@@ -154,14 +154,14 @@ class UpdateInfo:
         self.is_liked = not is_liked
         self.save()
 
-    def update_rate_status(self, difficulty):
+    def update_rate(self, difficulty):
         rated_times = self.rated_times or 0
         self.rated_at = now
         self.rated_times = rated_times + 1
         self.difficulty_rated = difficulty
         self.save()
 
-    def update_answer_status(self, answer):
+    def update_answer(self, answer):
         answered_times = self.answered_times or 0
         self.answered_at = now
         self.answered_times = answered_times + 1

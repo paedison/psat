@@ -60,7 +60,6 @@ $(document).on('click', '.like-button', function(event) {
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
             $(target).replaceWith(data);
-            console.log(data);
         }
     });
 });

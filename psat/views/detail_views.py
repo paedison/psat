@@ -1,268 +1,223 @@
 # Python Standard Function Import
 import json
-from datetime import datetime
 
+from django.db.models import Q
 # Django Core Import
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.utils.timezone import make_aware
 from django.views.generic import DetailView
 
 # Custom App Import
 from common.constants.icon import *
 from log.views import create_log
-from psat.models import Exam, Problem, Evaluation
-from psat.views.common_views import get_evaluation_info
-
-now = make_aware(datetime.now())
-exam = Exam.objects
-problem = Problem.objects
-evaluation = Evaluation.objects
-
-icon_like_template = 'psat/snippets/icon_like.html'
-icon_rate_template = 'psat/snippets/icon_rate.html'
-icon_answer_template = 'psat/snippets/icon_answer.html'
+from psat.models import Problem, Evaluation
+from psat.views.list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
 
 
-class BaseDetailView(DetailView):
+class DetailInfoMixIn:
+    """ Represent PSAT detail information mixin. """
+    kwargs: dict
+    category: str
+    icon_template_dict = {
+        'like': 'psat/snippets/icon_like.html',
+        'rate': 'psat/snippets/icon_rate.html',
+        'answer': 'psat/snippets/icon_answer.html',
+    }
+
+    @property
+    def problem_id(self) -> str:
+        """ Return problem ID. """
+        return self.kwargs.get('problem_id')
+
+    @property
+    def object(self) -> object:
+        """ Return detail view object. """
+        return Problem.objects.get(id=self.problem_id)
+
+    @property
+    def info(self) -> dict:
+        """ Return information dictionary of the detail. """
+        return {
+            'category': self.category,
+            'type': f'{self.category}Detail',
+            'title': self.object.full_title(),
+            'target_id': f'{self.category}DetailContent',
+            'icon': ICON_LIST[self.category],
+            'color': COLOR_LIST[self.category],
+            'problem_id': self.problem_id
+        }
+
+    @property
+    def icon_template(self):
+        """ Return icon template pathname. """
+        return self.icon_template_dict[self.category]
+
+
+class BaseDetailView(
+    DetailInfoMixIn,
+    EvaluationInfoMixIn,
+    QuerysetFieldMixIn,
+    DetailView,
+):
+    """ Represent PSAT base detail view. """
     model = Problem
     template_name = 'psat/problem_detail.html'
     context_object_name = 'problem'
     pk_url_kwarg = 'problem_id'
-    object = title = problem_id = None
-    info = {}
-    like_data = like_list = rate_data = rate_list = answer_data = answer_list = None
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-
-        self.problem_id = kwargs.get('problem_id')
-        self.object = problem.get(id=self.problem_id)
-
-        if self.request.user.is_authenticated:
-            self.like_data = problem.filter(evaluation__user=self.request.user, evaluation__is_liked=True)
-            self.rate_data = problem.filter(evaluation__user=self.request.user, evaluation__difficulty_rated__gte=1)
-            self.answer_data = problem.filter(evaluation__user=self.request.user, evaluation__is_correct__gte=0)
-            self.like_list = self.like_data.values_list('id', flat=True)
-            self.rate_list = self.rate_data.values_list('id', flat=True)
-            self.answer_list = self.answer_data.values_list('id', flat=True)
-
-        self.title = self.object.full_title()
-        self.info = {
-            'category': 'problem',
-            'type': 'problemDetail',
-            'title': self.title,
-            'target_id': 'problemDetailContent',
-            'icon': MENU_PROBLEM_ICON,
-            'color': 'primary',
-            'problem_id': self.problem_id,
-        }
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         if request.user.is_authenticated:
-            self.update_open_status_in_evaluation_model()
+            self.update_open_status()
         create_log(self.request, self.info)
         return self.render_to_response(context)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        self.object = get_evaluation_info(self.request, self.object)
-        prev_prob, next_prob = self.get_prev_next_prob()
-        context['problem'] = self.object
-        context['info'] = self.info
-        context['prev_prob'] = prev_prob
-        context['next_prob'] = next_prob
-        return context
-
-    def get_prev_next_prob(self, prob_data=None, prob_list=None):
-        page_list = list(prob_list)
-        try:
-            curr_index = page_list.index(self.problem_id)
-            last_index = len(page_list) - 1
-            prev_prob = prob_data.get(id=page_list[curr_index - 1]) if curr_index != 0 else ''
-            next_prob = prob_data.get(id=page_list[curr_index + 1]) if curr_index != last_index else ''
-        except ValueError:
-            prev_prob = next_prob = None
-        return prev_prob, next_prob
-
-    def update_open_status_in_evaluation_model(self):
-        user, problem_id = self.request.user, self.problem_id
-        obj, created = evaluation.get_or_create(user=user, problem_id=problem_id)
-        obj.update_open_status()
-        return obj
-
-
-class ProblemDetailView(BaseDetailView):
-    def get_prev_next_prob(self, **kwargs):
-        max_id = problem.order_by('-id')[0].id
-        prev_prob = problem.get(id=self.problem_id - 1) if self.problem_id != 1 else ''
-        next_prob = problem.get(id=self.problem_id + 1) if self.problem_id != max_id else ''
-        return prev_prob, next_prob
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['anchor_id'] = self.problem_id - self.object.number
-        return context
-
-
-class LikeDetailView(BaseDetailView):
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-
-        self.info = {
-            'category': 'like',
-            'type': 'likeDetail',
-            'title': self.title,
-            'target_id': 'likeDetailContent',
-            'icon': SOLID_HEART_ICON,
-            'color': 'danger',
-            'problem_id': self.problem_id,
-        }
-
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.update_like_status_in_evaluation_model()
-        context = self.get_context_data(**kwargs)
-        html = render(request, icon_like_template, context).content.decode('utf-8')
-        create_log(self.request, self.info)
-        return HttpResponse(html)
+        val = self.request.POST.get('difficulty') or self.request.POST.get('answer')
+        if self.category == 'answer':
+            return self.post_answer(request, val, **kwargs)
+        else:
+            return self.post_other(request, val, **kwargs)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        list_by_exam = list(self.like_data.values_list('exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
-        list_by_exam_organized = organize_list(list_by_exam, 'like')
-        context['list_data'] = list_by_exam_organized
-        context['like_data'] = self.like_data
-        return context
-
-    def update_like_status_in_evaluation_model(self):
-        user, problem_id = self.request.user, self.problem_id
-        obj, created = evaluation.get_or_create(user=user, problem_id=problem_id)
-        obj.update_like_status()
-        return obj
-
-    def get_prev_next_prob(self, **kwargs):
-        return super().get_prev_next_prob(self.like_data, self.like_list)
-
-
-class RateDetailView(BaseDetailView):
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-
-        self.info = {
-            'category': 'rate',
-            'type': 'rateDetail',
-            'title': self.title,
-            'target_id': 'rateDetailContent',
-            'icon': SOLID_STAR_ICON,
-            'color': 'warning',
-            'problem_id': self.problem_id,
-        }
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        difficulty = self.request.POST.get('difficulty')
-        self.update_rate_status_in_evaluation_model(difficulty)
-        context = self.get_context_data(**kwargs)
-        html = render(request, icon_rate_template, context).content.decode('utf-8')
-        create_log(self.request, self.info)
-        return HttpResponse(html)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['rate_data'] = self.rate_data
-        list_by_exam = list(self.rate_data.values_list('exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
-        list_by_exam_organized = organize_list(list_by_exam, 'rate')
-        context['list_data'] = list_by_exam_organized
-        return context
-
-    def update_rate_status_in_evaluation_model(self, difficulty):
-        user, problem_id = self.request.user, self.problem_id
-        obj, created = evaluation.get_or_create(user=user, problem_id=problem_id)
-        obj.update_rate_status(difficulty)
-        return obj
-
-    def get_prev_next_prob(self, **kwargs):
-        return super().get_prev_next_prob(self.rate_data, self.rate_list)
-
-
-class AnswerDetailView(BaseDetailView):
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-
-        self.info = {
-            'category': 'answer',
-            'type': 'answerDetail',
-            'title': self.title,
-            'target_id': 'answerDetailContent',
-            'icon': SOLID_CHECK_ICON,
-            'color': 'success',
-            'problem_id': self.problem_id,
-        }
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        answer = self.info['answer'] = self.request.POST.get('answer')
-        if answer is None:
+    def post_answer(self, request, val, **kwargs):
+        """ Handle POST request when category is answer. """
+        if val is None:
             message, html = '<div class="text-danger">정답을 선택해주세요.</div>', ''
         else:
-            obj, message = self.update_answer_status_in_evaluation_model(int(answer))
+            obj = self.update_evaluation_status(int(val))
+            is_correct = obj.submitted_answer == obj.correct_answer()
+            text = ['success', '정답'] if is_correct else ['danger', '오답']
+            message = f'<div class="text-{text[0]}">{text[1]}입니다.</div>'
             context = self.get_context_data(**kwargs)
-            html = render(request, icon_answer_template, context).content.decode('utf-8')
-        create_log(self.request, self.info)
+            html = render(request, self.icon_template, context).content.decode('utf-8')
         response = json.dumps({
             'message': message,
             'html': html,
         })
+        create_log(self.request, self.info)
         return HttpResponse(response, content_type='application/json')
+
+    def post_other(self, request, val, **kwargs):
+        """ Handle POST request when category is not answer. """
+        self.update_evaluation_status(val)
+        context = self.get_context_data(**kwargs)
+        html = render(request, self.icon_template, context).content.decode('utf-8')
+        create_log(self.request, self.info)
+        return HttpResponse(html)
+
+    def update_evaluation_status(self, val=None):
+        """ Update POST request when category is answer. """
+        obj, created = Evaluation.objects.get_or_create(
+            user=self.request.user, problem_id=self.problem_id)
+        if self.category == 'like':
+            obj.update_like()
+        elif self.category == 'rate':
+            obj.update_rate(val)
+        elif self.category == 'answer':
+            obj.update_answer(val)
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['answer_data'] = self.answer_data
-        list_by_exam = list(self.answer_data.values_list('exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
-        list_by_exam_organized = organize_list(list_by_exam, 'answer')
-        context['list_data'] = list_by_exam_organized
+        context['anchor_id'] = self.problem_id - int(self.object.number)
+        updated_object = self.get_evaluation_info(self.object)
+        context['problem'] = updated_object
+        self.update_context_data(context)
         return context
 
-    def update_answer_status_in_evaluation_model(self, answer):
+    def get_prev_next_prob(self, prob_data=None, prob_list=None):
+        """ Return previous and next problems. """
+        problem = Problem.objects
+        if self.category == 'problem':
+            last = problem.order_by('-id')[0].id
+            prev_prob = problem.get(id=self.problem_id - 1) if self.problem_id != 1 else ''
+            next_prob = problem.get(id=self.problem_id + 1) if self.problem_id != last else ''
+        else:
+            try:
+                page_list = list(prob_list)
+                q = page_list.index(self.problem_id)
+                last = len(page_list) - 1
+                prev_prob = prob_data.get(id=page_list[q - 1]) if q != 0 else ''
+                next_prob = prob_data.get(id=page_list[q + 1]) if q != last else ''
+            except ValueError:
+                prev_prob = next_prob = None
+        return prev_prob, next_prob
+
+    def update_open_status(self):
+        """ Update open status. """
         user, problem_id = self.request.user, self.problem_id
-        obj, created = evaluation.get_or_create(user=user, problem_id=problem_id)
-        obj.update_answer_status(answer)
+        obj, created = Evaluation.objects.get_or_create(user=user, problem_id=problem_id)
+        obj.update_open()
+        return obj
 
-        is_correct = obj.submitted_answer == obj.correct_answer()
-        text = ['success', '정답'] if is_correct else ['danger', '오답']
-        message = f'<div class="text-{text[0]}">{text[1]}입니다.</div>'
-        return obj, message
+    def update_context_data(self, context):
+        """ Update context data. """
+        prob_data, prob_list = self.get_prob_data_list()
+        prev_prob, next_prob = self.get_prev_next_prob(prob_data, prob_list)
 
-    def get_prev_next_prob(self, **kwargs):
-        return super().get_prev_next_prob(self.answer_data, self.answer_list)
+        list_by_exam = list(
+            prob_data.values_list(
+                'exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
+        list_by_exam_organized = self.organize_list(list_by_exam)
+        context['list_data'] = list_by_exam_organized
+
+        context['info'] = self.info
+        context['prev_prob'] = prev_prob
+        context['next_prob'] = next_prob
+
+    def get_prob_data_list(self):
+        """ Return problem data and list. """
+        field = self.queryset_field[0]
+        problem_filter = Q(evaluation__user=self.request.user)
+        if self.category != 'problem':
+            val = 1 if self.category == 'like' else 0
+            problem_filter &= Q(**{field: val})
+        prob_data = Problem.objects.filter(problem_filter)
+        prob_list = prob_data.values_list('id', flat=True)
+        return prob_data, prob_list
+
+    def organize_list(self, input_list):
+        """ Return organized list divided by 5 items. """
+        # Create a dictionary to store instances based on the first value
+        organized_dict = {}
+        for item in input_list:
+            key = item[0]
+            if key not in organized_dict:
+                organized_dict[key] = []
+            year, exam2, subject, number, problem_id = item[1:6]
+            number, problem_id = int(number), int(problem_id)
+            list_item = {
+                'exam_name': f"{year}년 '{exam2} {subject}'",
+                'problem_number': number,
+                'problem_id': problem_id,
+                'problem_url': reverse_lazy(f'psat:{self.category}_detail', args=[problem_id])
+            }
+            organized_dict[key].append(list_item)
+
+        # Create a list to store the final organized result
+        organized_list = []
+        for key, items in organized_dict.items():
+            num_empty_instances = 5 - (len(items) % 5)
+            if num_empty_instances < 5:
+                items.extend([None] * num_empty_instances)
+            for i in range(0, len(items), 5):
+                row = items[i:i + 5]
+                organized_list.extend(row)
+        return organized_list
 
 
-def organize_list(input_list, detail_type):
-    # Create a dictionary to store instances based on the first value
-    organized_dict = {}
-    for item in input_list:
-        key = item[0]
-        if key not in organized_dict:
-            organized_dict[key] = []
-        list_item = {
-            'exam_name': f"{item[1]}년 '{item[2]} {item[3]}'",
-            'problem_number': int(item[4]),
-            'problem_id': int(item[5]),
-            'problem_url': reverse_lazy(f'psat:{detail_type}_detail', args=[int(item[5])])
-        }
-        organized_dict[key].append(list_item)
+class ProblemDetailView(BaseDetailView):
+    category = 'problem'
 
-    # Create a list to store the final organized result
-    organized_list = []
-    for key, items in organized_dict.items():
-        num_empty_instances = 5 - (len(items) % 5)
-        if num_empty_instances < 5:
-            items.extend([None] * num_empty_instances)
-        for i in range(0, len(items), 5):
-            row = items[i:i+5]
-            organized_list.extend(row)
 
-    return organized_list
+class LikeDetailView(BaseDetailView):
+    category = 'like'
+
+
+class RateDetailView(BaseDetailView):
+    category = 'rate'
+
+
+class AnswerDetailView(BaseDetailView):
+    category = 'answer'
