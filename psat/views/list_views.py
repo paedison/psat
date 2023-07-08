@@ -7,10 +7,10 @@ from django.views import View
 from django.views.generic import ListView
 
 # Custom App Import
+from ..models import Problem, Evaluation
 from common.constants.icon import *
 from common.constants.psat import *
 from log.views import create_log
-from psat.models import Problem, Evaluation
 
 
 def index():
@@ -163,9 +163,9 @@ class QuerysetFieldMixIn:
     """ Represent queryset field. """
     field_dict = {
         'problem': ['', ''],
-        'like': ['evaluation__is_liked__gte', 'evaluation__is_liked'],
-        'rate': ['evaluation__difficulty_rated__gte', 'evaluation__difficulty_rated'],
-        'answer': ['evaluation__is_correct__gte', 'evaluation__is_correct'],
+        'like': ['evaluation__is_liked__gte', 'evaluation__is_liked', '-evaluation__liked_at'],
+        'rate': ['evaluation__difficulty_rated__gte', 'evaluation__difficulty_rated', '-evaluation__rated_at'],
+        'answer': ['evaluation__is_correct__gte', 'evaluation__is_correct', '-evaluation__rated_at'],
     }
 
     @property
@@ -189,23 +189,23 @@ class BaseListView(
     category: str
 
     @property
-    def object_list(self):
+    def object_list(self) -> object:
         return self.get_queryset()
 
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
+    def get(self, request, *args, **kwargs) -> render:
+        context = self.get_context_data(**kwargs)
         html = render(request, self.content_template, context)
-        create_log(self.request, self.info)
+        create_log(self.request, self.info, page_obj=context['page_obj'])
         return html
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs) -> HttpResponse:
         self.kwargs['page'] = request.POST.get('page', '1')
         context = self.get_context_data(**kwargs)
         html = render(request, self.content_template, context).content.decode('utf-8')
-        create_log(self.request, self.info)
+        create_log(self.request, self.info, page_obj=context['page_obj'])
         return HttpResponse(html)
 
-    def get_queryset(self):
+    def get_queryset(self) -> object:
         field = self.queryset_field
         opt = self.option[self.category]
         year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
@@ -226,12 +226,11 @@ class BaseListView(
             problem_filter &= Q(**{lookup_expr: value})
         return Problem.objects.filter(problem_filter)
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, *, object_list=None, **kwargs) -> dict:
         """Get the context for this view."""
         queryset = self.object_list
         page_size = self.get_paginate_by(queryset)
         paginator, page_obj, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
-        self.info['page'] = page_obj.number
         for obj in page_obj:
             self.get_evaluation_info(obj)
         return {
@@ -259,7 +258,7 @@ class AnswerListView(BaseListView):
     category = 'answer'
 
 
-class MainView(ListInfoMixIn, View):
+class ListMainView(ListInfoMixIn, View):
     """ Represent PSAT list main view. """
     template_name = 'psat/problem_list.html'
     main_list_view = None
@@ -273,7 +272,7 @@ class MainView(ListInfoMixIn, View):
         return main_title_dict[self.category]
 
     @property
-    def info(self):
+    def info(self) -> dict:
         """ Return information dictionary of the main list. """
         return {
             'category': self.category,
@@ -284,38 +283,38 @@ class MainView(ListInfoMixIn, View):
             'color': COLOR_LIST[self.category],
         }
 
-    def get(self, request):
+    def get(self, request) -> render:
         list_view = self.main_list_view.as_view()
-        subject_all = list_view(request).content.decode('utf-8')
-        subject_eoneo = list_view(request, sub='언어').content.decode('utf-8')
-        subject_jaryo = list_view(request, sub='자료').content.decode('utf-8')
-        subject_sanghwang = list_view(request, sub='상황').content.decode('utf-8')
+        all_ = list_view(request).content.decode('utf-8')
+        eoneo = list_view(request, sub='언어').content.decode('utf-8')
+        jaryo = list_view(request, sub='자료').content.decode('utf-8')
+        sanghwang = list_view(request, sub='상황').content.decode('utf-8')
         context = {
             'info': self.info,
             'total': TOTAL,
-            'subject_all': subject_all,
-            'subject_eoneo': subject_eoneo,
-            'subject_jaryo': subject_jaryo,
-            'subject_sanghwang': subject_sanghwang,
+            'all': all_,
+            'eoneo': eoneo,
+            'jaryo': jaryo,
+            'sanghwang': sanghwang,
         }
         return render(request, self.template_name, context)
 
 
-class MainProblemView(MainView):
+class ProblemListMainView(ListMainView):
     main_list_view = ProblemListView
     category = 'problem'
 
 
-class MainLikeView(MainView):
+class LikeListMainView(ListMainView):
     main_list_view = LikeListView
     category = 'like'
 
 
-class MainRateView(MainView):
+class RateListMainView(ListMainView):
     main_list_view = RateListView
     category = 'rate'
 
 
-class MainAnswerView(MainView):
+class AnswerListMainView(ListMainView):
     main_list_view = AnswerListView
     category = 'answer'

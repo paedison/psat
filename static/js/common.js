@@ -83,3 +83,19 @@ $(document).on('click', '.list-page', function(event) {
         }
     });
 });
+
+
+/* Ajax for '.list-filter' (Like / Rate / Answer List Filter) */
+$(document).on('click', '.list-filter', function(event) {
+    event.preventDefault();
+    let url = $(this).attr('href');
+    let target = $(this).closest('section').data('target');
+    $.ajax({
+        url: url,
+        type: 'POST',
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $(target).replaceWith(data);
+        }
+    });
+});

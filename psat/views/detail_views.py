@@ -9,10 +9,10 @@ from django.urls import reverse_lazy
 from django.views.generic import DetailView
 
 # Custom App Import
+from ..models import Problem, Evaluation
+from .list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
 from common.constants.icon import *
 from log.views import create_log
-from psat.models import Problem, Evaluation
-from psat.views.list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
 
 
 class DetailInfoMixIn:
@@ -49,7 +49,7 @@ class DetailInfoMixIn:
         }
 
     @property
-    def icon_template(self):
+    def icon_template(self) -> str:
         """ Return icon template pathname. """
         return self.icon_template_dict[self.category]
 
@@ -66,21 +66,21 @@ class BaseDetailView(
     context_object_name = 'problem'
     pk_url_kwarg = 'problem_id'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs) -> render:
         context = self.get_context_data(**kwargs)
         if request.user.is_authenticated:
             self.update_open_status()
         create_log(self.request, self.info)
         return self.render_to_response(context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs) -> HttpResponse:
         val = self.request.POST.get('difficulty') or self.request.POST.get('answer')
         if self.category == 'answer':
             return self.post_answer(request, val, **kwargs)
         else:
             return self.post_other(request, val, **kwargs)
 
-    def post_answer(self, request, val, **kwargs):
+    def post_answer(self, request, val, **kwargs) -> HttpResponse:
         """ Handle POST request when category is answer. """
         if val is None:
             message, html = '<div class="text-danger">정답을 선택해주세요.</div>', ''
@@ -98,7 +98,7 @@ class BaseDetailView(
         create_log(self.request, self.info)
         return HttpResponse(response, content_type='application/json')
 
-    def post_other(self, request, val, **kwargs):
+    def post_other(self, request, val, **kwargs) -> HttpResponse:
         """ Handle POST request when category is not answer. """
         self.update_evaluation_status(val)
         context = self.get_context_data(**kwargs)
@@ -106,7 +106,7 @@ class BaseDetailView(
         create_log(self.request, self.info)
         return HttpResponse(html)
 
-    def update_evaluation_status(self, val=None):
+    def update_evaluation_status(self, val=None) -> object:
         """ Update POST request when category is answer. """
         obj, created = Evaluation.objects.get_or_create(
             user=self.request.user, problem_id=self.problem_id)
@@ -118,7 +118,7 @@ class BaseDetailView(
             obj.update_answer(val)
         return obj
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         context['anchor_id'] = self.problem_id - int(self.object.number)
         updated_object = self.get_evaluation_info(self.object)
@@ -126,7 +126,7 @@ class BaseDetailView(
         self.update_context_data(context)
         return context
 
-    def get_prev_next_prob(self, prob_data=None, prob_list=None):
+    def get_prev_next_prob(self, prob_data=None, prob_list=None) -> [object, object]:
         """ Return previous and next problems. """
         problem = Problem.objects
         if self.category == 'problem':
@@ -144,14 +144,14 @@ class BaseDetailView(
                 prev_prob = next_prob = None
         return prev_prob, next_prob
 
-    def update_open_status(self):
+    def update_open_status(self) -> object:
         """ Update open status. """
         user, problem_id = self.request.user, self.problem_id
         obj, created = Evaluation.objects.get_or_create(user=user, problem_id=problem_id)
         obj.update_open()
         return obj
 
-    def update_context_data(self, context):
+    def update_context_data(self, context) -> None:
         """ Update context data. """
         prob_data, prob_list = self.get_prob_data_list()
         prev_prob, next_prob = self.get_prev_next_prob(prob_data, prob_list)
@@ -166,7 +166,7 @@ class BaseDetailView(
         context['prev_prob'] = prev_prob
         context['next_prob'] = next_prob
 
-    def get_prob_data_list(self):
+    def get_prob_data_list(self) -> [object, object]:
         """ Return problem data and list. """
         field = self.queryset_field[0]
         problem_filter = Q(evaluation__user=self.request.user)
@@ -177,7 +177,7 @@ class BaseDetailView(
         prob_list = prob_data.values_list('id', flat=True)
         return prob_data, prob_list
 
-    def organize_list(self, input_list):
+    def organize_list(self, input_list) -> list:
         """ Return organized list divided by 5 items. """
         # Create a dictionary to store instances based on the first value
         organized_dict = {}

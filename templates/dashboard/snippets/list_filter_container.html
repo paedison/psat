@@ -3,11 +3,11 @@
 
 <!-- List Filter Start -->
 <div class="input-group dropdown" role="option">
-    {% if info.type == 'dashboardLike' %}
+    {% if info.type == 'likeDashboard' %}
         {% include 'dashboard/snippets/list_filter_for_like.html' %}
-    {% elif info.type == 'dashboardRate' %}
+    {% elif info.type == 'rateDashboard' %}
         {% include 'dashboard/snippets/list_filter_for_rate.html' %}
-    {% elif info.type == 'dashboardAnswer' %}
+    {% elif info.type == 'answerDashboard' %}
         {% include 'dashboard/snippets/list_filter_for_answer.html' %}
     {% endif %}
 </div>

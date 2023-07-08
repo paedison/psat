@@ -1,7 +1,7 @@
 {% load static %}
 {% load psat_filter %}
 
-{% if info.type == 'dashboardLike' %}
+{% if info.type == 'likeDashboard' %}
     <tr class="table-warning align-middle text-center text-nowrap">
         <td class="px-1" colspan="7">
             <span role="textbox" aria-label="date" class="text-primary">
@@ -9,7 +9,7 @@
             </span>
         </td>
     </tr>
-{% elif info.type == 'dashboardRate' %}
+{% elif info.type == 'rateDashboard' %}
     <tr class="table-warning align-middle text-center text-nowrap">
         <td class="px-1" colspan="7">
             <span role="textbox" aria-label="date" class="text-primary">
@@ -17,7 +17,7 @@
             </span>
         </td>
     </tr>
-{% elif info.type == 'dashboardAnswer' %}
+{% elif info.type == 'answerDashboard' %}
     <tr class="table-warning align-middle text-center text-nowrap">
         <td class="px-1" colspan="7">
             <span role="textbox" aria-label="date" class="text-primary">

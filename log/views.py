@@ -40,13 +40,16 @@ def create_request_log(request, info=None, extra=''):
     return HttpResponse(json_data, content_type='application/json')
 
 
-def create_log(request, info, extra=''):
+def create_log(request, info, page_obj=None, extra=''):
     user_id = request.user.id
     session_key = request.COOKIES.get('sessionid')
     log_url = urllib.parse.unquote(request.get_full_path())
     method = request.method
 
-    log_for_list = ['problemList', 'likeList', 'rateList', 'answerList', 'postList']
+    log_for_list = [
+        'problemList', 'likeList', 'rateList', 'answerList', 'postList',
+        'likeDashboard', 'rateDashboard', 'answerDashboard',
+    ]
     log_for_detail = ['problemDetail', 'likeDetail', 'rateDetail', 'answerDetail', 'postDetail']
     log_for_board = ['postCreate', 'postUpdate', 'commentCreate', 'commentUpdate']
     log_for_delete = ['postDelete', 'commentDelete']
@@ -54,7 +57,7 @@ def create_log(request, info, extra=''):
     log_type = info.get('type')
     title = info.get('title')
     sub = info.get('sub', '')
-    page = info.get('page', '1')
+    page = page_obj.number if page_obj else 1
     answer = info.get('answer', '')
     problem_id = info.get('problem_id', '')
     post_id = info.get('post_id', '')

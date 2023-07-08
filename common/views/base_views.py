@@ -55,21 +55,3 @@ class ProfileView(ListView):
             'info': self.info,
         }
         return context
-
-    # def get(self, request):
-    #     dashboard_like_view = DashboardLikeView.as_view()
-    #     dashboard_rate_view = DashboardRateView.as_view()
-    #     dashboard_answer_view = DashboardAnswerView.as_view()
-    #
-    #     dashboard_like = dashboard_like_view(self.request).content.decode('utf-8')
-    #     dashboard_rate = dashboard_rate_view(self.request).content.decode('utf-8')
-    #     dashboard_answer = dashboard_answer_view(self.request).content.decode('utf-8')
-    #
-    #     context = {
-    #         'info': self.info,
-    #         'dashboard_like': dashboard_like,
-    #         'dashboard_rate': dashboard_rate,
-    #         'dashboard_answer': dashboard_answer,
-    #     }
-    #
-    #     return render(request, 'dashboard/dashboard_main.html', context)

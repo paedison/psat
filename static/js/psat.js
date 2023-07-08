@@ -33,22 +33,6 @@ $(document).on('click', '#problemChoice input[name="difficulty"]', function(even
 });
 
 
-/* Ajax for '.list-filter' (Like / Rate / Answer List Filter) */
-$(document).on('click', '.list-filter', function(event) {
-    event.preventDefault();
-    let url = $(this).attr('href');
-    let target = $(this).closest('section').data('target');
-    $.ajax({
-        url: url,
-        type: 'POST',
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $(target).replaceWith(data);
-        }
-    });
-});
-
-
 /* Ajax for '.like-button' (Like Button) */
 $(document).on('click', '.like-button', function(event) {
     event.preventDefault();
