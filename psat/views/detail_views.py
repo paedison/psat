@@ -26,12 +26,12 @@ class DetailInfoMixIn:
     }
 
     @property
-    def problem_id(self) -> str:
+    def problem_id(self) -> int:
         """ Return problem ID. """
-        return self.kwargs.get('problem_id')
+        return int(self.kwargs.get('problem_id'))
 
     @property
-    def object(self) -> object:
+    def object(self) -> Problem:
         """ Return detail view object. """
         return Problem.objects.get(id=self.problem_id)
 
@@ -106,7 +106,7 @@ class BaseDetailView(
         create_log(self.request, self.info)
         return HttpResponse(html)
 
-    def update_evaluation_status(self, val=None) -> object:
+    def update_evaluation_status(self, val=None) -> Evaluation:
         """ Update POST request when category is answer. """
         obj, created = Evaluation.objects.get_or_create(
             user=self.request.user, problem_id=self.problem_id)

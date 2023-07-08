@@ -1,4 +1,5 @@
 # Django Core Import
+from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -61,7 +62,8 @@ class ListInfoMixIn:
     @property
     def title(self) -> str:
         """ Return title of the list. """
-        year, ex, exam2, sub, subject = self.url['year'], self.url['ex'], self.url['exam2'], self.url['sub'], self.url['subject']
+        year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
+        exam2, subject = self.url['exam2'], self.url['subject']
         title = self.title_dict[self.category]
         title_parts = []
         if year != '전체':
@@ -114,6 +116,8 @@ class ListInfoMixIn:
 
 class EvaluationInfoMixIn:
     """ Represent Evaluation model information mixin. """
+    request: WSGIRequest
+
     def get_evaluation_info(self, obj) -> object:
         """ Get Evaluation information. """
         user = self.request.user
@@ -161,6 +165,7 @@ class EvaluationInfoMixIn:
 
 class QuerysetFieldMixIn:
     """ Represent queryset field. """
+    category: str
     field_dict = {
         'problem': ['', ''],
         'like': ['evaluation__is_liked__gte', 'evaluation__is_liked', '-evaluation__liked_at'],
@@ -262,7 +267,6 @@ class ListMainView(ListInfoMixIn, View):
     """ Represent PSAT list main view. """
     template_name = 'psat/problem_list.html'
     main_list_view = None
-    category: str
 
     @property
     def title(self) -> str:

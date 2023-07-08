@@ -1,9 +1,7 @@
 # Django Core Import
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, JsonResponse
-from django.middleware.csrf import get_token
 from django.shortcuts import render, redirect
-from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 
@@ -31,8 +29,81 @@ COMMENT_UPDATE_TEMPLATE = 'board/comment_update.html'
 COMMENT_CONTENT_TEMPLATE = 'board/comment_content.html'
 
 
+class InfoMixIn:
+    kwargs: dict
+    app_name: str
+    view_type: str
+    template_name_dict = {
+        'postList': 'board/post_list.html',
+        'postListContent': 'board/post_list_content.html',
+        'postCreate': 'board/post_create.html',
+        'postDetail': 'board/post_detail.html',
+        'postUpdate': 'board/post_create.html',
+        'postDelete': '',
+        'commentCreate': 'board/comment_create.html',
+        'commentDelete': '',
+        'commentUpdate': 'board/comment_update.html',
+        'commentDetail': 'board/comment_content.html',
+    }
+    # view_type: postList, postCreate, postDetail, postUpdate, postDelete,
+    # commentCreate, commentDelete, commentUpdate, commentDetail
+
+    @property
+    def template_name(self):
+        return self.template_name_dict[self.view_type]
+
+    @property
+    def content_template_name(self):
+        return self.template_name_dict['postListContent'] if self.view_type == 'postList' else ''
+
+    @property
+    def post_id(self) -> int:
+        return self.kwargs.get('post_id')
+
+    @property
+    def comment_id(self) -> int:
+        return self.kwargs.get('comment_id')
+
+    @property
+    def title(self) -> str:
+        return self.app_name.capitalize()
+
+    @property
+    def list_url(self) -> reverse_lazy:
+        return reverse_lazy(f'{self.app_name}:list')
+
+    @property
+    def base_icon(self) -> str:
+        return ICON_LIST[self.app_name]
+
+    @property
+    def base_color(self) -> str:
+        return COLOR_LIST[self.app_name]
+
+    @property
+    def info(self) -> dict:
+        return {
+            'category': self.app_name,
+            'type': self.view_type,
+            'title': self.title,
+            'pagination_url': self.list_url,
+            'target_id': f'{self.view_type}Content{self.post_id}_{self.comment_id}',
+            'icon': self.base_icon,
+            'color': self.base_color,
+            'post_id': self.post_id,
+            'comment_id': self.comment_id,
+        }
+
+    @property
+    def success_url(self):
+        if self.view_type in ['postUpdate', 'commentCreate', 'commentDelete']:
+            return reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])
+        if self.view_type == 'commentUpdate':
+            return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.comment_id])
+
+
 class BaseView:
-    info = {}
+    info: dict
     object = None
 
     def update_context(self, context, **kwargs):
@@ -151,10 +222,10 @@ class PostDetailView(BaseView, DetailView):
         context = self.update_context(context, **kwargs)
 
         id_list = list(self.model.objects.values_list('id', flat=True))
-        curr_index = id_list.index(self.object.id)
-        last_index = len(id_list) - 1
-        prev_post = self.model.objects.get(id=id_list[curr_index + 1]) if curr_index != last_index else ''
-        next_post = self.model.objects.get(id=id_list[curr_index - 1]) if curr_index != 0 else ''
+        q = id_list.index(self.object.id)
+        last = len(id_list) - 1
+        prev_post = self.model.objects.get(id=id_list[q + 1]) if q != last else ''
+        next_post = self.model.objects.get(id=id_list[q - 1]) if q != 0 else ''
 
         context['prev_post'] = prev_post
         context['next_post'] = next_post
