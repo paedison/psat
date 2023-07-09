@@ -114,27 +114,57 @@ class CreateLog:
     board_dict = ['postCreate', 'postUpdate', 'commentCreate', 'commentUpdate']
     delete_dict = ['postDelete', 'commentDelete']
 
-    def log_info(self):
-        method = self.request.method
-        log_type = self.info.get('type')
-        title = self.info.get('title')
-        log_content = f'{log_type}({method}) - {title}'
-        log_info = {
-            'user_id': self.request.user.id,
-            'session_key': self.request.COOKIES.get('sessionid'),
-            'log_url': urllib.parse.unquote(self.request.get_full_path()),
-            'type': log_type,
-            'method': method,
-            'title': self.info.get('title'),
-            'sub': self.info.get('sub', ''),
-            'page': self.page_obj.number if self.page_obj else 1,
-            'answer': self.info.get('answer', ''),
-            'problem_id': self.info.get('problem_id', ''),
-            'post_id': self.info.get('post_id', ''),
-            'comment_id': self.info.get('comment_id', ''),
-            'log_content': log_content,
-        }
-        return log_info
+    @property
+    def user_id(self):
+        return self.request.user.id
+
+    @property
+    def session_key(self):
+        return self.request.COOKIES.get('sessionid')
+
+    @property
+    def log_url(self):
+        return urllib.parse.unquote(self.request.get_full_path())
+
+    @property
+    def method(self):
+        return self.request.method
+
+    @property
+    def log_type(self):
+        return self.info.get('type')
+
+    @property
+    def title(self):
+        return self.info.get('title')
+
+    @property
+    def log_content(self):
+        return f'{self.log_type}({self.method}) - {self.title}'
+
+    @property
+    def sub(self):
+        return self.info.get('sub', '')
+
+    @property
+    def page(self):
+        return self.page_obj.number if self.page_obj else 1
+
+    @property
+    def answer(self):
+        return self.info.get('answer', '')
+
+    @property
+    def problem_id(self):
+        return self.info.get('problem_id', '')
+
+    @property
+    def post_id(self):
+        return self.info.get('post_id', '')
+
+    @property
+    def comment_id(self):
+        return self.info.get('comment_id', '')
 
     # if log_type in list_dict:
     #     log_content += f'({sub} p.{page})'
