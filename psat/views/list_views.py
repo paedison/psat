@@ -1,4 +1,5 @@
 # Django Core Import
+
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.http import HttpResponse
@@ -8,17 +9,17 @@ from django.views import View
 from django.views.generic import ListView
 
 # Custom App Import
-from ..models import Problem, Evaluation
 from common.constants.icon import *
 from common.constants.psat import *
-from log.views import create_log
+from log.views import CreateLogMixIn
+from ..models import Problem, Evaluation
 
 
-def index():
+def index(request):
     return redirect('psat:base')
 
 
-class ListInfoMixIn:
+class PsatListInfoMixIn:
     """ Represent PSAT list information mixin. """
     kwargs: dict
     category: str
@@ -180,9 +181,10 @@ class QuerysetFieldMixIn:
 
 
 class BaseListView(
-    ListInfoMixIn,
+    PsatListInfoMixIn,
     EvaluationInfoMixIn,
     QuerysetFieldMixIn,
+    CreateLogMixIn,
     ListView
 ):
     """ Represent PSAT base list view. """
@@ -200,14 +202,14 @@ class BaseListView(
     def get(self, request, *args, **kwargs) -> render:
         context = self.get_context_data(**kwargs)
         html = render(request, self.content_template, context)
-        create_log(self.request, self.info, page_obj=context['page_obj'])
+        self.create_log_for_list(page_obj=context['page_obj'])
         return html
 
     def post(self, request, *args, **kwargs) -> HttpResponse:
         self.kwargs['page'] = request.POST.get('page', '1')
         context = self.get_context_data(**kwargs)
         html = render(request, self.content_template, context).content.decode('utf-8')
-        create_log(self.request, self.info, page_obj=context['page_obj'])
+        self.create_log_for_list(page_obj=context['page_obj'])
         return HttpResponse(html)
 
     def get_queryset(self) -> object:
@@ -263,17 +265,17 @@ class AnswerListView(BaseListView):
     category = 'answer'
 
 
-class ListMainView(ListInfoMixIn, View):
+class ListMainView(PsatListInfoMixIn, View):
     """ Represent PSAT list main view. """
     template_name = 'psat/problem_list.html'
     main_list_view = None
 
     @property
-    def title(self) -> str:
-        """ Return title of the list. """
-        main_title_dict = self.title_dict.copy()
-        main_title_dict['problem'] = 'PSAT 기출문제'
-        return main_title_dict[self.category]
+    def menu(self) -> str:
+        """ Return menu name of the list. """
+        menu_dict = self.title_dict.copy()
+        menu_dict['problem'] = 'PSAT 기출문제'
+        return menu_dict[self.category]
 
     @property
     def info(self) -> dict:
@@ -281,7 +283,7 @@ class ListMainView(ListInfoMixIn, View):
         return {
             'category': self.category,
             'type': f'{self.category}List',
-            'title': self.title,
+            'menu': self.menu,
             'target_id': f'{self.category}List',
             'icon': ICON_LIST[self.category],
             'color': COLOR_LIST[self.category],

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from log.models import AccountLog, RequestLog, ProblemLog, LikeLog, RateLog, AnswerLog
+from .models import AccountLog, RequestLog, ProblemLog, LikeLog, RateLog, AnswerLog
 
 
 class GeneralLogAdmin(admin.ModelAdmin):
@@ -9,22 +9,22 @@ class GeneralLogAdmin(admin.ModelAdmin):
 
 
 class ProblemLogAdmin(admin.ModelAdmin):
-    list_display = ('id', 'timestamp', 'user', 'session_key', 'problem')
+    list_display = ('id', 'timestamp', 'evaluation', 'user_id', 'session_key', 'problem_id')
     list_per_page = 20
 
 
 class LikeLogAdmin(admin.ModelAdmin):
-    list_display = ('id', 'timestamp', 'user', 'problem', 'is_liked')
+    list_display = ('id', 'timestamp', 'evaluation', 'user_id', 'problem_id', 'is_liked')
     list_per_page = 20
 
 
 class RateLogAdmin(admin.ModelAdmin):
-    list_display = ('id', 'timestamp', 'user', 'problem', 'difficulty_rated')
+    list_display = ('id', 'timestamp', 'evaluation', 'user_id', 'problem_id', 'difficulty_rated')
     list_per_page = 20
 
 
 class AnswerLogAdmin(admin.ModelAdmin):
-    list_display = ('id', 'timestamp', 'user', 'problem', 'submitted_answer', 'is_correct')
+    list_display = ('id', 'timestamp', 'evaluation', 'user_id', 'problem_id', 'submitted_answer', 'is_correct')
     list_per_page = 20
 
 

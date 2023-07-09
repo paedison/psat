@@ -1,21 +1,21 @@
 # Python Standard Function Import
 import json
 
-from django.db.models import Q
 # Django Core Import
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView
 
 # Custom App Import
-from ..models import Problem, Evaluation
-from .list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
 from common.constants.icon import *
-from log.views import create_log
+from log.views import CreateLogMixIn
+from .list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
+from ..models import Problem, Evaluation
 
 
-class DetailInfoMixIn:
+class PsatDetailInfoMixIn:
     """ Represent PSAT detail information mixin. """
     kwargs: dict
     category: str
@@ -55,9 +55,10 @@ class DetailInfoMixIn:
 
 
 class BaseDetailView(
-    DetailInfoMixIn,
+    PsatDetailInfoMixIn,
     EvaluationInfoMixIn,
     QuerysetFieldMixIn,
+    CreateLogMixIn,
     DetailView,
 ):
     """ Represent PSAT base detail view. """
@@ -70,7 +71,7 @@ class BaseDetailView(
         context = self.get_context_data(**kwargs)
         if request.user.is_authenticated:
             self.update_open_status()
-        create_log(self.request, self.info)
+        self.create_log_for_psat_detail()
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs) -> HttpResponse:
@@ -80,12 +81,12 @@ class BaseDetailView(
         else:
             return self.post_other(request, val, **kwargs)
 
-    def post_answer(self, request, val, **kwargs) -> HttpResponse:
+    def post_answer(self, request, answer, **kwargs) -> HttpResponse:
         """ Handle POST request when category is answer. """
-        if val is None:
+        if answer is None:
             message, html = '<div class="text-danger">정답을 선택해주세요.</div>', ''
         else:
-            obj = self.update_evaluation_status(int(val))
+            obj = self.update_evaluation_status(int(answer))
             is_correct = obj.submitted_answer == obj.correct_answer()
             text = ['success', '정답'] if is_correct else ['danger', '오답']
             message = f'<div class="text-{text[0]}">{text[1]}입니다.</div>'
@@ -95,7 +96,8 @@ class BaseDetailView(
             'message': message,
             'html': html,
         })
-        create_log(self.request, self.info)
+        # create_log(self.request, self.info)
+        self.create_log_for_psat_post_answer(answer)
         return HttpResponse(response, content_type='application/json')
 
     def post_other(self, request, val, **kwargs) -> HttpResponse:
@@ -103,7 +105,8 @@ class BaseDetailView(
         self.update_evaluation_status(val)
         context = self.get_context_data(**kwargs)
         html = render(request, self.icon_template, context).content.decode('utf-8')
-        create_log(self.request, self.info)
+        # create_log(self.request, self.info)
+        self.create_log_for_psat_post_other()
         return HttpResponse(html)
 
     def update_evaluation_status(self, val=None) -> Evaluation:
@@ -126,42 +129,17 @@ class BaseDetailView(
         self.update_context_data(context)
         return context
 
-    def get_prev_next_prob(self, prob_data=None, prob_list=None) -> [object, object]:
-        """ Return previous and next problems. """
-        problem = Problem.objects
-        if self.category == 'problem':
-            last = problem.order_by('-id')[0].id
-            prev_prob = problem.get(id=self.problem_id - 1) if self.problem_id != 1 else ''
-            next_prob = problem.get(id=self.problem_id + 1) if self.problem_id != last else ''
-        else:
-            try:
-                page_list = list(prob_list)
-                q = page_list.index(self.problem_id)
-                last = len(page_list) - 1
-                prev_prob = prob_data.get(id=page_list[q - 1]) if q != 0 else ''
-                next_prob = prob_data.get(id=page_list[q + 1]) if q != last else ''
-            except ValueError:
-                prev_prob = next_prob = None
-        return prev_prob, next_prob
-
-    def update_open_status(self) -> object:
-        """ Update open status. """
-        user, problem_id = self.request.user, self.problem_id
-        obj, created = Evaluation.objects.get_or_create(user=user, problem_id=problem_id)
-        obj.update_open()
-        return obj
-
     def update_context_data(self, context) -> None:
         """ Update context data. """
-        prob_data, prob_list = self.get_prob_data_list()
+        prob_data = prob_list = None
+        if self.request.user.is_authenticated:
+            prob_data, prob_list = self.get_prob_data_list()
+            list_by_exam = list(
+                prob_data.values_list(
+                    'exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
+            list_by_exam_organized = self.organize_list(list_by_exam)
+            context['list_data'] = list_by_exam_organized
         prev_prob, next_prob = self.get_prev_next_prob(prob_data, prob_list)
-
-        list_by_exam = list(
-            prob_data.values_list(
-                'exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
-        list_by_exam_organized = self.organize_list(list_by_exam)
-        context['list_data'] = list_by_exam_organized
-
         context['info'] = self.info
         context['prev_prob'] = prev_prob
         context['next_prob'] = next_prob
@@ -205,6 +183,31 @@ class BaseDetailView(
                 row = items[i:i + 5]
                 organized_list.extend(row)
         return organized_list
+
+    def get_prev_next_prob(self, prob_data=None, prob_list=None) -> [object, object]:
+        """ Return previous and next problems. """
+        problem = Problem.objects
+        if self.category == 'problem':
+            last = problem.order_by('-id')[0].id
+            prev_prob = problem.get(id=self.problem_id - 1) if self.problem_id != 1 else ''
+            next_prob = problem.get(id=self.problem_id + 1) if self.problem_id != last else ''
+        else:
+            try:
+                page_list = list(prob_list)
+                q = page_list.index(self.problem_id)
+                last = len(page_list) - 1
+                prev_prob = prob_data.get(id=page_list[q - 1]) if q != 0 else ''
+                next_prob = prob_data.get(id=page_list[q + 1]) if q != last else ''
+            except ValueError:
+                prev_prob = next_prob = None
+        return prev_prob, next_prob
+
+    def update_open_status(self) -> object:
+        """ Update open status. """
+        user, problem_id = self.request.user, self.problem_id
+        obj, created = Evaluation.objects.get_or_create(user=user, problem_id=problem_id)
+        obj.update_open()
+        return obj
 
 
 class ProblemDetailView(BaseDetailView):

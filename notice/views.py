@@ -7,87 +7,127 @@ from django.views.generic import ListView, CreateView, DetailView, UpdateView, D
 
 # Custom App Import
 from common.constants.icon import *
-from log.views import create_log
+from log.views import CreateLogMixIn
 from notice.forms import PostForm, CommentForm  # Should Change App Name
 from notice.models import Post, Comment  # Should Change App Name
 
-APP_NAME = 'notice'
-TITLE = APP_NAME.capitalize()
-list_url = reverse_lazy(f'{APP_NAME}:list')
-BASE_ICON = ICON_LIST[APP_NAME]
-BASE_COLOR = COLOR_LIST[APP_NAME]
 
-post_model, comment_model = Post, Comment
-post_form, comment_form = PostForm, CommentForm
-
-LIST_TEMPLATE = 'board/post_list.html'
-LIST_CONTENT_TEMPLATE = 'board/post_list_content.html'
-POST_CREATE_TEMPLATE = 'board/post_create.html'
-POST_DETAIL_TEMPLATE = 'board/post_detail.html'
-COMMENT_CREATE_TEMPLATE = 'board/comment_create.html'
-COMMENT_UPDATE_TEMPLATE = 'board/comment_update.html'
-COMMENT_CONTENT_TEMPLATE = 'board/comment_content.html'
-
-
-class InfoMixIn:
+class BoardInfoMixIn:
     kwargs: dict
-    app_name: str
+    app_name = 'notice'
+    paginate_by = 10
     view_type: str
-    template_name_dict = {
-        'postList': 'board/post_list.html',
-        'postListContent': 'board/post_list_content.html',
-        'postCreate': 'board/post_create.html',
-        'postDetail': 'board/post_detail.html',
-        'postUpdate': 'board/post_create.html',
-        'postDelete': '',
-        'commentCreate': 'board/comment_create.html',
-        'commentDelete': '',
-        'commentUpdate': 'board/comment_update.html',
-        'commentDetail': 'board/comment_content.html',
+
+    post_model, comment_model = Post, Comment
+    post_form, comment_form = PostForm, CommentForm
+
+    pk_post, pk_comment = 'post_id', 'comment_id'
+
+    post_list_template = 'board/post_list.html'
+    post_list_content_template = 'board/post_list_content.html'
+    post_create_template = 'board/post_create.html'
+    post_detail_template = 'board/post_detail.html'
+    comment_create_template = 'board/comment_create.html'
+    comment_update_template = 'board/comment_update.html'
+    comment_content_template = 'board/comment_content.html'
+
+    dict = {
+        'postList': {
+            'model': post_model,
+            'pk_url_kwarg': pk_post,
+            'template_name': post_list_template,
+        },
+        'postDetail': {
+            'model': post_model,
+            'pk_url_kwarg': pk_post,
+            'template_name': post_detail_template,
+        },
+        'postCreate': {
+            'model': post_model,
+            'pk_url_kwarg': pk_post,
+            'form_class': post_form,
+            'template_name': post_create_template,
+        },
+        'postUpdate': {
+            'model': post_model,
+            'pk_url_kwarg': pk_post,
+            'form_class': post_form,
+            'template_name': post_create_template,
+        },
+        'postDelete': {
+            'model': post_model,
+            'pk_url_kwarg': pk_post,
+            'form_class': post_form,
+        },
+        'commentDetail': {
+            'model': comment_model,
+            'pk_url_kwarg': pk_comment,
+            'template_name': comment_content_template,
+        },
+        'commentCreate': {
+            'model': comment_model,
+            'pk_url_kwarg': pk_comment,
+            'form_class': comment_form,
+            'template_name': comment_create_template,
+        },
+        'commentUpdate': {
+            'model': comment_model,
+            'pk_url_kwarg': pk_comment,
+            'form_class': comment_form,
+            'template_name': comment_create_template,
+        },
+        'commentDelete': {
+            'model': comment_model,
+            'pk_url_kwarg': pk_comment,
+            'form_class': comment_form,
+        },
     }
-    # view_type: postList, postCreate, postDetail, postUpdate, postDelete,
-    # commentCreate, commentDelete, commentUpdate, commentDetail
-
     @property
-    def template_name(self):
-        return self.template_name_dict[self.view_type]
-
+    def model(self): return self.dict[self.view_type]['model']
     @property
-    def content_template_name(self):
-        return self.template_name_dict['postListContent'] if self.view_type == 'postList' else ''
-
+    def pk_url_kwarg(self): return self.dict[self.view_type]['pk_url_kwarg']
     @property
-    def post_id(self) -> int:
-        return self.kwargs.get('post_id')
-
+    def form_class(self): return self.dict[self.view_type]['form_class']
     @property
-    def comment_id(self) -> int:
-        return self.kwargs.get('comment_id')
+    def template_name(self): return self.dict[self.view_type]['template_name']
+    @property
+    def post_id(self) -> int: return self.kwargs.get('post_id', '')
+    @property
+    def comment_id(self) -> int: return self.kwargs.get('comment_id', '')
+    @property
+    def menu(self) -> str: return self.app_name.capitalize()
+    @property
+    def list_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:list')
+    @property
+    def base_icon(self) -> str: return ICON_LIST[self.app_name]
+    @property
+    def base_color(self) -> str: return COLOR_LIST[self.app_name]
 
     @property
     def title(self) -> str:
-        return self.app_name.capitalize()
+        string = self.menu
+        if self.post_id:
+            string += f' {self.post_id}'
+        if self.comment_id:
+            string += f' - {self.comment_id}'
+        return string
 
     @property
-    def list_url(self) -> reverse_lazy:
-        return reverse_lazy(f'{self.app_name}:list')
-
-    @property
-    def base_icon(self) -> str:
-        return ICON_LIST[self.app_name]
-
-    @property
-    def base_color(self) -> str:
-        return COLOR_LIST[self.app_name]
+    def target_id(self) -> str:
+        string = f'{self.view_type}Content{self.post_id}'
+        if self.comment_id:
+            string += f'_{self.comment_id}'
+        return string
 
     @property
     def info(self) -> dict:
         return {
             'category': self.app_name,
             'type': self.view_type,
+            'menu': self.menu,
             'title': self.title,
             'pagination_url': self.list_url,
-            'target_id': f'{self.view_type}Content{self.post_id}_{self.comment_id}',
+            'target_id': self.target_id,
             'icon': self.base_icon,
             'color': self.base_color,
             'post_id': self.post_id,
@@ -96,9 +136,11 @@ class InfoMixIn:
 
     @property
     def success_url(self):
-        if self.view_type in ['postUpdate', 'commentCreate', 'commentDelete']:
+        if self.view_type == 'postDelete':
+            return reverse_lazy(f'{self.app_name}:list')
+        elif self.view_type in ['postUpdate', 'commentCreate', 'commentDelete']:
             return reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])
-        if self.view_type == 'commentUpdate':
+        elif self.view_type == 'commentUpdate':
             return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.comment_id])
 
 
@@ -119,102 +161,38 @@ class BaseView:
         return context
 
 
-class PostListView(BaseView, ListView):
-    model = post_model
-    template_name = LIST_TEMPLATE
-    paginate_by = 10
+class PostListView(BoardInfoMixIn, CreateLogMixIn, BaseView, ListView):
+    view_type = 'postList'
 
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.info = {
-            'category': APP_NAME,
-            'type': 'postList',
-            'title': TITLE,
-            'pagination_url': list_url,
-            'target_id': 'postListContent',
-            'icon': BASE_ICON,
-            'color': BASE_COLOR,
-        }
+    @property
+    def object_list(self) -> object: return self.get_queryset()
 
     def get(self, request, *args, **kwargs):
-        create_log(self.request, self.info)
-        return super().get(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        self.create_log_for_list(page_obj=context['page_obj'])
+        return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
         self.kwargs['page'] = request.POST.get('page', '1')
         context = self.get_context_data(**kwargs)
-        html = render(request, LIST_CONTENT_TEMPLATE, context).content.decode('utf-8')
-        create_log(self.request, self.info)
+        html = render(request, self.post_list_content_template, context).content.decode('utf-8')
+        self.create_log_for_list(page_obj=context['page_obj'])
         return HttpResponse(html)
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        queryset = self.get_queryset()
-        context = super().get_context_data(object_list=queryset, **kwargs)
+        context = super().get_context_data(**kwargs)
         context = self.update_context(context, **kwargs)
         top_fixed = self.model.objects.filter(top_fixed=True)
         context['top_fixed'] = top_fixed
         return context
 
 
-class PostCreateView(BaseView, LoginRequiredMixin, CreateView):
-    model = post_model
-    form_class = post_form
-    template_name = POST_CREATE_TEMPLATE
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.info = {
-            'category': APP_NAME,
-            'type': 'postCreate',
-            'title': TITLE,
-            'pagination_url': list_url,
-            'target_id': 'postCreateContent',
-            'icon': BASE_ICON,
-            'color': BASE_COLOR,
-        }
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy(f'{APP_NAME}:detail', args=[self.object.pk])
-
-    def get(self, request, *args, **kwargs):
-        create_log(self.request, self.info)
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        create_log(self.request, self.info)
-        return super().post(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
-        return context
-
-
-class PostDetailView(BaseView, DetailView):
-    model = post_model
-    template_name = POST_DETAIL_TEMPLATE
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        post_id = kwargs.get('pk', '')
-        self.info = {
-            'category': APP_NAME,
-            'type': 'postDetail',
-            'title': TITLE,
-            'pagination_url': list_url,
-            'target_id': 'postDetailContent',
-            'icon': BASE_ICON,
-            'color': BASE_COLOR,
-            'post_id': post_id,
-        }
+class PostDetailView(BoardInfoMixIn, CreateLogMixIn, BaseView, DetailView):
+    view_type = 'postDetail'
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
-        create_log(self.request, self.info)
+        self.create_request_log()
         return response
 
     def get_context_data(self, **kwargs):
@@ -234,104 +212,23 @@ class PostDetailView(BaseView, DetailView):
         return context
 
 
-class PostUpdateView(BaseView, LoginRequiredMixin, UpdateView):
-    model = post_model
-    form_class = post_form
-    template_name = POST_CREATE_TEMPLATE
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        post_id = kwargs.get('pk', '')
-        self.info = {
-            'category': APP_NAME,
-            'type': 'postUpdate',
-            'title': TITLE,
-            'pagination_url': list_url,
-            'target_id': '',
-            'icon': BASE_ICON,
-            'color': BASE_COLOR,
-            'post_id': post_id,
-        }
+class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, CreateView):
+    view_type = 'postCreate'
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
-        context['info']['target_id'] = f'postUpdateContent{self.object.id}'
-        return context
-
     def get_success_url(self):
-        return reverse_lazy(f'{APP_NAME}:detail', args=[self.object.id])
+        return reverse_lazy(f'{self.app_name}:detail', args=[self.object.pk])
 
     def get(self, request, *args, **kwargs):
-        create_log(self.request, self.info)
+        self.create_log_for_board_create_update()
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        create_log(self.request, self.info)
+        self.create_log_for_board_create_update()
         return super().post(request, *args, **kwargs)
-
-
-class PostDeleteView(BaseView, LoginRequiredMixin, DeleteView):
-    model = post_model
-    success_url = list_url
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        post_id = kwargs.get('pk', '')
-        self.info = {
-            'category': APP_NAME,
-            'type': 'postDelete',
-            'title': TITLE,
-            'pagination_url': list_url,
-            'target_id': '',
-            'icon': BASE_ICON,
-            'color': BASE_COLOR,
-            'post_id': post_id,
-        }
-
-    def post(self, request, *args, **kwargs):
-        create_log(self.request, self.info)
-        return super().post(request, *args, **kwargs)
-
-
-class CommentCreateView(BaseView, LoginRequiredMixin, CreateView):
-    model = comment_model
-    form_class = comment_form
-    template_name = COMMENT_CREATE_TEMPLATE
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.info = {
-            'category': APP_NAME,
-            'type': 'commentCreate',
-            'title': TITLE,
-            'pagination_url': list_url,
-            'target_id': 'commentCreateContent',
-            'icon': BASE_ICON,
-            'color': BASE_COLOR,
-        }
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.post_id = self.kwargs['pk']
-        return super().form_valid(form)
-
-    def get(self, request, *args, **kwargs):
-        post_id = self.kwargs['pk']
-        create_log(self.request, self.info)
-        return redirect(reverse_lazy(f'{APP_NAME}:detail', args=[post_id]))
-
-    def post(self, request, *args, **kwargs):
-        create_log(self.request, self.info)
-        return super().post(request, *args, **kwargs)
-
-    def get_success_url(self):
-        post_id = self.kwargs['pk']
-        return reverse_lazy(f'{APP_NAME}:detail', args=[post_id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -339,74 +236,97 @@ class CommentCreateView(BaseView, LoginRequiredMixin, CreateView):
         return context
 
 
-class CommentDeleteView(BaseView, LoginRequiredMixin, DeleteView):
-    model = comment_model
+class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, UpdateView):
+    view_type = 'postUpdate'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context = self.update_context(context, **kwargs)
+        context['info']['target_id'] = f'postUpdateContent{self.post_id}'
+        return context
+
+    def get(self, request, *args, **kwargs):
+        self.create_log_for_board_create_update()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.create_log_for_board_create_update()
+        return super().post(request, *args, **kwargs)
+
+
+class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, DeleteView):
+    view_type = 'postDelete'
+
+    def post(self, request, *args, **kwargs):
+        self.create_log_for_board_delete()
+        return super().post(request, *args, **kwargs)
+
+
+class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, BaseView, DetailView):
+    view_type = 'commentDetail'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context = self.update_context(context, **kwargs)
+        return context
+
+
+class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, CreateView):
+    view_type = 'commentCreate'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.post_id = self.post_id
+        return super().form_valid(form)
+
+    def get(self, request, *args, **kwargs):
+        self.create_log_for_board_create_update()
+        return redirect(reverse_lazy(f'{self.app_name}:detail', args=[self.post_id]))
+
+    def post(self, request, *args, **kwargs):
+        self.create_log_for_board_create_update()
+        return super().post(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context = self.update_context(context, **kwargs)
+        return context
+
+
+class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, UpdateView):
+    view_type = 'commentUpdate'
 
     def get_success_url(self):
-        obj = self.get_object()
-        return reverse_lazy(f'{APP_NAME}:detail', args=[obj.post.id])
-
-
-class CommentUpdateView(BaseView, LoginRequiredMixin, UpdateView):
-    model = comment_model
-    form_class = comment_form
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-
-        self.info = {
-            'category': APP_NAME,
-            'type': 'commentUpdate',
-            'title': TITLE,
-            'pagination_url': list_url,
-            'target_id': '',
-            'icon': BASE_ICON,
-            'color': BASE_COLOR,
-        }
-
-    def get_success_url(self):
-        return reverse_lazy(f'{APP_NAME}:comment_detail', args=[self.object.id])
+        return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        create_log(self.request, self.info)
         context = self.get_context_data(**kwargs)
-        html = render(request, COMMENT_UPDATE_TEMPLATE, context).content.decode('utf-8')
+        html = render(request, self.comment_update_template, context).content.decode('utf-8')
+        self.create_log_for_board_create_update()
         return JsonResponse({
             'html': html,
         })
+
+    def post(self, request, *args, **kwargs):
+        self.create_log_for_board_create_update()
+        return super().post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context = self.update_context(context, **kwargs)
         context['comment'] = self.object
-        print(self.object.content)
         context['info']['target_id'] = f'commentUpdateContent{self.object.id}'
         return context
 
 
-class CommentDetailView(BaseView, DetailView):
-    model = comment_model
-    template_name = COMMENT_CONTENT_TEMPLATE
+class CommentDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, DeleteView):
+    view_type = 'commentDelete'
 
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.info = {
-            'category': APP_NAME,
-            'type': 'commentDetail',
-            'title': TITLE,
-            'pagination_url': list_url,
-            'target_id': 'commentDetailContent',
-            'icon': BASE_ICON,
-            'color': BASE_COLOR,
-        }
-
-    def get(self, request, *args, **kwargs):
-        response = super().get(request, *args, **kwargs)
-        create_log(self.request, self.info)
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
-        return context
+    def get_success_url(self):
+        obj = self.get_object()
+        return reverse_lazy(f'{self.app_name}:detail', args=[obj.post.id])

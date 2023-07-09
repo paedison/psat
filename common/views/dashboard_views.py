@@ -10,10 +10,10 @@ from django.views import View
 from common.constants.icon import *
 from common.constants.psat import *
 from psat.models import Problem
-from psat.views.list_views import BaseListView, ListInfoMixIn
+from psat.views.list_views import BaseListView, PsatListInfoMixIn
 
 
-class CardInfoMixIn(ListInfoMixIn):
+class CardInfoMixIn(PsatListInfoMixIn):
     """ Represent Dashboard card information mixin. """
     @property
     def title(self) -> str:

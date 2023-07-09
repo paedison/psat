@@ -21,6 +21,7 @@ $(document).on('click', '#instanceDeleteModalFooter', function(event) {
     $.ajax({
         url: deleteUrl,
         type: 'POST',
+        // data: { 'post_id': content },
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
             $('.close').click();
