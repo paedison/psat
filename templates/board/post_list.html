@@ -32,7 +32,8 @@
                                         data-bs-target="#navContent{{ category.code }}"
                                         aria-controls="navContent{{ category.code }}"
                                         aria-selected="{% if forloop.counter0 == 0 %}true{% else %}false{% endif %}">
-                                    <i class="fa-solid fa-bars fa-fw"></i> {{ category.name }}
+                                    {{ category.icon|safe }}
+                                    {{ category.name }}
                                 </button>
                                 {% endfor %}
                             {% endif %}

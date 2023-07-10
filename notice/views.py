@@ -247,7 +247,9 @@ class PostListMainView(BoardInfoMixIn, generic.View):
         list_view = PostListView.as_view()
         category_content = self.category_list.copy()
         for category in category_content:
-            category['html'] = list_view(request, category=category['choice']).content.decode('utf-8')
+            choice = category['choice']
+            category['html'] = list_view(request, category=choice).content.decode('utf-8')
+            category['icon'] = icon.BOARD_ICON_SET[f'category{choice}']
         context = {
             'info': self.info,
             'category_content': category_content,

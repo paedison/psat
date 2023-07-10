@@ -43,10 +43,13 @@ PSAT_ICON_SET = {
 
 BOARD_ICON_SET = {
     'top_fixed': '<i class="fa-solid fa-bullhorn fa-fw"></i>',
-    'list': '<i class="fa-solid fa-list"></i>',
-    'reply': '<i class="fa-solid fa-reply"></i>',
-    'update': '<i class="fa-solid fa-pen"></i>',
-    'delete': '<i class="fa-solid fa-trash"></i>',
-    'previous': '<i class="fa-solid fa-arrow-down"></i>',
-    'next': '<i class="fa-solid fa-arrow-up"></i>',
+    'list': '<i class="fa-solid fa-list fa-fw"></i>',
+    'reply': '<i class="fa-solid fa-reply fa-fw"></i>',
+    'update': '<i class="fa-solid fa-pen fa-fw"></i>',
+    'delete': '<i class="fa-solid fa-trash fa-fw"></i>',
+    'previous': '<i class="fa-solid fa-arrow-down fa-fw"></i>',
+    'next': '<i class="fa-solid fa-arrow-up fa-fw"></i>',
+    'category0': '<i class="fa-solid fa-bars fa-fw"></i>',
+    'category1': '<i class="fa-regular fa-bell fa-fw"></i>',
+    'category2': '<i class="fa-regular fa-bookmark fa-fw"></i>',
 }
