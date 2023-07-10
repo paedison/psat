@@ -3,14 +3,14 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
 # Third Party Library Import
-from allauth.account.views import LogoutView, LoginView
+from allauth.account import views as all_auth
 from allauth.socialaccount.models import SocialAccount
 
 # Custom App Import
-from common.models import User
+from ..models import User
 
 
-class CustomLoginView(LoginView):
+class CustomLoginView(all_auth.LoginView):
     extra_context = {}
 
     def form_invalid(self, form):
@@ -27,7 +27,7 @@ class CustomLoginView(LoginView):
         return super().form_invalid(form)
 
 
-class CustomLogoutView(LogoutView):
+class CustomLogoutView(all_auth.LogoutView):
     def get_next_page(self):
         next_page = self.request.GET.get('next')
         if next_page:

@@ -5,12 +5,10 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views import View
-from django.views.generic import ListView
+from django.views import generic
 
 # Custom App Import
-from common.constants.icon import *
-from common.constants.psat import *
+from common.constants import icon, color, psat
 from log.views import CreateLogMixIn
 from ..models import Problem, Evaluation
 
@@ -21,8 +19,12 @@ def index(request):
 
 
 class PsatListInfoMixIn:
-    """ Represent PSAT list information mixin. """
+    """
+    Represent PSAT list information mixin.
+    category(str): One of [ problem, like, rate, answer ]
+    """
     kwargs: dict
+    app_name = 'psat'
     category: str
     title_dict = {
         'problem': '',
@@ -38,10 +40,10 @@ class PsatListInfoMixIn:
         if year != '전체':
             year = int(year)
         ex = self.kwargs.get('ex', '전체')
-        exam2 = next((i['exam2'] for i in TOTAL['exam_list'] if i['ex'] == ex), None)
+        exam2 = next((i['exam2'] for i in psat.TOTAL['exam_list'] if i['ex'] == ex), None)
         sub = self.kwargs.get('sub', '전체')
-        subject = next((i['subject'] for i in TOTAL['subject_list'] if i['sub'] == sub), None)
-        sub_code = next((i['sub_code'] for i in TOTAL['subject_list'] if i['sub'] == sub), '')
+        subject = next((i['subject'] for i in psat.TOTAL['subject_list'] if i['sub'] == sub), None)
+        sub_code = next((i['sub_code'] for i in psat.TOTAL['subject_list'] if i['sub'] == sub), '')
         return {
             'year': year,
             'ex': ex,
@@ -101,15 +103,17 @@ class PsatListInfoMixIn:
     def info(self) -> dict:
         """ Return information dictionary of the list. """
         return {
+            'app_name': self.app_name,
+            'menu': '',
             'category': self.category,
             'type': f'{self.category}List',
+            'title': self.title,
             'sub': self.url['sub'],
             'sub_code': self.url['sub_code'],
-            'title': self.title,
             'pagination_url': self.pagination_url,
             'target_id': f'{self.category}ListContent{self.url["sub_code"]}',
-            'icon': ICON_LIST[self.category],
-            'color': COLOR_LIST[self.category],
+            'icon': icon.ICON_LIST[self.category],
+            'color': color.COLOR_LIST[self.category],
             'is_liked': self.option['like'],
             'star_count': self.option['rate'],
             'is_correct': self.option['answer'],
@@ -152,11 +156,11 @@ class EvaluationInfoMixIn:
 
                 obj.liked_at = None
                 obj.is_liked = None
-                obj.like_icon = EMPTY_HEART_ICON
+                obj.like_icon = icon.EMPTY_HEART_ICON
 
                 obj.rated_at = None
                 obj.difficulty_rated = None
-                obj.rate_icon = STAR0_ICON
+                obj.rate_icon = icon.STAR0_ICON
 
                 obj.answered_at = None
                 obj.submitted_answered = None
@@ -186,7 +190,7 @@ class BaseListView(
     EvaluationInfoMixIn,
     QuerysetFieldMixIn,
     CreateLogMixIn,
-    ListView
+    generic.ListView,
 ):
     """ Represent PSAT base list view. """
     model = Problem
@@ -266,28 +270,30 @@ class AnswerListView(BaseListView):
     category = 'answer'
 
 
-class ListMainView(PsatListInfoMixIn, View):
+class ListMainView(PsatListInfoMixIn, generic.View):
     """ Represent PSAT list main view. """
     template_name = 'psat/problem_list.html'
     main_list_view = None
 
     @property
-    def menu(self) -> str:
+    def title(self) -> str:
         """ Return menu name of the list. """
-        menu_dict = self.title_dict.copy()
-        menu_dict['problem'] = 'PSAT 기출문제'
-        return menu_dict[self.category]
+        title_dict = self.title_dict.copy()
+        title_dict['problem'] = 'PSAT 기출문제'
+        return title_dict[self.category]
 
     @property
     def info(self) -> dict:
         """ Return information dictionary of the main list. """
         return {
+            'app_name': self.app_name,
+            'menu': self.category,
             'category': self.category,
             'type': f'{self.category}List',
-            'menu': self.menu,
+            'title': self.title,
             'target_id': f'{self.category}List',
-            'icon': ICON_LIST[self.category],
-            'color': COLOR_LIST[self.category],
+            'icon': icon.ICON_LIST[self.category],
+            'color': color.COLOR_LIST[self.category],
         }
 
     def get(self, request) -> render:
@@ -298,7 +304,7 @@ class ListMainView(PsatListInfoMixIn, View):
         sanghwang = list_view(request, sub='상황').content.decode('utf-8')
         context = {
             'info': self.info,
-            'total': TOTAL,
+            'total': psat.TOTAL,
             'all': all_,
             'eoneo': eoneo,
             'jaryo': jaryo,

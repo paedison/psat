@@ -9,7 +9,7 @@ from common.views.dashboard_views import (
 app_name = 'dashboard'
 
 urlpatterns = [
-    path('', DashboardMainView.as_view(), name='main'),
+    path('', DashboardMainView.as_view(), name='base'),
 
     path('like/', LikeDashboardView.as_view(), name='like'),
     path('like/<int:is_liked>liked/', LikeDashboardView.as_view(), name='like'),

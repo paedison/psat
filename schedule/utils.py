@@ -3,7 +3,7 @@ from django.db.models import Q
 from calendar import HTMLCalendar
 
 # Custom App Import
-from schedule.models import Event
+from .models import Event
 
 
 class Calendar(HTMLCalendar):

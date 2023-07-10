@@ -3,15 +3,15 @@ from django.urls import reverse_lazy
 
 from common.models import User
 
-CATEGORY_CHOICES = [
-    (1, '일반'),
-    (2, '사용팁'),
-]
-
 app_name = 'notice'
 
 
 class Post(models.Model):
+    CATEGORY_CHOICES = [
+        (1, '일반'),
+        (2, '사용팁'),
+    ]
+
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
@@ -32,7 +32,7 @@ class Post(models.Model):
 
     @staticmethod
     def get_list_url():
-        return reverse_lazy(f'{app_name}:list')
+        return reverse_lazy(f'{app_name}:base')
 
     @staticmethod
     def get_create_url():

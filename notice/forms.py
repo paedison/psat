@@ -1,7 +1,7 @@
 from django import forms
-from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
+from django_summernote.widgets import SummernoteWidget
 
-from notice.models import Post, Comment
+from .models import Post, Comment
 
 
 # Apply summernote to specific fields.

@@ -2,17 +2,18 @@
 import calendar
 from datetime import datetime, timedelta, date
 
+# Django Core Import
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.safestring import mark_safe
 from django.views import generic
 
 # Custom App Import
-from common.constants.icon import *
-from schedule.forms import EventForm
-from schedule.models import Calendar, Event
-from schedule.utils import Calendar
+from common.constants import icon
+from .forms import EventForm
+from .models import Calendar, Event
+from .utils import Calendar
 
 
 def index(request):
@@ -21,19 +22,27 @@ def index(request):
 
 class CalendarView(generic.ListView):
     model = Event
+    app_name = 'schedule'
+    category = 'schedule'
     template_name = 'schedule/calendar.html'
+
+    @property
+    def info(self) -> dict:
+        """ Return information dictionary of the Dashboard main list. """
+        return {
+            'app_name': self.app_name,
+            'menu': self.category,
+            'category': self.category,
+            'type': f'{self.category}List',
+            'title': self.category.capitalize(),
+            'target_id': f'{self.category}List',
+            'url': reverse_lazy(f'{self.category}:base'),
+            'icon': icon.MENU_DASHBOARD_ICON,
+            'color': 'primary',
+        }
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        info = {
-            'category': 'schedule',
-            'type': 'schedule',
-            'title': 'Schedule',
-            'url': reverse('schedule:base'),
-            'icon': MENU_SCHEDULE_ICON,
-            'color': 'primary',
-        }
 
         # use today's date for the calendar
         d = get_date(self.request.GET.get('month', None))
@@ -43,14 +52,14 @@ class CalendarView(generic.ListView):
 
         # Call the formatmonth method, which returns our calendar as a table
         html_cal = cal.formatmonth(withyear=True)
-        context['info'] = info
+        context['info'] = self.info
         context['calendar'] = mark_safe(html_cal)
         context['prev_month'] = prev_month(d)
         context['next_month'] = next_month(d)
 
         from log.views import create_request_log
         extra = f'(Calendar {d.year}-{d.month})'
-        create_request_log(self.request, info, extra)
+        create_request_log(self.request, self.info, extra)
 
         return context
 

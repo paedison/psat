@@ -7,10 +7,10 @@ from django.urls import reverse_lazy
 from django.utils.datetime_safe import datetime
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
-from django.views.generic import ListView
+from django.views import generic
 
 # Custom App Import
-from common.constants.icon import *
+from common.constants import icon
 from psat.models import Problem, Evaluation
 
 # Third Party Library Import
@@ -32,7 +32,7 @@ def page_404(request):
 
 
 @method_decorator(login_required, name='dispatch')
-class ProfileView(ListView):
+class ProfileView(generic.ListView):
     model = Evaluation
     template_name = 'account/profile.html'
     info = {}
@@ -45,7 +45,7 @@ class ProfileView(ListView):
             'type': 'accountProfile',
             'title': 'Profile',
             'url': reverse_lazy('profile'),
-            'icon': MENU_PROFILE_ICON,
+            'icon': icon.MENU_PROFILE_ICON,
             'color': 'primary',
         }
 

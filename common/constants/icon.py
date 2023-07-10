@@ -51,16 +51,3 @@ ICON_LIST = {
     'qna': MENU_QNA_ICON,
     'schedule': MENU_SCHEDULE_ICON,
 }
-
-COLOR_LIST = {
-    'notice': 'primary',
-    'dashboard': 'primary',
-    'profile': 'primary',
-    'psat': 'primary',
-    'problem': 'primary',
-    'like': 'danger',
-    'rate': 'warning',
-    'answer': 'success',
-    'qna': 'primary',
-    'schedule': 'primary',
-}

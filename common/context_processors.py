@@ -1,5 +1,9 @@
 import inspect
-from common.constants import icon, psat, urls
+from common.constants import (
+    icon as common_icon,
+    psat as common_psat,
+    urls as common_urls
+)
 
 
 def get_constants(module):
@@ -10,9 +14,9 @@ def get_constants(module):
     return constants
 
 
-icon_constants = get_constants(icon)
-psat_constants = get_constants(psat)
-urls_constants = get_constants(urls)
+icon_constants = get_constants(common_icon)
+psat_constants = get_constants(common_psat)
+urls_constants = get_constants(common_urls)
 
 
 def global_settings(request):

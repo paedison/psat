@@ -3,20 +3,28 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
+from django.views import generic
 
 # Custom App Import
-from common.constants.icon import *
+from common.constants import icon, color
 from log.views import CreateLogMixIn
-from notice.forms import PostForm, CommentForm  # Should Change App Name
-from notice.models import Post, Comment  # Should Change App Name
+from .forms import PostForm, CommentForm  # Should Change App Name
+from .models import Post, Comment  # Should Change App Name
 
 
 class BoardInfoMixIn:
+    """
+    Represent board information mixin.
+    view_type: one of [ postList, postListMain, postDetail,
+         postCreate, postUpdate, postDelete, commentDetail,
+         commentCreate, commentUpdate, commentDelete ]
+    category(int): Category of Post model
+    """
     kwargs: dict
     app_name = 'notice'
     paginate_by = 10
     view_type: str
+    category = 0
 
     post_model = Post
     post_form = PostForm
@@ -33,10 +41,14 @@ class BoardInfoMixIn:
     comment_content_template = 'board/comment_content.html'
 
     dict = {
+        'postListMain': {
+            'model': post_model,
+            'template_name': post_list_template,
+        },
         'postList': {
             'model': post_model,
             'pk_url_kwarg': post_pk,
-            'template_name': post_list_template,
+            'template_name': post_list_content_template,
         },
         'postDetail': {
             'model': post_model,
@@ -83,6 +95,7 @@ class BoardInfoMixIn:
             'form_class': comment_form,
         },
     }
+
     @property
     def model(self): return self.dict[self.view_type]['model']
     @property
@@ -96,19 +109,19 @@ class BoardInfoMixIn:
     @property
     def comment_id(self) -> int: return self.kwargs.get('comment_id', '')
     @property
-    def menu(self) -> str: return self.app_name.capitalize()
+    def menu(self) -> str: return self.app_name
     @property
     def post_list_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:list')
     @property
     def post_create_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:create')
     @property
-    def base_icon(self) -> str: return ICON_LIST[self.app_name]
+    def base_icon(self) -> str: return icon.ICON_LIST[self.app_name]
     @property
-    def base_color(self) -> str: return COLOR_LIST[self.app_name]
+    def base_color(self) -> str: return color.COLOR_LIST[self.app_name]
 
     @property
     def title(self) -> str:
-        string = self.menu
+        string = self.menu.capitalize()
         if self.post_id:
             string += f' {self.post_id}'
         if self.comment_id:
@@ -116,8 +129,33 @@ class BoardInfoMixIn:
         return string
 
     @property
+    def category_choices(self):
+        category_choices = self.model.CATEGORY_CHOICES.copy()
+        category_choices.insert(0, (0, '전체'))
+        return category_choices
+
+    @property
+    def category_code(self) -> str:
+        if self.category == 0:
+            return ''
+        else:
+            return chr(self.category_choices[self.category][0]+64)
+
+    @property
+    def category_list(self):
+        category_list = []
+        for category in self.category_choices:
+            code = chr(64 + category[0]) if category[0] != 0 else ''
+            category_list.append({
+                'choice': category[0],
+                'name': category[1],
+                'code': code,
+            })
+        return category_list
+
+    @property
     def target_id(self) -> str:
-        string = f'{self.view_type}Content{self.post_id}'
+        string = f'{self.view_type}{self.category_code}Content{self.post_id}'
         if self.comment_id:
             string += f'_{self.comment_id}'
         return string
@@ -125,9 +163,10 @@ class BoardInfoMixIn:
     @property
     def info(self) -> dict:
         return {
-            'category': self.app_name,
-            'type': self.view_type,
+            'app_name': self.app_name,
             'menu': self.menu,
+            'category': self.category,
+            'type': self.view_type,
             'title': self.title,
             'pagination_url': self.post_list_url,
             'target_id': self.target_id,
@@ -149,16 +188,19 @@ class BoardInfoMixIn:
             return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.comment_id])
 
 
-class PostListView(BoardInfoMixIn, CreateLogMixIn, ListView):
+class PostListView(BoardInfoMixIn, CreateLogMixIn, generic.ListView):
     view_type = 'postList'
 
     @property
-    def object_list(self) -> object: return self.get_queryset()
+    def object_list(self): return self.model.objects.all()
+    @property
+    def category(self): return self.kwargs.get('category', 0)
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
+        html = render(request, self.post_list_content_template, context)
         self.create_log_for_list(page_obj=context['page_obj'])
-        return self.render_to_response(context)
+        return html
 
     def post(self, request, *args, **kwargs):
         self.kwargs['page'] = request.POST.get('page', '1')
@@ -169,9 +211,12 @@ class PostListView(BoardInfoMixIn, CreateLogMixIn, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         queryset = self.object_list
+        top_fixed = self.model.objects.filter(top_fixed=True)
+        if self.category:
+            queryset = queryset.filter(category=self.category)
+            top_fixed = top_fixed.filter(category=self.category)
         page_size = self.get_paginate_by(queryset)
         paginator, page_obj, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
-        top_fixed = self.model.objects.filter(top_fixed=True)
         return {
             'view': self,
             'info': self.info,
@@ -181,7 +226,36 @@ class PostListView(BoardInfoMixIn, CreateLogMixIn, ListView):
         }
 
 
-class PostDetailView(BoardInfoMixIn, CreateLogMixIn, DetailView):
+class PostListMainView(BoardInfoMixIn, generic.View):
+    """ Represent PSAT list main view. """
+    view_type = 'postListMain'
+
+    @property
+    def info(self) -> dict:
+        """ Return information dictionary of the main list. """
+        return {
+            'app_name': self.app_name,
+            'menu': self.menu,
+            'type': self.view_type,
+            'title': self.title,
+            'target_id': f'{self.app_name}List',
+            'icon': icon.ICON_LIST[self.app_name],
+            'color': color.COLOR_LIST[self.app_name],
+        }
+
+    def get(self, request) -> render:
+        list_view = PostListView.as_view()
+        category_content = self.category_list.copy()
+        for category in category_content:
+            category['html'] = list_view(request, category=category['choice']).content.decode('utf-8')
+        context = {
+            'info': self.info,
+            'category_content': category_content,
+        }
+        return render(request, self.template_name, context)
+
+
+class PostDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
     view_type = 'postDetail'
 
     def get(self, request, *args, **kwargs):
@@ -207,7 +281,7 @@ class PostDetailView(BoardInfoMixIn, CreateLogMixIn, DetailView):
         return prev_post, next_post
 
 
-class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, CreateView):
+class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.CreateView):
     view_type = 'postCreate'
 
     def form_valid(self, form):
@@ -231,7 +305,7 @@ class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, CreateV
         return context
 
 
-class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, UpdateView):
+class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.UpdateView):
     view_type = 'postUpdate'
 
     def form_valid(self, form):
@@ -253,7 +327,7 @@ class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, UpdateV
         return super().post(request, *args, **kwargs)
 
 
-class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, DeleteView):
+class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.DeleteView):
     view_type = 'postDelete'
 
     def post(self, request, *args, **kwargs):
@@ -261,7 +335,7 @@ class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, DeleteV
         return super().post(request, *args, **kwargs)
 
 
-class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, DetailView):
+class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
     view_type = 'commentDetail'
 
     def get_context_data(self, **kwargs):
@@ -270,7 +344,7 @@ class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, DetailView):
         return context
 
 
-class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, CreateView):
+class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.CreateView):
     view_type = 'commentCreate'
 
     def form_valid(self, form):
@@ -292,7 +366,7 @@ class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, Crea
         return context
 
 
-class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, UpdateView):
+class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.UpdateView):
     view_type = 'commentUpdate'
 
     @property
@@ -316,7 +390,7 @@ class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, Upda
         return context
 
 
-class CommentDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, DeleteView):
+class CommentDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.DeleteView):
     view_type = 'commentDelete'
 
     @property

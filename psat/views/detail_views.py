@@ -6,10 +6,10 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import DetailView
+from django.views import generic
 
 # Custom App Import
-from common.constants.icon import *
+from common.constants import icon, color
 from log.views import CreateLogMixIn
 from .list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
 from ..models import Problem, Evaluation
@@ -43,8 +43,8 @@ class PsatDetailInfoMixIn:
             'type': f'{self.category}Detail',
             'title': self.object.full_title(),
             'target_id': f'{self.category}DetailContent',
-            'icon': ICON_LIST[self.category],
-            'color': COLOR_LIST[self.category],
+            'icon': icon.ICON_LIST[self.category],
+            'color': color.COLOR_LIST[self.category],
             'problem_id': self.problem_id
         }
 
@@ -59,7 +59,7 @@ class BaseDetailView(
     EvaluationInfoMixIn,
     QuerysetFieldMixIn,
     CreateLogMixIn,
-    DetailView,
+    generic.DetailView,
 ):
     """ Represent PSAT base detail view. """
     model = Problem

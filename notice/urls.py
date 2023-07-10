@@ -2,12 +2,13 @@ from django.urls import path
 
 from notice.views import (
     PostListView, PostCreateView, PostDetailView, PostUpdateView, PostDeleteView,
-    CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView
+    CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView, PostListMainView
 )
 
 app_name = 'notice'
 
 urlpatterns = [
+    path('', PostListMainView.as_view(), name='base'),
     path('list/', PostListView.as_view(), name='list'),
     path('post/create/', PostCreateView.as_view(), name='create'),
     path('post/<int:post_id>/', PostDetailView.as_view(), name='detail'),

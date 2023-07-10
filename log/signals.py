@@ -6,7 +6,7 @@ from django.contrib.auth.signals import user_logged_in, user_logged_out, user_lo
 from django.dispatch import receiver
 
 # Custom App Import
-from log.models import AccountLog
+from .models import AccountLog
 
 
 def get_user_info(request):

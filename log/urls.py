@@ -1,6 +1,6 @@
-from django.urls import path, re_path
+from django.urls import path
 
-from log.views import create_request_log
+from .views import create_request_log
 
 app_name = 'log'
 

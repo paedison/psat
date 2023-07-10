@@ -3,19 +3,18 @@ import os
 from datetime import datetime
 
 # Django Core Import
-from django.conf import settings
 from django.db import models
 from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 
-from _config.settings.base import BASE_DIR
-# Custom App Import
-from common.models import User
-from common.constants.icon import *
-
 # Third Party Library Import
 from taggit.managers import TaggableManager
+
+# Custom App Import
+from _config.settings.base import BASE_DIR
+from common.constants import icon
+from common.models import User
 
 now = make_aware(datetime.now())
 
@@ -128,15 +127,15 @@ class AddInfo:
 
     def like_icon(self):
         is_liked = self.is_liked
-        return SOLID_HEART_ICON if is_liked else EMPTY_HEART_ICON
+        return icon.SOLID_HEART_ICON if is_liked else icon.EMPTY_HEART_ICON
 
     def rate_icon(self):
         difficulty = self.difficulty_rated
-        return SOLID_STAR_ICON * (difficulty or 0) + EMPTY_STAR_ICON * (5 - (difficulty or 0))
+        return icon.SOLID_STAR_ICON * (difficulty or 0) + icon.EMPTY_STAR_ICON * (5 - (difficulty or 0))
 
     def answer_icon(self):
         is_correct = self.is_correct
-        return SOLID_CHECK_ICON if is_correct else EMPTY_XMARK_ICON if is_correct is False else ''
+        return icon.SOLID_CHECK_ICON if is_correct else icon.EMPTY_XMARK_ICON if is_correct is False else ''
 
 
 class UpdateInfo:

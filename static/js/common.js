@@ -1,5 +1,5 @@
 export const urls = {
-    /* Category */
+    /* Category or Menu */
     'dashboard': '/dashboard/',
     'profile': '/account/profile/',
     'problem': '/psat/',
@@ -24,10 +24,12 @@ export const urls = {
     'answerDetail': '/psat/answer/',
     'scheduleList': '/schedule/',
 }
+const psat_menu = ['problem', 'like', 'rate', 'answer']
 
 let collapseProblem = $('#collapseProblem');
 export let info = JSON.parse($('#info').text());
 let infoCategory = info['category'];
+let menu = info['menu'];
 export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 
 
@@ -39,12 +41,8 @@ function collapseMenu() {
 }
 
 $(document).ready(function() {
-    $('#' + infoCategory + 'List').addClass('active');
-    if (infoCategory === 'problem'
-        || infoCategory === 'like'
-        || infoCategory === 'rate'
-        || infoCategory === 'answer'
-    ) {
+    $('#' + menu + 'List').addClass('active');
+    if (psat_menu.includes(menu)) {
         collapseMenu();
     }
 });

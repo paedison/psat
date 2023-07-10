@@ -4,11 +4,10 @@ from django.db.models import Q
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views import View
+from django.views import generic
 
 # Custom App Import
-from common.constants.icon import *
-from common.constants.psat import *
+from common.constants import icon, color, psat
 from psat.models import Problem
 from psat.views.list_views import BaseListView, PsatListInfoMixIn
 
@@ -39,8 +38,8 @@ class CardInfoMixIn(PsatListInfoMixIn):
             'title': self.title,
             'pagination_url': self.pagination_url,
             'target_id': f'{self.category}DashboardContent',
-            'icon': ICON_LIST[self.category],
-            'color': COLOR_LIST[self.category],
+            'icon': icon.ICON_LIST[self.category],
+            'color': color.COLOR_LIST[self.category],
             'is_liked': self.option['like'],
             'star_count': self.option['rate'],
             'is_correct': self.option['answer'],
@@ -63,21 +62,26 @@ class DashboardListView(CardInfoMixIn, BaseListView):
 
 
 @method_decorator(login_required, name='dispatch')
-class DashboardMainView(View):
+class DashboardMainView(generic.View):
     """ Represent Dashboard main view. """
+    app_name = 'common'
+    category = 'dashboard'
     template_name = 'dashboard/dashboard_main.html'
 
     @property
     def info(self) -> dict:
         """ Return information dictionary of the Dashboard main list. """
         return {
-                'category': 'dashboard',
-                'type': 'dashboardList',
-                'title': 'Dashboard',
-                'url': reverse_lazy('dashboard:main'),
-                'icon': MENU_DASHBOARD_ICON,
-                'color': 'primary',
-            }
+            'app_name': self.app_name,
+            'menu': self.category,
+            'category': self.category,
+            'type': f'{self.category}List',
+            'title': self.category.capitalize(),
+            'target_id': f'{self.category}List',
+            'url': reverse_lazy(f'{self.category}:base'),
+            'icon': icon.MENU_DASHBOARD_ICON,
+            'color': 'primary',
+        }
 
     def get(self, request) -> render:
         like_view = LikeDashboardView.as_view()
@@ -88,7 +92,7 @@ class DashboardMainView(View):
         answer_ = answer_view(request).content.decode('utf-8')
         context = {
             'info': self.info,
-            'total': TOTAL,
+            'total': psat.TOTAL,
             'like': like_,
             'rate': rate_,
             'answer': answer_,

@@ -4,7 +4,7 @@
 <aside class="bg-gradient-primary ">
     <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar">
     {% if user.is_authenticated %}
-        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'dashboard:main' %}" role="banner">
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'dashboard:base' %}" role="banner">
             <div class="sidebar-brand-icon rotate-n-15">
                 {{ SITE_LOGO_ICON|safe }}
             </div>
@@ -12,14 +12,14 @@
         </a>
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="noticeList">
-            <a class="nav-link" href="{% url 'notice:list' %}">
+            <a class="nav-link" href="{% url 'notice:base' %}">
                 {{ MENU_NOTICE_ICON|safe }}
                 <span>Notice</span>
             </a>
         </li>
         <hr class="sidebar-divider my-0">
         <li class="nav-item" id="dashboardList">
-            <a class="nav-link" href="{% url 'dashboard:main' %}">
+            <a class="nav-link" href="{% url 'dashboard:base' %}">
                 {{ MENU_DASHBOARD_ICON|safe }}
                 <span>Dashboard</span>
             </a>
@@ -80,8 +80,8 @@
             <div class="sidebar-brand-text mx-3">paedison.com</div>
         </a>
         <hr class="sidebar-divider my-0">
-        <li class="nav-item" id="dashboardList">
-            <a class="nav-link" href="{% url 'notice:list' %}">
+        <li class="nav-item" id="noticeList">
+            <a class="nav-link" href="{% url 'notice:base' %}">
                 {{ MENU_NOTICE_ICON|safe }}
                 <span>Notice</span>
             </a>
