@@ -34,6 +34,7 @@ urlpatterns = [
     path('log/', include('log.urls')),  # 로그 관리
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
     path('summernote/', include('django_summernote.urls')),
+    path('google6929fc40d3e408c6.html')
 ]
 
 if settings.DEBUG:
