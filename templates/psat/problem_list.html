@@ -21,24 +21,24 @@
             <section class="col-12 mb-4">
                 <div class="card h-100">
                     <div class="card-body">
-                            <!-- Navigation Tab Start -->
-                            <nav>
-                                <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                    <button class="nav-link active text-primary font-weight-bold small p-2" id="nav-all-tab" data-bs-toggle="tab" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">
-                                        <i class="fa-solid fa-bars fa-fw"></i> 전체
-                                    </button>
-                                    <button class="nav-link text-primary font-weight-bold small p-2" id="nav-eoneo-tab" data-bs-toggle="tab" data-bs-target="#nav-eoneo" type="button" role="tab" aria-controls="nav-eoneo" aria-selected="false">
-                                        <i class="fa-solid fa-language fa-fw"></i> 언어
-                                    </button>
-                                    <button class="nav-link text-primary font-weight-bold small p-2" id="nav-jaryo-tab" data-bs-toggle="tab" data-bs-target="#nav-jaryo" type="button" role="tab" aria-controls="nav-jaryo" aria-selected="false">
-                                        <i class="fa-solid fa-table-cells-large fa-fw"></i> 자료
-                                    </button>
-                                    <button class="nav-link text-primary font-weight-bold small p-2" id="nav-sanghwang-tab" data-bs-toggle="tab" data-bs-target="#nav-sanghwang" type="button" role="tab" aria-controls="nav-sanghwang" aria-selected="false">
-                                        <i class="fa-solid fa-scale-balanced fa-fw"></i> 상황
-                                    </button>
-                                </div>
-                            </nav>
-                            <!-- Navigation Tab End -->
+                        <!-- Navigation Tab Start -->
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <button class="nav-link active text-primary font-weight-bold small p-2" id="nav-all-tab" data-bs-toggle="tab" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">
+                                    {{ PSAT_ICON_SET.all|safe }} 전체
+                                </button>
+                                <button class="nav-link text-primary font-weight-bold small p-2" id="nav-eoneo-tab" data-bs-toggle="tab" data-bs-target="#nav-eoneo" type="button" role="tab" aria-controls="nav-eoneo" aria-selected="false">
+                                    {{ PSAT_ICON_SET.eoneo|safe }} 언어
+                                </button>
+                                <button class="nav-link text-primary font-weight-bold small p-2" id="nav-jaryo-tab" data-bs-toggle="tab" data-bs-target="#nav-jaryo" type="button" role="tab" aria-controls="nav-jaryo" aria-selected="false">
+                                    {{ PSAT_ICON_SET.jaryo|safe }} 자료
+                                </button>
+                                <button class="nav-link text-primary font-weight-bold small p-2" id="nav-sanghwang-tab" data-bs-toggle="tab" data-bs-target="#nav-sanghwang" type="button" role="tab" aria-controls="nav-sanghwang" aria-selected="false">
+                                    {{ PSAT_ICON_SET.sanghwang|safe }} 상황
+                                </button>
+                            </div>
+                        </nav>
+                        <!-- Navigation Tab End -->
                         <div class="tab-content" id="nav-tabContent">
                             <!-- All Subject Tab Start -->
                             <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">

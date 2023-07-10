@@ -39,6 +39,10 @@ PSAT_ICON_SET = {
     'next_prob': '<i class="fa-solid fa-arrow-down"></i>',
     'filter': '<i class="fa-solid fa-filter"></i>',
     'right_arrow': '<i class="fa-solid fa-arrow-right"></i>',
+    'all': '<i class="fa-solid fa-bars fa-fw"></i>',
+    'eoneo': '<i class="fa-solid fa-language fa-fw"></i>',
+    'jaryo': '<i class="fa-solid fa-table-cells-large fa-fw"></i>',
+    'sanghwang': '<i class="fa-solid fa-scale-balanced fa-fw"></i>',
 }
 
 BOARD_ICON_SET = {
