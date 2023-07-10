@@ -43,8 +43,8 @@ class PsatDetailInfoMixIn:
             'type': f'{self.category}Detail',
             'title': self.object.full_title(),
             'target_id': f'{self.category}DetailContent',
-            'icon': icon.ICON_LIST[self.category],
-            'color': color.COLOR_LIST[self.category],
+            'icon': icon.MENU_ICON_SET[self.category],
+            'color': color.COLOR_SET[self.category],
             'problem_id': self.problem_id
         }
 

@@ -32,28 +32,38 @@
         {% if user.is_admin %}
             <li class="nav-item dropdown no-arrow">
                 <div role="button" aria-label="admin-button">
-                    <a class="nav-link px-1" href="{% url 'admin:index' %}" target="admin">{{ MENU_ADMIN_ICON|safe }}</a>
+                    <a class="nav-link px-1" href="{{ MENU_URL_SET.admin }}" target="admin">
+                        {{ MENU_ICON_SET.admin|safe }}
+                    </a>
                 </div>
             </li>
         {% endif %}
             <li class="nav-item dropdown no-arrow">
                 <div role="button" aria-label="problem-button">
-                    <a class="nav-link px-1" href="{% url 'psat:base' %}">{{ MENU_PROBLEM_ICON|safe }}</a>
+                    <a class="nav-link px-1" href="{{ MENU_URL_SET.problem }}">
+                        {{ MENU_ICON_SET.problem|safe }}
+                    </a>
                 </div>
             </li>
             <li class="nav-item dropdown no-arrow">
                 <div role="button" aria-label="like-button">
-                    <a class="nav-link px-1" href="{% url 'psat:like' %}">{{ MENU_LIKE_ICON|safe }}</a>
+                    <a class="nav-link px-1" href="{{ MENU_URL_SET.like }}">
+                        {{ MENU_ICON_SET.like|safe }}
+                    </a>
                 </div>
             </li>
             <li class="nav-item dropdown no-arrow">
                 <div role="button" aria-label="rate-button">
-                    <a class="nav-link px-1" href="{% url 'psat:rate' %}">{{ MENU_RATE_ICON|safe }}</a>
+                    <a class="nav-link px-1" href="{{ MENU_URL_SET.rate }}">
+                        {{ MENU_ICON_SET.rate|safe }}
+                    </a>
                 </div>
             </li>
             <li class="nav-item dropdown no-arrow">
                 <div role="button" aria-label="answer-button">
-                    <a class="nav-link px-1" href="{% url 'psat:answer' %}">{{ MENU_ANSWER_ICON|safe }}</a>
+                    <a class="nav-link px-1" href="{{ MENU_URL_SET.answer }}">
+                        {{ MENU_ICON_SET.answer|safe }}
+                    </a>
                 </div>
             </li>
     {% endif %}
@@ -67,13 +77,17 @@
                 {# Profile Image #}
                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ user.username }}</span>
-                    <img class="img-profile rounded-circle" src="{% static 'image/undraw_profile.svg' %}" alt="Profile Image"/>
+                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                        {{ user.username }}
+                    </span>
+                    <img class="img-profile rounded-circle"
+                         src="{% static 'image/undraw_profile.svg' %}" alt="Profile Image"/>
                 </a>
 
             {# User Info Dropdown (Login) #}
             {% if user.is_authenticated %}
-                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in"
+                     aria-labelledby="userDropdown">
                     {% comment %}
                     <a class="dropdown-item" href="{% url 'profile' %}">
                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Profile
@@ -82,23 +96,37 @@
                         <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>설정
                     </a>
                     {% endcomment %}
-                    <a class="dropdown-item" href="{% url 'dashboard:base' %}">
-                        <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>Dashboard
+                    <a class="dropdown-item" href="{{ MENU_URL_SET.dashboard }}">
+                        <span class="text-gray-400 mr-2">
+                            {{ MENU_ICON_SET.dashboard|safe }}
+                        </span>
+                        Dashboard
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>Logout
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                       data-bs-target="#logoutModal">
+                        <span class="text-gray-400 mr-2">
+                            {{ MENU_ICON_SET.logout|safe }}
+                        </span>
+                        Logout
                     </a>
                 </div>
 
             {# User Info Dropdown (Logout) #}
             {% else %}
-                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in"
+                     aria-labelledby="userDropdown">
                     <a class="dropdown-item" href="{% url 'account_login' %}">
-                        <i class="fas fa-sign-in-alt fa-sm fa-fw mr-2 text-gray-400"></i>Login
+                        <span class="text-gray-400 mr-2">
+                            {{ MENU_ICON_SET.login|safe }}
+                        </span>
+                        Login
                     </a>
                     <a class="dropdown-item" href="{% url 'account_signup' %}">
-                        <i class="fas fa-sign-in-alt fa-sm fa-fw mr-2 text-gray-400"></i>Signup
+                        <span class="text-gray-400 mr-2">
+                            {{ MENU_ICON_SET.signup|safe }}
+                        </span>
+                        Signup
                     </a>
                 </div>
             {% endif %}

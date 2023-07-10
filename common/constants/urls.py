@@ -1,13 +1,13 @@
-MENU_DASHBOARD_URL = '/dashboard/'
-MENU_PROFILE_URL = '/account/profile/'
-MENU_PROBLEM_URL = '/psat/'
-MENU_LIKE_URL = '/psat/like/'
-MENU_RATE_URL = '/psat/rate/'
-MENU_ANSWER_URL = '/psat/answer/'
-MENU_SCHEDULE_URL = '/schedule/'
+MENU_URL_SET = {
+    'admin': '/admin/',
+    'notice': '/notice/',
+    'dashboard': '/dashboard/',
+    'profile': '/account/profile/',
+    'problem': '/psat/',
+    'like': '/psat/like/',
+    'rate': '/psat/rate/',
+    'answer': '/psat/answer/',
+    'schedule': '/schedule/',
+    'qna': '/qna/'
+}
 
-PSAT_LIST_URL = MENU_PROBLEM_URL
-PSAT_DETAIL_URL = '/psat/detail/'
-PSAT_LIKE_URL = MENU_LIKE_URL
-PSAT_RATE_URL = MENU_RATE_URL
-PSAT_ANSWER_URL = MENU_ANSWER_URL

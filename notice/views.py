@@ -115,9 +115,9 @@ class BoardInfoMixIn:
     @property
     def post_create_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:create')
     @property
-    def base_icon(self) -> str: return icon.ICON_LIST[self.app_name]
+    def base_icon(self) -> str: return icon.MENU_ICON_SET[self.app_name]
     @property
-    def base_color(self) -> str: return color.COLOR_LIST[self.app_name]
+    def base_color(self) -> str: return color.COLOR_SET[self.app_name]
 
     @property
     def title(self) -> str:
@@ -239,8 +239,8 @@ class PostListMainView(BoardInfoMixIn, generic.View):
             'type': self.view_type,
             'title': self.title,
             'target_id': f'{self.app_name}List',
-            'icon': icon.ICON_LIST[self.app_name],
-            'color': color.COLOR_LIST[self.app_name],
+            'icon': icon.MENU_ICON_SET[self.app_name],
+            'color': color.COLOR_SET[self.app_name],
         }
 
     def get(self, request) -> render:

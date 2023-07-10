@@ -1,53 +1,52 @@
-SOLID_HEART_ICON = '<i class="fa-solid fa-heart"></i>'
-EMPTY_HEART_ICON = '<i class="fa-regular fa-heart"></i>'
-
-SOLID_STAR_ICON = '<i class="fa-solid fa-star"></i>'
-EMPTY_STAR_ICON = '<i class="fa-regular fa-star"></i>'
-
-STAR0_ICON = SOLID_STAR_ICON * 0 + EMPTY_STAR_ICON * 5
-STAR1_ICON = SOLID_STAR_ICON * 1 + EMPTY_STAR_ICON * 4
-STAR2_ICON = SOLID_STAR_ICON * 2 + EMPTY_STAR_ICON * 3
-STAR3_ICON = SOLID_STAR_ICON * 3 + EMPTY_STAR_ICON * 2
-STAR4_ICON = SOLID_STAR_ICON * 4 + EMPTY_STAR_ICON * 1
-STAR5_ICON = SOLID_STAR_ICON * 5 + EMPTY_STAR_ICON * 0
-
-SOLID_CHECK_ICON = '<i class="fa-solid fa-circle-check"></i>'
-EMPTY_XMARK_ICON = '<i class="fa-solid fa-circle-xmark"></i>'
-
 SITE_LOGO_ICON = '<i class="fa-solid fa-pen-to-square"></i>'
-MENU_ADMIN_ICON = '<i class="fa-solid fa-crown fa-fw"></i>'
 
-MENU_NOTICE_ICON = '<i class="fa-solid fa-bullhorn fa-fw"></i>'
-MENU_DASHBOARD_ICON = '<i class="fa-solid fa-tachometer-alt fa-fw"></i>'
-MENU_PROFILE_ICON = '<i class="fa-solid fa-user fa-fw"></i>'
-MENU_PSAT_ICON = '<i class="fa-solid fa-layer-group fa-fw"></i>'
-MENU_PROBLEM_ICON = '<i class="fa-solid fa-file-lines fa-fw"></i>'
-MENU_LIKE_ICON = '<i class="fa-solid fa-heart fa-fw"></i>'
-MENU_RATE_ICON = '<i class="fa-solid fa-star fa-fw"></i>'
-MENU_ANSWER_ICON = '<i class="fa-solid fa-circle-check fa-fw"></i>'
-MENU_QNA_ICON = '<i class="fa-solid fa-clipboard-question fa-fw"></i>'
-MENU_SCHEDULE_ICON = '<i class="fa-regular fa-calendar-days fa-fw"></i>'
+MENU_ICON_SET = {
+    'admin': '<i class="fa-solid fa-crown fa-fw"></i>',
+    'notice': '<i class="fa-solid fa-bullhorn fa-fw"></i>',
+    'dashboard': '<i class="fa-solid fa-list fa-fw"></i>',
+    'profile': '<i class="fa-solid fa-user fa-fw"></i>',
+    'account': '<i class="fa-solid fa-user fa-fw"></i>',
+    'psat': '<i class="fa-solid fa-layer-group fa-fw"></i>',
+    'problem': '<i class="fa-solid fa-file-lines fa-fw"></i>',
+    'like': '<i class="fa-solid fa-heart fa-fw"></i>',
+    'rate': '<i class="fa-solid fa-star fa-fw"></i>',
+    'answer': '<i class="fa-solid fa-circle-check fa-fw"></i>',
+    'qna': '<i class="fa-solid fa-clipboard-question fa-fw"></i>',
+    'schedule': '<i class="fa-regular fa-calendar-days fa-fw"></i>',
+    'signup': '<i class="fa-solid fa-door-open fa-fw"></i>',
+    'login': '<i class="fa-solid fa-sign-in-alt fa-fw"></i>',
+    'logout': '<i class="fa-solid fa-sign-out-alt fa-fw"></i>',
+}
 
-FILTER_ICON = '<i class="fa-solid fa-filter"></i>'
-RIGHT_ARROW_ICON = '<i class="fa-solid fa-arrow-right"></i>'
-UP_ARROW_ICON = '<i class="fa-solid fa-arrow-up"></i>'
-DOWN_ARROW_ICON = '<i class="fa-solid fa-arrow-down"></i>'
-CHECK_ICON = '<i class="fa-solid fa-check"></i>'
+PSAT_ICON_SET = {
+    'likeNone': '<i class="fa-regular fa-heart"></i>',
+    'likeFalse': '<i class="fa-regular fa-heart"></i>',
+    'likeTrue': '<i class="fa-solid fa-heart"></i>',
+    'rate0': '<i class="fa-regular fa-star"></i>',
+    'rate1': '<i class="fa-solid fa-star"></i>',
+    'starNone': '<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>',
+    'star1': '<i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>',
+    'star2': '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>',
+    'star3': '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>',
+    'star4': '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>',
+    'star5': '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>',
+    'answerNone': '',
+    'answerFalse': '<i class="fa-solid fa-circle-xmark"></i>',
+    'answerTrue': '<i class="fa-solid fa-circle-check"></i>',
+    'answerCheck': '<i class="fa-solid fa-check"></i>',
+    'list': '<i class="fa-solid fa-list"></i>',
+    'prev_prob': '<i class="fa-solid fa-arrow-up"></i>',
+    'next_prob': '<i class="fa-solid fa-arrow-down"></i>',
+    'filter': '<i class="fa-solid fa-filter"></i>',
+    'right_arrow': '<i class="fa-solid fa-arrow-right"></i>',
+}
 
-LIST_ICON = '<i class="fa-solid fa-list"></i>'
-REPLY_ICON = '<i class="fa-solid fa-reply"></i>'
-PEN_ICON = '<i class="fa-solid fa-pen"></i>'
-TRASH_ICON = '<i class="fa-solid fa-trash"></i>'
-
-ICON_LIST = {
-    'notice': MENU_NOTICE_ICON,
-    'dashboard': MENU_DASHBOARD_ICON,
-    'profile': MENU_PROFILE_ICON,
-    'psat': MENU_PSAT_ICON,
-    'problem': MENU_PROBLEM_ICON,
-    'like': MENU_LIKE_ICON,
-    'rate': MENU_RATE_ICON,
-    'answer': MENU_ANSWER_ICON,
-    'qna': MENU_QNA_ICON,
-    'schedule': MENU_SCHEDULE_ICON,
+BOARD_ICON_SET = {
+    'top_fixed': '<i class="fa-solid fa-bullhorn fa-fw"></i>',
+    'list': '<i class="fa-solid fa-list"></i>',
+    'reply': '<i class="fa-solid fa-reply"></i>',
+    'update': '<i class="fa-solid fa-pen"></i>',
+    'delete': '<i class="fa-solid fa-trash"></i>',
+    'previous': '<i class="fa-solid fa-arrow-down"></i>',
+    'next': '<i class="fa-solid fa-arrow-up"></i>',
 }

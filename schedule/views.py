@@ -37,7 +37,7 @@ class CalendarView(generic.ListView):
             'title': self.category.capitalize(),
             'target_id': f'{self.category}List',
             'url': reverse_lazy(f'{self.category}:base'),
-            'icon': icon.MENU_DASHBOARD_ICON,
+            'icon': icon.MENU_ICON_SET[self.category],
             'color': 'primary',
         }
 

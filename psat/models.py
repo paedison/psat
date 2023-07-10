@@ -126,16 +126,13 @@ class AddInfo:
         return reverse_lazy('psat:answer_detail', kwargs={'problem_id': problem_id})
 
     def like_icon(self):
-        is_liked = self.is_liked
-        return icon.SOLID_HEART_ICON if is_liked else icon.EMPTY_HEART_ICON
+        return icon.PSAT_ICON_SET[f'like{self.is_liked}']
 
     def rate_icon(self):
-        difficulty = self.difficulty_rated
-        return icon.SOLID_STAR_ICON * (difficulty or 0) + icon.EMPTY_STAR_ICON * (5 - (difficulty or 0))
+        return icon.PSAT_ICON_SET[f'star{self.difficulty_rated}']
 
     def answer_icon(self):
-        is_correct = self.is_correct
-        return icon.SOLID_CHECK_ICON if is_correct else icon.EMPTY_XMARK_ICON if is_correct is False else ''
+        return icon.PSAT_ICON_SET[f'answer{self.is_correct}']
 
 
 class UpdateInfo:

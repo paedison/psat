@@ -45,7 +45,7 @@ class ProfileView(generic.ListView):
             'type': 'accountProfile',
             'title': 'Profile',
             'url': reverse_lazy('profile'),
-            'icon': icon.MENU_PROFILE_ICON,
+            'icon': icon.MENU_ICON_SET['profile'],
             'color': 'primary',
         }
 

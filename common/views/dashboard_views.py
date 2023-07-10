@@ -38,8 +38,8 @@ class CardInfoMixIn(PsatListInfoMixIn):
             'title': self.title,
             'pagination_url': self.pagination_url,
             'target_id': f'{self.category}DashboardContent',
-            'icon': icon.ICON_LIST[self.category],
-            'color': color.COLOR_LIST[self.category],
+            'icon': icon.MENU_ICON_SET[self.category],
+            'color': color.COLOR_SET[self.category],
             'is_liked': self.option['like'],
             'star_count': self.option['rate'],
             'is_correct': self.option['answer'],
@@ -79,7 +79,7 @@ class DashboardMainView(generic.View):
             'title': self.category.capitalize(),
             'target_id': f'{self.category}List',
             'url': reverse_lazy(f'{self.category}:base'),
-            'icon': icon.MENU_DASHBOARD_ICON,
+            'icon': icon.MENU_ICON_SET[self.category],
             'color': 'primary',
         }
 

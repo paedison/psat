@@ -9,7 +9,7 @@
     <td class="text-justify px-1 d-none d-sm-table-cell d-md-none">
         <span role="textbox" aria-label="post-title">
         {% if post.top_fixed %}
-            <span class="text-danger">{{ MENU_NOTICE_ICON|safe }}</span>
+            <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
         {% endif %}
             <a class="text-decoration-none link" href="{{ post.get_absolute_url }}">
                 {{ post.title|truncatechars:30 }}
@@ -19,7 +19,7 @@
     <td class="text-justify px-1 d-none d-md-table-cell d-lg-none">
         <span role="textbox" aria-label="post-title">
         {% if post.top_fixed %}
-            <span class="text-danger">{{ MENU_NOTICE_ICON|safe }}</span>
+            <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
         {% endif %}
             <a class="text-decoration-none link" href="{{ post.get_absolute_url }}">
                 {{ post.title|truncatechars:30 }}
@@ -29,7 +29,7 @@
     <td class="text-justify px-1 d-none d-lg-table-cell">
         <span role="textbox" aria-label="post-title">
         {% if post.top_fixed %}
-            <span class="text-danger">{{ MENU_NOTICE_ICON|safe }}</span>
+            <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
         {% endif %}
             <a class="text-decoration-none link" href="{{ post.get_absolute_url }}">
                 {{ post.title|truncatechars:30 }}

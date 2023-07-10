@@ -2,8 +2,10 @@
 {% load psat_filter %}
 
     <div class="input-group-append dropdown" role="option">
-        <a class="btn btn-circle btn-sm btn-{{ info.color }} dropdown-toggle" href="#" role="button" id="problemChoiceLink" data-bs-toggle="dropdown" aria-expanded="false">
-            {{ LIST_ICON|safe }}
+        <a id="problemChoiceLink" href="#" role="button"
+           class="btn btn-circle btn-sm btn-{{ info.color }} dropdown-toggle"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            {{ PSAT_ICON_SET.list|safe }}
         </a>
         <div class="dropdown-menu" aria-labelledby="problemChoiceLink">
     {% if info.type == 'problemDetail' %}

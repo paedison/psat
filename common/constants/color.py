@@ -1,4 +1,4 @@
-COLOR_LIST = {
+COLOR_SET = {
     'notice': 'primary',
     'dashboard': 'primary',
     'profile': 'primary',

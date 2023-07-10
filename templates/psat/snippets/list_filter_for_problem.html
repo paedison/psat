@@ -2,7 +2,7 @@
 {% load psat_filter %}
 
     <a class="btn btn-sm btn-outline-primary dropdown-toggle" href="" role="button" id="dropdownYearLink{{ info.sub_code }}" data-bs-toggle="dropdown" aria-expanded="false">
-        {{ FILTER_ICON|safe }}
+        {{ PSAT_ICON_SET.filter|safe }}
     </a>
     <ul class="dropdown-menu" aria-labelledby="dropdownYearLink{{ info.sub_code }}">
         <div class="d-flex col-12 col-lg-4 flex-wrap justify-content-start" style="min-width: 300px;">
@@ -30,7 +30,7 @@
     </ul>
 
     <a class="btn btn-outline-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownExamLink{{ info.sub_code }}" data-bs-toggle="dropdown" aria-expanded="false">
-        {{ FILTER_ICON|safe }}
+        {{ PSAT_ICON_SET.filter|safe }}
     </a>
     <ul class="dropdown-menu" aria-labelledby="dropdownExamLink{{ info.sub_code }}">
         <div class="d-flex col-12 col-lg-4 flex-wrap justify-content-start" style="min-width: 300px;">

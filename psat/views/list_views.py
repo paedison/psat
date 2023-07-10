@@ -112,8 +112,8 @@ class PsatListInfoMixIn:
             'sub_code': self.url['sub_code'],
             'pagination_url': self.pagination_url,
             'target_id': f'{self.category}ListContent{self.url["sub_code"]}',
-            'icon': icon.ICON_LIST[self.category],
-            'color': color.COLOR_LIST[self.category],
+            'icon': icon.MENU_ICON_SET[self.category],
+            'color': color.COLOR_SET[self.category],
             'is_liked': self.option['like'],
             'star_count': self.option['rate'],
             'is_correct': self.option['answer'],
@@ -156,11 +156,11 @@ class EvaluationInfoMixIn:
 
                 obj.liked_at = None
                 obj.is_liked = None
-                obj.like_icon = icon.EMPTY_HEART_ICON
+                obj.like_icon = icon.PSAT_ICON_SET['likeNone']
 
                 obj.rated_at = None
                 obj.difficulty_rated = None
-                obj.rate_icon = icon.STAR0_ICON
+                obj.rate_icon = icon.PSAT_ICON_SET['starNone']
 
                 obj.answered_at = None
                 obj.submitted_answered = None
@@ -292,8 +292,8 @@ class ListMainView(PsatListInfoMixIn, generic.View):
             'type': f'{self.category}List',
             'title': self.title,
             'target_id': f'{self.category}List',
-            'icon': icon.ICON_LIST[self.category],
-            'color': color.COLOR_LIST[self.category],
+            'icon': icon.MENU_ICON_SET[self.category],
+            'color': color.COLOR_SET[self.category],
         }
 
     def get(self, request) -> render:
