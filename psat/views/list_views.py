@@ -16,7 +16,8 @@ from ..models import Problem, Evaluation
 
 
 def index(request):
-    return redirect('psat:base')
+    if request:
+        return redirect('psat:base')
 
 
 class PsatListInfoMixIn:

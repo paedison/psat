@@ -16,5 +16,6 @@ urls_constants = get_constants(urls)
 
 
 def global_settings(request):
-    global_constants = {**icon_constants, **psat_constants, **urls_constants}
-    return global_constants
+    if request:
+        global_constants = {**icon_constants, **psat_constants, **urls_constants}
+        return global_constants

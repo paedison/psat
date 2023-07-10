@@ -58,7 +58,7 @@
                             {% include 'board/snippets/list_pagination.html' %}
                         {% if user.is_admin %}
                             <div class="d-inline-block ml-auto">
-                                <a class="btn btn-sm btn-outline-primary" href="{{ page_obj.0.get_create_url }}">글쓰기</a>
+                                <a class="btn btn-sm btn-outline-primary" href="{{ info.post_create_url }}">글쓰기</a>
                             </div>
                         {%  endif %}
                         </section>

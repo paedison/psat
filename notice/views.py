@@ -18,11 +18,12 @@ class BoardInfoMixIn:
     paginate_by = 10
     view_type: str
 
-    post_model, comment_model = Post, Comment
-    post_form, comment_form = PostForm, CommentForm
+    post_model = Post
+    post_form = PostForm
+    comment_model = Comment
+    comment_form = CommentForm
 
-    pk_post, pk_comment = 'post_id', 'comment_id'
-
+    post_pk, comment_pk = 'post_id', 'comment_id'
     post_list_template = 'board/post_list.html'
     post_list_content_template = 'board/post_list_content.html'
     post_create_template = 'board/post_create.html'
@@ -34,51 +35,51 @@ class BoardInfoMixIn:
     dict = {
         'postList': {
             'model': post_model,
-            'pk_url_kwarg': pk_post,
+            'pk_url_kwarg': post_pk,
             'template_name': post_list_template,
         },
         'postDetail': {
             'model': post_model,
-            'pk_url_kwarg': pk_post,
+            'pk_url_kwarg': post_pk,
             'template_name': post_detail_template,
         },
         'postCreate': {
             'model': post_model,
-            'pk_url_kwarg': pk_post,
+            'pk_url_kwarg': post_pk,
             'form_class': post_form,
             'template_name': post_create_template,
         },
         'postUpdate': {
             'model': post_model,
-            'pk_url_kwarg': pk_post,
+            'pk_url_kwarg': post_pk,
             'form_class': post_form,
             'template_name': post_create_template,
         },
         'postDelete': {
             'model': post_model,
-            'pk_url_kwarg': pk_post,
+            'pk_url_kwarg': post_pk,
             'form_class': post_form,
         },
         'commentDetail': {
             'model': comment_model,
-            'pk_url_kwarg': pk_comment,
+            'pk_url_kwarg': comment_pk,
             'template_name': comment_content_template,
         },
         'commentCreate': {
             'model': comment_model,
-            'pk_url_kwarg': pk_comment,
+            'pk_url_kwarg': comment_pk,
             'form_class': comment_form,
             'template_name': comment_create_template,
         },
         'commentUpdate': {
             'model': comment_model,
-            'pk_url_kwarg': pk_comment,
+            'pk_url_kwarg': comment_pk,
             'form_class': comment_form,
             'template_name': comment_create_template,
         },
         'commentDelete': {
             'model': comment_model,
-            'pk_url_kwarg': pk_comment,
+            'pk_url_kwarg': comment_pk,
             'form_class': comment_form,
         },
     }
@@ -97,7 +98,9 @@ class BoardInfoMixIn:
     @property
     def menu(self) -> str: return self.app_name.capitalize()
     @property
-    def list_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:list')
+    def post_list_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:list')
+    @property
+    def post_create_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:create')
     @property
     def base_icon(self) -> str: return ICON_LIST[self.app_name]
     @property
@@ -126,12 +129,14 @@ class BoardInfoMixIn:
             'type': self.view_type,
             'menu': self.menu,
             'title': self.title,
-            'pagination_url': self.list_url,
+            'pagination_url': self.post_list_url,
             'target_id': self.target_id,
             'icon': self.base_icon,
             'color': self.base_color,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
+            'list_url': self.post_list_url,
+            'post_create_url': self.post_create_url,
         }
 
     @property
@@ -144,24 +149,7 @@ class BoardInfoMixIn:
             return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.comment_id])
 
 
-class BaseView:
-    info: dict
-    object = None
-
-    def update_context(self, context, **kwargs):
-        context['info'] = self.info
-        try:
-            page_obj = context['page_obj']
-            paginator = context['paginator']
-            context['info']['page'] = page_obj.number
-            context['page_range'] = paginator.get_elided_page_range(page_obj.number, on_ends=1)
-        except KeyError:
-            context['info']['page'] = ''
-            context['page_range'] = ''
-        return context
-
-
-class PostListView(BoardInfoMixIn, CreateLogMixIn, BaseView, ListView):
+class PostListView(BoardInfoMixIn, CreateLogMixIn, ListView):
     view_type = 'postList'
 
     @property
@@ -180,14 +168,20 @@ class PostListView(BoardInfoMixIn, CreateLogMixIn, BaseView, ListView):
         return HttpResponse(html)
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
+        queryset = self.object_list
+        page_size = self.get_paginate_by(queryset)
+        paginator, page_obj, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
         top_fixed = self.model.objects.filter(top_fixed=True)
-        context['top_fixed'] = top_fixed
-        return context
+        return {
+            'view': self,
+            'info': self.info,
+            'page_obj': page_obj,
+            'page_range': paginator.get_elided_page_range(page_obj.number, on_ends=1),
+            'top_fixed': top_fixed,
+        }
 
 
-class PostDetailView(BoardInfoMixIn, CreateLogMixIn, BaseView, DetailView):
+class PostDetailView(BoardInfoMixIn, CreateLogMixIn, DetailView):
     view_type = 'postDetail'
 
     def get(self, request, *args, **kwargs):
@@ -197,22 +191,23 @@ class PostDetailView(BoardInfoMixIn, CreateLogMixIn, BaseView, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
+        prev_post, next_post = self.get_prev_next_post()
+        context['info'] = self.info
+        context['prev_post'] = prev_post
+        context['next_post'] = next_post
+        context['comments'] = self.object.comment.all()
+        return context
 
+    def get_prev_next_post(self):
         id_list = list(self.model.objects.values_list('id', flat=True))
         q = id_list.index(self.object.id)
         last = len(id_list) - 1
         prev_post = self.model.objects.get(id=id_list[q + 1]) if q != last else ''
         next_post = self.model.objects.get(id=id_list[q - 1]) if q != 0 else ''
-
-        context['prev_post'] = prev_post
-        context['next_post'] = next_post
-        context['comments'] = self.object.comment.all()
-
-        return context
+        return prev_post, next_post
 
 
-class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, CreateView):
+class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, CreateView):
     view_type = 'postCreate'
 
     def form_valid(self, form):
@@ -232,11 +227,11 @@ class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseVie
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
+        context['info'] = self.info
         return context
 
 
-class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, UpdateView):
+class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, UpdateView):
     view_type = 'postUpdate'
 
     def form_valid(self, form):
@@ -245,7 +240,7 @@ class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseVie
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
+        context['info'] = self.info
         context['info']['target_id'] = f'postUpdateContent{self.post_id}'
         return context
 
@@ -258,7 +253,7 @@ class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseVie
         return super().post(request, *args, **kwargs)
 
 
-class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, DeleteView):
+class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, DeleteView):
     view_type = 'postDelete'
 
     def post(self, request, *args, **kwargs):
@@ -266,16 +261,16 @@ class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseVie
         return super().post(request, *args, **kwargs)
 
 
-class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, BaseView, DetailView):
+class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, DetailView):
     view_type = 'commentDetail'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
+        context['info'] = self.info
         return context
 
 
-class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, CreateView):
+class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, CreateView):
     view_type = 'commentCreate'
 
     def form_valid(self, form):
@@ -293,24 +288,21 @@ class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, Base
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
+        context['info'] = self.info
         return context
 
 
-class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, UpdateView):
+class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, UpdateView):
     view_type = 'commentUpdate'
 
-    def get_success_url(self):
-        return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
+    @property
+    def success_url(self): return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
 
     def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
         context = self.get_context_data(**kwargs)
         html = render(request, self.comment_update_template, context).content.decode('utf-8')
         self.create_log_for_board_create_update()
-        return JsonResponse({
-            'html': html,
-        })
+        return JsonResponse({'html': html})
 
     def post(self, request, *args, **kwargs):
         self.create_log_for_board_create_update()
@@ -318,15 +310,14 @@ class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, Base
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context = self.update_context(context, **kwargs)
+        context['info'] = self.info
         context['comment'] = self.object
         context['info']['target_id'] = f'commentUpdateContent{self.object.id}'
         return context
 
 
-class CommentDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, BaseView, DeleteView):
+class CommentDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, DeleteView):
     view_type = 'commentDelete'
 
-    def get_success_url(self):
-        obj = self.get_object()
-        return reverse_lazy(f'{self.app_name}:detail', args=[obj.post.id])
+    @property
+    def success_url(self): return reverse_lazy(f'{self.app_name}:detail', args=[self.object.post.id])
