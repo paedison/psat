@@ -35,7 +35,10 @@ urlpatterns = [
     re_path(r'answer/list/(?P<sub>언어|자료|상황|전체)/$', AnswerListView.as_view(), name='answer_list_sub'),
     re_path(r'answer/list/(?P<is_correct>[01])correct/(?P<sub>언어|자료|상황|전체)/$', AnswerListView.as_view(), name='answer_list_opt_sub'),
     path('answer/detail/<int:problem_id>/', AnswerDetailView.as_view(), name='answer_detail'),
-    #
+
+    # Search
+    path('search/', ProblemSearchListView.as_view(), name='search'),
+
     # # Tag: Tag_views
     # path('detail/<int:problem_id>/tags/', ProblemTagsView.as_view(), name='problem_tags'),
     # path('detail/<int:problem_id>/tags/add/', add_tag, name='problem_tags'),

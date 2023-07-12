@@ -36,6 +36,11 @@
                                 <button class="nav-link text-primary font-weight-bold small p-2" id="nav-sanghwang-tab" data-bs-toggle="tab" data-bs-target="#nav-sanghwang" type="button" role="tab" aria-controls="nav-sanghwang" aria-selected="false">
                                     {{ PSAT_ICON_SET.sanghwang|safe }} 상황
                                 </button>
+                            {% if info.category == 'problem' %}
+                                <button class="nav-link text-primary font-weight-bold small p-2" id="nav-search-tab" data-bs-toggle="tab" data-bs-target="#nav-search" type="button" role="tab" aria-controls="nav-search" aria-selected="false">
+                                    {{ PSAT_ICON_SET.search|safe }} 검색
+                                </button>
+                            {% endif %}
                             </div>
                         </nav>
                         <!-- Navigation Tab End -->
@@ -63,6 +68,14 @@
                                 {{ sanghwang|safe }}
                             </div>
                             <!-- Sanghwang Tab End -->
+
+                        {% if info.category == 'problem' %}
+                            <!-- Search Tab Start -->
+                            <div class="tab-pane fade" id="nav-search" role="tabpanel" aria-labelledby="nav-search-tab">
+                                {{ search|safe }}
+                            </div>
+                            <!-- Search Tab End -->
+                        {% endif %}
                         </div>
                     </div>
                 </div>

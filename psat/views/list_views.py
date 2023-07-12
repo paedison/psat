@@ -1,5 +1,4 @@
 # Django Core Import
-
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.http import HttpResponse
@@ -7,10 +6,14 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import generic
 
+# Third Party Library Import
+from searchview import views as search_view
+
 # Custom App Import
 from common.constants import icon, color, psat
 from log.views import CreateLogMixIn
-from ..models import Problem, Evaluation
+from ..forms import ProblemSearchForm
+from ..models import Problem, Evaluation, ProblemData
 
 
 def index(request):
@@ -31,6 +34,7 @@ class PsatListInfoMixIn:
         'like': 'PSAT 즐겨찾기',
         'rate': 'PSAT 난이도',
         'answer': 'PSAT 정답확인',
+        'search': 'PSAT 검색'
     }
 
     @property
@@ -61,6 +65,7 @@ class PsatListInfoMixIn:
             'like': self.kwargs.get('is_liked'),
             'rate': self.kwargs.get('star_count'),
             'answer': self.kwargs.get('is_correct'),
+            'search': None,
         }
 
     @property
@@ -177,6 +182,7 @@ class QuerysetFieldMixIn:
         'like': ['evaluation__is_liked__gte', 'evaluation__is_liked', '-evaluation__liked_at'],
         'rate': ['evaluation__difficulty_rated__gte', 'evaluation__difficulty_rated', '-evaluation__rated_at'],
         'answer': ['evaluation__is_correct__gte', 'evaluation__is_correct', '-evaluation__rated_at'],
+        'search': ['', ''],
     }
 
     @property
@@ -185,17 +191,10 @@ class QuerysetFieldMixIn:
         return self.field_dict[self.category]
 
 
-class BaseListView(
-    PsatListInfoMixIn,
-    EvaluationInfoMixIn,
-    QuerysetFieldMixIn,
-    CreateLogMixIn,
-    generic.ListView,
-):
+class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn, QuerysetFieldMixIn, generic.ListView):
     """ Represent PSAT base list view. """
     model = Problem
-    template_name = 'psat/problem_list.html'
-    content_template = 'psat/problem_list_content.html'
+    template_name = 'psat/problem_list_content.html'
     context_object_name = 'problem'
     paginate_by = 10
     category: str
@@ -206,14 +205,14 @@ class BaseListView(
 
     def get(self, request, *args, **kwargs) -> render:
         context = self.get_context_data(**kwargs)
-        html = render(request, self.content_template, context)
+        html = render(request, self.template_name, context)
         self.create_log_for_list(page_obj=context['page_obj'])
         return html
 
     def post(self, request, *args, **kwargs) -> HttpResponse:
         self.kwargs['page'] = request.POST.get('page', '1')
         context = self.get_context_data(**kwargs)
-        html = render(request, self.content_template, context).content.decode('utf-8')
+        html = render(request, self.template_name, context).content.decode('utf-8')
         self.create_log_for_list(page_obj=context['page_obj'])
         return HttpResponse(html)
 
@@ -302,6 +301,8 @@ class ListMainView(PsatListInfoMixIn, generic.View):
         eoneo = list_view(request, sub='언어').content.decode('utf-8')
         jaryo = list_view(request, sub='자료').content.decode('utf-8')
         sanghwang = list_view(request, sub='상황').content.decode('utf-8')
+        problem_search_view = ProblemSearchListView.as_view()
+        search = problem_search_view(request).content.decode('utf-8')
         context = {
             'info': self.info,
             'total': psat.TOTAL,
@@ -309,6 +310,7 @@ class ListMainView(PsatListInfoMixIn, generic.View):
             'eoneo': eoneo,
             'jaryo': jaryo,
             'sanghwang': sanghwang,
+            'search': search,
         }
         return render(request, self.template_name, context)
 
@@ -331,3 +333,63 @@ class RateListMainView(ListMainView):
 class AnswerListMainView(ListMainView):
     main_list_view = AnswerListView
     category = 'answer'
+
+
+class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn, QuerysetFieldMixIn, search_view.SearchView):
+    model = ProblemData
+    template_name = 'psat/problem_list_content.html'
+    form_class = ProblemSearchForm
+    paginate_by = 10
+    first_display_all_list = False
+    ordering = '-problem__exam__year'
+    category = 'search'
+
+    @property
+    def log_title(self) -> str:
+        """ Return menu name of the list. """
+        return self.title_dict[self.category]
+
+    @property
+    def pagination_url(self) -> reverse_lazy:
+        return reverse_lazy('psat:search')
+
+    @property
+    def info(self) -> dict:
+        """ Return information dictionary of the main list. """
+        return {
+            'app_name': self.app_name,
+            'menu': self.category,
+            'category': self.category,
+            'type': f'{self.category}List',
+            'title': self.log_title,
+            'pagination_url': self.pagination_url,
+            'target_id': f'{self.category}ListContent',
+            'icon': icon.MENU_ICON_SET[self.category],
+            'color': color.COLOR_SET[self.category],
+        }
+
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        html = render(request, self.template_name, context)
+        self.create_log_for_list(page_obj=context['page_obj'])
+        return html
+
+    def post(self, request, *args, **kwargs) -> HttpResponse:
+        super().post(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        html = render(request, self.template_name, context).content.decode('utf-8')
+        self.create_log_for_list(page_obj=context['page_obj'])
+        return HttpResponse(html)
+
+    def get_context_data(self, *, object_list=None, **kwargs) -> dict:
+        context = super().get_context_data()
+        page_obj = context['page_obj']
+        paginator = context['paginator']
+        page_range = paginator.get_elided_page_range(page_obj.number, on_ends=1)
+        for obj in page_obj:
+            self.get_evaluation_info(obj)
+        context['url'] = self.url
+        context['info'] = self.info
+        context['page_range'] = page_range
+        return context

@@ -32,6 +32,9 @@ DIFFICULTY_CHOICES = [
 
 
 class AddInfo:
+    def __init__(self):
+        self.is_liked = self.difficulty_rated = self.is_correct = None
+
     def exam_id(self):
         return self.exam.id if isinstance(self, Problem) else self.problem.exam.id
 
@@ -136,6 +139,12 @@ class AddInfo:
 
 
 class UpdateInfo:
+    def __init__(self):
+        self.is_liked = self.difficulty_rated = self.is_correct = None
+        self.opened_times = self.liked_times = self.rated_times = self.answered_times = None
+        self.opened_at = self.liked_at = self.rated_at = self.answered_at = None
+        self.submitted_answer = self.correct_answer = None
+
     def update_open(self):
         opened_times = self.opened_times or 0
         self.opened_at = now
@@ -167,6 +176,9 @@ class UpdateInfo:
         else:
             self.is_correct = False
         self.save()
+
+    def save(self):
+        pass
 
 
 class Exam(AddInfo, models.Model):

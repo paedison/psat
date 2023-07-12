@@ -1,11 +1,11 @@
 {% load static %}
 
 <span role="textbox" aria-label="question">
-{% if info.type == 'problemList' %}
+{% if info.type == 'problemList' or 'searchList' %}
     <a class="text-decoration-none link" href="{{ problem.get_problem_url }}" target="detailWindow">
         {{ problem.problem_question|truncatechars:30 }}
     </a>
-{% elif info.type == 'likeList' or info.type == 'likeDashboard' %}
+{% elif info.type == 'likeList' or 'likeDashboard' %}
     {% if problem.is_liked %}
     <a class="text-decoration-none link" href="{{ problem.get_like_url }}" target="detailWindow">
         {{ problem.problem_question|truncatechars:30 }}
@@ -15,11 +15,11 @@
         {{ problem.problem_question|truncatechars:30 }}
     </a>
     {% endif %}
-{% elif info.type == 'rateList' or info.type == 'rateDashboard' %}
+{% elif info.type == 'rateList' or 'rateDashboard' %}
     <a class="text-decoration-none link" href="{{ problem.get_rate_url }}" target="detailWindow">
         {{ problem.problem_question|truncatechars:30 }}
     </a>
-{% elif info.type == 'answerList' or info.type == 'answerDashboard' %}
+{% elif info.type == 'answerList' or 'answerDashboard' %}
     <a class="text-decoration-none link" href="{{ problem.get_answer_url }}" target="detailWindow">
         {{ problem.problem_question|truncatechars:30 }}
     </a>

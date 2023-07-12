@@ -57,9 +57,9 @@ class CreateLogMixIn:
     @property
     def log_type(self): return self.info.get('type')
     @property
-    def title(self): return self.info.get('title')
+    def log_title(self): return self.info.get('title')
     @property
-    def log_content(self): return f'{self.log_type}({self.method}) - {self.title}'
+    def log_content(self): return f'{self.log_type}({self.method}) - {self.log_title}'
     @property
     def sub(self): return self.info.get('sub', '')
     @property

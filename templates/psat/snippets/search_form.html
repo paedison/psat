@@ -1,0 +1,12 @@
+{% load widget_tweaks %}
+
+<form method="post" id="search_form" class="user">
+    {% csrf_token %}
+    <div class="input-group">
+        {% render_field form.data__contains class='form-control form-control-sm form-control-user' placeholder='검색어를 입력해주세요' %}
+        <a id="psatSearchButton" href="{% url 'psat:search' %}"
+           class="btn btn-primary btn-sm btn-user">
+            {{ PSAT_ICON_SET.search|safe }}
+        </a>
+    </div>
+</form>

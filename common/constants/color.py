@@ -9,4 +9,5 @@ COLOR_SET = {
     'answer': 'success',
     'qna': 'primary',
     'schedule': 'primary',
+    'search': 'primary',
 }

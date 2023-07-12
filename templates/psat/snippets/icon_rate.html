@@ -2,11 +2,13 @@
 {% load psat_filter %}
 
 {% if user.is_authenticated %}
-    <a class="rate-button" href="{% url 'psat:rate_detail' problem.prob_id %}" data-bs-toggle="modal" id="psatRate{{ problem.prob_id }}{{ info.sub_code }}" data-bs-target="#rateModal">
-        <span role="button" aria-label="rate-button">{{ problem.rate_icon|safe }}</span>
+    <a id="psatRate{{ problem.prob_id }}{{ info.sub_code }}" class="rate-button"
+       href="{% url 'psat:rate_detail' problem.prob_id %}"
+       data-bs-toggle="modal" data-bs-target="#rateModal">
+        {{ problem.rate_icon|safe }}
     </a>
 {% else %}
     <a href="" data-bs-toggle="modal" data-bs-target="#loginModal">
-        <span role="button" aria-label="rate-button">{{ PSAT_ICON_SET.starNone|safe }}</span>
+        {{ PSAT_ICON_SET.starNone|safe }}
     </a>
 {% endif %}

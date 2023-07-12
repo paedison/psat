@@ -2,6 +2,11 @@
 
 <section id="{{ info.target_id }}">
     <div id="info" style="display: none;">{{ info|json_script:info }}</div>
+{% if info.category == 'search' %}
+    <section class="col-12 col-sm-8 col-md-6 col-lg-5 mt-4 ml-auto mr-auto" data-target="#{{ info.target_id }}">
+        {% include 'psat/snippets/search_form.html' %}
+    </section>
+{% endif %}
     <table class="table small mb-4">
         <thead>
             <tr class="align-middle text-center text-nowrap">
@@ -63,7 +68,11 @@
             <tr class="text-center">
                 <td colspan="8">
                     <span role="textbox" aria-label="empty-data">
+                    {% if info.category == 'search' %}
+                        검색된 자료가 없습니다.
+                    {% else %}
                         추가된 자료가 없습니다.
+                    {% endif %}
                     </span>
                 </td>
             </tr>
@@ -72,8 +81,10 @@
     </table>
     <section class="d-flex align-items-center justify-content-center text-sm" data-target="#{{ info.target_id }}">
         {% include 'board/snippets/list_pagination.html' %}
+    {% if info.category != 'search' %}
         <div class="d-inline-block ml-auto">
             {% include 'psat/snippets/list_filter_container.html' %}
         </div>
+    {% endif %}
     </section>
 </section>

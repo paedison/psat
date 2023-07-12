@@ -8,36 +8,18 @@ let problemChoice = $('#problemChoice');
 let selectButton = $('#selectButton');
 
 
-/* */
+/* Redirect to problem detail */
 selectButton.on('click', () => {
     location.href = `${typeUrl}${problemChoice.val()}/`;
 });
 
 
-/* Ajax for '#rateButton' (Rate Button) */
-$(document).on('click', '#problemChoice input[name="difficulty"]', function(event) {
-    event.preventDefault();
-    let difficulty = $(this).attr('value');
-    let url = rateButton.data('url');
-    let target = '#' + rateButton.data('target');
-    $.ajax({
-        url: url,
-        type: 'POST',
-        data: { 'difficulty': difficulty },
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $('.close').click();
-            $(target).replaceWith(data);
-        }
-    });
-});
-
-
-/* Ajax for '.like-button' (Like Button) */
+/* Ajax for like */
 $(document).on('click', '.like-button', function(event) {
     event.preventDefault();
     let url = $(this).attr('href');
-    let target = $(this).data('target');
+    let id = $(this).attr('id');
+    let target = `#${id}`;
     $.ajax({
         url: url,
         type: 'POST',
@@ -49,21 +31,19 @@ $(document).on('click', '.like-button', function(event) {
 });
 
 
-/* Transmitting Data for '.rate-button' (Open Rate Modal) */
+/* Ajax for rate */
 $(document).on('click', '.rate-button', function(){
-    let problemId = $(this).data('problemId');
     let url = $(this).attr('href');
     let id = $(this).attr('id');
     rateButton.data('url', url);
-    rateButton.data('target', id);
+    rateButton.data('target', `#${id}`);
 });
 
-/* Ajax for '#rateButton' (Rate Button) */
 $(document).on('click', 'input[name="difficulty"]', function(event) {
     event.preventDefault();
     let difficulty = $(this).attr('value');
     let url = rateButton.data('url');
-    let target = '#' + rateButton.data('target');
+    let target = rateButton.data('target');
     $.ajax({
         url: url,
         type: 'POST',
@@ -77,7 +57,7 @@ $(document).on('click', 'input[name="difficulty"]', function(event) {
 });
 
 
-/* Ajax for '.answer-button' (Answer Button) */
+/* Ajax for answer */
 $(document).on('click', '.answer-button', function(event) {
     event.preventDefault();
     let url = $(this).attr('href');
@@ -95,3 +75,42 @@ $(document).on('click', '.answer-button', function(event) {
     });
 });
 
+
+/* Ajax for search */
+$(document).ready(function() {
+    $(document).on('keypress', '#id_data__contains', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            submitSearch();
+        }
+    });
+
+    $(document).on('click', '#psatSearchButton', function(event) {
+        event.preventDefault();
+        submitSearch();
+    });
+
+    $(document).on('click', '.search-page', function(event) {
+        event.preventDefault();
+        submitSearch($(this).data('value'));
+    });
+
+    function submitSearch(page = null) {
+        let url = $('#psatSearchButton').attr('href');
+        let target = $('#psatSearchButton').closest('section').data('target');
+        let searchData = {
+            'page': page,
+            'data__contains': $('#id_data__contains').val()
+        };
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: searchData,
+            headers: { 'X-CSRFToken': csrf_token },
+            success: function(data) {
+                $(target).replaceWith(data);
+            }
+        });
+    }
+});

@@ -28,12 +28,11 @@ const psat_menu = ['problem', 'like', 'rate', 'answer']
 
 let collapseProblem = $('#collapseProblem');
 export let info = JSON.parse($('#info').text());
-let infoCategory = info['category'];
 let menu = info['menu'];
 export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 
 
-/* Collapse & Activate Menu */
+/* Collapse & activate menu */
 function collapseMenu() {
     collapseProblem.parent().addClass('active');
     collapseProblem.prev('a').removeClass('collapsed');
@@ -65,7 +64,7 @@ $(document).on('click', '#accountLogout', function(event) {
 });
 
 
-/* Ajax for '.list-page' (List Pagination) */
+/* Ajax for list pagination */
 $(document).on('click', '.list-page', function(event) {
     event.preventDefault();
     let url = $(this).attr('href');
@@ -83,7 +82,7 @@ $(document).on('click', '.list-page', function(event) {
 });
 
 
-/* Ajax for '.list-filter' (Like / Rate / Answer List Filter) */
+/* Ajax for list Filter */
 $(document).on('click', '.list-filter', function(event) {
     event.preventDefault();
     let url = $(this).attr('href');
