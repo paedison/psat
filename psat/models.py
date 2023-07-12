@@ -175,8 +175,8 @@ class UpdateInfo:
             self.is_correct = False
         self.save()
 
-    def save(self):
-        pass
+    # def save(self):
+    #     pass
 
 
 class Exam(AddInfo, models.Model):

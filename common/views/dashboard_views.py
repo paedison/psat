@@ -49,7 +49,7 @@ class CardInfoMixIn(PsatListInfoMixIn):
 class DashboardListView(CardInfoMixIn, BaseListView):
     """ Represent Dashboard List view. """
     paginate_by = 10
-    content_template = 'dashboard/dashboard_card_content.html'
+    template_name = 'dashboard/dashboard_card_content.html'
     kwargs: dict
 
     def get_queryset(self) -> object:
