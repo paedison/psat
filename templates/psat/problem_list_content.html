@@ -10,10 +10,10 @@
     <table class="table small mb-4">
         <thead>
             <tr class="align-middle text-center text-nowrap">
-                <th class="col-1 px-1">번호</th>
-                <th class="col-1 px-1">{{ PSAT_ICON_SET.likeTrue|safe }}</th>
-                <th class="col-1 px-1">난이도</th>
-                <th class="col-1 px-1">{{ PSAT_ICON_SET.answerTrue|safe }}</th>
+                <th class="px-1">번호</th>
+                <th class="px-1">{{ PSAT_ICON_SET.likeTrue|safe }}</th>
+                <th class="px-1">난이도</th>
+                <th class="px-1">{{ PSAT_ICON_SET.answerTrue|safe }}</th>
                 <th class="px-1 d-none d-sm-table-cell d-md-none">문제</th>
                 <th class="px-1 d-none d-md-table-cell d-lg-none">문제</th>
                 <th class="px-1 d-none d-lg-table-cell">문제</th>
@@ -35,9 +35,7 @@
             {% endifchanged %}
             <tr class="align-middle text-center text-nowrap">
                 <td class="px-1">
-                    <div role="textbox" aria-label="problem-number">
-                        {{ problem.problem_number }}
-                    </div>
+                    {{ problem.problem_number }}
                 </td>
                 <td class="px-1">
                     {% include 'psat/snippets/icon_like.html' %}
@@ -59,7 +57,7 @@
                 </td>
             </tr>
             <tr class="align-middle text-center text-nowrap">
-                <td class="px-1 d-sm-none" colspan="4" style="border-top:none;">
+                <td class="px-1 d-sm-none" colspan="7" style="border-top:none;">
                     {% include 'psat/snippets/list_table_problem.html' %}
                 </td>
             </tr>

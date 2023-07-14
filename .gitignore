@@ -9,6 +9,7 @@ static/vendor/datatables
 static/vendor/fontawesome-free_old
 **/demo/
 _config/settings/dev.py
+git_update.sh
 
 
 ### Django ###
