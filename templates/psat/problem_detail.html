@@ -80,6 +80,29 @@
                                             </div>
                                         {% endif %}
                                         {% endif %}
+{#                                            <div>#}
+                                <div class="container">
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <div class="image-container">
+                                                <img class="img-fluid" src="{{ problem.image_file.name2 }}" alt="{{ problem.image_file.tag2 }}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                        <style>
+                                            .image-container {
+                                                height: 50%; /* Set the height to 50% of the container */
+                                                overflow: hidden; /* Hide the overflowing portion of the image */
+                                                position: relative; /* Enable positioning of child elements */
+                                            }
+                                            .image-container img {
+                                                position: absolute; /* Position the image absolutely within the container */
+                                                top: 0; /* Align the top edge of the image with the top edge of the container */
+                                                left: 0; /* Align the left edge of the image with the left edge of the container */
+                                                transform: translateY(-50%); /* Move the image up by 50% of its height to center it vertically */
+                                            }
+                                        </style>
                                         </div>
                                     </td>
                                 </tr>
