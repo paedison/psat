@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 # Third Party Library Import
 from allauth.account import views as all_auth
 from allauth.socialaccount.models import SocialAccount
+from django.views.generic import RedirectView
 
 # Custom App Import
 from ..models import User
@@ -25,6 +26,18 @@ class CustomLoginView(all_auth.LoginView):
         except User.DoesNotExist:
             pass
         return super().form_invalid(form)
+
+
+class DummyLoginView(RedirectView):
+    url = reverse_lazy('psat:base')
+
+
+class DummyLogoutView(RedirectView):
+    url = reverse_lazy('psat:base')
+
+
+class DummySignupView(RedirectView):
+    url = reverse_lazy('psat:base')
 
 
 class CustomLogoutView(all_auth.LogoutView):
