@@ -2,6 +2,7 @@
 
 # Django Core Import
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.datetime_safe import datetime
@@ -54,3 +55,7 @@ class ProfileView(generic.ListView):
             'info': self.info,
         }
         return context
+
+
+def ads(request):
+    return HttpResponse("google.com, pub-3543306443016219, DIRECT, f08c47fec0942fa0")
