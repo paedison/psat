@@ -18,10 +18,6 @@ from common.models import User
 
 now = make_aware(datetime.now())
 
-static_path = BASE_DIR / 'static'
-static_url = '/static/'
-preparing_image_path = os.path.join(static_path, f'image/preparing.png')
-
 DIFFICULTY_CHOICES = [
     (1, '⭐️'),
     (2, '⭐️⭐️'),
@@ -91,6 +87,7 @@ class AddInfo:
     def image_file(self):
         year, year_ex_sub = self.year(), self.year_ex_sub()
         number = f'{self.problem_number():02}'
+        static_path = BASE_DIR / 'static'
 
         preparing_image = static('image/preparing.png')
         file1 = f'PSAT{year_ex_sub}{number}-1.png'
