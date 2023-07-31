@@ -17,12 +17,12 @@ from common.views.base_views import ProfileView
 urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
 
-    path("signup/", DummySignupView.as_view(), name="account_signup"),
-    path("login/", DummyLoginView.as_view(), name="account_login"),
-    path("logout/", DummyLogoutView.as_view(), name="account_logout"),
-    # path("signup/", allauth_views.signup, name="account_signup"),
-    # path("login/", CustomLoginView.as_view(), name="account_login"),
-    # path("logout/", CustomLogoutView.as_view(), name="account_logout"),
+    # path("signup/", DummySignupView.as_view(), name="account_signup"),
+    # path("login/", DummyLoginView.as_view(), name="account_login"),
+    # path("logout/", DummyLogoutView.as_view(), name="account_logout"),
+    path("signup/", allauth_views.signup, name="account_signup"),
+    path("login/", CustomLoginView.as_view(), name="account_login"),
+    path("logout/", CustomLogoutView.as_view(), name="account_logout"),
     path("password/change/", allauth_views.password_change, name="account_change_password"),
     path("password/set/", allauth_views.password_set, name="account_set_password"),
     path("inactive/", allauth_views.account_inactive, name="account_inactive"),
