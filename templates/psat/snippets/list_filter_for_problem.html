@@ -36,11 +36,11 @@
         <div class="d-flex col-12 col-lg-4 flex-wrap justify-content-start" style="min-width: 300px;">
         {% if url.ex == '전체' %}
             <li class="col-6 p-0">
-                <a class="p-1 dropdown-item list-filter text-nowrap text-center active" href="{% url  'psat:problem_list' year='전체' ex='전체' sub=url.sub %}">전체 연도</a>
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center active" href="{% url  'psat:problem_list' year='전체' ex='전체' sub=url.sub %}">전체 시험</a>
             </li>
         {% else %}
             <li class="col-6 p-0">
-                <a class="p-1 dropdown-item list-filter text-nowrap text-center" href="{% url  'psat:problem_list' year='전체' ex='전체' sub=url.sub %}">전체 연도</a>
+                <a class="p-1 dropdown-item list-filter text-nowrap text-center" href="{% url  'psat:problem_list' year='전체' ex='전체' sub=url.sub %}">전체 시험</a>
             </li>
         {% endif %}
         {% for t in TOTAL.exam_list %}

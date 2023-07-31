@@ -1,11 +1,15 @@
 from django.urls import path, re_path
 
 from psat.views.list_views import *
+from psat.views import list_test_views
 from psat.views.detail_views import *
 
 app_name = 'psat'
 
 urlpatterns = [
+    # Test
+    path('test/', list_test_views.ProblemListMainView.as_view(), name='base'),
+
     # Problem
     path('', ProblemListMainView.as_view(), name='base'),
     path('list/', ProblemListView.as_view(), name='problem'),

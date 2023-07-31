@@ -137,3 +137,9 @@ img.problem-image{
 .comment-form:focus {
     outline:none;
 }
+
+.scrollspy-list {
+    position: relative;
+    height: 150px;
+    overflow: auto;
+}
