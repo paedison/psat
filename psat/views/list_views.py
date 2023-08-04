@@ -39,15 +39,20 @@ class PsatListInfoMixIn:
 
     @property
     def url(self) -> dict:
-        """ Return URL dictionary containing year, ex, exam2, sub, subject, sub_code. """
+        """
+        Return URL dictionary containing year, ex, exam2, sub, subject, sub_code.
+        """
         year = self.kwargs.get('year', '전체')
         if year != '전체':
             year = int(year)
         ex = self.kwargs.get('ex', '전체')
-        exam2 = next((i['exam2'] for i in psat.TOTAL['exam_list'] if i['ex'] == ex), None)
+        exam2 = next((i['exam2'] for i in psat.TOTAL['exam_list']
+                      if i['ex'] == ex), None)
         sub = self.kwargs.get('sub', '전체')
-        subject = next((i['subject'] for i in psat.TOTAL['subject_list'] if i['sub'] == sub), None)
-        sub_code = next((i['sub_code'] for i in psat.TOTAL['subject_list'] if i['sub'] == sub), '')
+        subject = next((i['subject'] for i in psat.TOTAL['subject_list']
+                        if i['sub'] == sub), None)
+        sub_code = next((i['sub_code'] for i in psat.TOTAL['subject_list']
+                         if i['sub'] == sub), '')
         return {
             'year': year,
             'ex': ex,
@@ -179,9 +184,12 @@ class QuerysetFieldMixIn:
     category: str
     field_dict = {
         'problem': ['', ''],
-        'like': ['evaluation__is_liked__gte', 'evaluation__is_liked', '-evaluation__liked_at'],
-        'rate': ['evaluation__difficulty_rated__gte', 'evaluation__difficulty_rated', '-evaluation__rated_at'],
-        'answer': ['evaluation__is_correct__gte', 'evaluation__is_correct', '-evaluation__rated_at'],
+        'like': ['evaluation__is_liked__gte', 'evaluation__is_liked',
+                 '-evaluation__liked_at'],
+        'rate': ['evaluation__difficulty_rated__gte', 'evaluation__difficulty_rated',
+                 '-evaluation__rated_at'],
+        'answer': ['evaluation__is_correct__gte', 'evaluation__is_correct',
+                   '-evaluation__rated_at'],
         'search': ['', ''],
     }
 
@@ -191,7 +199,8 @@ class QuerysetFieldMixIn:
         return self.field_dict[self.category]
 
 
-class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn, QuerysetFieldMixIn, generic.ListView):
+class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
+                   QuerysetFieldMixIn, generic.ListView):
     """ Represent PSAT base list view. """
     model = Problem
     template_name = 'psat/problem_list_content.html'
@@ -241,7 +250,8 @@ class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn, Query
         """Get the context for this view."""
         queryset = self.object_list
         page_size = self.get_paginate_by(queryset)
-        paginator, page_obj, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
+        paginator, page_obj, queryset, is_paginated = self.paginate_queryset(
+            queryset, page_size)
         for obj in page_obj:
             self.get_evaluation_info(obj)
         return {
@@ -335,7 +345,8 @@ class AnswerListMainView(ListMainView):
     category = 'answer'
 
 
-class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn, QuerysetFieldMixIn, search_view.SearchView):
+class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
+                            QuerysetFieldMixIn, search_view.SearchView):
     model = ProblemData
     template_name = 'psat/problem_list_content.html'
     form_class = ProblemSearchForm
