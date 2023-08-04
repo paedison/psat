@@ -1,0 +1,14 @@
+{% load psat_filter %}
+
+<div class="td-div-xl" aria-label="Reference">
+    {{ problem.year_ex_sub_hyphen }} {{ problem.number|add_0 }}
+</div>
+<div class="td-div-xs" aria-label="Like">
+    {% include 'psat/snippets/icon_like.html' %}
+</div>
+<div class="td-div-lg" aria-label="Rate">
+    {% include 'psat/snippets/icon_rate.html' %}
+</div>
+<div class="td-div-xs" aria-label="Answer">
+    {% include 'psat/snippets/icon_answer.html' %}
+</div>

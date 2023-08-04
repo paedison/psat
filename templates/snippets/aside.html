@@ -1,115 +1,94 @@
-{% block aside %}
 
-<!-- Sidebar Start -->
-<aside class="bg-gradient-primary ">
-    <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar">
-    {% if user.is_authenticated %}
-        <a class="sidebar-brand d-flex align-items-center justify-content-center"
-           href="{{ MENU_URL_SET.dashboard }}" role="banner">
-            <div class="sidebar-brand-icon rotate-n-15">
-                {{ SITE_LOGO_ICON|safe }}
-            </div>
-            <div class="sidebar-brand-text mx-3">paedison.com</div>
-        </a>
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item" id="noticeList">
-            <a class="nav-link" href="{{ MENU_URL_SET.notice }}">
-                {{ MENU_ICON_SET.notice|safe }}
-                <span>Notice</span>
-            </a>
-        </li>
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item" id="dashboardList">
-            <a class="nav-link" href="{{ MENU_URL_SET.dashboard }}">
-                {{ MENU_ICON_SET.dashboard|safe }}
-                <span>Dashboard</span>
-            </a>
-        </li>
-        {% comment %}
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item" id="profileList">
-            <a class="nav-link" href="{{ MENU_URL_SET.profile }}">
-                {{ MENU_ICON_SET.profile|safe }} Profile
-            </a>
-        </li>
-        {% endcomment %}
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item" role="menuitem" aria-label="PSAT Collapse Menu">
-            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" aria-expanded="false"
-               data-bs-target="#collapseProblem" aria-controls="collapseProblem">
-                {{ MENU_ICON_SET.psat|safe }}
-                <span>PSAT</span>
-            </a>
-            <div id="collapseProblem" class="collapse" aria-labelledby="headingProblem"
-                 data-bs-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item" id="problemList" href="{{ MENU_URL_SET.problem }}">
-                        {{ MENU_ICON_SET.problem|safe }}
-                        <span>기출문제</span>
-                    </a>
-                    <a class="collapse-item" id="likeList" href="{{ MENU_URL_SET.like }}">
-                        {{ MENU_ICON_SET.like|safe }}
-                        <span>즐겨찾기</span>
-                    </a>
-                    <a class="collapse-item" id="rateList" href="{{ MENU_URL_SET.rate }}">
-                        {{ MENU_ICON_SET.rate|safe }}
-                        <span>난이도</span>
-                    </a>
-                    <a class="collapse-item" id="answerList" href="{{ MENU_URL_SET.answer }}">
-                        {{ MENU_ICON_SET.answer|safe }}
-                        <span>정답확인</span>
-                    </a>
-                    {% comment %}
-                    <a class="collapse-item" id="communityList" href="{{ MENU_URL_SET.qna }}">
-                        {{ MENU_ICON_SET.qna|safe }} Q & A
-                    </a>
-                    {% endcomment %}
-                </div>
-            </div>
-        </li>
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item" id="scheduleList">
-            <a class="nav-link" href="{{ MENU_URL_SET.schedule }}">
-                {{ MENU_ICON_SET.schedule|safe }}
-                <span>Schedule</span>
-            </a>
-        </li>
-    {% else %}
-        {# Logo #}
-        <a class="sidebar-brand d-flex align-items-center justify-content-center"
-           href="{{ MENU_URL_SET.problem }}" role="banner">
-            <div class="sidebar-brand-icon rotate-n-15">
-                {{ SITE_LOGO_ICON|safe }}
-            </div>
-            <div class="sidebar-brand-text mx-3">paedison.com</div>
-        </a>
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item" id="noticeList">
-            <a class="nav-link" href="{{ MENU_URL_SET.notice }}">
-                {{ MENU_ICON_SET.notice|safe }}
-                <span>Notice</span>
-            </a>
-        </li>
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item" id="problemList">
-            <a class="nav-link" href="{{ MENU_URL_SET.problem }}">
-                {{ MENU_ICON_SET.psat|safe }}
-                <span>PSAT</span>
-            </a>
-        </li>
-        <hr class="sidebar-divider my-0">
-        <li class="nav-item" id="scheduleList">
-            <a class="nav-link" href="{{ MENU_URL_SET.schedule }}">
-                {{ MENU_ICON_SET.schedule|safe }}
-                <span>Schedule</span>
-            </a>
-        </li>
-    {% endif %}
-        {# Nav Item: Sidebar Toggle Button #}
-        <div class="text-center d-none d-md-inline">
-            <button class="rounded-circle border-0" id="sidebarToggle"></button>
-        </div>
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar">
+    <ul id="sidebar-nav" class="sidebar-nav">
+        {% if user.is_authenticated %}
+            <li class="nav-item">
+                <a id="noticeList" class="nav-link collapsed" href="{{ MENU_URL_SET.notice }}">
+                    {{ MENU_ICON_SET.notice|safe }}
+                    <span>Notice</span>
+                </a>
+            </li><!-- End Notice Nav -->
+
+            <li class="nav-item">
+                <a id="dashboardList" class="nav-link collapsed" href="{{ MENU_URL_SET.dashboard }}">
+                    {{ MENU_ICON_SET.dashboard|safe }}
+                    <span>Dashboard</span>
+                </a>
+            </li><!-- End Dashboard Nav -->
+
+            {% comment %}
+            <li class="nav-item" id="profileList">
+                <a class="nav-link" href="{{ MENU_URL_SET.profile }}">
+                    {{ MENU_ICON_SET.profile|safe }} Profile
+                </a>
+            </li>
+            {% endcomment %}
+            <li class="nav-item" role="menuitem" aria-label="PSAT Menu">
+                <a class="nav-link collapsed" href="#" aria-expanded="false"
+                   data-bs-target="#psat-nav" data-bs-toggle="collapse">
+                    {{ MENU_ICON_SET.psat|safe }}
+                    <span>PSAT</span>
+                    <i class="fa-solid fa-chevron-down ms-auto"></i>
+                </a>
+                <ul id="psat-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                    <li>
+                        <a id="problemList" href="{{ MENU_URL_SET.problem }}">
+                            <i class="fa-regular fa-circle"></i>
+                            {{ MENU_ICON_SET.problem|safe }}
+                            <span>기출문제</span>
+                        </a>
+                        <a id="likeList" href="{{ MENU_URL_SET.like }}">
+                            <i class="fa-regular fa-circle"></i>
+                            {{ MENU_ICON_SET.like|safe }}
+                            <span>즐겨찾기</span>
+                        </a>
+                        <a id="rateList" href="{{ MENU_URL_SET.rate }}">
+                            <i class="fa-regular fa-circle"></i>
+                            {{ MENU_ICON_SET.rate|safe }}
+                            <span>난이도</span>
+                        </a>
+                        <a id="answerList" href="{{ MENU_URL_SET.answer }}">
+                            <i class="fa-regular fa-circle"></i>
+                            {{ MENU_ICON_SET.answer|safe }}
+                            <span>정답확인</span>
+                        </a>
+                        {% comment %}
+                        <a class="collapse-item" id="communityList"
+                         href="{{ MENU_URL_SET.qna }}">
+                            {{ MENU_ICON_SET.qna|safe }} Q & A
+                        </a>
+                        {% endcomment %}
+                    </li>
+                </ul>
+            </li><!-- End PSAT Nav -->
+
+            <li class="nav-item">
+                <a id="scheduleList" class="nav-link collapsed" href="{{ MENU_URL_SET.schedule }}">
+                    {{ MENU_ICON_SET.schedule|safe }}
+                    <span>Schedule</span>
+                </a>
+            </li><!-- End Schedule Nav -->
+
+        {% else %}
+            <li class="nav-item">
+                <a id="noticeList" class="nav-link collapsed" href="{{ MENU_URL_SET.notice }}">
+                    {{ MENU_ICON_SET.notice|safe }}
+                    <span>Notice</span>
+                </a>
+            </li><!-- End Notice Nav -->
+            <li class="nav-item">
+                <a id="problemList" class="nav-link collapsed" href="{{ MENU_URL_SET.problem }}">
+                    {{ MENU_ICON_SET.psat|safe }}
+                    <span>PSAT</span>
+                </a>
+            </li><!-- End PSAT Nav -->
+            <li class="nav-item">
+                <a id="scheduleList" class="nav-link collapsed" href="{{ MENU_URL_SET.schedule }}">
+                    {{ MENU_ICON_SET.schedule|safe }}
+                    <span>Schedule</span>
+                </a>
+            </li><!-- End Schedule Nav -->
+        {% endif %}
     </ul>
-</aside>
-<!-- Sidebar End -->
-{% endblock %}
+</aside><!-- End Sidebar-->

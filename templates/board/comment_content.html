@@ -3,8 +3,13 @@
     <div id="comment{{ comment.id }}" class="p-2">
         <div class="d-flex justify-content-between">
             <div>
-                <span class="text-gray-900 mr-1">{{ comment.user.username }}</span>
-                <span class="mr-1">{{ comment.created_at|date:'Y.m.d' }}({{ comment.created_at|date:'w'|int2kor }}) {{ comment.created_at|time:'H:i' }}</span>
+                <span class="text-gray-500 mr-1">
+                    {{ comment.user.username }}
+                </span>
+                <span class="mr-1">
+                    {{ comment.created_at|date:'Y.m.d' }}({{ comment.created_at|date:'w'|int2kor }})
+                    {{ comment.created_at|time:'H:i' }}
+                </span>
             </div>
         {%  if comment.user == user %}
             <div>

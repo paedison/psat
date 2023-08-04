@@ -5,59 +5,130 @@
 {% block head_title %}{% endblock head_title %}
 {% block extra_head %}{% endblock extra_head %}
 
-{% block html_body %} {# [05] Main Content #}
-<body class="bg-gradient-primary">
+{% block html_body %}
+<body>
+<main>
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-xl-10 col-lg-12 col-md-9">
-                <div class="card o-hidden border-0 shadow-lg my-5">
-                    <div class="card-body p-0">
-                        <div class="row">
-                            {% block main_image %}{% endblock %}
-                            <div class="col-lg-6">
-                                <div class="p-5">
-                            {% block body %}
-                                {% if messages %}
-                                    <form class="user">
-                                        {% for message in messages %}
-                                        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
-                                            {{message}}
+        <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6 col-xl-5 d-flex flex-column align-items-center justify-content-center">
+                        <div class="d-flex justify-content-center py-4">
+                            <a href="{{ MENU_URL_SET.problem }}" role="banner"
+                               class="logo d-flex align-items-center w-auto">
+                                <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
+                                <span>Paedison</span>
+                            </a>
+                        </div><!-- End Logo -->
+
+                        <div class="card mb-3">
+                            <div class="card-title text-center fw-bold fs-2">
+                                {% block body_title %}{% endblock body_title %}
+                            </div>
+                            <div class="card-body">
+                                {% block body %}
+                                    {% if messages %}
+                                        <div class="row">
+                                            {% for error in messages %}
+                                                {% include 'account/snippets/account_error_alert.html' %}
+                                            {% endfor %}
                                         </div>
-                                        {% endfor %}
-                                    </form>
-                                {% endif %}
-
-                                {% block content %}{% endblock %}
-
-                                {% block footer %}
-                                    {% if user.is_authenticated %}
-                                    <div class="text-center">
-                                        <a class="small" href="{% url 'account_email' %}">{% trans "Change E-mail" %}</a>
-                                    </div>
-                                    <div class="text-center">
-                                        <a class="small" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
-                                    </div>
-                                    {% else %}
-                                    <div class="text-center">
-                                        <a class="button secondaryAction small" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
-                                    </div>
-                                    <div class="text-center">
-                                        <a class="small" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
-                                    </div>
                                     {% endif %}
-                                {% endblock footer %}
 
-                            {% endblock body %}
+                                    {% if form.non_field_errors %}
+                                        <div class="row">
+                                            {% for error in form.non_field_errors %}
+                                                {% include 'account/snippets/account_error_alert.html' %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
 
-                            {% block extra_body %}{% endblock %}
+                                    {% if form.errors %}
+                                        <div class="row">
+                                            {% if form.errors.email %}
+                                                {% for error in form.errors.email %}
+                                                    {% include 'account/snippets/account_error_alert.html' %}
+                                                {% endfor %}
+                                            {% endif %}
 
-                                </div>
+                                            {% if form.errors.username %}
+                                                {% for error in form.errors.username %}
+                                                    {% include 'account/snippets/account_error_alert.html' %}
+                                                {% endfor %}
+                                            {% endif %}
+
+                                            {% if form.errors.password1 %}
+                                                {% for error in form.errors.password1 %}
+                                                    {% include 'account/snippets/account_error_alert.html' %}
+                                                {% endfor %}
+                                            {% endif %}
+
+                                            {% if form.errors.password2 %}
+                                                {% for error in form.errors.password2 %}
+                                                    {% include 'account/snippets/account_error_alert.html' %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+
+                                    {% block content %}{% endblock content %}
+
+                                    {% block footer %}
+                                        {% if user.is_authenticated %}
+                                        <div class="text-center">
+                                            <a class="small" href="{% url 'account_email' %}">
+                                                {% trans "Change E-mail" %}
+                                            </a>
+                                        </div>
+                                        <div class="text-center">
+                                            <a class="small" href="{% url 'account_logout' %}">
+                                                {% trans "Sign Out" %}
+                                            </a>
+                                        </div>
+                                        {% else %}
+                                        <div class="text-center">
+                                            <a class="button secondaryAction small"
+                                               href="{% url 'account_reset_password' %}">
+                                                {% trans "Forgot Password?" %}
+                                            </a>
+                                        </div>
+                                        <div class="text-center">
+                                            <a class="small" href="{% url 'account_signup' %}">
+                                                {% trans "Sign Up" %}
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                    {% endblock footer %}
+
+                                {% endblock body %}
+
+                                {% block extra_body %}{% endblock extra_body %}
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+      </section>
     </div>
+</main><!-- End main -->
+
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+</a>
+
+<!-- Vendor JS Files -->
+<script src="{% static 'vendor/jquery/jquery-3.5.1.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'vendor/jquery-easing/jquery.easing.js' %}"></script>
+{#<script type="module" src="{% static 'vendor/chart.js/chart.js' %}"></script>#}
+
+<!-- Template Main JS File -->
+<script src="{% static 'vendor/nice-admin/js/main.js' %}"></script>
+<script type="module" src="{% static 'js/common.js' %}"></script>
+
+<!-- Page Javascript File -->
+{% block page_script %}{% endblock page_script %}
+
 </body>
 {% endblock html_body %}

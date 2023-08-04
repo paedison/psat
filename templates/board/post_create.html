@@ -4,56 +4,56 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %} {# [05] Main Content #}
-<!-- Main Content Start -->
+{% block main %}
 <section id="{{ info.target_id }}">
-    <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    <section class="container col-12 px-3 mb-4">
-        <div class="row d-flex align-items-center justify-content-between" role="textbox">
-            <h6 class="font-weight-bold text-primary m-0">
-                {{ info.icon|safe }} {{ info.title }}
-            </h6>
-        </div>
-    </section>
-    <article class="mx-0 main-article">
-        <!-- Content Row Start -->
+    <div id="info">{{ info|json_script:info }}</div>
+    <div class="pagetitle my-2">
+        <h1>
+            {{ info.icon|safe }}
+            {{ info.title }}
+        </h1>
+    </div><!-- End Page Title -->
+
+    <section class="section">
         <div class="row">
-            <section class="col-12 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
+            <div class="col-12 my-2">
+                <div class="card">
+                    <div class="card-body p-4">
                         <form method="post" class="user">
                             {% csrf_token %}
 
                             {% if form.errors.content %}
-                            <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
+                            <div class="alert alert-danger btn-user text-center font-weight-bold">
                                 내용을 입력해주세요.
                             </div>
                             {% endif %}
 
                             <div class="d-flex">
-                                {% render_field form.category class='col-2 form-select form-select-sm' %}
-                                {% render_field form.title class='col-10 form-control form-control-sm' placeholder='제목을 입력해주세요' %}
+                                <div class="col-2">
+                                    {% render_field form.category class='form-select form-select-sm' %}
+                                </div>
+                                <div class="col-10">
+                                    {% render_field form.title class='form-control form-control-sm' placeholder='제목을 입력해주세요' %}
+                                </div>
                             </div>
                             {% render_field form.content placeholder='내용을 입력해주세요' %}
 
                             <div class="d-flex align-items-center justify-content-end mt-2">
-                                <div class="custom-control custom-checkbox mr-2">
-                                    <input type="checkbox" name="top_fixed" class="custom-control-input" id="id_top_fixed">
-                                    <label class="custom-control-label small pt-1" for="id_top_fixed">상단 고정</label>
+                                <div class="form-check mr-2">
+                                    <input type="checkbox" name="top_fixed" class="form-check-input" id="id_top_fixed">
+                                    <label class="form-check-label small" for="id_top_fixed">상단 고정</label>
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-4">
                                     글쓰기
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
-            </section>
-        </div>
-        <!-- Content Row End -->
-    </article>
-</section>
-<!-- Main Content End -->
+            </div>
+        </div><!-- End Content Row -->
+    </section>
+</section><!-- End Main Content -->
 {% endblock %}
 
 {% block page_script %}

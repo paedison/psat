@@ -6,59 +6,55 @@
 {% load account socialaccount %}
 {% providers_media_js %}
 
-{% block head_title %}{% trans "Welcome!" %}{% endblock %}
-{% block main_image %}<div class="col-lg-6 d-none d-lg-block bg-login-image"></div>{% endblock %}
+{% block head_title %}{% trans "Welcome!" %}{% endblock head_title %}
+{% block body_title %}{% trans "Welcome!" %}{% endblock body_title %}
 
 {% block content %}
 {% get_providers as socialaccount_providers %}
-    <div class="text-center">
-        <h1 class="h4 text-gray-900 mb-4">{% trans "Welcome!" %}</h1>
-    </div>
-
-    <form method="post" action="{% url 'account_login' %}" class="login user">
+    <form method="post" action="{% url 'account_login' %}" class="row g-3">
         {% csrf_token %}
-        {% with WIDGET_REQUIRED_CLASS='form-group form-control form-control-user' %}
-
-        {% if form.non_field_errors %}
-            {% for error in form.non_field_errors %}
-        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
-            {{ error }}
+        <div class="col-12">
+            <div class="form-floating">
+                {% render_field form.login class="form-control form-control-sm" %}
+                <label for="id_login">
+                    {% trans 'E-mail' %}
+                </label>
+            </div>
         </div>
-            {% endfor %}
-        {% endif %}
 
-        {% if existing_social_user %}
-        <div class="alert alert-danger btn-user text-center font-weight-bold" role="alert">
-            소셜로그인으로 등록된 이메일입니다.
+        <div class="col-12">
+            <div class="form-floating">
+               {% render_field form.password class="form-control form-control-sm" %}
+                <label for="id_password">
+                    {% trans 'Password' %}
+                </label>
+            </div>
         </div>
-        {% endif %}
-
-        {% render_field form.login placeholder='이메일을 입력해주세요' %}
-        {% render_field form.password placeholder='비밀번호를 입력해주세요' %}
 
         {% if redirect_field_value %}
             <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
         {% endif %}
 
-        <div class="form-group">
-            <div class="custom-control custom-checkbox small">
-                <input type="checkbox" class="custom-control-input" id="id_remember">
-                <label class="custom-control-label" for="id_remember">{% trans 'Remember Me'%}</label>
+        <div class="col-12">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="remember"
+                       value="true" id="id_remember">
+                <label class="form-check-label" for="id_remember">{% trans 'Remember Me'%}</label>
             </div>
         </div>
-    {% endwith %}
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary btn-user btn-block">
+
+        <div class="col-12">
+            <button class="btn btn-primary w-100" type="submit">
                 {% trans 'Sign In' %}
             </button>
         </div>
     </form>
 
-    <form method="post" class="user" action="{% provider_login_url 'google' %}" >
+    <form method="post" action="{% provider_login_url 'google' %}" class="row my-3">
         {% csrf_token %}
-        <div class="form-group">
-            <button type="submit" class="btn btn-google btn-user btn-block">
-                Google 계정으로 계속하기
+        <div class="col-12">
+            <button class="btn btn-danger w-100" type="submit">
+                {% trans 'Continue with Google' %}
             </button>
         </div>
     </form>

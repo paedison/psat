@@ -1,17 +1,16 @@
 {% load static %}
 {% load psat_filter %}
 
-    <div class="input-group-append dropdown" role="option">
-        <a id="problemChoiceLink" href="#" role="button"
-           class="btn btn-circle btn-sm btn-{{ info.color }} dropdown-toggle"
-           data-bs-toggle="dropdown" aria-expanded="false">
-            {{ PSAT_ICON_SET.list|safe }}
-        </a>
-        <div class="dropdown-menu" aria-labelledby="problemChoiceLink">
-    {% if info.type == 'problemDetail' %}
-        {% include 'psat/snippets/detail_filter_for_problem.html' %}
-    {% else %}
-        {% include 'psat/snippets/detail_filter_for_others.html' %}
-    {% endif %}
+    <a id="problemChoiceLink" href="#" class="btn btn-circle btn-sm btn-{{ info.color }} dropdown-toggle"
+       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ PSAT_ICON_SET.list|safe }}
+    </a>
+    <div class="dropdown-menu" aria-labelledby="problemChoiceLink">
+        <div class="dropdown" role="option">
+            {% if info.type == 'problemDetail' %}
+                {% include 'psat/snippets/detail_filter_for_problem.html' %}
+            {% else %}
+                {% include 'psat/snippets/detail_filter_for_others.html' %}
+            {% endif %}
         </div>
     </div>

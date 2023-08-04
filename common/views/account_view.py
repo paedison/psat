@@ -1,4 +1,5 @@
 # Django Core Import
+from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
@@ -16,11 +17,12 @@ class CustomLoginView(all_auth.LoginView):
 
     def form_invalid(self, form):
         email = form.cleaned_data['login']
+        print(email)
         try:
             existing_user = User.objects.get(email=email)
             try:
                 SocialAccount.objects.get(user=existing_user)
-                self.extra_context['existing_social_user'] = True
+                messages.error(self.request, '소셜로그인으로 등록된 이메일입니다.')
             except SocialAccount.DoesNotExist:
                 pass
         except User.DoesNotExist:

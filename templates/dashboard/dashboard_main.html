@@ -1,74 +1,82 @@
-{% extends 'psat/problem_list.html' %}
+{% extends 'list.html' %}
 {% load static %}
 {% load psat_filter %}
 
-{% block main %} {# [05] Main Content #}
-<!-- Main Content Start -->
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% block main %}
 <section id="{{ info.target_id }}">
-    <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    <section class="container col-12 px-3 mb-4">
-        <div class="row d-flex align-items-center justify-content-between" role="textbox">
-            <h6 class="font-weight-bold text-primary m-0">
-                {{ info.icon|safe }} {{ info.title }}
-            </h6>
-        </div>
-    </section>
-    <article class="mx-0 main-article">
-    <!-- Content Row Start -->
-    <div class="row">
-        <section class="col-12 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <!-- Navigation Tab Start -->
-                    <nav>
-                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                            <button class="nav-link active text-primary font-weight-bold small p-2" id="nav-like-tab" data-bs-toggle="tab" data-bs-target="#nav-like" type="button" role="tab" aria-controls="nav-like" aria-selected="true">
-                                {{ MENU_ICON_SET.like|safe }} 즐겨찾기
-                            </button>
-                            <button class="nav-link text-primary font-weight-bold small p-2" id="nav-rate-tab" data-bs-toggle="tab" data-bs-target="#nav-rate" type="button" role="tab" aria-controls="nav-rate" aria-selected="false">
-                                {{ MENU_ICON_SET.rate|safe }} 난이도
-                            </button>
-                            <button class="nav-link text-primary font-weight-bold small p-2" id="nav-answer-tab" data-bs-toggle="tab" data-bs-target="#nav-answer" type="button" role="tab" aria-controls="nav-answer" aria-selected="false">
-                                {{ MENU_ICON_SET.answer|safe }} 정답확인
-                            </button>
-                            <button class="nav-link text-primary font-weight-bold small p-2" id="nav-problem-tab" data-bs-toggle="tab" data-bs-target="#nav-problem" type="button" role="tab" aria-controls="nav-problem" aria-selected="false">
-                                {{ MENU_ICON_SET.problem|safe }} 기출문제
-                            </button>
-                        </div>
-                    </nav>
-                    <!-- Navigation Tab End -->
+    <div id="info">{{ info|json_script:info }}</div>
+    <div class="pagetitle my-2">
+        <h1>
+            {{ info.icon|safe }}
+            {{ info.title }}
+        </h1>
+    </div><!-- End Page Title -->
 
-                    <div class="tab-content" id="nav-tabContent">
-                        <!-- Like Tab Start -->
-                        <div class="tab-pane fade show active" id="nav-like" role="tabpanel" aria-labelledby="nav-like-tab">
-                            {{ like|safe }}
-                        </div>
-                        <!-- Like Tab End -->
+    <section class="section">
+        <div class="row">
+            <div class="col-12 my-2">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <button class="nav-link active p-2" id="nav-like-tab" type="button"
+                                        data-bs-toggle="tab" data-bs-target="#nav-like" role="tab"
+                                        aria-controls="nav-like" aria-selected="true">
+                                    <span class="fw-bold small text-primary">
+                                        {{ MENU_ICON_SET.like|safe }} 즐겨찾기
+                                    </span>
+                                </button>
+                                <button class="nav-link p-2" id="nav-rate-tab" type="button"
+                                        data-bs-toggle="tab" data-bs-target="#nav-rate" role="tab"
+                                        aria-controls="nav-rate" aria-selected="false">
+                                    <span class="fw-bold small text-primary">
+                                        {{ MENU_ICON_SET.rate|safe }} 난이도
+                                    </span>
+                                </button>
+                                <button class="nav-link p-2" id="nav-answer-tab" type="button"
+                                        data-bs-toggle="tab" data-bs-target="#nav-answer" role="tab"
+                                        aria-controls="nav-answer" aria-selected="false">
+                                    <span class="fw-bold small text-primary">
+                                        {{ MENU_ICON_SET.answer|safe }} 정답확인
+                                    </span>
+                                </button>
+                                <button class="nav-link p-2" id="nav-problem-tab" type="button"
+                                        data-bs-toggle="tab" data-bs-target="#nav-problem" role="tab"
+                                        aria-controls="nav-problem" aria-selected="false">
+                                    <span class="fw-bold small text-primary">
+                                        {{ MENU_ICON_SET.problem|safe }} 기출문제
+                                    </span>
+                                </button>
+                            </div>
+                        </nav><!-- End Navigation -->
 
-                        <!-- Rate Tab Start -->
-                        <div class="tab-pane fade" id="nav-rate" role="tabpanel" aria-labelledby="nav-rate-tab">
-                            {{ rate|safe }}
-                        </div>
-                        <!-- Rate Tab End -->
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-like" role="tabpanel"
+                                 aria-labelledby="nav-like-tab">
+                                {{ like|safe }}
+                            </div><!-- End Like Tab -->
 
-                        <!-- Answer Tab Start -->
-                        <div class="tab-pane fade" id="nav-answer" role="tabpanel" aria-labelledby="nav-answer-tab">
-                            {{ answer|safe }}
-                        </div>
-                        <!-- Answer Tab End -->
+                            <div class="tab-pane fade" id="nav-rate" role="tabpanel"
+                                 aria-labelledby="nav-rate-tab">
+                                {{ rate|safe }}
+                            </div><!-- End Rate Tab -->
 
-                        <!-- Problem Tab Start -->
-                        <div class="tab-pane fade" id="nav-problem" role="tabpanel" aria-labelledby="nav-problem-tab">
-                            {% include 'dashboard/dashboard_card_problem.html' %}
+                            <div class="tab-pane fade" id="nav-answer" role="tabpanel"
+                                 aria-labelledby="nav-answer-tab">
+                                {{ answer|safe }}
+                            </div><!-- End Answer Tab -->
+
+                            <div class="tab-pane fade" id="nav-problem" role="tabpanel"
+                                 aria-labelledby="nav-problem-tab">
+                                {% include 'dashboard/dashboard_card_problem.html' %}
+                            </div><!-- End Problem Tab -->
                         </div>
-                        <!-- Problem Tab End -->
                     </div>
                 </div>
             </div>
-        </section>
-    </div>
-    <!-- Content Row End -->
-    </article>
-</section>
-<!-- Main Content End -->
+        </div><!-- End Content Row -->
+    </section>
+</section><!-- End Main Content -->
 {% endblock %}

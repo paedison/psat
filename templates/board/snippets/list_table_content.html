@@ -1,52 +1,16 @@
 {% load psat_filter %}
 
-    <td class="px-1">
-        <span role="textbox" aria-label="post-number">{{ post.id }}</span>
-    </td>
-    <td class="px-1">
-        <span role="textbox" aria-label="post-category">{{ post.get_category_display }}</span>
-    </td>
-    <td class="text-justify px-1 d-none d-sm-table-cell d-md-none">
-        <span role="textbox" aria-label="post-title">
-        {% if post.top_fixed %}
-            <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
-        {% endif %}
-            <a class="text-decoration-none link" href="{{ post.get_absolute_url }}">
-                {{ post.title|truncatechars:30 }}
-            </a>
-        </span>
-    </td>
-    <td class="text-justify px-1 d-none d-md-table-cell d-lg-none">
-        <span role="textbox" aria-label="post-title">
-        {% if post.top_fixed %}
-            <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
-        {% endif %}
-            <a class="text-decoration-none link" href="{{ post.get_absolute_url }}">
-                {{ post.title|truncatechars:30 }}
-            </a>
-        </span>
-    </td>
-    <td class="text-justify px-1 d-none d-lg-table-cell">
-        <span role="textbox" aria-label="post-title">
-        {% if post.top_fixed %}
-            <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
-        {% endif %}
-            <a class="text-decoration-none link" href="{{ post.get_absolute_url }}">
-                {{ post.title|truncatechars:30 }}
-            </a>
-        </span>
-    </td>
-    <td class="px-1">
-        <span role="textbox" aria-label="post-writer">{{ post.user.username }}</span>
-    </td>
-    <td class="px-1">
-        <span role="textbox" aria-label="post-create-datetime">
-            {{ post.created_at|date:'Y.m.d' }}({{ post.created_at|date:'w'|int2kor }})
-        </span>
-    </td>
-    <td class="px-1">
-        <span role="textbox" aria-label="post-hit-count">{{ post.hit }}</span>
-    </td>
-    <td class="px-1">
-        <span role="textbox" aria-label="post-comment-count">{{ post.get_comment_count }}</span>
-    </td>
+<td class="text-start text-nowrap px-2">
+    {% if post.top_fixed %}
+        <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
+    {% endif %}
+    <a class="text-decoration-none link" href="{{ post.get_absolute_url }}">
+        {{ post.title|truncatechars:30 }}
+    </a>
+</td>
+<td class="text-center text-nowrap px-0 col-1">{{ post.user.username }}</td>
+<td class="text-nowrap px-2 col-1">
+    <div class="td-div-md" aria-label="Date">{{ post.created_at|date:'n/j' }}</div>
+    <div class="td-div-sm" aria-label="Hit">{{ post.hit }}</div>
+    <div class="td-div-sm" aria-label="Comment">{{ post.get_comment_count }}</div>
+</td>

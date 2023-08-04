@@ -186,3 +186,4 @@ cython_debug/
 /export_exam.sql
 /export_problem.sql
 /export_problemdata.sql
+/static/vendor/bootstrap/bootstrap_v5.3.1.txt

@@ -50,7 +50,7 @@ $(document).on('click', 'input[name="difficulty"]', function(event) {
         data: { 'difficulty': difficulty },
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
-            $('.close').click();
+            $('.btn-close').click();
             $(target).replaceWith(data);
         }
     });

@@ -5,48 +5,66 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %} {# [05] Main Content #}
-<!-- Main Content Start -->
+{% block main %}
 <section id="{{ info.target_id }}" class="">
-    <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    <section class="container col-12 px-3 mb-4">
-        <div class="row d-flex align-items-center justify-content-start" role="textbox">
-            <h6 class="font-weight-bold text-primary m-0">
-                {{ info.icon|safe }} {{ info.menu }}
-            </h6>
-        </div>
-    </section>
-    <article class="mx-0 main-article">
-        <!-- Content Row Start -->
+    <div id="info">{{ info|json_script:info }}</div>
+    <div class="pagetitle my-2">
+        <h1>
+            {{ info.icon|safe }}
+            {{ info.menu|capfirst }}
+        </h1>
+    </div><!-- End Page Title -->
+
+    <section class="section">
         <div class="row">
-            <section class="col-12 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between" role="button" aria-label="button-group">
+            <section class="col-12 mt-2 mb-4">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between">
                             {% include 'board/snippets/detail_button_group.html' %}
                         </div>
+
                         <hr class="my-2">
-                        <div role="textbox" aria-label="post-title">
-                            <h6 class="text-primary font-weight-bold">{{ post.title }}</h6>
-                            <div class="small mb-3" role="textbox" aria-label="post-title">
-                                <span class="mr-1">{{ post.user.username }}</span>
-                                <span class="mr-1">조회 <span class="text-danger font-weight-bold">{{ post.hit }}</span></span>
-                                <span class="mr-1">{{ post.created_at|date:'Y.m.d' }}({{ post.created_at|date:'w'|int2kor }}) {{ post.created_at|time:'H:i' }}</span>
-                                <span class="mr-1">댓글 <span class="text-danger font-weight-bold">{{ post.get_comment_count }}</span></span>
-                            </div>
+
+                        <h6 class="text-primary fw-bold">
+                            {{ post.title }}
+                        </h6>
+
+                        <div class="small mb-3 text-secondary">
+                            <span class="me-1">
+                                {{ post.user.username }}
+                            </span>
+                            <span class="me-1">
+                                조회
+                                <span class="text-danger fw-bold">
+                                    {{ post.hit }}
+                                </span>
+                            </span>
+                            <span class="me-1">
+                                {{ post.created_at|date:'Y.m.d' }}({{ post.created_at|date:'w'|int2kor }})
+                                {{ post.created_at|time:'H:i' }}
+                            </span>
+                            <span class="me-1">
+                                댓글
+                                <span class="text-danger fw-bold">
+                                    {{ post.get_comment_count }}
+                                </span>
+                            </span>
                         </div>
-                        <div class="mb-4" role="textbox" aria-label="post-content">
+
+                        <div class="mb-4">
                             {{ post.content|safe }}
                         </div>
-                        <div class="bg-gray-200 small p-3">
-                        {% if comments %}
-                            {% for comment in comments %}
-                            <div class="comment-box">
-                                {% include 'board/comment_content.html' %}
-                            </div>
-                            <hr class="my-2">
-                            {% endfor %}
-                        {% endif %}
+
+                        <div class="bg-secondary-light small p-3">
+                            {% if comments %}
+                                {% for comment in comments %}
+                                    <div class="comment-box">
+                                        {% include 'board/comment_content.html' %}
+                                    </div>
+                                    <hr class="my-2">
+                                {% endfor %}
+                            {% endif %}
                             {% include 'board/comment_create.html' %}
                         </div>
                     </div>
@@ -54,7 +72,7 @@
             </section>
         </div>
         <!-- Content Row End -->
-    </article>
+    </section>
 </section>
 <!-- Main Content End -->
 {% endblock %}

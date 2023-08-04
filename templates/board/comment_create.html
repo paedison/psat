@@ -3,9 +3,13 @@
 <div class="comment-create p-2 bg-white">
     <form method="post" action="{{ post.get_create_comment_url }}">
         {% csrf_token %}
-        <textarea name="content" cols="40" rows="3" placeholder="댓글을 입력해주세요" class="comment-form" required id="id_content">{{ original }}</textarea>
+        <textarea name="content" cols="40" rows="3" required
+                  placeholder="댓글을 입력해주세요" class="comment-form"
+                  id="id_content">{{ original }}</textarea>
         <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-sm btn-outline-primary">등록</button>
+            <button type="submit" class="btn btn-sm btn-outline-primary">
+                등록
+            </button>
         </div>
     </form>
 </div>

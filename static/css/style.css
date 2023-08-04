@@ -1,32 +1,5 @@
-.no-scroll {
-    -ms-overflow-style: none; /* IE, Edge */
-    scrollbar-width: none; /* Firefox */
-}
-.no-scroll::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-}
-
-div.prev_problem, div.next_problem{
-    visibility:hidden;
-    position:absolute;
-    z-index:100;
-    height:100%;
-    width:20%;
-    transition: all 1s linear;
-}
-
-div.prev_problem{
-    left: 0;
-}
-
-div.next_problem{
-    right: 0;
-}
-
-div.prev_problem:hover, div.next_problem:hover{
-    visibility: visible;
-    background-color: gray;
-    opacity: 0.2;
+#info {
+    display: none;
 }
 
 /* Empty Heart */
@@ -62,7 +35,7 @@ div.prev_problem:hover, div.next_problem:hover{
 
 /* Solid Blue File */
 .fa-solid.fa-file-lines {
-    color: #4e73df;  /* Primary */
+    color: #0d6efd;  /* Primary */
     cursor: pointer;
 }
 
@@ -76,7 +49,7 @@ div.prev_problem:hover, div.next_problem:hover{
     color: #e74a3b;  /* Danger */
 }
 
-
+/* Rate Button */
 .rateButton fieldset{
     display: inline-block; /* 하위 별점 이미지들이 있는 영역만 자리를 차지함.*/
     direction: rtl; /* 이모지 순서 반전 */
@@ -103,29 +76,6 @@ div.prev_problem:hover, div.next_problem:hover{
 }
 
 
-.question-sentence{
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-img.problem-image{
-    max-width:100%;
-    cursor:pointer;
-}
-.problem-box{
-	display:flex;
-}
-.problem-number{
-	display:inline-block;
-	width:3rem;
-	margin-right:0.3rem;
-}
-.problem-question{
-	display:inline-block;
-	width:100%;
-	word-break:keep-all;
-}
-
 .comment-form {
     margin:0;
     padding:0;
@@ -142,4 +92,106 @@ img.problem-image{
     position: relative;
     height: 150px;
     overflow: auto;
+}
+
+/* Header Style */
+.img-profile {
+    height: 2rem;
+    width: 2rem;
+}
+
+.topbar-divider {
+    width: 0;
+    border-right: 1px solid #e3e6f0;
+    height: calc(4.375rem - 2rem);
+    margin: auto 1rem;
+}
+
+/* Circled Button */
+.btn-circle {
+    border-radius: 100%;
+    height: 2.5rem;
+    width: 2.5rem;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-circle.btn-sm, .btn-group-sm > .btn-circle.btn {
+    height: 1.8rem;
+    width: 1.8rem;
+    font-size: 0.75rem;
+}
+
+.btn-circle.btn-lg, .btn-group-lg > .btn-circle.btn {
+    height: 3.5rem;
+    width: 3.5rem;
+    font-size: 1.35rem;
+}
+
+/* User style */
+form.user .custom-checkbox.small label {
+    line-height: 1.5rem;
+}
+
+form.user .form-control-user {
+    font-size: 0.8rem;
+    border-radius: 10rem;
+padding: 1.5rem 1rem;
+}
+
+form.user .btn-user {
+    font-size: 0.8rem;
+    border-radius: 10rem;
+    padding: 0.75rem 1rem;
+}
+
+
+/* Table Header */
+div.td-div-xs {
+    width: 1.5rem;
+    display: inline-block;
+    text-align: center;
+}
+
+div.td-div-sm {
+    width: 2rem;
+    display: inline-block;
+    text-align: center;
+}
+
+div.td-div-md {
+    width: 3rem;
+    display: inline-block;
+    text-align: center;
+}
+
+div.td-div-lg {
+    width: 5rem;
+    display: inline-block;
+    text-align: center;
+}
+
+div.td-div-xl {
+    width: 7.5rem;
+    display: inline-block;
+    text-align: center;
+}
+
+
+.sidebar-nav .nav-link .fa-chevron-down {
+  margin-right: 0;
+  transition: transform 0.2s ease-in-out;
+}
+
+.sidebar-nav .nav-link:not(.collapsed) .fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+.sidebar-nav .nav-content a i {
+  font-size: 14px;
+  margin-right: 8px;
+  line-height: 0;
+  border-radius: 50%;
 }

@@ -33,16 +33,23 @@ export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 
 
 /* Collapse & activate menu */
-function collapseMenu() {
-    collapseProblem.parent().addClass('active');
-    collapseProblem.prev('a').removeClass('collapsed');
-    collapseProblem.addClass('show');
+function collapseMenu(target) {
+    let nav_content = $(target).closest('ul');
+    let nav_link = nav_content.prev('a');
+    let bullet_point = $(target).children().first()
+
+    nav_link.removeClass('collapsed').attr('aria-expanded', 'true');
+    nav_content.addClass('show');
+    $(target).addClass('active');
+    bullet_point.removeClass('fa-regular').addClass('fa-solid')
 }
 
 $(document).ready(function() {
-    $('#' + menu + 'List').addClass('active');
+    let target_link = `#${menu}List`
     if (psat_menu.includes(menu)) {
-        collapseMenu();
+        collapseMenu(target_link);
+    } else {
+        $(target_link).removeClass('collapsed');
     }
 });
 

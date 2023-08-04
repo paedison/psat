@@ -4,63 +4,56 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %} {# [05] Main Content #}
-<!-- Main Content Start -->
+{% block main %}
 <section id="{{ info.target_id }}">
-    <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    <section class="container col-12 px-3 mb-4">
-        <div class="row d-flex align-items-center justify-content-between" role="textbox">
-            <h6 class="font-weight-bold text-primary m-0">
-                {{ info.icon|safe }} {{ info.title }}
-            </h6>
-        </div>
-    </section>
-    <article class="mx-0 main-article">
-        <!-- Content Row Start -->
+    <div id="info">{{ info|json_script:info }}</div>
+    <div class="pagetitle my-2">
+        <h1>
+            {{ info.icon|safe }}
+            {{ info.title }}
+        </h1>
+    </div><!-- End Page Title -->
+
+    <section class="section">
         <div class="row">
-            <section class="col-12 mb-4">
-                <div class="card h-100">
+            <div class="col-12 my-2">
+                <div class="card">
                     <div class="card-body">
-                        <!-- Navigation Tab Start -->
-                        <nav>
+                        <nav class="mt-4">
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                {% if category_content %}
+                                    {% for category in category_content %}
+                                        <button class="nav-link p-2{% if forloop.counter0 == 0 %} active{% endif %}"
+                                                id="navCategory{{ category.code }}" type="button" role="tab"
+                                                data-bs-toggle="tab" data-bs-target="#navContent{{ category.code }}"
+                                                aria-controls="navContent{{ category.code }}"
+                                                aria-selected="{% if forloop.counter0 == 0 %}true{% else %}false{% endif %}">
+                                            <span class="fw-bold small text-primary">
+                                                {{ category.icon|safe }} {{ category.name }}
+                                            </span>
+                                        </button>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </nav><!-- End Navigation -->
+
+                        <div class="tab-content" id="nav-tabContent">
                             {% if category_content %}
                                 {% for category in category_content %}
-                                <button class="nav-link text-primary font-weight-bold small p-2{% if forloop.counter0 == 0 %} active{% endif %}"
-                                        id="navCategory{{ category.code }}"
-                                        data-bs-toggle="tab" type="button" role="tab"
-                                        data-bs-target="#navContent{{ category.code }}"
-                                        aria-controls="navContent{{ category.code }}"
-                                        aria-selected="{% if forloop.counter0 == 0 %}true{% else %}false{% endif %}">
-                                    {{ category.icon|safe }}
-                                    {{ category.name }}
-                                </button>
-                                {% endfor %}
-                            {% endif %}
-                            </div>
-                        </nav>
-                        <!-- Navigation Tab End -->
-                        <div class="tab-content" id="nav-tabContent">
-                        {% if category_content %}
-                            {% for category in category_content %}
-                            <!-- {% if forloop.counter0 == 0 %}All {% endif %}Category{{ category.code }} Start -->
-                            <div class="tab-pane fade{% if forloop.counter0 == 0 %} show active{% endif %}"
-                                 id="navContent{{ category.code }}" role="tabpanel"
-                                 aria-labelledby="navCategory{{ category.code }}">
-                                {{ category.html|safe }}
-                            </div>
-                            <!-- {% if forloop.counter0 == 0 %}All {% endif %}Category{{ category.code }} End -->
+                                    <div class="tab-pane fade{% if forloop.counter0 == 0 %} show active{% endif %}"
+                                         id="navContent{{ category.code }}" role="tabpanel"
+                                         aria-labelledby="navCategory{{ category.code }}">
+                                        {{ category.html|safe }}
+                                    </div><!-- End {% if forloop.counter0 == 0 %}All {% endif %}Category{{ category.code }} -->
                             {% endfor %}
                         {% endif %}
                         </div>
                     </div>
                 </div>
-            </section>
-        </div>
-        <!-- Content Row End -->
-    </article>
-</section>
-<!-- Main Content End -->
+            </div>
+        </div><!-- End Content Row -->
+    </section>
+</section><!-- End Main Content -->
 {% endblock %}
 
 {% block page_script %}

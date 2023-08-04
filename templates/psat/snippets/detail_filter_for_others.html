@@ -9,7 +9,7 @@
                 {% if forloop.counter0 != 0 %}
                 <hr class="m-2">
                 {% endif %}
-                <div class="row justify-content-center p-2 text-primary font-weight-bold">
+                <div class="row justify-content-center p-2 text-primary fw-bold">
                     {{ data.exam_name }}
                 </div>
             {% endifchanged %}
@@ -17,7 +17,10 @@
                 {% endif %}
             {% if data %}
                 <div class="col-2 text-center p-0">
-                    <a class="p-1 dropdown-item text-nowrap text-center{% if num == data.problem_number %} active{% endif %}" href="{{ data.problem_url }}">{{ data.problem_number }}번</a>
+                    <a href="{{ data.problem_url }}"
+                       class="p-1 dropdown-item text-nowrap text-center{% if num == data.problem_number %} active{% endif %}">
+                        {{ data.problem_number }}번
+                    </a>
                 </div>
             {% else %}
                 <div class="col-2 text-center p-0"> </div>

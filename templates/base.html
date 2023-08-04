@@ -9,83 +9,62 @@
     <meta name="google-site-verification" content="jv9Vpec7TB34EdIig5UYbDqQ_ueu3uNlLM_FbIzwWWM" />
     <title>{% block head_title %}{% endblock head_title %}</title>
 
-    {# Favicon #}
+    <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
     <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
 
-    {# Bootstrap CSS #}
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap/css/bootstrap.css' %}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
-    {# Custom Font #}
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <!-- Vendor CSS Files -->
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/fontawesome-free/css/all.css' %}">
-    <!--    <script src="https://kit.fontawesome.com/6c271d7b52.js" crossorigin="anonymous"></script>-->
+{#    <link rel="stylesheet" type="text/css" href="{% static 'vendor/sb-admin-2/css/sb-admin-2.css' %}">#}
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/nice-admin/css/style.css' %}">
 
-    {# Custom Styles #}
+    <!-- Template Main CSS File -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/schedule.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/sb-admin-2/css/sb-admin-2.css' %}">
 
+    <!-- Googld AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3543306443016219" crossorigin="anonymous"></script>
 
     {% block extra_head %}{% endblock extra_head %}
-
 </head>
+
 {% block html_body %}
-<!-- Page Top Start -->
-<body id="page-top"> {# [00] Page Top Start #}
-    <!-- Page Wrapper Start -->
-    <div id="wrapper"> {# [01] Page Wrapper Start #}
-        {% block aside %}{% endblock aside %} {# [02] Sidebar #}
-        <!-- Content Wrapper Start -->
-        <div id="content-wrapper" class="d-flex flex-column"> {# [02] Content Wrapper Start #}
-            <!-- Content Start -->
-            <div id="content">  {# [03] Main Content Start #}
-                {% block header %}{% endblock header %} {# [04] Main Header #}
-                <!-- Main Container Start -->
-                <main class="container-fluid main-container p-0"> {# [04] Main Container Start #}
-                    {% block main %}{% endblock main %} {# [05] Main Content #}
-                    {% block hashtag %}{% endblock hashtag %} {# [05] Main Hashtag #}
-                </main> {# [04] Main Container End #}
-                <!-- Main Container End -->
-            </div> {# [03] Content End #}
-            <!-- Content End -->
-            {% block footer %}{% endblock footer %} {# [03] Footer End #}
-        </div> {# [02] Content Wrapper End #}
-        <!-- Content Wrapper End -->
+<body>
 
-        {% include 'snippets/modal.html' %} {# Login / Logout Modal #}
+{% block header %}{% endblock header %}
+{% block aside %}{% endblock aside %}
 
-        <!-- Scroll Button -->
-        {# Scroll Button #}
-        <a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>
+<main id="main" class="main">
+    {% block main %}{% endblock main %}
+</main><!-- End main -->
 
-    </div> {# [01] Page Wrapper End #}
-    <!-- Page Wrapper End -->
+{% block footer %}{% endblock footer %}
+{% include 'snippets/modal.html' %}
 
-    {# Bootstrap JS #}
-    <script src="{% static 'vendor/jquery/jquery-3.5.1.js' %}"></script>
-    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.js' %}"></script>
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+    <i class="fas fa-angle-up"></i>
+</a>
 
-    {# Plugin JS #}
-    <script src="{% static 'vendor/jquery-easing/jquery.easing.js' %}"></script>
-{#    <script type="module" src="{% static 'vendor/chart.js/chart.js' %}"></script>#}
+<!-- Vendor JS Files -->
+<script src="{% static 'vendor/jquery/jquery-3.5.1.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'vendor/jquery-easing/jquery.easing.js' %}"></script>
+{#<script type="module" src="{% static 'vendor/chart.js/chart.js' %}"></script>#}
 
-    {# Common JS #}
-    <script src="{% static 'vendor/sb-admin-2/js/sb-admin-2.js' %}"></script>
-    <script type="module" src="{% static 'js/common.js' %}"></script>
+<!-- Template Main JS File -->
+<script src="{% static 'vendor/nice-admin/js/main.js' %}"></script>
+<script type="module" src="{% static 'js/common.js' %}"></script>
 
-    {# Page JS #}
-    {% block page_script %}
-        <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"-->
-        <!--            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"-->
-        <!--            crossorigin="anonymous"></script>-->
-    {% endblock page_script %}
-    {# [00] Page Top End #}
+<!-- Page Javascript File -->
+{% block page_script %}{% endblock page_script %}
+
 </body>
-<!-- Page Top End -->
 {% endblock html_body %}
-</html>
-{% endlineless %}
+
+</html>{% endlineless %}

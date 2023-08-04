@@ -370,11 +370,13 @@ class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, gene
 
 class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.UpdateView):
     view_type = 'commentUpdate'
+    object: object
 
     @property
     def success_url(self): return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
 
     def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
         context = self.get_context_data(**kwargs)
         html = render(request, self.comment_update_template, context).content.decode('utf-8')
         self.create_log_for_board_create_update()

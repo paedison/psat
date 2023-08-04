@@ -24,7 +24,7 @@ $(document).on('click', '#instanceDeleteModalFooter', function(event) {
         // data: { 'post_id': content },
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
-            $('.close').click();
+            $('.btn-close').click();
             window.location.href = redirectUrl;
         }
     });

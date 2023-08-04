@@ -1,138 +1,98 @@
 {% load static %}
+{% load i18n %}
 
-<!-- Main Header Start -->
-<header>
-    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+<!-- ======= Main Header ======= -->
+<header id="header" class="header fixed-top d-flex align-items-center">
+    <div class="d-flex align-items-center justify-content-between">
+        {% include 'snippets/logo.html' %}
+        <i class="fa fa-bars toggle-sidebar-btn"></i>
+    </div><!-- End Logo -->
 
-        {# Side-bar Toggle Button #}
-        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-            <i class="fa fa-bars"></i>
-        </button>
-
-        {% comment %}
-        <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-            <div class="input-group">
-                <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                    aria-label="Search" aria-describedby="basic-addon2">
-                <div class="input-group-append">
-                    <button class="btn btn-primary" type="button">
-                        <i class="fas fa-search fa-sm"></i>
-                    </button>
-                </div>
-            </div>
-        </form>
-        {% endcomment %}
-
-        {# Header Menu #}
-        <ul class="navbar-nav ml-auto">
-
-    {# Menu (Login only) #}
-    {% if user.is_authenticated %}
-
-        {% if user.is_admin %}
-            <li class="nav-item dropdown no-arrow">
-                <div role="button" aria-label="admin-button">
-                    <a class="nav-link px-1" href="{{ MENU_URL_SET.admin }}" target="admin">
-                        {{ MENU_ICON_SET.admin|safe }}
-                    </a>
-                </div>
-            </li>
-        {% endif %}
-            <li class="nav-item dropdown no-arrow">
-                <div role="button" aria-label="problem-button">
+    <nav class="header-nav ms-auto">
+        <ul class="d-flex align-items-center">
+            {% if user.is_authenticated %}
+                {% if user.is_admin %}
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link px-1" href="{{ MENU_URL_SET.admin }}" target="admin">
+                            {{ MENU_ICON_SET.admin|safe }}
+                        </a>
+                    </li>
+                {% endif %}
+                <li class="nav-item dropdown no-arrow">
                     <a class="nav-link px-1" href="{{ MENU_URL_SET.problem }}">
                         {{ MENU_ICON_SET.problem|safe }}
                     </a>
-                </div>
-            </li>
-            <li class="nav-item dropdown no-arrow">
-                <div role="button" aria-label="like-button">
+                </li>
+
+                <li class="nav-item dropdown no-arrow">
                     <a class="nav-link px-1" href="{{ MENU_URL_SET.like }}">
                         {{ MENU_ICON_SET.like|safe }}
                     </a>
-                </div>
-            </li>
-            <li class="nav-item dropdown no-arrow">
-                <div role="button" aria-label="rate-button">
+                </li>
+
+                <li class="nav-item dropdown no-arrow">
                     <a class="nav-link px-1" href="{{ MENU_URL_SET.rate }}">
                         {{ MENU_ICON_SET.rate|safe }}
                     </a>
-                </div>
-            </li>
-            <li class="nav-item dropdown no-arrow">
-                <div role="button" aria-label="answer-button">
-                    <a class="nav-link px-1" href="{{ MENU_URL_SET.answer }}">
+                </li>
+
+                <li class="nav-item dropdown no-arrow">
+                    <a class="nav-link ps-1" href="{{ MENU_URL_SET.answer }}">
                         {{ MENU_ICON_SET.answer|safe }}
                     </a>
-                </div>
-            </li>
-    {% endif %}
+                </li>
 
-            {# Divider #}
-            <div class="topbar-divider d-none d-sm-block"></div>
-
-            {# Dropdown menu #}
-            <li class="nav-item dropdown no-arrow">
-
-                {# Profile Image #}
-                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                   data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                        {{ user.username }}
-                    </span>
-                    <img class="img-profile rounded-circle"
-                         src="{% static 'image/undraw_profile.svg' %}" alt="Profile Image"/>
-                </a>
-
-            {# User Info Dropdown (Login) #}
-            {% if user.is_authenticated %}
-                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in"
-                     aria-labelledby="userDropdown">
-                    {% comment %}
-                    <a class="dropdown-item" href="{% url 'profile' %}">
-                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Profile
-                    </a>
-                    <a class="dropdown-item" href="#">
-                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>설정
-                    </a>
-                    {% endcomment %}
-                    <a class="dropdown-item" href="{{ MENU_URL_SET.dashboard }}">
-                        <span class="text-gray-400 mr-2">
-                            {{ MENU_ICON_SET.dashboard|safe }}
-                        </span>
-                        Dashboard
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                       data-bs-target="#logoutModal">
-                        <span class="text-gray-400 mr-2">
-                            {{ MENU_ICON_SET.logout|safe }}
-                        </span>
-                        Logout
-                    </a>
-                </div>
-
-            {# User Info Dropdown (Logout) #}
-            {% else %}
-                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in"
-                     aria-labelledby="userDropdown">
-                    <a class="dropdown-item" href="{% url 'account_login' %}">
-                        <span class="text-gray-400 mr-2">
-                            {{ MENU_ICON_SET.login|safe }}
-                        </span>
-                        Login
-                    </a>
-                    <a class="dropdown-item" href="{% url 'account_signup' %}">
-                        <span class="text-gray-400 mr-2">
-                            {{ MENU_ICON_SET.signup|safe }}
-                        </span>
-                        Signup
-                    </a>
-                </div>
+                <div class="topbar-divider"></div>
             {% endif %}
 
-            </li> {# End of Dropdown Menu #}
-        </ul> {# End of Header Menu #}
-    </nav>
-</header>
-<!-- Main Header End -->
+            <li class="nav-item dropdown pe-3">
+                <a class="nav-link nav-profile d-flex align-items-center pe-0"
+                   href="#" data-bs-toggle="dropdown">
+                    <img src="{% static 'image/undraw_profile.jpg' %}" alt="Profile"
+                         class="img-profile rounded-circle">
+                    <span class="d-none d-md-block dropdown-toggle ps-2">
+                        {{ user.username }}
+                    </span>
+                </a><!-- End Profile Image Icon -->
+
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                    {% if user.is_authenticated %}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center"
+                               href="{{ MENU_URL_SET.dashboard }}">
+                                {{ MENU_ICON_SET.dashboard|safe }}
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="#"
+                               data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                {{ MENU_ICON_SET.logout|safe }}
+                                <span>{% trans 'Logout' %}</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center"
+                               href="{% url 'account_login' %}">
+                                {{ MENU_ICON_SET.login|safe }}
+                                <span>{% trans 'Login' %}</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center"
+                               href="{% url 'account_signup' %}">
+                                {{ MENU_ICON_SET.signup|safe }}
+                                <span>{% trans 'Signup' %}</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul><!-- End Profile Dropdown Items -->
+            </li><!-- End Profile Nav -->
+        </ul>
+    </nav><!-- End Icons Navigation -->
+</header><!-- End Main Header -->

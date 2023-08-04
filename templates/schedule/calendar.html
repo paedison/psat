@@ -4,44 +4,38 @@
 
 {% block head_title %}시험 일정{% endblock head_title %}
 
-{% block main %} {# [05] Main Content #}
-<!-- Main Content Start -->
+{% block main %}
 <section id="{{ info.target_id }}">
-    <div id="info" style="display: none;">{{ info|json_script:info }}</div>
-    <section class="container col-12 px-3 mb-4">
-        <div class="row d-flex align-items-center justify-content-between" role="textbox">
-            <h6 class="font-weight-bold text-primary m-0">
-                {{ info.icon|safe }} {{ info.title }}
-            </h6>
-        </div>
-    </section>
-    <article class="mx-0 main-article">
-        <!-- Content Row Start -->
+    <div id="info">{{ info|json_script:info }}</div>
+    <div class="pagetitle my-2">
+        <h1>{{ info.icon|safe }} {{ info.title }}</h1>
+    </div><!-- End Page Title -->
+
+    <section class="section">
         <div class="row">
-            <section class="col-12 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
+            <div class="col-12 my-2">
+                <div class="card">
+                    <div class="card-body p-4">
                         <div class="p-0 my-2 d-flex justify-content-between">
-                            <a class="btn btn-outline-primary" href="{% url 'schedule:base' %}?{{ prev_month }}">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'schedule:base' %}?{{ prev_month }}">
                                 이전 달
                             </a>
                         {% if user.is_admin %}
-                            <a class="btn btn-outline-primary" href="{% url 'schedule:new' %}">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'schedule:new' %}">
                                 새 일정
                             </a>
                         {% endif %}
-                            <a class="btn btn-outline-primary" href="{% url 'schedule:base' %}?{{ next_month }}">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'schedule:base' %}?{{ next_month }}">
                                 다음 달
                             </a>
                         </div>
                         {{ calendar }}
                     </div>
                 </div>
-            </section>
-        </div>
-        <!-- Content Row End -->
-    </article>
-</section>
+            </div>
+        </div><!-- End Content Row -->
+    </section>
+</section><!-- End Main Content -->
 {% endblock %}
 
 {% block page_script %}

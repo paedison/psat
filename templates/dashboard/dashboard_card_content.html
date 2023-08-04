@@ -1,73 +1,49 @@
 {% load static %}
 {% load psat_filter %}
 
-<section id="{{ info.target_id }}" class="col-12 p-0">
-    <table class="table small mb-4">
-        <thead>
-            <tr class="align-middle text-center text-nowrap">
-                <th class="col-1 px-1">문제 출처</th>
-                <th class="col-1 px-1">{{ PSAT_ICON_SET.likeTrue|safe }}</th>
-                <th class="col-1 px-1">난이도</th>
-                <th class="col-1 px-1">{{ PSAT_ICON_SET.answerTrue|safe }}</th>
-                <th class="px-1 d-none d-sm-table-cell d-md-none">문제</th>
-                <th class="px-1 d-none d-md-table-cell d-lg-none">문제</th>
-                <th class="px-1 d-none d-lg-table-cell">문제</th>
-            </tr>
-        </thead>
-        <tbody>
-    {% if page_obj %}
-        {% for problem in page_obj %}
-            {% ifchanged %}
-                {% include 'dashboard/dashboard_card_datetime.html' %}
-            {% endifchanged %}
-            <tr class="align-middle text-center text-nowrap">
-                <td class="px-1">
-                    <span role="textbox" aria-label="reference">
-                        <a class="text-decoration-none link text-nowrap" href="{% url 'psat:rate_detail' problem.id %}" target="problem_detail">
-                            {{ problem.year_ex_sub_hyphen }} {{ problem.number|add_0 }}번
-                        </a>
-                    </span>
-                </td>
-                <td class="px-1">
-                    <span role="button" aria-label="like-button">
-                        {% include 'psat/snippets/icon_like.html' %}
-                    </span>
-                </td>
-                <td class="px-1">
-                    <span role="button" aria-label="rate-button">
-                        {% include 'psat/snippets/icon_rate.html' %}
-                    </span>
-                </td>
-                <td class="px-1">
-                    <span role="figure" aria-label="answer-icon">
-                        {% include 'psat/snippets/icon_answer.html' %}
-                    </span>
-                </td>
-                <td class="text-justify px-1 d-none d-sm-table-cell d-md-none">
-                    {% include 'psat/snippets/list_table_problem.html' %}
-                </td>
-                <td class="text-justify px-1 d-none d-md-table-cell d-lg-none">
-                    {% include 'psat/snippets/list_table_problem.html' %}
-                </td>
-                <td class="text-justify px-1 d-none d-lg-table-cell">
-                    {% include 'psat/snippets/list_table_problem.html' %}
-                </td>
-            </tr>
-        {% endfor %}
-    {% else %}
-            <tr class="text-center">
-                <td colspan="8">
-                    <span role="textbox" aria-label="empty-data">
+<section id="{{ info.target_id }}">
+    <div id="info">{{ info|json_script:info }}</div>
+    <div class="table-responsive">
+        <table class="table small">
+            <thead>
+                <tr>
+                    <th class="text-nowrap px-2 col-1">
+                        {% include 'psat/snippets/list_table_header.html' %}
+                    </th>
+                    <th class="text-start text-sm-center text-nowrap px-2">문제</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if page_obj %}
+                {% for problem in page_obj %}
+                    {% ifchanged %}
+                        {% include 'dashboard/dashboard_card_datetime.html' %}
+                    {% endifchanged %}
+                    <tr>
+                        <td class="text-nowrap px-2 col-1">
+                            {% include 'psat/snippets/list_table_problem_info.html' %}
+                        </td>
+                        <td class="text-start text-nowrap px-2">
+                            {% include 'psat/snippets/list_table_problem.html' %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td class="text-center text-nowrap px-2" colspan="5">
                         추가된 자료가 없습니다.
-                    </span>
-                </td>
-            </tr>
-    {% endif %}
-        </tbody>
-    </table>
-    <section class="d-flex align-items-center justify-content-center text-sm" data-target="#{{ info.target_id }}">
-        {% include 'board/snippets/list_pagination.html' %}
-        <div class="d-inline-block ml-auto">
+                    </td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <section class="d-flex align-items-center flex-wrap justify-content-center text-sm"
+             data-target="#{{ info.target_id }}">
+        <div class="p-2 me-auto ms-auto">
+            {% include 'board/snippets/list_pagination.html' %}
+        </div>
+        <div class="p-2">
             {% include 'dashboard/snippets/list_filter_container.html' %}
         </div>
     </section>

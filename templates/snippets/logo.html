@@ -1,0 +1,7 @@
+{% load static %}
+
+<a href="{% if user.is_authenticated %}{{ MENU_URL_SET.dashboard }}{% else %}{{ MENU_URL_SET.problem }}{% endif %}"
+   class="logo d-flex align-items-center w-auto" role="banner">
+    <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
+    <span class="d-none d-sm-block">Paedison</span>
+</a>
