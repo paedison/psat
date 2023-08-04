@@ -6,11 +6,11 @@
     <div class="table-responsive">
         <table class="table small">
             <thead>
-                <tr>
-                    <th class="text-nowrap px-2 col-1">
+                <tr class="d-none d-sm-table-row">
+                    <th class="text-nowrap p-2 col-1">
                         {% include 'psat/snippets/list_table_header.html' %}
                     </th>
-                    <th class="text-start text-sm-center text-nowrap px-2">문제</th>
+                    <th class="text-start text-sm-center text-nowrap p-2">문제</th>
                 </tr>
             </thead>
             <tbody>
@@ -18,16 +18,19 @@
                 {% for problem in page_obj %}
                     {% ifchanged %}
                         <tr class="table-warning">
-                            <td class="text-sm-center text-nowrap text-primary fw-bold px-2" colspan="5">
+                            <td class="text-center text-nowrap text-primary fw-bold p-2" colspan="5">
                                 {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
                             </td>
                         </tr>
                     {% endifchanged %}
                     <tr>
-                        <td class="text-nowrap px-2 col-1">
+                        <td class="text-nowrap p-2 col-1">
                             {% include 'psat/snippets/list_table_problem_info.html' %}
+                            <div class="d-sm-none pt-2">
+                                {% include 'psat/snippets/list_table_problem.html' %}
+                            </div>
                         </td>
-                        <td class="text-start text-nowrap px-2">
+                        <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
                             {% include 'psat/snippets/list_table_problem.html' %}
                         </td>
                     </tr>

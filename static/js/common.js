@@ -89,7 +89,7 @@ $(document).on('click', '.list-page', function(event) {
 });
 
 
-/* Ajax for list Filter */
+/* Ajax for list filter */
 $(document).on('click', '.list-filter', function(event) {
     event.preventDefault();
     let url = $(this).attr('href');
@@ -101,5 +101,21 @@ $(document).on('click', '.list-filter', function(event) {
         success: function(data) {
             $(target).replaceWith(data);
         }
+    });
+});
+
+
+/* Hide header bar */
+$(document).ready(function() {
+    let prevScrollPos = $(window).scrollTop();
+
+    $(window).scroll(function() {
+        const currentScrollPos = $(window).scrollTop();
+        if (prevScrollPos < currentScrollPos) {
+            $('.header').addClass('hide');
+        } else {
+            $('.header').removeClass('hide');
+        }
+        prevScrollPos = currentScrollPos;
     });
 });

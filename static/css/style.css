@@ -107,6 +107,10 @@
     margin: auto 1rem;
 }
 
+.header.hide {
+  top: -60px;
+}
+
 /* Circled Button */
 .btn-circle {
     border-radius: 100%;
