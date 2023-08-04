@@ -1,7 +1,7 @@
 {% load psat_filter %}
 
 <div class="td-div-xl" aria-label="Reference">
-    {{ problem.year_ex_sub_hyphen }} {{ problem.number|add_0 }}
+    {% include 'psat/snippets/problem_reference.html' %}
 </div>
 <div class="td-div-xs" aria-label="Like">
     {% include 'psat/snippets/icon_like.html' %}
