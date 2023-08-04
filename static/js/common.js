@@ -119,3 +119,9 @@ $(document).ready(function() {
         prevScrollPos = currentScrollPos;
     });
 });
+
+
+// Toggle the side navigation
+$("#sidebarToggle").on('click', function(e) {
+    $("body").toggleClass("toggle-sidebar");
+});
