@@ -42,13 +42,13 @@
                                         {{ MENU_ICON_SET.answer|safe }} 정답확인
                                     </span>
                                 </button>
-                                <button class="nav-link p-2" id="nav-problem-tab" type="button"
-                                        data-bs-toggle="tab" data-bs-target="#nav-problem" role="tab"
-                                        aria-controls="nav-problem" aria-selected="false">
-                                    <span class="fw-bold small text-primary">
-                                        {{ MENU_ICON_SET.problem|safe }} 기출문제
-                                    </span>
-                                </button>
+{#                                <button class="nav-link p-2" id="nav-problem-tab" type="button"#}
+{#                                        data-bs-toggle="tab" data-bs-target="#nav-problem" role="tab"#}
+{#                                        aria-controls="nav-problem" aria-selected="false">#}
+{#                                    <span class="fw-bold small text-primary">#}
+{#                                        {{ MENU_ICON_SET.problem|safe }} 기출문제#}
+{#                                    </span>#}
+{#                                </button>#}
                             </div>
                         </nav><!-- End Navigation -->
 
@@ -68,10 +68,10 @@
                                 {{ answer|safe }}
                             </div><!-- End Answer Tab -->
 
-                            <div class="tab-pane fade" id="nav-problem" role="tabpanel"
-                                 aria-labelledby="nav-problem-tab">
-                                {% include 'dashboard/dashboard_card_problem.html' %}
-                            </div><!-- End Problem Tab -->
+{#                            <div class="tab-pane fade" id="nav-problem" role="tabpanel"#}
+{#                                 aria-labelledby="nav-problem-tab">#}
+{#                                {% include 'dashboard/dashboard_card_problem.html' %}#}
+{#                            </div><!-- End Problem Tab -->#}
                         </div>
                     </div>
                 </div>
