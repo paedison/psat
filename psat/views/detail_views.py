@@ -101,7 +101,6 @@ class BaseDetailView(
             'message': message,
             'html': html,
         })
-        # create_log(self.request, self.info)
         self.create_log_for_psat_post_answer(answer)
         return HttpResponse(response, content_type='application/json')
 
@@ -110,7 +109,6 @@ class BaseDetailView(
         self.update_evaluation_status(val)
         context = self.get_context_data(**kwargs)
         html = render(request, self.icon_template, context).content.decode('utf-8')
-        # create_log(self.request, self.info)
         self.create_log_for_psat_post_other()
         return HttpResponse(html)
 
@@ -130,7 +128,9 @@ class BaseDetailView(
         """Get problem memo corresponding to user and problem."""
         user = self.request.user
         problem = self.object
-        problem_memo = ProblemMemo.objects.filter(user=user, problem=problem).first()
+        problem_memo = None
+        if user.is_authenticated:
+            problem_memo = ProblemMemo.objects.filter(user=user, problem=problem).first()
         return problem_memo
 
     def get_context_data(self, **kwargs) -> dict:
