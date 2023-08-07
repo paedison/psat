@@ -77,11 +77,13 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td class="p-0">
-                                        {% include 'psat/snippets/detail_info_container.html' %}
-                                    </td>
-                                </tr>
+                                {% if user.is_authenticated %}
+                                    <tr>
+                                        <td class="p-0">
+                                            {% include 'psat/snippets/detail_info_container.html' %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             </tbody>
                         {% endif %}
                         </table>
