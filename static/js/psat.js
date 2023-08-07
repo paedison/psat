@@ -1,17 +1,6 @@
-import { info, urls, csrf_token } from './common.js'
+import { csrf_token } from './common.js'
 
-let infoType = info['type'];
-let typeUrl = urls[infoType];
 let rateButton = $('#rateButton');
-
-let problemChoice = $('#problemChoice');
-let selectButton = $('#selectButton');
-
-
-/* Redirect to problem detail */
-selectButton.on('click', () => {
-    location.href = `${typeUrl}${problemChoice.val()}/`;
-});
 
 
 /* Ajax for like */
@@ -96,8 +85,9 @@ $(document).ready(function() {
     });
 
     function submitSearch(page = null) {
-        let url = $('#psatSearchButton').attr('href');
-        let target = $('#psatSearchButton').closest('section').data('target');
+        let psatSearchButton = $('#psatSearchButton')
+        let url = psatSearchButton.attr('href');
+        let target = psatSearchButton.closest('section').data('target');
         let searchData = {
             'page': page,
             'data__contains': $('#id_data__contains').val()
@@ -113,4 +103,94 @@ $(document).ready(function() {
             }
         });
     }
+});
+
+
+/* Create Memo */
+$(document).on('click', '.memo-create-button', function(event) {
+    event.preventDefault();
+    let createUrl = $(this).data('url');
+    let detailMemo = $(`#detailMemo`);
+    let user = $('#user_id').val();
+    let problem = $('#problem_id').val();
+    let content = $('#content').val();
+    $.ajax({
+        url: createUrl,
+        type: 'POST',
+        data: {
+            'user': user,
+            'problem': problem,
+            'content': content,
+        },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            detailMemo.html(data);
+        }
+    });
+});
+
+/* Load Memo Update Form */
+$(document).on('click', '.memo-update', function(event) {
+    event.preventDefault();
+    let updateUrl = $(this).attr('href');
+    let detailMemo = $(`#detailMemo`);
+    $.ajax({
+        url: updateUrl,
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            detailMemo.html(data.html);
+        }
+    });
+});
+
+/* Memo Update */
+$(document).on('click', '.memo-update-button', function(event) {
+    event.preventDefault();
+    let updateUrl = $(this).data('url');
+    let user = $('#user_id').val();
+    let problem = $('#problem_id').val();
+    let content = $('#content').val();
+    let detailMemo = $(`#detailMemo`);
+    $.ajax({
+        url: updateUrl,
+        type: 'POST',
+        data: {
+            'user': user,
+            'problem': problem,
+            'content': content,
+        },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            detailMemo.html(data);
+        }
+    });
+});
+
+/* Instance(Memo) Delete */
+$(document).on('click', '.memo-delete', function(){
+    let deleteHeader = $('#instanceDeleteModalHeader');
+    let deleteFooter = $('#instanceDeleteModalFooter');
+    let text = $(this).data('text');
+    let deleteUrl = $(this).attr('href');
+    let redirectUrl = $(this).data('url');
+    deleteHeader.text(text);
+    deleteFooter.attr('href', deleteUrl);
+    deleteFooter.data('url', redirectUrl);
+});
+
+$(document).on('click', '#instanceDeleteModalFooter', function(event) {
+    event.preventDefault();
+    let deleteUrl = $(this).attr('href');
+    let redirectUrl = $(this).data('url');
+    $.ajax({
+        url: deleteUrl,
+        type: 'POST',
+        // data: { 'post_id': content },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $('.btn-close').click();
+            window.location.href = redirectUrl;
+        }
+    });
 });

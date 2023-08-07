@@ -12,7 +12,7 @@ from django.views import generic
 from common.constants import icon, color
 from log.views import CreateLogMixIn
 from .list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
-from ..models import Problem, Evaluation
+from ..models import Problem, Evaluation, ProblemMemo
 
 
 class PsatDetailInfoMixIn:
@@ -36,6 +36,10 @@ class PsatDetailInfoMixIn:
         return Problem.objects.get(id=self.problem_id)
 
     @property
+    def current_url(self) -> reverse_lazy:
+        return reverse_lazy(f'psat:{self.category}_detail', args=[self.problem_id])
+
+    @property
     def info(self) -> dict:
         """ Return information dictionary of the detail. """
         return {
@@ -43,6 +47,7 @@ class PsatDetailInfoMixIn:
             'type': f'{self.category}Detail',
             'title': self.object.full_title(),
             'target_id': f'{self.category}DetailContent',
+            'current_url': self.current_url,
             'icon': icon.MENU_ICON_SET[self.category],
             'color': color.COLOR_SET[self.category],
             'problem_id': self.problem_id
@@ -61,7 +66,7 @@ class BaseDetailView(
     CreateLogMixIn,
     generic.DetailView,
 ):
-    """ Represent PSAT base detail view. """
+    """Represent PSAT base detail view."""
     model = Problem
     template_name = 'psat/problem_detail.html'
     context_object_name = 'problem'
@@ -82,7 +87,7 @@ class BaseDetailView(
             return self.post_other(request, val, **kwargs)
 
     def post_answer(self, request, answer, **kwargs) -> HttpResponse:
-        """ Handle POST request when category is answer. """
+        """Handle POST request when category is answer."""
         if answer is None:
             message, html = '<div class="text-danger">정답을 선택해주세요.</div>', ''
         else:
@@ -101,7 +106,7 @@ class BaseDetailView(
         return HttpResponse(response, content_type='application/json')
 
     def post_other(self, request, val, **kwargs) -> HttpResponse:
-        """ Handle POST request when category is not answer. """
+        """Handle POST request when category is not answer."""
         self.update_evaluation_status(val)
         context = self.get_context_data(**kwargs)
         html = render(request, self.icon_template, context).content.decode('utf-8')
@@ -110,7 +115,7 @@ class BaseDetailView(
         return HttpResponse(html)
 
     def update_evaluation_status(self, val=None) -> Evaluation:
-        """ Update POST request when category is answer. """
+        """Update POST request when category is answer."""
         obj, created = Evaluation.objects.get_or_create(
             user=self.request.user, problem_id=self.problem_id)
         if self.category == 'like':
@@ -121,8 +126,16 @@ class BaseDetailView(
             obj.update_answer(val)
         return obj
 
+    def get_problem_memo(self) -> ProblemMemo:
+        """Get problem memo corresponding to user and problem."""
+        user = self.request.user
+        problem = self.object
+        problem_memo = ProblemMemo.objects.filter(user=user, problem=problem).first()
+        return problem_memo
+
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
+        context['problem_memo'] = self.get_problem_memo()
         context['anchor_id'] = self.problem_id - int(self.object.number)
         updated_object = self.get_evaluation_info(self.object)
         context['problem'] = updated_object
@@ -130,7 +143,7 @@ class BaseDetailView(
         return context
 
     def update_context_data(self, context) -> None:
-        """ Update context data. """
+        """Update context data."""
         prob_data = prob_list = None
         if self.request.user.is_authenticated:
             prob_data, prob_list = self.get_prob_data_list()
@@ -189,17 +202,14 @@ class BaseDetailView(
         problem = Problem.objects
         if self.category == 'problem':
             last = problem.order_by('-id')[0].id
-            prev_prob = problem.get(id=self.problem_id - 1) if self.problem_id != 1 else ''
-            next_prob = problem.get(id=self.problem_id + 1) if self.problem_id != last else ''
+            prev_prob = problem.get(id=self.problem_id - 1) if self.problem_id != 1 else None
+            next_prob = problem.get(id=self.problem_id + 1) if self.problem_id != last else None
         else:
-            try:
-                page_list = list(prob_list)
-                q = page_list.index(self.problem_id)
-                last = len(page_list) - 1
-                prev_prob = prob_data.get(id=page_list[q - 1]) if q != 0 else ''
-                next_prob = prob_data.get(id=page_list[q + 1]) if q != last else ''
-            except ValueError:
-                prev_prob = next_prob = None
+            page_list = list(prob_list)
+            q = page_list.index(self.problem_id)
+            last = len(page_list) - 1
+            prev_prob = prob_data.filter(id=page_list[q - 1]).first() if q != 0 else None
+            next_prob = prob_data.filter(id=page_list[q + 1]).first() if q != last else None
         return prev_prob, next_prob
 
     def update_open_status(self) -> object:

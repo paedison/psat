@@ -3,49 +3,51 @@
 }
 
 /* Empty Heart */
-.fa-regular.fa-heart {
+i.fa-regular.fa-heart {
     color: #ddd;
     cursor: pointer;
 }
 
 /* Solid Red Heart */
-.fa-solid.fa-heart {
+i.fa-solid.fa-heart {
     --bs-text-opacity: 1;
     color: #e74a3b;  /* Danger */
     cursor: pointer;
 }
 
 /* Empty Star */
-.fa-regular.fa-star {
+i.fa-regular.fa-star {
     color: #ddd;
     cursor: pointer;
+    margin-right: 0;
 }
 
 /* Solid Yellow Star */
-.fa-solid.fa-star {
+i.fa-solid.fa-star {
     color: #f6c23e;  /* Warning */
     cursor: pointer;
+    margin-right: 0;
 }
 
 /* Solid Yellow Crown */
-.fa-solid.fa-crown {
+i.fa-solid.fa-crown {
     color: #f6c23e;  /* Warning */
     cursor: pointer;
 }
 
 /* Solid Blue File */
-.fa-solid.fa-file-lines {
+i.fa-solid.fa-file-lines {
     color: #0d6efd;  /* Primary */
     cursor: pointer;
 }
 
 /* Solid Green Check */
-.fa-solid.fa-circle-check {
+i.fa-solid.fa-circle-check {
     color: #1cc88a;  /* Success */
 }
 
 /* Solid Red Xmark */
-.fa-solid.fa-circle-xmark {
+i.fa-solid.fa-circle-xmark {
     color: #e74a3b;  /* Danger */
 }
 

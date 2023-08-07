@@ -178,8 +178,7 @@ class BoardInfoMixIn:
             'post_create_url': self.post_create_url,
         }
 
-    @property
-    def success_url(self):
+    def get_success_url(self):
         if self.view_type == 'postDelete':
             return reverse_lazy(f'{self.app_name}:list')
         elif self.view_type in ['postUpdate', 'commentCreate', 'commentDelete']:
@@ -372,8 +371,8 @@ class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, gene
     view_type = 'commentUpdate'
     object: object
 
-    @property
-    def success_url(self): return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
+    def get_success_url(self):
+        return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -397,5 +396,5 @@ class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, gene
 class CommentDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.DeleteView):
     view_type = 'commentDelete'
 
-    @property
-    def success_url(self): return reverse_lazy(f'{self.app_name}:detail', args=[self.object.post.id])
+    def get_success_url(self):
+        return reverse_lazy(f'{self.app_name}:detail', args=[self.object.post.id])

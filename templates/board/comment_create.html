@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load widget_tweaks %}
 
 <div class="comment-create p-2 bg-white">
@@ -8,7 +9,7 @@
                   id="id_content">{{ original }}</textarea>
         <div class="d-flex justify-content-end">
             <button type="submit" class="btn btn-sm btn-outline-primary">
-                등록
+                {% trans 'Create' %}
             </button>
         </div>
     </form>

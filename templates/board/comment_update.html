@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load widget_tweaks %}
 
 <div id="commentUpdateForm{{ comment.id }}" class="p-2 bg-white">
@@ -5,13 +6,13 @@
           class="comment-update-form" data-comment-id="{{ comment.id }}">
         {% csrf_token %}
         <textarea name="content" cols="40" rows="3" class="comment-form"
-                  placeholder="댓글을 입력해주세요" required
+                  placeholder="{% trans 'Leave comments' %}" required
                   id="id_content">{{ comment.content }}</textarea>
         <div class="d-flex justify-content-end">
             <button class="btn btn-sm btn-outline-primary comment-update-button"
                     type="submit" data-comment-id="{{ comment.id }}"
                     data-url="{{ comment.get_comment_update_url }}">
-                수정
+                {% trans 'Update' %}
             </button>
         </div>
     </form>

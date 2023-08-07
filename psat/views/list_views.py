@@ -137,45 +137,27 @@ class EvaluationInfoMixIn:
     def get_evaluation_info(self, obj) -> object:
         """ Get Evaluation information. """
         user = self.request.user
+        problem_id = obj.prob_id()
+        source = None
         if user.is_authenticated:
-            try:
-                source = Evaluation.objects.get(user=user, problem_id=obj.prob_id())
-                obj.like_icon = source.like_icon()
-                obj.rate_icon = source.rate_icon()
-                obj.answer_icon = source.answer_icon()
+            source = Evaluation.objects.filter(user=user, problem_id=problem_id).first()
 
-                obj.opened_at = source.opened_at
-                obj.opened_times = source.opened_times
+        obj.opened_at = source.opened_at if source else None
+        obj.opened_times = source.opened_times if source else 0
 
-                obj.liked_at = source.liked_at
-                obj.is_liked = source.is_liked
-                obj.like_icon = source.like_icon()
+        obj.liked_at = source.liked_at if source else None
+        obj.is_liked = source.is_liked if source else None
+        obj.like_icon = source.like_icon() if source else icon.PSAT_ICON_SET['likeNone']
 
-                obj.rated_at = source.rated_at
-                obj.difficulty_rated = source.difficulty_rated
-                obj.rate_icon = source.rate_icon()
+        obj.rated_at = source.rated_at if source else None
+        obj.difficulty_rated = source.difficulty_rated if source else None
+        obj.rate_icon = source.rate_icon() if source else icon.PSAT_ICON_SET['starNone']
 
-                obj.answered_at = source.answered_at
-                obj.submitted_answered = source.submitted_answer
-                obj.is_correct = source.is_correct
-                obj.answer_icon = source.answer_icon()
+        obj.answered_at = source.answered_at if source else None
+        obj.submitted_answered = source.submitted_answer if source else None
+        obj.is_correct = source.is_correct if source else None
+        obj.answer_icon = source.answer_icon() if source else ''
 
-            except Evaluation.DoesNotExist:
-                obj.opened_at = None
-                obj.opened_times = 0
-
-                obj.liked_at = None
-                obj.is_liked = None
-                obj.like_icon = icon.PSAT_ICON_SET['likeNone']
-
-                obj.rated_at = None
-                obj.difficulty_rated = None
-                obj.rate_icon = icon.PSAT_ICON_SET['starNone']
-
-                obj.answered_at = None
-                obj.submitted_answered = None
-                obj.is_correct = None
-                obj.answer_icon = ''
         return obj
 
 

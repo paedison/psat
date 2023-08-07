@@ -1,0 +1,17 @@
+{% load i18n %}
+
+<div class="d-flex align-items-start mb-2 mx-2">
+    <a class="text-secondary me-2 memo-update" href="{% url 'psat:memo_update' problem_memo.id %}"
+       data-memo-id="{{ problem_memo.id }}" title="{% trans 'Update' %}">
+        {{ BOARD_ICON_SET.update|safe }}
+    </a>
+    <a class="text-danger me-2 memo-delete" href="{% url 'psat:memo_delete' problem_memo.id %}"
+       data-url="{{ info.current_url }}" data-text="메모를 삭제하시겠습니까?"
+       data-bs-toggle="modal" data-bs-target="#instanceDeleteModal" title="{% trans 'Delete' %}">
+        {{ BOARD_ICON_SET.delete|safe }}
+    </a>
+    <div id="detailMemo{{ problem_memo.id }}"
+         class="border-start border-secondary-subtle ps-2 text-secondary fw-bold">
+        {{ problem_memo.content }}
+    </div>
+</div>

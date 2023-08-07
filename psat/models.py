@@ -7,9 +7,11 @@ from django.db import models
 from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
+from django.utils.translation import ugettext_lazy as _
 
 # Third Party Library Import
 from taggit.managers import TaggableManager
+from taggit.models import TagBase, ItemBase
 
 # Custom App Import
 from _config.settings.base import BASE_DIR
@@ -176,6 +178,33 @@ class UpdateInfo:
     #     pass
 
 
+# class ProblemTag(TagBase):
+#
+#     class Meta:
+#         verbose_name = _("tag")
+#         verbose_name_plural = _("tags")
+#         unique_together = [["name", "slug"]]
+#
+#
+# class TaggedProblem(ItemBase):
+#     id = models.AutoField(primary_key=True)
+#     problem = models.ForeignKey(
+#         'Problem', on_delete=models.CASCADE,
+#         verbose_name="문제 ID", db_column="problem_id")
+#     tag = models.ForeignKey(
+#         ProblemTag, on_delete=models.CASCADE,
+#         verbose_name="태그", related_name="tagged_problems")
+#     user = models.ForeignKey(
+#         User, on_delete=models.CASCADE,
+#         verbose_name="사용자 ID", db_column="user_id")
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+#
+#     class Meta:
+#         verbose_name = _("tagged problem")
+#         verbose_name_plural = _("tagged problems")
+
+
 class Exam(AddInfo, models.Model):
     objects = models.Manager()
 
@@ -210,6 +239,9 @@ class Problem(AddInfo, models.Model):
     question = models.TextField()
     answer = models.IntegerField()
     tags = TaggableManager()
+    # tags = TaggableManager(
+    #     verbose_name=_('tags'), blank=True,through=TaggedProblem,
+    #     help_text=_('A comma-separated list of tags.'))
 
     class Meta:
         ordering = ['-exam__year', 'id']
@@ -225,7 +257,9 @@ class ProblemData(AddInfo, models.Model):
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
-    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, verbose_name="문제 ID", db_column="problem_id")
+    problem = models.OneToOneField(
+        Problem, on_delete=models.CASCADE,
+        verbose_name="문제 ID", db_column="problem_id")
     data = models.TextField()
 
     def __str__(self):
@@ -240,8 +274,12 @@ class Evaluation(AddInfo, UpdateInfo, models.Model):
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="사용자 ID", db_column="user_id")
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, verbose_name="문제 ID", db_column="problem_id")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        verbose_name="사용자 ID", db_column="user_id")
+    problem = models.ForeignKey(
+        Problem, on_delete=models.CASCADE,
+        verbose_name="문제 ID", db_column="problem_id")
 
     opened_at = models.DateTimeField("오픈 일시", null=True)
     opened_times = models.IntegerField("오픈 횟수", null=True)
@@ -252,7 +290,8 @@ class Evaluation(AddInfo, UpdateInfo, models.Model):
 
     rated_at = models.DateTimeField("평가 일시", null=True)
     rated_times = models.IntegerField("평가 횟수", null=True)
-    difficulty_rated = models.IntegerField("평가 난이도", null=True, choices=DIFFICULTY_CHOICES)
+    difficulty_rated = models.IntegerField(
+        "평가 난이도", null=True, choices=DIFFICULTY_CHOICES)
 
     answered_at = models.DateTimeField("정답확인 일시", null=True)
     answered_times = models.IntegerField("정답확인 횟수", null=True)
@@ -261,3 +300,18 @@ class Evaluation(AddInfo, UpdateInfo, models.Model):
 
     class Meta:
         ordering = ['-problem__exam__year', 'problem__exam__id', 'problem__number']
+
+
+class ProblemMemo(models.Model):
+    objects = models.Manager()
+
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        verbose_name="사용자 ID", db_column="user_id")
+    problem = models.ForeignKey(
+        Problem, on_delete=models.CASCADE,
+        verbose_name="문제 ID", db_column="problem_id")
+    content = models.TextField("내용")
+    created_at = models.DateTimeField("작성일", auto_now_add=True)
+    updated_at = models.DateTimeField("수정일", auto_now=True)

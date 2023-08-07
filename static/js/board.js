@@ -1,35 +1,5 @@
 import { csrf_token } from './common.js'
 
-let deleteHeader = $('#instanceDeleteModalHeader');
-let deleteFooter = $('#instanceDeleteModalFooter');
-
-
-/* Instance(Post, Comment) Delete */
-$(document).on('click', '.instance-delete', function(){
-    let text = $(this).data('text');
-    let deleteUrl = $(this).attr('href');
-    let redirectUrl = $(this).data('url');
-    deleteHeader.text(text);
-    deleteFooter.attr('href', deleteUrl);
-    deleteFooter.data('url', redirectUrl);
-});
-
-$(document).on('click', '#instanceDeleteModalFooter', function(event) {
-    event.preventDefault();
-    let deleteUrl = $(this).attr('href');
-    let redirectUrl = $(this).data('url');
-    $.ajax({
-        url: deleteUrl,
-        type: 'POST',
-        // data: { 'post_id': content },
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $('.btn-close').click();
-            window.location.href = redirectUrl;
-        }
-    });
-});
-
 
 /* Load Comment Update Form */
 $(document).on('click', '.comment-update', function(event) {
@@ -68,6 +38,35 @@ $(document).on('click', '.comment-update-button', function(event) {
         success: function(data) {
             originalComment.replaceWith(data);
             commentUpdateForm.remove();
+        }
+    });
+});
+
+
+/* Instance(Post, Comment) Delete */
+$(document).on('click', '.instance-delete', function(){
+    let deleteHeader = $('#instanceDeleteModalHeader');
+    let deleteFooter = $('#instanceDeleteModalFooter');
+    let text = $(this).data('text');
+    let deleteUrl = $(this).attr('href');
+    let redirectUrl = $(this).data('url');
+    deleteHeader.text(text);
+    deleteFooter.attr('href', deleteUrl);
+    deleteFooter.data('url', redirectUrl);
+});
+
+$(document).on('click', '#instanceDeleteModalFooter', function(event) {
+    event.preventDefault();
+    let deleteUrl = $(this).attr('href');
+    let redirectUrl = $(this).data('url');
+    $.ajax({
+        url: deleteUrl,
+        type: 'POST',
+        // data: { 'post_id': content },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $('.btn-close').click();
+            window.location.href = redirectUrl;
         }
     });
 });

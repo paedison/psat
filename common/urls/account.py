@@ -1,25 +1,20 @@
 # Python Standard Function Import
 from importlib import import_module
 
+# Django Core Import
+from django.urls import path, re_path, include
+
 # Third Party Library Import
 from allauth import app_settings
 from allauth.account import views as allauth_views
 from allauth.socialaccount import providers
 
-# Django Core Import
-from django.urls import path, re_path, include
-
 # Custom App Import
-from common.views.account_view import CustomLoginView, CustomLogoutView, DummyLoginView, DummySignupView, \
-    DummyLogoutView
-from common.views.base_views import ProfileView
+from ..views.account_view import CustomLoginView, CustomLogoutView
+from ..views.base_views import ProfileView
 
 urlpatterns = [
     path('profile/', ProfileView.as_view(), name='profile'),
-
-    # path("signup/", DummySignupView.as_view(), name="account_signup"),
-    # path("login/", DummyLoginView.as_view(), name="account_login"),
-    # path("logout/", DummyLogoutView.as_view(), name="account_logout"),
     path("signup/", allauth_views.signup, name="account_signup"),
     path("login/", CustomLoginView.as_view(), name="account_login"),
     path("logout/", CustomLogoutView.as_view(), name="account_logout"),

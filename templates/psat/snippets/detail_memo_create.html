@@ -1,0 +1,23 @@
+{% load i18n %}
+
+<div class="memo-create mb-2 mx-2">
+    <form method="post" action="{% url 'psat:memo_create' %}">
+        {% csrf_token %}
+        <label for="user_id" hidden>User</label>
+        <input type="text" id="user_id" name="user_id" value="{{ user.id }}" hidden/>
+
+        <label for="problem_id" hidden>Problem</label>
+        <input type="text" id="problem_id" name="problem_id" value="{{ problem.prob_id }}" hidden/>
+
+        <div class="input-group">
+            <label for="content" hidden>Content</label>
+            <textarea id="content" name="content" rows="1" required
+                      class="form-control form-control-sm memo-form"
+                      placeholder="{% trans 'Leave memo' %}"></textarea>
+            <button class="btn btn-sm btn-outline-primary memo-create-button"
+                    type="submit" data-url="{% url 'psat:memo_create' %}">
+                {% trans 'Create' %}
+            </button>
+        </div>
+    </form>
+</div>

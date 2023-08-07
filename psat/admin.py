@@ -11,17 +11,17 @@ class ExamAdmin(admin.ModelAdmin):
 
 
 class ProblemAdmin(admin.ModelAdmin):
-    list_display = ('exam', 'number', 'question')
-    # list_display = ('exam', 'number', 'question', 'tag_list')
+    # list_display = ('exam', 'number', 'question')
+    list_display = ('exam', 'number', 'question', 'tag_list')
     # list_filter = ('exam', 'number', 'question')
     search_fields = ('exam', 'number', 'question')
     list_per_page = 20
 
-    # def get_queryset(self, request):
-    #     return super().get_queryset(request).prefetch_related('tags')
-    #
-    # def tag_list(self, obj):
-    #     return ', '.join(o.name for o in obj.tags.all())
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('tags')
+
+    def tag_list(self, obj):
+        return ', '.join(o.name for o in obj.tags.all())
 
 
 class EvaluationAdmin(admin.ModelAdmin):

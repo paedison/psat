@@ -17,16 +17,12 @@ class CustomLoginView(all_auth.LoginView):
 
     def form_invalid(self, form):
         email = form.cleaned_data['login']
-        print(email)
-        try:
-            existing_user = User.objects.get(email=email)
-            try:
-                SocialAccount.objects.get(user=existing_user)
-                messages.error(self.request, '소셜로그인으로 등록된 이메일입니다.')
-            except SocialAccount.DoesNotExist:
-                pass
-        except User.DoesNotExist:
-            pass
+        social_account = None
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user:
+            social_account = SocialAccount.objects.filter(user=existing_user).first()
+        if social_account:
+            messages.error(self.request, '소셜로그인으로 등록된 이메일입니다.')
         return super().form_invalid(form)
 
 
