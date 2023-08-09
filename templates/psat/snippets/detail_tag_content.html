@@ -1,0 +1,27 @@
+{% load i18n %}
+{% load taggit_templatetags2_tags %}
+{% get_tags_for_object problem_tag as "tags" %}
+
+<div class="d-flex align-items-start mb-2 mx-2">
+{#    <a class="text-secondary me-2 tag-update" title="{% trans 'Update' %}"#}
+{#       href="{% url 'psat:tag_update' problem_tag.id %}" data-info-target="#detailMyTag">#}
+{#        {{ BOARD_ICON_SET.update|safe }}#}
+{#    </a>#}
+{#    <a class="text-danger me-2 tag-delete" href="{% url 'psat:tag_delete' problem_tag.id %}"#}
+{#       data-url="{{ info.current_url }}" data-text="태그를 삭제하시겠습니까?"#}
+{#       data-bs-toggle="modal" data-bs-target="#instanceDeleteModal" title="{% trans 'Delete' %}">#}
+{#        {{ BOARD_ICON_SET.delete|safe }}#}
+{#    </a>#}
+    <div class="border-start border-secondary-subtle ps-2">
+        {% for tag in tags %}
+            <span class="badge rounded-pill bg-primary tag-name">
+                {{ tag.name }}
+                <a class="text-white tag-delete" href="{% url 'psat:tag_delete' problem_tag.id tag.name %}"
+                   data-url="{{ info.current_url }}" data-text="태그를 삭제하시겠습니까?"
+                   data-bs-toggle="modal" data-bs-target="#instanceDeleteModal" title="{% trans 'Delete' %}">
+                    {{ BOARD_ICON_SET.delete|safe }}
+                </a>
+            </span>
+        {% endfor %}
+    </div>
+</div>

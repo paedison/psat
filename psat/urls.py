@@ -3,6 +3,7 @@ from django.urls import path, re_path
 from .views.list_views import *
 from .views.detail_views import *
 from .views.memo_views import *
+from .views.tag_views import *
 from .views import list_test_views
 
 app_name = 'psat'
@@ -53,10 +54,16 @@ urlpatterns = [
     path('search/', ProblemSearchListView.as_view(), name='search'),
 
     # Memo
-    path('memo/create/', MemoCreateView.as_view(), name='memo_create'),
-    path('memo/<int:pk>/', MemoDetailView.as_view(), name='memo_detail'),
-    path('memo/<int:pk>/update/', MemoUpdateView.as_view(), name='memo_update'),
-    path('memo/<int:pk>/delete/', MemoDeleteView.as_view(), name='memo_delete'),
+    path('memo/create/', ProblemMemoCreateView.as_view(), name='memo_create'),
+    path('memo/<int:pk>/', ProblemMemoDetailView.as_view(), name='memo_detail'),
+    path('memo/<int:pk>/update/', ProblemMemoUpdateView.as_view(), name='memo_update'),
+    path('memo/<int:pk>/delete/', ProblemMemoDeleteView.as_view(), name='memo_delete'),
+
+    # Tag
+    path('tag/create/', ProblemTagCreateView.as_view(), name='tag_create'),
+    path('tag/<int:pk>/', ProblemTagDetailView.as_view(), name='tag_detail'),
+    path('tag/<int:pk>/update/<str:tag_name>/', ProblemTagUpdateView.as_view(), name='tag_update'),
+    path('tag/<int:pk>/delete/<str:tag_name>/', ProblemTagDeleteView.as_view(), name='tag_delete'),
 
     # # Tag: Tag_views
     # path('detail/<int:problem_id>/tags/', ProblemTagsView.as_view(), name='problem_tags'),

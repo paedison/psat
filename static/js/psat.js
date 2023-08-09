@@ -194,3 +194,104 @@ $(document).on('click', '#instanceDeleteModalFooter', function(event) {
         }
     });
 });
+
+
+/* Create Tag */
+$(document).on('click', '.tag-create-button', function(event) {
+    event.preventDefault();
+
+    let url = $(this).data('url');
+    let target = $(this).data('infoTarget');
+    let infoType = $(this).data('infoType');
+
+    let user = $('#user_id').val();
+    let problem = $('#problem_id').val();
+    let data = $(`#${infoType}`).val();
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: {
+            'user': user,
+            'problem': problem,
+            'tags': data,
+        },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $(target).html(data);
+            console.log(data);
+        }
+    });
+});
+
+/* Load Tag Update Form */
+$(document).on('click', '.tag-update', function(event) {
+    event.preventDefault();
+
+    let url = $(this).attr('href');
+    let target = $(this).data('infoTarget');
+    $.ajax({
+        url: url,
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            $(target).html(data.html);
+        }
+    });
+});
+
+/* Tag Update */
+$(document).on('click', '.tag-update-button', function(event) {
+    event.preventDefault();
+
+    let url = $(this).data('url');
+    let target = $(this).data('infoTarget');
+    let infoType = $(this).data('infoType');
+
+    let user = $('#user_id').val();
+    let problem = $('#problem_id').val();
+    let data = $(`#${infoType}`).val();
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: {
+            'user': user,
+            'problem': problem,
+            'tags': data,
+        },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $(target).html(data);
+            console.log(data);
+        }
+    });
+});
+
+/* Instance(Tag) Delete */
+$(document).on('click', '.tag-delete', function(){
+    let deleteHeader = $('#tagDeleteModalHeader');
+    let deleteFooter = $('#tagDeleteModalFooter');
+    let text = $(this).data('text');
+    let deleteUrl = $(this).attr('href');
+    let redirectUrl = $(this).data('url');
+    deleteHeader.text(text);
+    deleteFooter.attr('href', deleteUrl);
+    deleteFooter.data('url', redirectUrl);
+});
+
+$(document).on('click', '#tagDeleteModalFooter', function(event) {
+    event.preventDefault();
+    let deleteUrl = $(this).attr('href');
+    let redirectUrl = $(this).data('url');
+    $.ajax({
+        url: deleteUrl,
+        type: 'POST',
+        // data: { 'post_id': content },
+        headers: { 'X-CSRFToken': csrf_token },
+        success: function(data) {
+            $('.btn-close').click();
+            window.location.href = redirectUrl;
+        }
+    });
+});

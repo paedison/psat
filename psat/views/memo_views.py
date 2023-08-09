@@ -11,7 +11,7 @@ from ..forms import ProblemMemoForm
 from ..models import ProblemMemo
 
 
-class MemoDetailView(generic.DetailView):
+class ProblemMemoDetailView(generic.DetailView):
     model = ProblemMemo
     context_object_name = 'problem_memo'
     template_name = 'psat/snippets/detail_memo_content.html'
@@ -24,7 +24,7 @@ class MemoDetailView(generic.DetailView):
         return html
 
 
-class MemoCreateView(generic.CreateView):
+class ProblemMemoCreateView(generic.CreateView):
     model = ProblemMemo
     form_class = ProblemMemoForm
     context_object_name = 'problem_memo'
@@ -34,7 +34,7 @@ class MemoCreateView(generic.CreateView):
         return reverse_lazy(f'psat:memo_detail', args=[self.object.id])
 
 
-class MemoUpdateView(generic.UpdateView):
+class ProblemMemoUpdateView(generic.UpdateView):
     model = ProblemMemo
     form_class = ProblemMemoForm
     context_object_name = 'problem_memo'
@@ -51,7 +51,7 @@ class MemoUpdateView(generic.UpdateView):
         return JsonResponse({'html': html})
 
 
-class MemoDeleteView(generic.DeleteView):
+class ProblemMemoDeleteView(generic.DeleteView):
     model = ProblemMemo
     form_class = ProblemMemoForm
     context_object_name = 'problem_memo'

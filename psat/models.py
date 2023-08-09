@@ -174,9 +174,6 @@ class UpdateInfo:
             self.is_correct = False
         self.save()
 
-    # def save(self):
-    #     pass
-
 
 # class ProblemTag(TagBase):
 #
@@ -315,3 +312,26 @@ class ProblemMemo(models.Model):
     content = models.TextField("내용")
     created_at = models.DateTimeField("작성일", auto_now_add=True)
     updated_at = models.DateTimeField("수정일", auto_now=True)
+
+    class Meta:
+        unique_together = [["user", "problem"]]
+
+
+class ProblemTag(models.Model):
+    objects = models.Manager()
+
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        verbose_name="사용자 ID", db_column="user_id")
+    problem = models.ForeignKey(
+        'Problem', on_delete=models.CASCADE,
+        verbose_name="문제 ID", db_column="problem_id")
+    tags = TaggableManager()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("tagged problem")
+        verbose_name_plural = _("tagged problems")
+        unique_together = [["user", "problem"]]

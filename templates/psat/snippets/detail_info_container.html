@@ -20,25 +20,29 @@
     </div>
     <div class="accordion-item">
         <h2 id="headingMyTag" class="accordion-header">
-            <button class="accordion-button p-2 collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseMyTag" aria-expanded="false" aria-controls="collapseMyTag">
+            <button class="accordion-button p-2" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseMyTag" aria-expanded="true" aria-controls="collapseMyTag">
                 <div class="badge bg-success">MY TAG</div>
             </button>
         </h2>
-        <div id="collapseMyTag" class="accordion-collapse collapse" aria-labelledby="headingMyTag">
+        <div id="collapseMyTag" class="accordion-collapse collapse show" aria-labelledby="headingMyTag">
             <div id="detailMyTag" class="accordion-body">
-
+                {% if problem_tag %}
+                    {% include 'psat/snippets/detail_tag_content.html' %}
+                {% else %}
+                    {% include 'psat/snippets/detail_tag_create.html' %}
+                {% endif %}
             </div>
         </div>
     </div>
     <div class="accordion-item">
         <h2 id="headingOtherTag" class="accordion-header">
-            <button class="accordion-button p-2 collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseOtherTag" aria-expanded="false" aria-controls="collapseOtherTag">
+            <button class="accordion-button p-2" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOtherTag" aria-expanded="true" aria-controls="collapseOtherTag">
                 <div class="badge bg-success">OTHER TAG</div>
             </button>
         </h2>
-        <div id="collapseOtherTag" class="accordion-collapse collapse" aria-labelledby="headingOtherTag">
+        <div id="collapseOtherTag" class="accordion-collapse collapse show" aria-labelledby="headingOtherTag">
             <div id="detailOtherTag" class="accordion-body">
 
             </div>

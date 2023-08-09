@@ -12,7 +12,7 @@ from django.views import generic
 from common.constants import icon, color
 from log.views import CreateLogMixIn
 from .list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
-from ..models import Problem, Evaluation, ProblemMemo
+from ..models import Problem, Evaluation, ProblemMemo, ProblemTag
 
 
 class PsatDetailInfoMixIn:
@@ -133,9 +133,19 @@ class BaseDetailView(
             problem_memo = ProblemMemo.objects.filter(user=user, problem=problem).first()
         return problem_memo
 
+    def get_problem_tag(self) -> ProblemTag:
+        """Get problem memo corresponding to user and problem."""
+        user = self.request.user
+        problem = self.object
+        problem_tag = None
+        if user.is_authenticated:
+            problem_tag = ProblemTag.objects.filter(user=user, problem=problem).first()
+        return problem_tag
+
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         context['problem_memo'] = self.get_problem_memo()
+        context['problem_tag'] = self.get_problem_tag()
         context['anchor_id'] = self.problem_id - int(self.object.number)
         updated_object = self.get_evaluation_info(self.object)
         context['problem'] = updated_object

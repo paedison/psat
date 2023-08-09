@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from psat.models import Exam, Problem, Evaluation
+from psat.models import Exam, Problem, Evaluation, ProblemMemo, ProblemTag
 
 
 class ExamAdmin(admin.ModelAdmin):
@@ -31,6 +31,24 @@ class EvaluationAdmin(admin.ModelAdmin):
     list_per_page = 20
 
 
+class ProblemMemoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'problem', 'user', 'content', 'created_at', 'updated_at',)
+    list_per_page = 20
+
+
+class ProblemTagAdmin(admin.ModelAdmin):
+    list_display = ('id', 'problem', 'user', 'tags', 'created_at', 'updated_at',)
+    list_per_page = 20
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('tags')
+
+    def tag_list(self, obj):
+        return ', '.join(o.name for o in obj.tags.all())
+
+
 admin.site.register(Exam, ExamAdmin)
 admin.site.register(Problem, ProblemAdmin)
 admin.site.register(Evaluation, EvaluationAdmin)
+admin.site.register(ProblemMemo, ProblemMemoAdmin)
+admin.site.register(ProblemTag, ProblemTagAdmin)

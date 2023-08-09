@@ -224,3 +224,7 @@ div.td-div-xl {
 .sidebar #sidebarToggle:focus {
   outline: none;
 }
+
+.tag-name {
+    cursor: pointer;
+}

@@ -5,7 +5,7 @@ from django import forms
 from searchview import forms as search_view
 
 # Custom App Import
-from psat.models import Problem, ProblemMemo
+from psat.models import ProblemMemo, ProblemTag
 
 
 class ProblemSearchForm(search_view.SearchForm):
@@ -29,3 +29,9 @@ class ProblemMemoForm(forms.ModelForm):
     class Meta:
         model = ProblemMemo
         fields = ['user', 'problem', 'content']
+
+
+class ProblemTagForm(forms.ModelForm):
+    class Meta:
+        model = ProblemTag
+        fields = ['user', 'problem']
