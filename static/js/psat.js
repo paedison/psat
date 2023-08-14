@@ -201,7 +201,7 @@ $(document).on('click', '.tag-create-button', function(event) {
     event.preventDefault();
 
     let url = $(this).data('url');
-    let target = $(this).data('infoTarget');
+    let infoTarget = $(this).data('infoTarget');
     let infoType = $(this).data('infoType');
 
     let user = $('#user_id').val();
@@ -218,8 +218,7 @@ $(document).on('click', '.tag-create-button', function(event) {
         },
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
-            $(target).html(data);
-            console.log(data);
+            $(infoTarget).html(data);
         }
     });
 });
@@ -263,27 +262,23 @@ $(document).on('click', '.tag-update-button', function(event) {
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
             $(target).html(data);
-            console.log(data);
         }
     });
 });
 
 /* Instance(Tag) Delete */
 $(document).on('click', '.tag-delete', function(){
-    let deleteHeader = $('#tagDeleteModalHeader');
-    let deleteFooter = $('#tagDeleteModalFooter');
     let text = $(this).data('text');
     let deleteUrl = $(this).attr('href');
-    let redirectUrl = $(this).data('url');
-    deleteHeader.text(text);
-    deleteFooter.attr('href', deleteUrl);
-    deleteFooter.data('url', redirectUrl);
+    let infoTarget = $(this).data('infoTarget');
+    $('#tagDeleteModalHeader').text(text);
+    $('#tagDeleteModalFooter').attr('href', deleteUrl).data('infoTarget', infoTarget);
 });
 
 $(document).on('click', '#tagDeleteModalFooter', function(event) {
     event.preventDefault();
     let deleteUrl = $(this).attr('href');
-    let redirectUrl = $(this).data('url');
+    let infoTarget = $(this).data('infoTarget');
     $.ajax({
         url: deleteUrl,
         type: 'POST',
@@ -291,7 +286,7 @@ $(document).on('click', '#tagDeleteModalFooter', function(event) {
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
             $('.btn-close').click();
-            window.location.href = redirectUrl;
+            $(infoTarget).html(data);
         }
     });
 });

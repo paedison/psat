@@ -4,7 +4,6 @@ from .views.list_views import *
 from .views.detail_views import *
 from .views.memo_views import *
 from .views.tag_views import *
-from .views import list_test_views
 
 app_name = 'psat'
 
@@ -17,9 +16,6 @@ re_answer_list_sub = r'answer/list/(?P<sub>언어|자료|상황|전체)/$'
 re_answer_list_opt_sub = r'answer/list/(?P<is_correct>[01])correct/(?P<sub>언어|자료|상황|전체)/$'
 
 urlpatterns = [
-    # Test
-    path('test/', list_test_views.ProblemListMainView.as_view(), name='base'),
-
     # Problem
     path('', ProblemListMainView.as_view(), name='base'),
     path('list/', ProblemListView.as_view(), name='problem'),
@@ -60,23 +56,10 @@ urlpatterns = [
     path('memo/<int:pk>/delete/', ProblemMemoDeleteView.as_view(), name='memo_delete'),
 
     # Tag
-    path('tag/create/', ProblemTagCreateView.as_view(), name='tag_create'),
-    path('tag/<int:pk>/', ProblemTagDetailView.as_view(), name='tag_detail'),
-    path('tag/<int:pk>/update/<str:tag_name>/', ProblemTagUpdateView.as_view(), name='tag_update'),
-    path('tag/<int:pk>/delete/<str:tag_name>/', ProblemTagDeleteView.as_view(), name='tag_delete'),
-
-    # # Tag: Tag_views
-    # path('detail/<int:problem_id>/tags/', ProblemTagsView.as_view(), name='problem_tags'),
-    # path('detail/<int:problem_id>/tags/add/', add_tag, name='problem_tags'),
-    # path('detail/<int:problem_id>/tags/edit/', edit_tag, name='problem_tags'),
-    # path('detail/<int:problem_id>/tags/remove/', remove_tag, name='problem_tags'),
+    path('tag/create/', ProblemMyTagCreateView.as_view(), name='tag_create'),
+    path('tag/<int:pk>/', ProblemMyTagDetailView.as_view(), name='tag_detail'),
+    path('tag/<int:pk>/add/', ProblemMyTagAddView.as_view(), name='tag_add'),
+    path('tag/<int:pk>/del/<str:tag_name>/', ProblemMyTagDeleteView.as_view(), name='tag_delete'),
     # path('tags/', TagCloudTV.as_view(), name='tag_cloud'),
     # path('tags/<str:tag>/', TaggedObjectLV.as_view(), name='tagged_object_list'),
-
-    # Hashtag: hashtag_views
-    # path('problem/<int:problem_id>/', problem_detail_view_hashtag, name='hashtag'),
-    # path('problem/<int:pk>/create_hashtag/', CreateHashtagView.as_view(), name='create_hashtag'),
-    # path('hashtag/<int:pk>/edit/', EditHashtagView.as_view(), name='edit_hashtag'),
-    # path('hashtag/<int:pk>/', HashtagDetailView.as_view(), name='hashtag_detail'),
-    # path('problems-with-hashtag/<int:pk>/', ProblemsWithHashtagView.as_view(), name='problems_with_hashtag'),
 ]

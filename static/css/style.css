@@ -228,3 +228,7 @@ div.td-div-xl {
 .tag-name {
     cursor: pointer;
 }
+
+.tag-button {
+    border-radius: 50rem;
+}

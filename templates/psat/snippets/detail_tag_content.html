@@ -2,26 +2,40 @@
 {% load taggit_templatetags2_tags %}
 {% get_tags_for_object problem_tag as "tags" %}
 
+{% include 'psat/snippets/detail_tag_add.html' %}
 <div class="d-flex align-items-start mb-2 mx-2">
-{#    <a class="text-secondary me-2 tag-update" title="{% trans 'Update' %}"#}
-{#       href="{% url 'psat:tag_update' problem_tag.id %}" data-info-target="#detailMyTag">#}
-{#        {{ BOARD_ICON_SET.update|safe }}#}
-{#    </a>#}
-{#    <a class="text-danger me-2 tag-delete" href="{% url 'psat:tag_delete' problem_tag.id %}"#}
-{#       data-url="{{ info.current_url }}" data-text="태그를 삭제하시겠습니까?"#}
-{#       data-bs-toggle="modal" data-bs-target="#instanceDeleteModal" title="{% trans 'Delete' %}">#}
-{#        {{ BOARD_ICON_SET.delete|safe }}#}
-{#    </a>#}
     <div class="border-start border-secondary-subtle ps-2">
         {% for tag in tags %}
-            <span class="badge rounded-pill bg-primary tag-name">
-                {{ tag.name }}
-                <a class="text-white tag-delete" href="{% url 'psat:tag_delete' problem_tag.id tag.name %}"
-                   data-url="{{ info.current_url }}" data-text="태그를 삭제하시겠습니까?"
-                   data-bs-toggle="modal" data-bs-target="#instanceDeleteModal" title="{% trans 'Delete' %}">
-                    {{ BOARD_ICON_SET.delete|safe }}
-                </a>
-            </span>
+            <div class="btn-group">
+                <span class="badge rounded-pill bg-primary dropdown-toggle"
+                      type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ tag.name }}
+                </span>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" title="{% trans 'Delete' %}"
+                           href="{% url 'psat:tag_delete' problem_tag.id tag.name %}">
+                            <i class="fa-solid fa-tag"></i>태그 모음
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item tag-delete" data-info-target="#detailMyTag"
+                           href="{% url 'psat:tag_delete' problem_tag.id tag.name %}"
+                           data-text="태그를 삭제하시겠습니까?" data-tag-name="{{ tag.name }}"
+                           data-bs-toggle="modal" data-bs-target="#tagDeleteModal"
+                           title="{% trans 'Delete' %}">
+                            <i class="fa-solid fa-xmark"></i>{% trans 'Delete' %}
+                        </a>
+                    </li>
+                </ul>
+            </div>
         {% endfor %}
+{#        <span class="badge rounded-pill bg-secondary-light tag-name">#}
+{#            <a class="text-white tag-create" href="{% url 'psat:tag_create' %}"#}
+{#               data-target="#detailMyTag"#}
+{#               title="{% trans 'Add' %}">#}
+{#                ADD +#}
+{#            </a>#}
+{#        </span>#}
     </div>
 </div>
