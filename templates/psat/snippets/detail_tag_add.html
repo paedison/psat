@@ -1,25 +1,25 @@
 {% load i18n %}
 
-<div class="tag-add mb-2 mx-2">
-    <form method="post" action="{% url 'psat:tag_add' problem_tag.id %}">
-        {% csrf_token %}
-        <label for="user_id" hidden>User</label>
-        <input type="text" id="user_id" name="user_id" value="{{ problem_tag.user.id }}" hidden/>
+<form method="post" action="{% url 'psat:tag_add' my_tag.id %}">
+    {% csrf_token %}
+    <label for="user_id" hidden>User</label>
+    <input id="user_id" name="user_id" type="text"
+           value="{{ my_tag.user.id }}" hidden/>
 
-        <label for="problem_id" hidden>Problem</label>
-        <input type="text" id="problem_id" name="problem_id"
-               value="{{ problem_tag.problem.id }}" hidden/>
+    <label for="problem_id" hidden>Problem</label>
+    <input id="problem_id" name="problem_id" type="text"
+           value="{{ my_tag.problem.id }}" hidden/>
 
-        <div class="input-group">
-            <label for="tags" hidden>Tags</label>
-            <input id="tags" name="tags" class="form-control form-control-sm tag-form"
-                   type="text" placeholder="{% trans 'Leave tags' %}"
-                   aria-label="Tag input" required/>
-            <button class="btn btn-sm btn-outline-primary tag-create-button"
-                    type="submit" data-url="{% url 'psat:tag_add' problem_tag.id %}"
-                    data-info-target="#detailMyTag" data-info-type="tags">
-                {% trans 'Add' %}
-            </button>
-        </div>
-    </form>
-</div>
+    <div class="input-group">
+        <label for="tags" hidden>Tags</label>
+        <input id="tags" name="tags" type="text"
+               class="form-control form-control-sm tag-form"
+               placeholder="{% trans 'Leave tags' %}"
+               aria-label="Tag input" required/>
+        <button class="btn btn-sm btn-outline-primary tag-create-button"
+                type="submit" data-url="{% url 'psat:tag_add' my_tag.id %}"
+                data-info-target="#detailTags" data-info-type="tags">
+            {% trans 'Add' %}
+        </button>
+    </div>
+</form>

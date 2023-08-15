@@ -4,20 +4,22 @@
     <form method="post" action="{% url 'psat:tag_create' %}">
         {% csrf_token %}
         <label for="user_id" hidden>User</label>
-        <input type="text" id="user_id" name="user_id" value="{{ user.id }}" hidden/>
+        <input id="user_id" name="user_id" type="text"
+               value="{{ user.id }}" hidden/>
 
         <label for="problem_id" hidden>Problem</label>
-        <input type="text" id="problem_id" name="problem_id"
-               value="{{ problem.prob_id }}" hidden/>
+        <input id="problem_id" name="problem_id" type="text"
+               value="{{ my_tag.problem.id }}" hidden/>
 
         <div class="input-group">
             <label for="tags" hidden>Tags</label>
-            <input id="tags" name="tags" class="form-control form-control-sm tag-form"
-                   type="text" placeholder="{% trans 'Leave tags' %}"
-                   aria-label="Tag input" required />
+            <input id="tags" name="tags" type="text"
+                   class="form-control form-control-sm tag-form"
+                   placeholder="{% trans 'Leave tags' %}"
+                   aria-label="Tag input" required/>
             <button class="btn btn-sm btn-outline-primary tag-create-button"
                     type="submit" data-url="{% url 'psat:tag_create' %}"
-                    data-info-target="#detailMyTag" data-info-type="tags">
+                    data-info-target="#detailTags">
                 {% trans 'Create' %}
             </button>
         </div>

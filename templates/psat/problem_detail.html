@@ -80,14 +80,14 @@
                                 {% if user.is_authenticated %}
                                     <tr>
                                         <td class="p-0">
-                                            {% include 'psat/snippets/detail_info_container.html' %}
+                                            {% include 'psat/problem_detail_memo.html' %}
+                                            {% include 'psat/problem_detail_tag.html' %}
                                         </td>
                                     </tr>
                                 {% endif %}
                             </tbody>
                         {% endif %}
                         </table>
-    {#                    {% include 'psat/problem_tags.html' %}#}
                     </div>
                 </div>
             </div>

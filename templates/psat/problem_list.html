@@ -12,7 +12,7 @@
             {{ info.icon|safe }}
             {{ info.title }}
         </h1>
-    </div><!-- End Page Title -->
+    </div><!-- Page Title End -->
 
     <section class="section">
         <div class="row">
@@ -59,42 +59,42 @@
                                 </button>
                             {% endif %}
                             </div>
-                        </nav><!-- End Navigation -->
+                        </nav><!-- Navigation End -->
 
                         <div class="tab-content" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="nav-all" role="tabpanel"
                                  aria-labelledby="nav-all-tab">
                                 {{ all|safe }}
-                            </div><!-- End All Subject Tab -->
+                            </div><!-- All Subject Tab End -->
 
                             <div class="tab-pane fade" id="nav-eoneo" role="tabpanel"
                                  aria-labelledby="nav-eoneo-tab">
                                 {{ eoneo|safe }}
-                            </div><!-- End Eoneo Tab -->
+                            </div><!-- Eoneo Tab End -->
 
                             <div class="tab-pane fade" id="nav-jaryo" role="tabpanel"
                                  aria-labelledby="nav-jaryo-tab">
                                 {{ jaryo|safe }}
-                            </div><!-- End Jaryo Tab -->
+                            </div><!-- Jaryo Tab End -->
 
                             <div class="tab-pane fade" id="nav-sanghwang" role="tabpanel"
                                  aria-labelledby="nav-sanghwang-tab">
                                 {{ sanghwang|safe }}
-                            </div><!-- End Sanghwang Tab -->
+                            </div><!-- Sanghwang Tab End -->
 
                         {% if info.category == 'problem' %}
                             <div class="tab-pane fade" id="nav-search" role="tabpanel"
                                  aria-labelledby="nav-search-tab">
                                 {{ search|safe }}
-                            </div><!-- End Search Tab -->
+                            </div><!-- Search Tab End -->
                         {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-        </div><!-- End Content Row -->
+        </div><!-- Content Row End -->
     </section>
-</section><!-- End Main Content -->
+</section><!-- Main Content End -->
 {% endblock %}
 
 {% block page_script %}

@@ -1,0 +1,63 @@
+{% load i18n %}
+{% load taggit_templatetags2_tags %}
+{% get_taglist as tags_list for 'psat' %}
+
+<div class="d-flex align-items-start mb-2 mx-2">
+    {% if all_tag %}
+    <div class="border-start border-secondary-subtle ps-2">
+        {% for tag in all_tag %}
+            <div class="btn-group">
+                <span class="badge rounded-pill bg-primary dropdown-toggle"
+                      type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {{ tag }}
+                </span>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" title="{% trans 'Delete' %}"
+                           href="#">
+                            <i class="fa-solid fa-tag"></i>태그 모음
+                        </a>
+                    </li>
+                    {% if my_tag_list %}
+                        {% if tag not in my_tag_list %}
+                            <li>
+                                <form method="post" action="{% url 'psat:tag_add' my_tag.id %}">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <label for="tags" hidden>Tags</label>
+                                        <input id="tags" name="tags"
+                                               class="form-control form-control-sm tag-form"
+                                               type="text" value="{{ tag }}" hidden/>
+                                        <button class="dropdown-item tag-create-button"
+                                           type="submit" data-url="{% url 'psat:tag_add' my_tag.id %}"
+                                           data-info-target="#detailTags">
+                                            <i class="fa-solid fa-plus"></i>{% trans 'Add to my tags' %}
+                                        </button>
+                                    </div>
+                                </form>
+                            </li><!-- Add to My Tags End -->
+                        {% endif %}
+                    {% else %}
+                        <li>
+                            <form method="post" action="{% url 'psat:tag_create' %}">
+                                {% csrf_token %}
+                                <div class="input-group">
+                                    <label for="tags" hidden>Tags</label>
+                                    <input id="tags" name="tags"
+                                           class="form-control form-control-sm tag-form"
+                                           type="text" value="{{ tag }}" hidden/>
+                                    <button class="dropdown-item tag-create-button"
+                                       type="submit" data-url="{% url 'psat:tag_create' %}"
+                                       data-info-target="#detailTags">
+                                        <i class="fa-solid fa-plus"></i>{% trans 'Add to my tags' %}
+                                    </button>
+                                </div>
+                            </form>
+                        </li><!-- Add to My Tags End -->
+                    {% endif %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div><!-- All Tags List End -->

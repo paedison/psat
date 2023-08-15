@@ -1,0 +1,42 @@
+{% load i18n %}
+
+<div id="detailTags">
+    <div id="accordionMyTag" class="accordion accordion-flush">
+        <div class="accordion-item">
+            <h2 id="headingMyTags" class="accordion-header">
+                <button class="accordion-button p-2" type="button"
+                        data-bs-target="#collapseMyTags" aria-expanded="true"
+                        data-bs-toggle="collapse" aria-controls="collapseMyTags">
+                    <div class="badge bg-success">MY TAGS</div>
+                </button>
+            </h2>
+            <div id="collapseMyTags" class="accordion-collapse collapse show"
+                 aria-labelledby="headingMyTags">
+                <div class="accordion-body p-0">
+                    {% if my_tag %}
+                        {% include 'psat/snippets/detail_tag_content_my.html' %}
+                    {% else %}
+                        {% include 'psat/snippets/detail_tag_create.html' %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div><!-- My Tags End -->
+    <div id="accordionAllTag" class="accordion accordion-flush">
+        <div class="accordion-item">
+            <h2 id="headingAllTags" class="accordion-header">
+                <button class="accordion-button p-2" type="button"
+                        data-bs-target="#collapseAllTags" aria-expanded="true"
+                        data-bs-toggle="collapse" aria-controls="collapseAllTags">
+                    <div class="badge bg-success">ALL TAGS</div>
+                </button>
+            </h2>
+            <div id="collapseAllTags" class="accordion-collapse collapse show"
+                 aria-labelledby="headingAllTags">
+                <div class="accordion-body p-0">
+                    {% include 'psat/snippets/detail_tag_content_all.html' %}
+                </div>
+            </div>
+        </div>
+    </div><!-- All Tags End -->
+</div>

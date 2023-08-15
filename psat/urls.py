@@ -56,10 +56,9 @@ urlpatterns = [
     path('memo/<int:pk>/delete/', ProblemMemoDeleteView.as_view(), name='memo_delete'),
 
     # Tag
-    path('tag/create/', ProblemMyTagCreateView.as_view(), name='tag_create'),
-    path('tag/<int:pk>/', ProblemMyTagDetailView.as_view(), name='tag_detail'),
-    path('tag/<int:pk>/add/', ProblemMyTagAddView.as_view(), name='tag_add'),
-    path('tag/<int:pk>/del/<str:tag_name>/', ProblemMyTagDeleteView.as_view(), name='tag_delete'),
-    # path('tags/', TagCloudTV.as_view(), name='tag_cloud'),
-    # path('tags/<str:tag>/', TaggedObjectLV.as_view(), name='tagged_object_list'),
+    # path('tag/cloud/', ProblemTagCloudView.as_view(), name='tag_cloud'),
+    path('tag/create/', ProblemTagCreateView.as_view(), name='tag_create'),
+    path('tag/<int:pk>/', ProblemTagDetailView.as_view(), name='tag_detail'),
+    path('tag/<int:pk>/add/', ProblemTagAddView.as_view(), name='tag_add'),
+    path('tag/<int:pk>/del/<str:tag_name>/', ProblemTagDeleteView.as_view(), name='tag_delete'),
 ]

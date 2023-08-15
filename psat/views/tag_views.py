@@ -14,12 +14,12 @@ from ..models import ProblemTag
 class TagSettingMixIn:
     model = ProblemTag
     form_class = ProblemTagForm
-    context_object_name = 'problem_tag'
+    context_object_name = 'my_tag'
     object: any
 
 
-class ProblemMyTagDetailView(TagSettingMixIn, generic.DetailView):
-    template_name = 'psat/snippets/detail_tag_content.html'
+class ProblemTagDetailView(TagSettingMixIn, generic.DetailView):
+    template_name = 'psat/problem_detail_tag.html'
 
     def get(self, request, *args, **kwargs) -> render:
         self.object = self.get_object()
@@ -27,9 +27,49 @@ class ProblemMyTagDetailView(TagSettingMixIn, generic.DetailView):
         html = render(request, self.template_name, context)
         return html
 
+    def get_my_tag(self) -> ProblemTag:
+        """Get problem tags corresponding to the user and the problem."""
+        my_tag = self.object
+        my_tag_list = list(my_tag.tags.names()) if my_tag else None
+        return my_tag, my_tag_list
 
-class ProblemMyTagCreateView(TagSettingMixIn, generic.CreateView):
+    def get_all_tags(self) -> ProblemTag:
+        """Get problem all tags corresponding to the problem."""
+        problem = self.object.problem
+        all_tags = ProblemTag.objects.filter(problem=problem)
+        tag_list = []
+        for tag in all_tags:
+            tag_name = tag.tags.names()
+            tag_list.extend(tag_name)
+        unique_tags = list(set(tag_list))
+        return unique_tags
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        my_tag, my_tag_list = self.get_my_tag()
+        context['my_tag'] = my_tag
+        context['my_tag_list'] = my_tag_list
+        context['all_tag'] = self.get_all_tags()
+        return context
+
+
+class ProblemTagCreateView(TagSettingMixIn, generic.CreateView):
     template_name = 'psat/snippets/detail_tag_create.html'
+    my_tag: any
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        problem_id = self.request.POST.get('problem', '')
+        my_tag = ProblemTag.objects.filter(user=user, problem_id=problem_id).first()
+        if my_tag:
+            self.object = my_tag
+            form = self.get_form()
+            if form.is_valid():
+                return self.form_valid(form)
+            else:
+                return self.form_invalid(form)
+        else:
+            return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -40,11 +80,15 @@ class ProblemMyTagCreateView(TagSettingMixIn, generic.CreateView):
                 self.object.tags.add(tag)
         return response
 
+    def form_invalid(self, form):
+        print("invalid form")
+        return super().form_invalid(form)
+
     def get_success_url(self):
         return reverse_lazy(f'psat:tag_detail', args=[self.object.id])
 
 
-class ProblemMyTagAddView(ProblemMyTagCreateView):
+class ProblemTagAddView(ProblemTagCreateView):
     template_name = 'psat/snippets/detail_tag_add.html'
 
     def get(self, request, *args, **kwargs):
@@ -62,11 +106,11 @@ class ProblemMyTagAddView(ProblemMyTagCreateView):
             return self.form_invalid(form)
 
 
-class ProblemMyTagDeleteView(TagSettingMixIn, generic.DeleteView):
+class ProblemTagDeleteView(TagSettingMixIn, generic.DeleteView):
     @property
     def success_url(self):
-        problem_tag_id = self.kwargs.get('pk', '')
-        return reverse_lazy(f'psat:tag_detail', args=[problem_tag_id])
+        my_tag_id = self.kwargs.get('pk', '')
+        return reverse_lazy(f'psat:tag_detail', args=[my_tag_id])
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()

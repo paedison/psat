@@ -196,17 +196,18 @@ $(document).on('click', '#instanceDeleteModalFooter', function(event) {
 });
 
 
-/* Create Tag */
+/* Create or Add Tag */
 $(document).on('click', '.tag-create-button', function(event) {
     event.preventDefault();
 
     let url = $(this).data('url');
     let infoTarget = $(this).data('infoTarget');
-    let infoType = $(this).data('infoType');
-
     let user = $('#user_id').val();
     let problem = $('#problem_id').val();
-    let data = $(`#${infoType}`).val();
+    let tags = $(this).prev('input').val();
+    console.log(user);
+    console.log(problem);
+    console.log(tags);
 
     $.ajax({
         url: url,
@@ -214,59 +215,17 @@ $(document).on('click', '.tag-create-button', function(event) {
         data: {
             'user': user,
             'problem': problem,
-            'tags': data,
+            'tags': tags,
         },
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
             $(infoTarget).html(data);
+            console.log(data);
         }
     });
 });
 
-/* Load Tag Update Form */
-$(document).on('click', '.tag-update', function(event) {
-    event.preventDefault();
-
-    let url = $(this).attr('href');
-    let target = $(this).data('infoTarget');
-    $.ajax({
-        url: url,
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            $(target).html(data.html);
-        }
-    });
-});
-
-/* Tag Update */
-$(document).on('click', '.tag-update-button', function(event) {
-    event.preventDefault();
-
-    let url = $(this).data('url');
-    let target = $(this).data('infoTarget');
-    let infoType = $(this).data('infoType');
-
-    let user = $('#user_id').val();
-    let problem = $('#problem_id').val();
-    let data = $(`#${infoType}`).val();
-
-    $.ajax({
-        url: url,
-        type: 'POST',
-        data: {
-            'user': user,
-            'problem': problem,
-            'tags': data,
-        },
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $(target).html(data);
-        }
-    });
-});
-
-/* Instance(Tag) Delete */
+/* Tag Delete */
 $(document).on('click', '.tag-delete', function(){
     let text = $(this).data('text');
     let deleteUrl = $(this).attr('href');

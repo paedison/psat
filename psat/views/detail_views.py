@@ -1,5 +1,6 @@
 # Python Standard Function Import
 import json
+from unittest import result
 
 # Django Core Import
 from django.db.models import Q
@@ -7,6 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
+from taggit.models import Tag
 
 # Custom App Import
 from common.constants import icon, color
@@ -125,27 +127,38 @@ class BaseDetailView(
         return obj
 
     def get_problem_memo(self) -> ProblemMemo:
-        """Get problem memo corresponding to user and problem."""
+        """Get problem memo corresponding to the user and the problem."""
         user = self.request.user
         problem = self.object
-        problem_memo = None
-        if user.is_authenticated:
-            problem_memo = ProblemMemo.objects.filter(user=user, problem=problem).first()
+        problem_memo = ProblemMemo.objects.filter(user=user, problem=problem).first()
         return problem_memo
 
-    def get_problem_tag(self) -> ProblemTag:
-        """Get problem memo corresponding to user and problem."""
+    def get_my_tag(self) -> ProblemTag:
+        """Get problem tags corresponding to the user and the problem."""
         user = self.request.user
         problem = self.object
-        problem_tag = None
-        if user.is_authenticated:
-            problem_tag = ProblemTag.objects.filter(user=user, problem=problem).first()
-        return problem_tag
+        my_tag = ProblemTag.objects.filter(user=user, problem=problem).first()
+        my_tag_list = list(my_tag.tags.names()) if my_tag else None
+        return my_tag, my_tag_list
+
+    def get_all_tags(self) -> ProblemTag:
+        """Get problem all tags corresponding to the problem."""
+        problem = self.object
+        all_tags = ProblemTag.objects.filter(problem=problem)
+        tag_list = []
+        for tag in all_tags:
+            tag_name = tag.tags.names()
+            tag_list.extend(tag_name)
+        unique_tags = list(set(tag_list))
+        return unique_tags
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
+        my_tag, my_tag_list = self.get_my_tag()
         context['problem_memo'] = self.get_problem_memo()
-        context['problem_tag'] = self.get_problem_tag()
+        context['my_tag'] = my_tag
+        context['my_tag_list'] = my_tag_list
+        context['all_tag'] = self.get_all_tags()
         context['anchor_id'] = self.problem_id - int(self.object.number)
         updated_object = self.get_evaluation_info(self.object)
         context['problem'] = updated_object
