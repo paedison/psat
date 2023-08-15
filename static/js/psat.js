@@ -201,23 +201,24 @@ $(document).on('click', '.tag-create-button', function(event) {
     event.preventDefault();
 
     let url = $(this).data('url');
+    let userId = $(this).data('userId');
+    let problemId = $(this).data('problemId');
     let infoTarget = $(this).data('infoTarget');
-    let user = $('#user_id').val();
-    let problem = $('#problem_id').val();
+    let csrfToken = $(this).next('input').val();
     let tags = $(this).prev('input').val();
-    console.log(user);
-    console.log(problem);
-    console.log(tags);
+    console.log(userId);
+    console.log(problemId);
+    console.log(csrfToken);
 
     $.ajax({
         url: url,
         type: 'POST',
         data: {
-            'user': user,
-            'problem': problem,
+            'user': userId,
+            'problem': problemId,
             'tags': tags,
         },
-        headers: { 'X-CSRFToken': csrf_token },
+        headers: { 'X-CSRFToken': csrfToken },
         success: function(data) {
             $(infoTarget).html(data);
             console.log(data);

@@ -1,0 +1,29 @@
+{% load i18n %}
+{% load taggit_templatetags2_tags %}
+{% get_tags_for_object my_tag as "tags" %}
+
+{% for tag in tags %}
+    <div class="btn-group">
+        <span class="badge rounded-pill bg-primary dropdown-toggle"
+              type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ tag.name }}
+        </span>
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item" title="{% trans 'Tag Cloud' %}"
+                   href="#">
+                    <i class="fa-solid fa-tag"></i>{% trans 'Tag Cloud' %}
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item tag-delete" data-info-target="#detailTags"
+                   href="{% url 'psat:tag_delete' my_tag.id tag.name %}"
+                   data-text="태그를 삭제하시겠습니까?" data-tag-name="{{ tag.name }}"
+                   data-bs-toggle="modal" data-bs-target="#tagDeleteModal"
+                   title="{% trans 'Delete Tag' %}">
+                    <i class="fa-solid fa-xmark"></i>{% trans 'Delete Tag' %}
+                </a>
+            </li>
+        </ul>
+    </div>
+{% endfor %}

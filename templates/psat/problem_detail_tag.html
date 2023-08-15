@@ -14,9 +14,18 @@
                  aria-labelledby="headingMyTags">
                 <div class="accordion-body p-0">
                     {% if my_tag %}
-                        {% include 'psat/snippets/detail_tag_content_my.html' %}
+                        <div class="tag-add mb-2 mx-2">
+                            {% include 'psat/snippets/detail_tag_add.html' %}
+                        </div><!-- Add to My Tags End -->
+                        <div class="d-flex align-items-start mb-2 mx-2">
+                            <div class="border-start border-secondary-subtle ps-2">
+                                {% include 'psat/snippets/detail_tag_list_my.html' %}
+                            </div>
+                        </div><!-- My Tag List End -->
                     {% else %}
-                        {% include 'psat/snippets/detail_tag_create.html' %}
+                        <div class="tag-create mb-2 mx-2">
+                            {% include 'psat/snippets/detail_tag_create.html' %}
+                        </div><!-- Tag Create End -->
                     {% endif %}
                 </div>
             </div>
@@ -34,7 +43,13 @@
             <div id="collapseAllTags" class="accordion-collapse collapse show"
                  aria-labelledby="headingAllTags">
                 <div class="accordion-body p-0">
-                    {% include 'psat/snippets/detail_tag_content_all.html' %}
+                    {% if all_tag %}
+                        <div class="d-flex align-items-start mb-2 mx-2">
+                            <div class="border-start border-secondary-subtle ps-2">
+                                {% include 'psat/snippets/detail_tag_list_all.html' %}
+                            </div>
+                        </div><!-- All Tag List End -->
+                    {% endif %}
                 </div>
             </div>
         </div>

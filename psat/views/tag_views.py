@@ -8,7 +8,7 @@ from django.views import generic
 
 # Custom App Import
 from ..forms import ProblemTagForm
-from ..models import ProblemTag
+from ..models import ProblemTag, Problem
 
 
 class TagSettingMixIn:
@@ -27,13 +27,13 @@ class ProblemTagDetailView(TagSettingMixIn, generic.DetailView):
         html = render(request, self.template_name, context)
         return html
 
-    def get_my_tag(self) -> ProblemTag:
+    def get_my_tag(self) -> tuple[ProblemTag, list[str] | None]:
         """Get problem tags corresponding to the user and the problem."""
         my_tag = self.object
         my_tag_list = list(my_tag.tags.names()) if my_tag else None
         return my_tag, my_tag_list
 
-    def get_all_tags(self) -> ProblemTag:
+    def get_all_tags(self) -> list[str]:
         """Get problem all tags corresponding to the problem."""
         problem = self.object.problem
         all_tags = ProblemTag.objects.filter(problem=problem)
@@ -42,6 +42,7 @@ class ProblemTagDetailView(TagSettingMixIn, generic.DetailView):
             tag_name = tag.tags.names()
             tag_list.extend(tag_name)
         unique_tags = list(set(tag_list))
+        unique_tags.sort()
         return unique_tags
 
     def get_context_data(self, **kwargs) -> dict:
@@ -50,17 +51,28 @@ class ProblemTagDetailView(TagSettingMixIn, generic.DetailView):
         context['my_tag'] = my_tag
         context['my_tag_list'] = my_tag_list
         context['all_tag'] = self.get_all_tags()
+        context['problem'] = self.object.problem
         return context
 
 
 class ProblemTagCreateView(TagSettingMixIn, generic.CreateView):
     template_name = 'psat/snippets/detail_tag_create.html'
     my_tag: any
+    problem: Problem
+
+    def get_problem(self) -> Problem:
+        problem_id = self.request.POST.get('problem', '')
+        problem = Problem.objects.filter(id=problem_id).first()
+        return problem
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
-        problem_id = self.request.POST.get('problem', '')
-        my_tag = ProblemTag.objects.filter(user=user, problem_id=problem_id).first()
+        my_tag = None
+        problem = self.get_problem()
+
+        if problem:
+            my_tag = ProblemTag.objects.filter(
+                user=user, problem=problem).first()
         if my_tag:
             self.object = my_tag
             form = self.get_form()
@@ -80,12 +92,14 @@ class ProblemTagCreateView(TagSettingMixIn, generic.CreateView):
                 self.object.tags.add(tag)
         return response
 
-    def form_invalid(self, form):
-        print("invalid form")
-        return super().form_invalid(form)
-
     def get_success_url(self):
         return reverse_lazy(f'psat:tag_detail', args=[self.object.id])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        problem = self.get_problem()
+        context['problem'] = problem
+        return context
 
 
 class ProblemTagAddView(ProblemTagCreateView):
