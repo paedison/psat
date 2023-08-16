@@ -136,29 +136,29 @@ class BaseDetailView(
             problem_memo = ProblemMemo.objects.filter(user=user, problem=problem).first()
         return problem_memo
 
-    def get_my_tag(self) -> tuple[ProblemTag | None, list[str] | None]:
+    def get_my_tag(self) -> tuple:
         """Get problem tags corresponding to the user and the problem."""
         user = self.request.user
         problem = self.object
-        my_tag = None
+        my_tag = my_tag_list = None
         if user.is_authenticated:
             my_tag = ProblemTag.objects.filter(user=user, problem=problem).first()
-        my_tag_list = list(my_tag.tags.names()) if my_tag else None
+            my_tag_list = list(my_tag.tags.names()) if my_tag else None
         my_tag = my_tag if my_tag_list else None
         return my_tag, my_tag_list
 
-    def get_all_tags(self) -> list[str] | None:
+    def get_all_tags(self) -> list:
         """Get problem all tags corresponding to the problem."""
         problem = self.object
-        all_tags = ProblemTag.objects.filter(problem=problem)
-        tag_list = []
-        if all_tags:
-            for tag in all_tags:
+        problem_tags = ProblemTag.objects.filter(problem=problem)
+        tags = []
+        if problem_tags:
+            for tag in problem_tags:
                 tag_name = tag.tags.names()
-                tag_list.extend(tag_name)
-        unique_tags = list(set(tag_list))
-        unique_tags.sort()
-        return unique_tags
+                tags.extend(tag_name)
+        all_tags = list(set(tags))
+        all_tags.sort()
+        return all_tags
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)

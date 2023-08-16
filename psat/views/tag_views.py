@@ -27,29 +27,22 @@ class ProblemTagDetailView(TagSettingMixIn, generic.DetailView):
         html = render(request, self.template_name, context)
         return html
 
-    def get_my_tag(self) -> tuple[ProblemTag, list[str] | None]:
-        """Get problem tags corresponding to the user and the problem."""
-        my_tag = self.object
-        my_tag_list = list(my_tag.tags.names()) if my_tag else None
-        return my_tag, my_tag_list
-
-    def get_all_tags(self) -> list[str]:
+    def get_all_tags(self) -> list:
         """Get problem all tags corresponding to the problem."""
         problem = self.object.problem
-        all_tags = ProblemTag.objects.filter(problem=problem)
-        tag_list = []
-        for tag in all_tags:
+        problem_tags = ProblemTag.objects.filter(problem=problem)
+        tags = []
+        for tag in problem_tags:
             tag_name = tag.tags.names()
-            tag_list.extend(tag_name)
-        unique_tags = list(set(tag_list))
-        unique_tags.sort()
-        return unique_tags
+            tags.extend(tag_name)
+        all_tags = list(set(tags))
+        all_tags.sort()
+        return all_tags
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
-        my_tag, my_tag_list = self.get_my_tag()
-        context['my_tag'] = my_tag
-        context['my_tag_list'] = my_tag_list
+        context['my_tag'] = self.object
+        context['my_tag_list'] = list(self.object.tags.names())
         context['all_tag'] = self.get_all_tags()
         context['problem'] = self.object.problem
         return context
