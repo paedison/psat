@@ -1,7 +1,5 @@
 # Python Standard Function Import
 import json
-from typing import Tuple, Any, List
-from unittest import result
 
 # Django Core Import
 from django.db.models import Q
@@ -9,7 +7,6 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
-from taggit.models import Tag
 
 # Custom App Import
 from common.constants import icon, color

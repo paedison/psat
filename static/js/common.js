@@ -26,7 +26,6 @@ export const urls = {
 }
 const psat_menu = ['problem', 'like', 'rate', 'answer']
 
-let collapseProblem = $('#collapseProblem');
 export let info = JSON.parse($('#info').text());
 let menu = info['menu'];
 export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
@@ -122,6 +121,6 @@ $(document).ready(function() {
 
 
 // Toggle the side navigation
-$("#sidebarToggle").on('click', function(e) {
+$("#sidebarToggle").on('click', function() {
     $("body").toggleClass("toggle-sidebar");
 });
