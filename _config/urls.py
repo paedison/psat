@@ -19,11 +19,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from common.views.base_views import ads
-from psat.views.list_views import index, ProblemListMainView
+from psat.views.list_views import index
 
 urlpatterns = [
-    path('', ProblemListMainView.as_view()),
-    # path('', index),
+    path('', index),
     path('ads.txt', ads),
     path('admin/', admin.site.urls, name='admin'),  # 관리자 페이지
     path('notice/', include('notice.urls')),  # 공지사항
