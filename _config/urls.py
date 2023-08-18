@@ -31,6 +31,7 @@ urlpatterns = [
     path('account/', include('common.urls.account')),  # 로그인, 로그아웃, 회원가입, 비밀번호 변경 등
     # path('account/', include('allauth.urls')),  # 소셜 로그인용 URL
     path('psat/', include('psat.urls')),  # PSAT 기출문제 관리
+    path('psat2/', include('psat2.urls')),  # PSAT 기출문제 관리
     path('schedule/', include('schedule.urls')),  # 시험 일정
     # path('quiz/', include('quiz.urls')),  # 연산연습 등
     path('log/', include('log.urls')),  # 로그 관리
