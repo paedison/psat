@@ -50,3 +50,9 @@ class CustomLogoutView(all_auth.LogoutView):
         super().logout()
         next_page = self.get_next_page()
         return redirect(next_page)
+
+
+def check_email(request):
+    email = request.POST.get('login', '')
+    if User.objects.filter(email=email).exists():
+        return HttpR

@@ -1,0 +1,98 @@
+{% load i18n %}
+{% load partials %}
+
+{% startpartial content %}
+    <div class="d-flex align-items-start mb-2 mx-2">
+        <a class="text-secondary me-2" title="{% trans 'Update' %}"
+           hx-get="{% url 'psat:memo_update' problem_memo.id %}"
+           hx-target="#detailMemo" hx-swap="innerHTML" href="">
+            {{ BOARD_ICON_SET.update|safe }}
+        </a>
+        <a class="text-danger me-2" title="{% trans 'Delete' %}"
+           hx-post="{% url 'psat:memo_delete' problem_memo.id %}"
+           hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
+           hx-target="#detailMemo" hx-swap="innerHTML" href="">
+            {{ BOARD_ICON_SET.delete|safe }}
+        </a>
+        <div id="detailMemo{{ problem_memo.id }}"
+             class="border-start border-secondary-subtle ps-2 text-secondary fw-bold">
+            {{ problem_memo.content }}
+        </div>
+    </div>
+{% endpartial %}
+
+{% startpartial create %}
+    <div class="memo-create mb-2 mx-2">
+        <form>
+            {% csrf_token %}
+            <label for="id_memo_user" hidden>User</label>
+            <input id="id_memo_user" name="user" type="text"
+                   value="{{ user.id }}" hidden/>
+
+            <label for="id_memo_problem" hidden>Problem</label>
+            <input id="id_memo_problem" name="problem" type="text"
+                   value="{{ problem.prob_id }}" hidden/>
+
+            <div class="input-group">
+                <label for="id_memo_content" hidden>Content</label>
+                <textarea id="id_memo_content" name="content" rows="1" required
+                          class="form-control form-control-sm"
+                          placeholder="{% trans 'Leave memo' %}"></textarea>
+                <button class="btn btn-sm btn-outline-primary"
+                        hx-post="{% url 'psat:memo_create' %}"
+                        hx-target="#detailMemo" hx-swap="innerHTML">
+                    {% trans 'Create' %}
+                </button>
+            </div>
+        </form>
+    </div>
+{% endpartial %}
+
+{% startpartial update %}
+    <div class="memo-update mb-2 mx-2">
+        <form>
+            {% csrf_token %}
+            <label for="id_user" hidden>User</label>
+            <input id="id_user" name="user" type="text"
+                   value="{{ problem_memo.user.id }}" hidden/>
+
+            <label for="id_problem" hidden>Problem</label>
+            <input id="id_problem" name="problem" type="text"
+                   value="{{ problem_memo.problem.id }}" hidden/>
+
+            <div class="input-group">
+                <label for="id_content" hidden>Content</label>
+                <textarea id="id_content" name="content" rows="1" required
+                          class="form-control form-control-sm"
+                          placeholder="{% trans 'Leave memo' %}">{{ problem_memo.content }}</textarea>
+                <button class="btn btn-sm btn-outline-primary"
+                        hx-post="{% url 'psat:memo_update' problem_memo.id %}"
+                        hx-target="#detailMemo" hx-swap="innerHTML">
+                    {% trans 'Update' %}
+                </button>
+            </div>
+        </form>
+    </div>
+{% endpartial %}
+
+<div id="accordionMemo" class="accordion accordion-flush">
+    <div class="accordion-item">
+        <h2 id="headingMemo" class="accordion-header">
+            <button class="accordion-button p-2" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseMemo" aria-expanded="true"
+                    aria-controls="collapseMemo">
+                <div class="badge bg-success">MEMO</div>
+            </button>
+        </h2>
+        <div id="collapseMemo" class="accordion-collapse collapse show"
+             aria-labelledby="headingMemo">
+            <div id="detailMemo" class="accordion-body p-0 small">
+                {% if problem_memo %}
+                    {% partial content %}
+                {% else %}
+                    {% partial create %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div><!-- Problem Memo End -->

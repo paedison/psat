@@ -12,7 +12,7 @@
             <div class="d-flex align-items-center pb-2 fs-6">
                 <div>
                     <div class="input-group me-2">
-                        {% include 'psat/snippets/detail_navigation.html' %}
+                        {% include 'psat/snippets/detail_nav_container.html' %}
                         {% include 'psat/snippets/detail_filter_container.html' %}
                     </div>
                 </div>
@@ -72,8 +72,8 @@
                                 {% if user.is_authenticated %}
                                     <tr>
                                         <td class="p-0">
-                                            {% include 'psat/problem_detail_memo.html' %}
-                                            {% include 'psat/problem_detail_tag.html' %}
+                                            {% include 'psat/snippets/detail_memo_container.html' %}
+                                            {% include 'psat/snippets/detail_tag_container.html' %}
                                         </td>
                                     </tr>
                                 {% endif %}
@@ -89,7 +89,7 @@
 {% endblock %}
 
 {% block footer %}
-    {% include 'psat/../snippets/footer.html' %}
+    {% include 'snippets/footer.html' %}
 {% endblock %}
 
 {% block page_script %}

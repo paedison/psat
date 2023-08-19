@@ -19,7 +19,7 @@ class TagSettingMixIn:
 
 
 class ProblemTagDetailView(TagSettingMixIn, generic.DetailView):
-    template_name = 'psat/problem_detail_tag.html'
+    template_name = 'psat/snippets/detail_tag_container.html'
 
     def get(self, request, *args, **kwargs) -> render:
         self.object = self.get_object()
@@ -49,7 +49,7 @@ class ProblemTagDetailView(TagSettingMixIn, generic.DetailView):
 
 
 class ProblemTagCreateView(TagSettingMixIn, generic.CreateView):
-    template_name = 'psat/snippets/detail_tag_create.html'
+    template_name = 'psat/snippets/detail_tag_container.html#create'
     my_tag: any
     problem: Problem
 
@@ -96,7 +96,7 @@ class ProblemTagCreateView(TagSettingMixIn, generic.CreateView):
 
 
 class ProblemTagAddView(ProblemTagCreateView):
-    template_name = 'psat/snippets/detail_tag_add.html'
+    template_name = 'psat/snippets/detail_tag_container.html#add'
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()

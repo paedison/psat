@@ -10,7 +10,7 @@ from allauth.account import views as allauth_views
 from allauth.socialaccount import providers
 
 # Custom App Import
-from ..views.account_view import CustomLoginView, CustomLogoutView
+from ..views.account_view import CustomLoginView, CustomLogoutView, check_email
 from ..views.base_views import ProfileView
 
 urlpatterns = [
@@ -29,7 +29,7 @@ urlpatterns = [
     re_path(r"^confirm-email/(?P<key>[-:\w]+)/$", allauth_views.confirm_email,
             name="account_confirm_email"),
 
-    # password reset
+    # Password Reset
     path("password/reset/", allauth_views.password_reset, name="account_reset_password"),
     path("password/reset/done/", allauth_views.password_reset_done,
          name="account_reset_password_done"),
@@ -53,3 +53,10 @@ for provider in providers.registry.get_list():
     if prov_urlpatterns:
         provider_urlpatterns += prov_urlpatterns
 urlpatterns += provider_urlpatterns
+
+htmx_urlpatterns = [
+    # Login Validation
+    path("check/e-mail/", check_email, name='check_email'),
+]
+
+urlpatterns += htmx_urlpatterns
