@@ -1,16 +1,108 @@
 {% load static %}
 {% load psat_filter %}
+{% load partials %}
 
-    <a id="problemChoiceLink" href="#" class="btn btn-circle btn-sm btn-{{ info.color }} dropdown-toggle"
-       role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        {{ PSAT_ICON_SET.list|safe }}
-    </a>
-    <div class="dropdown-menu" aria-labelledby="problemChoiceLink">
-        <div class="dropdown" role="option">
-            {% if info.type == 'problemDetail' %}
-                {% include 'psat/snippets/detail_filter_for_problem.html' %}
-            {% else %}
-                {% include 'psat/snippets/detail_filter_for_others.html' %}
-            {% endif %}
+{% startpartial problem_filter %}
+    <div class="container p-0" style="min-width: 300px;">
+        <div class="row justify-content-center p-2 text-primary fw-bold">
+            {{ problem.year }}년 '{{ problem.exam2 }}' {{ problem.subject }}
         </div>
+        {% if problem.ex == '민경' or problem.ex == '칠급' %}
+            <div class="row justify-content-center">
+                {% for num in TOTAL.nums25 %}
+                    <div class="col-2 text-center small p-1">
+                        <a href="{% url 'psat:problem_detail' anchor_id|add:num %}">
+                            {{ num }}번
+                        </a>
+                    </div>
+                    {% if forloop.counter|divisibleby:5 %}
+            </div>
+            <div class="row justify-content-center">
+                    {% endif %}
+                {% endfor %}
+        {% else %}
+            <div class="row justify-content-center">
+                {% for num in TOTAL.nums40 %}
+                    <div class="col-2 text-center small p-1">
+                        <a href="{% url 'psat:problem_detail' anchor_id|add:num %}">
+                            {{ num }}번
+                        </a>
+                    </div>
+                    {% if forloop.counter|divisibleby:5 %}
+            </div>
+            <div class="row justify-content-center">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
+{% endpartial %}
+
+{% startpartial other_filter %}
+            <div class="container no-gutters justify-content-center p-0" style="min-width: 300px;">
+        {% for data in list_data %}
+            {% if forloop.counter0|divisibleby:5 %}
+                </div>
+            {% ifchanged %}
+                {% if forloop.counter0 != 0 %}
+                <hr class="m-2">
+                {% endif %}
+                <div class="row justify-content-center p-2 text-primary fw-bold">
+                    {{ data.exam_name }}
+                </div>
+            {% endifchanged %}
+                <div class="row justify-content-center">
+                {% endif %}
+            {% if data %}
+                <div class="col-2 text-center p-0">
+                    <a href="{{ data.problem_url }}"
+                       class="p-1 dropdown-item text-nowrap text-center{% if num == data.problem_number %} active{% endif %}">
+                        {{ data.problem_number }}번
+                    </a>
+                </div>
+            {% else %}
+                <div class="col-2 text-center p-0"> </div>
+            {% endif %}
+        {% endfor %}
+            </div>
+{#    <div class="container no-gutters justify-content-center p-0" style="min-width: 300px;">#}
+{#        <div class="row justify-content-center m-0">#}
+{#            {% for data in list_data %}#}
+{#                {% ifchanged %}#}
+{#                    <div class="row justify-content-center p-2 text-primary fw-bold">#}
+{#                        {{ data.exam_name }}#}
+{#                    </div>#}
+{#                {% endifchanged %}#}
+{#                {% if data %}#}
+{#                    <div class="col-2 text-center small p-1">#}
+{#                        <a href="{{ data.problem_url }}">{{ data.problem_number }}번</a>#}
+{#                    </div>#}
+{#                {% else %}#}
+{#                    <div class="col-2 text-center small p-1"> </div>#}
+{#                {% endif %}#}
+    {#                {% if forloop.counter0 != 0 %}#}
+    {#                <hr class="m-2">#}
+    {#                {% endif %}#}
+{#                {% if forloop.counter|divisibleby:5 %}#}
+{#                    </div>#}
+{#                    <div class="row justify-content-center">#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+{#        </div>#}
+{#    </div>#}
+{% endpartial %}
+
+<a id="problemChoiceLink" href="#" role="button"
+   class="btn btn-circle btn-sm btn-{{ info.color }} dropdown-toggle"
+   data-bs-toggle="dropdown" aria-expanded="false">
+    {{ PSAT_ICON_SET.list|safe }}
+</a>
+<div class="dropdown-menu" aria-labelledby="problemChoiceLink">
+    <div class="dropdown" role="option">
+        {% if info.type == 'problemDetail' %}
+            {% partial problem_filter %}
+        {% else %}
+            {% partial other_filter %}
+        {% endif %}
+    </div>
+</div>

@@ -53,7 +53,8 @@
                         aria-label="Close"></button>
             </div>
             <div class="modal-footer mx-auto">
-                <form class="rateButton" id="rateButton" method="post">
+                <form class="rateButton" id="rateButton" method="post"
+                      data-url="" data-target="">
                 {% csrf_token %}
                     <fieldset>
                         <label for="star1">

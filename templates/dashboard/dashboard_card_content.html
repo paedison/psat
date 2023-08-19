@@ -1,29 +1,46 @@
 {% load static %}
 {% load psat_filter %}
+{% load partials %}
+
+{% startpartial datetime %}
+    <tr class="table-warning small">
+        {% if info.type == 'likeDashboard' %}
+            <td class="text-sm-center text-nowrap text-primary fw-bold px-2" colspan="5">
+                {{ problem.liked_at|date:'Y.m.d' }}({{ problem.liked_at|date:'w'|int2kor }})
+            </td>
+        {% elif info.type == 'rateDashboard' %}
+            <td class="text-sm-center text-nowrap text-primary fw-bold px-2" colspan="5">
+                {{ problem.rated_at|date:'Y.m.d' }}({{ problem.rated_at|date:'w'|int2kor }})
+            </td>
+        {% elif info.type == 'answerDashboard' %}
+            <td class="text-sm-center text-nowrap text-primary fw-bold px-2" colspan="5">
+                {{ problem.answered_at|date:'Y.m.d' }}({{ problem.answered_at|date:'w'|int2kor }})
+            </td>
+        {% endif %}
+    </tr>
+{% endpartial %}
+
 
 <section id="{{ info.target_id }}">
     <div id="info">{{ info|json_script:info }}</div>
     <div class="table-responsive">
-        <table class="table small">
+        <table class="table">
             <thead>
-                <tr>
-                    <th class="text-nowrap px-2 col-1">
-                        {% include 'psat/snippets/list_table_header.html' %}
-                    </th>
-                    <th class="text-start text-sm-center text-nowrap px-2">문제</th>
-                </tr>
+                {% include 'psat/snippets/list_table_header.html' %}
             </thead>
             <tbody>
             {% if page_obj %}
                 {% for problem in page_obj %}
-                    {% ifchanged %}
-                        {% include 'dashboard/dashboard_card_datetime.html' %}
-                    {% endifchanged %}
+                    {% ifchanged %}{% partial datetime %}{% endifchanged %}
                     <tr>
-                        <td class="text-nowrap px-2 col-1">
-                            {% include 'psat/snippets/list_table_problem_info.html' %}
+                        <td class="text-nowrap p-2 col-1">
+                            {% include 'psat/snippets/problem_reference.html' %}
+                            {% include 'psat/snippets/icon_container.html' %}
+                            <div class="d-sm-none pt-2">
+                                {% include 'psat/snippets/list_table_problem.html' %}
+                            </div>
                         </td>
-                        <td class="text-start text-nowrap px-2">
+                        <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
                             {% include 'psat/snippets/list_table_problem.html' %}
                         </td>
                     </tr>

@@ -1,14 +1,97 @@
 {% load static %}
 {% load psat_filter %}
+{% load partials %}
 
-<!-- List Filter Start -->
+{% startpartial like %}
+    <a class="btn btn-outline-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownLikeLink{{ info.sub_code }}" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ PSAT_ICON_SET.filter|safe }}
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="dropdownLikeLink{{ info.sub_code }}">
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.is_liked is None %} active{% endif %}" href="{% url 'dashboard:like' %}">
+                <i class="fa-regular fa-file-lines mr-2"></i>즐겨찾기 전체 문제
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.is_liked == 1 %} active{% endif %}" href="{% url 'dashboard:like' is_liked=1 %}">
+                <i class="fa-solid fa-heart mr-2"></i>즐겨찾기 추가 문제
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.is_liked == 0 %} active{% endif %}" href="{% url 'dashboard:like' is_liked=0 %}">
+                <i class="fa-regular fa-heart mr-2"></i>즐겨찾기 제외 문제
+            </a>
+        </li>
+    </ul>
+{% endpartial %}
+
+{% startpartial rate %}
+    <a class="btn btn-outline-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownRateLink" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ PSAT_ICON_SET.filter|safe }}
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="dropdownRateLink">
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.star_count is None %} active{% endif %}" href="{% url 'dashboard:rate' %}">
+                <i class="fa-regular fa-file-lines mr-2"></i>전체 문제
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.star_count == 1 %} active{% endif %}" href="{% url 'dashboard:rate' star_count=1 %}">
+                <i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.star_count == 2 %} active{% endif %}" href="{% url 'dashboard:rate' star_count=2 %}">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.star_count == 3 %} active{% endif %}" href="{% url 'dashboard:rate' star_count=3 %}">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.star_count == 4 %} active{% endif %}" href="{% url 'dashboard:rate' star_count=4 %}">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.star_count == 5 %} active{% endif %}" href="{% url 'dashboard:rate' star_count=5 %}">
+                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            </a>
+        </li>
+    </ul>
+{% endpartial %}
+
+{% startpartial answer %}
+    <a class="btn btn-outline-primary btn-sm dropdown-toggle" href="" role="button" id="dropdownAnswerLink" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ PSAT_ICON_SET.filter|safe }}
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="dropdownAnswerLink">
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.is_correct is None %} active{% endif %}" href="{% url 'dashboard:answer' %}">
+                <i class="fa-regular fa-file-lines mr-2"></i>전체 문제
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.is_correct == 1 %} active{% endif %}" href="{% url 'dashboard:answer' is_correct=1 %}">
+                <i class="fa-solid fa-circle-check mr-2"></i>맞힌 문제
+            </a>
+        </li>
+        <li>
+            <a class="list-filter dropdown-item text-center{% if info.is_correct == 0 %} active{% endif %}" href="{% url 'dashboard:answer' is_correct=0 %}">
+                <i class="fa-solid fa-circle-xmark mr-2"></i>틀린 문제
+            </a>
+        </li>
+    </ul>
+{% endpartial %}
+
 <div class="input-group dropdown" role="option">
     {% if info.type == 'likeDashboard' %}
-        {% include 'dashboard/snippets/list_filter_for_like.html' %}
+        {% partial like %}
     {% elif info.type == 'rateDashboard' %}
-        {% include 'dashboard/snippets/list_filter_for_rate.html' %}
+        {% partial rate %}
     {% elif info.type == 'answerDashboard' %}
-        {% include 'dashboard/snippets/list_filter_for_answer.html' %}
+        {% partial answer %}
     {% endif %}
-</div>
-<!-- List Filter End -->
+</div><!-- List Filter End -->

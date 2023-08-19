@@ -19,11 +19,6 @@ class PsatDetailInfoMixIn:
     """ Represent PSAT detail information mixin. """
     kwargs: dict
     category: str
-    icon_template_dict = {
-        'like': 'psat/snippets/icon_like.html',
-        'rate': 'psat/snippets/icon_rate.html',
-        'answer': 'psat/snippets/icon_answer.html',
-    }
 
     @property
     def problem_id(self) -> int:
@@ -56,7 +51,8 @@ class PsatDetailInfoMixIn:
     @property
     def icon_template(self) -> str:
         """ Return icon template pathname. """
-        return self.icon_template_dict[self.category]
+        icon_container = 'psat/snippets/icon_container.html'
+        return f'{icon_container}#{self.category}'
 
 
 class BaseDetailView(
@@ -167,7 +163,8 @@ class BaseDetailView(
         context['anchor_id'] = self.problem_id - int(self.object.number)
         updated_object = self.get_evaluation_info(self.object)
         context['problem'] = updated_object
-        self.update_context_data(context)
+        if self.request.method == 'GET':
+            self.update_context_data(context)
         return context
 
     def update_context_data(self, context) -> None:
@@ -180,6 +177,7 @@ class BaseDetailView(
                     'exam__id', 'exam__year', 'exam__exam2', 'exam__subject', 'number', 'id'))
             list_by_exam_organized = self.organize_list(list_by_exam)
             context['list_data'] = list_by_exam_organized
+            # context['list_data'] = prob_data
         prev_prob, next_prob = self.get_prev_next_prob(prob_data, prob_list)
         context['info'] = self.info
         context['prev_prob'] = prev_prob
@@ -207,7 +205,7 @@ class BaseDetailView(
             year, exam2, subject, number, problem_id = item[1:6]
             number, problem_id = int(number), int(problem_id)
             list_item = {
-                'exam_name': f"{year}년 '{exam2} {subject}'",
+                'exam_name': f"{year}년 '{exam2}' {subject}",
                 'problem_number': number,
                 'problem_id': problem_id,
                 'problem_url': reverse_lazy(f'psat:{self.category}_detail', args=[problem_id])

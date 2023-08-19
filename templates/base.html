@@ -34,7 +34,7 @@
 </head>
 
 {% block html_body %}
-<body>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
 {% block header %}{% endblock header %}
 {% block aside %}{% endblock aside %}

@@ -1,25 +1,27 @@
 {% load psat_filter %}
 
-{% if info.type == 'problemList' or info.type == 'searchList' %}
-    <a class="text-decoration-none fw-bold link" href="{{ problem.get_problem_url }}">
-        {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
-    </a>
-{% elif info.type == 'likeList' or info.type == 'likeDashboard' %}
-    {% if problem.is_liked %}
-    <a class="text-decoration-none fw-bold link" href="{{ problem.get_like_url }}">
-        {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
-    </a>
-    {% else %}
-    <a class="text-decoration-none fw-bold link" href="{{ problem.get_problem_url }}">
-        {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
-    </a>
+<div class="td-div-xl small" aria-label="Reference">
+    {% if info.type == 'problemList' or info.type == 'searchList' %}
+        <a class="text-decoration-none fw-bold link" href="{{ problem.get_problem_url }}">
+            {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
+        </a>
+    {% elif info.type == 'likeList' or info.type == 'likeDashboard' %}
+        {% if problem.is_liked %}
+        <a class="text-decoration-none fw-bold link" href="{{ problem.get_like_url }}">
+            {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
+        </a>
+        {% else %}
+        <a class="text-decoration-none fw-bold link" href="{{ problem.get_problem_url }}">
+            {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
+        </a>
+        {% endif %}
+    {% elif info.type == 'rateList' or info.type == 'rateDashboard' %}
+        <a class="text-decoration-none fw-bold link" href="{{ problem.get_rate_url }}">
+            {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
+        </a>
+    {% elif info.type == 'answerList' or info.type == 'answerDashboard' %}
+        <a class="text-decoration-none fw-bold link" href="{{ problem.get_answer_url }}">
+            {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
+        </a>
     {% endif %}
-{% elif info.type == 'rateList' or info.type == 'rateDashboard' %}
-    <a class="text-decoration-none fw-bold link" href="{{ problem.get_rate_url }}">
-        {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
-    </a>
-{% elif info.type == 'answerList' or info.type == 'answerDashboard' %}
-    <a class="text-decoration-none fw-bold link" href="{{ problem.get_answer_url }}">
-        {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
-    </a>
-{% endif %}
+</div>

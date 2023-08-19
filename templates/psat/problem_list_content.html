@@ -4,20 +4,15 @@
 <section id="{{ info.target_id }}">
     <div id="info">{{ info|json_script:info }}</div>
     <div class="table-responsive">
-        <table class="table small">
+        <table class="table">
             <thead>
-                <tr class="d-none d-sm-table-row">
-                    <th class="text-nowrap p-2 col-1">
-                        {% include 'psat/snippets/list_table_header.html' %}
-                    </th>
-                    <th class="text-start text-sm-center text-nowrap p-2">문제</th>
-                </tr>
+                {% include 'psat/snippets/list_table_header.html' %}
             </thead>
             <tbody>
             {% if page_obj %}
                 {% for problem in page_obj %}
                     {% ifchanged %}
-                        <tr class="table-warning">
+                        <tr class="table-warning small">
                             <td class="text-center text-nowrap text-primary fw-bold p-2" colspan="5">
                                 {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
                             </td>
@@ -25,7 +20,8 @@
                     {% endifchanged %}
                     <tr>
                         <td class="text-nowrap p-2 col-1">
-                            {% include 'psat/snippets/list_table_problem_info.html' %}
+                            {% include 'psat/snippets/problem_reference.html' %}
+                            {% include 'psat/snippets/icon_container.html' %}
                             <div class="d-sm-none pt-2">
                                 {% include 'psat/snippets/list_table_problem.html' %}
                             </div>
