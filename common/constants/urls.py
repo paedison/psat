@@ -10,4 +10,3 @@ MENU_URL_SET = {
     'schedule': '/schedule/',
     'qna': '/qna/'
 }
-

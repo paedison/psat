@@ -246,3 +246,12 @@ div.td-div-xl {
 /*.detail-filter > .filter-title {*/
     /*grid-template-areas: ;*/
 /*}*/
+
+
+.htmx-fade-in.htmx-added {
+  opacity: 0;
+}
+.htmx-fade-in {
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}

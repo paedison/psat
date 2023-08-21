@@ -1,15 +1,21 @@
 from django.urls import path
 
-from notice.views import (
-    PostListView, PostCreateView, PostDetailView, PostUpdateView, PostDeleteView,
-    CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView, PostListMainView
+# from .views import (
+#     PostListView, PostCreateView, PostDetailView, PostUpdateView, PostDeleteView,
+#     CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView, PostListMainView
+# )
+from .views.post import (
+    PostListView, PostListCategoryView, PostCreateView, PostDetailView, PostUpdateView, PostDeleteView,
+)
+from .views.comment import (
+    CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView,
 )
 
 app_name = 'notice'
 
 urlpatterns = [
-    path('', PostListMainView.as_view(), name='base'),
-    path('list/', PostListView.as_view(), name='list'),
+    path('', PostListView.as_view(), name='base'),
+    path('', PostListView.as_view(), name='list'),
     path('post/create/', PostCreateView.as_view(), name='create'),
     path('post/<int:post_id>/', PostDetailView.as_view(), name='detail'),
     path('post/<int:post_id>/update/', PostUpdateView.as_view(), name='update'),
@@ -20,3 +26,9 @@ urlpatterns = [
     path('comment/<int:comment_id>/update/', CommentUpdateView.as_view(), name='comment_update'),
     path('comment/<int:comment_id>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
 ]
+
+htmx_urlpatterns = [
+    path('category/<int:category>/', PostListCategoryView.as_view(), name='list_category'),
+]
+
+urlpatterns += htmx_urlpatterns

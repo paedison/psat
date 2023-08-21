@@ -8,14 +8,14 @@
                     {{ MENU_ICON_SET.notice|safe }}
                     <span>Notice</span>
                 </a>
-            </li><!-- End Notice Nav -->
+            </li><!-- Notice Nav End -->
 
             <li class="nav-item">
                 <a id="dashboardList" class="nav-link collapsed" href="{{ MENU_URL_SET.dashboard }}">
                     {{ MENU_ICON_SET.dashboard|safe }}
                     <span>Dashboard</span>
                 </a>
-            </li><!-- End Dashboard Nav -->
+            </li><!-- Dashboard Nav End -->
 
             {% comment %}
             <li class="nav-item" id="profileList">
@@ -61,14 +61,14 @@
                         {% endcomment %}
                     </li>
                 </ul>
-            </li><!-- End PSAT Nav -->
+            </li><!-- PSAT Nav End -->
 
             <li class="nav-item">
                 <a id="scheduleList" class="nav-link collapsed" href="{{ MENU_URL_SET.schedule }}">
                     {{ MENU_ICON_SET.schedule|safe }}
                     <span>Schedule</span>
                 </a>
-            </li><!-- End Schedule Nav -->
+            </li><!-- Schedule Nav End -->
 
         {% else %}
             <li class="nav-item">
@@ -76,22 +76,22 @@
                     {{ MENU_ICON_SET.notice|safe }}
                     <span>Notice</span>
                 </a>
-            </li><!-- End Notice Nav -->
+            </li><!-- Notice Nav End -->
             <li class="nav-item">
                 <a id="problemList" class="nav-link collapsed" href="{{ MENU_URL_SET.problem }}">
                     {{ MENU_ICON_SET.psat|safe }}
                     <span>PSAT</span>
                 </a>
-            </li><!-- End PSAT Nav -->
+            </li><!-- PSAT Nav End -->
             <li class="nav-item">
                 <a id="scheduleList" class="nav-link collapsed" href="{{ MENU_URL_SET.schedule }}">
                     {{ MENU_ICON_SET.schedule|safe }}
                     <span>Schedule</span>
                 </a>
-            </li><!-- End Schedule Nav -->
+            </li><!-- Schedule Nav End -->
         {% endif %}
     </ul>
     <div class="d-none d-md-block text-center">
         <button id="sidebarToggle" class="rounded-circle border-0"></button>
     </div>
-</aside><!-- End Sidebar-->
+</aside><!-- Sidebar End -->

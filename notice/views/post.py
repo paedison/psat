@@ -1,15 +1,15 @@
 # Django Core Import
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
+from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
+from vanilla.model_views import ListView
 
 # Custom App Import
 from common.constants import icon, color
 from log.views import CreateLogMixIn
-from .forms import PostForm, CommentForm  # Should Change App Name
-from .models import Post, Comment  # Should Change App Name
+from ..forms import PostForm, CommentForm  # Should Change App Name
+from ..models import Post, Comment  # Should Change App Name
 
 
 class BoardInfoMixIn:
@@ -150,6 +150,7 @@ class BoardInfoMixIn:
                 'choice': category[0],
                 'name': category[1],
                 'code': code,
+                'url': reverse_lazy(f'{self.app_name}:list_category', args=[category[0]]),
             })
         return category_list
 
@@ -187,73 +188,41 @@ class BoardInfoMixIn:
             return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.comment_id])
 
 
-class PostListView(BoardInfoMixIn, CreateLogMixIn, generic.ListView):
+class PostListView(BoardInfoMixIn, ListView):
+    model = Post
+    template_name = 'board/post_list.html'
+    context_object_name = 'posts'
+    paginate_by = 10
     view_type = 'postList'
+    object_list: any
 
-    @property
-    def object_list(self): return self.model.objects.all()
     @property
     def category(self): return self.kwargs.get('category', 0)
 
     def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.post_list_content_template, context)
-        self.create_log_for_list(page_obj=context['page_obj'])
-        return html
-
-    def post(self, request, *args, **kwargs):
-        self.kwargs['page'] = request.POST.get('page', '1')
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.post_list_content_template, context).content.decode('utf-8')
-        self.create_log_for_list(page_obj=context['page_obj'])
-        return HttpResponse(html)
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        queryset = self.object_list
-        top_fixed = self.model.objects.filter(top_fixed=True)
+        queryset = self.get_queryset()
         if self.category:
             queryset = queryset.filter(category=self.category)
-            top_fixed = top_fixed.filter(category=self.category)
-        page_size = self.get_paginate_by(queryset)
-        paginator, page_obj, queryset, is_paginated = self.paginate_queryset(queryset, page_size)
-        return {
-            'view': self,
-            'info': self.info,
-            'page_obj': page_obj,
-            'page_range': paginator.get_elided_page_range(page_obj.number, on_ends=1),
-            'top_fixed': top_fixed,
-        }
+
+        paginate_by = self.get_paginate_by()
+        paginator = self.get_paginator(queryset, paginate_by)
+        page = self.paginate_queryset(queryset, paginate_by)
+        self.object_list = page.object_list
+
+        context = self.get_context_data(
+            info=self.info,
+            page_obj=page,
+            is_paginated=page.has_other_pages(),
+            paginator=page.paginator,
+            page_range=paginator.get_elided_page_range(),
+            top_fixed=self.model.objects.filter(top_fixed=True),
+            category_list=self.category_list.copy(),
+        )
+        return self.render_to_response(context)
 
 
-class PostListMainView(BoardInfoMixIn, generic.View):
-    """ Represent PSAT list main view. """
-    view_type = 'postListMain'
-
-    @property
-    def info(self) -> dict:
-        """ Return information dictionary of the main list. """
-        return {
-            'app_name': self.app_name,
-            'menu': self.menu,
-            'type': self.view_type,
-            'title': self.title,
-            'target_id': f'{self.app_name}List',
-            'icon': icon.MENU_ICON_SET[self.app_name],
-            'color': color.COLOR_SET[self.app_name],
-        }
-
-    def get(self, request) -> render:
-        list_view = PostListView.as_view()
-        category_content = self.category_list.copy()
-        for category in category_content:
-            choice = category['choice']
-            category['html'] = list_view(request, category=choice).content.decode('utf-8')
-            category['icon'] = icon.BOARD_ICON_SET[f'category{choice}']
-        context = {
-            'info': self.info,
-            'category_content': category_content,
-        }
-        return render(request, self.template_name, context)
+class PostListCategoryView(PostListView):
+    template_name = 'board/post_list_content.html'
 
 
 class PostDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
@@ -334,67 +303,3 @@ class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic
     def post(self, request, *args, **kwargs):
         self.create_log_for_board_delete()
         return super().post(request, *args, **kwargs)
-
-
-class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
-    view_type = 'commentDetail'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['info'] = self.info
-        return context
-
-
-class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.CreateView):
-    view_type = 'commentCreate'
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.post_id = self.post_id
-        return super().form_valid(form)
-
-    def get(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return redirect(reverse_lazy(f'{self.app_name}:detail', args=[self.post_id]))
-
-    def post(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return super().post(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['info'] = self.info
-        return context
-
-
-class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.UpdateView):
-    view_type = 'commentUpdate'
-    object: object
-
-    def get_success_url(self):
-        return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.comment_update_template, context).content.decode('utf-8')
-        self.create_log_for_board_create_update()
-        return JsonResponse({'html': html})
-
-    def post(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return super().post(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['info'] = self.info
-        context['comment'] = self.object
-        context['info']['target_id'] = f'commentUpdateContent{self.object.id}'
-        return context
-
-
-class CommentDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.DeleteView):
-    view_type = 'commentDelete'
-
-    def get_success_url(self):
-        return reverse_lazy(f'{self.app_name}:detail', args=[self.object.post.id])

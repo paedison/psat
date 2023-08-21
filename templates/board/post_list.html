@@ -1,6 +1,41 @@
 {% extends 'list.html' %}
 {% load static %}
 {% load psat_filter %}
+{% load partials %}
+
+{% startpartial category_tab %}
+    {% if category_list %}
+        {% for category in category_list %}
+            <button class="nav-link p-2{% if category.choice == 0 %} active{% endif %}"
+                    id="navCategory{{ category.choice }}" type="button" role="tab"
+                    data-bs-toggle="tab" data-bs-target="#navContent{{ category.choice }}"
+                    aria-controls="navContent{{ category.choice }}"
+                    aria-selected="{% if category.choice == 0 %}true{% else %}false{% endif %}">
+                <span class="fw-bold small text-primary"
+                      {% if category.choice != 0 %}
+                      hx-get="{{ category.url }}" hx-target="#navContent{{ category.choice }}"
+                      hx-trigger="load delay:0.5s"{% endif %}>
+                    {{ category.name }}
+                </span>
+            </button>
+        {% endfor %}
+    {% endif %}
+{% endpartial %}
+
+{% startpartial category_content %}
+    {% if category_list %}
+        {% for category in category_list %}
+            <div class="tab-pane fade{% if category.choice == 0 %} show active{% endif %}"
+                 id="navContent{{ category.choice }}" role="tabpanel"
+                 aria-labelledby="navCategory{{ category.choice }}">
+                {% if category.choice == 0 %}
+                    {% include 'board/post_list_content.html' %}
+                {% else %}
+                {% endif %}
+            </div><!-- Category{{ category.choice }} End -->
+        {% endfor %}
+    {% endif %}
+{% endpartial %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
@@ -12,7 +47,7 @@
             {{ info.icon|safe }}
             {{ info.title }}
         </h1>
-    </div><!-- End Page Title -->
+    </div><!-- Page Title End -->
 
     <section class="section">
         <div class="row">
@@ -21,39 +56,18 @@
                     <div class="card-body">
                         <nav class="mt-4">
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                {% if category_content %}
-                                    {% for category in category_content %}
-                                        <button class="nav-link p-2{% if forloop.counter0 == 0 %} active{% endif %}"
-                                                id="navCategory{{ category.code }}" type="button" role="tab"
-                                                data-bs-toggle="tab" data-bs-target="#navContent{{ category.code }}"
-                                                aria-controls="navContent{{ category.code }}"
-                                                aria-selected="{% if forloop.counter0 == 0 %}true{% else %}false{% endif %}">
-                                            <span class="fw-bold small text-primary">
-                                                {{ category.icon|safe }} {{ category.name }}
-                                            </span>
-                                        </button>
-                                    {% endfor %}
-                                {% endif %}
+                                {% partial category_tab %}
                             </div>
-                        </nav><!-- End Navigation -->
-
+                        </nav><!-- Navigation End -->
                         <div class="tab-content" id="nav-tabContent">
-                            {% if category_content %}
-                                {% for category in category_content %}
-                                    <div class="tab-pane fade{% if forloop.counter0 == 0 %} show active{% endif %}"
-                                         id="navContent{{ category.code }}" role="tabpanel"
-                                         aria-labelledby="navCategory{{ category.code }}">
-                                        {{ category.html|safe }}
-                                    </div><!-- End {% if forloop.counter0 == 0 %}All {% endif %}Category{{ category.code }} -->
-                            {% endfor %}
-                        {% endif %}
-                        </div>
+                            {% partial category_content %}
+                        </div><!-- Category End -->
                     </div>
                 </div>
             </div>
-        </div><!-- End Content Row -->
+        </div><!-- Content Row End -->
     </section>
-</section><!-- End Main Content -->
+</section><!-- Main Content End -->
 {% endblock %}
 
 {% block page_script %}

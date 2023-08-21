@@ -1,7 +1,7 @@
 {% load static %}
 
-<section id="{{ info.target_id }}">
-    <div id="info">{{ info|json_script:info }}</div>
+<section id="{{ info.target_id }}" class="htmx-fade-in" hx-swap="outerHTML">
+{#    <div id="info">{{ info|json_script:info }}</div>#}
     <div class="table-responsive">
         <table class="table small">
             <thead>
