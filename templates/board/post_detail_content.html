@@ -1,0 +1,103 @@
+{% load static %}
+{% load widget_tweaks %}
+{% load psat_filter %}
+{% load partials %}
+
+{% startpartial buttons %}
+    <div class="left-button col-auto px-0">
+        <a class="btn btn-circle btn-sm btn-outline-secondary"
+           href="{{ post.get_list_url }}" title="List">
+            {{ BOARD_ICON_SET.list|safe }}
+        </a>
+        {% if prev_post %}
+            <a class="btn btn-circle btn-sm btn-outline-secondary"
+               hx-get="{{ prev_post.get_absolute_url }}" title="Previous"
+               hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {{ BOARD_ICON_SET.previous|safe }}
+            </a>
+        {% endif %}
+        {% if next_post %}
+            <a class="btn btn-circle btn-sm btn-outline-secondary"
+               hx-get="{{ next_post.get_absolute_url }}" title="Next"
+               hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {{ BOARD_ICON_SET.next|safe }}
+            </a>
+        {%  endif %}
+    </div>
+    <div class="right-button">
+        <a class="btn btn-circle btn-sm btn-outline-warning"
+           href="{{ post.get_list_url }}" title="Reply">
+            {{ BOARD_ICON_SET.reply|safe }}
+        </a>
+        {% if post.user == user %}
+            <a class="btn btn-circle btn-sm btn-outline-success"
+               hx-get="{{ post.get_update_url }}" title="Update"
+               hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {{ BOARD_ICON_SET.update|safe }}
+            </a>
+            <a class="btn btn-circle btn-sm btn-outline-danger instance-delete"
+               href="{{ post.get_delete_url }}" data-url="{{ post.get_list_url }}"
+               data-text="글을 삭제하시겠습니까?" data-bs-toggle="modal"
+               data-bs-target="#instanceDeleteModal" title="Delete">
+                {{ BOARD_ICON_SET.delete|safe }}
+            </a>
+        {% endif %}
+    </div>
+{% endpartial %}
+
+{% startpartial post_header %}
+    <h6 class="text-primary fw-bold">{{ post.title }}</h6>
+    <div class="small mb-3 text-secondary">
+        <span class="me-1">{{ post.user.username }}</span>
+        <span class="me-1">조회
+            <span class="text-danger fw-bold">{{ post.hit }}</span>
+        </span>
+        <span class="me-1">
+            {{ post.created_at|date:'Y.m.d' }}({{ post.created_at|date:'w'|int2kor }})
+            {{ post.created_at|time:'H:i' }}
+        </span>
+        <span class="me-1">댓글
+            <span class="text-danger fw-bold">{{ post.get_comment_count }}</span>
+        </span>
+    </div>
+{% endpartial %}
+
+<section id="{{ info.target_id }}" class="htmx-fade-in">
+{#    <div id="info">{{ info|json_script:info }}</div>#}
+    <div class="pagetitle my-2">
+        <h1>
+            {{ info.icon|safe }}
+            {{ info.menu|capfirst }}
+        </h1>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+        <div class="row">
+            <div class="col-12 my-2">
+                <div class="card m-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between">
+                            {% partial buttons %}
+                        </div>
+                        <hr class="my-2">
+                        {% partial post_header %}
+                        <div class="mb-4">
+                            {{ post.content|safe }}
+                        </div>
+                        <div class="bg-secondary-light small p-3">
+                            {% if comments %}
+                                {% for comment in comments %}
+                                    <div class="comment-box">
+                                        {% include 'board/comment_content.html' %}
+                                    </div>
+                                    <hr class="my-2">
+                                {% endfor %}
+                            {% endif %}
+                            {% include 'board/comment_create.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- Content Row End -->
+    </section>
+</section><!-- Main Content End -->

@@ -2,41 +2,48 @@
 {% load psat_filter %}
 
 <div role="navigation" aria-label="pagination">
-    <ul class="pagination pagination-sm justify-content-center m-0">
-    {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link {% if info.type == 'searchList' %}search-page{% else %}list-page{% endif %}" data-value="{{ page_obj.number|add:-1 }}" href="{{ info.pagination_url }}">
-                <i class="fa-solid fa-chevron-left"></i>
-            </a>
-        </li>
-    {% endif %}
-{% for number in page_range %}
-    {% if number == page_obj.number %}
-        <li class="page-item active" aria-current="page">
-            <a class="page-link {% if info.type == 'searchList' %}search-page{% else %}list-page{% endif %}" data-value="{{ number }}" href="{{ info.pagination_url }}">
-                {{ number }}
-            </a>
-        </li>
-    {% elif number == page_obj.paginator.ELLIPSIS %}
-        <li class="page-item disabled">
-            <a class="page-link {% if info.type == 'searchList' %}search-page{% else %}list-page{% endif %}" data-value="{{ number }}" href="{{ info.pagination_url }}" tabindex="-1" aria-disabled="true">
-                {{ number }}
-            </a>
-        </li>
-    {% else %}
-        <li class="page-item">
-            <a class="page-link {% if info.type == 'searchList' %}search-page{% else %}list-page{% endif %}" data-value="{{ number }}" href="{{ info.pagination_url }}">
-                {{ number }}
-            </a>
-        </li>
-    {% endif %}
-{% endfor %}
-    {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link {% if info.type == 'searchList' %}search-page{% else %}list-page{% endif %}" data-value="{{ page_obj.number|add:1 }}" href="{{ info.pagination_url }}?page={{ page_obj.number|add:1 }}">
-                <i class="fa-solid fa-chevron-right"></i>
-            </a>
-        </li>
-    {% endif %}
+    <ul class="pagination pagination-sm justify-content-center m-0"
+        hx-target="#navContent{{ info.category }}" hx-swap="innerHTML swap:0.25s">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link {% if info.type == 'searchList' %}search-page{% endif %}"
+                   hx-get="{{ info.pagination_url }}?page={{ page_obj.number|add:-1 }}" href="">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+            </li>
+        {% endif %}
+        {% for number in page_range %}
+            {% if number == page_obj.number %}
+                <li class="page-item active" aria-current="page">
+                    <a class="page-link {% if info.type == 'searchList' %}search-page{% endif %}"
+                       hx-get="{{ info.pagination_url }}?page={{ number }}" href="">
+                        {{ number }}
+                    </a>
+                </li>
+            {% elif number == page_obj.paginator.ELLIPSIS %}
+                <li class="page-item disabled">
+                    <a class="page-link {% if info.type == 'searchList' %}search-page{% endif %}"
+                       tabindex="-1" aria-disabled="true"
+                       hx-get="{{ info.pagination_url }}?page={{ number }}" href="">
+                        {{ number }}
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link {% if info.type == 'searchList' %}search-page{% endif %}"
+                       hx-get="{{ info.pagination_url }}?page={{ number }}" href="">
+                        {{ number }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link {% if info.type == 'searchList' %}search-page{% endif %}"
+                   hx-get="{{ info.pagination_url }}?page={{ page_obj.number|add:1 }}" href="">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </li>
+        {% endif %}
     </ul>
-</div><!-- End Pagination -->
+</div><!-- Pagination End -->

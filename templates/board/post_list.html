@@ -14,7 +14,7 @@
                 <span class="fw-bold small text-primary"
                       {% if category.choice != 0 %}
                       hx-get="{{ category.url }}" hx-target="#navContent{{ category.choice }}"
-                      hx-trigger="load delay:0.5s"{% endif %}>
+                      hx-trigger="load delay:0.5*{{ category.choice }}s"{% endif %}>
                     {{ category.name }}
                 </span>
             </button>
@@ -25,7 +25,7 @@
 {% startpartial category_content %}
     {% if category_list %}
         {% for category in category_list %}
-            <div class="tab-pane fade{% if category.choice == 0 %} show active{% endif %}"
+            <div class="tab-pane fade{% if category.choice == 0 %} show active{% endif %} htmx-fade-out"
                  id="navContent{{ category.choice }}" role="tabpanel"
                  aria-labelledby="navCategory{{ category.choice }}">
                 {% if category.choice == 0 %}
@@ -42,6 +42,7 @@
 {% block main %}
 <section id="{{ info.target_id }}">
     <div id="info">{{ info|json_script:info }}</div>
+{#    <div id="info">{{ info.menu }}</div>#}
     <div class="pagetitle my-2">
         <h1>
             {{ info.icon|safe }}

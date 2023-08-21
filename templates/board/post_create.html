@@ -1,18 +1,18 @@
-{% extends 'list.html' %}
-{% load static %}
+{#{% extends 'list.html' %}#}
+{#{% load static %}#}
 {% load widget_tweaks %}
-
-{% block head_title %}{{ info.title }}{% endblock head_title %}
-
-{% block main %}
+{##}
+{#{% block head_title %}{{ info.title }}{% endblock head_title %}#}
+{##}
+{#{% block main %}#}
 <section id="{{ info.target_id }}">
-    <div id="info">{{ info|json_script:info }}</div>
+{#    <div id="info">{{ info|json_script:info }}</div>#}
     <div class="pagetitle my-2">
         <h1>
             {{ info.icon|safe }}
             {{ info.title }}
         </h1>
-    </div><!-- End Page Title -->
+    </div><!-- Page Title End -->
 
     <section class="section">
         <div class="row">
@@ -43,7 +43,9 @@
                                     <input type="checkbox" name="top_fixed" class="form-check-input" id="id_top_fixed">
                                     <label class="form-check-label small" for="id_top_fixed">상단 고정</label>
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-outline-primary ms-4">
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-4"
+                                        hx-post="{{ info.post_create_url }}"
+                                        hx-target="#main" hx-swap="innerHTML swap:0.25s">
                                     글쓰기
                                 </button>
                             </div>
@@ -51,11 +53,11 @@
                     </div>
                 </div>
             </div>
-        </div><!-- End Content Row -->
+        </div><!-- Content Row End -->
     </section>
-</section><!-- End Main Content -->
-{% endblock %}
-
-{% block page_script %}
-    <script type="module" src="{% static 'js/board.js' %}"></script>
-{% endblock %}
+</section><!-- Main Content End -->
+{#{% endblock %}#}
+{##}
+{#{% block page_script %}#}
+{#    <script type="module" src="{% static 'js/board.js' %}"></script>#}
+{#{% endblock %}#}

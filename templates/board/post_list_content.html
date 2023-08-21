@@ -1,39 +1,63 @@
 {% load static %}
+{% load partials %}
 
-<section id="{{ info.target_id }}" class="htmx-fade-in" hx-swap="outerHTML">
+{% startpartial thead %}
+    <tr>
+        <th class="text-center text-nowrap px-2">제목</th>
+        <th class="text-center text-nowrap px-0 col-1">글쓴이</th>
+        <th class="text-nowrap px-2 col-1">
+            <div class="td-div-md" aria-label="Date">작성일</div>
+            <div class="td-div-sm" aria-label="Hits">조회</div>
+            <div class="td-div-sm" aria-label="Comment">댓글</div>
+        </th>
+    </tr>
+{% endpartial %}
+
+{% startpartial tbody %}
+    <tr{% if post.top_fixed %} class="table-warning"{% endif %}>
+        <td class="text-start text-nowrap px-2">
+            {% if post.top_fixed %}
+                <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
+            {% endif %}
+            <a class="text-decoration-none link" href=""
+               hx-get="{{ post.get_absolute_url }}"
+               hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {{ post.title|truncatechars:30 }}
+            </a>
+        </td>
+        <td class="text-center text-nowrap px-0 col-1">{{ post.user.username }}</td>
+        <td class="text-nowrap px-2 col-1">
+            <div class="td-div-md" aria-label="Date">{{ post.created_at|date:'n/j' }}</div>
+            <div class="td-div-sm" aria-label="Hit">{{ post.hit }}</div>
+            <div class="td-div-sm" aria-label="Comment">{{ post.get_comment_count }}</div>
+        </td>
+    </tr>
+{% endpartial %}
+
+<section id="{{ info.target_id }}" class="htmx-fade-in">
 {#    <div id="info">{{ info|json_script:info }}</div>#}
     <div class="table-responsive">
         <table class="table small">
             <thead>
-                <tr>
-                    <th class="text-center text-nowrap px-2">제목</th>
-                    <th class="text-center text-nowrap px-0 col-1">글쓴이</th>
-                    <th class="text-nowrap px-2 col-1">
-                        {% include 'board/snippets/list_table_header.html' %}
-                    </th>
-                </tr>
+                {% partial thead %}
             </thead>
             <tbody>
-            {% if top_fixed %}
-                {% for post in top_fixed %}
-                    <tr class="table-warning">
-                        {% include 'board/snippets/list_table_content.html' %}
-                    </tr>
-                {% endfor %}
-            {% endif %}
-            {% if page_obj %}
-                {% for post in page_obj %}
+                {% if top_fixed %}
+                    {% for post in top_fixed %}
+                        {% partial tbody %}
+                    {% endfor %}
+                {% endif %}
+                {% if page_obj %}
+                    {% for post in page_obj %}
+                        {% partial tbody %}
+                    {% endfor %}
+                {% else %}
                     <tr>
-                        {% include 'board/snippets/list_table_content.html' %}
+                        <td class="text-center text-nowrap px-2" colspan="8">
+                            추가된 자료가 없습니다.
+                        </td>
                     </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td class="text-center text-nowrap px-2" colspan="8">
-                        추가된 자료가 없습니다.
-                    </td>
-                </tr>
-            {% endif %}
+                {% endif %}
             </tbody>
         </table>
     </div>

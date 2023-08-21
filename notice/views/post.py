@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
-from vanilla.model_views import ListView
+from vanilla.model_views import ListView, DetailView, UpdateView
 
 # Custom App Import
 from common.constants import icon, color
@@ -113,6 +113,8 @@ class BoardInfoMixIn:
     @property
     def post_list_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:list')
     @property
+    def list_category_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:list_category', args=[self.category])
+    @property
     def post_create_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:create')
     @property
     def base_icon(self) -> str: return icon.MENU_ICON_SET[self.app_name]
@@ -169,7 +171,7 @@ class BoardInfoMixIn:
             'category': self.category,
             'type': self.view_type,
             'title': self.title,
-            'pagination_url': self.post_list_url,
+            'pagination_url': self.list_category_url,
             'target_id': self.target_id,
             'icon': self.base_icon,
             'color': self.base_color,
@@ -225,22 +227,24 @@ class PostListCategoryView(PostListView):
     template_name = 'board/post_list_content.html'
 
 
-class PostDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
+class PostDetailView(BoardInfoMixIn, DetailView):
     view_type = 'postDetail'
+    lookup_field = 'id'
+    lookup_url_kwarg = 'post_id'
+
+    template_name = 'board/post_detail_content.html'
+    object: any
 
     def get(self, request, *args, **kwargs):
-        response = super().get(request, *args, **kwargs)
-        self.create_request_log()
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        self.object = self.get_object()
         prev_post, next_post = self.get_prev_next_post()
-        context['info'] = self.info
-        context['prev_post'] = prev_post
-        context['next_post'] = next_post
-        context['comments'] = self.object.comment.all()
-        return context
+        context = self.get_context_data(
+            info=self.info,
+            prev_post=prev_post,
+            next_post=next_post,
+            comments=self.object.comment.all(),
+        )
+        return self.render_to_response(context)
 
     def get_prev_next_post(self):
         id_list = list(self.model.objects.values_list('id', flat=True))
@@ -249,6 +253,32 @@ class PostDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
         prev_post = self.model.objects.get(id=id_list[q + 1]) if q != last else ''
         next_post = self.model.objects.get(id=id_list[q - 1]) if q != 0 else ''
         return prev_post, next_post
+#
+#
+# class PostDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
+#     view_type = 'postDetail'
+#
+#     def get(self, request, *args, **kwargs):
+#         response = super().get(request, *args, **kwargs)
+#         self.create_request_log()
+#         return response
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         prev_post, next_post = self.get_prev_next_post()
+#         context['info'] = self.info
+#         context['prev_post'] = prev_post
+#         context['next_post'] = next_post
+#         context['comments'] = self.object.comment.all()
+#         return context
+#
+#     def get_prev_next_post(self):
+#         id_list = list(self.model.objects.values_list('id', flat=True))
+#         q = id_list.index(self.object.id)
+#         last = len(id_list) - 1
+#         prev_post = self.model.objects.get(id=id_list[q + 1]) if q != last else ''
+#         next_post = self.model.objects.get(id=id_list[q - 1]) if q != 0 else ''
+#         return prev_post, next_post
 
 
 class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.CreateView):
@@ -275,8 +305,13 @@ class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic
         return context
 
 
-class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.UpdateView):
+class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, UpdateView):
     view_type = 'postUpdate'
+    lookup_field = 'id'
+    lookup_url_kwarg = 'post_id'
+
+    template_name = 'board/post_create.html'
+    object: any
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -297,6 +332,28 @@ class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic
         return super().post(request, *args, **kwargs)
 
 
+# class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.UpdateView):
+#     view_type = 'postUpdate'
+#
+#     def form_valid(self, form):
+#         form.instance.user = self.request.user
+#         return super().form_valid(form)
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['info'] = self.info
+#         context['info']['target_id'] = f'postUpdateContent{self.post_id}'
+#         return context
+#
+#     def get(self, request, *args, **kwargs):
+#         self.create_log_for_board_create_update()
+#         return super().get(request, *args, **kwargs)
+#
+#     def post(self, request, *args, **kwargs):
+#         self.create_log_for_board_create_update()
+#         return super().post(request, *args, **kwargs)
+#
+#
 class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.DeleteView):
     view_type = 'postDelete'
 
