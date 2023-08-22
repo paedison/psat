@@ -17,29 +17,36 @@ class CardInfoMixIn(PsatListInfoMixIn):
     @property
     def title(self) -> str:
         """ Return title of the list. """
-        return self.title_dict[self.category]
+        return self.title_dict[self.view_type]
 
     @property
     def pagination_url(self) -> reverse_lazy:
         """ Return URL of reverse_lazy style. """
-        opt = self.option[self.category]
+        opt = self.option[self.view_type]
         args = [opt] if opt else None
         if args:
-            return reverse_lazy(f'dashboard:{self.category}', args=args)
+            return reverse_lazy(f'dashboard:{self.view_type}', args=args)
         else:
-            return reverse_lazy(f'dashboard:{self.category}')
+            return reverse_lazy(f'dashboard:{self.view_type}')
+
+    @property
+    def category(self):
+        if self.view_type == 'like': return 1
+        elif self.view_type == 'rate': return 2
+        elif self.view_type == 'answer': return 3
 
     @property
     def info(self) -> dict:
         """ Return information dictionary of the list. """
         return {
-            'category': f'{self.category}Dashboard',
-            'type': f'{self.category}Dashboard',
+            'view_type': f'{self.view_type}Dashboard',
+            'category': self.category,
+            'type': f'{self.view_type}Dashboard',
             'title': self.title,
             'pagination_url': self.pagination_url,
-            'target_id': f'{self.category}DashboardContent',
-            'icon': icon.MENU_ICON_SET[self.category],
-            'color': color.COLOR_SET[self.category],
+            'target_id': f'{self.view_type}DashboardContent',
+            'icon': icon.MENU_ICON_SET[self.view_type],
+            'color': color.COLOR_SET[self.view_type],
             'is_liked': self.option['like'],
             'star_count': self.option['rate'],
             'is_correct': self.option['answer'],
@@ -54,7 +61,7 @@ class DashboardListView(CardInfoMixIn, BaseListView):
 
     def get_queryset(self) -> object:
         field = self.queryset_field
-        opt = self.option[self.category]
+        opt = self.option[self.view_type]
         lookup_expr = field[0] if opt is None else field[1]
         value = 0 if opt is None else opt
         problem_filter = Q(**{'evaluation__user': self.request.user, lookup_expr: value})
@@ -65,7 +72,7 @@ class DashboardListView(CardInfoMixIn, BaseListView):
 class DashboardMainView(generic.View):
     """ Represent Dashboard main view. """
     app_name = 'common'
-    category = 'dashboard'
+    view_type = 'dashboard'
     template_name = 'dashboard/dashboard_main.html'
 
     @property
@@ -73,13 +80,13 @@ class DashboardMainView(generic.View):
         """ Return information dictionary of the Dashboard main list. """
         return {
             'app_name': self.app_name,
-            'menu': self.category,
-            'category': self.category,
-            'type': f'{self.category}List',
-            'title': self.category.capitalize(),
-            'target_id': f'{self.category}List',
-            'url': reverse_lazy(f'{self.category}:base'),
-            'icon': icon.MENU_ICON_SET[self.category],
+            'menu': self.view_type,
+            'view_type': self.view_type,
+            'type': f'{self.view_type}List',
+            'title': self.view_type.capitalize(),
+            'target_id': f'{self.view_type}List',
+            'url': reverse_lazy(f'{self.view_type}:base'),
+            'icon': icon.MENU_ICON_SET[self.view_type],
             'color': 'primary',
         }
 
@@ -101,12 +108,12 @@ class DashboardMainView(generic.View):
 
 
 class LikeDashboardView(DashboardListView):
-    category = 'like'
+    view_type = 'like'
 
 
 class RateDashboardView(DashboardListView):
-    category = 'rate'
+    view_type = 'rate'
 
 
 class AnswerDashboardView(DashboardListView):
-    category = 'answer'
+    view_type = 'answer'
