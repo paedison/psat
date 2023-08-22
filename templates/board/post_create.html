@@ -1,63 +1,76 @@
-{#{% extends 'list.html' %}#}
-{#{% load static %}#}
+{% extends 'list.html' %}
+{% load static %}
+{% load partials %}
 {% load widget_tweaks %}
-{##}
-{#{% block head_title %}{{ info.title }}{% endblock head_title %}#}
-{##}
-{#{% block main %}#}
-<section id="{{ info.target_id }}">
-{#    <div id="info">{{ info|json_script:info }}</div>#}
-    <div class="pagetitle my-2">
-        <h1>
-            {{ info.icon|safe }}
-            {{ info.title }}
-        </h1>
-    </div><!-- Page Title End -->
 
-    <section class="section">
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% startpartial form %}
+    <form method="post" class="user">
+        {% csrf_token %}
+        {% if form.errors.content %}
+            <div class="alert alert-danger fade show small py-2 fw-bold" role="alert">
+                내용을 입력해주세요.
+            </div>
+        {% endif %}
+        {% render_field form.user hidden="true" %}
+        <div class="d-flex">
+            {% with WIDGET_REQUIRED_CLASS='form-select form-select-sm' %}
+                <div class="col-2">
+                    {% render_field form.category %}
+                </div>
+                <div class="col-10">
+                    {% render_field form.title placeholder="제목을 입력해주세요" %}
+                </div>
+            {% endwith %}
+        </div>
+        {{ form.content }}
+
+        <div class="d-flex align-items-center justify-content-end mt-2">
+            <div class="form-check mr-2">
+                <input type="checkbox" name="top_fixed"
+                       class="form-check-input" id="id_top_fixed">
+                <label class="form-check-label small" for="id_top_fixed">
+                    상단 고정</label>
+            </div>
+            <button type="submit" class="btn btn-sm btn-outline-primary ms-4"
+                    hx-boost="true" hx-swap="outerHTML swap:0.25s"
+                    hx-post="{{ post.get_update_content_url }}"
+                    hx-target="section .section">
+                글쓰기
+            </button>
+        </div>
+    </form>
+{% endpartial %}
+
+{% startpartial content %}
+    <section class="section htmx-fade-in htmx-fade-out">
+        {{ info|json_script:'info' }}
         <div class="row">
             <div class="col-12 my-2">
                 <div class="card m-0">
                     <div class="card-body p-4">
-                        <form method="post" class="user">
-                            {% csrf_token %}
-
-                            {% if form.errors.content %}
-                            <div class="alert alert-danger btn-user text-center font-weight-bold">
-                                내용을 입력해주세요.
-                            </div>
-                            {% endif %}
-
-                            <div class="d-flex">
-                                <div class="col-2">
-                                    {% render_field form.category class='form-select form-select-sm' %}
-                                </div>
-                                <div class="col-10">
-                                    {% render_field form.title class='form-control form-control-sm' placeholder='제목을 입력해주세요' %}
-                                </div>
-                            </div>
-                            {% render_field form.content placeholder='내용을 입력해주세요' %}
-
-                            <div class="d-flex align-items-center justify-content-end mt-2">
-                                <div class="form-check mr-2">
-                                    <input type="checkbox" name="top_fixed" class="form-check-input" id="id_top_fixed">
-                                    <label class="form-check-label small" for="id_top_fixed">상단 고정</label>
-                                </div>
-                                <button type="submit" class="btn btn-sm btn-outline-primary ms-4"
-                                        hx-post="{{ info.post_create_url }}"
-                                        hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                                    글쓰기
-                                </button>
-                            </div>
-                        </form>
+                        {% partial form %}
                     </div>
                 </div>
             </div>
         </div><!-- Content Row End -->
     </section>
-</section><!-- Main Content End -->
-{#{% endblock %}#}
-{##}
-{#{% block page_script %}#}
-{#    <script type="module" src="{% static 'js/board.js' %}"></script>#}
-{#{% endblock %}#}
+{% endpartial %}
+
+
+{% block main %}
+    <section id="{{ info.target_id }}">
+        <div class="pagetitle my-2">
+            <h1>
+                {{ info.icon|safe }}
+                {{ info.menu|capfirst }}
+            </h1>
+        </div><!-- Page Title End -->
+        {% partial content %}
+    </section><!-- Main Content End -->
+{% endblock %}
+
+{% block page_script %}
+    <script type="module" src="{% static 'js/board.js' %}"></script>
+{% endblock %}

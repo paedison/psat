@@ -1,61 +1,96 @@
 {% extends 'list.html' %}
+{% load i18n %}
 {% load static %}
 {% load widget_tweaks %}
 {% load psat_filter %}
+{% load partials %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %}
-<section id="{{ info.target_id }}" class="">
-    <div id="info">{{ info|json_script:info }}</div>
-    <div class="pagetitle my-2">
-        <h1>
-            {{ info.icon|safe }}
-            {{ info.menu|capfirst }}
-        </h1>
-    </div><!-- End Page Title -->
+{% startpartial buttons %}
+    <div class="left-button col-auto px-0" hx-target="section .section"
+         hx-boost="true" hx-swap="outerHTML swap:0.25s">
+        <a class="btn btn-circle btn-sm btn-outline-secondary"
+           hx-get="{{ prev_post.get_list_content_url }}" href=""
+           hx-push-url="{{ post.get_list_url }}" title="List">
+            {{ BOARD_ICON_SET.list|safe }}
+        </a>
+        {% if next_post %}
+            <a class="btn btn-circle btn-sm btn-outline-secondary"
+               hx-get="{{ next_post.get_detail_content_url }}" href=""
+               hx-push-url="{{ next_post.get_absolute_url }}" title="Next">
+                {{ BOARD_ICON_SET.next|safe }}
+            </a>
+        {% else %}
+            <a class="btn btn-circle btn-sm btn-outline-secondary"></a>
+        {%  endif %}
+        {% if prev_post %}
+            <a class="btn btn-circle btn-sm btn-outline-secondary"
+               hx-get="{{ prev_post.get_detail_content_url }}" href=""
+               hx-push-url="{{ prev_post.get_absolute_url }}" title="Previous">
+                {{ BOARD_ICON_SET.previous|safe }}
+            </a>
+        {% else %}
+            <a class="btn btn-circle btn-sm btn-outline-secondary"></a>
+        {% endif %}
+    </div>
+    <div class="right-button" hx-target="section .section"
+         hx-boost="true" hx-swap="outerHTML swap:0.25s">
+        <a class="btn btn-circle btn-sm btn-outline-warning"
+           hx-get="{{ post.get_list_content_url }}" href=""
+           hx-push-url="{{ post.get_list_url }}" title="Reply">
+            {{ BOARD_ICON_SET.reply|safe }}
+        </a>
+        {% if post.user == user %}
+            <a class="btn btn-circle btn-sm btn-outline-success"
+               hx-get="{{ post.get_update_content_url }}" href=""
+               hx-push-url="{{ post.get_update_url }}" title="Update">
+                {{ BOARD_ICON_SET.update|safe }}
+            </a>
+            <a class="btn btn-circle btn-sm btn-outline-danger instance-delete"
+               hx-boost="false" title="Delete" hx-post="{{ post.get_delete_url }}"
+               hx-confirm="{% trans 'Are you sure you wish to delete your post?' %}"
+               hx-push-url="{{ post.get_list_url }}">
+                {{ BOARD_ICON_SET.delete|safe }}
+            </a>
+        {% endif %}
+    </div>
+{% endpartial %}
 
-    <section class="section">
+{% startpartial post_header %}
+    <h6 class="text-primary fw-bold">{{ post.title }}</h6>
+    <div class="small mb-3 text-secondary">
+        <span class="me-1">{{ post.user.username }}</span>
+        <span class="me-1">조회
+            <span class="text-danger fw-bold">{{ post.hit }}</span>
+        </span>
+        <span class="me-1">
+            {% with timestamp=post.created_at %}
+                {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+                {{ timestamp|time:'H:i' }}
+            {% endwith %}
+        </span>
+        <span class="me-1">댓글
+            <span class="text-danger fw-bold">{{ post.get_comment_count }}</span>
+        </span>
+    </div>
+{% endpartial %}
+
+{% startpartial content %}
+    <section class="section htmx-fade-in htmx-fade-out">
+        {{ info|json_script:'info' }}
         <div class="row">
             <div class="col-12 my-2">
                 <div class="card m-0">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between">
-                            {% include 'board/snippets/detail_button_group.html' %}
+                            {% partial buttons %}
                         </div>
-
                         <hr class="my-2">
-
-                        <h6 class="text-primary fw-bold">
-                            {{ post.title }}
-                        </h6>
-
-                        <div class="small mb-3 text-secondary">
-                            <span class="me-1">
-                                {{ post.user.username }}
-                            </span>
-                            <span class="me-1">
-                                조회
-                                <span class="text-danger fw-bold">
-                                    {{ post.hit }}
-                                </span>
-                            </span>
-                            <span class="me-1">
-                                {{ post.created_at|date:'Y.m.d' }}({{ post.created_at|date:'w'|int2kor }})
-                                {{ post.created_at|time:'H:i' }}
-                            </span>
-                            <span class="me-1">
-                                댓글
-                                <span class="text-danger fw-bold">
-                                    {{ post.get_comment_count }}
-                                </span>
-                            </span>
-                        </div>
-
+                        {% partial post_header %}
                         <div class="mb-4">
                             {{ post.content|safe }}
                         </div>
-
                         <div class="bg-secondary-light small p-3">
                             {% if comments %}
                                 {% for comment in comments %}
@@ -72,7 +107,19 @@
             </div>
         </div><!-- Content Row End -->
     </section>
-</section><!-- Main Content End -->
+{% endpartial %}
+
+
+{% block main %}
+    <section id="{{ info.target_id }}">
+        <div class="pagetitle my-2">
+            <h1>
+                {{ info.icon|safe }}
+                {{ info.menu|capfirst }}
+            </h1>
+        </div><!-- Page Title End -->
+        {% partial content %}
+    </section><!-- Main Content End -->
 {% endblock %}
 
 {% block page_script %}

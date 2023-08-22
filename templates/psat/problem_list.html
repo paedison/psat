@@ -6,7 +6,7 @@
 
 {% block main %}
 <section id="{{ info.target_id }}">
-    <div id="info">{{ info|json_script:info }}</div>
+    {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>
             {{ info.icon|safe }}

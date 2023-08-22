@@ -19,24 +19,76 @@
             {% if post.top_fixed %}
                 <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
             {% endif %}
-            <a class="text-decoration-none link" href=""
-               hx-get="{{ post.get_absolute_url }}"
-               hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            <a hx-get="{{ post.get_detail_content_url }}" href=""
+               hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
                 {{ post.title|truncatechars:30 }}
             </a>
         </td>
         <td class="text-center text-nowrap px-0 col-1">{{ post.user.username }}</td>
         <td class="text-nowrap px-2 col-1">
-            <div class="td-div-md" aria-label="Date">{{ post.created_at|date:'n/j' }}</div>
+            <div class="td-div-md" aria-label="Date">
+                {{ post.created_at|date:'n/j' }}</div>
             <div class="td-div-sm" aria-label="Hit">{{ post.hit }}</div>
-            <div class="td-div-sm" aria-label="Comment">{{ post.get_comment_count }}</div>
+            <div class="td-div-sm" aria-label="Comment">
+                {{ post.get_comment_count }}</div>
         </td>
     </tr>
 {% endpartial %}
 
+{% startpartial pagination %}
+    <div role="navigation" aria-label="pagination">
+        <ul class="pagination pagination-sm justify-content-center m-0"
+            hx-target="#navContent{{ info.category }}" hx-swap="innerHTML swap:0.25s">
+            {% with url=info.pagination_url %}
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href=""
+                       hx-get="{{ url }}?page={{ page_obj.number|add:-1 }}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+            {% for number in page_range %}
+                {% if number == page_obj.number %}
+                    <li class="page-item active" aria-current="page">
+                        <a class="page-link" href=""
+                           hx-get="{{ url }}?page={{ number }}">
+                            {{ number }}
+                        </a>
+                    </li>
+                {% elif number == page_obj.paginator.ELLIPSIS %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="" tabindex="-1" aria-disabled="true"
+                           hx-get="{{ url }}?page={{ number }}">
+                            {{ number }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href=""
+                           hx-get="{{ url }}?page={{ number }}">
+                            {{ number }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href=""
+                       hx-get="{{ url }}?page={{ page_obj.number|add:1 }}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        {% endwith %}
+        </ul>
+    </div><!-- Pagination End -->
+{% endpartial %}
+
 <section id="{{ info.target_id }}" class="htmx-fade-in">
-{#    <div id="info">{{ info|json_script:info }}</div>#}
-    <div class="table-responsive">
+    {{ info|json_script:'info' }}
+    <div class="table-responsive" hx-boost="true"
+         hx-target="section .section" hx-swap="outerHTML swap:0.25s">
         <table class="table small">
             <thead>
                 {% partial thead %}
@@ -53,7 +105,7 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td class="text-center text-nowrap px-2" colspan="8">
+                        <td class="text-center text-nowrap px-2" colspan="5">
                             추가된 자료가 없습니다.
                         </td>
                     </tr>
@@ -61,17 +113,19 @@
             </tbody>
         </table>
     </div>
-    <section class="d-flex align-items-center flex-wrap justify-content-center text-sm"
-             data-target="#{{ info.target_id }}">
+    <section class="d-flex flex-wrap">
         <div class="p-2 me-auto ms-auto">
-            {% include 'board/snippets/list_pagination.html' %}
+            {% partial pagination %}
         </div>
-    {% if user.is_admin %}
-        <div class="p-2">
-            <a class="btn btn-sm btn-outline-primary" href="{{ info.post_create_url }}">
-                글쓰기
-            </a>
-        </div>
-    {%  endif %}
+        {% if user.is_admin %}
+            <div class="p-2">
+                <a class="btn btn-sm btn-outline-primary" hx-boost="true"
+                   hx-target="section .section" hx-swap="outerHTML swap:0.25s"
+                   hx-get="{{ info.post_create_content_url }}" href=""
+                   hx-push-url="{{ info.post_create_url }}" title="Create">
+                    글쓰기
+                </a>
+            </div>
+        {%  endif %}
     </section>
 </section>

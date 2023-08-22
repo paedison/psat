@@ -14,7 +14,7 @@ class SomeForm(forms.Form):
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['category', 'title', 'content', 'top_fixed']
+        fields = ['user', 'category', 'title', 'content', 'top_fixed']
         widgets = {
             'content': SummernoteWidget(),
         }

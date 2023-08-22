@@ -2,7 +2,7 @@
 {% load psat_filter %}
 
 <section id="{{ info.target_id }}">
-    <div id="info">{{ info|json_script:info }}</div>
+    {{ info|json_script:'info' }}
     <div class="table-responsive">
         <table class="table">
             <thead>
@@ -50,7 +50,7 @@
     <section class="d-flex align-items-center flex-wrap justify-content-center text-sm"
              data-target="#{{ info.target_id }}">
         <div class="p-2 me-auto ms-auto">
-            {% include 'board/snippets/list_pagination.html' %}
+            {% include 'board/snippets/../board/list_pagination.html' %}
         </div>
     {% if info.category != 'search' %}
         <div class="p-2">

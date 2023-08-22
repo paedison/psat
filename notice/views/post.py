@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.urls import reverse_lazy
 from django.views import generic
-from vanilla.model_views import ListView, DetailView, UpdateView
+from vanilla.model_views import ListView, DetailView, UpdateView, CreateView, DeleteView
 
 # Custom App Import
 from common.constants import icon, color
@@ -117,6 +117,8 @@ class BoardInfoMixIn:
     @property
     def post_create_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:create')
     @property
+    def post_create_content_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:create_content')
+    @property
     def base_icon(self) -> str: return icon.MENU_ICON_SET[self.app_name]
     @property
     def base_color(self) -> str: return color.COLOR_SET[self.app_name]
@@ -179,6 +181,7 @@ class BoardInfoMixIn:
             'comment_id': self.comment_id,
             'list_url': self.post_list_url,
             'post_create_url': self.post_create_url,
+            'post_create_content_url': self.post_create_content_url,
         }
 
     def get_success_url(self):
@@ -223,6 +226,10 @@ class PostListView(BoardInfoMixIn, ListView):
         return self.render_to_response(context)
 
 
+class PostListContentView(PostListView):
+    template_name = 'board/post_list.html#content'
+
+
 class PostListCategoryView(PostListView):
     template_name = 'board/post_list_content.html'
 
@@ -232,7 +239,7 @@ class PostDetailView(BoardInfoMixIn, DetailView):
     lookup_field = 'id'
     lookup_url_kwarg = 'post_id'
 
-    template_name = 'board/post_detail_content.html'
+    template_name = 'board/post_detail.html'
     object: any
 
     def get(self, request, *args, **kwargs):
@@ -253,56 +260,26 @@ class PostDetailView(BoardInfoMixIn, DetailView):
         prev_post = self.model.objects.get(id=id_list[q + 1]) if q != last else ''
         next_post = self.model.objects.get(id=id_list[q - 1]) if q != 0 else ''
         return prev_post, next_post
-#
-#
-# class PostDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
-#     view_type = 'postDetail'
-#
-#     def get(self, request, *args, **kwargs):
-#         response = super().get(request, *args, **kwargs)
-#         self.create_request_log()
-#         return response
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         prev_post, next_post = self.get_prev_next_post()
-#         context['info'] = self.info
-#         context['prev_post'] = prev_post
-#         context['next_post'] = next_post
-#         context['comments'] = self.object.comment.all()
-#         return context
-#
-#     def get_prev_next_post(self):
-#         id_list = list(self.model.objects.values_list('id', flat=True))
-#         q = id_list.index(self.object.id)
-#         last = len(id_list) - 1
-#         prev_post = self.model.objects.get(id=id_list[q + 1]) if q != last else ''
-#         next_post = self.model.objects.get(id=id_list[q - 1]) if q != 0 else ''
-#         return prev_post, next_post
 
 
-class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.CreateView):
+class PostDetailContentView(PostDetailView):
+    template_name = 'board/post_detail.html#content'
+
+
+class PostCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateView):
     view_type = 'postCreate'
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy(f'{self.app_name}:detail', args=[self.object.pk])
-
-    def get(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return super().post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
         return context
+
+
+class PostCreateContentView(PostCreateView):
+    template_name = 'board/post_create.html#content'
 
 
 class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, UpdateView):
@@ -313,50 +290,25 @@ class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, UpdateV
     template_name = 'board/post_create.html'
     object: any
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
         context['info']['target_id'] = f'postUpdateContent{self.post_id}'
         return context
 
-    def get(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return super().post(request, *args, **kwargs)
+    def get_success_url(self):
+        return reverse_lazy(f'{self.app_name}:detail_content', args=[self.post_id])
 
 
-# class PostUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.UpdateView):
-#     view_type = 'postUpdate'
-#
-#     def form_valid(self, form):
-#         form.instance.user = self.request.user
-#         return super().form_valid(form)
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['info'] = self.info
-#         context['info']['target_id'] = f'postUpdateContent{self.post_id}'
-#         return context
-#
-#     def get(self, request, *args, **kwargs):
-#         self.create_log_for_board_create_update()
-#         return super().get(request, *args, **kwargs)
-#
-#     def post(self, request, *args, **kwargs):
-#         self.create_log_for_board_create_update()
-#         return super().post(request, *args, **kwargs)
-#
-#
-class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.DeleteView):
+class PostUpdateContentView(PostUpdateView):
+    template_name = 'board/post_create.html#content'
+
+
+class PostDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, DeleteView):
+    lookup_field = 'id'
+    lookup_url_kwarg = 'post_id'
     view_type = 'postDelete'
+    template_name = 'board/post_delete.html'
 
-    def post(self, request, *args, **kwargs):
-        self.create_log_for_board_delete()
-        return super().post(request, *args, **kwargs)
+    def get_success_url(self):
+        return reverse_lazy(f'{self.app_name}:list_content')

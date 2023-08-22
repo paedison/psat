@@ -30,16 +30,30 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse_lazy(f'{app_name}:detail', args=[self.id])
 
+    def get_detail_content_url(self):
+        return reverse_lazy(f'{app_name}:detail_content', args=[self.id])
+
     @staticmethod
     def get_list_url():
         return reverse_lazy(f'{app_name}:base')
 
     @staticmethod
+    def get_list_content_url():
+        return reverse_lazy(f'{app_name}:list_content')
+
+    @staticmethod
     def get_create_url():
         return reverse_lazy(f'{app_name}:create')
 
+    @staticmethod
+    def get_create_content_url():
+        return reverse_lazy(f'{app_name}:create_content')
+
     def get_update_url(self):
         return reverse_lazy(f'{app_name}:update', args=[self.id])
+
+    def get_update_content_url(self):
+        return reverse_lazy(f'{app_name}:update_content', args=[self.id])
 
     def get_delete_url(self):
         return reverse_lazy(f'{app_name}:delete', args=[self.id])

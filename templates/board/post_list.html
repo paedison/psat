@@ -3,72 +3,78 @@
 {% load psat_filter %}
 {% load partials %}
 
-{% startpartial category_tab %}
-    {% if category_list %}
-        {% for category in category_list %}
-            <button class="nav-link p-2{% if category.choice == 0 %} active{% endif %}"
-                    id="navCategory{{ category.choice }}" type="button" role="tab"
-                    data-bs-toggle="tab" data-bs-target="#navContent{{ category.choice }}"
-                    aria-controls="navContent{{ category.choice }}"
-                    aria-selected="{% if category.choice == 0 %}true{% else %}false{% endif %}">
-                <span class="fw-bold small text-primary"
-                      {% if category.choice != 0 %}
-                      hx-get="{{ category.url }}" hx-target="#navContent{{ category.choice }}"
-                      hx-trigger="load delay:0.5*{{ category.choice }}s"{% endif %}>
-                    {{ category.name }}
-                </span>
-            </button>
-        {% endfor %}
-    {% endif %}
-{% endpartial %}
-
-{% startpartial category_content %}
-    {% if category_list %}
-        {% for category in category_list %}
-            <div class="tab-pane fade{% if category.choice == 0 %} show active{% endif %} htmx-fade-out"
-                 id="navContent{{ category.choice }}" role="tabpanel"
-                 aria-labelledby="navCategory{{ category.choice }}">
-                {% if category.choice == 0 %}
-                    {% include 'board/post_list_content.html' %}
-                {% else %}
-                {% endif %}
-            </div><!-- Category{{ category.choice }} End -->
-        {% endfor %}
-    {% endif %}
-{% endpartial %}
-
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %}
-<section id="{{ info.target_id }}">
-    <div id="info">{{ info|json_script:info }}</div>
-{#    <div id="info">{{ info.menu }}</div>#}
-    <div class="pagetitle my-2">
-        <h1>
-            {{ info.icon|safe }}
-            {{ info.title }}
-        </h1>
-    </div><!-- Page Title End -->
+{% startpartial nav_tab %}
+    {% if category_list %}
+        {% for category in category_list %}
+            {% with c=category.choice %}
+                <button class="nav-link p-2{% if c == 0 %} active{% endif %}"
+                        id="navCategory{{ c }}" type="button" role="tab"
+                        data-bs-toggle="tab" data-bs-target="#navContent{{ c }}"
+                        aria-controls="navContent{{ c }}"
+                        aria-selected="{% if c == 0 %}true{% else %}false{% endif %}">
+                    <span class="fw-bold small text-primary"{% if c != 0 %}
+                          hx-get="{{ category.url }}" hx-target="#navContent{{ c }}"
+                          hx-trigger="load delay:0.5*{{ c }}s"{% endif %}>
+                        {{ category.name }}
+                    </span>
+                </button>
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+{% endpartial %}
 
-    <section class="section">
+{% startpartial nav_content %}
+    {% if category_list %}
+        {% for category in category_list %}
+            {% with c=category.choice %}
+                <div class="tab-pane fade{% if c == 0 %} show active{% endif %}"
+                     id="navContent{{ c }}" role="tabpanel"
+                     aria-labelledby="navCategory{{ c }}">
+                    {% if c == 0 %}
+                        {% include 'board/post_list_content.html' %}
+                    {% else %}
+                    {% endif %}
+                </div><!-- Category{{ c }} End -->
+            {% endwith %}
+        {% endfor %}
+    {% endif %}
+{% endpartial %}
+
+{% startpartial content %}
+    <section class="section htmx-fade-out">
+    {{ info|json_script:'info' }}
         <div class="row">
             <div class="col-12 my-2">
                 <div class="card m-0">
                     <div class="card-body">
                         <nav class="mt-4">
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                {% partial category_tab %}
+                                {% partial nav_tab %}
                             </div>
                         </nav><!-- Navigation End -->
                         <div class="tab-content" id="nav-tabContent">
-                            {% partial category_content %}
+                            {% partial nav_content %}
                         </div><!-- Category End -->
                     </div>
                 </div>
             </div>
         </div><!-- Content Row End -->
     </section>
-</section><!-- Main Content End -->
+{% endpartial %}
+
+
+{% block main %}
+    <section id="{{ info.target_id }}">
+        <div class="pagetitle my-2">
+            <h1>
+                {{ info.icon|safe }}
+                {{ info.menu|capfirst }}
+            </h1>
+        </div><!-- Page Title End -->
+        {% partial content %}
+    </section><!-- Main Content End -->
 {% endblock %}
 
 {% block page_script %}
