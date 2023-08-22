@@ -1,8 +1,74 @@
 {% extends 'list.html' %}
 {% load static %}
 {% load psat_filter %}
+{% load partials %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% startpartial nav_tab %}
+    <button class="nav-link active p-2" id="navCategory0" type="button"
+            data-bs-toggle="tab" data-bs-target="#navContent0" role="tab"
+            aria-controls="navContent0" aria-selected="true">
+        <span class="fw-bold small text-primary">
+            {{ PSAT_ICON_SET.all|safe }} 전체
+        </span>
+    </button>
+    <button class="nav-link p-2" id="navCategory1" type="button"
+            data-bs-toggle="tab" data-bs-target="#navContent1" role="tab"
+            aria-controls="navContent1" aria-selected="false">
+        <span class="fw-bold small text-primary">
+            {{ PSAT_ICON_SET.eoneo|safe }} 언어
+        </span>
+    </button>
+    <button class="nav-link p-2" id="navCategory2" type="button"
+            data-bs-toggle="tab" data-bs-target="#navContent2" role="tab"
+            aria-controls="navContent2" aria-selected="false">
+        <span class="fw-bold small text-primary">
+            {{ PSAT_ICON_SET.jaryo|safe }} 자료
+        </span>
+    </button>
+    <button class="nav-link p-2" id="navCategory3" type="button"
+            data-bs-toggle="tab" data-bs-target="#navContent3" role="tab"
+            aria-controls="navContent3" aria-selected="false">
+        <span class="fw-bold small text-primary">
+            {{ PSAT_ICON_SET.sanghwang|safe }} 상황
+        </span>
+    </button>
+    {% if info.view_type == 'problem' %}
+        <button class="nav-link p-2" id="navCategory4" type="button"
+                data-bs-toggle="tab" data-bs-target="#navContent4" role="tab"
+                aria-controls="navContent4" aria-selected="false">
+            <span class="fw-bold small text-primary">
+                {{ PSAT_ICON_SET.search|safe }} 검색
+            </span>
+        </button>
+    {% endif %}
+{% endpartial %}
+
+{% startpartial nav_content %}
+    <div class="tab-pane fade show active" id="navContent0" role="tabpanel"
+         aria-labelledby="navCategory0">
+        {{ all|safe }}
+    </div><!-- All Subject Tab End -->
+    <div class="tab-pane fade" id="navContent1" role="tabpanel"
+         aria-labelledby="navCategory1">
+        {{ eoneo|safe }}
+    </div><!-- Eoneo Tab End -->
+    <div class="tab-pane fade" id="navContent2" role="tabpanel"
+         aria-labelledby="navCategory2">
+        {{ jaryo|safe }}
+    </div><!-- Jaryo Tab End -->
+    <div class="tab-pane fade" id="navContent3" role="tabpanel"
+         aria-labelledby="navCategory3">
+        {{ sanghwang|safe }}
+    </div><!-- Sanghwang Tab End -->
+    {% if info.view_type == 'problem' %}
+        <div class="tab-pane fade" id="navContent4" role="tabpanel"
+             aria-labelledby="navCategory4">
+            {{ search|safe }}
+        </div><!-- Search Tab End -->
+    {% endif %}
+{% endpartial %}
 
 {% block main %}
 <section id="{{ info.target_id }}">
@@ -21,73 +87,11 @@
                     <div class="card-body p-4">
                         <nav>
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <button class="nav-link active p-2" id="nav-all-tab" type="button"
-                                        data-bs-toggle="tab" data-bs-target="#nav-all" role="tab"
-                                        aria-controls="nav-all" aria-selected="true">
-                                    <span class="fw-bold small text-primary">
-                                        {{ PSAT_ICON_SET.all|safe }} 전체
-                                    </span>
-                                </button>
-                                <button class="nav-link p-2" id="nav-eoneo-tab" type="button"
-                                        data-bs-toggle="tab" data-bs-target="#nav-eoneo" role="tab"
-                                        aria-controls="nav-eoneo" aria-selected="false">
-                                    <span class="fw-bold small text-primary">
-                                        {{ PSAT_ICON_SET.eoneo|safe }} 언어
-                                    </span>
-                                </button>
-                                <button class="nav-link p-2" id="nav-jaryo-tab" type="button"
-                                        data-bs-toggle="tab" data-bs-target="#nav-jaryo" role="tab"
-                                        aria-controls="nav-jaryo" aria-selected="false">
-                                    <span class="fw-bold small text-primary">
-                                        {{ PSAT_ICON_SET.jaryo|safe }} 자료
-                                    </span>
-                                </button>
-                                <button class="nav-link p-2" id="nav-sanghwang-tab" type="button"
-                                        data-bs-toggle="tab" data-bs-target="#nav-sanghwang" role="tab"
-                                        aria-controls="nav-sanghwang" aria-selected="false">
-                                    <span class="fw-bold small text-primary">
-                                        {{ PSAT_ICON_SET.sanghwang|safe }} 상황
-                                    </span>
-                                </button>
-                            {% if info.category == 'problem' %}
-                                <button class="nav-link p-2" id="nav-search-tab" type="button"
-                                        data-bs-toggle="tab" data-bs-target="#nav-search" role="tab"
-                                        aria-controls="nav-search" aria-selected="false">
-                                    <span class="fw-bold small text-primary">
-                                        {{ PSAT_ICON_SET.search|safe }} 검색
-                                    </span>
-                                </button>
-                            {% endif %}
+                                {% partial nav_tab %}
                             </div>
                         </nav><!-- Navigation End -->
-
                         <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-all" role="tabpanel"
-                                 aria-labelledby="nav-all-tab">
-                                {{ all|safe }}
-                            </div><!-- All Subject Tab End -->
-
-                            <div class="tab-pane fade" id="nav-eoneo" role="tabpanel"
-                                 aria-labelledby="nav-eoneo-tab">
-                                {{ eoneo|safe }}
-                            </div><!-- Eoneo Tab End -->
-
-                            <div class="tab-pane fade" id="nav-jaryo" role="tabpanel"
-                                 aria-labelledby="nav-jaryo-tab">
-                                {{ jaryo|safe }}
-                            </div><!-- Jaryo Tab End -->
-
-                            <div class="tab-pane fade" id="nav-sanghwang" role="tabpanel"
-                                 aria-labelledby="nav-sanghwang-tab">
-                                {{ sanghwang|safe }}
-                            </div><!-- Sanghwang Tab End -->
-
-                        {% if info.category == 'problem' %}
-                            <div class="tab-pane fade" id="nav-search" role="tabpanel"
-                                 aria-labelledby="nav-search-tab">
-                                {{ search|safe }}
-                            </div><!-- Search Tab End -->
-                        {% endif %}
+                            {% partial nav_content %}
                         </div>
                     </div>
                 </div>

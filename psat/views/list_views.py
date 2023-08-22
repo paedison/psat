@@ -24,11 +24,11 @@ def index(request):
 class PsatListInfoMixIn:
     """
     Represent PSAT list information mixin.
-    category(str): One of [ problem, like, rate, answer ]
+    view_type(str): One of [ problem, like, rate, answer ]
     """
     kwargs: dict
     app_name = 'psat'
-    category: str
+    view_type: str
     title_dict = {
         'problem': '',
         'like': 'PSAT 즐겨찾기',
@@ -78,7 +78,7 @@ class PsatListInfoMixIn:
         """ Return title of the list. """
         year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
         exam2, subject = self.url['exam2'], self.url['subject']
-        title = self.title_dict[self.category]
+        title = self.title_dict[self.view_type]
         title_parts = []
         if year != '전체':
             title_parts.append(f"{year}년")
@@ -87,7 +87,7 @@ class PsatListInfoMixIn:
         if sub != '전체':
             title_parts.append(subject)
         title_parts.append('PSAT 기출문제')
-        if self.category == 'problem':
+        if self.view_type == 'problem':
             title = ' '.join(title_parts)
         return title
 
@@ -95,9 +95,9 @@ class PsatListInfoMixIn:
     def pagination_url(self) -> reverse_lazy:
         """ Return URL of reverse_lazy style. """
         year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
-        opt = self.option[self.category]
-        if self.category == 'problem':
-            return reverse_lazy(f'psat:{self.category}_list', args=[year, ex, sub])
+        opt = self.option[self.view_type]
+        if self.view_type == 'problem':
+            return reverse_lazy(f'psat:{self.view_type}_list', args=[year, ex, sub])
         else:
             sub = sub if sub != '전체' else None
             args = [opt, sub]
@@ -105,9 +105,14 @@ class PsatListInfoMixIn:
             _opt = '_opt' if opt else ''
             _sub = '_sub' if sub else ''
             if args:
-                return reverse_lazy(f'psat:{self.category}_list{_opt}{_sub}', args=args)
+                return reverse_lazy(f'psat:{self.view_type}_list{_opt}{_sub}', args=args)
             else:
-                return reverse_lazy(f'psat:{self.category}_list')
+                return reverse_lazy(f'psat:{self.view_type}_list')
+
+    @property
+    def category(self):
+        sub_code = self.url['sub_code'] or 0
+        return sub_code
 
     @property
     def info(self) -> dict:
@@ -116,14 +121,15 @@ class PsatListInfoMixIn:
             'app_name': self.app_name,
             'menu': '',
             'category': self.category,
-            'type': f'{self.category}List',
+            'view_type': self.view_type,
+            'type': f'{self.view_type}List',
             'title': self.title,
             'sub': self.url['sub'],
             'sub_code': self.url['sub_code'],
             'pagination_url': self.pagination_url,
-            'target_id': f'{self.category}ListContent{self.url["sub_code"]}',
-            'icon': icon.MENU_ICON_SET[self.category],
-            'color': color.COLOR_SET[self.category],
+            'target_id': f'{self.view_type}ListContent{self.url["sub_code"]}',
+            'icon': icon.MENU_ICON_SET[self.view_type],
+            'color': color.COLOR_SET[self.view_type],
             'is_liked': self.option['like'],
             'star_count': self.option['rate'],
             'is_correct': self.option['answer'],
@@ -163,7 +169,7 @@ class EvaluationInfoMixIn:
 
 class QuerysetFieldMixIn:
     """ Represent queryset field. """
-    category: str
+    view_type: str
     field_dict = {
         'problem': ['', ''],
         'like': ['evaluation__is_liked__gte', 'evaluation__is_liked',
@@ -178,7 +184,7 @@ class QuerysetFieldMixIn:
     @property
     def queryset_field(self) -> list:
         """ Return queryset field for 'get_queryset'. """
-        return self.field_dict[self.category]
+        return self.field_dict[self.view_type]
 
 
 class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
@@ -188,7 +194,7 @@ class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
     template_name = 'psat/problem_list_content.html'
     context_object_name = 'problem'
     paginate_by = 10
-    category: str
+    view_type: str
 
     @property
     def object_list(self) -> object:
@@ -209,10 +215,10 @@ class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
 
     def get_queryset(self) -> object:
         field = self.queryset_field
-        opt = self.option[self.category]
+        opt = self.option[self.view_type]
         year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
         problem_filter = Q()
-        if self.category == 'problem':
+        if self.view_type == 'problem':
             if year != '전체':
                 problem_filter &= Q(exam__year=year)
             if ex != '전체':
@@ -246,19 +252,19 @@ class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
 
 
 class ProblemListView(BaseListView):
-    category = 'problem'
+    view_type = 'problem'
 
 
 class LikeListView(BaseListView):
-    category = 'like'
+    view_type = 'like'
 
 
 class RateListView(BaseListView):
-    category = 'rate'
+    view_type = 'rate'
 
 
 class AnswerListView(BaseListView):
-    category = 'answer'
+    view_type = 'answer'
 
 
 class ListMainView(PsatListInfoMixIn, generic.View):
@@ -271,20 +277,20 @@ class ListMainView(PsatListInfoMixIn, generic.View):
         """ Return menu name of the list. """
         title_dict = self.title_dict.copy()
         title_dict['problem'] = 'PSAT 기출문제'
-        return title_dict[self.category]
+        return title_dict[self.view_type]
 
     @property
     def info(self) -> dict:
         """ Return information dictionary of the main list. """
         return {
             'app_name': self.app_name,
-            'menu': self.category,
-            'category': self.category,
-            'type': f'{self.category}List',
+            'menu': self.view_type,
+            'view_type': self.view_type,
+            'type': f'{self.view_type}List',
             'title': self.title,
-            'target_id': f'{self.category}List',
-            'icon': icon.MENU_ICON_SET[self.category],
-            'color': color.COLOR_SET[self.category],
+            'target_id': f'{self.view_type}List',
+            'icon': icon.MENU_ICON_SET[self.view_type],
+            'color': color.COLOR_SET[self.view_type],
         }
 
     def get(self, request) -> render:
@@ -309,22 +315,22 @@ class ListMainView(PsatListInfoMixIn, generic.View):
 
 class ProblemListMainView(ListMainView):
     main_list_view = ProblemListView
-    category = 'problem'
+    view_type = 'problem'
 
 
 class LikeListMainView(ListMainView):
     main_list_view = LikeListView
-    category = 'like'
+    view_type = 'like'
 
 
 class RateListMainView(ListMainView):
     main_list_view = RateListView
-    category = 'rate'
+    view_type = 'rate'
 
 
 class AnswerListMainView(ListMainView):
     main_list_view = AnswerListView
-    category = 'answer'
+    view_type = 'answer'
 
 
 class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
@@ -335,12 +341,12 @@ class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMix
     paginate_by = 10
     first_display_all_list = False
     ordering = '-problem__exam__year'
-    category = 'search'
+    view_type = 'search'
 
     @property
     def log_title(self) -> str:
         """ Return menu name of the list. """
-        return self.title_dict[self.category]
+        return self.title_dict[self.view_type]
 
     @property
     def pagination_url(self) -> reverse_lazy:
@@ -351,14 +357,14 @@ class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMix
         """ Return information dictionary of the main list. """
         return {
             'app_name': self.app_name,
-            'menu': self.category,
-            'category': self.category,
-            'type': f'{self.category}List',
+            'menu': self.view_type,
+            'view_type': self.view_type,
+            'type': f'{self.view_type}List',
             'title': self.log_title,
             'pagination_url': self.pagination_url,
-            'target_id': f'{self.category}ListContent',
-            'icon': icon.MENU_ICON_SET[self.category],
-            'color': color.COLOR_SET[self.category],
+            'target_id': f'{self.view_type}ListContent',
+            'icon': icon.MENU_ICON_SET[self.view_type],
+            'color': color.COLOR_SET[self.view_type],
         }
 
     def get(self, request, *args, **kwargs):
