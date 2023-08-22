@@ -2,7 +2,7 @@
 <div role="navigation" aria-label="pagination">
     <ul class="pagination pagination-sm justify-content-center m-0"
         hx-target="#navContent{{ info.category }}" hx-swap="innerHTML swap:0.25s">
-        {% with url=info.pagination_url %}
+        {% with url=info.pagination_url page_range=paginator.get_elided_page_range %}
         {% if page_obj.has_previous %}
             <li class="page-item">
                 <a class="page-link" href=""

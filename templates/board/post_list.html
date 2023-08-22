@@ -42,7 +42,7 @@
     {% endif %}
 {% endpartial %}
 
-{% startpartial content %}
+{% startpartial nav %}
     <section class="section htmx-fade-out">
     {{ info|json_script:'info' }}
         <div class="row">
@@ -73,7 +73,7 @@
                 {{ info.menu|capfirst }}
             </h1>
         </div><!-- Page Title End -->
-        {% partial content %}
+        {% partial nav %}
     </section><!-- Main Content End -->
 {% endblock %}
 

@@ -11,14 +11,14 @@
     <div class="left-button col-auto px-0" hx-target="section .section"
          hx-boost="true" hx-swap="outerHTML swap:0.25s">
         <a class="btn btn-circle btn-sm btn-outline-secondary"
-           hx-get="{{ prev_post.get_list_content_url }}" href=""
+           hx-get="{{ post.get_list_navigation_url }}" href=""
            hx-push-url="{{ post.get_list_url }}" title="List">
             {{ BOARD_ICON_SET.list|safe }}
         </a>
         {% if next_post %}
             <a class="btn btn-circle btn-sm btn-outline-secondary"
                hx-get="{{ next_post.get_detail_content_url }}" href=""
-               hx-push-url="{{ next_post.get_absolute_url }}" title="Next">
+               hx-push-url="{{ next_post.get_detail_url }}" title="Next">
                 {{ BOARD_ICON_SET.next|safe }}
             </a>
         {% else %}
@@ -27,7 +27,7 @@
         {% if prev_post %}
             <a class="btn btn-circle btn-sm btn-outline-secondary"
                hx-get="{{ prev_post.get_detail_content_url }}" href=""
-               hx-push-url="{{ prev_post.get_absolute_url }}" title="Previous">
+               hx-push-url="{{ prev_post.get_detail_url }}" title="Previous">
                 {{ BOARD_ICON_SET.previous|safe }}
             </a>
         {% else %}
@@ -37,7 +37,7 @@
     <div class="right-button" hx-target="section .section"
          hx-boost="true" hx-swap="outerHTML swap:0.25s">
         <a class="btn btn-circle btn-sm btn-outline-warning"
-           hx-get="{{ post.get_list_content_url }}" href=""
+           hx-get="{{ post.get_list_navigation_url }}" href=""
            hx-push-url="{{ post.get_list_url }}" title="Reply">
             {{ BOARD_ICON_SET.reply|safe }}
         </a>
@@ -48,9 +48,9 @@
                 {{ BOARD_ICON_SET.update|safe }}
             </a>
             <a class="btn btn-circle btn-sm btn-outline-danger instance-delete"
-               hx-boost="false" title="Delete" hx-post="{{ post.get_delete_url }}"
-               hx-confirm="{% trans 'Are you sure you wish to delete your post?' %}"
-               hx-push-url="{{ post.get_list_url }}">
+               hx-post="{{ post.get_delete_url }}" hx-boost="false"
+               hx-push-url="{{ post.get_list_url }}" title="Delete"
+               hx-confirm="{% trans 'Are you sure you wish to delete your post?' %}">
                 {{ BOARD_ICON_SET.delete|safe }}
             </a>
         {% endif %}
@@ -77,7 +77,7 @@
 {% endpartial %}
 
 {% startpartial content %}
-    <section class="section htmx-fade-in htmx-fade-out">
+    <section id="{{ info.target_id }}" class="section htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="row">
             <div class="col-12 my-2">
@@ -111,7 +111,7 @@
 
 
 {% block main %}
-    <section id="{{ info.target_id }}">
+    <section>
         <div class="pagetitle my-2">
             <h1>
                 {{ info.icon|safe }}

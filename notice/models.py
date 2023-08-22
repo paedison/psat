@@ -30,16 +30,19 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse_lazy(f'{app_name}:detail', args=[self.id])
 
+    def get_detail_url(self):
+        return reverse_lazy(f'{app_name}:detail', args=[self.id])
+
     def get_detail_content_url(self):
         return reverse_lazy(f'{app_name}:detail_content', args=[self.id])
 
     @staticmethod
     def get_list_url():
-        return reverse_lazy(f'{app_name}:base')
+        return reverse_lazy(f'{app_name}:list')
 
     @staticmethod
-    def get_list_content_url():
-        return reverse_lazy(f'{app_name}:list_content')
+    def get_list_navigation_url():
+        return reverse_lazy(f'{app_name}:list_navigation')
 
     @staticmethod
     def get_create_url():

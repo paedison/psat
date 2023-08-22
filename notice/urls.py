@@ -5,8 +5,8 @@ from django.urls import path
 #     CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView, PostListMainView
 # )
 from .views.post import (
-    PostListView, PostListCategoryView, PostCreateView, PostDetailView, PostUpdateView, PostDeleteView,
-    PostCreateContentView, PostDetailContentView, PostUpdateContentView, PostListContentView,
+    PostListView, PostListContentView, PostCreateView, PostDetailView, PostUpdateView, PostDeleteView,
+    PostCreateContentView, PostDetailContentView, PostUpdateContentView, PostListNavigationView,
 )
 from .views.comment import (
     CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView,
@@ -16,7 +16,7 @@ app_name = 'notice'
 
 urlpatterns = [
     path('', PostListView.as_view(), name='base'),
-    path('', PostListView.as_view(), name='list'),
+    path('list/', PostListView.as_view(), name='list'),
 
     path('create/', PostCreateView.as_view(), name='create'),
     path('<int:post_id>/', PostDetailView.as_view(), name='detail'),
@@ -30,8 +30,8 @@ urlpatterns = [
 ]
 
 htmx_urlpatterns = [
-    path('htmx/', PostListContentView.as_view(), name='list_content'),
-    path('htmx/category/<int:category>/', PostListCategoryView.as_view(), name='list_category'),
+    path('htmx/nav/', PostListNavigationView.as_view(), name='list_navigation'),
+    path('htmx/list/<int:category>/', PostListContentView.as_view(), name='list_content'),
 
     path('htmx/create/', PostCreateContentView.as_view(), name='create_content'),
     path('htmx/<int:post_id>/', PostDetailContentView.as_view(), name='detail_content'),
