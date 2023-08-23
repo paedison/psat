@@ -18,8 +18,10 @@ class Post(models.Model):
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="사용자 ID", db_column="user_id")
-    category = models.IntegerField("카테고리", choices=CATEGORY_CHOICES, default=1)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="사용자 ID", db_column="user_id")
+    category = models.IntegerField(
+        "카테고리", choices=CATEGORY_CHOICES, default=1)
     title = models.CharField("제목", max_length=50)
     content = QuillField()
     hit = models.IntegerField("조회수", default=1)
@@ -71,15 +73,19 @@ class Post(models.Model):
         return reverse_lazy(f'{app_name}:comment_create', args=[self.id])
 
     def get_comment_count(self):
-        return self.comment.count()
+        return self.post_comments.count()
 
 
 class Comment(models.Model):
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="사용자 ID", db_column="user_id")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name="게시글", db_column="post_id", related_name="comment")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="사용자 ID",
+        db_column="user_id", related_name="user_comments")
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, verbose_name="게시글",
+        db_column="post_id", related_name="post_comments")
     content = models.TextField("내용")
     created_at = models.DateTimeField("작성일", auto_now_add=True)
     modified_at = models.DateTimeField("수정일", auto_now=True)

@@ -3,17 +3,40 @@
 
 <div id="commentUpdateForm{{ comment.id }}" class="p-2 bg-white">
     <form method="post" action="{{ comment.get_comment_update_url }}"
-          class="comment-update-form" data-comment-id="{{ comment.id }}">
+          data-comment-id="{{ comment.id }}">
         {% csrf_token %}
-        <textarea name="content" cols="40" rows="3" class="comment-form"
-                  placeholder="{% trans 'Leave comments' %}" required
-                  id="id_content">{{ comment.content }}</textarea>
+        <input type="text" name="user" value="{{ user.id }}" aria-label="User" hidden/>
+        <input type="text" name="post" value="{{ post.id }}" aria-label="Post" hidden/>
+        {% render_field form.content rows="3" class='form-control form-control sm' %}
+{#        <textarea name="content" cols="40" rows="3" class="comment-form"#}
+{#                  placeholder="{% trans 'Leave comments' %}" required#}
+{#                  id="id_content">{{ comment.content }}</textarea>#}
         <div class="d-flex justify-content-end">
             <button class="btn btn-sm btn-outline-primary comment-update-button"
-                    type="submit" data-comment-id="{{ comment.id }}"
+                    type="submit"
                     data-url="{{ comment.get_comment_update_url }}">
                 {% trans 'Update' %}
             </button>
         </div>
     </form>
 </div>
+
+{#<div id="commentUpdateForm{{ comment.id }}" class="p-2 bg-white">#}
+{#    <form method="post" action="{{ comment.get_comment_update_url }}"#}
+{#          class="comment-update-form" data-comment-id="{{ comment.id }}">#}
+{#        {% csrf_token %}#}
+{#        <input type="text" name="user" value="{{ user.id }}" aria-label="User" hidden/>#}
+{#        <input type="text" name="post" value="{{ post.id }}" aria-label="Post" hidden/>#}
+{#        {% render_field form.content rows="3" class='form-control form-control sm' %}#}
+{#        <textarea name="content" cols="40" rows="3" class="comment-form"#}
+{#                  placeholder="{% trans 'Leave comments' %}" required#}
+{#                  id="id_content">{{ comment.content }}</textarea>#}
+{#        <div class="d-flex justify-content-end">#}
+{#            <button class="btn btn-sm btn-outline-primary comment-update-button"#}
+{#                    type="submit" data-comment-id="{{ comment.id }}"#}
+{#                    data-url="{{ comment.get_comment_update_url }}">#}
+{#                {% trans 'Update' %}#}
+{#            </button>#}
+{#        </div>#}
+{#    </form>#}
+{#</div>#}

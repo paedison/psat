@@ -1,9 +1,11 @@
 {% load i18n %}
 {% load widget_tweaks %}
 
-<div class="comment-create p-2 bg-white">
+<div class="p-2 bg-white">
     <form method="post" action="{{ post.get_create_comment_url }}">
         {% csrf_token %}
+        <input type="text" name="user" value="{{ user.id }}" aria-label="User" hidden/>
+        <input type="text" name="post" value="{{ post.id }}" aria-label="Post" hidden/>
         <textarea name="content" cols="40" rows="3" required
                   placeholder="댓글을 입력해주세요" class="comment-form"
                   id="id_content">{{ original }}</textarea>
@@ -14,3 +16,19 @@
         </div>
     </form>
 </div>
+
+{#<div class="comment-create p-2 bg-white">#}
+{#    <form method="post" action="{{ post.get_create_comment_url }}">#}
+{#        {% csrf_token %}#}
+{#        <input type="text" name="user" value="{{ user.id }}" aria-label="User" hidden/>#}
+{#        <input type="text" name="post" value="{{ post.id }}" aria-label="Post" hidden/>#}
+{#        <textarea name="content" cols="40" rows="3" required#}
+{#                  placeholder="댓글을 입력해주세요" class="comment-form"#}
+{#                  id="id_content">{{ original }}</textarea>#}
+{#        <div class="d-flex justify-content-end">#}
+{#            <button type="submit" class="btn btn-sm btn-outline-primary">#}
+{#                {% trans 'Create' %}#}
+{#            </button>#}
+{#        </div>#}
+{#    </form>#}
+{#</div>#}

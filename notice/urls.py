@@ -9,7 +9,7 @@ from .views.post import (
     PostCreateContentView, PostDetailContentView, PostUpdateContentView, PostListNavigationView,
 )
 from .views.comment import (
-    CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView,
+    CommentCreateView, CommentUpdateView, CommentDeleteView, CommentDetailView, CommentListView,
 )
 
 app_name = 'notice'
@@ -22,8 +22,9 @@ urlpatterns = [
     path('<int:post_id>/', PostDetailView.as_view(), name='detail'),
     path('<int:post_id>/update/', PostUpdateView.as_view(), name='update'),
     path('<int:post_id>/delete/', PostDeleteView.as_view(), name='delete'),
-    path('<int:post_id>/comment/', CommentCreateView.as_view(), name='comment_create'),
 
+    path('<int:post_id>/comment/', CommentListView.as_view(), name='comment_list'),
+    path('<int:post_id>/comment/create/', CommentCreateView.as_view(), name='comment_create'),
     path('comment/<int:comment_id>/', CommentDetailView.as_view(), name='comment_detail'),
     path('comment/<int:comment_id>/update/', CommentUpdateView.as_view(), name='comment_update'),
     path('comment/<int:comment_id>/delete/', CommentDeleteView.as_view(), name='comment_delete'),

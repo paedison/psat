@@ -1,25 +1,30 @@
+{% load i18n %}
 {% load psat_filter %}
 
-    <div id="comment{{ comment.id }}" class="p-2">
+    <div id="comment{{ comment.id }}" class="htmx-fade-out htmx-fade-in p-2">
         <div class="d-flex justify-content-between">
             <div>
                 <span class="text-gray-500 mr-1">
                     {{ comment.user.username }}
                 </span>
                 <span class="mr-1">
-                    {{ comment.created_at|date:'Y.m.d' }}({{ comment.created_at|date:'w'|int2kor }})
-                    {{ comment.created_at|time:'H:i' }}
+                    {% with timestamp=comment.created_at %}
+                        {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+                        {{ timestamp|time:'H:i' }}
+                    {% endwith %}
                 </span>
             </div>
-        {%  if comment.user == user %}
+        {% if comment.user == user %}
             <div>
-                <a class="text-gray-600 mr-2 comment-update" href="{{ comment.get_comment_update_url }}"
-                   data-url="{{ comment.post.get_absolute_url }}" data-comment-id="{{ comment.id }}" title="Update">
+                <a class="btn btn-circle btn-sm btn-outline-success" href=""
+                   hx-get="{{ comment.get_comment_update_url }}" title="Update"
+                   hx-target="#comment{{ comment.id }}" hx-swap="afterend swap:0.25s">
                     {{ BOARD_ICON_SET.update|safe }}
                 </a>
-                <a class="text-danger instance-delete" href="{{ comment.get_comment_delete_url }}"
-                   data-url="{{ comment.post.get_absolute_url }}" data-text="댓글을 삭제하시겠습니까?"
-                   data-bs-toggle="modal" data-bs-target="#instanceDeleteModal" title="Delete">
+                <a class="btn btn-circle btn-sm btn-outline-danger"
+                   hx-post="{{ comment.get_comment_delete_url }}" title="Delete"
+                   hx-target="closest section" hx-swap="innerHTML swap:0.25s"
+                   hx-confirm="{% trans 'Are you sure you wish to delete your post?' %}">
                     {{ BOARD_ICON_SET.delete|safe }}
                 </a>
             </div>

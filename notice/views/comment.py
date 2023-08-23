@@ -4,30 +4,38 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import generic
+from vanilla import DetailView, CreateView, UpdateView, ListView, TemplateView
 
 # Custom App Import
 from common.constants import icon, color
-from log.views import CreateLogMixIn
-from ..forms import PostForm, CommentForm  # Should Change App Name
-from ..models import Post, Comment  # Should Change App Name
+from ..forms import CommentForm  # Should Change App Name
+from ..models import Comment, Post  # Should Change App Name
 
 
-class BoardInfoMixIn:
+class CommentViewMixIn:
     """
-    Represent board information mixin.
+    Represent comment view mixin.
     view_type: one of [ postList, postListMain, postDetail,
          postCreate, postUpdate, postDelete, commentDetail,
          commentCreate, commentUpdate, commentDelete ]
     category(int): Category of Post model
     """
     kwargs: dict
-    app_name = 'notice'
-    paginate_by = 10
     view_type: str
     category = 0
+    object: any
+    object_list: any
 
-    post_model = Post
-    post_form = PostForm
+    # Default Settings
+    app_name = 'notice'
+    menu = app_name.capitalize()
+    staff_menu = True  # Whether only admin or staff can create posts or not.
+    model = Comment
+    form_class = CommentForm
+    paginate_by = 10
+    lookup_field = 'id'
+    lookup_url_kwarg = 'comment_id'
+
     comment_model = Comment
     comment_form = CommentForm
 
@@ -41,37 +49,6 @@ class BoardInfoMixIn:
     comment_content_template = 'board/comment_content.html'
 
     dict = {
-        'postListMain': {
-            'model': post_model,
-            'template_name': post_list_template,
-        },
-        'postList': {
-            'model': post_model,
-            'pk_url_kwarg': post_pk,
-            'template_name': post_list_content_template,
-        },
-        'postDetail': {
-            'model': post_model,
-            'pk_url_kwarg': post_pk,
-            'template_name': post_detail_template,
-        },
-        'postCreate': {
-            'model': post_model,
-            'pk_url_kwarg': post_pk,
-            'form_class': post_form,
-            'template_name': post_create_template,
-        },
-        'postUpdate': {
-            'model': post_model,
-            'pk_url_kwarg': post_pk,
-            'form_class': post_form,
-            'template_name': post_create_template,
-        },
-        'postDelete': {
-            'model': post_model,
-            'pk_url_kwarg': post_pk,
-            'form_class': post_form,
-        },
         'commentDetail': {
             'model': comment_model,
             'pk_url_kwarg': comment_pk,
@@ -97,19 +74,13 @@ class BoardInfoMixIn:
     }
 
     @property
-    def model(self): return self.dict[self.view_type]['model']
-    @property
     def pk_url_kwarg(self): return self.dict[self.view_type]['pk_url_kwarg']
-    @property
-    def form_class(self): return self.dict[self.view_type]['form_class']
     @property
     def template_name(self): return self.dict[self.view_type]['template_name']
     @property
     def post_id(self) -> int: return self.kwargs.get('post_id', '')
     @property
     def comment_id(self) -> int: return self.kwargs.get('comment_id', '')
-    @property
-    def menu(self) -> str: return self.app_name
     @property
     def post_list_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:list')
     @property
@@ -142,18 +113,6 @@ class BoardInfoMixIn:
             return chr(self.category_choices[self.category][0]+64)
 
     @property
-    def category_list(self):
-        category_list = []
-        for category in self.category_choices:
-            code = chr(64 + category[0]) if category[0] != 0 else ''
-            category_list.append({
-                'choice': category[0],
-                'name': category[1],
-                'code': code,
-            })
-        return category_list
-
-    @property
     def target_id(self) -> str:
         string = f'{self.view_type}{self.category_code}Content{self.post_id}'
         if self.comment_id:
@@ -178,16 +137,44 @@ class BoardInfoMixIn:
             'post_create_url': self.post_create_url,
         }
 
-    def get_success_url(self):
-        if self.view_type == 'postDelete':
-            return reverse_lazy(f'{self.app_name}:list')
-        elif self.view_type in ['postUpdate', 'commentCreate', 'commentDelete']:
-            return reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])
-        elif self.view_type == 'commentUpdate':
-            return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.comment_id])
+    # def get_success_url(self):
+    #     if self.view_type == 'postDelete':
+    #         return reverse_lazy(f'{self.app_name}:list')
+    #     elif self.view_type in ['postUpdate', 'commentCreate', 'commentDelete']:
+    #         return reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])
+    #     elif self.view_type == 'commentUpdate':
+    #         return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.comment_id])
 
 
-class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
+class CommentListView(TemplateView):
+    post_model = Post
+    comment_model = Comment
+    lookup_field = 'id'
+    lookup_url_kwarg = 'post_id'
+    template_name = 'board/comment_list.html'
+    context_object_name = 'comments'
+    paginate_by = 10
+    view_type = 'commentList'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post_id = self.kwargs.get('post_id')
+        # post = self.post_model.objects.get(id=self.post_id)
+        comments = self.comment_model.objects.filter(post_id=post_id)
+        context['comments'] = comments
+        return context
+
+    # def get_queryset(self):
+    #     queryset = self.model.objects.get(id=self.post_id)
+    #     return queryset
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['info'] = self.info
+    #     return context
+
+
+class CommentDetailView(CommentViewMixIn, DetailView):
     view_type = 'commentDetail'
 
     def get_context_data(self, **kwargs):
@@ -196,21 +183,14 @@ class CommentDetailView(BoardInfoMixIn, CreateLogMixIn, generic.DetailView):
         return context
 
 
-class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.CreateView):
+class CommentCreateView(LoginRequiredMixin, CommentViewMixIn, CreateView):
     view_type = 'commentCreate'
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.post_id = self.post_id
-        return super().form_valid(form)
+    def get_success_url(self):
+        super().get_success_url()
 
     def get(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
         return redirect(reverse_lazy(f'{self.app_name}:detail', args=[self.post_id]))
-
-    def post(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return super().post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -218,23 +198,12 @@ class CommentCreateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, gene
         return context
 
 
-class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.UpdateView):
+class CommentUpdateView(LoginRequiredMixin, CommentViewMixIn, UpdateView):
     view_type = 'commentUpdate'
     object: object
 
     def get_success_url(self):
         return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.comment_update_template, context).content.decode('utf-8')
-        self.create_log_for_board_create_update()
-        return JsonResponse({'html': html})
-
-    def post(self, request, *args, **kwargs):
-        self.create_log_for_board_create_update()
-        return super().post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -244,7 +213,7 @@ class CommentUpdateView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, gene
         return context
 
 
-class CommentDeleteView(LoginRequiredMixin, BoardInfoMixIn, CreateLogMixIn, generic.DeleteView):
+class CommentDeleteView(LoginRequiredMixin, CommentViewMixIn, generic.DeleteView):
     view_type = 'commentDelete'
 
     def get_success_url(self):

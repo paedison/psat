@@ -27,6 +27,7 @@ class PostViewMixIn:
     # Default Settings
     app_name = 'notice'
     menu = app_name.capitalize()
+    staff_menu = True  # Whether only admin or staff can create posts or not.
     model = Post
     form_class = PostForm
     paginate_by = 10
@@ -130,7 +131,7 @@ class PostViewMixIn:
             'post_detail_url': self.post_detail_url,
             'post_create_url': self.post_create_url,
             'post_create_content_url': self.post_create_content_url,
-            'staff_menu': True,
+            'staff_menu': self.staff_menu,
         }
 
 
@@ -175,6 +176,7 @@ class PostDetailView(PostViewMixIn, DetailView):
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
         context['prev_post'], context['next_post'] = self.get_prev_next_post()
+        context['comments'] = self.object.post_comments.all()
         return context
 
 
