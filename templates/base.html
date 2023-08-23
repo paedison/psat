@@ -20,8 +20,11 @@
 
     <!-- Vendor CSS Files -->
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/fontawesome-free/css/all.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/nice-admin/css/style.css' %}">
+
+    <!-- django-quill-editor Media -->
+    {% include 'django_quill/media.html' %}
 
     <!-- Template Main CSS File -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
@@ -51,14 +54,13 @@
 </a>
 
 <!-- Vendor JS Files -->
-<script src="{% static 'vendor/jquery/jquery-3.5.1.js' %}"></script>
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'vendor/jquery-easing/jquery.easing.js' %}"></script>
 <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
-{#<script type="module" src="{% static 'vendor/chart.js/chart.js' %}"></script>#}
+<script src="{% static 'vendor/nice-admin/js/main.js' %}"></script>
 
 <!-- Template Main JS File -->
-<script src="{% static 'vendor/nice-admin/js/main.js' %}"></script>
 <script type="module" src="{% static 'js/common.js' %}"></script>
 
 <!-- Page Javascript File -->

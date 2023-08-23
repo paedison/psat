@@ -6,7 +6,6 @@ from vanilla.model_views import (
 
 # Custom App Import
 from common.constants import icon, color
-from log.views import CreateLogMixIn
 from ..forms import PostForm  # Should Change Module
 from ..models import Post  # Should Change Module
 
@@ -14,9 +13,10 @@ from ..models import Post  # Should Change Module
 class PostViewMixIn:
     """
     Represent post view mixin.
-    view_type: one of [ postList, postDetail,
-         postCreate, postUpdate, postDelete ]
-    category(int): Category of Post model
+    view_type: one of [ postList, postListNavigation, postListContent,
+        postDetail, postDetailContent, postCreate, postCreateContent,
+        postUpdate, postUpdateContent, postDelete ]
+    category(int): Category field of Post model
     """
     kwargs: dict
     view_type: str
@@ -24,8 +24,9 @@ class PostViewMixIn:
     object: any
     object_list: any
 
-    # Basic Settings
-    app_name = menu = 'notice'
+    # Default Settings
+    app_name = 'notice'
+    menu = app_name.capitalize()
     model = Post
     form_class = PostForm
     paginate_by = 10
@@ -54,8 +55,9 @@ class PostViewMixIn:
     }
 
     # URLs
-    post_list_content_url = reverse_lazy(f'{app_name}:list_content', args=[category])
+    post_list_url = reverse_lazy(f'{app_name}:list')
     post_list_navigation_url = reverse_lazy(f'{app_name}:list_navigation')
+    post_list_content_url = reverse_lazy(f'{app_name}:list_content', args=[category])
     post_create_url = reverse_lazy(f'{app_name}:create')
     post_create_content_url = reverse_lazy(f'{app_name}:create_content')
 
@@ -82,8 +84,11 @@ class PostViewMixIn:
     def comment_id(self) -> int: return self.kwargs.get('comment_id', '')
 
     @property
-    def create_success_url(self) -> reverse_lazy:
-        return reverse_lazy(f'{self.app_name}:detail_content', args=[self.object.id])
+    def post_detail_url(self) -> reverse_lazy:
+        url = ''
+        if self.post_id:
+            url = reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])
+        return url
 
     @property
     def post_detail_content_url(self) -> reverse_lazy:
@@ -91,7 +96,7 @@ class PostViewMixIn:
 
     @property
     def title(self) -> str:
-        string = self.menu.capitalize()
+        string = self.menu
         string += f' {self.post_id}' if self.post_id else ''
         string += f' - {self.comment_id}' if self.comment_id else ''
         return string
@@ -119,8 +124,13 @@ class PostViewMixIn:
             'color': self.base_color,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
+            'post_list_url': self.post_list_url,
+            'post_list_navigation_url': self.post_list_navigation_url,
+            'post_list_content_url': self.post_list_content_url,
+            'post_detail_url': self.post_detail_url,
             'post_create_url': self.post_create_url,
             'post_create_content_url': self.post_create_content_url,
+            'staff_menu': True,
         }
 
 
@@ -137,7 +147,7 @@ class PostListView(PostViewMixIn, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
-        context['top_fixed'] = self.model.objects.filter(top_fixed=True)
+        context['top_fixed'] = self.get_queryset().filter(top_fixed=True)
         context['category_list'] = self.category_list.copy()
         return context
 
@@ -174,7 +184,6 @@ class PostDetailContentView(PostDetailView):
 
 class PostCreateView(LoginRequiredMixin, PostViewMixIn, CreateView):
     view_type = 'postCreate'
-    def get_success_url(self): return self.create_success_url
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -186,7 +195,7 @@ class PostCreateContentView(PostCreateView):
     view_type = 'postCreateContent'
 
 
-class PostUpdateView(LoginRequiredMixin, PostViewMixIn, CreateLogMixIn, UpdateView):
+class PostUpdateView(LoginRequiredMixin, PostViewMixIn, UpdateView):
     view_type = 'postUpdate'
 
     def get_context_data(self, **kwargs):
@@ -201,6 +210,6 @@ class PostUpdateContentView(PostUpdateView):
     view_type = 'postUpdateContent'
 
 
-class PostDeleteView(LoginRequiredMixin, PostViewMixIn, CreateLogMixIn, DeleteView):
+class PostDeleteView(LoginRequiredMixin, PostViewMixIn, DeleteView):
     view_type = 'postDelete'
     def get_success_url(self): return self.post_list_navigation_url

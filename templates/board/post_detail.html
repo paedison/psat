@@ -89,7 +89,7 @@
                         <hr class="my-2">
                         {% partial post_header %}
                         <div class="mb-4">
-                            {{ post.content|safe }}
+                            {{ post.content.html|safe }}
                         </div>
                         <div class="bg-secondary-light small p-3">
                             {% if comments %}
@@ -113,10 +113,12 @@
 {% block main %}
     <section>
         <div class="pagetitle my-2">
-            <h1>
-                {{ info.icon|safe }}
-                {{ info.menu|capfirst }}
-            </h1>
+            <a hx-target="section .section" href="" title="{{ info.menu }}"
+               hx-boost="true" hx-swap="outerHTML swap:0.25s"
+               hx-get="{{ info.post_list_navigation_url }}"
+               hx-push-url="{{ info.post_list_url }}">
+                <h1>{{ info.icon|safe }}{{ info.menu }}</h1>
+            </a>
         </div><!-- Page Title End -->
         {% partial content %}
     </section><!-- Main Content End -->

@@ -16,6 +16,7 @@
 {% startpartial tbody %}
     <tr{% if post.top_fixed %} class="table-warning"{% endif %}>
         <td class="text-start text-nowrap px-2">
+            <span class="badge rounded-pill bg-secondary">{{ post.get_category_display }}</span>
             {% if post.top_fixed %}
                 <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
             {% endif %}
@@ -26,82 +27,37 @@
         </td>
         <td class="text-center text-nowrap px-0 col-1">{{ post.user.username }}</td>
         <td class="text-nowrap px-2 col-1">
-            <div class="td-div-md" aria-label="Date">
-                {{ post.created_at|date:'n/j' }}</div>
+            <div class="td-div-md" aria-label="Date">{{ post.created_at|date:'n/j' }}</div>
             <div class="td-div-sm" aria-label="Hit">{{ post.hit }}</div>
-            <div class="td-div-sm" aria-label="Comment">
-                {{ post.get_comment_count }}</div>
+            <div class="td-div-sm" aria-label="Comment">{{ post.get_comment_count }}</div>
         </td>
     </tr>
 {% endpartial %}
 
-{% startpartial pagination %}
-    <div role="navigation" aria-label="pagination">
-        <ul class="pagination pagination-sm justify-content-center m-0"
-            hx-target="#navContent{{ info.category }}" hx-swap="innerHTML swap:0.25s">
-            {% with url=info.pagination_url %}
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href=""
-                       hx-get="{{ url }}?page={{ page_obj.number|add:-1 }}">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </a>
-                </li>
-            {% endif %}
-            {% for number in page_range %}
-                {% if number == page_obj.number %}
-                    <li class="page-item active" aria-current="page">
-                        <a class="page-link" href=""
-                           hx-get="{{ url }}?page={{ number }}">
-                            {{ number }}
-                        </a>
-                    </li>
-                {% elif number == page_obj.paginator.ELLIPSIS %}
-                    <li class="page-item disabled">
-                        <a class="page-link" href="" tabindex="-1" aria-disabled="true"
-                           hx-get="{{ url }}?page={{ number }}">
-                            {{ number }}
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item">
-                        <a class="page-link" href=""
-                           hx-get="{{ url }}?page={{ number }}">
-                            {{ number }}
-                        </a>
-                    </li>
-                {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href=""
-                       hx-get="{{ url }}?page={{ page_obj.number|add:1 }}">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </a>
-                </li>
-            {% endif %}
-        {% endwith %}
-        </ul>
-    </div><!-- Pagination End -->
+{% startpartial create_button %}
+    <div class="p-2">
+        <a class="btn btn-sm btn-outline-primary" hx-boost="true"
+           hx-target="section .section" hx-swap="outerHTML swap:0.25s"
+           hx-get="{{ info.post_create_content_url }}" href=""
+           hx-push-url="{{ info.post_create_url }}" title="Create">
+            글쓰기
+        </a>
+    </div>
 {% endpartial %}
 
 <section id="{{ info.target_id }}" class="htmx-fade-in">
     {{ info|json_script:'info' }}
-    <div class="table-responsive" hx-boost="true"
-         hx-target="section .section" hx-swap="outerHTML swap:0.25s">
+    <div class="table-responsive" hx-boost="true" hx-target="section .section"
+         hx-swap="outerHTML swap:0.25s">
         <table class="table small">
-            <thead>
-                {% partial thead %}
-            </thead>
+            <thead>{% partial thead %}</thead>
             <tbody>
                 {% if top_fixed %}
-                    {% for post in top_fixed %}
-                        {% partial tbody %}
-                    {% endfor %}
+                    {% for post in top_fixed %}{% partial tbody %}{% endfor %}
                 {% endif %}
                 {% if page_obj %}
                     {% for post in page_obj %}
-                        {% partial tbody %}
+                        {% if not post.top_fixed %}{% partial tbody %}{% endif %}
                     {% endfor %}
                 {% else %}
                     <tr>
@@ -117,15 +73,10 @@
         <div class="p-2 me-auto ms-auto">
             {% include 'board/list_pagination.html' %}
         </div>
-        {% if user.is_admin %}
-            <div class="p-2">
-                <a class="btn btn-sm btn-outline-primary" hx-boost="true"
-                   hx-target="section .section" hx-swap="outerHTML swap:0.25s"
-                   hx-get="{{ info.post_create_content_url }}" href=""
-                   hx-push-url="{{ info.post_create_url }}" title="Create">
-                    글쓰기
-                </a>
-            </div>
-        {%  endif %}
+        {% if info.staff_menu %}
+            {% if user.is_admin %}{% partial create_button %}{% endif %}
+        {% else %}
+            {% partial create_button %}
+        {% endif %}
     </section>
 </section>

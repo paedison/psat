@@ -1,11 +1,10 @@
+# Django Core Import
 from django.contrib import admin
-from django_summernote.admin import SummernoteModelAdmin
 
-from notice.models import Post
-
-
-class PostAdmin(SummernoteModelAdmin):
-    summernote_fields = '__all__'
+# Custom App Import
+from .models import Post
 
 
-admin.site.register(Post, PostAdmin)
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    pass

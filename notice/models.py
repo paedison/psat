@@ -1,6 +1,9 @@
+# Django Core Import
 from django.db import models
 from django.urls import reverse_lazy
+from django_quill.fields import QuillField
 
+# Custom App Import
 from common.models import User
 
 app_name = 'notice'
@@ -18,7 +21,7 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="사용자 ID", db_column="user_id")
     category = models.IntegerField("카테고리", choices=CATEGORY_CHOICES, default=1)
     title = models.CharField("제목", max_length=50)
-    content = models.TextField("내용")
+    content = QuillField()
     hit = models.IntegerField("조회수", default=1)
     created_at = models.DateTimeField("작성일", auto_now_add=True)
     modified_at = models.DateTimeField("수정일", auto_now=True)
@@ -26,6 +29,9 @@ class Post(models.Model):
 
     class Meta:
         ordering = ["-id"]
+
+    def __str__(self):
+        return self.title
 
     def get_absolute_url(self):
         return reverse_lazy(f'{app_name}:detail', args=[self.id])

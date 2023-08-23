@@ -34,7 +34,6 @@
                      aria-labelledby="navCategory{{ c }}">
                     {% if c == 0 %}
                         {% include 'board/post_list_content.html' %}
-                    {% else %}
                     {% endif %}
                 </div><!-- Category{{ c }} End -->
             {% endwith %}
@@ -44,7 +43,7 @@
 
 {% startpartial nav %}
     <section class="section htmx-fade-out">
-    {{ info|json_script:'info' }}
+        {{ info|json_script:'info' }}
         <div class="row">
             <div class="col-12 my-2">
                 <div class="card m-0">
@@ -68,10 +67,12 @@
 {% block main %}
     <section id="{{ info.target_id }}">
         <div class="pagetitle my-2">
-            <h1>
-                {{ info.icon|safe }}
-                {{ info.menu|capfirst }}
-            </h1>
+            <a hx-target="section .section" href="" title="{{ info.menu }}"
+               hx-boost="true" hx-swap="outerHTML swap:0.25s"
+               hx-get="{{ info.post_list_navigation_url }}"
+               hx-push-url="{{ info.post_list_url }}">
+                <h1>{{ info.icon|safe }}{{ info.menu }}</h1>
+            </a>
         </div><!-- Page Title End -->
         {% partial nav %}
     </section><!-- Main Content End -->
