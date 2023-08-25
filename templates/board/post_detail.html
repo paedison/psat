@@ -76,7 +76,7 @@
     </div>
 {% endpartial %}
 
-{% startpartial content %}
+{% startpartial container %}
     <section id="{{ info.target_id }}" class="section htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="row">
@@ -91,17 +91,7 @@
                         <div class="mb-4">
                             {{ post.content.html|safe }}
                         </div>
-                        <section class="bg-secondary-light small p-3">
-                            {% if comments %}
-                                {% for comment in comments %}
-                                    <div id="comment-box">
-                                        {% include 'board/comment_content.html' %}
-                                    </div>
-                                    <hr class="my-2">
-                                {% endfor %}
-                            {% endif %}
-                            {% include 'board/comment_create.html' %}
-                        </section>
+                        {% include 'board/comment_list.html#container' %}
                     </div>
                 </div>
             </div>
@@ -120,7 +110,7 @@
                 <h1>{{ info.icon|safe }}{{ info.menu }}</h1>
             </a>
         </div><!-- Page Title End -->
-        {% partial content %}
+        {% partial container %}
     </section><!-- Main Content End -->
 {% endblock %}
 

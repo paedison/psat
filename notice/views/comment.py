@@ -4,11 +4,11 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views import generic
-from vanilla import DetailView, CreateView, UpdateView, ListView, TemplateView
+from vanilla import DetailView, CreateView, UpdateView, ListView, TemplateView, DeleteView
 
 # Custom App Import
 from common.constants import icon, color
-from ..forms import CommentForm  # Should Change App Name
+from ..forms import CommentForm, PostForm  # Should Change App Name
 from ..models import Comment, Post  # Should Change App Name
 
 
@@ -36,55 +36,40 @@ class CommentViewMixIn:
     lookup_field = 'id'
     lookup_url_kwarg = 'comment_id'
 
-    comment_model = Comment
-    comment_form = CommentForm
+    post_model = Post
+    post_form = PostForm
 
-    post_pk, comment_pk = 'post_id', 'comment_id'
-    post_list_template = 'board/post_list.html'
-    post_list_content_template = 'board/post_list_content.html'
-    post_create_template = 'board/post_create.html'
-    post_detail_template = 'board/post_detail.html'
-    comment_create_template = 'board/comment_create.html'
-    comment_update_template = 'board/comment_update.html'
-    comment_content_template = 'board/comment_content.html'
-
-    dict = {
-        'commentDetail': {
-            'model': comment_model,
-            'pk_url_kwarg': comment_pk,
-            'template_name': comment_content_template,
-        },
-        'commentCreate': {
-            'model': comment_model,
-            'pk_url_kwarg': comment_pk,
-            'form_class': comment_form,
-            'template_name': comment_create_template,
-        },
-        'commentUpdate': {
-            'model': comment_model,
-            'pk_url_kwarg': comment_pk,
-            'form_class': comment_form,
-            'template_name': comment_create_template,
-        },
-        'commentDelete': {
-            'model': comment_model,
-            'pk_url_kwarg': comment_pk,
-            'form_class': comment_form,
-        },
+    # Templates
+    folder = 'board'
+    list_template = f'{folder}/comment_list.html'  # CommentListView
+    list_content_template = f'{list_template}#container'  # CommentListContentView
+    detail_template = f'{folder}/comment_detail.html'  # CommentDetailView
+    detail_content_template = f'{detail_template}#container'  # CommentDetailContentView
+    create_template = f'{folder}/comment_create.html'  # CommentCreateView
+    create_content_template = f'{create_template}#container'  # CommentCreateContentView
+    template_dict = {
+        'commentList': list_template,
+        'commentListContent': list_content_template,
+        'commentDetail': detail_template,
+        'commentDetailContent': detail_content_template,
+        'commentCreate': create_template,
+        'commentCreateContent': create_content_template,
+        'commentUpdate': create_template,
+        'commentUpdateContent': create_content_template,
     }
 
     @property
-    def pk_url_kwarg(self): return self.dict[self.view_type]['pk_url_kwarg']
+    def template_name(self) -> str: return self.template_dict[self.view_type]
+
     @property
-    def template_name(self): return self.dict[self.view_type]['template_name']
-    @property
-    def post_id(self) -> int: return self.kwargs.get('post_id', '')
+    def post_id(self) -> int:
+        if self.comment_id:
+            comment = self.model.objects.get(id=self.comment_id)
+            return comment.post.id
+        return self.kwargs.get('post_id')
+
     @property
     def comment_id(self) -> int: return self.kwargs.get('comment_id', '')
-    @property
-    def post_list_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:list')
-    @property
-    def post_create_url(self) -> reverse_lazy: return reverse_lazy(f'{self.app_name}:create')
     @property
     def base_icon(self) -> str: return icon.MENU_ICON_SET[self.app_name]
     @property
@@ -92,49 +77,49 @@ class CommentViewMixIn:
 
     @property
     def title(self) -> str:
-        string = self.menu.capitalize()
-        if self.post_id:
-            string += f' {self.post_id}'
-        if self.comment_id:
-            string += f' - {self.comment_id}'
+        string = self.menu
+        string += f' {self.post_id}' if self.post_id else ''
+        string += f' - {self.comment_id}' if self.comment_id else ''
         return string
-
-    @property
-    def category_choices(self):
-        category_choices = self.model.CATEGORY_CHOICES.copy()
-        category_choices.insert(0, (0, '전체'))
-        return category_choices
-
-    @property
-    def category_code(self) -> str:
-        if self.category == 0:
-            return ''
-        else:
-            return chr(self.category_choices[self.category][0]+64)
 
     @property
     def target_id(self) -> str:
-        string = f'{self.view_type}{self.category_code}Content{self.post_id}'
-        if self.comment_id:
-            string += f'_{self.comment_id}'
+        category = self.category
+        category = category if type(category) == int else category[0]
+        string = f'{self.view_type}Content{category}'
+        string += f'-post{self.post_id}' if self.post_id else ''
+        string += f'-comment{self.comment_id}' if self.comment_id else ''
         return string
 
     @property
-    def info(self) -> dict:
+    def comment_list_url(self) -> reverse_lazy:
+        return reverse_lazy(f'{self.app_name}:comment_list', args=[self.post_id])
+
+    @property
+    def comment_list_content_url(self) -> reverse_lazy:
+        return reverse_lazy(f'{self.app_name}:comment_list_content', args=[self.post_id])
+
+    @property
+    def comment_create_url(self) -> reverse_lazy:
+        return reverse_lazy(f'{self.app_name}:comment_create', args=[self.post_id])
+
+    @property
+    def info(self):
         return {
             'app_name': self.app_name,
             'menu': self.menu,
             'category': self.category,
             'type': self.view_type,
             'title': self.title,
-            'pagination_url': self.post_list_url,
+            'pagination_url': self.comment_list_content_url,
             'target_id': self.target_id,
             'icon': self.base_icon,
             'color': self.base_color,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
-            'list_url': self.post_list_url,
-            'post_create_url': self.post_create_url,
+            'comment_list_url': self.comment_list_url,
+            'comment_list_content_url': self.comment_list_content_url,
+            'comment_create_url': self.comment_create_url,
         }
 
     # def get_success_url(self):
@@ -174,6 +159,10 @@ class CommentListView(TemplateView):
     #     return context
 
 
+class CommentListContentView(TemplateView):
+    pass
+
+
 class CommentDetailView(CommentViewMixIn, DetailView):
     view_type = 'commentDetail'
 
@@ -200,21 +189,20 @@ class CommentCreateView(LoginRequiredMixin, CommentViewMixIn, CreateView):
 
 class CommentUpdateView(LoginRequiredMixin, CommentViewMixIn, UpdateView):
     view_type = 'commentUpdate'
-    object: object
 
     def get_success_url(self):
-        return reverse_lazy(f'{self.app_name}:comment_detail', args=[self.object.id])
+        return reverse_lazy(f'{self.app_name}:comment_list', args=[self.post_id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
         context['comment'] = self.object
-        context['info']['target_id'] = f'commentUpdateContent{self.object.id}'
+        context['info']['target_id'] = f'commentUpdateContent{self.post_id}'
         return context
 
 
-class CommentDeleteView(LoginRequiredMixin, CommentViewMixIn, generic.DeleteView):
+class CommentDeleteView(LoginRequiredMixin, CommentViewMixIn, DeleteView):
     view_type = 'commentDelete'
 
     def get_success_url(self):
-        return reverse_lazy(f'{self.app_name}:detail', args=[self.object.post.id])
+        return reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])

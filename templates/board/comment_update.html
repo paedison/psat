@@ -1,9 +1,9 @@
 {% load i18n %}
 {% load widget_tweaks %}
-
-<div id="commentUpdateForm{{ comment.id }}" class="p-2 bg-white">
+{{ form }}
+<div class="p-2 bg-white">
     <form method="post" action="{{ comment.get_comment_update_url }}"
-          data-comment-id="{{ comment.id }}">
+          data-comment-id="{{ comment.id }}" class="p-2 bg-white">
         {% csrf_token %}
         <input type="text" name="user" value="{{ user.id }}" aria-label="User" hidden/>
         <input type="text" name="post" value="{{ post.id }}" aria-label="Post" hidden/>
@@ -12,7 +12,7 @@
 {#                  placeholder="{% trans 'Leave comments' %}" required#}
 {#                  id="id_content">{{ comment.content }}</textarea>#}
         <div class="d-flex justify-content-end">
-            <button class="btn btn-sm btn-outline-primary comment-update-button"
+            <button class="btn btn-sm btn-outline-primary"
                     type="submit"
                     data-url="{{ comment.get_comment_update_url }}">
                 {% trans 'Update' %}

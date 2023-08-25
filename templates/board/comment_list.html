@@ -2,17 +2,61 @@
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
+{% load partials %}
 
-{% block main %}
-    <section class="bg-secondary-light small p-3">
+{% startpartial contents %}
+    <div id="comment{{ comment.id }}" class="htmx-fade-out htmx-fade-in p-2">
+        <div class="d-flex justify-content-between">
+            <div>
+                <span class="text-gray-500 mr-1">
+                    {{ comment.user.username }}
+                </span>
+                <span class="mr-1">
+                    {% with timestamp=comment.created_at %}
+                        {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+                        {{ timestamp|time:'H:i' }}
+                    {% endwith %}
+                </span>
+            </div>
+        {% if comment.user == user %}
+            <div>
+                <a class="btn btn-circle btn-sm btn-outline-success" href=""
+                   hx-get="{{ comment.get_comment_update_url }}" title="Update"
+                   hx-target="#commentUpdate{{ comment.id }}" hx-swap="innerHTML swap:0.25s">
+                    {{ BOARD_ICON_SET.update|safe }}
+                </a>
+                <a class="btn btn-circle btn-sm btn-outline-danger"
+                   hx-post="{{ comment.get_comment_delete_url }}" title="Delete"
+                   hx-target="#commentContainer" hx-swap="outerHTML swap:0.25s"
+                   hx-confirm="{% trans 'Are you sure you wish to delete your comment?' %}">
+                    {{ BOARD_ICON_SET.delete|safe }}
+                </a>
+            </div>
+        {% endif %}
+        </div>
+        <div id="commentContent{{ comment.id }}" class="comment text-gray-900">
+            {{ comment.content }}
+        </div>
+        <div id="commentUpdate{{ comment.id }}">
+
+        </div>
+    </div>
+{% endpartial %}
+
+{% startpartial container %}
+    <section id="commentContainer" class="bg-secondary-light small p-3">
         {% if comments %}
             {% for comment in comments %}
-                <div id="comment-box">
-                    {% include 'board/comment_content.html' %}
+                <div id="commentContents">
+                    {% partial contents %}
                 </div>
                 <hr class="my-2">
             {% endfor %}
         {% endif %}
         {% include 'board/comment_create.html' %}
     </section>
+{% endpartial %}
+
+{% block main %}
+    {% partial container %}
 {% endblock %}

@@ -16,11 +16,11 @@ class PostViewMixIn:
     view_type: one of [ postList, postListNavigation, postListContent,
         postDetail, postDetailContent, postCreate, postCreateContent,
         postUpdate, postUpdateContent, postDelete ]
-    category(int): Category field of Post model
+    category: Category field of Post model
     """
     kwargs: dict
     view_type: str
-    category = 0
+    category: any
     object: any
     object_list: any
 
@@ -37,28 +37,18 @@ class PostViewMixIn:
     # Templates
     folder = 'board'
     list_template = f'{folder}/post_list.html'  # PostListView
-    list_navigation_template = f'{list_template}#nav'  # PostListNavigationView
-    list_content_template = f'{folder}/post_list_content.html'  # PostListContentView
+    list_content_template = f'{folder}/post_list_content.html'  # PostListView
+    list_navigation_template = f'{list_template}#navigation'  # PostListNavigationView
+
     detail_template = f'{folder}/post_detail.html'  # PostDetailView
-    detail_content_template = f'{detail_template}#content'  # PostDetailContentView
+    detail_content_template = f'{detail_template}#container'  # PostDetailContentView
+
     create_template = f'{folder}/post_create.html'  # PostCreateView
-    create_content_template = f'{create_template}#content'  # PostCreateContentView
-    template_dict = {
-        'postList': list_template,
-        'postListNavigation': list_navigation_template,
-        'postListContent': list_content_template,
-        'postDetail': detail_template,
-        'postDetailContent': detail_content_template,
-        'postCreate': create_template,
-        'postCreateContent': create_content_template,
-        'postUpdate': create_template,
-        'postUpdateContent': create_content_template,
-    }
+    create_content_template = f'{create_template}#container'  # PostCreateContentView
 
     # URLs
     post_list_url = reverse_lazy(f'{app_name}:list')
     post_list_navigation_url = reverse_lazy(f'{app_name}:list_navigation')
-    post_list_content_url = reverse_lazy(f'{app_name}:list_content', args=[category])
     post_create_url = reverse_lazy(f'{app_name}:create')
     post_create_content_url = reverse_lazy(f'{app_name}:create_content')
 
@@ -68,7 +58,6 @@ class PostViewMixIn:
 
     # Category list
     category_choices = model.CATEGORY_CHOICES.copy()
-    category_choices.insert(0, (0, '전체'))
     category_list = []
     for category in category_choices:
         category_list.append({
@@ -78,18 +67,21 @@ class PostViewMixIn:
         })
 
     @property
-    def template_name(self) -> str: return self.template_dict[self.view_type]
+    def category(self) -> str: return self.kwargs.get('category')
     @property
-    def post_id(self) -> int: return self.kwargs.get('post_id', '')
+    def post_id(self) -> int: return self.kwargs.get('post_id')
     @property
-    def comment_id(self) -> int: return self.kwargs.get('comment_id', '')
+    def comment_id(self) -> int: return self.kwargs.get('comment_id')
+
+    @property
+    def post_list_content_url(self) -> reverse_lazy:
+        if self.category:
+            return reverse_lazy(f'{self.app_name}:list_content', args=[self.category])
 
     @property
     def post_detail_url(self) -> reverse_lazy:
-        url = ''
         if self.post_id:
-            url = reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])
-        return url
+            return reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])
 
     @property
     def post_detail_content_url(self) -> reverse_lazy:
@@ -105,7 +97,8 @@ class PostViewMixIn:
     @property
     def target_id(self) -> str:
         category = self.category
-        category = category if type(category) == int else category[0]
+        if category is not None:
+            category = category if type(category) == int else category[0]
         string = f'{self.view_type}Content{category}'
         string += f'-post{self.post_id}' if self.post_id else ''
         string += f'-comment{self.comment_id}' if self.comment_id else ''
@@ -126,8 +119,8 @@ class PostViewMixIn:
             'post_id': self.post_id,
             'comment_id': self.comment_id,
             'post_list_url': self.post_list_url,
-            'post_list_navigation_url': self.post_list_navigation_url,
             'post_list_content_url': self.post_list_content_url,
+            'post_list_navigation_url': self.post_list_navigation_url,
             'post_detail_url': self.post_detail_url,
             'post_create_url': self.post_create_url,
             'post_create_content_url': self.post_create_content_url,
@@ -137,32 +130,40 @@ class PostViewMixIn:
 
 class PostListView(PostViewMixIn, ListView):
     view_type = 'postList'
-    @property
-    def category(self): return self.kwargs.get('category', 0)
+
+    def get_filtered_queryset(self):
+        fq = self.model.objects.all()
+        fq = fq.filter(category=self.category) if self.category else fq
+        return fq
 
     def get_queryset(self):
-        q = self.model.objects.all()
-        q = q.filter(category=self.category) if self.category else q
-        return q
+        return self.get_filtered_queryset().filter(top_fixed=False)
+
+    def get_top_fixed(self):
+        return self.get_filtered_queryset().filter(top_fixed=True)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
-        context['top_fixed'] = self.get_queryset().filter(top_fixed=True)
+        context['top_fixed'] = self.get_top_fixed()
         context['category_list'] = self.category_list.copy()
         return context
+
+    def get_template_names(self):
+        if self.category is None:
+            return self.list_template
+        else:
+            return self.list_content_template
 
 
 class PostListNavigationView(PostListView):
     view_type = 'postListNavigation'
-
-
-class PostListContentView(PostListView):
-    view_type = 'postListContent'
+    def get_template_names(self) -> str: return self.list_navigation_template
 
 
 class PostDetailView(PostViewMixIn, DetailView):
     view_type = 'postDetail'
+    def get_template_names(self) -> str: return self.detail_template
 
     def get_prev_next_post(self):
         id_list = list(self.model.objects.values_list('id', flat=True))
@@ -182,10 +183,13 @@ class PostDetailView(PostViewMixIn, DetailView):
 
 class PostDetailContentView(PostDetailView):
     view_type = 'postDetailContent'
+    def get_template_names(self) -> str: return self.detail_content_template
 
 
 class PostCreateView(LoginRequiredMixin, PostViewMixIn, CreateView):
     view_type = 'postCreate'
+    def get_template_names(self) -> str: return self.create_template
+    def get_success_url(self) -> reverse_lazy: return self.object.get_detail_content_url()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -195,23 +199,25 @@ class PostCreateView(LoginRequiredMixin, PostViewMixIn, CreateView):
 
 class PostCreateContentView(PostCreateView):
     view_type = 'postCreateContent'
+    def get_template_names(self) -> str: return self.create_content_template
 
 
 class PostUpdateView(LoginRequiredMixin, PostViewMixIn, UpdateView):
     view_type = 'postUpdate'
+    def get_template_names(self) -> str: return self.create_template
+    def get_success_url(self) -> reverse_lazy: return self.post_detail_content_url
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
         return context
 
-    def get_success_url(self): return self.post_detail_content_url
-
 
 class PostUpdateContentView(PostUpdateView):
     view_type = 'postUpdateContent'
+    def get_template_names(self) -> str: return self.create_content_template
 
 
 class PostDeleteView(LoginRequiredMixin, PostViewMixIn, DeleteView):
     view_type = 'postDelete'
-    def get_success_url(self): return self.post_list_navigation_url
+    def get_success_url(self) -> reverse_lazy: return self.post_list_navigation_url

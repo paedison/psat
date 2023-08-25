@@ -1,4 +1,5 @@
 {% extends 'list.html' %}
+{% load i18n %}
 {% load static %}
 {% load partials %}
 {% load widget_tweaks %}
@@ -32,23 +33,28 @@
             </div>
             {% if info.type == 'postCreate' or info.type == 'postCreateContent' %}
                 <button type="submit" class="btn btn-sm btn-outline-primary ms-2"
-                        title="Create">
-                    작성
+                        hx-boost="true" hx-swap="outerHTML swap:0.25s"
+                        hx-post="{{ post.get_create_content_url }}"
+                        hx-push-url="{{ info.post_list_url }}"
+                        title="{% trans 'Create' %}"
+                        hx-target="section .section">
+                    {% trans 'Create' %}
                 </button>
             {% elif info.type == 'postUpdate' or info.type == 'postUpdateContent' %}
                 <button type="submit" class="btn btn-sm btn-outline-primary ms-2"
                         hx-boost="true" hx-swap="outerHTML swap:0.25s"
                         hx-post="{{ post.get_update_content_url }}"
-                        hx-push-url="{{ info.post_detail_url }}" title="Update"
+                        hx-push-url="{{ info.post_detail_url }}"
+                        title="{% trans 'Update' %}"
                         hx-target="section .section">
-                    수정
+                    {% trans 'Update' %}
                 </button>
             {% endif %}
         </div>
     </form>
 {% endpartial %}
 
-{% startpartial content %}
+{% startpartial container %}
     <section class="section htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="row">
@@ -74,7 +80,7 @@
                 <h1>{{ info.icon|safe }}{{ info.menu }}</h1>
             </a>
         </div><!-- Page Title End -->
-        {% partial content %}
+        {% partial container %}
     </section><!-- Main Content End -->
 {% endblock %}
 
