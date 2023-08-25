@@ -34,7 +34,7 @@
             {% if info.type == 'postCreate' or info.type == 'postCreateContent' %}
                 <button type="submit" class="btn btn-sm btn-outline-primary ms-2"
                         hx-boost="true" hx-swap="outerHTML swap:0.25s"
-                        hx-post="{{ post.get_create_content_url }}"
+                        hx-post="{{ post.get_post_create_content_url }}"
                         hx-push-url="{{ info.post_list_url }}"
                         title="{% trans 'Create' %}"
                         hx-target="section .section">
@@ -43,7 +43,7 @@
             {% elif info.type == 'postUpdate' or info.type == 'postUpdateContent' %}
                 <button type="submit" class="btn btn-sm btn-outline-primary ms-2"
                         hx-boost="true" hx-swap="outerHTML swap:0.25s"
-                        hx-post="{{ post.get_update_content_url }}"
+                        hx-post="{{ post.get_post_update_content_url }}"
                         hx-push-url="{{ info.post_detail_url }}"
                         title="{% trans 'Update' %}"
                         hx-target="section .section">

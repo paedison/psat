@@ -20,7 +20,7 @@
             {% if post.top_fixed %}
                 <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
             {% endif %}
-            <a hx-get="{{ post.get_detail_content_url }}" href=""
+            <a hx-get="{{ post.get_post_detail_content_url }}" href=""
                hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
                 {{ post.title|truncatechars:30 }}
             </a>

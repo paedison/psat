@@ -38,38 +38,38 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse_lazy(f'{app_name}:detail', args=[self.id])
 
-    def get_detail_url(self):
+    def get_post_detail_url(self):
         return reverse_lazy(f'{app_name}:detail', args=[self.id])
 
-    def get_detail_content_url(self):
+    def get_post_detail_content_url(self):
         return reverse_lazy(f'{app_name}:detail_content', args=[self.id])
 
     @staticmethod
-    def get_list_url():
+    def get_post_list_url():
         return reverse_lazy(f'{app_name}:list')
 
     @staticmethod
-    def get_list_navigation_url():
+    def get_post_list_navigation_url():
         return reverse_lazy(f'{app_name}:list_navigation')
 
     @staticmethod
-    def get_create_url():
+    def get_post_create_url():
         return reverse_lazy(f'{app_name}:create')
 
     @staticmethod
-    def get_create_content_url():
+    def get_post_create_content_url():
         return reverse_lazy(f'{app_name}:create_content')
 
-    def get_update_url(self):
+    def get_post_update_url(self):
         return reverse_lazy(f'{app_name}:update', args=[self.id])
 
-    def get_update_content_url(self):
+    def get_post_update_content_url(self):
         return reverse_lazy(f'{app_name}:update_content', args=[self.id])
 
-    def get_delete_url(self):
+    def get_post_delete_url(self):
         return reverse_lazy(f'{app_name}:delete', args=[self.id])
 
-    def get_create_comment_url(self):
+    def get_comment_create_url(self):
         return reverse_lazy(f'{app_name}:comment_create', args=[self.id])
 
     def get_comment_count(self):
@@ -94,7 +94,12 @@ class Comment(models.Model):
         ordering = ["-id"]
 
     def get_comment_update_url(self):
-        return reverse_lazy(f'{app_name}:comment_update', args=[self.id])
+        return reverse_lazy(f'{app_name}:comment_update',
+                            kwargs={'post_id': self.post.id, 'comment_id': self.id})
 
     def get_comment_delete_url(self):
-        return reverse_lazy(f'{app_name}:comment_delete', args=[self.id])
+        return reverse_lazy(f'{app_name}:comment_delete',
+                            kwargs={'post_id': self.post.id, 'comment_id': self.id})
+
+    def get_post_detail_url(self):
+        return reverse_lazy(f'{app_name}:detail', args=[self.post.id])

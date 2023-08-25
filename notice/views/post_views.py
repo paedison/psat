@@ -88,6 +88,11 @@ class PostViewMixIn:
         return reverse_lazy(f'{self.app_name}:detail_content', args=[self.post_id])
 
     @property
+    def comment_create_url(self) -> reverse_lazy:
+        if self.post_id:
+            return reverse_lazy(f'{self.app_name}:comment_create', args=[self.post_id])
+
+    @property
     def title(self) -> str:
         string = self.menu
         string += f' {self.post_id}' if self.post_id else ''
@@ -124,6 +129,7 @@ class PostViewMixIn:
             'post_detail_url': self.post_detail_url,
             'post_create_url': self.post_create_url,
             'post_create_content_url': self.post_create_content_url,
+            'comment_create_url': self.comment_create_url,
             'staff_menu': self.staff_menu,
         }
 
@@ -189,7 +195,7 @@ class PostDetailContentView(PostDetailView):
 class PostCreateView(LoginRequiredMixin, PostViewMixIn, CreateView):
     view_type = 'postCreate'
     def get_template_names(self) -> str: return self.create_template
-    def get_success_url(self) -> reverse_lazy: return self.object.get_detail_content_url()
+    def get_success_url(self) -> reverse_lazy: return self.object.get_post_detail_content_url()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

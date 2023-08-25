@@ -1,14 +1,12 @@
 from django.urls import path, re_path
 
-from .views.comment import (
+from .views.comment_views import (
+    CommentListView,
     CommentCreateView,
     CommentUpdateView,
     CommentDeleteView,
-    CommentDetailView,
-    CommentListView,
-    CommentListContentView,
 )
-from .views.post import (
+from .views.post_views import (
     PostListView, PostListNavigationView,
     PostCreateView, PostCreateContentView,
     PostDetailView, PostDetailContentView,
@@ -38,10 +36,7 @@ urlpatterns = [
 
     # Comment views
     path('<int:post_id>/comment/', CommentListView.as_view(), name='comment_list'),
-    path('htmx/<int:post_id>/comment/', CommentListContentView.as_view(), name='comment_list_content'),
-
     path('<int:post_id>/comment/create/', CommentCreateView.as_view(), name='comment_create'),
-    path('comment/<int:comment_id>/', CommentDetailView.as_view(), name='comment_detail'),
-    path('comment/<int:comment_id>/update/', CommentUpdateView.as_view(), name='comment_update'),
-    path('comment/<int:comment_id>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
+    path('<int:post_id>/comment/<int:comment_id>/update/', CommentUpdateView.as_view(), name='comment_update'),
+    path('<int:post_id>/comment/<int:comment_id>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
 ]
