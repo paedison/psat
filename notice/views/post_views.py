@@ -77,6 +77,8 @@ class PostViewMixIn:
     def post_list_content_url(self) -> reverse_lazy:
         if self.category:
             return reverse_lazy(f'{self.app_name}:list_content', args=[self.category])
+        else:
+            return reverse_lazy(f'{self.app_name}:list_content', args=[0])
 
     @property
     def post_detail_url(self) -> reverse_lazy:
