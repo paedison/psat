@@ -18,7 +18,7 @@ from ..models import Problem, Evaluation, ProblemMemo, ProblemTag
 class PsatDetailInfoMixIn:
     """ Represent PSAT detail information mixin. """
     kwargs: dict
-    category: str
+    view_type: str
 
     @property
     def problem_id(self) -> int:
@@ -32,19 +32,19 @@ class PsatDetailInfoMixIn:
 
     @property
     def current_url(self) -> reverse_lazy:
-        return reverse_lazy(f'psat:{self.category}_detail', args=[self.problem_id])
+        return reverse_lazy(f'psat:{self.view_type}_detail', args=[self.problem_id])
 
     @property
     def info(self) -> dict:
         """ Return information dictionary of the detail. """
         return {
-            'category': self.category,
-            'type': f'{self.category}Detail',
+            'view_type': self.view_type,
+            'type': f'{self.view_type}Detail',
             'title': self.object.full_title(),
-            'target_id': f'{self.category}DetailContent',
+            'target_id': f'{self.view_type}DetailContent',
             'current_url': self.current_url,
-            'icon': icon.MENU_ICON_SET[self.category],
-            'color': color.COLOR_SET[self.category],
+            'icon': icon.MENU_ICON_SET[self.view_type],
+            'color': color.COLOR_SET[self.view_type],
             'problem_id': self.problem_id
         }
 
@@ -52,7 +52,7 @@ class PsatDetailInfoMixIn:
     def icon_template(self) -> str:
         """ Return icon template pathname. """
         icon_container = 'psat/snippets/icon_container.html'
-        return f'{icon_container}#{self.category}'
+        return f'{icon_container}#{self.view_type}'
 
 
 class BaseDetailView(
@@ -77,13 +77,13 @@ class BaseDetailView(
 
     def post(self, request, *args, **kwargs) -> HttpResponse:
         val = self.request.POST.get('difficulty') or self.request.POST.get('answer')
-        if self.category == 'answer':
+        if self.view_type == 'answer':
             return self.post_answer(request, val, **kwargs)
         else:
             return self.post_other(request, val, **kwargs)
 
     def post_answer(self, request, answer, **kwargs) -> HttpResponse:
-        """Handle POST request when category is answer."""
+        """Handle POST request when view_type is answer."""
         if answer is None:
             message, html = '<div class="text-danger">정답을 선택해주세요.</div>', ''
         else:
@@ -101,7 +101,7 @@ class BaseDetailView(
         return HttpResponse(response, content_type='application/json')
 
     def post_other(self, request, val, **kwargs) -> HttpResponse:
-        """Handle POST request when category is not answer."""
+        """Handle POST request when view_type is not answer."""
         self.update_evaluation_status(val)
         context = self.get_context_data(**kwargs)
         html = render(request, self.icon_template, context).content.decode('utf-8')
@@ -109,14 +109,14 @@ class BaseDetailView(
         return HttpResponse(html)
 
     def update_evaluation_status(self, val=None) -> Evaluation:
-        """Update POST request when category is answer."""
+        """Update POST request when view_type is answer."""
         obj, created = Evaluation.objects.get_or_create(
             user=self.request.user, problem_id=self.problem_id)
-        if self.category == 'like':
+        if self.view_type == 'like':
             obj.update_like()
-        elif self.category == 'rate':
+        elif self.view_type == 'rate':
             obj.update_rate(val)
-        elif self.category == 'answer':
+        elif self.view_type == 'answer':
             obj.update_answer(val)
         return obj
 
@@ -187,8 +187,8 @@ class BaseDetailView(
         """ Return problem data and list. """
         field = self.queryset_field[0]
         problem_filter = Q(evaluation__user=self.request.user)
-        if self.category != 'problem':
-            val = 1 if self.category == 'like' else 0
+        if self.view_type != 'problem':
+            val = 1 if self.view_type == 'like' else 0
             problem_filter &= Q(**{field: val})
         prob_data = Problem.objects.filter(problem_filter)
         prob_list = prob_data.values_list('id', flat=True)
@@ -208,7 +208,7 @@ class BaseDetailView(
                 'exam_name': f"{year}년 '{exam2}' {subject}",
                 'problem_number': number,
                 'problem_id': problem_id,
-                'problem_url': reverse_lazy(f'psat:{self.category}_detail', args=[problem_id])
+                'problem_url': reverse_lazy(f'psat:{self.view_type}_detail', args=[problem_id])
             }
             organized_dict[key].append(list_item)
 
@@ -226,7 +226,7 @@ class BaseDetailView(
     def get_prev_next_prob(self, prob_data=None, prob_list=None) -> [object, object]:
         """ Return previous and next problems. """
         problem = Problem.objects
-        if self.category == 'problem':
+        if self.view_type == 'problem':
             last = problem.order_by('-id')[0].id
             prev_prob = problem.get(id=self.problem_id - 1) if self.problem_id != 1 else None
             next_prob = problem.get(id=self.problem_id + 1) if self.problem_id != last else None
@@ -247,16 +247,16 @@ class BaseDetailView(
 
 
 class ProblemDetailView(BaseDetailView):
-    category = 'problem'
+    view_type = 'problem'
 
 
 class LikeDetailView(BaseDetailView):
-    category = 'like'
+    view_type = 'like'
 
 
 class RateDetailView(BaseDetailView):
-    category = 'rate'
+    view_type = 'rate'
 
 
 class AnswerDetailView(BaseDetailView):
-    category = 'answer'
+    view_type = 'answer'
