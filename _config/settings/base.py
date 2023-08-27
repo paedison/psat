@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     'schedule',
     'log',
     'notice',
+    'analysis',
 ]
 
 MIDDLEWARE = [
