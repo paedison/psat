@@ -10,6 +10,7 @@ static/vendor/fontawesome-free_old
 **/demo/
 _config/settings/dev.py
 git_update.sh
+analysis/util/google_service_key.json
 
 
 ### Django ###

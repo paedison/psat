@@ -1,3 +1,5 @@
+import sys
+
 import gspread  # 구글스프레드시트 함수 불러오기
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -6,37 +8,51 @@ scopes = [
     'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/cloud-platform',
 ]
-
-# credentials, project = google.auth.default(
-#     scopes=[
-#         'https://spreadsheets.google.com/feeds',
-#         'https://www.googleapis.com/auth/drive',
-#         'https://www.googleapis.com/auth/cloud-platform',
-#     ]
-# )
-
 json_file_name = r'google_service_key.json'
 credentials = ServiceAccountCredentials.from_json_keyfile_name(json_file_name, scopes)
-# scoped_credentials = credentials.with_scopes[
-#     'https://spreadsheets.google.com/feeds',
-#     'https://www.googleapis.com/auth/drive',
-#     'https://www.googleapis.com/auth/cloud-platform',
-# ]
-
-gc = gspread.authorize(credentials)  # 간소화 변수로 구글스프레드시트 접근인증하기
+gc = gspread.authorize(credentials)  # 간소화 변수로 구글스프레드시트 접근인증하기 / Client 클래스 인스턴스 생성
 spreadsheet_url = 'https://docs.google.com/spreadsheets/d/1Pa9DDI2Uy2hbf_zq1ppsFeFN5rpc1CkE7ePl_bXyHuc/'
-doc = gc.open_by_url(spreadsheet_url)  # url 열기
 
-# 스프레스시트 문서 가져오기
-worksheet = doc.worksheet('copy')  # 시트 선택하기 (0=첫번째시트, 1=두번째시트)
 
-print(doc.get_worksheet(1))
+def get_sheet_data(
+        url: str, name: str, cell_range: str = None,
+):
+    spreadsheet = gc.open_by_url(url)  # url 열기 / Spreadsheet 클래스 호출
+    worksheet = spreadsheet.worksheet(name)  # 시트 선택하기 / Worksheet 클래스 호출
 
-val = worksheet.acell('a1').value  # a1 값 불러오기(테스트해봄)
-# val = worksheet.cell(6, 2).value  # 6행,2열 값 불러오기(테스트해봄)
+    if cell_range:
+        data = worksheet.get_values(cell_range)
+    else:
+        data = worksheet.get_all_values()
 
-row_values_list = worksheet.row_values(6)  # 첫 번째 행에서 모든 값을 가져옵니다.
-col_values_list = worksheet.col_values(1)  # 첫 번째 열에서 모든 값을 가져옵니다.
+    return data
 
-list_of_lists = worksheet.get_all_values()  # 워크 시트의 모든 값을 목록으로 가져 오기
-print(list_of_lists[6])
+    # header = data[0]
+    # dict_data = []
+    # for row in data[1:]:
+    #     row_dict = {}
+    #     for col, value in enumerate(row):
+    #         row_dict[header[col]] = value
+    #     dict_data.append(row_dict)
+    # return dict_data
+
+
+def get_answer_dict(worksheet: str, id_range: str, answer_range):
+    id_data = get_sheet_data(spreadsheet_url, worksheet, id_range)
+    answer_data = get_sheet_data(spreadsheet_url, worksheet, answer_range)
+
+    id_list = [item for sublist in id_data for item in sublist]
+    answer_list = [item for sublist in answer_data for item in sublist]
+
+    if len(id_list) == len(answer_list):
+        answer_set = list(zip(id_list, answer_list))
+
+        with open('answer_set.txt', 'w') as file:
+            for pair in answer_set:
+                file.write(f'{pair[0]}, {pair[1]}\n')
+        print(dict(answer_set))
+    else:
+        print('Error')
+
+
+get_answer_dict('settings', 'K:K', 'R:R')

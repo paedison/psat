@@ -1,55 +1,54 @@
 from django.db import models
 
-from common.models import User
-
 
 class CorrectAnswer:
     score_set = dict(sub00=4, sub01=2.5, sub02=2.5, sub03=2.5)
-    correct_answer_set = dict(
-        sub00_01="", sub00_02="", sub00_03="", sub00_04="", sub00_05="",
-        sub00_06="", sub00_07="", sub00_08="", sub00_09="", sub00_10="",
-        sub00_11="", sub00_12="", sub00_13="", sub00_14="", sub00_15="",
-        sub00_16="", sub00_17="", sub00_18="", sub00_19="", sub00_20="",
-        sub00_21="", sub00_22="", sub00_23="", sub00_24="", sub00_25="",
-        sub01_01="", sub01_02="", sub01_03="", sub01_04="", sub01_05="",
-        sub01_06="", sub01_07="", sub01_08="", sub01_09="", sub01_10="",
-        sub01_11="", sub01_12="", sub01_13="", sub01_14="", sub01_15="",
-        sub01_16="", sub01_17="", sub01_18="", sub01_19="", sub01_20="",
-        sub01_21="", sub01_22="", sub01_23="", sub01_24="", sub01_25="",
-        sub01_26="", sub01_27="", sub01_28="", sub01_29="", sub01_30="",
-        sub01_31="", sub01_32="", sub01_33="", sub01_34="", sub01_35="",
-        sub01_36="", sub01_37="", sub01_38="", sub01_39="", sub01_40="",
-        sub02_01="", sub02_02="", sub02_03="", sub02_04="", sub02_05="",
-        sub02_06="", sub02_07="", sub02_08="", sub02_09="", sub02_10="",
-        sub02_11="", sub02_12="", sub02_13="", sub02_14="", sub02_15="",
-        sub02_16="", sub02_17="", sub02_18="", sub02_19="", sub02_20="",
-        sub02_21="", sub02_22="", sub02_23="", sub02_24="", sub02_25="",
-        sub02_26="", sub02_27="", sub02_28="", sub02_29="", sub02_30="",
-        sub02_31="", sub02_32="", sub02_33="", sub02_34="", sub02_35="",
-        sub02_36="", sub02_37="", sub02_38="", sub02_39="", sub02_40="",
-        sub03_01="", sub03_02="", sub03_03="", sub03_04="", sub03_05="",
-        sub03_06="", sub03_07="", sub03_08="", sub03_09="", sub03_10="",
-        sub03_11="", sub03_12="", sub03_13="", sub03_14="", sub03_15="",
-        sub03_16="", sub03_17="", sub03_18="", sub03_19="", sub03_20="",
-        sub03_21="", sub03_22="", sub03_23="", sub03_24="", sub03_25="",
-        sub03_26="", sub03_27="", sub03_28="", sub03_29="", sub03_30="",
-        sub03_31="", sub03_32="", sub03_33="", sub03_34="", sub03_35="",
-        sub03_36="", sub03_37="", sub03_38="", sub03_39="", sub03_40="")
+    correct_answer_set = {
+        'sub00_01': '4', 'sub00_02': '4', 'sub00_03': '2', 'sub00_04': '1', 'sub00_05': '4',
+        'sub00_06': '3', 'sub00_07': '4', 'sub00_08': '3', 'sub00_09': '4', 'sub00_10': '1',
+        'sub00_11': '3', 'sub00_12': '2', 'sub00_13': '3', 'sub00_14': '3', 'sub00_15': '1',
+        'sub00_16': '1', 'sub00_17': '4', 'sub00_18': '3', 'sub00_19': '2', 'sub00_20': '1',
+        'sub00_21': '3', 'sub00_22': '4', 'sub00_23': '2', 'sub00_24': '1', 'sub00_25': '3',
+        'sub01_01': '4', 'sub01_02': '5', 'sub01_03': '4', 'sub01_04': '3', 'sub01_05': '5',
+        'sub01_06': '1', 'sub01_07': '1', 'sub01_08': '4', 'sub01_09': '3', 'sub01_10': '1',
+        'sub01_11': '2', 'sub01_12': '4', 'sub01_13': '5', 'sub01_14': '4', 'sub01_15': '5',
+        'sub01_16': '4', 'sub01_17': '3', 'sub01_18': '5', 'sub01_19': '3', 'sub01_20': '2',
+        'sub01_21': '5', 'sub01_22': '4', 'sub01_23': '3', 'sub01_24': '3', 'sub01_25': '4',
+        'sub01_26': '1', 'sub01_27': '1', 'sub01_28': '1', 'sub01_29': '5', 'sub01_30': '3',
+        'sub01_31': '4', 'sub01_32': '5', 'sub01_33': '4', 'sub01_34': '3', 'sub01_35': '4',
+        'sub01_36': '1', 'sub01_37': '4', 'sub01_38': '3', 'sub01_39': '5', 'sub01_40': '5',
+        'sub02_01': '4', 'sub02_02': '4', 'sub02_03': '1', 'sub02_04': '5', 'sub02_05': '2',
+        'sub02_06': '3', 'sub02_07': '2', 'sub02_08': '4', 'sub02_09': '3', 'sub02_10': '4',
+        'sub02_11': '5', 'sub02_12': '4', 'sub02_13': '5', 'sub02_14': '4', 'sub02_15': '1',
+        'sub02_16': '5', 'sub02_17': '3', 'sub02_18': '3', 'sub02_19': '5', 'sub02_20': '3',
+        'sub02_21': '3', 'sub02_22': '2', 'sub02_23': '3', 'sub02_24': '2', 'sub02_25': '1',
+        'sub02_26': '2', 'sub02_27': '5', 'sub02_28': '5', 'sub02_29': '4', 'sub02_30': '3',
+        'sub02_31': '4', 'sub02_32': '2', 'sub02_33': '5', 'sub02_34': '1', 'sub02_35': '1',
+        'sub02_36': '1', 'sub02_37': '1', 'sub02_38': '2', 'sub02_39': '3', 'sub02_40': '1',
+        'sub03_01': '1', 'sub03_02': '3', 'sub03_03': '1', 'sub03_04': '5', 'sub03_05': '4',
+        'sub03_06': '5', 'sub03_07': '3', 'sub03_08': '4', 'sub03_09': '2', 'sub03_10': '3',
+        'sub03_11': '5', 'sub03_12': '5', 'sub03_13': '5', 'sub03_14': '1', 'sub03_15': '4',
+        'sub03_16': '4', 'sub03_17': '2', 'sub03_18': '1', 'sub03_19': '2', 'sub03_20': '2',
+        'sub03_21': '2', 'sub03_22': '2', 'sub03_23': '3', 'sub03_24': '5', 'sub03_25': '4',
+        'sub03_26': '2', 'sub03_27': '1', 'sub03_28': '2', 'sub03_29': '4', 'sub03_30': '4',
+        'sub03_31': '3', 'sub03_32': '3', 'sub03_33': '1', 'sub03_34': '5', 'sub03_35': '4',
+        'sub03_36': '1', 'sub03_37': '3', 'sub03_38': '4', 'sub03_39': '2', 'sub03_40': '3'}
 
 
 class Data(CorrectAnswer, models.Model):
-    department_choices = [
-        ()
+    DEPARTMENT_CHOICES = [
+        ("1", "일반행정"),
+        ("2", "재경"),
     ]
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     email = models.EmailField()
-    student_number = models.IntegerField(max_length=8)
+    student_number = models.IntegerField()
     student_name = models.TextField()
-    password = models.IntegerField(max_length=4)
-    department = models.Choices(department_choices)
+    password = models.IntegerField()
+    department = models.CharField(max_length=20, choices=DEPARTMENT_CHOICES, default="일반행정")
     is_valid = models.BooleanField(default=True)
     sub00_01 = models.IntegerField(default=0)
     sub00_02 = models.IntegerField(default=0)
@@ -212,21 +211,33 @@ class Data(CorrectAnswer, models.Model):
         return score * correct_count
 
     @property
-    def sub00_result(self): return self.get_sub_result('00')
-    @property
-    def sub00_score(self): return self.get_sub_score('00')
+    def sub00_result(self):
+        return self.get_sub_result('00')
 
     @property
-    def sub01_result(self): return self.get_sub_result('01')
-    @property
-    def sub01_score(self): return self.get_sub_score('01')
+    def sub00_score(self):
+        return self.get_sub_score('00')
 
     @property
-    def sub02_result(self): return self.get_sub_result('02')
-    @property
-    def sub02_score(self): return self.get_sub_score('02')
+    def sub01_result(self):
+        return self.get_sub_result('01')
 
     @property
-    def sub03_result(self): return self.get_sub_result('03')
+    def sub01_score(self):
+        return self.get_sub_score('01')
+
     @property
-    def sub03_score(self): return self.get_sub_score('03')
+    def sub02_result(self):
+        return self.get_sub_result('02')
+
+    @property
+    def sub02_score(self):
+        return self.get_sub_score('02')
+
+    @property
+    def sub03_result(self):
+        return self.get_sub_result('03')
+
+    @property
+    def sub03_score(self):
+        return self.get_sub_score('03')
