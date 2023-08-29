@@ -7,14 +7,18 @@ from analysis.models import Data, CorrectAnswer
 
 
 def verify_new_data_exists_or_not():
-    with open(r'C:\projects\paedison3\analysis\util\copy_worksheet.json', 'r', encoding='utf-8') as file:
+    with open(r'copy_worksheet.json', 'r', encoding='utf-8') as file:
         content = json.load(file)
         max_id = 0
         for item in content:
             if 'copy_id' in item and isinstance(item['copy_id'], int) and item['copy_id'] > max_id:
                 max_id = item['copy_id']
-    max_data_id = Data.objects.order_by('id').last()
-    return max_id == max_data_id
+    last_data = Data.objects.all().order_by('id').last()
+    try:
+        last_data_id = last_data.id
+    except AttributeError:
+        last_data_id = None
+    return max_id == last_data_id
 
 
 def update_analysis_model():
@@ -23,7 +27,7 @@ def update_analysis_model():
     if is_updated:
         message = 'Already updated'
     else:
-        with open(r'C:\projects\paedison3\analysis\util\copy_worksheet.json', 'r', encoding='utf-8') as file:
+        with open(r'copy_worksheet.json', 'r', encoding='utf-8') as file:
             content = json.load(file)
             for item in content:
                 if 'copy_id' in item and isinstance(item['copy_id'], int):
@@ -48,8 +52,11 @@ def calculate_total_answer_rate_list(sub_code):
 
 
 def index(request):
-    update_analysis_model()
-    return HttpResponse(update_analysis_model())
+    if request.user.is_authenticated:
+        message = update_analysis_model()
+    else:
+        message = 'Not allowed'
+    return HttpResponse(message)
 
 
 class DataListView(ListView):

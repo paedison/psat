@@ -59,4 +59,4 @@ def get_copy_data():
 # copy, result, reference, data_all, data_statistics
 
 
-verify_new_data_exists_or_not()
+# verify_new_data_exists_or_not()

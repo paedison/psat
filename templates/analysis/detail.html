@@ -25,10 +25,10 @@
 {% endpartial %}
 
 {% startpartial table_tr %}
-    <tr class="text-center">
-        <td class="text-nowrap"></td>
+    <tr class="text-center table-warning">
+        <td class="text-nowrap fw-bold"></td>
         {% for _ in 'x'|ljust:loop_counter %}
-            <td>{{ forloop.counter|add:loop_min }}</td>
+            <td class="text-nowrap fw-bold text-secondary">{{ forloop.counter|add:loop_min }}</td>
         {% endfor %}
     </tr>
     <tr class="text-center">
@@ -52,7 +52,7 @@
 
 {% startpartial post_content %}
     <div class="small mb-3 table-responsive">
-        <h3 class="fw-bold text-primary">헌법</h3>
+        <h3 class="fw-bold text-primary pt-3">헌법</h3>
         <table class="table">
             <tbody>
                 {% with results=post.sub00_result answer_rates=total00_answer_list loop_counter=10 loop_min=0 loop_max=10 %}
@@ -66,7 +66,7 @@
                 {% endwith %}
             </tbody>
         </table>
-        <h3 class="fw-bold text-primary">언어논리</h3>
+        <h3 class="fw-bold text-primary pt-3">언어논리</h3>
         <table class="table">
             <tbody>
                 {% with results=post.sub01_result answer_rates=total01_answer_list loop_counter=10 loop_min=0 loop_max=10 %}
@@ -83,7 +83,7 @@
                 {% endwith %}
             </tbody>
         </table>
-        <h3 class="fw-bold text-primary">자료해석</h3>
+        <h3 class="fw-bold text-primary pt-3">자료해석</h3>
         <table class="table">
             <tbody>
                 {% with results=post.sub02_result answer_rates=total02_answer_list loop_counter=10 loop_min=0 loop_max=10 %}
@@ -100,7 +100,7 @@
                 {% endwith %}
             </tbody>
         </table>
-        <h3 class="fw-bold text-primary">상황판단</h3>
+        <h3 class="fw-bold text-primary pt-3">상황판단</h3>
         <table class="table">
             <tbody>
                 {% with results=post.sub03_result answer_rates=total03_answer_list loop_counter=10 loop_min=0 loop_max=10 %}
