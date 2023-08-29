@@ -1,13 +1,18 @@
 import json
+import os
 
 from django.http import HttpResponse
 from vanilla import ListView, DetailView
 
 from analysis.models import Data, CorrectAnswer
 
+current_directory = os.path.dirname(os.path.abspath(__file__))
+json_file_path = os.path.join(current_directory, 'util', 'copy_worksheet.json')
+
 
 def verify_new_data_exists_or_not():
-    with open(r'copy_worksheet.json', 'r', encoding='utf-8') as file:
+
+    with open(json_file_path, 'r', encoding='utf-8') as file:
         content = json.load(file)
         max_id = 0
         for item in content:
@@ -27,7 +32,7 @@ def update_analysis_model():
     if is_updated:
         message = 'Already updated'
     else:
-        with open(r'copy_worksheet.json', 'r', encoding='utf-8') as file:
+        with open(json_file_path, 'r', encoding='utf-8') as file:
             content = json.load(file)
             for item in content:
                 if 'copy_id' in item and isinstance(item['copy_id'], int):
