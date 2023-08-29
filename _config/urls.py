@@ -33,6 +33,7 @@ urlpatterns = [
     path('schedule/', include('schedule.urls')),  # 시험 일정
     # path('quiz/', include('quiz.urls')),  # 연산연습 등
     path('log/', include('log.urls')),  # 로그 관리
+    path('analysis/', include('analysis.urls')),  # 로그 관리
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
 ]
 

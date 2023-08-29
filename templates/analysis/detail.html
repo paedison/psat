@@ -1,0 +1,157 @@
+{% extends 'list.html' %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+{% load psat_filter %}
+{% load partials %}
+
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% startpartial buttons %}
+    <div class="left-button col-auto px-0">
+        <a class="btn btn-circle btn-sm btn-outline-secondary"
+           href="{% url 'analysis:list' %}" title="List">
+            {{ BOARD_ICON_SET.list|safe }}
+        </a>
+    </div>
+{% endpartial %}
+
+{% startpartial post_header %}
+    <div class="small mb-3 text-secondary">
+        <div class="me-1">응시번호: {{ object.student_number }}</div>
+        <div class="me-1">이름: {{ object.student_name }}</div>
+        <div class="me-1">직렬: {{ object.department }}</div>
+    </div>
+{% endpartial %}
+
+{% startpartial table_tr %}
+    <tr class="text-center">
+        <td class="text-nowrap"></td>
+        {% for _ in 'x'|ljust:loop_counter %}
+            <td>{{ forloop.counter|add:loop_min }}</td>
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap">정오</td>
+        {% for result in results %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>{{ result }}</td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap" >정답률(%)</td>
+        {% for answer_rate in answer_rates %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>{{ answer_rate|floatformat:0 }}</td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{% endpartial %}
+
+
+{% startpartial post_content %}
+    <div class="small mb-3 table-responsive">
+        <h3 class="fw-bold text-primary">헌법</h3>
+        <table class="table">
+            <tbody>
+                {% with results=post.sub00_result answer_rates=total00_answer_list loop_counter=10 loop_min=0 loop_max=10 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub00_result answer_rates=total00_answer_list loop_counter=10 loop_min=10 loop_max=20 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub00_result answer_rates=total00_answer_list loop_counter=5 loop_min=20 loop_max=25 %}
+                    {% partial table_tr %}
+                {% endwith %}
+            </tbody>
+        </table>
+        <h3 class="fw-bold text-primary">언어논리</h3>
+        <table class="table">
+            <tbody>
+                {% with results=post.sub01_result answer_rates=total01_answer_list loop_counter=10 loop_min=0 loop_max=10 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub01_result answer_rates=total01_answer_list loop_counter=10 loop_min=10 loop_max=20 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub01_result answer_rates=total01_answer_list loop_counter=10 loop_min=20 loop_max=30 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub01_result answer_rates=total01_answer_list loop_counter=10 loop_min=30 loop_max=40 %}
+                    {% partial table_tr %}
+                {% endwith %}
+            </tbody>
+        </table>
+        <h3 class="fw-bold text-primary">자료해석</h3>
+        <table class="table">
+            <tbody>
+                {% with results=post.sub02_result answer_rates=total02_answer_list loop_counter=10 loop_min=0 loop_max=10 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub02_result answer_rates=total02_answer_list loop_counter=10 loop_min=10 loop_max=20 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub02_result answer_rates=total02_answer_list loop_counter=10 loop_min=20 loop_max=30 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub02_result answer_rates=total02_answer_list loop_counter=10 loop_min=30 loop_max=40 %}
+                    {% partial table_tr %}
+                {% endwith %}
+            </tbody>
+        </table>
+        <h3 class="fw-bold text-primary">상황판단</h3>
+        <table class="table">
+            <tbody>
+                {% with results=post.sub03_result answer_rates=total03_answer_list loop_counter=10 loop_min=0 loop_max=10 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub03_result answer_rates=total03_answer_list loop_counter=10 loop_min=10 loop_max=20 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub03_result answer_rates=total03_answer_list loop_counter=10 loop_min=20 loop_max=30 %}
+                    {% partial table_tr %}
+                {% endwith %}
+                {% with results=post.sub03_result answer_rates=total03_answer_list loop_counter=10 loop_min=30 loop_max=40 %}
+                    {% partial table_tr %}
+                {% endwith %}
+            </tbody>
+        </table>
+    </div>
+{% endpartial %}
+
+{% startpartial container %}
+    <section id="{{ info.target_id }}" class="section htmx-fade-in htmx-fade-out">
+        {{ info|json_script:'info' }}
+        <div class="row">
+            <div class="col-12 my-2">
+                <div class="card m-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between">
+                            {% partial buttons %}
+                        </div>
+                        <hr class="my-2">
+                        {% partial post_header %}
+                        <div class="mb-4">
+                            {% partial post_content %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- Content Row End -->
+    </section>
+{% endpartial %}
+
+
+{% block main %}
+    <section>
+        <div class="pagetitle my-2">
+            <h1>제1회 전국모의고사</h1>
+        </div><!-- Page Title End -->
+        {% partial container %}
+    </section><!-- Main Content End -->
+{% endblock %}
+
+{% block page_script %}
+    <script type="module" src="{% static 'js/board.js' %}"></script>
+{% endblock %}

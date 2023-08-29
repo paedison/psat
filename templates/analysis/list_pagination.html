@@ -1,0 +1,36 @@
+
+<div role="navigation" aria-label="pagination">
+    <ul class="pagination pagination-sm justify-content-center m-0">
+        {% with page_range=paginator.get_elided_page_range %}
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.number|add:-1 }}">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+            </li>
+        {% endif %}
+        {% for number in page_range %}
+            {% if number == page_obj.number %}
+                <li class="page-item active" aria-current="page">
+                    <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                </li>
+            {% elif number == page_obj.paginator.ELLIPSIS %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.number|add:1 }}">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    {% endwith %}
+    </ul>
+</div><!-- Pagination End -->
