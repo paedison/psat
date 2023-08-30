@@ -1,7 +1,7 @@
 {% load static %}
 {% load psat_filter %}
 
-<section id="{{ info.target_id }}">
+<section id="{{ info.target_id }}" class="htmx-fade-in">
     {{ info|json_script:'info' }}
     <div class="table-responsive">
         <table class="table">
@@ -41,7 +41,7 @@
             </tbody>
         </table>
     </div>
-    {% if info.category == 'search' %}
+    {% if info.view_type == 'search' %}
         <section class="col-sm-8 col-md-6 col-lg-5 my-4 ms-auto me-auto"
                  data-target="#{{ info.target_id }}">
             {% include 'psat/snippets/search_form.html' %}
@@ -50,9 +50,9 @@
     <section class="d-flex flex-wrap"
              data-target="#{{ info.target_id }}">
         <div class="p-2 me-auto ms-auto">
-            {% include 'board/list_pagination.html' %}
+            {% include 'psat/snippets/list_pagination.html' %}
         </div>
-    {% if info.category != 'search' %}
+    {% if info.view_type != 'search' %}
         <div class="p-2">
             {% include 'psat/snippets/list_filter_container.html' %}
         </div>

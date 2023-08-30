@@ -8,6 +8,7 @@ from django.views import generic
 
 # Third Party Library Import
 from searchview import views as search_view
+from vanilla import ListView
 
 # Custom App Import
 from common.constants import icon, color, psat
@@ -29,6 +30,9 @@ class PsatListInfoMixIn:
     kwargs: dict
     app_name = 'psat'
     view_type: str
+    object: any
+    object_list: any
+
     title_dict = {
         'problem': '',
         'like': 'PSAT 즐겨찾기',
@@ -42,17 +46,17 @@ class PsatListInfoMixIn:
         """
         Return URL dictionary containing year, ex, exam2, sub, subject, sub_code.
         """
-        year = self.kwargs.get('year', '전체')
-        if year != '전체':
-            year = int(year)
-        ex = self.kwargs.get('ex', '전체')
+        year = self.kwargs.get('year')
+        year = year if year == '전체' or year is None else int(year)
+        ex = self.kwargs.get('ex')
         exam2 = next((i['exam2'] for i in psat.TOTAL['exam_list']
                       if i['ex'] == ex), None)
-        sub = self.kwargs.get('sub', '전체')
+        sub = self.kwargs.get('sub')
         subject = next((i['subject'] for i in psat.TOTAL['subject_list']
                         if i['sub'] == sub), None)
         sub_code = next((i['sub_code'] for i in psat.TOTAL['subject_list']
-                         if i['sub'] == sub), '')
+                         if i['sub'] == sub), None)
+
         return {
             'year': year,
             'ex': ex,
@@ -80,15 +84,17 @@ class PsatListInfoMixIn:
         exam2, subject = self.url['exam2'], self.url['subject']
         title = self.title_dict[self.view_type]
         title_parts = []
-        if year != '전체':
+
+        if year != '전체' and year is not None:
             title_parts.append(f"{year}년")
-        if ex != '전체':
+        if ex != '전체' and ex is not None:
             title_parts.append(exam2)
-        if sub != '전체':
+        if sub != '전체' and sub is not None:
             title_parts.append(subject)
         title_parts.append('PSAT 기출문제')
-        if self.view_type == 'problem':
+        if self.view_type == 'problem' and title_parts is not None:
             title = ' '.join(title_parts)
+
         return title
 
     @property
@@ -97,6 +103,8 @@ class PsatListInfoMixIn:
         year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
         opt = self.option[self.view_type]
         if self.view_type == 'problem':
+            if sub is None:
+                return None
             return reverse_lazy(f'psat:{self.view_type}_list', args=[year, ex, sub])
         else:
             sub = sub if sub != '전체' else None
@@ -110,9 +118,7 @@ class PsatListInfoMixIn:
                 return reverse_lazy(f'psat:{self.view_type}_list')
 
     @property
-    def category(self):
-        sub_code = self.url['sub_code'] or 0
-        return sub_code
+    def category(self): return self.url['sub_code']
 
     @property
     def info(self) -> dict:
@@ -187,154 +193,119 @@ class QuerysetFieldMixIn:
         return self.field_dict[self.view_type]
 
 
-class BaseListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
-                   QuerysetFieldMixIn, generic.ListView):
+class BaseListView(PsatListInfoMixIn, EvaluationInfoMixIn, ListView):
     """ Represent PSAT base list view. """
     model = Problem
-    template_name = 'psat/problem_list_content.html'
     context_object_name = 'problem'
     paginate_by = 10
     view_type: str
 
-    @property
-    def object_list(self) -> object:
-        return self.get_queryset()
+    def get_elided_page_range(self, page_number):
+        paginator = self.get_paginator(self.get_queryset(), self.paginate_by)
+        elided_page_range = paginator.get_elided_page_range(
+            number=page_number, on_each_side=3, on_ends=1)
+        return elided_page_range
 
-    def get(self, request, *args, **kwargs) -> render:
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.template_name, context)
-        self.create_log_for_list(page_obj=context['page_obj'])
-        return html
-
-    def post(self, request, *args, **kwargs) -> HttpResponse:
-        self.kwargs['page'] = request.POST.get('page', '1')
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.template_name, context).content.decode('utf-8')
-        self.create_log_for_list(page_obj=context['page_obj'])
-        return HttpResponse(html)
-
-    def get_queryset(self) -> object:
-        field = self.queryset_field
-        opt = self.option[self.view_type]
-        year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
-        problem_filter = Q()
-        if self.view_type == 'problem':
-            if year != '전체':
-                problem_filter &= Q(exam__year=year)
-            if ex != '전체':
-                problem_filter &= Q(exam__ex=ex)
-            if sub != '전체':
-                problem_filter &= Q(exam__sub=sub)
-        else:
-            problem_filter = Q(evaluation__user=self.request.user)
-            if sub != '전체':
-                problem_filter &= Q(exam__sub=sub)
-            lookup_expr = field[0] if opt is None else field[1]
-            value = 0 if opt is None else opt
-            problem_filter &= Q(**{lookup_expr: value})
-        return Problem.objects.filter(problem_filter)
-
-    def get_context_data(self, *, object_list=None, **kwargs) -> dict:
-        """Get the context for this view."""
-        queryset = self.object_list
-        page_size = self.get_paginate_by(queryset)
-        paginator, page_obj, queryset, is_paginated = self.paginate_queryset(
-            queryset, page_size)
-        for obj in page_obj:
+    def get(self, request, *args, **kwargs):
+        page = self.paginate_queryset(self.get_queryset(), self.paginate_by)
+        self.object_list = page.object_list
+        for obj in page:
             self.get_evaluation_info(obj)
-        return {
-            'view': self,
-            'url': self.url,
-            'info': self.info,
-            'page_obj': page_obj,
-            'page_range': paginator.get_elided_page_range(page_obj.number, on_ends=1),
-        }
+
+        page_number = self.request.GET.get('page', 1)
+        page_range = self.get_elided_page_range(page_number)
+
+        context = self.get_context_data(
+            url=self.url,
+            info=self.info,
+            page_obj=page,
+            is_paginated=page.has_other_pages(),
+            paginator=page.paginator,
+            page_range=page_range,
+        )
+
+        return self.render_to_response(context)
+
+    def get_template_names(self):
+        if self.url['sub'] is None:
+            return 'psat/problem_list.html'
+        else:
+            return 'psat/problem_list_content.html'
 
 
 class ProblemListView(BaseListView):
     view_type = 'problem'
 
+    def get_queryset(self) -> object:
+        year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
+        problem_filter = Q()
+
+        if year != '전체':
+            problem_filter &= Q(exam__year=year)
+        if ex != '전체':
+            problem_filter &= Q(exam__ex=ex)
+        if sub != '전체':
+            problem_filter &= Q(exam__sub=sub)
+
+        return Problem.objects.filter(problem_filter)
+
 
 class LikeListView(BaseListView):
     view_type = 'like'
+
+    def get_queryset(self) -> object:
+        is_liked = self.kwargs.get('is_liked')
+        sub = self.url['sub']
+        problem_filter = Q(evaluation__user=self.request.user)
+
+        if sub != '전체':
+            problem_filter &= Q(exam__sub=sub)
+        if is_liked is None:
+            problem_filter &= Q(evaluation__is_liked__gte=0)
+        else:
+            problem_filter &= Q(evaluation__is_liked=is_liked)
+
+        return Problem.objects.filter(problem_filter)
 
 
 class RateListView(BaseListView):
     view_type = 'rate'
 
+    def get_queryset(self) -> object:
+        star_count = self.kwargs.get('star_count')
+        sub = self.url['sub']
+        problem_filter = Q(evaluation__user=self.request.user)
+
+        if sub != '전체':
+            problem_filter &= Q(exam__sub=sub)
+        if star_count is None:
+            problem_filter &= Q(evaluation__difficulty_rated__gte=0)
+        else:
+            problem_filter &= Q(evaluation__difficulty_rated=star_count)
+
+        return Problem.objects.filter(problem_filter)
+
 
 class AnswerListView(BaseListView):
     view_type = 'answer'
 
+    def get_queryset(self) -> object:
+        is_correct = self.kwargs.get('is_correct')
+        sub = self.url['sub']
+        problem_filter = Q(evaluation__user=self.request.user)
 
-class ListMainView(PsatListInfoMixIn, generic.View):
-    """ Represent PSAT list main view. """
-    template_name = 'psat/problem_list.html'
-    main_list_view = None
+        if sub != '전체':
+            problem_filter &= Q(exam__sub=sub)
+        if is_correct is None:
+            problem_filter &= Q(evaluation__is_correct__gte=0)
+        else:
+            problem_filter &= Q(evaluation__is_correct=is_correct)
 
-    @property
-    def title(self) -> str:
-        """ Return menu name of the list. """
-        title_dict = self.title_dict.copy()
-        title_dict['problem'] = 'PSAT 기출문제'
-        return title_dict[self.view_type]
-
-    @property
-    def info(self) -> dict:
-        """ Return information dictionary of the main list. """
-        return {
-            'app_name': self.app_name,
-            'menu': self.view_type,
-            'view_type': self.view_type,
-            'type': f'{self.view_type}List',
-            'title': self.title,
-            'target_id': f'{self.view_type}List',
-            'icon': icon.MENU_ICON_SET[self.view_type],
-            'color': color.COLOR_SET[self.view_type],
-        }
-
-    def get(self, request) -> render:
-        list_view = self.main_list_view.as_view()
-        all_ = list_view(request).content.decode('utf-8')
-        eoneo = list_view(request, sub='언어').content.decode('utf-8')
-        jaryo = list_view(request, sub='자료').content.decode('utf-8')
-        sanghwang = list_view(request, sub='상황').content.decode('utf-8')
-        problem_search_view = ProblemSearchListView.as_view()
-        search = problem_search_view(request).content.decode('utf-8')
-        context = {
-            'info': self.info,
-            'total': psat.TOTAL,
-            'all': all_,
-            'eoneo': eoneo,
-            'jaryo': jaryo,
-            'sanghwang': sanghwang,
-            'search': search,
-        }
-        return render(request, self.template_name, context)
-
-
-class ProblemListMainView(ListMainView):
-    main_list_view = ProblemListView
-    view_type = 'problem'
-
-
-class LikeListMainView(ListMainView):
-    main_list_view = LikeListView
-    view_type = 'like'
-
-
-class RateListMainView(ListMainView):
-    main_list_view = RateListView
-    view_type = 'rate'
-
-
-class AnswerListMainView(ListMainView):
-    main_list_view = AnswerListView
-    view_type = 'answer'
+        return Problem.objects.filter(problem_filter)
 
 
 class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
-                            QuerysetFieldMixIn, search_view.SearchView):
+                            search_view.SearchView):
     model = ProblemData
     template_name = 'psat/problem_list_content.html'
     form_class = ProblemSearchForm

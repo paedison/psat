@@ -20,6 +20,7 @@ MENU_ICON_SET = {
 }
 
 PSAT_ICON_SET = {
+    'filterAll': '<i class="fa-regular fa-file-lines"></i>',
     'likeNone': '<i class="fa-regular fa-heart"></i>',
     'likeFalse': '<i class="fa-regular fa-heart"></i>',
     'likeTrue': '<i class="fa-solid fa-heart"></i>',

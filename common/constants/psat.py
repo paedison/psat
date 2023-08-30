@@ -1,3 +1,5 @@
+from django.urls import reverse_lazy
+
 TOTAL = {
     'year_list': list(reversed(range(2004, 2024))),
     'exam_list': [
@@ -9,9 +11,9 @@ TOTAL = {
         {'ex': '입시', 'exam2': '입법고시'},
     ],
     'subject_list': [
-        {'sub': '언어', 'subject': '언어논리', 'sub_code': '1', 'sub2': 'eoneo'},
-        {'sub': '자료', 'subject': '자료해석', 'sub_code': '2', 'sub2': 'jaryo'},
-        {'sub': '상황', 'subject': '상황판단', 'sub_code': '3', 'sub2': 'sanghwang'},
+        {'sub': '언어', 'subject': '언어논리', 'sub_code': 1, 'sub2': 'eoneo'},
+        {'sub': '자료', 'subject': '자료해석', 'sub_code': 2, 'sub2': 'jaryo'},
+        {'sub': '상황', 'subject': '상황판단', 'sub_code': 3, 'sub2': 'sanghwang'},
     ],
     'nums25': range(1, 26),
     'nums40': range(1, 41),
@@ -73,4 +75,31 @@ TOTAL = {
         {'year': 2005, 'ex': '외시', 'exam2': '외교원/외무고시'},
         {'year': 2005, 'ex': '입시', 'exam2': '입법고시'},
         {'year': 2004, 'ex': '외시', 'exam2': '외교원/외무고시'}],
+}
+
+URLS = {
+    'problem': {
+        'total': reverse_lazy('psat:problem_list', args=['전체', '전체', '전체']),
+        'eoneo': reverse_lazy('psat:problem_list', args=['전체', '전체', '언어']),
+        'jaryo': reverse_lazy('psat:problem_list', args=['전체', '전체', '자료']),
+        'sanghwang': reverse_lazy('psat:problem_list', args=['전체', '전체', '상황']),
+    },
+    'like': {
+        'total': reverse_lazy('psat:like_list_sub', args=['전체']),
+        'eoneo': reverse_lazy('psat:like_list_sub', args=['언어']),
+        'jaryo': reverse_lazy('psat:like_list_sub', args=['자료']),
+        'sanghwang': reverse_lazy('psat:like_list_sub', args=['상황']),
+    },
+    'rate': {
+        'total': reverse_lazy('psat:rate_list_sub', args=['전체']),
+        'eoneo': reverse_lazy('psat:rate_list_sub', args=['언어']),
+        'jaryo': reverse_lazy('psat:rate_list_sub', args=['자료']),
+        'sanghwang': reverse_lazy('psat:rate_list_sub', args=['상황']),
+    },
+    'answer': {
+        'total': reverse_lazy('psat:answer_list_sub', args=['전체']),
+        'eoneo': reverse_lazy('psat:answer_list_sub', args=['언어']),
+        'jaryo': reverse_lazy('psat:answer_list_sub', args=['자료']),
+        'sanghwang': reverse_lazy('psat:answer_list_sub', args=['상황']),
+    }
 }

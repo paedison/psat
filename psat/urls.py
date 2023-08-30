@@ -17,13 +17,13 @@ re_answer_list_opt_sub = r'answer/list/(?P<is_correct>[01])correct/(?P<sub>ì–¸ì–
 
 urlpatterns = [
     # Problem
-    path('', ProblemListMainView.as_view(), name='base'),
+    path('', ProblemListView.as_view(), name='base'),
     path('list/', ProblemListView.as_view(), name='problem'),
     re_path(re_problem_list, ProblemListView.as_view(), name='problem_list'),
     path('detail/<int:problem_id>/', ProblemDetailView.as_view(), name='problem_detail'),
 
     # Like
-    path('like/', LikeListMainView.as_view(), name='like'),
+    path('like/', LikeListView.as_view(), name='like'),
     path('like/list/', LikeListView.as_view(), name='like_list'),
     path('like/list/<int:is_liked>liked/', LikeListView.as_view(), name='like_list_opt'),
     re_path(re_like_list_sub, LikeListView.as_view(), name='like_list_sub'),
@@ -31,7 +31,7 @@ urlpatterns = [
     path('like/detail/<int:problem_id>/', LikeDetailView.as_view(), name='like_detail'),
 
     # Rate
-    path('rate/', RateListMainView.as_view(), name='rate'),
+    path('rate/', RateListView.as_view(), name='rate'),
     path('rate/list/', RateListView.as_view(), name='rate_list'),
     path('rate/list/<int:star_count>star/', RateListView.as_view(), name='rate_list_opt'),
     re_path(re_rate_list_sub, RateListView.as_view(), name='rate_list_sub'),
@@ -39,7 +39,7 @@ urlpatterns = [
     path('rate/detail/<int:problem_id>/', RateDetailView.as_view(), name='rate_detail'),
 
     # Answer
-    path('answer/', AnswerListMainView.as_view(), name='answer'),
+    path('answer/', AnswerListView.as_view(), name='answer'),
     path('answer/list/', AnswerListView.as_view(), name='answer_list'),
     path('answer/list/<int:is_correct>correct/', AnswerListView.as_view(), name='answer_list_opt'),
     re_path(re_answer_list_sub, AnswerListView.as_view(), name='answer_list_sub'),

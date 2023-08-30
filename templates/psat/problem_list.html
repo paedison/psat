@@ -5,67 +5,104 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% startpartial nav_tab %}
-    <button class="nav-link active p-2" id="navCategory0" type="button"
-            data-bs-toggle="tab" data-bs-target="#navContent0" role="tab"
+{% startpartial navigation_menu_content %}
+    <button id="navCategory0" class="nav-link p-2 active" type="button" role="tab"
+            data-bs-toggle="tab" data-bs-target="#navContent0"
             aria-controls="navContent0" aria-selected="true">
-        <span class="fw-bold small text-primary">
+        <span class="fw-bold small text-primary" hx-trigger="load delay:0s"
+              hx-get="{{ menu_url.total }}"
+              hx-swap="innerHtml" hx-target="#navContent0">
             {{ PSAT_ICON_SET.all|safe }} 전체
         </span>
     </button>
-    <button class="nav-link p-2" id="navCategory1" type="button"
-            data-bs-toggle="tab" data-bs-target="#navContent1" role="tab"
+    <button id="navCategory1" class="nav-link p-2" type="button" role="tab"
+            data-bs-toggle="tab" data-bs-target="#navContent1"
             aria-controls="navContent1" aria-selected="false">
-        <span class="fw-bold small text-primary">
+        <span class="fw-bold small text-primary" hx-trigger="load delay:0.3s"
+              hx-get="{{ menu_url.eoneo }}"
+              hx-swap="innerHtml" hx-target="#navContent1">
             {{ PSAT_ICON_SET.eoneo|safe }} 언어
         </span>
     </button>
-    <button class="nav-link p-2" id="navCategory2" type="button"
-            data-bs-toggle="tab" data-bs-target="#navContent2" role="tab"
+    <button id="navCategory2" class="nav-link p-2" type="button" role="tab"
+            data-bs-toggle="tab" data-bs-target="#navContent2"
             aria-controls="navContent2" aria-selected="false">
-        <span class="fw-bold small text-primary">
+        <span class="fw-bold small text-primary" hx-trigger="load delay:0.6s"
+              hx-get="{{ menu_url.jaryo }}"
+              hx-swap="innerHtml" hx-target="#navContent2">
             {{ PSAT_ICON_SET.jaryo|safe }} 자료
         </span>
     </button>
-    <button class="nav-link p-2" id="navCategory3" type="button"
-            data-bs-toggle="tab" data-bs-target="#navContent3" role="tab"
+    <button id="navCategory3" class="nav-link p-2" type="button" role="tab"
+            data-bs-toggle="tab" data-bs-target="#navContent3"
             aria-controls="navContent3" aria-selected="false">
-        <span class="fw-bold small text-primary">
+        <span class="fw-bold small text-primary" hx-trigger="load delay:0.9s"
+              hx-get="{{ menu_url.sanghwang }}"
+              hx-swap="innerHtml" hx-target="#navContent3">
             {{ PSAT_ICON_SET.sanghwang|safe }} 상황
         </span>
     </button>
     {% if info.view_type == 'problem' %}
-        <button class="nav-link p-2" id="navCategory4" type="button"
-                data-bs-toggle="tab" data-bs-target="#navContent4" role="tab"
+        <button id="navCategory4" class="nav-link p-2" type="button" role="tab"
+                data-bs-toggle="tab" data-bs-target="#navContent4"
                 aria-controls="navContent4" aria-selected="false">
-            <span class="fw-bold small text-primary">
+            <span class="fw-bold small text-primary" hx-trigger="load delay:1.2s"
+                  hx-get="{% url 'psat:search' %}"
+                  hx-swap="innerHtml" hx-target="#navContent4">
                 {{ PSAT_ICON_SET.search|safe }} 검색
             </span>
         </button>
     {% endif %}
 {% endpartial %}
 
-{% startpartial nav_content %}
-    <div class="tab-pane fade show active" id="navContent0" role="tabpanel"
+{% startpartial navigation_menu %}
+    {% if info.view_type == 'problem' %}
+        {% with menu_url=URLS.problem %}
+            {% partial navigation_menu_content %}
+        {% endwith %}
+        <button id="navCategory4" class="nav-link p-2" type="button" role="tab"
+                data-bs-toggle="tab" data-bs-target="#navContent4"
+                aria-controls="navContent4" aria-selected="false">
+            <span class="fw-bold small text-primary" hx-trigger="load delay:1.2s"
+                  hx-get="{% url 'psat:search' %}"
+                  hx-swap="innerHtml" hx-target="#navContent4">
+                {{ PSAT_ICON_SET.search|safe }} 검색
+            </span>
+        </button>
+    {% endif %}
+    {% if info.view_type == 'like' %}
+        {% with menu_url=URLS.like %}
+            {% partial navigation_menu_content %}
+        {% endwith %}
+    {% endif %}
+    {% if info.view_type == 'rate' %}
+        {% with menu_url=URLS.rate %}
+            {% partial navigation_menu_content %}
+        {% endwith %}
+    {% endif %}
+    {% if info.view_type == 'answer' %}
+        {% with menu_url=URLS.answer %}
+            {% partial navigation_menu_content %}
+        {% endwith %}
+    {% endif %}
+{% endpartial %}
+
+{% startpartial navigation_container %}
+    <div id="navContent0" class="tab-pane fade show active" role="tabpanel"
          aria-labelledby="navCategory0">
-        {{ all|safe }}
     </div><!-- All Subject Tab End -->
-    <div class="tab-pane fade" id="navContent1" role="tabpanel"
+    <div id="navContent1" class="tab-pane fade" role="tabpanel"
          aria-labelledby="navCategory1">
-        {{ eoneo|safe }}
     </div><!-- Eoneo Tab End -->
-    <div class="tab-pane fade" id="navContent2" role="tabpanel"
+    <div id="navContent2" class="tab-pane fade" role="tabpanel"
          aria-labelledby="navCategory2">
-        {{ jaryo|safe }}
     </div><!-- Jaryo Tab End -->
-    <div class="tab-pane fade" id="navContent3" role="tabpanel"
+    <div id="navContent3" class="tab-pane fade" role="tabpanel"
          aria-labelledby="navCategory3">
-        {{ sanghwang|safe }}
     </div><!-- Sanghwang Tab End -->
     {% if info.view_type == 'problem' %}
-        <div class="tab-pane fade" id="navContent4" role="tabpanel"
+        <div id="navContent4" class="tab-pane fade" role="tabpanel"
              aria-labelledby="navCategory4">
-            {{ search|safe }}
         </div><!-- Search Tab End -->
     {% endif %}
 {% endpartial %}
@@ -80,18 +117,18 @@
         </h1>
     </div><!-- Page Title End -->
 
-    <section class="section">
+    <section class="section htmx-fade-out">
         <div class="row">
             <div class="col-12 my-2">
                 <div class="card m-0">
                     <div class="card-body p-4">
                         <nav>
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                {% partial nav_tab %}
+                                {% partial navigation_menu %}
                             </div>
                         </nav><!-- Navigation End -->
                         <div class="tab-content" id="nav-tabContent">
-                            {% partial nav_content %}
+                            {% partial navigation_container %}
                         </div>
                     </div>
                 </div>

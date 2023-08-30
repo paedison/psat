@@ -150,11 +150,21 @@ class PostListView(PostViewMixIn, ListView):
     def get_top_fixed(self):
         return self.get_filtered_queryset().filter(top_fixed=True)
 
+    def get_elided_page_range(self, page_number):
+        paginator = self.get_paginator(self.get_queryset(), self.paginate_by)
+        elided_page_range = paginator.get_elided_page_range(
+            number=page_number, on_each_side=3, on_ends=1)
+        return elided_page_range
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        page_number = self.request.GET.get('page', 1)
+        page_range = self.get_elided_page_range(page_number)
+
         context['info'] = self.info
         context['top_fixed'] = self.get_top_fixed()
         context['category_list'] = self.category_list.copy()
+        context['page_range'] = page_range
         return context
 
     def get_template_names(self):
