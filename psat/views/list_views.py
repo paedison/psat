@@ -1,5 +1,4 @@
 # Django Core Import
-from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -20,7 +19,36 @@ def index(request):
         return redirect('psat:base')
 
 
-class PsatListInfoMixIn:
+def get_evaluation_info(user, obj) -> object:
+    problem_id = obj.prob_id()
+    like_none_icon = icon.PSAT_ICON_SET['likeNone']
+    star_none_icon = icon.PSAT_ICON_SET['starNone']
+
+    source = None
+    if user.is_authenticated:
+        source = Evaluation.objects.filter(
+            user=user, problem_id=problem_id).first()
+
+    obj.opened_at = source.opened_at if source else None
+    obj.opened_times = source.opened_times if source else 0
+
+    obj.liked_at = source.liked_at if source else None
+    obj.is_liked = source.is_liked if source else None
+    obj.like_icon = source.like_icon() if source else like_none_icon
+
+    obj.rated_at = source.rated_at if source else None
+    obj.difficulty_rated = source.difficulty_rated if source else None
+    obj.rate_icon = source.rate_icon() if source else star_none_icon
+
+    obj.answered_at = source.answered_at if source else None
+    obj.submitted_answered = source.submitted_answer if source else None
+    obj.is_correct = source.is_correct if source else None
+    obj.answer_icon = source.answer_icon() if source else ''
+
+    return obj
+
+
+class PSATListInfoMixIn:
     """
     Represent PSAT list information mixin.
     view_type(str): One of [ problem, like, rate, answer ]
@@ -116,7 +144,7 @@ class PsatListInfoMixIn:
     @property
     def info(self) -> dict:
         return {
-            'menu': '',
+            'menu': self.view_type,
             'category': self.category,
             'view_type': self.view_type,
             'type': f'{self.view_type}List',
@@ -133,40 +161,7 @@ class PsatListInfoMixIn:
         }
 
 
-class EvaluationInfoMixIn:
-    """ Represent Evaluation model information mixin. """
-    request: WSGIRequest
-
-    def get_evaluation_info(self, obj) -> object:
-        user = self.request.user
-        problem_id = obj.prob_id()
-        source = None
-        like_none_icon = icon.PSAT_ICON_SET['likeNone']
-        star_none_icon = icon.PSAT_ICON_SET['starNone']
-        if user.is_authenticated:
-            source = Evaluation.objects.filter(
-                user=user, problem_id=problem_id).first()
-
-        obj.opened_at = source.opened_at if source else None
-        obj.opened_times = source.opened_times if source else 0
-
-        obj.liked_at = source.liked_at if source else None
-        obj.is_liked = source.is_liked if source else None
-        obj.like_icon = source.like_icon() if source else like_none_icon
-
-        obj.rated_at = source.rated_at if source else None
-        obj.difficulty_rated = source.difficulty_rated if source else None
-        obj.rate_icon = source.rate_icon() if source else star_none_icon
-
-        obj.answered_at = source.answered_at if source else None
-        obj.submitted_answered = source.submitted_answer if source else None
-        obj.is_correct = source.is_correct if source else None
-        obj.answer_icon = source.answer_icon() if source else ''
-
-        return obj
-
-
-class BaseListView(PsatListInfoMixIn, EvaluationInfoMixIn, ListView):
+class BaseListView(PSATListInfoMixIn, ListView):
     """ Represent PSAT base list view. """
     model = Problem
     context_object_name = 'problem'
@@ -183,7 +178,7 @@ class BaseListView(PsatListInfoMixIn, EvaluationInfoMixIn, ListView):
         page = self.paginate_queryset(self.get_queryset(), self.paginate_by)
         self.object_list = page.object_list
         for obj in page:
-            self.get_evaluation_info(obj)
+            get_evaluation_info(self.request.user, obj)
 
         page_number = self.request.GET.get('page', 1)
         page_range = self.get_elided_page_range(page_number)
@@ -206,46 +201,40 @@ class BaseListView(PsatListInfoMixIn, EvaluationInfoMixIn, ListView):
             return self.list_content_template
 
     def get_queryset(self) -> Problem.objects:
-        problem_filter = Q(evaluation__user=self.request.user)
-        sub = self.url['sub']
-        if sub != '전체' and sub is not None:
-            problem_filter &= Q(exam__sub=sub)
+        year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
+        field = value = None
+        problem_filter = Q()
 
-        opt = val = None
-        if self.view_type == 'like':
-            opt = 'evaluation__is_liked'
-            val = self.kwargs.get('is_liked')
-        elif self.view_type == 'rate':
-            opt = 'evaluation__difficulty_rated'
-            val = self.kwargs.get('star_count')
-        elif self.view_type == 'answer':
-            opt = 'evaluation__is_correct'
-            val = self.kwargs.get('is_correct')
-
-        if val is None:
-            problem_filter &= Q(**{opt + '__isnull': False})
+        if self.view_type == 'problem':
+            if year != '전체':
+                problem_filter &= Q(exam__year=year)
+            if ex != '전체':
+                problem_filter &= Q(exam__ex=ex)
+            if sub != '전체':
+                problem_filter &= Q(exam__sub=sub)
         else:
-            problem_filter &= Q(**{opt: val})
-        # problem_filter &= Q(**{opt: val}) if val is not None else ~Q(**{opt: None})
+            problem_filter = Q(evaluation__user=self.request.user)
+            if sub != '전체' and sub is not None:
+                problem_filter &= Q(exam__sub=sub)
+            if self.view_type == 'like':
+                field = 'evaluation__is_liked'
+                value = self.kwargs.get('is_liked')
+            elif self.view_type == 'rate':
+                field = 'evaluation__difficulty_rated'
+                value = self.kwargs.get('star_count')
+            elif self.view_type == 'answer':
+                field = 'evaluation__is_correct'
+                value = self.kwargs.get('is_correct')
 
+            if value is None:
+                problem_filter &= Q(**{field+'__isnull': False})
+            else:
+                problem_filter &= Q(**{field: value})
         return Problem.objects.filter(problem_filter)
 
 
 class ProblemListView(BaseListView):
     view_type = 'problem'
-
-    def get_queryset(self) -> object:
-        year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
-        problem_filter = Q()
-
-        if year != '전체':
-            problem_filter &= Q(exam__year=year)
-        if ex != '전체':
-            problem_filter &= Q(exam__ex=ex)
-        if sub != '전체':
-            problem_filter &= Q(exam__sub=sub)
-
-        return Problem.objects.filter(problem_filter)
 
 
 class LikeListView(BaseListView):
@@ -260,9 +249,7 @@ class AnswerListView(BaseListView):
     view_type = 'answer'
 
 
-class ProblemSearchListView(
-    PsatListInfoMixIn, EvaluationInfoMixIn, search_view.SearchView
-):
+class ProblemSearchListView(PSATListInfoMixIn, search_view.SearchView):
     model = ProblemData
     template_name = 'psat/problem_list_content.html'
     form_class = ProblemSearchForm
@@ -310,7 +297,7 @@ class ProblemSearchListView(
         paginator = context['paginator']
         page_range = paginator.get_elided_page_range(page_obj.number, on_ends=1)
         for obj in page_obj:
-            self.get_evaluation_info(obj)
+            get_evaluation_info(self.request.user, obj)
         context['url'] = self.url
         context['info'] = self.info
         context['page_range'] = page_range

@@ -40,6 +40,7 @@ PSAT_ICON_SET = {
     'prev_prob': '<i class="fa-solid fa-arrow-up"></i>',
     'next_prob': '<i class="fa-solid fa-arrow-down"></i>',
     'filter': '<i class="fa-solid fa-filter"></i>',
+    'left_arrow': '<i class="fa-solid fa-arrow-left"></i>',
     'right_arrow': '<i class="fa-solid fa-arrow-right"></i>',
     'all': '<i class="fa-solid fa-bars fa-fw"></i>',
     'eoneo': '<i class="fa-solid fa-language fa-fw"></i>',

@@ -16,22 +16,22 @@
             {{ BOARD_ICON_SET.list|safe }}
         </a>
         {% if next_post %}
-            <a class="btn btn-circle btn-sm btn-outline-secondary"
+            <a id="next_post" class="btn btn-circle btn-sm btn-outline-secondary"
                hx-get="{{ next_post.get_post_detail_content_url }}" href=""
                hx-push-url="{{ next_post.get_post_detail_url }}" title="Next">
                 {{ BOARD_ICON_SET.next|safe }}
             </a>
         {% else %}
-            <a class="btn btn-circle btn-sm btn-outline-secondary"></a>
+            <a id="next_post" class="btn btn-circle btn-sm btn-outline-secondary"></a>
         {%  endif %}
         {% if prev_post %}
-            <a class="btn btn-circle btn-sm btn-outline-secondary"
+            <a id="prev_post" class="btn btn-circle btn-sm btn-outline-secondary"
                hx-get="{{ prev_post.get_post_detail_content_url }}" href=""
                hx-push-url="{{ prev_post.get_post_detail_url }}" title="Previous">
                 {{ BOARD_ICON_SET.previous|safe }}
             </a>
         {% else %}
-            <a class="btn btn-circle btn-sm btn-outline-secondary"></a>
+            <a id="prev_post" class="btn btn-circle btn-sm btn-outline-secondary"></a>
         {% endif %}
     </div>
     <div class="right-button" hx-target="section .section"
