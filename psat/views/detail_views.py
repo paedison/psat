@@ -11,7 +11,7 @@ from django.views import generic
 # Custom App Import
 from common.constants import icon, color
 from log.views import CreateLogMixIn
-from .list_views import EvaluationInfoMixIn, QuerysetFieldMixIn
+from .list_views import EvaluationInfoMixIn
 from ..models import Problem, Evaluation, ProblemMemo, ProblemTag
 
 
@@ -53,6 +53,26 @@ class PsatDetailInfoMixIn:
         """ Return icon template pathname. """
         icon_container = 'psat/snippets/icon_container.html'
         return f'{icon_container}#{self.view_type}'
+
+
+class QuerysetFieldMixIn:
+    """ Represent queryset field. """
+    view_type: str
+    field_dict = {
+        'problem': ['', ''],
+        'like': ['evaluation__is_liked__gte', 'evaluation__is_liked',
+                 '-evaluation__liked_at'],
+        'rate': ['evaluation__difficulty_rated__gte',
+                 'evaluation__difficulty_rated', '-evaluation__rated_at'],
+        'answer': ['evaluation__is_correct__gte', 'evaluation__is_correct',
+                   '-evaluation__rated_at'],
+        'search': ['', ''],
+    }
+
+    @property
+    def queryset_field(self) -> list:
+        """ Return queryset field for 'get_queryset'. """
+        return self.field_dict[self.view_type]
 
 
 class BaseDetailView(

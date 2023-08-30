@@ -1,50 +1,62 @@
 # Django Core Import
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.utils.decorators import method_decorator
-from django.views import generic
+from vanilla import TemplateView
 
 # Custom App Import
-from common.constants import icon, color, psat
-from psat.models import Problem
-from psat.views.list_views import BaseListView, PsatListInfoMixIn
+from common.constants import icon, color
+from psat.views.list_views import BaseListView
 
 
-class CardInfoMixIn(PsatListInfoMixIn):
-    """ Represent Dashboard card information mixin. """
+class CardInfoMixIn:
+    """
+    Represent Dashboard card information mixin.
+    view_type(str): One of [ like, rate, answer ]
+    """
+    kwargs: dict
+    view_type: str
+    object: any
+    object_list: any
+
+    title_dict = {
+        'like': 'PSAT 즐겨찾기',
+        'rate': 'PSAT 난이도',
+        'answer': 'PSAT 정답확인',
+    }
+    category_dict = {'like': 0, 'rate': 1, 'answer': 2}
+    content_template = 'dashboard/dashboard_card_content.html'
+
     @property
-    def title(self) -> str:
-        """ Return title of the list. """
-        return self.title_dict[self.view_type]
+    def title(self) -> str: return self.title_dict[self.view_type]
+    @property
+    def category(self) -> int: return self.category_dict[self.view_type]
+    def get_template_names(self) -> str: return self.content_template
+
+    @property
+    def option(self) -> dict:
+        return {
+            'like': self.kwargs.get('is_liked'),
+            'rate': self.kwargs.get('star_count'),
+            'answer': self.kwargs.get('is_correct'),
+        }
 
     @property
     def pagination_url(self) -> reverse_lazy:
-        """ Return URL of reverse_lazy style. """
         opt = self.option[self.view_type]
         args = [opt] if opt else None
+        url_pattern = f'dashboard:{self.view_type}'
         if args:
-            return reverse_lazy(f'dashboard:{self.view_type}', args=args)
+            return reverse_lazy(url_pattern, args=args)
         else:
-            return reverse_lazy(f'dashboard:{self.view_type}')
-
-    @property
-    def category(self):
-        if self.view_type == 'like': return 1
-        elif self.view_type == 'rate': return 2
-        elif self.view_type == 'answer': return 3
+            return reverse_lazy(f'{url_pattern}_all')
 
     @property
     def info(self) -> dict:
-        """ Return information dictionary of the list. """
         return {
             'view_type': f'{self.view_type}Dashboard',
             'category': self.category,
             'type': f'{self.view_type}Dashboard',
             'title': self.title,
             'pagination_url': self.pagination_url,
-            'target_id': f'{self.view_type}DashboardContent',
             'icon': icon.MENU_ICON_SET[self.view_type],
             'color': color.COLOR_SET[self.view_type],
             'is_liked': self.option['like'],
@@ -53,67 +65,44 @@ class CardInfoMixIn(PsatListInfoMixIn):
         }
 
 
-class DashboardListView(CardInfoMixIn, BaseListView):
-    """ Represent Dashboard List view. """
-    paginate_by = 10
-    template_name = 'dashboard/dashboard_card_content.html'
-    kwargs: dict
-
-    def get_queryset(self) -> object:
-        field = self.queryset_field
-        opt = self.option[self.view_type]
-        lookup_expr = field[0] if opt is None else field[1]
-        value = 0 if opt is None else opt
-        problem_filter = Q(**{'evaluation__user': self.request.user, lookup_expr: value})
-        return Problem.objects.filter(problem_filter).order_by(field[2])
-
-
-@method_decorator(login_required, name='dispatch')
-class DashboardMainView(generic.View):
+class DashboardMainView(TemplateView):
     """ Represent Dashboard main view. """
-    app_name = 'common'
     view_type = 'dashboard'
     template_name = 'dashboard/dashboard_main.html'
 
-    @property
-    def info(self) -> dict:
-        """ Return information dictionary of the Dashboard main list. """
-        return {
-            'app_name': self.app_name,
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        context['info'] = {
             'menu': self.view_type,
             'view_type': self.view_type,
-            'type': f'{self.view_type}List',
+            'type': f'{self.view_type}Main',
             'title': self.view_type.capitalize(),
-            'target_id': f'{self.view_type}List',
             'url': reverse_lazy(f'{self.view_type}:base'),
             'icon': icon.MENU_ICON_SET[self.view_type],
             'color': 'primary',
         }
-
-    def get(self, request) -> render:
-        like_view = LikeDashboardView.as_view()
-        rate_view = RateDashboardView.as_view()
-        answer_view = AnswerDashboardView.as_view()
-        like_ = like_view(request, is_liked=1).content.decode('utf-8')
-        rate_ = rate_view(request).content.decode('utf-8')
-        answer_ = answer_view(request).content.decode('utf-8')
-        context = {
-            'info': self.info,
-            'total': psat.TOTAL,
-            'like': like_,
-            'rate': rate_,
-            'answer': answer_,
-        }
-        return render(request, self.template_name, context)
+        return context
 
 
-class LikeDashboardView(DashboardListView):
+class LikeDashboardView(CardInfoMixIn, BaseListView):
     view_type = 'like'
+    category = 0
+
+    def get_queryset(self) -> object:
+        return super().get_queryset().order_by('-evaluation__liked_at')
 
 
-class RateDashboardView(DashboardListView):
+class RateDashboardView(CardInfoMixIn, BaseListView):
     view_type = 'rate'
+    category = 1
+
+    def get_queryset(self) -> object:
+        return super().get_queryset().order_by('-evaluation__rated_at')
 
 
-class AnswerDashboardView(DashboardListView):
+class AnswerDashboardView(CardInfoMixIn, BaseListView):
     view_type = 'answer'
+    category = 2
+
+    def get_queryset(self) -> object:
+        return super().get_queryset().order_by('-evaluation__answered_at')

@@ -42,13 +42,11 @@
         </table>
     </div>
     {% if info.view_type == 'search' %}
-        <section class="col-sm-8 col-md-6 col-lg-5 my-4 ms-auto me-auto"
-                 data-target="#{{ info.target_id }}">
+        <section class="col-sm-8 col-md-6 col-lg-5 my-4 ms-auto me-auto">
             {% include 'psat/snippets/search_form.html' %}
         </section>
     {% endif %}
-    <section class="d-flex flex-wrap"
-             data-target="#{{ info.target_id }}">
+    <section class="d-flex flex-wrap">
         <div class="p-2 me-auto ms-auto">
             {% include 'psat/snippets/list_pagination.html' %}
         </div>

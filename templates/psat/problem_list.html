@@ -42,17 +42,6 @@
             {{ PSAT_ICON_SET.sanghwang|safe }} 상황
         </span>
     </button>
-    {% if info.view_type == 'problem' %}
-        <button id="navCategory4" class="nav-link p-2" type="button" role="tab"
-                data-bs-toggle="tab" data-bs-target="#navContent4"
-                aria-controls="navContent4" aria-selected="false">
-            <span class="fw-bold small text-primary" hx-trigger="load delay:1.2s"
-                  hx-get="{% url 'psat:search' %}"
-                  hx-swap="innerHtml" hx-target="#navContent4">
-                {{ PSAT_ICON_SET.search|safe }} 검색
-            </span>
-        </button>
-    {% endif %}
 {% endpartial %}
 
 {% startpartial navigation_menu %}

@@ -4,7 +4,6 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views import generic
 
 # Third Party Library Import
 from searchview import views as search_view
@@ -12,7 +11,6 @@ from vanilla import ListView
 
 # Custom App Import
 from common.constants import icon, color, psat
-from log.views import CreateLogMixIn
 from ..forms import ProblemSearchForm
 from ..models import Problem, Evaluation, ProblemData
 
@@ -28,7 +26,6 @@ class PsatListInfoMixIn:
     view_type(str): One of [ problem, like, rate, answer ]
     """
     kwargs: dict
-    app_name = 'psat'
     view_type: str
     object: any
     object_list: any
@@ -40,12 +37,11 @@ class PsatListInfoMixIn:
         'answer': 'PSAT 정답확인',
         'search': 'PSAT 검색'
     }
+    list_template = 'psat/problem_list.html'
+    list_content_template = 'psat/problem_list_content.html'
 
     @property
     def url(self) -> dict:
-        """
-        Return URL dictionary containing year, ex, exam2, sub, subject, sub_code.
-        """
         year = self.kwargs.get('year')
         year = year if year == '전체' or year is None else int(year)
         ex = self.kwargs.get('ex')
@@ -56,7 +52,6 @@ class PsatListInfoMixIn:
                         if i['sub'] == sub), None)
         sub_code = next((i['sub_code'] for i in psat.TOTAL['subject_list']
                          if i['sub'] == sub), None)
-
         return {
             'year': year,
             'ex': ex,
@@ -68,7 +63,6 @@ class PsatListInfoMixIn:
 
     @property
     def option(self) -> dict:
-        """ Return option dictionary. """
         return {
             'problem': None,
             'like': self.kwargs.get('is_liked'),
@@ -79,7 +73,6 @@ class PsatListInfoMixIn:
 
     @property
     def title(self) -> str:
-        """ Return title of the list. """
         year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
         exam2, subject = self.url['exam2'], self.url['subject']
         title = self.title_dict[self.view_type]
@@ -99,9 +92,9 @@ class PsatListInfoMixIn:
 
     @property
     def pagination_url(self) -> reverse_lazy:
-        """ Return URL of reverse_lazy style. """
         year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
         opt = self.option[self.view_type]
+        url_pattern = f'psat:{self.view_type}_list'
         if self.view_type == 'problem':
             if sub is None:
                 return None
@@ -113,18 +106,16 @@ class PsatListInfoMixIn:
             _opt = '_opt' if opt else ''
             _sub = '_sub' if sub else ''
             if args:
-                return reverse_lazy(f'psat:{self.view_type}_list{_opt}{_sub}', args=args)
+                return reverse_lazy(f'{url_pattern}{_opt}{_sub}', args=args)
             else:
-                return reverse_lazy(f'psat:{self.view_type}_list')
+                return reverse_lazy(url_pattern)
 
     @property
-    def category(self): return self.url['sub_code']
+    def category(self) -> int: return self.url['sub_code']
 
     @property
     def info(self) -> dict:
-        """ Return information dictionary of the list. """
         return {
-            'app_name': self.app_name,
             'menu': '',
             'category': self.category,
             'view_type': self.view_type,
@@ -147,23 +138,25 @@ class EvaluationInfoMixIn:
     request: WSGIRequest
 
     def get_evaluation_info(self, obj) -> object:
-        """ Get Evaluation information. """
         user = self.request.user
         problem_id = obj.prob_id()
         source = None
+        like_none_icon = icon.PSAT_ICON_SET['likeNone']
+        star_none_icon = icon.PSAT_ICON_SET['starNone']
         if user.is_authenticated:
-            source = Evaluation.objects.filter(user=user, problem_id=problem_id).first()
+            source = Evaluation.objects.filter(
+                user=user, problem_id=problem_id).first()
 
         obj.opened_at = source.opened_at if source else None
         obj.opened_times = source.opened_times if source else 0
 
         obj.liked_at = source.liked_at if source else None
         obj.is_liked = source.is_liked if source else None
-        obj.like_icon = source.like_icon() if source else icon.PSAT_ICON_SET['likeNone']
+        obj.like_icon = source.like_icon() if source else like_none_icon
 
         obj.rated_at = source.rated_at if source else None
         obj.difficulty_rated = source.difficulty_rated if source else None
-        obj.rate_icon = source.rate_icon() if source else icon.PSAT_ICON_SET['starNone']
+        obj.rate_icon = source.rate_icon() if source else star_none_icon
 
         obj.answered_at = source.answered_at if source else None
         obj.submitted_answered = source.submitted_answer if source else None
@@ -171,26 +164,6 @@ class EvaluationInfoMixIn:
         obj.answer_icon = source.answer_icon() if source else ''
 
         return obj
-
-
-class QuerysetFieldMixIn:
-    """ Represent queryset field. """
-    view_type: str
-    field_dict = {
-        'problem': ['', ''],
-        'like': ['evaluation__is_liked__gte', 'evaluation__is_liked',
-                 '-evaluation__liked_at'],
-        'rate': ['evaluation__difficulty_rated__gte', 'evaluation__difficulty_rated',
-                 '-evaluation__rated_at'],
-        'answer': ['evaluation__is_correct__gte', 'evaluation__is_correct',
-                   '-evaluation__rated_at'],
-        'search': ['', ''],
-    }
-
-    @property
-    def queryset_field(self) -> list:
-        """ Return queryset field for 'get_queryset'. """
-        return self.field_dict[self.view_type]
 
 
 class BaseListView(PsatListInfoMixIn, EvaluationInfoMixIn, ListView):
@@ -228,9 +201,34 @@ class BaseListView(PsatListInfoMixIn, EvaluationInfoMixIn, ListView):
 
     def get_template_names(self):
         if self.url['sub'] is None:
-            return 'psat/problem_list.html'
+            return self.list_template
         else:
-            return 'psat/problem_list_content.html'
+            return self.list_content_template
+
+    def get_queryset(self) -> Problem.objects:
+        problem_filter = Q(evaluation__user=self.request.user)
+        sub = self.url['sub']
+        if sub != '전체' and sub is not None:
+            problem_filter &= Q(exam__sub=sub)
+
+        opt = val = None
+        if self.view_type == 'like':
+            opt = 'evaluation__is_liked'
+            val = self.kwargs.get('is_liked')
+        elif self.view_type == 'rate':
+            opt = 'evaluation__difficulty_rated'
+            val = self.kwargs.get('star_count')
+        elif self.view_type == 'answer':
+            opt = 'evaluation__is_correct'
+            val = self.kwargs.get('is_correct')
+
+        if val is None:
+            problem_filter &= Q(**{opt + '__isnull': False})
+        else:
+            problem_filter &= Q(**{opt: val})
+        # problem_filter &= Q(**{opt: val}) if val is not None else ~Q(**{opt: None})
+
+        return Problem.objects.filter(problem_filter)
 
 
 class ProblemListView(BaseListView):
@@ -253,59 +251,18 @@ class ProblemListView(BaseListView):
 class LikeListView(BaseListView):
     view_type = 'like'
 
-    def get_queryset(self) -> object:
-        is_liked = self.kwargs.get('is_liked')
-        sub = self.url['sub']
-        problem_filter = Q(evaluation__user=self.request.user)
-
-        if sub != '전체':
-            problem_filter &= Q(exam__sub=sub)
-        if is_liked is None:
-            problem_filter &= Q(evaluation__is_liked__gte=0)
-        else:
-            problem_filter &= Q(evaluation__is_liked=is_liked)
-
-        return Problem.objects.filter(problem_filter)
-
 
 class RateListView(BaseListView):
     view_type = 'rate'
-
-    def get_queryset(self) -> object:
-        star_count = self.kwargs.get('star_count')
-        sub = self.url['sub']
-        problem_filter = Q(evaluation__user=self.request.user)
-
-        if sub != '전체':
-            problem_filter &= Q(exam__sub=sub)
-        if star_count is None:
-            problem_filter &= Q(evaluation__difficulty_rated__gte=0)
-        else:
-            problem_filter &= Q(evaluation__difficulty_rated=star_count)
-
-        return Problem.objects.filter(problem_filter)
 
 
 class AnswerListView(BaseListView):
     view_type = 'answer'
 
-    def get_queryset(self) -> object:
-        is_correct = self.kwargs.get('is_correct')
-        sub = self.url['sub']
-        problem_filter = Q(evaluation__user=self.request.user)
 
-        if sub != '전체':
-            problem_filter &= Q(exam__sub=sub)
-        if is_correct is None:
-            problem_filter &= Q(evaluation__is_correct__gte=0)
-        else:
-            problem_filter &= Q(evaluation__is_correct=is_correct)
-
-        return Problem.objects.filter(problem_filter)
-
-
-class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMixIn,
-                            search_view.SearchView):
+class ProblemSearchListView(
+    PsatListInfoMixIn, EvaluationInfoMixIn, search_view.SearchView
+):
     model = ProblemData
     template_name = 'psat/problem_list_content.html'
     form_class = ProblemSearchForm
@@ -315,19 +272,14 @@ class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMix
     view_type = 'search'
 
     @property
-    def log_title(self) -> str:
-        """ Return menu name of the list. """
-        return self.title_dict[self.view_type]
+    def log_title(self) -> str: return self.title_dict[self.view_type]
 
     @property
-    def pagination_url(self) -> reverse_lazy:
-        return reverse_lazy('psat:search')
+    def pagination_url(self) -> reverse_lazy: return reverse_lazy('psat:search')
 
     @property
     def info(self) -> dict:
-        """ Return information dictionary of the main list. """
         return {
-            'app_name': self.app_name,
             'menu': self.view_type,
             'view_type': self.view_type,
             'type': f'{self.view_type}List',
@@ -342,14 +294,14 @@ class ProblemSearchListView(CreateLogMixIn, PsatListInfoMixIn, EvaluationInfoMix
         super().get(request, *args, **kwargs)
         context = self.get_context_data(**kwargs)
         html = render(request, self.template_name, context)
-        self.create_log_for_list(page_obj=context['page_obj'])
+        # self.create_log_for_list(page_obj=context['page_obj'])
         return html
 
     def post(self, request, *args, **kwargs) -> HttpResponse:
         super().post(request, *args, **kwargs)
         context = self.get_context_data(**kwargs)
         html = render(request, self.template_name, context).content.decode('utf-8')
-        self.create_log_for_list(page_obj=context['page_obj'])
+        # self.create_log_for_list(page_obj=context['page_obj'])
         return HttpResponse(html)
 
     def get_context_data(self, *, object_list=None, **kwargs) -> dict:
