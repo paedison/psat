@@ -537,7 +537,7 @@ msgstr "수정"
 #: .\templates\psat\snippets\detail_memo_container.html:44
 #: .\templates\psat\snippets\detail_tag_container.html:36
 msgid "Create"
-msgstr "작성"
+msgstr "입력"
 
 #: .\templates\board\comment_list.html:31
 #: .\templates\psat\old\old\detail_memo_content.html:10

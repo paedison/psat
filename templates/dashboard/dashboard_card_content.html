@@ -5,15 +5,15 @@
 {% startpartial datetime %}
     <tr class="table-warning small">
         {% if info.type == 'likeDashboard' %}
-            <td class="text-sm-center text-nowrap text-primary fw-bold px-2" colspan="5">
+            <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
                 {{ problem.liked_at|date:'Y.m.d' }}({{ problem.liked_at|date:'w'|int2kor }})
             </td>
         {% elif info.type == 'rateDashboard' %}
-            <td class="text-sm-center text-nowrap text-primary fw-bold px-2" colspan="5">
+            <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
                 {{ problem.rated_at|date:'Y.m.d' }}({{ problem.rated_at|date:'w'|int2kor }})
             </td>
         {% elif info.type == 'answerDashboard' %}
-            <td class="text-sm-center text-nowrap text-primary fw-bold px-2" colspan="5">
+            <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
                 {{ problem.answered_at|date:'Y.m.d' }}({{ problem.answered_at|date:'w'|int2kor }})
             </td>
         {% endif %}
