@@ -1,10 +1,10 @@
 # Python Standard Function Import
 
 # Django Core Import
-from django.http import JsonResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
+from vanilla import DetailView
 
 # Custom App Import
 from ..forms import ProblemTagForm
@@ -18,17 +18,10 @@ class TagSettingMixIn:
     object: any
 
 
-class ProblemTagDetailView(TagSettingMixIn, generic.DetailView):
+class ProblemTagDetailView(TagSettingMixIn, DetailView):
     template_name = 'psat/snippets/detail_tag_container.html'
 
-    def get(self, request, *args, **kwargs) -> render:
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
-        html = render(request, self.template_name, context)
-        return html
-
     def get_all_tags(self) -> list:
-        """Get problem all tags corresponding to the problem."""
         problem = self.object.problem
         problem_tags = ProblemTag.objects.filter(problem=problem)
         tags = []
@@ -53,19 +46,17 @@ class ProblemTagCreateView(TagSettingMixIn, generic.CreateView):
     my_tag: any
     problem: Problem
 
-    def get_problem(self) -> Problem:
+    @property
+    def problem(self) -> Problem:
         problem_id = self.request.POST.get('problem', '')
-        problem = Problem.objects.filter(id=problem_id).first()
-        return problem
+        return Problem.objects.filter(id=problem_id).first()
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
         my_tag = None
-        problem = self.get_problem()
-
-        if problem:
+        if self.problem:
             my_tag = ProblemTag.objects.filter(
-                user=user, problem=problem).first()
+                user=user, problem=self.problem).first()
         if my_tag:
             self.object = my_tag
             form = self.get_form()
@@ -90,19 +81,12 @@ class ProblemTagCreateView(TagSettingMixIn, generic.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        problem = self.get_problem()
-        context['problem'] = problem
+        context['problem'] = self.problem
         return context
 
 
 class ProblemTagAddView(ProblemTagCreateView):
     template_name = 'psat/snippets/detail_tag_container.html#add'
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.template_name, context).content.decode('utf-8')
-        return JsonResponse({'html': html})
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -124,3 +108,9 @@ class ProblemTagDeleteView(TagSettingMixIn, generic.DeleteView):
         tag_name = self.kwargs.get('tag_name', '')
         self.object.tags.remove(tag_name)
         return HttpResponseRedirect(self.success_url)
+
+
+problem_tag_create_view = ProblemTagCreateView.as_view()
+problem_tag_detail_view = ProblemTagDetailView.as_view()
+problem_tag_add_view = ProblemTagAddView.as_view()
+problem_tag_delete_view = ProblemTagDeleteView.as_view()

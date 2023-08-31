@@ -49,15 +49,6 @@
         {% with menu_url=URLS.problem %}
             {% partial navigation_menu_content %}
         {% endwith %}
-        <button id="navCategory4" class="nav-link p-2" type="button" role="tab"
-                data-bs-toggle="tab" data-bs-target="#navContent4"
-                aria-controls="navContent4" aria-selected="false">
-            <span class="fw-bold small text-primary" hx-trigger="load delay:1.2s"
-                  hx-get="{% url 'psat:search' %}"
-                  hx-swap="innerHtml" hx-target="#navContent4">
-                {{ PSAT_ICON_SET.search|safe }} 검색
-            </span>
-        </button>
     {% endif %}
     {% if info.view_type == 'like' %}
         {% with menu_url=URLS.like %}
@@ -89,11 +80,6 @@
     <div id="navContent3" class="tab-pane fade" role="tabpanel"
          aria-labelledby="navCategory3">
     </div><!-- Sanghwang Tab End -->
-    {% if info.view_type == 'problem' %}
-        <div id="navContent4" class="tab-pane fade" role="tabpanel"
-             aria-labelledby="navCategory4">
-        </div><!-- Search Tab End -->
-    {% endif %}
 {% endpartial %}
 
 {% block main %}

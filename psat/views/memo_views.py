@@ -57,3 +57,9 @@ class ProblemMemoDeleteView(generic.DeleteView):
 
     def get_success_url(self):
         return reverse_lazy(f'psat:memo_create')
+
+
+problem_memo_create_view = ProblemMemoCreateView.as_view()
+problem_memo_detail_view = ProblemMemoDetailView.as_view()
+problem_memo_update_view = ProblemMemoUpdateView.as_view()
+problem_memo_delete_view = ProblemMemoDeleteView.as_view()

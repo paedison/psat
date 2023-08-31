@@ -16,15 +16,6 @@ class ProblemSearchForm(search_view.SearchForm):
     )
 
 
-# class ProblemTagForm(forms.ModelForm):
-#     class Meta:
-#         model = Problem
-#         fields = ['tags']
-#         widgets = {
-#             'tags': forms.TextInput(attrs={'data-role': 'tagsinput'})
-#         }
-
-
 class ProblemMemoForm(forms.ModelForm):
     class Meta:
         model = ProblemMemo

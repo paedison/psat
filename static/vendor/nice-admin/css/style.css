@@ -403,9 +403,9 @@ h6 {
   .header .search-bar {
     position: fixed;
     top: 50px;
-    left: 0;
-    right: 0;
     padding: 20px;
+    left: 50%;
+    transform: translate(-50%);
     box-shadow: 0px 0px 15px 0px rgba(1, 41, 112, 0.1);
     background: white;
     z-index: 9999;

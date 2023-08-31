@@ -1,7 +1,6 @@
 # Django Core Import
 from django.db.models import Q
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
 # Third Party Library Import
@@ -249,20 +248,22 @@ class AnswerListView(BaseListView):
     view_type = 'answer'
 
 
-class ProblemSearchListView(PSATListInfoMixIn, search_view.SearchView):
+class ProblemSearchView(PSATListInfoMixIn, search_view.SearchView):
     model = ProblemData
-    template_name = 'psat/problem_list_content.html'
+    template_name = 'psat/problem_search.html'
     form_class = ProblemSearchForm
     paginate_by = 10
     first_display_all_list = False
     ordering = '-problem__exam__year'
     view_type = 'search'
+    category = 0
 
     @property
     def log_title(self) -> str: return self.title_dict[self.view_type]
 
     @property
-    def pagination_url(self) -> reverse_lazy: return reverse_lazy('psat:search')
+    def pagination_url(self) -> reverse_lazy:
+        return reverse_lazy('psat:search_content')
 
     @property
     def info(self) -> dict:
@@ -277,20 +278,6 @@ class ProblemSearchListView(PSATListInfoMixIn, search_view.SearchView):
             'color': color.COLOR_SET[self.view_type],
         }
 
-    def get(self, request, *args, **kwargs):
-        super().get(request, *args, **kwargs)
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.template_name, context)
-        # self.create_log_for_list(page_obj=context['page_obj'])
-        return html
-
-    def post(self, request, *args, **kwargs) -> HttpResponse:
-        super().post(request, *args, **kwargs)
-        context = self.get_context_data(**kwargs)
-        html = render(request, self.template_name, context).content.decode('utf-8')
-        # self.create_log_for_list(page_obj=context['page_obj'])
-        return HttpResponse(html)
-
     def get_context_data(self, *, object_list=None, **kwargs) -> dict:
         context = super().get_context_data()
         page_obj = context['page_obj']
@@ -302,3 +289,15 @@ class ProblemSearchListView(PSATListInfoMixIn, search_view.SearchView):
         context['info'] = self.info
         context['page_range'] = page_range
         return context
+
+
+class ProblemSearchContentView(ProblemSearchView):
+    template_name = 'psat/problem_search.html#search_content'
+
+
+problem_list_view = ProblemListView.as_view()
+like_list_view = LikeListView.as_view()
+rate_list_view = RateListView.as_view()
+answer_list_view = AnswerListView.as_view()
+problem_search_view = ProblemSearchView.as_view()
+problem_search_content_view = ProblemSearchContentView.as_view()

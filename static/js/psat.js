@@ -3,23 +3,6 @@ import { csrf_token } from './common.js'
 let rateButton = $('#rateButton');
 
 
-/* Ajax for like */
-$(document).on('click', '.like-button', function(event) {
-    event.preventDefault();
-    let url = $(this).attr('href');
-    let id = $(this).attr('id');
-    let target = `#${id}`;
-    $.ajax({
-        url: url,
-        type: 'POST',
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $(target).replaceWith(data);
-        }
-    });
-});
-
-
 /* Ajax for rate */
 $(document).on('click', '.rate-button', function(){
     let url = $(this).attr('href');
@@ -92,7 +75,6 @@ $(document).ready(function() {
             'page': page,
             'data__contains': $('#id_data__contains').val()
         };
-
         $.ajax({
             url: url,
             type: 'POST',
@@ -103,60 +85,4 @@ $(document).ready(function() {
             }
         });
     }
-});
-
-
-/* Create or Add Tag */
-$(document).on('click', '.tag-create-button', function(event) {
-    event.preventDefault();
-
-    let url = $(this).data('url');
-    let userId = $(this).data('userId');
-    let problemId = $(this).data('problemId');
-    let infoTarget = $(this).data('infoTarget');
-    let csrfToken = $(this).next('input').val();
-    let tags = $(this).prev('input').val();
-    console.log(userId);
-    console.log(problemId);
-    console.log(csrfToken);
-
-    $.ajax({
-        url: url,
-        type: 'POST',
-        data: {
-            'user': userId,
-            'problem': problemId,
-            'tags': tags,
-        },
-        headers: { 'X-CSRFToken': csrfToken },
-        success: function(data) {
-            $(infoTarget).html(data);
-            console.log(data);
-        }
-    });
-});
-
-/* Tag Delete */
-$(document).on('click', '.tag-delete', function(){
-    let text = $(this).data('text');
-    let deleteUrl = $(this).attr('href');
-    let infoTarget = $(this).data('infoTarget');
-    $('#tagDeleteModalHeader').text(text);
-    $('#tagDeleteModalFooter').attr('href', deleteUrl).data('infoTarget', infoTarget);
-});
-
-$(document).on('click', '#tagDeleteModalFooter', function(event) {
-    event.preventDefault();
-    let deleteUrl = $(this).attr('href');
-    let infoTarget = $(this).data('infoTarget');
-    $.ajax({
-        url: deleteUrl,
-        type: 'POST',
-        // data: { 'post_id': content },
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $('.btn-close').click();
-            $(infoTarget).html(data);
-        }
-    });
 });

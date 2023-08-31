@@ -1,5 +1,6 @@
 {% load static %}
 {% load i18n %}
+{% load widget_tweaks %}
 
 <!-- ======= Main Header ======= -->
 <header id="header" class="header fixed-top d-flex align-items-center">
@@ -8,8 +9,35 @@
         <i class="fa fa-bars toggle-sidebar-btn"></i>
     </div><!-- Logo End -->
 
+    <div class="search-bar">
+{#        <form class="search-form d-flex align-items-center" method="POST" action="#">#}
+{#            <input type="text" name="query" placeholder="Search"#}
+{#                   title="{% trans 'Enter search keyword' %}">#}
+{#            <button type="submit" title="Search" hx-post="">#}
+{#                {{ PSAT_ICON_SET.search|safe }}#}
+{#            </button>#}
+{#        </form>#}
+        <form class="search-form d-flex align-items-center" method="POST" action="#">
+            {% csrf_token %}
+            <input type="text" name="data__contains"
+                   placeholder="{% trans 'Enter search keyword' %}"
+                   title="{% trans 'Enter search keyword' %}">
+            <button type="submit" title="Search"
+{#                    class="btn btn-primary btn-sm"#}
+                    hx-post="{% url 'psat:search' %}"
+                    hx-swap="innerHtml swap:0.5s" hx-target="#main">
+                {{ PSAT_ICON_SET.search|safe }}
+            </button>
+        </form>
+    </div>
+
     <nav class="header-nav ms-auto">
         <ul class="d-flex align-items-center">
+            <li class="nav-item">
+                <a class="nav-link search-bar-toggle px-1" href="#">
+                    {{ PSAT_ICON_SET.search|safe }}
+                </a>
+            </li>
             {% if user.is_authenticated %}
                 {% if user.is_admin %}
                     <li class="nav-item dropdown no-arrow">

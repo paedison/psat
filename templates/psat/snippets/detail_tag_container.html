@@ -93,17 +93,17 @@
                             <div class="input-group">
                                 {% partial tag_input_hidden %}
                                 {% if not my_tag_list %}
-                                    <button class="dropdown-item"
-                                            hx-post="{% url 'psat:tag_create' %}"
-                                            hx-target="#detailTags" hx-swap="innerHTML">
+                                    <a class="dropdown-item"
+                                       hx-post="{% url 'psat:tag_create' %}"
+                                       hx-target="#detailTags" hx-swap="innerHTML">
                                         <i class="fa-solid fa-plus"></i>{% trans 'Add to my tags' %}
-                                    </button>
+                                    </a>
                                 {% elif my_tag_list and tag not in my_tag_list %}
-                                    <button class="dropdown-item"
-                                            hx-post="{% url 'psat:tag_add' my_tag.id %}"
-                                            hx-target="#detailTags" hx-swap="innerHTML">
+                                    <a class="dropdown-item"
+                                       hx-post="{% url 'psat:tag_add' my_tag.id %}"
+                                       hx-target="#detailTags" hx-swap="innerHTML">
                                         <i class="fa-solid fa-plus"></i>{% trans 'Add to my tags' %}
-                                    </button>
+                                    </a>
                                 {% endif %}
                             </div>
                         </form>
@@ -115,64 +115,38 @@
 {% endpartial %}
 
 <div id="detailTags">
-    <div id="accordionMyTag" class="accordion accordion-flush">
-        <div class="accordion-item">
-            <h2 id="headingMyTags" class="accordion-header">
-                <button class="accordion-button p-2" type="button"
-                        data-bs-target="#collapseMyTags" aria-expanded="true"
-                        data-bs-toggle="collapse" aria-controls="collapseMyTags">
-                    <div class="badge bg-success">MY TAGS</div>
-                </button>
-            </h2>
-            <div id="collapseMyTags" class="accordion-collapse collapse show"
-                 aria-labelledby="headingMyTags">
-                <div class="accordion-body p-0">
-                    <div class="mb-2 mx-2">
-                        <form>
-                            {% partial user_problem %}
-                            <div class="input-group">
-                                {% partial tag_input %}
-                                {% if my_tag %}
-                                    {% partial tag_add %}
-                                {% else %}
-                                    {% partial tag_create %}
-                                {% endif %}
-                            </div>
-                        </form>
-                    </div>
+    <div id="myTags">
+        <div class="badge bg-success m-2">MY TAGS</div>
+        <div class="mb-2 mx-2">
+            <form>
+                {% partial user_problem %}
+                <div class="input-group">
+                    {% partial tag_input %}
                     {% if my_tag %}
-                        <div class="d-flex align-items-start mb-2 mx-2">
-                            <div class="border-start border-secondary-subtle ps-2">
-                                {% partial my_list %}
-                            </div>
-                        </div>
+                        {% partial tag_add %}
+                    {% else %}
+                        {% partial tag_create %}
                     {% endif %}
                 </div>
-            </div>
+            </form>
         </div>
+        {% if my_tag %}
+            <div class="d-flex align-items-start mb-2 mx-2">
+                <div class="border-start border-secondary-subtle ps-2">
+                    {% partial my_list %}
+                </div>
+            </div>
+        {% endif %}
     </div><!-- My Tags End -->
 
-    <div id="accordionAllTag" class="accordion accordion-flush">
-        <div class="accordion-item">
-            <h2 id="headingAllTags" class="accordion-header">
-                <button class="accordion-button p-2" type="button"
-                        data-bs-target="#collapseAllTags" aria-expanded="true"
-                        data-bs-toggle="collapse" aria-controls="collapseAllTags">
-                    <div class="badge bg-success">ALL TAGS</div>
-                </button>
-            </h2>
-            <div id="collapseAllTags" class="accordion-collapse collapse show"
-                 aria-labelledby="headingAllTags">
-                <div class="accordion-body p-0">
-                    {% if all_tag %}
-                        <div class="d-flex align-items-start mb-2 mx-2">
-                            <div class="border-start border-secondary-subtle ps-2">
-                                {% partial all_list %}
-                            </div>
-                        </div>
-                    {% endif %}
+    <div id="allTags">
+        <div class="badge bg-success m-2">ALL TAGS</div>
+        {% if all_tag %}
+            <div class="d-flex align-items-start mb-2 mx-2">
+                <div class="border-start border-secondary-subtle ps-2">
+                    {% partial all_list %}
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div><!-- All Tags End -->
 </div>

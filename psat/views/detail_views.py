@@ -251,3 +251,9 @@ class RateDetailView(BaseDetailView):
 
 class AnswerDetailView(BaseDetailView):
     view_type = 'answer'
+
+
+problem_detail_view = ProblemDetailView.as_view()
+like_detail_view = LikeDetailView.as_view()
+rate_detail_view = RateDetailView.as_view()
+answer_detail_view = AnswerDetailView.as_view()
