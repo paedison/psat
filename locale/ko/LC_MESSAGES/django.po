@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-04 12:00+0900\n"
+"POT-Creation-Date: 2023-08-31 15:30+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,8 +18,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: .\_config\settings\base.py:172
+#: .\_config\settings\base.py:185
 msgid "Korean"
+msgstr ""
+
+#: .\psat\models.py:335
+msgid "tagged problem"
+msgstr ""
+
+#: .\psat\models.py:336
+msgid "tagged problems"
 msgstr ""
 
 #: .\psat\templatetags\psat_filter.py:30
@@ -66,22 +74,22 @@ msgstr "계정 비활성"
 msgid "This account is inactive."
 msgstr "해당 계정은 비활성화된 상태입니다."
 
-#: .\templates\account\base.html:76 .\templates\account\old\base.html:35
+#: .\templates\account\base.html:80 .\templates\account\old\base.html:35
 msgid "Change E-mail"
 msgstr "이메일 변경"
 
-#: .\templates\account\base.html:81 .\templates\account\logout.html:5
+#: .\templates\account\base.html:85 .\templates\account\logout.html:5
 #: .\templates\account\logout.html:8 .\templates\account\logout.html:17
 #: .\templates\account\old\base.html:38
 msgid "Sign Out"
 msgstr "로그아웃"
 
-#: .\templates\account\base.html:88 .\templates\account\old\base.html:42
+#: .\templates\account\base.html:92 .\templates\account\old\base.html:42
 #: .\templates\account\password_change.html:14
 msgid "Forgot Password?"
 msgstr "비밀번호를 잊으셨나요?"
 
-#: .\templates\account\base.html:93 .\templates\account\old\base.html:45
+#: .\templates\account\base.html:97 .\templates\account\old\base.html:45
 #: .\templates\account\signup.html:10 .\templates\account\signup.html:57
 #: .\templates\socialaccount\signup.html:8
 #: .\templates\socialaccount\signup.html:19
@@ -410,7 +418,7 @@ msgstr "비밀번호가 변경되었습니다."
 msgid "Set Password"
 msgstr "비밀번호 설정"
 
-#: .\templates\account\signup.html:9 .\templates\snippets\header.html:90
+#: .\templates\account\signup.html:9 .\templates\snippets\header.html:118
 #: .\templates\socialaccount\signup.html:5
 msgid "Signup"
 msgstr "회원가입"
@@ -503,11 +511,134 @@ msgstr ""
 msgid "Django administration"
 msgstr ""
 
-#: .\templates\snippets\header.html:73
+#: .\templates\board\comment_create.html:18
+msgid "Enter comments"
+msgstr "댓글을 입력해주세요"
+
+#: .\templates\board\comment_create.html:26
+#: .\templates\board\comment_create.html:27
+#: .\templates\board\comment_list.html:24
+#: .\templates\board\old\comment_update.html:15
+#: .\templates\board\post_create.html:48 .\templates\board\post_create.html:50
+#: .\templates\psat\old\old\detail_memo_content.html:5
+#: .\templates\psat\old\old\detail_memo_update.html:20
+#: .\templates\psat\snippets\detail_memo_container.html:6
+#: .\templates\psat\snippets\detail_memo_container.html:71
+msgid "Update"
+msgstr "수정"
+
+#: .\templates\board\comment_create.html:34
+#: .\templates\board\comment_create.html:35
+#: .\templates\board\old\comment_create.html:12
+#: .\templates\board\post_create.html:39 .\templates\board\post_create.html:41
+#: .\templates\psat\old\detail_tag_container.html:36
+#: .\templates\psat\old\old\detail_memo_create.html:19
+#: .\templates\psat\old\old\detail_tag_create.html:16
+#: .\templates\psat\snippets\detail_memo_container.html:44
+#: .\templates\psat\snippets\detail_tag_container.html:36
+msgid "Create"
+msgstr "작성"
+
+#: .\templates\board\comment_list.html:31
+#: .\templates\psat\old\old\detail_memo_content.html:10
+#: .\templates\psat\old\old\detail_tag_list_all.html:12
+#: .\templates\psat\snippets\detail_memo_container.html:11
+#: .\venv\Lib\site-packages\django\forms\formsets.py:417
+msgid "Delete"
+msgstr "삭제"
+
+#: .\templates\board\comment_list.html:34
+#, fuzzy
+#| msgid "Are you sure you want to sign out?"
+msgid "Are you sure you wish to delete your comment?"
+msgstr "정말로 로그아웃 하시겠습니까?"
+
+#: .\templates\board\old\comment_content.html:27
+#: .\templates\board\post_detail.html:53
+#, fuzzy
+#| msgid "Are you sure you want to sign out?"
+msgid "Are you sure you wish to delete your post?"
+msgstr "정말로 로그아웃 하시겠습니까?"
+
+#: .\templates\board\old\comment_update.html:9
+msgid "Leave comments"
+msgstr "댓글을 입력해주세요"
+
+#: .\templates\psat\old\detail_tag_container.html:14
+#: .\templates\psat\old\detail_tag_container.html:20
+#: .\templates\psat\old\old\detail_tag_add.html:9
+#: .\templates\psat\old\old\detail_tag_create.html:9
+#: .\templates\psat\snippets\detail_tag_container.html:14
+#: .\templates\psat\snippets\detail_tag_container.html:20
+msgid "Leave tags"
+msgstr "태그를 입력해주세요"
+
+#: .\templates\psat\old\detail_tag_container.html:28
+#: .\templates\psat\old\old\detail_tag_add.html:16
+#: .\templates\psat\snippets\detail_tag_container.html:28
+msgid "Add"
+msgstr "추가"
+
+#: .\templates\psat\old\detail_tag_container.html:41
+#: .\templates\psat\old\detail_tag_container.html:45
+#: .\templates\psat\old\old\detail_tag_list_my.html:23
+#: .\templates\psat\old\old\detail_tag_list_my.html:24
+#: .\templates\psat\snippets\detail_tag_container.html:41
+#: .\templates\psat\snippets\detail_tag_container.html:45
+msgid "Delete Tag"
+msgstr "태그 삭제"
+
+#: .\templates\psat\old\detail_tag_container.html:43
+#: .\templates\psat\snippets\detail_tag_container.html:43
+#, fuzzy
+#| msgid "Are you sure you want to sign out?"
+msgid "Are you sure you wish to delete your tag?"
+msgstr "정말로 로그아웃 하시겠습니까?"
+
+#: .\templates\psat\old\detail_tag_container.html:57
+#: .\templates\psat\old\detail_tag_container.html:59
+#: .\templates\psat\old\old\detail_tag_list_my.html:13
+#: .\templates\psat\old\old\detail_tag_list_my.html:15
+#: .\templates\psat\snippets\detail_tag_container.html:57
+#: .\templates\psat\snippets\detail_tag_container.html:59
+msgid "Tag Cloud"
+msgstr "태그 클라우드"
+
+#: .\templates\psat\old\detail_tag_container.html:99
+#: .\templates\psat\old\detail_tag_container.html:105
+#: .\templates\psat\old\old\detail_tag_list_all.html:30
+#: .\templates\psat\old\old\detail_tag_list_all.html:49
+#: .\templates\psat\snippets\detail_tag_container.html:99
+#: .\templates\psat\snippets\detail_tag_container.html:105
+msgid "Add to my tags"
+msgstr "내 태그에 추가"
+
+#: .\templates\psat\old\old\detail_memo_create.html:16
+#: .\templates\psat\old\old\detail_memo_update.html:16
+#: .\templates\psat\snippets\detail_memo_container.html:40
+#: .\templates\psat\snippets\detail_memo_container.html:67
+msgid "Leave memo"
+msgstr "메모를 입력해주세요"
+
+#: .\templates\psat\problem_search.html:63
+msgid "Search Result"
+msgstr "검색 결과"
+
+#: .\templates\psat\snippets\detail_memo_container.html:13
+#, fuzzy
+#| msgid "Are you sure you want to sign out?"
+msgid "Are you sure you wish to delete your memo?"
+msgstr "정말로 로그아웃 하시겠습니까?"
+
+#: .\templates\snippets\header.html:23 .\templates\snippets\header.html:24
+msgid "Enter search keyword"
+msgstr "검색어를 입력해주세요"
+
+#: .\templates\snippets\header.html:101
 msgid "Logout"
 msgstr "로그아웃"
 
-#: .\templates\snippets\header.html:81
+#: .\templates\snippets\header.html:109
 msgid "Login"
 msgstr "로그인"
 
@@ -1163,10 +1294,6 @@ msgstr[1] ""
 msgid "Order"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\formsets.py:417
-msgid "Delete"
-msgstr ""
-
 #: .\venv\Lib\site-packages\django\forms\models.py:763
 #, python-format
 msgid "Please correct the duplicate data for %(field)s."
@@ -1767,26 +1894,31 @@ msgstr ""
 msgid "Connect, get help, or contribute"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django_summernote\views.py:72
-msgid "Only POST method is allowed"
+#: .\venv\Lib\site-packages\httplib2\__init__.py:408
+#, python-format
+msgid "Content purported to be compressed with %s but failed to decompress."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django_summernote\views.py:86
-msgid "Attachment module is disabled"
+#: .\venv\Lib\site-packages\httplib2\__init__.py:572
+#, python-format
+msgid "Unsupported value for qop: %s."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django_summernote\views.py:93
-msgid "Only authenticated users are allowed"
+#: .\venv\Lib\site-packages\httplib2\__init__.py:576
+#: .\venv\Lib\site-packages\httplib2\__init__.py:654
+#, python-format
+msgid "Unsupported value for algorithm: %s."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django_summernote\views.py:99
-msgid "No files were requested"
+#: .\venv\Lib\site-packages\httplib2\__init__.py:649
+msgid "The challenge doesn't contain a server nonce, or this one is empty."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django_summernote\views.py:140
-msgid "File size exceeds the limit allowed and cannot be saved"
+#: .\venv\Lib\site-packages\httplib2\__init__.py:659
+#, python-format
+msgid "Unsupported value for pw-algorithm: %s."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django_summernote\views.py:160
-msgid "Failed to save attachment"
+#: .\venv\Lib\site-packages\httplib2\__init__.py:1468
+msgid "Redirected but the response is missing a Location: header."
 msgstr ""
