@@ -1,40 +1,52 @@
 {% load i18n %}
 {% load widget_tweaks %}
 
-<div class="p-2 bg-white">
-    <form method="post">
-        {% csrf_token %}
-        {% if form.errors.content %}
-            <div class="alert alert-danger fade show small py-2 fw-bold" role="alert">
-                내용을 입력해주세요.
-            </div>
-        {% endif %}
-        <input id="id_user{{ comment_id }}" type="text" name="user"
-               value="{{ user.id }}" aria-label="User" hidden/>
-        <input id="id_post{{ comment_id }}" type="text" name="post"
-               value="{{ info.post_id }}" aria-label="Post" hidden/>
-        <textarea name="content" cols="40" rows="1" required
-                  class='form-control form-control-sm'
-                  placeholder="{% trans 'Enter comments' %}"
-                  id="id_content{{ comment_id }}">{{ form.content.value }}</textarea>
-        <div class="d-flex justify-content-end">
-            {% if info.type == 'commentUpdate' %}
-                <button type="submit" class="btn btn-sm btn-outline-primary"
-                        hx-boost="true" hx-swap="outerHTML swap:0.25s"
-                        hx-post="{{ comment.get_comment_update_url }}"
-                        hx-push-url="{{ comment.get_post_detail_url }}"
-                        title="{% trans 'Update' %}" hx-target="#commentContainer">
-                    {% trans 'Update' %}
-                </button>
-            {% else %}
-                <button type="submit" class="btn btn-sm btn-outline-primary"
-                        hx-boost="true" hx-swap="outerHTML swap:0.25s"
-                        hx-post="{{ post.get_comment_create_url }}"
-                        hx-push-url="{{ post.get_post_detail_url }}"
-                        title="{% trans 'Create' %}" hx-target="#commentContainer">
-                    {% trans 'Create' %}
-                </button>
+{% if user.is_authenticated %}
+    <div class="p-2 bg-white">
+        <form method="post">
+            {% csrf_token %}
+            {% if form.errors.content %}
+                <div class="alert alert-danger fade show small py-2 fw-bold" role="alert">
+                    {% trans 'Enter comments' %}
+                </div>
             {% endif %}
-        </div>
-    </form>
-</div>
+            <input id="id_user{{ comment_id }}" type="text" name="user"
+                   value="{{ user.id }}" aria-label="User" hidden/>
+            <input id="id_post{{ comment_id }}" type="text" name="post"
+                   value="{{ info.post_id }}" aria-label="Post" hidden/>
+            <textarea name="content" cols="40" rows="1" required
+                      class='form-control form-control-sm' aria-label="Content"
+                      placeholder="{% trans 'Enter comments' %}"
+                      id="id_content{{ comment_id }}">{{ form.content.value }}</textarea>
+            <div class="d-flex justify-content-end">
+                {% if info.type == 'commentUpdate' %}
+                    <button type="submit" class="btn btn-sm btn-outline-primary"
+                            hx-boost="true" hx-swap="outerHTML swap:0.25s"
+                            hx-post="{{ comment.get_comment_update_url }}"
+                            hx-push-url="{{ comment.get_post_detail_url }}"
+                            title="{% trans 'Update' %}" hx-target="#commentContainer">
+                        {% trans 'Update' %}
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn btn-sm btn-outline-primary"
+                            hx-boost="true" hx-swap="outerHTML swap:0.25s"
+                            hx-post="{{ post.get_comment_create_url }}"
+                            hx-push-url="{{ post.get_post_detail_url }}"
+                            title="{% trans 'Create' %}" hx-target="#commentContainer">
+                        {% trans 'Create' %}
+                    </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+{% else %}
+    <div class="p-2 bg-white">
+        <ul class="list-group">
+           <li class="list-group-item" hx-get="{% url 'account_login' %}"
+               hx-target="#main" hx-swap="outerHTML"
+               hx-confirm="{% trans 'Do you want to log in?' %}">
+               {% trans 'Log in to comment' %}
+           </li>
+        </ul>
+    </div>
+{% endif %}

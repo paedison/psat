@@ -58,8 +58,16 @@
 {% endpartial %}
 
 {% startpartial post_header %}
-    <h6 class="text-primary fw-bold">{{ post.title }}</h6>
-    <div class="small mb-3 text-secondary">
+    <h6 class="text-primary fw-bold">
+        {% if post.top_fixed %}
+            <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
+        {% endif %}
+        {% if post.is_hidden %}
+            <span class="text-danger">{{ BOARD_ICON_SET.is_hidden|safe }}</span>
+        {% endif %}
+        {{ post.title }}
+    </h6>
+    <div class="small text-secondary">
         <span class="me-1">{{ post.user.username }}</span>
         <span class="me-1">조회
             <span class="text-danger fw-bold">{{ post.hit }}</span>
@@ -86,9 +94,12 @@
                         <div class="d-flex justify-content-between">
                             {% partial buttons %}
                         </div>
+
                         <hr class="my-2">
                         {% partial post_header %}
-                        <div class="mb-4">
+                        <hr class="my-2">
+
+                        <div class="my-4">
                             {{ post.content.html|safe }}
                         </div>
                         {% include 'board/comment_list.html' %}

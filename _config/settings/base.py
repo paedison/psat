@@ -275,11 +275,13 @@ QUILL_CONFIGS = {
                 [
                     {'header': []},
                     {'align': []},
+                    {'list': 'ordered'},
+                    {'list': 'bullet'},
                     'bold', 'italic', 'underline', 'strike', 'blockquote',
                     {'color': []},
                     {'background': []},
                 ],
-                ['code-block', 'link'],
+                ['image', 'code-block', 'link'],
                 ['clean'],
             ]
         }

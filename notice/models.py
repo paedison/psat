@@ -28,12 +28,18 @@ class Post(models.Model):
     created_at = models.DateTimeField("작성일", auto_now_add=True)
     modified_at = models.DateTimeField("수정일", auto_now=True)
     top_fixed = models.BooleanField("상단 고정", default=False)
+    is_hidden = models.BooleanField("비밀글", default=False)
 
     class Meta:
         ordering = ["-id"]
 
     def __str__(self):
         return self.title
+
+    def update_hit(self):
+        hit = self.hit
+        self.hit = hit + 1
+        self.save()
 
     def get_absolute_url(self):
         return reverse_lazy(f'{app_name}:detail', args=[self.id])

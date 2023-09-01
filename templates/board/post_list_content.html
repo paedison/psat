@@ -15,14 +15,28 @@
 
 {% startpartial tbody %}
     <tr{% if post.top_fixed %} class="table-warning"{% endif %}>
-        <td class="text-start text-nowrap px-2">
+        <td class="text-start text-nowrap fw-bold px-2">
             <span class="badge rounded-pill bg-secondary">{{ post.get_category_display }}</span>
             {% if post.top_fixed %}
                 <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
             {% endif %}
-            <a hx-get="{{ post.get_post_detail_content_url }}" href=""
+            {% if post.is_hidden %}
+                <span class="text-danger">{{ BOARD_ICON_SET.is_hidden|safe }}</span>
+            {% endif %}
+            <a class="text-decoration-none d-md-none"
+               hx-get="{{ post.get_post_detail_content_url }}" href=""
                hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
                 {{ post.title|truncatechars:30 }}
+            </a>
+            <a class="text-decoration-none d-none d-md-inline d-lg-none"
+               hx-get="{{ post.get_post_detail_content_url }}" href=""
+               hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
+                {{ post.title|truncatechars:40 }}
+            </a>
+            <a class="text-decoration-none d-none d-lg-inline"
+               hx-get="{{ post.get_post_detail_content_url }}" href=""
+               hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
+                {{ post.title|truncatechars:50 }}
             </a>
         </td>
         <td class="text-center text-nowrap px-0 col-1">{{ post.user.username }}</td>

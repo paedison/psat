@@ -142,6 +142,8 @@ class PostListView(PostViewMixIn, ListView):
     def get_filtered_queryset(self):
         fq = self.model.objects.all()
         fq = fq.filter(category=self.category) if self.category else fq
+        if not self.request.user.is_authenticated or not self.request.user.is_admin:
+            fq = fq.filter(is_hidden=False)
         return fq
 
     def get_queryset(self):
@@ -182,6 +184,11 @@ class PostListNavigationView(PostListView):
 class PostDetailView(PostViewMixIn, DetailView):
     view_type = 'postDetail'
     def get_template_names(self) -> str: return self.detail_template
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        self.object.update_hit()
+        return response
 
     def get_prev_next_post(self):
         id_list = list(self.model.objects.values_list('id', flat=True))

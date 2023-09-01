@@ -4,7 +4,7 @@
 <section id="{{ info.target_id }}" class="htmx-fade-in">
     {{ info|json_script:'info' }}
     <div class="table-responsive">
-        <table class="table">
+        <table class="table small">
             <thead>
                 {% include 'psat/snippets/list_table_header.html' %}
             </thead>
@@ -12,7 +12,7 @@
             {% if page_obj %}
                 {% for problem in page_obj %}
                     {% ifchanged %}
-                        <tr class="table-warning small">
+                        <tr class="table-warning">
                             <td class="text-start text-nowrap text-primary fw-bold p-2" colspan="5">
                                 {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
                             </td>

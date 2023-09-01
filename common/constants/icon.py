@@ -51,6 +51,7 @@ PSAT_ICON_SET = {
 
 BOARD_ICON_SET = {
     'top_fixed': '<i class="fa-solid fa-bullhorn fa-fw"></i>',
+    'is_hidden': '<i class="fa-solid fa-lock fa-fw"></i>',
     'list': '<i class="fa-solid fa-list fa-fw"></i>',
     'reply': '<i class="fa-solid fa-reply fa-fw"></i>',
     'update': '<i class="fa-solid fa-pen fa-fw"></i>',
