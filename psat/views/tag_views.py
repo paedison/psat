@@ -35,7 +35,7 @@ class ProblemTagDetailView(TagSettingMixIn, DetailView):
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         context['my_tag'] = self.object
-        context['my_tag_list'] = list(self.object.tags.names())
+        context['my_tag_list'] = list(self.object.tags.names()).sort()
         context['all_tag'] = self.get_all_tags()
         context['problem'] = self.object.problem
         return context
