@@ -24,22 +24,23 @@
                 {% render_field form.title placeholder="제목을 입력해주세요" class='form-control form-control-sm' %}
             </div>
         </div>
+        {{ form.media }}
         {{ form.content }}
         <div class="d-flex align-items-center justify-content-end mt-2">
             {% if user.is_admin %}
                 <div class="form-check">
                     {% render_field form.is_hidden class='form-check-input' %}
-                    <label class="form-check-label small" for="id_is_hidden">
+                    <label class="form-check-label small me-3" for="id_is_hidden">
                         비밀글</label>
                 </div>
             {% endif %}
             <div class="form-check">
                 {% render_field form.top_fixed class='form-check-input' %}
-                <label class="form-check-label small" for="id_top_fixed">
+                <label class="form-check-label small me-3" for="id_top_fixed">
                     상단 고정</label>
             </div>
             {% if info.type == 'postCreate' or info.type == 'postCreateContent' %}
-                <button type="submit" class="btn btn-sm btn-outline-primary ms-2"
+                <button type="submit" class="btn btn-sm btn-outline-primary"
                         hx-boost="true" hx-swap="outerHTML swap:0.25s"
                         hx-post="{{ post.get_post_create_content_url }}"
                         hx-push-url="{{ info.post_list_url }}"

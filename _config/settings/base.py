@@ -82,7 +82,8 @@ INSTALLED_APPS = [
     'taggit',
     'taggit_templatetags2',
     'template_partials',
-    'django_quill',
+    'ckeditor',
+    'ckeditor_uploader',
 
     # My Apps
     'common',
@@ -189,7 +190,7 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media/'
 
@@ -265,25 +266,23 @@ ACCOUNT_FORMS = {
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 
-# Quill Editor Settings
-QUILL_CONFIGS = {
-    'default':{
-        'theme': 'snow',
-        'modules': {
-            'syntax': True,
-            'toolbar': [
-                [
-                    {'header': []},
-                    {'align': []},
-                    {'list': 'ordered'},
-                    {'list': 'bullet'},
-                    'bold', 'italic', 'underline', 'strike', 'blockquote',
-                    {'color': []},
-                    {'background': []},
-                ],
-                ['image', 'code-block', 'link'],
-                ['clean'],
-            ]
-        }
-    }
+# CkEditor Settings
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+CKEDITOR_IMAGE_BACKEND = 'pillow'
+CKEDITOR_CONFIGS = {
+    'default': {
+        # 'toolbar': 'basic',
+        'toolbar': [
+            ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript'],
+            ['NumberedList', 'BulletedList', 'Blockquote', 'Code'],
+            ['Link', 'Unlink', 'Anchor'],
+            ['Image', 'Table', 'HorizontalRule', 'SpecialChar'],
+            ['Styles', 'Format', 'Font', 'FontSize'],
+            ['TextColor', 'BGColor'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['RemoveFormat', 'Source'],
+        ],
+        'width': 'auto',
+    },
 }
