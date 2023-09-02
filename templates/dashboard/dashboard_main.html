@@ -33,30 +33,18 @@
             {{ MENU_ICON_SET.answer|safe }} 정답확인
         </span>
     </button>
-{#    <button id="navCategory3" class="nav-link p-2" type="button" role="tab"#}
-{#            data-bs-toggle="tab" data-bs-target="#navContent3"#}
-{#            aria-controls="navContent3" aria-selected="false">#}
-{#        <span class="fw-bold small text-primary" hx-trigger="load delay:0.9s"#}
-{#              hx-get="{{ menu_url.sanghwang }}"#}
-{#              hx-swap="innerHtml" hx-target="#navContent3">#}
-{#            {{ MENU_ICON_SET.problem|safe }} 기출문제#}
-{#        </span>#}
-{#    </button>#}
 {% endpartial %}
 
 {% startpartial navigation_container %}
-    <div id="navContent0" class="tab-pane fade show active" role="tabpanel"
-         aria-labelledby="navCategory0">
+    <div id="navContent0" class="tab-pane fade show active htmx-fade-out"
+         role="tabpanel" aria-labelledby="navCategory0">
     </div><!-- Like Tab End -->
-    <div id="navContent1" class="tab-pane fade" role="tabpanel"
-         aria-labelledby="navCategory1">
+    <div id="navContent1" class="tab-pane fade htmx-fade-out"
+         role="tabpanel" aria-labelledby="navCategory1">
     </div><!-- Rate Tab End -->
-    <div id="navContent2" class="tab-pane fade" role="tabpanel"
-         aria-labelledby="navCategory2">
+    <div id="navContent2" class="tab-pane fade htmx-fade-out"
+         role="tabpanel" aria-labelledby="navCategory2">
     </div><!-- Answer Tab End -->
-{#    <div id="navContent3" class="tab-pane fade" role="tabpanel"#}
-{#         aria-labelledby="navCategory3">#}
-{#    </div><!-- Problem Tab End -->#}
 {% endpartial %}
 
 {% block main %}

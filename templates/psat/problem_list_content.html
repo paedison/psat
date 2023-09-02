@@ -1,7 +1,7 @@
 {% load static %}
 {% load psat_filter %}
 
-<section id="{{ info.target_id }}" class="htmx-fade-in">
+<section class="htmx-fade-in htmx-fade-out">
     {{ info|json_script:'info' }}
     <div class="table-responsive">
         <table class="table small">
