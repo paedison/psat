@@ -1,8 +1,12 @@
 # Python Standard Function Import
 
 # Django Core Import
+from django.contrib.contenttypes.models import ContentType
 from django.template import Library, Node
 from django.utils.translation import gettext_lazy as _
+
+from taggit_templatetags2 import settings
+from taggit_templatetags2.templatetags.taggit_templatetags2_tags import GetTagForObject
 
 # Custom App Import
 from psat.models import Exam, Problem
@@ -53,3 +57,45 @@ class LinelessNode(Node):
             if line.strip():
                 output_str = '\n'.join((output_str, line))
         return output_str
+
+
+@register.tag
+class GetSortedTagForObject(GetTagForObject):
+    name = 'get_sorted_tags_for_object'
+
+    def get_value(self, context, source_object, varname=''):
+        """
+        Args:
+            source_object - <django model object>
+
+        Return:
+            queryset tags
+        """
+
+        tag_model = settings.TAG_MODEL
+        app_label = source_object._meta.app_label
+
+        try:
+            model = source_object._meta.model_name
+        except AttributeError:
+            model = source_object._meta.module_name.lower()
+
+        content_type = ContentType.objects.get(app_label=app_label,
+                                               model=model)
+
+        try:
+            tags = tag_model.objects.filter(
+                taggit_taggeditem_items__object_id=source_object,
+                taggit_taggeditem_items__content_type=content_type
+            ).order_by('name')
+        except:
+            tags = tag_model.objects.filter(
+                taggit_taggeditem_items__object_id=source_object.pk,
+                taggit_taggeditem_items__content_type=content_type
+            ).order_by('name')
+
+        if varname:
+            context[varname]
+            return ''
+        else:
+            return tags
