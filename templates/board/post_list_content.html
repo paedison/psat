@@ -24,17 +24,17 @@
                 <span class="text-danger">{{ BOARD_ICON_SET.is_hidden|safe }}</span>
             {% endif %}
             <a class="text-decoration-none d-md-none"
-               hx-get="{{ post.get_post_detail_content_url }}" href=""
+               hx-get="{{ post.post_detail_content_url }}" href=""
                hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
                 {{ post.title|truncatechars:30 }}
             </a>
             <a class="text-decoration-none d-none d-md-inline d-lg-none"
-               hx-get="{{ post.get_post_detail_content_url }}" href=""
+               hx-get="{{ post.post_detail_content_url }}" href=""
                hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
                 {{ post.title|truncatechars:40 }}
             </a>
             <a class="text-decoration-none d-none d-lg-inline"
-               hx-get="{{ post.get_post_detail_content_url }}" href=""
+               hx-get="{{ post.post_detail_content_url }}" href=""
                hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
                 {{ post.title|truncatechars:50 }}
             </a>
@@ -43,7 +43,7 @@
         <td class="text-nowrap px-2 col-1">
             <div class="td-div-md" aria-label="Date">{{ post.created_at|date:'n/j' }}</div>
             <div class="td-div-sm" aria-label="Hit">{{ post.hit }}</div>
-            <div class="td-div-sm" aria-label="Comment">{{ post.get_comment_count }}</div>
+            <div class="td-div-sm" aria-label="Comment">{{ post.comment_count }}</div>
         </td>
     </tr>
 {% endpartial %}

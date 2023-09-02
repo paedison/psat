@@ -22,16 +22,16 @@
                 {% if info.type == 'commentUpdate' %}
                     <button type="submit" class="btn btn-sm btn-outline-primary"
                             hx-boost="true" hx-swap="outerHTML swap:0.25s"
-                            hx-post="{{ comment.get_comment_update_url }}"
-                            hx-push-url="{{ comment.get_post_detail_url }}"
+                            hx-post="{{ comment.comment_update_url }}"
+                            hx-push-url="{{ comment.post_detail_url }}"
                             title="{% trans 'Update' %}" hx-target="#commentContainer">
                         {% trans 'Update' %}
                     </button>
                 {% else %}
                     <button type="submit" class="btn btn-sm btn-outline-primary"
                             hx-boost="true" hx-swap="outerHTML swap:0.25s"
-                            hx-post="{{ post.get_comment_create_url }}"
-                            hx-push-url="{{ post.get_post_detail_url }}"
+                            hx-post="{{ info.comment_create_url }}"
+                            hx-push-url="{{ info.post_detail_url }}"
                             title="{% trans 'Create' %}" hx-target="#commentContainer">
                         {% trans 'Create' %}
                     </button>

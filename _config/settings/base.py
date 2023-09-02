@@ -284,5 +284,6 @@ CKEDITOR_CONFIGS = {
             ['RemoveFormat', 'Source'],
         ],
         'width': 'auto',
+        "removePlugins": "stylesheetparser",
     },
 }

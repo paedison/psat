@@ -214,7 +214,7 @@ class PostDetailContentView(PostDetailView):
 class PostCreateView(LoginRequiredMixin, PostViewMixIn, CreateView):
     view_type = 'postCreate'
     def get_template_names(self) -> str: return self.create_template
-    def get_success_url(self) -> reverse_lazy: return self.object.get_post_detail_content_url()
+    def get_success_url(self) -> reverse_lazy: return self.object.post_detail_url
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -230,7 +230,7 @@ class PostCreateContentView(PostCreateView):
 class PostUpdateView(LoginRequiredMixin, PostViewMixIn, UpdateView):
     view_type = 'postUpdate'
     def get_template_names(self) -> str: return self.create_template
-    def get_success_url(self) -> reverse_lazy: return self.post_detail_content_url
+    def get_success_url(self) -> reverse_lazy: return self.post_detail_url
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

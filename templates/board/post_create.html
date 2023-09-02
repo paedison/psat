@@ -7,15 +7,14 @@
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
 {% startpartial form %}
-    <form method="post" class="user" action="{{ info.post_create_url }}">
+    <form method="post" class="user">
         {% csrf_token %}
         {% if form.errors.content %}
             <div class="alert alert-danger fade show small py-2 fw-bold" role="alert">
                 내용을 입력해주세요.
             </div>
         {% endif %}
-        <input id="id_user" type="text" name="user" value="{{ user.id }}"
-               aria-label="User" hidden/>
+        <input id="id_user" type="text" name="user" value="{{ user.id }}" aria-label="User" hidden/>
         <div class="d-flex">
             <div class="col-2">
                 {% render_field form.category class='form-select form-select-sm' %}
@@ -28,36 +27,17 @@
         {{ form.content }}
         <div class="d-flex align-items-center justify-content-end mt-2">
             {% if user.is_admin %}
-                <div class="form-check">
-                    {% render_field form.is_hidden class='form-check-input' %}
-                    <label class="form-check-label small me-3" for="id_is_hidden">
-                        비밀글</label>
-                </div>
+            <div class="form-check">
+                {% render_field form.is_hidden class='form-check-input' %}
+                <label class="form-check-label small me-3" for="id_is_hidden">비밀글</label>
+            </div>
             {% endif %}
             <div class="form-check">
                 {% render_field form.top_fixed class='form-check-input' %}
-                <label class="form-check-label small me-3" for="id_top_fixed">
-                    상단 고정</label>
+                <label class="form-check-label small me-3" for="id_top_fixed">상단 고정</label>
             </div>
-            {% if info.type == 'postCreate' or info.type == 'postCreateContent' %}
-                <button type="submit" class="btn btn-sm btn-outline-primary"
-                        hx-boost="true" hx-swap="outerHTML swap:0.25s"
-                        hx-post="{{ post.get_post_create_content_url }}"
-                        hx-push-url="{{ info.post_list_url }}"
-                        title="{% trans 'Create' %}"
-                        hx-target="section .section">
-                    {% trans 'Create' %}
-                </button>
-            {% elif info.type == 'postUpdate' or info.type == 'postUpdateContent' %}
-                <button type="submit" class="btn btn-sm btn-outline-primary ms-2"
-                        hx-boost="true" hx-swap="outerHTML swap:0.25s"
-                        hx-post="{{ post.get_post_update_content_url }}"
-                        hx-push-url="{{ info.post_detail_url }}"
-                        title="{% trans 'Update' %}"
-                        hx-target="section .section">
-                    {% trans 'Update' %}
-                </button>
-            {% endif %}
+            <button type="submit" class="btn btn-sm btn-outline-primary ms-2"
+                    title="{% trans message %}">{% trans message %}</button>
         </div>
     </form>
 {% endpartial %}
@@ -69,7 +49,15 @@
             <div class="col-12 my-2">
                 <div class="card m-0">
                     <div class="card-body p-4">
-                        {% partial form %}
+                        {% if info.type == 'postCreate' or info.type == 'postCreateContent' %}
+                            {% with message='Create' %}
+                                {% partial form %}
+                            {% endwith %}
+                        {% elif info.type == 'postUpdate' or info.type == 'postUpdateContent' %}
+                            {% with message='Update' %}
+                                {% partial form %}
+                            {% endwith %}
+                        {% endif %}
                     </div>
                 </div>
             </div>

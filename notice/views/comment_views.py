@@ -74,6 +74,11 @@ class CommentViewMixIn:
         return reverse_lazy(f'{self.app_name}:comment_create', args=[self.post_id])
 
     @property
+    def post_detail_url(self) -> reverse_lazy:
+        if self.post_id:
+            return reverse_lazy(f'{self.app_name}:detail', args=[self.post_id])
+
+    @property
     def info(self):
         return {
             'app_name': self.app_name,
@@ -85,6 +90,8 @@ class CommentViewMixIn:
             'color': self.base_color,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
+            'comment_create_url': self.comment_create_url,
+            'post_detail_url': self.post_detail_url,
         }
 
 
@@ -97,6 +104,7 @@ class CommentListView(CommentViewMixIn, TemplateView):
         context = super().get_context_data(**kwargs)
         comments = self.model.objects.filter(post_id=self.post_id)
         context['comments'] = comments
+        context['info'] = self.info
         return context
 
 
