@@ -1,10 +1,11 @@
 # Python Standard Function Import
-
+from django.contrib.contenttypes.models import ContentType
 # Django Core Import
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views import generic
-from vanilla import DetailView
+from taggit.models import Tag, TaggedItem
+from vanilla import DetailView, TemplateView
 
 # Custom App Import
 from ..forms import ProblemTagForm
@@ -110,7 +111,38 @@ class ProblemTagDeleteView(TagSettingMixIn, generic.DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
+class ProblemTagCloudView(TemplateView):
+    template_name = 'psat/problem_tag_cloud.html'
+
+    # def get_all_tags(self) -> list:
+    #     problem = self.object.problem
+    #     problem_tags = ProblemTag.objects.filter(problem=problem)
+    #     tags = []
+    #     for tag in problem_tags:
+    #         tag_name = tag.tags.names()
+    #         tags.extend(tag_name)
+    #     all_tags = list(set(tags))
+    #     all_tags.sort()
+    #     return all_tags
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        content_type = ContentType.objects.get(app_label='psat', model='problemtag')
+        my_tag_ids = ProblemTag.objects.filter(
+            user=self.request.user).values_list('id', flat=True)
+        my_tags = Tag.objects.filter(
+            taggit_taggeditem_items__object_id__in=my_tag_ids,
+            taggit_taggeditem_items__content_type=content_type,
+        ).order_by('name')
+
+        all_tags = Tag.objects.all()
+        context['my_tags'] = my_tags
+        context['all_tags'] = all_tags
+        return context
+
+
 problem_tag_create_view = ProblemTagCreateView.as_view()
 problem_tag_detail_view = ProblemTagDetailView.as_view()
 problem_tag_add_view = ProblemTagAddView.as_view()
 problem_tag_delete_view = ProblemTagDeleteView.as_view()
+problem_tag_cloud_view = ProblemTagCloudView.as_view()

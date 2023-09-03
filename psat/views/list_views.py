@@ -278,6 +278,10 @@ class ProblemSearchView(PSATListInfoMixIn, search_view.SearchView):
             'color': color.COLOR_SET[self.view_type],
         }
 
+    def post(self, request, *args, **kwargs):
+        request.session.setdefault('_cleaned_data', '')
+        return super().post(request, *args, **kwargs)
+
     def get_context_data(self, *, object_list=None, **kwargs) -> dict:
         context = super().get_context_data()
         page_obj = context['page_obj']

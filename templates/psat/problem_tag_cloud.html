@@ -1,0 +1,54 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load psat_filter %}
+{% load partials %}
+{% load taggit_templatetags2_tags %}
+
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% block main %}
+<section>
+{#    {{ info|json_script:'info' }}#}
+    <div class="pagetitle my-2">
+        <h1>
+            {{ info.icon|safe }}
+            {{ info.title }}
+        </h1>
+    </div><!-- Page Title End -->
+
+    <section class="section htmx-fade-out">
+        <div class="row">
+            <div class="col-12 my-2">
+                <div class="card m-0">
+                    <div class="card-body p-4">
+                        <h1>Blog Tag Cloud</h1>
+                        <br>
+{#                        <div class="tag-cloud">#}
+{#                            {% for tag in my_tags %}#}
+{#                            <span class="tag-{{tag.weight|floatformat:0}}">#}
+{#                                <a href="{% url 'blog:tagged_object_list' tag.name %}">#}
+{#                                    {{tag.name}}({{tag.num_times}})</a>#}
+{#                            </span>#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+                        <div class="tag-cloud">
+                            {% get_tagcloud as tags %}
+                            {% for tag in tags %}
+                                {% if tag.num_times != 0 %}
+                                    <span class="tag-{{tag.weight|floatformat:0}}">
+                                        {{tag.name}}({{tag.num_times}})
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- Content Row End -->
+    </section>
+</section><!-- Main Content End -->
+{% endblock %}
+
+{% block page_script %}
+    <script type="module" src="{% static 'js/psat.js' %}"></script>
+{% endblock %}
