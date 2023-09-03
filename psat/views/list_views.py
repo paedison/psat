@@ -279,7 +279,10 @@ class ProblemSearchView(PSATListInfoMixIn, search_view.SearchView):
         }
 
     def post(self, request, *args, **kwargs):
-        request.session.setdefault('_cleaned_data', '')
+        try:
+            request.session['_cleaned_data']
+        except KeyError:
+            super().get(request, *args, **kwargs)
         return super().post(request, *args, **kwargs)
 
     def get_context_data(self, *, object_list=None, **kwargs) -> dict:
