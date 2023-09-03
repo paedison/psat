@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'template_partials',
     'ckeditor',
     'ckeditor_uploader',
+    'slippers',
 
     # My Apps
     'common',

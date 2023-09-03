@@ -1,0 +1,6 @@
+{% load slippers %}
+
+{% var class=class|default:'btn btn-primary' %}
+<button {% attrs class data-bs-dismiss %} type="button">
+    {{ children }}
+</button>

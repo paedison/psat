@@ -41,7 +41,7 @@ $(document).on('click', '.answer-button', function(event) {
         data: { 'answer': answer },
         headers: { 'X-CSRFToken': csrf_token },
         success: function(data) {
-            $('#answerModalLabel').html(data['message']);
+            $('#answerResult').html(data['message']);
             $(target).replaceWith(data['html']);
         }
     });

@@ -23,6 +23,11 @@ def add_0(content):  # Convert to 2-Digit Number
 
 
 @register.filter
+def abstract(content, base):  # Abstract content from base
+    return base - int(content)
+
+
+@register.filter
 def add_space(content):  # Add Space before 1-Digit Number
     if int(content) < 10:
         content = " " + str(content)

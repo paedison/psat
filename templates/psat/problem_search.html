@@ -4,7 +4,7 @@
 {% load partials %}
 
 {% startpartial search_content %}
-    <section class="htmx-fade-in">
+    <section class="htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="table-responsive">
             <table class="table small">
@@ -37,9 +37,6 @@
                 </tbody>
             </table>
         </div>
-        <section class="col-sm-8 col-md-6 col-lg-5 my-4 ms-auto me-auto">
-            {% include 'psat/snippets/search_form.html' %}
-        </section>
         <section class="d-flex flex-wrap">
             <div class="p-2 me-auto ms-auto">
                 {% include 'psat/snippets/list_pagination.html' %}
@@ -53,8 +50,7 @@
     <div class="pagetitle my-2">
         <h1>
             {{ PSAT_ICON_SET.search|safe }}
-{#            {% trans 'Search Result' %}#}
-            검색 결과
+            {% trans 'Search Result' %}
         </h1>
     </div><!-- Page Title End -->
 
@@ -66,11 +62,12 @@
                         <nav>
                             <div class="nav nav-tabs" id="nav-tab" role="tablist">
                                 <button id="navCategory0" class="nav-link p-2 active"
-                                        type="button" role="tab"
-                                        data-bs-toggle="tab" data-bs-target="#navContent0"
+                                        type="button" role="tab" data-bs-toggle="tab"
+                                        data-bs-target="#navContent0"
                                         aria-controls="navContent0" aria-selected="true">
                                     <span class="fw-bold small text-primary">
-                                        {{ PSAT_ICON_SET.search|safe }} 검색 결과
+                                        {{ PSAT_ICON_SET.search|safe }}
+                                        {% trans 'Search Result' %}
                                     </span>
                                 </button>
                             </div>
@@ -78,7 +75,8 @@
                         <div class="tab-content" id="nav-tabContent">
                             <div id="navContent0" class="tab-pane fade show active"
                                  role="tabpanel" aria-labelledby="navCategory0">
-                                {% partial search_content %}
+                                {% include 'psat/problem_list_content.html' %}
+{#                                {% partial search_content %}#}
                             </div>
                         </div><!-- Navigation Content End -->
                     </div>

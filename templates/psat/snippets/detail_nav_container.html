@@ -1,5 +1,9 @@
 {% load static %}
 {% load psat_filter %}
+{% load slippers %}
+
+{% fragment as prev_icon %}{{ PSAT_ICON_SET.prev_prob|safe }}{% endfragment %}
+{% fragment as next_icon %}{{ PSAT_ICON_SET.next_prob|safe }}{% endfragment %}
 
 <a id="problem_list" href="javascript:history.back()"
    class="btn btn-circle btn-sm btn-{{ info.color }}">
@@ -7,52 +11,36 @@
 </a>
 {% if prev_prob %}
     {% if info.type == 'problemDetail' %}
-        <a id="prev_prob" href="{{ prev_prob.get_problem_url }}"
-           class="btn btn-circle btn-sm btn-{{ info.color }}">
-            {{ PSAT_ICON_SET.prev_prob|safe }}
-        </a>
+        <a class="btn btn-circle btn-sm btn-{{ info.color }}"
+           href="{{ prev_prob.get_problem_url }}">{{ prev_icon }}</a>
     {% elif info.type == 'likeDetail' %}
-        <a id="prev_prob" href="{{ prev_prob.get_like_url }}"
-           class="btn btn-circle btn-sm btn-{{ info.color }}">
-            {{ PSAT_ICON_SET.prev_prob|safe }}
-        </a>
+        <a class="btn btn-circle btn-sm btn-{{ info.color }}"
+           href="{{ prev_prob.get_like_url }}">{{ prev_icon }}</a>
     {% elif info.type == 'rateDetail' %}
-        <a id="prev_prob" href="{{ prev_prob.get_rate_url }}"
-           class="btn btn-circle btn-sm btn-{{ info.color }}">
-            {{ PSAT_ICON_SET.prev_prob|safe }}
-        </a>
+        <a class="btn btn-circle btn-sm btn-{{ info.color }}"
+           href="{{ prev_prob.get_rate_url }}">{{ prev_icon }}</a>
     {% elif info.type == 'answerDetail' %}
-        <a id="prev_prob" href="{{ prev_prob.get_answer_url }}"
-           class="btn btn-circle btn-sm btn-{{ info.color }}">
-            {{ PSAT_ICON_SET.prev_prob|safe }}
-        </a>
+        <a class="btn btn-circle btn-sm btn-{{ info.color }}"
+           href="{{ prev_prob.get_answer_url }}">{{ prev_icon }}</a>
     {% endif %}
 {% else %}
-    <a id="prev_prob" class="btn btn-circle btn-sm btn-{{ info.color }}"></a>
+    <a class="btn btn-circle btn-sm btn-{{ info.color }}"></a>
 {% endif %}
 
 {% if next_prob %}
     {% if info.type == 'problemDetail' %}
-        <a id="next_prob" href="{{ next_prob.get_problem_url }}"
-           class="btn btn-circle btn-sm btn-{{ info.color }}">
-            {{ PSAT_ICON_SET.next_prob|safe }}
-        </a>
+        <a class="btn btn-circle btn-sm btn-{{ info.color }}"
+           href="{{ next_prob.get_problem_url }}">{{ next_icon }}</a>
     {% elif info.type == 'likeDetail' %}
-        <a id="next_prob" href="{{ next_prob.get_like_url }}"
-           class="btn btn-circle btn-sm btn-{{ info.color }}">
-            {{ PSAT_ICON_SET.next_prob|safe }}
-        </a>
+        <a class="btn btn-circle btn-sm btn-{{ info.color }}"
+           href="{{ next_prob.get_like_url }}">{{ next_icon }}</a>
     {% elif info.type == 'rateDetail' %}
-        <a id="next_prob" href="{{ next_prob.get_rate_url }}"
-           class="btn btn-circle btn-sm btn-{{ info.color }}">
-            {{ PSAT_ICON_SET.next_prob|safe }}
-        </a>
+        <a class="btn btn-circle btn-sm btn-{{ info.color }}"
+           href="{{ next_prob.get_rate_url }}">{{ next_icon }}</a>
     {% elif info.type == 'answerDetail' %}
-        <a id="next_prob" href="{{ next_prob.get_answer_url }}"
-           class="btn btn-circle btn-sm btn-{{ info.color }}">
-            {{ PSAT_ICON_SET.next_prob|safe }}
-        </a>
+        <a class="btn btn-circle btn-sm btn-{{ info.color }}"
+           href="{{ next_prob.get_answer_url }}">{{ next_icon }}</a>
     {% endif %}
 {% else %}
-    <a id="next_prob" class="btn btn-circle btn-sm btn-{{ info.color }}"></a>
+    <a class="btn btn-circle btn-sm btn-{{ info.color }}"></a>
 {% endif %}

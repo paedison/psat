@@ -11,13 +11,15 @@
             <tbody>
             {% if page_obj %}
                 {% for problem in page_obj %}
-                    {% ifchanged %}
-                        <tr class="table-warning">
-                            <td class="text-start text-nowrap text-primary fw-bold p-2" colspan="5">
-                                {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
-                            </td>
-                        </tr>
-                    {% endifchanged %}
+                    {% if not info.view_type == 'search' %}
+                        {% ifchanged %}
+                            <tr class="table-warning">
+                                <td class="text-start text-nowrap text-primary fw-bold p-2" colspan="5">
+                                    {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
+                                </td>
+                            </tr>
+                        {% endifchanged %}
+                    {% endif %}
                     <tr>
                         <td class="text-nowrap p-2 col-1">
                             {% include 'psat/snippets/problem_reference.html' %}
@@ -32,20 +34,17 @@
                     </tr>
                 {% endfor %}
             {% else %}
-                <tr>
-                    <td class="text-center text-nowrap px-2" colspan="5">
-                        {% if info.category == 'search' %}검색{% else %}추가{% endif %}된 자료가 없습니다.
-                    </td>
-                </tr>
+                {% if info.view_type == 'search' %}
+                    <tr>
+                        <td class="text-center text-nowrap px-2" colspan="5">
+                            검색된 자료가 없습니다.
+                        </td>
+                    </tr>
+                {% endif %}
             {% endif %}
             </tbody>
         </table>
     </div>
-    {% if info.view_type == 'search' %}
-        <section class="col-sm-8 col-md-6 col-lg-5 my-4 ms-auto me-auto">
-            {% include 'psat/snippets/search_form.html' %}
-        </section>
-    {% endif %}
     <section class="d-flex flex-wrap">
         <div class="p-2 me-auto ms-auto">
             {% include 'psat/snippets/list_pagination.html' %}

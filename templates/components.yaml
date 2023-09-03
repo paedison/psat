@@ -1,0 +1,3 @@
+components:
+  modal: 'snippets/modal_base.html'
+  button: 'snippets/button_base.html'

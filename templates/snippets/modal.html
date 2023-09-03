@@ -1,104 +1,37 @@
-<article class="modal fade" id="loginModal" tabindex="-1"
-         aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title fw-bold text-secondary" id="loginModalLabel">
-                    로그인이 필요합니다.
-                </h6>
-                <button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
-                    취소
-                </button>
-                <a class="btn btn-primary" href="{% url 'account_login' %}">로그인</a>
-            </div>
-        </div>
-    </div>
-</article><!-- Login Modal End -->
+{% load psat_filter %}
+{% load slippers %}
 
-<article class="modal fade" id="logoutModal" tabindex="-1"
-         aria-labelledby="logoutModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title fw-bold text-secondary" id="logoutModalLabel">
-                    로그아웃 하시겠습니까?
-                </h6>
-                <button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
-                    취소
-                </button>
-                <a id="accountLogout" class="btn btn-primary"
-                   href="{% url 'account_logout' %}">로그아웃</a>
-            </div>
-        </div>
-    </div>
-</article><!-- Logout Modal End -->
+{% fragment as cancel_button %}
+    {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
+{% endfragment %}
 
-<article class="modal fade" id="rateModal" tabindex="-1"
-         aria-labelledby="rateModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title fw-bold text-secondary" id="rateModalLabel">
-                    문제 난이도를 선택해주세요.
-                </h6>
-                <button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-            </div>
-            <div class="modal-footer mx-auto">
-                <form class="rateButton" id="rateButton" method="post"
-                      data-url="" data-target="">
-                {% csrf_token %}
-                    <fieldset>
-                        <label for="star1">
-                            <i class="fa fa-star"></i>
-                            <input type="radio" name="difficulty" value="5" id="star1">
-                        </label>
-                        <label for="star2">
-                            <i class="fa fa-star"></i>
-                            <input type="radio" name="difficulty" value="4" id="star2">
-                        </label>
-                        <label for="star3">
-                            <i class="fa fa-star"></i>
-                            <input type="radio" name="difficulty" value="3" id="star3">
-                        </label>
-                        <label for="star4">
-                            <i class="fa fa-star"></i>
-                            <input type="radio" name="difficulty" value="2" id="star4">
-                        </label>
-                        <label for="star5">
-                            <i class="fa fa-star"></i>
-                            <input type="radio" name="difficulty" value="1" id="star5">
-                        </label>
-                    </fieldset>
-                </form>
-                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
-                    취소
-                </button>
-            </div>
-        </div>
-    </div>
-</article><!-- Rate Modal End -->
+{% #modal name='login' header='로그인이 필요합니다.' %}
+    {{ cancel_button }}
+    <a class="btn btn-primary" href="{% url 'account_login' %}">로그인</a>
+{% /modal %}
 
-<article class="modal fade" id="answerModal" tabindex="-1"
-         aria-labelledby="answerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title fw-bold text-primary">정답 확인</h6>
-                <button class="btn-close" type="button" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-            </div>
-            <div class="modal-footer">
-                <h5 class="modal-title mx-auto fw-bold" id="answerModalLabel"></h5>
-            </div>
-        </div>
-    </div>
-</article><!-- Answer Modal End -->
+{% #modal name='logout' header='로그아웃 하시겠습니까?' %}
+    {{ cancel_button }}
+    <a id="accountLogout" class="btn btn-primary" href="{% url 'account_logout' %}">로그아웃</a>
+{% /modal %}
+
+{% fragment as gray_star %}<i class="fa fa-star"></i>{% endfragment %}
+{% #modal name='rate' header='문제 난이도를 선택해주세요.' %}
+    <form class="rateButton" id="rateButton" method="post" data-url="" data-target="">
+    {% csrf_token %}
+        <fieldset>
+            {% for i in '12345' %}
+                <label for="star{{ i }}">
+                    {{ gray_star }}
+                    <input id="star{{ i }}" type="radio" name="difficulty"
+                           value="{{ i|abstract:6 }}">
+                </label>
+            {% endfor %}
+        </fieldset>
+    </form>
+    {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
+{% /modal %}
+
+{% #modal name='answer' header='정답 확인' %}
+    <h5 id="answerResult" class="modal-title fw-bold"></h5>
+{% /modal %}

@@ -58,7 +58,11 @@ class PostViewMixIn:
 
     # Category list
     category_choices = model.CATEGORY_CHOICES.copy()
-    category_list = []
+    category_list = [{
+        'choice': 0,
+        'name': '전체',
+        'url': reverse_lazy(f'{app_name}:list_content', args=[0]),
+    }]
     for category in category_choices:
         category_list.append({
             'choice': category[0],
@@ -75,7 +79,7 @@ class PostViewMixIn:
 
     @property
     def post_list_content_url(self) -> reverse_lazy:
-        if self.category:
+        if self.category is not None:
             return reverse_lazy(f'{self.app_name}:list_content', args=[self.category])
 
     @property
