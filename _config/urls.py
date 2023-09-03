@@ -18,12 +18,16 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-from common.views.base_views import ads
+from common.views.base_views import ads, privacy
 from psat.views.list_views import index
 
 urlpatterns = [
     path('', index),
     path('ads.txt', ads),
+    path('privacy/', privacy, name='privacy_policy'),  # 개인정보처리방침
+
+    path('ckeditor/', include('ckeditor_uploader.urls')),  # CKEditor URLs
+
     path('admin/', admin.site.urls, name='admin'),  # 관리자 페이지
     path('notice/', include('notice.urls')),  # 공지사항
     path('common/', include('common.urls.base')),  # 공용 페이지
@@ -34,7 +38,7 @@ urlpatterns = [
     # path('quiz/', include('quiz.urls')),  # 연산연습 등
     path('log/', include('log.urls')),  # 로그 관리
     path('analysis/', include('analysis.urls')),  # 로그 관리
-    path('ckeditor/', include('ckeditor_uploader.urls')),  # 로그 관리
+
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
 ]
 

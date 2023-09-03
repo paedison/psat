@@ -57,5 +57,9 @@ class ProfileView(generic.ListView):
         return context
 
 
-def ads(request):
+def ads():
     return HttpResponse("google.com, pub-3543306443016219, DIRECT, f08c47fec0942fa0")
+
+
+def privacy(request):
+    return render(request, 'privacy.html', {})
