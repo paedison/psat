@@ -72,7 +72,7 @@
                hx-boost="true" hx-swap="outerHTML swap:0.25s"
                hx-get="{{ info.post_list_navigation_url }}"
                hx-push-url="{{ info.post_list_url }}">
-                <h1>{{ info.icon|safe }}{{ info.menu }}</h1>
+                <h1>{{ info.icon|safe }} {{ info.title }}</h1>
             </a>
         </div><!-- Page Title End -->
         {% partial navigation %}

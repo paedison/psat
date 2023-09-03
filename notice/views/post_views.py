@@ -26,7 +26,7 @@ class PostViewMixIn:
 
     # Default Settings
     app_name = 'notice'
-    menu = app_name.capitalize()
+    menu = app_name
     staff_menu = True  # Whether only admin or staff can create posts or not.
     model = Post
     form_class = PostForm
@@ -77,8 +77,6 @@ class PostViewMixIn:
     def post_list_content_url(self) -> reverse_lazy:
         if self.category:
             return reverse_lazy(f'{self.app_name}:list_content', args=[self.category])
-        else:
-            return reverse_lazy(f'{self.app_name}:list_content', args=[0])
 
     @property
     def post_detail_url(self) -> reverse_lazy:
@@ -96,7 +94,7 @@ class PostViewMixIn:
 
     @property
     def title(self) -> str:
-        string = self.menu
+        string = self.menu.capitalize()
         string += f' {self.post_id}' if self.post_id else ''
         string += f' - {self.comment_id}' if self.comment_id else ''
         return string
