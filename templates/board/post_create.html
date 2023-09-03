@@ -69,11 +69,11 @@
 {% block main %}
     <section id="{{ info.target_id }}">
         <div class="pagetitle my-2">
-            <a hx-target="section .section" href="" title="{{ info.menu }}"
+            <a hx-target="section .section" href="" title="{{ info.menu|capfirst }}"
                hx-boost="true" hx-swap="outerHTML swap:0.25s"
                hx-get="{{ info.post_list_navigation_url }}"
                hx-push-url="{{ info.post_list_url }}">
-                <h1>{{ info.icon|safe }}{{ info.menu }}</h1>
+                <h1>{{ info.icon|safe }} {{ info.menu|capfirst }}</h1>
             </a>
         </div><!-- Page Title End -->
         {% partial container %}
