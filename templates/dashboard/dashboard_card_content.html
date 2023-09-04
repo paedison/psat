@@ -3,7 +3,7 @@
 {% load partials %}
 
 {% startpartial datetime %}
-    <tr class="table-warning small">
+    <tr class="table-warning">
         {% if info.type == 'likeDashboard' %}
             <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
                 {{ problem.liked_at|date:'Y.m.d' }}({{ problem.liked_at|date:'w'|int2kor }})

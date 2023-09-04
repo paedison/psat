@@ -1,8 +1,8 @@
 # Django Core Import
-from ckeditor.fields import RichTextField
 from django.db import models
 from django.urls import reverse_lazy
 
+from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 
 # Custom App Import
@@ -26,7 +26,7 @@ class Post(models.Model):
     category = models.IntegerField(
         "카테고리", choices=CATEGORY_CHOICES, default=1)
     title = models.CharField("제목", max_length=50)
-    content = RichTextField()
+    content = RichTextUploadingField()
     hit = models.IntegerField("조회수", default=1)
     created_at = models.DateTimeField("작성일", auto_now_add=True)
     modified_at = models.DateTimeField("수정일", auto_now=True)

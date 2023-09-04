@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from environ import Env
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -84,7 +84,10 @@ INSTALLED_APPS = [
     'template_partials',
     'ckeditor',
     'ckeditor_uploader',
+    'PIL',
     'slippers',
+    'searchview',
+    'vanilla',
 
     # My Apps
     'common',
@@ -191,7 +194,8 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media/'
 
@@ -232,7 +236,6 @@ SOCIALACCOUNT_PROVIDERS = {
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'None'
-# ACCOUNT_EMAIL_VERIFICATION = 'Mandatory'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '이메일 인증'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
@@ -258,10 +261,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # Custom User Model
 AUTH_USER_MODEL = "common.User"
 
-ACCOUNT_FORMS = {
-    # 'login': 'common.forms.CustomLoginForm',
-}
-
 
 # Session Setting
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
@@ -271,9 +270,10 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 CKEDITOR_IMAGE_BACKEND = 'pillow'
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
 CKEDITOR_CONFIGS = {
     'default': {
-        # 'toolbar': 'basic',
         'toolbar': [
             ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript'],
             ['NumberedList', 'BulletedList', 'Blockquote', 'Code'],

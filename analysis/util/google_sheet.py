@@ -1,7 +1,6 @@
 import json
 
 import gspread  # 구글스프레드시트 함수 불러오기
-from oauth2client.service_account import ServiceAccountCredentials
 
 scopes = [
     'https://spreadsheets.google.com/feeds',
@@ -9,8 +8,7 @@ scopes = [
     'https://www.googleapis.com/auth/cloud-platform',
 ]
 json_file_name = r'google_key.json'
-credentials = ServiceAccountCredentials.from_json_keyfile_name(json_file_name, scopes)
-gc = gspread.authorize(credentials)  # 간소화 변수로 구글스프레드시트 접근인증하기 / Client 클래스 인스턴스 생성
+gc = gspread.service_account(filename=json_file_name)  # 간소화 변수로 구글스프레드시트 접근인증하기 / Client 클래스 인스턴스 생성
 spreadsheet_url = 'https://docs.google.com/spreadsheets/d/1Pa9DDI2Uy2hbf_zq1ppsFeFN5rpc1CkE7ePl_bXyHuc/'
 copy_worksheet_file = 'copy_worksheet.json'
 

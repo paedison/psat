@@ -1,19 +1,14 @@
-# Python Standard Function Import
 import os
 from datetime import datetime
 
-# Django Core Import
 from django.db import models
 from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
-# Third Party Library Import
 from taggit.managers import TaggableManager
-from taggit.models import TagBase, ItemBase
 
-# Custom App Import
 from _config.settings.base import BASE_DIR
 from common.constants import icon
 from common.models import User
@@ -175,33 +170,6 @@ class UpdateInfo:
         self.save()
 
 
-# class ProblemTag(TagBase):
-#
-#     class Meta:
-#         verbose_name = _("tag")
-#         verbose_name_plural = _("tags")
-#         unique_together = [["name", "slug"]]
-#
-#
-# class TaggedProblem(ItemBase):
-#     id = models.AutoField(primary_key=True)
-#     problem = models.ForeignKey(
-#         'Problem', on_delete=models.CASCADE,
-#         verbose_name="문제 ID", db_column="problem_id")
-#     tag = models.ForeignKey(
-#         ProblemTag, on_delete=models.CASCADE,
-#         verbose_name="태그", related_name="tagged_problems")
-#     user = models.ForeignKey(
-#         User, on_delete=models.CASCADE,
-#         verbose_name="사용자 ID", db_column="user_id")
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-#
-#     class Meta:
-#         verbose_name = _("tagged problem")
-#         verbose_name_plural = _("tagged problems")
-
-
 class Exam(AddInfo, models.Model):
     objects = models.Manager()
 
@@ -332,6 +300,6 @@ class ProblemTag(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = _("tagged problem")
-        verbose_name_plural = _("tagged problems")
+        verbose_name = _("Tagged problem")
+        verbose_name_plural = _("Tagged problems")
         unique_together = [["user", "problem"]]
