@@ -1,5 +1,6 @@
 {% extends 'list.html' %}
 {% load static %}
+{% load i18n %}
 {% load psat_filter %}
 {% load partials %}
 
@@ -53,7 +54,13 @@
         </tr>
         <tr>
             <td class="p-0">
-                {% include 'psat/snippets/detail_tag_container.html' %}
+                <div id="detailTags" hx-trigger="load delay:0s"
+                     {% if my_tag is None %}
+                     hx-get="{% url 'psat:tag_create' problem.id %}"
+                     {% else %}
+                     hx-get="{% url 'psat:tag_container' my_tag.id %}"
+                     {% endif %}
+                     hx-swap="innerHTML"></div>
             </td>
         </tr>
     {% endif %}

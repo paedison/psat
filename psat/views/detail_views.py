@@ -1,6 +1,7 @@
 # Python Standard Function Import
 import json
 
+from django.core.handlers.wsgi import WSGIRequest
 # Django Core Import
 from django.db.models import Q
 from django.http import HttpResponse
@@ -18,16 +19,25 @@ class PSATDetailInfoMixIn:
     """ Represent PSAT detail information mixin. """
     kwargs: dict
     view_type: str
-    object: any
+    object: Problem
+    request: WSGIRequest
 
     icon_container = 'psat/snippets/icon_container.html'
 
     @property
     def problem_id(self) -> int: return int(self.kwargs.get('problem_id'))
     @property
-    def object(self) -> Problem: return Problem.objects.get(id=self.problem_id)
+    def problem(self) -> Problem: return Problem.objects.get(id=self.problem_id)
+    @property
+    def object(self) -> Problem: return self.problem
     @property
     def icon_template(self) -> str: return f'{self.icon_container}#{self.view_type}'
+
+    @property
+    def my_tag(self) -> ProblemTag | None:
+        if self.request.user.is_authenticated:
+            return ProblemTag.objects.filter(user=self.request.user, problem=self.problem).first()
+        return None
 
     def get_problem_url(self, problem_id) -> reverse_lazy:
         return reverse_lazy(f'psat:{self.view_type}_detail', args=[problem_id])
@@ -114,38 +124,12 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
                 user=user, problem=problem).first()
         return problem_memo
 
-    def get_my_tag(self) -> tuple:
-        user = self.request.user
-        problem = self.object
-        my_tag = my_tag_list = None
-        if user.is_authenticated:
-            my_tag = ProblemTag.objects.filter(user=user, problem=problem).first()
-            my_tag_list = list(my_tag.tags.names()) if my_tag else None
-        my_tag = my_tag if my_tag_list else None
-        return my_tag, my_tag_list
-
-    def get_all_tags(self) -> list:
-        problem = self.object
-        problem_tags = ProblemTag.objects.filter(problem=problem)
-        tags = []
-        if problem_tags:
-            for tag in problem_tags:
-                tag_name = tag.tags.names()
-                tags.extend(tag_name)
-        all_tags = list(set(tags))
-        all_tags.sort()
-        return all_tags
-
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
-        my_tag, my_tag_list = self.get_my_tag()
         context['problem_memo'] = self.get_problem_memo()
-        context['my_tag'] = my_tag
-        context['my_tag_list'] = my_tag_list
-        context['all_tag'] = self.get_all_tags()
+        context['my_tag'] = self.my_tag
         context['anchor_id'] = self.problem_id - int(self.object.number)
-        updated_object = get_evaluation_info(self.request.user, self.object)
-        context['problem'] = updated_object
+        context['problem'] = get_evaluation_info(self.request.user, self.object)
         if self.request.method == 'GET':
             self.update_context_data(context)
         return context

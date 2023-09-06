@@ -17,6 +17,7 @@ MENU_ICON_SET = {
     'login': '<i class="fa-solid fa-sign-in-alt fa-fw"></i>',
     'logout': '<i class="fa-solid fa-sign-out-alt fa-fw"></i>',
     'search': '<i class="fa-solid fa-magnifying-glass fa-fw"></i>',
+    'tag': '<i class="fa-solid fa-tag fa-fw"></i>'
 }
 
 PSAT_ICON_SET = {
@@ -47,6 +48,7 @@ PSAT_ICON_SET = {
     'jaryo': '<i class="fa-solid fa-table-cells-large fa-fw"></i>',
     'sanghwang': '<i class="fa-solid fa-scale-balanced fa-fw"></i>',
     'search': '<i class="fa-solid fa-magnifying-glass fa-fw"></i>',
+    'tag': '<i class="fa-solid fa-tag fa-fw"></i>',
 }
 
 BOARD_ICON_SET = {

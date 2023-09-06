@@ -10,4 +10,5 @@ COLOR_SET = {
     'qna': 'primary',
     'schedule': 'primary',
     'search': 'primary',
+    'tag': 'primary',
 }

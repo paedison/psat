@@ -208,6 +208,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # DJANGO-Taggit
 TAGGIT_CASE_INSENSITIVE = True
 TAGGIT_LIMIT = 50
+TAGGIT_TAG_LIST_ORDER_BY = 'name'
 
 
 # DJango-allauth Package Settings

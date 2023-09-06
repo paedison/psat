@@ -64,9 +64,9 @@ urlpatterns = [
     path('memo/<int:pk>/delete/', problem_memo_delete_view, name='memo_delete'),
 
     # Tag
+    path('tag/create/problem<int:problem_id>/', problem_tag_create_view, name='tag_create'),
+    path('tag/container/tag<int:tag_id>/', problem_tag_container_view, name='tag_container'),
+    path('tag/add/tag<int:tag_id>/', problem_tag_add_view, name='tag_add'),
+    path('tag/del/tag<int:tag_id>/<str:tag_name>/', problem_tag_delete_view, name='tag_delete'),
     path('tag/cloud/', problem_tag_cloud_view, name='tag_cloud'),
-    path('tag/create/', problem_tag_create_view, name='tag_create'),
-    path('tag/problem/<int:pk>/', problem_tag_detail_view, name='tag_detail'),
-    path('tag/problem/<int:pk>/add/', problem_tag_add_view, name='tag_add'),
-    path('tag/problem/<int:pk>/del/<str:tag_name>/', problem_tag_delete_view, name='tag_delete'),
 ]

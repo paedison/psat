@@ -1,4 +1,5 @@
 # Django Core Import
+from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -18,7 +19,7 @@ def index(request):
         return redirect('psat:base')
 
 
-def get_evaluation_info(user, obj) -> object:
+def get_evaluation_info(user, obj: Problem) -> Problem:
     problem_id = obj.prob_id()
     like_none_icon = icon.PSAT_ICON_SET['likeNone']
     star_none_icon = icon.PSAT_ICON_SET['starNone']
@@ -54,7 +55,6 @@ class PSATListInfoMixIn:
     """
     kwargs: dict
     view_type: str
-    object: any
     object_list: any
 
     title_dict = {
