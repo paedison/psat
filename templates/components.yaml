@@ -1,3 +1,6 @@
 components:
-  modal: 'snippets/modal_base.html'
-  button: 'snippets/button_base.html'
+  modal: 'slippers/modal_base.html'
+  button: 'slippers/button_base.html'
+  nav_tab: 'slippers/nav_tab_base.html'
+  nav_content: 'slippers/nav_content_base.html'
+  content_row: 'slippers/content_row_base.html'

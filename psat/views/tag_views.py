@@ -212,15 +212,15 @@ class ProblemTagCloudView(TagSettingMixIn, TemplateView):
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
 
-        context['total_all_tags'] = self.get_tags()
-        context['eoneo_all_tags'] = self.get_tags(sub='언어')
-        context['jaryo_all_tags'] = self.get_tags(sub='자료')
-        context['sanghwang_all_tags'] = self.get_tags(sub='상황')
+        context['all_total_tags'] = self.get_tags()
+        context['all_eoneo_tags'] = self.get_tags(sub='언어')
+        context['all_jaryo_tags'] = self.get_tags(sub='자료')
+        context['all_sanghwang_tags'] = self.get_tags(sub='상황')
 
-        context['total_my_tags'] = self.get_tags(category='my')
-        context['eoneo_my_tags'] = self.get_tags(category='my', sub='언어')
-        context['jaryo_my_tags'] = self.get_tags(category='my', sub='자료')
-        context['sanghwang_my_tags'] = self.get_tags(category='my', sub='상황')
+        context['my_total_tags'] = self.get_tags(category='my')
+        context['my_eoneo_tags'] = self.get_tags(category='my', sub='언어')
+        context['my_jaryo_tags'] = self.get_tags(category='my', sub='자료')
+        context['my_sanghwang_tags'] = self.get_tags(category='my', sub='상황')
 
         context['info'] = self.info
         return context

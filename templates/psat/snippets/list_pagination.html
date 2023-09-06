@@ -6,13 +6,12 @@
         {% with url=info.pagination_url %}
         {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href=""
-                   {% if info.view_type == 'search' %}
-                   hx-post="{{ url }}{{ page_obj.number|add:-1 }}"
-                   hx-include="#id_data__contains">
-                   {% else %}
-                   hx-get="{{ url }}?page={{ page_obj.number|add:-1 }}">
-                   {% endif %}
+                <a class="page-link"
+                    {% if info.view_type == 'search' %}
+                        hx-post="{{ url }}{{ page_obj.number|add:-1 }}/"
+                        hx-include="#id_data__contains"
+                    {% else %} hx-get="{{ url }}?page={{ page_obj.number|add:-1 }}"
+                    {% endif %} href="">
                     <i class="fa-solid fa-chevron-left"></i>
                 </a>
             </li>
@@ -20,48 +19,40 @@
         {% for number in page_range %}
             {% if number == page_obj.number %}
                 <li class="page-item active" aria-current="page">
-                    <a class="page-link" href=""
-                       {% if info.view_type == 'search' %}
-                       hx-post="{{ url }}{{ number }}/"
-                       hx-include="#id_data__contains">
-                       {% else %}
-                       hx-get="{{ url }}?page={{ number }}">
-                       {% endif %}
+                    <a class="page-link"
+                        {% if info.view_type == 'search' %}
+                            hx-post="{{ url }}{{ number }}/"
+                            hx-include="#id_data__contains"
+                        {% else %} hx-get="{{ url }}?page={{ number }}"
+                        {% endif %} href="">
                     {{ number }}</a>
                 </li>
             {% elif number == page_obj.paginator.ELLIPSIS %}
                 <li class="page-item disabled">
-                    <a class="page-link" href="" tabindex="-1" aria-disabled="true"
-                       {% if info.view_type == 'search' %}
-                       hx-post="{{ url }}{{ number }}"
-                       hx-include="#id_data__contains">
-                       {% else %}
-                       hx-get="{{ url }}?page={{ number }}/">
-                       {% endif %}
-                    {{ number }}</a>
+                    <a class="page-link" href="" tabindex="-1" aria-disabled="true">
+                        {{ number }}
+                    </a>
                 </li>
             {% else %}
                 <li class="page-item">
-                    <a class="page-link" href=""
-                       {% if info.view_type == 'search' %}
-                       hx-post="{{ url }}{{ number }}/"
-                       hx-include="#id_data__contains">
-                       {% else %}
-                       hx-get="{{ url }}?page={{ number }}">
-                       {% endif %}
+                    <a class="page-link"
+                        {% if info.view_type == 'search' %}
+                            hx-post="{{ url }}{{ number }}/"
+                            hx-include="#id_data__contains"
+                        {% else %} hx-get="{{ url }}?page={{ number }}"
+                        {% endif %} href="">
                     {{ number }}</a>
                 </li>
             {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href=""
-                   {% if info.view_type == 'search' %}
-                   hx-post="{{ url }}{{ page_obj.number|add:1 }}/"
-                   hx-include="#id_data__contains">
-                   {% else %}
-                   hx-get="{{ url }}?page={{ page_obj.number|add:1 }}">
-                   {% endif %}
+                <a class="page-link"
+                    {% if info.view_type == 'search' %}
+                        hx-post="{{ url }}{{ page_obj.number|add:1 }}/"
+                        hx-include="#id_data__contains"
+                    {% else %} hx-get="{{ url }}?page={{ page_obj.number|add:1 }}"
+                    {% endif %} href="">
                     <i class="fa-solid fa-chevron-right"></i>
                 </a>
             </li>

@@ -76,30 +76,3 @@ TOTAL = {
         {'year': 2005, 'ex': '입시', 'exam2': '입법고시'},
         {'year': 2004, 'ex': '외시', 'exam2': '외교원/외무고시'}],
 }
-
-URLS = {
-    'problem': {
-        'total': reverse_lazy('psat:problem_list', args=['전체', '전체', '전체']),
-        'eoneo': reverse_lazy('psat:problem_list', args=['전체', '전체', '언어']),
-        'jaryo': reverse_lazy('psat:problem_list', args=['전체', '전체', '자료']),
-        'sanghwang': reverse_lazy('psat:problem_list', args=['전체', '전체', '상황']),
-    },
-    'like': {
-        'total': reverse_lazy('psat:like_list_sub', args=['전체']),
-        'eoneo': reverse_lazy('psat:like_list_sub', args=['언어']),
-        'jaryo': reverse_lazy('psat:like_list_sub', args=['자료']),
-        'sanghwang': reverse_lazy('psat:like_list_sub', args=['상황']),
-    },
-    'rate': {
-        'total': reverse_lazy('psat:rate_list_sub', args=['전체']),
-        'eoneo': reverse_lazy('psat:rate_list_sub', args=['언어']),
-        'jaryo': reverse_lazy('psat:rate_list_sub', args=['자료']),
-        'sanghwang': reverse_lazy('psat:rate_list_sub', args=['상황']),
-    },
-    'answer': {
-        'total': reverse_lazy('psat:answer_list_sub', args=['전체']),
-        'eoneo': reverse_lazy('psat:answer_list_sub', args=['언어']),
-        'jaryo': reverse_lazy('psat:answer_list_sub', args=['자료']),
-        'sanghwang': reverse_lazy('psat:answer_list_sub', args=['상황']),
-    }
-}

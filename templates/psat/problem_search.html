@@ -1,49 +1,7 @@
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
-{% load partials %}
-
-{% startpartial search_content %}
-    <section class="htmx-fade-in htmx-fade-out">
-        {{ info|json_script:'info' }}
-        <div class="table-responsive">
-            <table class="table small">
-                <thead>
-                    {% include 'psat/snippets/list_table_header.html' %}
-                </thead>
-                <tbody>
-                {% if page_obj %}
-                    {% for problem in page_obj %}
-                        <tr>
-                            <td class="text-nowrap p-2 col-1">
-                                {% include 'psat/snippets/problem_reference.html' %}
-                                {% include 'psat/snippets/icon_container.html' %}
-                                <div class="d-sm-none pt-2">
-                                    {% include 'psat/snippets/list_table_problem.html' %}
-                                </div>
-                            </td>
-                            <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
-                                {% include 'psat/snippets/list_table_problem.html' %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td class="text-center text-nowrap px-2" colspan="5">
-                            검색된 자료가 없습니다.
-                        </td>
-                    </tr>
-                {% endif %}
-                </tbody>
-            </table>
-        </div>
-        <section class="d-flex flex-wrap">
-            <div class="p-2 me-auto ms-auto">
-                {% include 'psat/snippets/list_pagination.html' %}
-            </div>
-        </section>
-    </section>
-{% endpartial %}
+{% load slippers %}
 
 <section>
     {{ info|json_script:'info' }}
@@ -53,35 +11,23 @@
             {% trans 'Search Result' %}
         </h1>
     </div><!-- Page Title End -->
-
     <section class="section htmx-fade-out">
-        <div class="row">
-            <div class="col-12 my-2">
-                <div class="card m-0">
-                    <div class="card-body p-4">
-                        <nav>
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <button id="navCategory0" class="nav-link p-2 active"
-                                        type="button" role="tab" data-bs-toggle="tab"
-                                        data-bs-target="#navContent0"
-                                        aria-controls="navContent0" aria-selected="true">
-                                    <span class="fw-bold small text-primary">
-                                        {{ PSAT_ICON_SET.search|safe }}
-                                        {% trans 'Search Result' %}
-                                    </span>
-                                </button>
-                            </div>
-                        </nav><!-- Navigation End -->
-                        <div class="tab-content" id="nav-tabContent">
-                            <div id="navContent0" class="tab-pane fade show active"
-                                 role="tabpanel" aria-labelledby="navCategory0">
-                                {% include 'psat/problem_list_content.html' %}
-{#                                {% partial search_content %}#}
-                            </div>
-                        </div><!-- Navigation Content End -->
-                    </div>
-                </div>
+    {% #content_row class3='p-4' %}
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                {% #nav_tab id='0' %}
+                    <span class="fw-bold small text-primary">
+                        {{ PSAT_ICON_SET.search|safe }}
+                        {% trans 'Search Result' %}
+                    </span>
+                {% /nav_tab %}
             </div>
-        </div><!-- Content Row End -->
+        </nav><!-- Navigation End -->
+        <div class="tab-content" id="nav-tabContent">
+            {% #nav_content id='0' %}
+                {% include 'psat/problem_list_content.html' %}
+            {% /nav_content %}
+        </div><!-- Navigation Content End -->
+    {% /content_row %}
     </section>
 </section><!-- Main Content End -->

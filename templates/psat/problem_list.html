@@ -1,119 +1,63 @@
 {% extends 'list.html' %}
 {% load static %}
 {% load psat_filter %}
-{% load partials %}
+{% load slippers %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% startpartial navigation_menu_content %}
-    <button id="navCategory0" class="nav-link p-2 active" type="button" role="tab"
-            data-bs-toggle="tab" data-bs-target="#navContent0"
-            aria-controls="navContent0" aria-selected="true">
-        <span class="fw-bold small text-primary" hx-trigger="load delay:0s"
-              hx-get="{{ menu_url.total }}"
-              hx-swap="innerHtml" hx-target="#navContent0">
-            {{ PSAT_ICON_SET.all|safe }} 전체
-        </span>
-    </button>
-    <button id="navCategory1" class="nav-link p-2" type="button" role="tab"
-            data-bs-toggle="tab" data-bs-target="#navContent1"
-            aria-controls="navContent1" aria-selected="false">
-        <span class="fw-bold small text-primary" hx-trigger="load delay:0.3s"
-              hx-get="{{ menu_url.eoneo }}"
-              hx-swap="innerHtml" hx-target="#navContent1">
-            {{ PSAT_ICON_SET.eoneo|safe }} 언어
-        </span>
-    </button>
-    <button id="navCategory2" class="nav-link p-2" type="button" role="tab"
-            data-bs-toggle="tab" data-bs-target="#navContent2"
-            aria-controls="navContent2" aria-selected="false">
-        <span class="fw-bold small text-primary" hx-trigger="load delay:0.6s"
-              hx-get="{{ menu_url.jaryo }}"
-              hx-swap="innerHtml" hx-target="#navContent2">
-            {{ PSAT_ICON_SET.jaryo|safe }} 자료
-        </span>
-    </button>
-    <button id="navCategory3" class="nav-link p-2" type="button" role="tab"
-            data-bs-toggle="tab" data-bs-target="#navContent3"
-            aria-controls="navContent3" aria-selected="false">
-        <span class="fw-bold small text-primary" hx-trigger="load delay:0.9s"
-              hx-get="{{ menu_url.sanghwang }}"
-              hx-swap="innerHtml" hx-target="#navContent3">
-            {{ PSAT_ICON_SET.sanghwang|safe }} 상황
-        </span>
-    </button>
-{% endpartial %}
-
-{% startpartial navigation_menu %}
-    {% if info.view_type == 'problem' %}
-        {% with menu_url=URLS.problem %}
-            {% partial navigation_menu_content %}
-        {% endwith %}
-    {% endif %}
-    {% if info.view_type == 'like' %}
-        {% with menu_url=URLS.like %}
-            {% partial navigation_menu_content %}
-        {% endwith %}
-    {% endif %}
-    {% if info.view_type == 'rate' %}
-        {% with menu_url=URLS.rate %}
-            {% partial navigation_menu_content %}
-        {% endwith %}
-    {% endif %}
-    {% if info.view_type == 'answer' %}
-        {% with menu_url=URLS.answer %}
-            {% partial navigation_menu_content %}
-        {% endwith %}
-    {% endif %}
-{% endpartial %}
-
-{% startpartial navigation_container %}
-    <div id="navContent0" class="tab-pane fade show active htmx-fade-out"
-         role="tabpanel" aria-labelledby="navCategory0">
-    </div><!-- All Subject Tab End -->
-    <div id="navContent1" class="tab-pane fade htmx-fade-out"
-         role="tabpanel" aria-labelledby="navCategory1">
-    </div><!-- Eoneo Tab End -->
-    <div id="navContent2" class="tab-pane fade htmx-fade-out"
-         role="tabpanel" aria-labelledby="navCategory2">
-    </div><!-- Jaryo Tab End -->
-    <div id="navContent3" class="tab-pane fade htmx-fade-out"
-         role="tabpanel" aria-labelledby="navCategory3">
-    </div><!-- Sanghwang Tab End -->
-{% endpartial %}
-
 {% block main %}
-<section id="{{ info.target_id }}">
-    {{ info|json_script:'info' }}
-    <div class="pagetitle my-2">
-        <h1>
-            {{ info.icon|safe }}
-            {{ info.title }}
-        </h1>
-    </div><!-- Page Title End -->
+    <section id="{{ info.target_id }}">
+        {{ info|json_script:'info' }}
+        <div class="pagetitle my-2">
+            <h1>
+                {{ info.icon|safe }}
+                {{ info.title }}
+            </h1>
+        </div><!-- Page Title End -->
+        <section class="section htmx-fade-out">
+        {% #content_row class3='p-4' %}
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    {% #nav_tab id='0' %}
+                        <span hx-trigger="load delay:0s" hx-target="#navContent0"
+                              hx-get="{{ info.menu_url.total }}" hx-swap="innerHtml">
+                            {{ PSAT_ICON_SET.all|safe }} 전체
+                        </span>
+                    {% /nav_tab %}
 
-    <section class="section htmx-fade-out">
-        <div class="row">
-            <div class="col-12 my-2">
-                <div class="card m-0">
-                    <div class="card-body p-4">
-                        <nav>
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                {% partial navigation_menu %}
-                            </div>
-                        </nav><!-- Navigation End -->
-                        <div class="tab-content" id="nav-tabContent">
-                            {% partial navigation_container %}
-                        </div>
-                    </div>
+                    {% #nav_tab id='1' %}
+                        <span hx-trigger="load delay:0.3s" hx-target="#navContent1"
+                              hx-get="{{ info.menu_url.eoneo }}" hx-swap="innerHtml">
+                            {{ PSAT_ICON_SET.eoneo|safe }} 언어
+                        </span>
+                    {% /nav_tab %}
+
+                    {% #nav_tab id='2' %}
+                        <span hx-trigger="load delay:0.6s" hx-target="#navContent2"
+                              hx-get="{{ info.menu_url.jaryo }}" hx-swap="innerHtml">
+                            {{ PSAT_ICON_SET.jaryo|safe }} 자료
+                        </span>
+                    {% /nav_tab %}
+
+                    {% #nav_tab id='3' %}
+                        <span hx-trigger="load delay:0.9s" hx-target="#navContent3"
+                              hx-get="{{ info.menu_url.sanghwang }}" hx-swap="innerHtml">
+                            {{ PSAT_ICON_SET.sanghwang|safe }} 상황
+                        </span>
+                    {% /nav_tab %}
                 </div>
+            </nav><!-- Navigation End -->
+            <div class="tab-content" id="nav-tabContent">
+                {% nav_content id='0' %}<!-- All Subject Tab End -->
+                {% nav_content id='1' %}<!-- Eoneo Tab End -->
+                {% nav_content id='2' %}<!-- Jaryo Tab End -->
+                {% nav_content id='3' %}<!-- Sanghwang Tab End -->
             </div>
-        </div><!-- Content Row End -->
-    </section>
-</section><!-- Main Content End -->
+        {% /content_row %}
+        </section>
+    </section><!-- Main Content End -->
 {% endblock %}
 
 {% block page_script %}
-{#    <script type="module" src="{% static 'js/list.js' %}"></script>#}
     <script type="module" src="{% static 'js/psat.js' %}"></script>
 {% endblock %}

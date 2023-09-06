@@ -1,0 +1,15 @@
+
+<section class="d-flex flex-wrap">
+    <div class="p-2 me-auto ms-auto">
+        {% include 'psat/snippets/list_pagination.html' %}
+    </div>
+    {% if info.view_type != 'search' %}
+        <div class="p-2">
+            {% if info.menu == 'psat' %}
+                {% include 'psat/snippets/list_filter_container.html' %}
+            {% elif info.menu == 'dashboard' %}
+                {% include 'dashboard/snippets/list_filter_container.html' %}
+            {% endif %}
+        </div>
+    {% endif %}
+</section>

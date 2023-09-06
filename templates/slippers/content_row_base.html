@@ -1,0 +1,14 @@
+{% load slippers %}
+{% var class1=class1|default:'col-12 my-2' %}
+{% var class2=class2|default:'card m-0' %}
+{% var class3=class3|default:'' %}
+
+<div class="row">
+    <div class="{{ class1 }}">
+        <div class="{{ class2 }}">
+            <div class="card-body {{ class3 }}">
+                {{ children }}
+            </div>
+        </div>
+    </div>
+</div><!-- Content Row End -->

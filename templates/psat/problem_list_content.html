@@ -1,5 +1,12 @@
 {% load static %}
 {% load psat_filter %}
+{% load partials %}
+
+{% startpartial reference %}
+    <td class="text-start text-nowrap text-primary fw-bold p-2" colspan="5">
+        {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
+    </td>
+{% endpartial %}
 
 <section class="htmx-fade-in htmx-fade-out">
     {{ info|json_script:'info' }}
@@ -11,27 +18,12 @@
             <tbody>
             {% if page_obj %}
                 {% for problem in page_obj %}
-                    {% if not info.view_type == 'search' %}
+                    {% if info.view_type != 'search' %}
                         {% ifchanged %}
-                            <tr class="table-warning">
-                                <td class="text-start text-nowrap text-primary fw-bold p-2" colspan="5">
-                                    {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
-                                </td>
-                            </tr>
+                            <tr class="table-warning">{% partial reference %}</tr>
                         {% endifchanged %}
                     {% endif %}
-                    <tr>
-                        <td class="text-nowrap p-2 col-1">
-                            {% include 'psat/snippets/problem_reference.html' %}
-                            {% include 'psat/snippets/icon_container.html' %}
-                            <div class="d-sm-none pt-2">
-                                {% include 'psat/snippets/list_table_problem.html' %}
-                            </div>
-                        </td>
-                        <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
-                            {% include 'psat/snippets/list_table_problem.html' %}
-                        </td>
-                    </tr>
+                    {% include 'psat/snippets/list_table_body.html' %}
                 {% endfor %}
             {% else %}
                 {% if info.view_type == 'search' %}
@@ -45,14 +37,5 @@
             </tbody>
         </table>
     </div>
-    <section class="d-flex flex-wrap">
-        <div class="p-2 me-auto ms-auto">
-            {% include 'psat/snippets/list_pagination.html' %}
-        </div>
-    {% if info.view_type != 'search' %}
-        <div class="p-2">
-            {% include 'psat/snippets/list_filter_container.html' %}
-        </div>
-    {% endif %}
-    </section>
+    {% include 'psat/snippets/list_footer.html' %}
 </section>

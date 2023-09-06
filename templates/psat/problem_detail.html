@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load psat_filter %}
 {% load partials %}
+{% load slippers %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
@@ -55,12 +56,10 @@
         <tr>
             <td class="p-0">
                 <div id="detailTags" hx-trigger="load delay:0s"
-                     {% if my_tag is None %}
-                     hx-get="{% url 'psat:tag_create' problem.id %}"
-                     {% else %}
-                     hx-get="{% url 'psat:tag_container' my_tag.id %}"
-                     {% endif %}
-                     hx-swap="innerHTML"></div>
+                    {% if my_tag is None %}
+                        hx-get="{% url 'psat:tag_create' problem.id %}"
+                    {% else %} hx-get="{% url 'psat:tag_container' my_tag.id %}"
+                    {% endif %} hx-swap="innerHTML"></div>
             </td>
         </tr>
     {% endif %}
@@ -86,32 +85,17 @@
                 {{ info.title }}
             </h1>
         </div><!-- Page Title End -->
-
         <section class="section">
-            <div class="row">
-                <div class="col-12 mt-2 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <table class="table my-4">
-                            {% if problem %}
-                                <thead>
-                                    {% partial thead %}
-                                </thead>
-                                <tbody>
-                                    {% partial tbody %}
-                                </tbody>
-                            {% endif %}
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div><!-- Content Row End -->
+        {% #content_row %}
+            <table class="table my-4">
+                {% if problem %}
+                    <thead>{% partial thead %}</thead>
+                    <tbody>{% partial tbody %}</tbody>
+                {% endif %}
+            </table>
+        {% /content_row %}
         </section>
     </section><!-- Main Content End -->
-{% endblock %}
-
-{% block footer %}
-    {% include 'snippets/footer.html' %}
 {% endblock %}
 
 {% block page_script %}

@@ -141,9 +141,41 @@ class PSATListInfoMixIn:
     def category(self) -> int: return self.url['sub_code']
 
     @property
+    def menu_url(self) -> dict:
+        if self.view_type == 'problem':
+            return {
+                'total': reverse_lazy('psat:problem_list', args=['전체', '전체', '전체']),
+                'eoneo': reverse_lazy('psat:problem_list', args=['전체', '전체', '언어']),
+                'jaryo': reverse_lazy('psat:problem_list', args=['전체', '전체', '자료']),
+                'sanghwang': reverse_lazy('psat:problem_list', args=['전체', '전체', '상황']),
+            }
+        elif self.view_type == 'like':
+            return {
+                'total': reverse_lazy('psat:like_list_sub', args=['전체']),
+                'eoneo': reverse_lazy('psat:like_list_sub', args=['언어']),
+                'jaryo': reverse_lazy('psat:like_list_sub', args=['자료']),
+                'sanghwang': reverse_lazy('psat:like_list_sub', args=['상황']),
+            }
+        elif self.view_type == 'rate':
+            return {
+                'total': reverse_lazy('psat:rate_list_sub', args=['전체']),
+                'eoneo': reverse_lazy('psat:rate_list_sub', args=['언어']),
+                'jaryo': reverse_lazy('psat:rate_list_sub', args=['자료']),
+                'sanghwang': reverse_lazy('psat:rate_list_sub', args=['상황']),
+            }
+        elif self.view_type == 'answer':
+            return {
+                'total': reverse_lazy('psat:answer_list_sub', args=['전체']),
+                'eoneo': reverse_lazy('psat:answer_list_sub', args=['언어']),
+                'jaryo': reverse_lazy('psat:answer_list_sub', args=['자료']),
+                'sanghwang': reverse_lazy('psat:answer_list_sub', args=['상황']),
+            }
+
+    @property
     def info(self) -> dict:
         return {
-            'menu': self.view_type,
+            'menu': 'psat',
+            'menu_url': self.menu_url,
             'category': self.category,
             'view_type': self.view_type,
             'type': f'{self.view_type}List',

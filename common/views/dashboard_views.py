@@ -52,6 +52,7 @@ class CardInfoMixIn:
     @property
     def info(self) -> dict:
         return {
+            'menu': 'dashboard',
             'view_type': f'{self.view_type}Dashboard',
             'category': self.category,
             'type': f'{self.view_type}Dashboard',

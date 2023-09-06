@@ -3,21 +3,9 @@
 {% load partials %}
 
 {% startpartial datetime %}
-    <tr class="table-warning">
-        {% if info.type == 'likeDashboard' %}
-            <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
-                {{ problem.liked_at|date:'Y.m.d' }}({{ problem.liked_at|date:'w'|int2kor }})
-            </td>
-        {% elif info.type == 'rateDashboard' %}
-            <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
-                {{ problem.rated_at|date:'Y.m.d' }}({{ problem.rated_at|date:'w'|int2kor }})
-            </td>
-        {% elif info.type == 'answerDashboard' %}
-            <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
-                {{ problem.answered_at|date:'Y.m.d' }}({{ problem.answered_at|date:'w'|int2kor }})
-            </td>
-        {% endif %}
-    </tr>
+    <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
+        {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+    </td>
 {% endpartial %}
 
 <section class="htmx-fade-in">
@@ -30,19 +18,24 @@
             <tbody>
             {% if page_obj %}
                 {% for problem in page_obj %}
-                    {% ifchanged %}{% partial datetime %}{% endifchanged %}
-                    <tr>
-                        <td class="text-nowrap p-2 col-1">
-                            {% include 'psat/snippets/problem_reference.html' %}
-                            {% include 'psat/snippets/icon_container.html' %}
-                            <div class="d-sm-none pt-2">
-                                {% include 'psat/snippets/list_table_problem.html' %}
-                            </div>
-                        </td>
-                        <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
-                            {% include 'psat/snippets/list_table_problem.html' %}
-                        </td>
-                    </tr>
+                    {% ifchanged %}
+                        <tr class="table-warning">
+                            {% if info.type == 'likeDashboard' %}
+                                {% with timestamp=problem.liked_at %}
+                                    {% partial datetime %}
+                                {% endwith %}
+                            {% elif info.type == 'rateDashboard' %}
+                                {% with timestamp=problem.rated_at %}
+                                    {% partial datetime %}
+                                {% endwith %}
+                            {% elif info.type == 'answerDashboard' %}
+                                {% with timestamp=problem.answered_at %}
+                                    {% partial datetime %}
+                                {% endwith %}
+                            {% endif %}
+                        </tr>
+                    {% endifchanged %}
+                    {% include 'psat/snippets/list_table_body.html' %}
                 {% endfor %}
             {% else %}
                 <tr>
@@ -54,12 +47,5 @@
             </tbody>
         </table>
     </div>
-    <section class="d-flex flex-wrap">
-        <div class="p-2 me-auto ms-auto">
-            {% include 'board/list_pagination.html' %}
-        </div>
-        <div class="p-2">
-            {% include 'dashboard/snippets/list_filter_container.html' %}
-        </div>
-    </section>
+    {% include 'psat/snippets/list_footer.html' %}
 </section>
