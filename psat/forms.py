@@ -1,11 +1,8 @@
-# Django Core Import
+from crispy_forms.helper import FormHelper
 from django import forms
-
-# Third Party Library Import
 from searchview import forms as search_view
 
-# Custom App Import
-from psat.models import ProblemMemo, ProblemTag
+from .models import ProblemMemo, ProblemTag
 
 
 class ProblemSearchForm(search_view.SearchForm):
@@ -17,6 +14,11 @@ class ProblemSearchForm(search_view.SearchForm):
 
 
 class ProblemMemoForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+
     class Meta:
         model = ProblemMemo
         fields = ['user', 'problem', 'content']

@@ -1,0 +1,63 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load psat_filter %}
+{% load slippers %}
+
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% block main %}
+    <section>
+        {{ info|json_script:'info' }}
+        <div class="pagetitle my-2">
+            <h1>
+                {{ info.icon|safe }}
+                {{ info.title }}
+            </h1>
+        </div><!-- Page Title End -->
+        <section class="section htmx-fade-out">
+        {% #content_row class3='p-4' %}
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    {% #nav_tab id='0' %}
+                        <span hx-trigger="load delay:0s" hx-target="#navContent0"
+                              hx-get="{% url 'score:list_content' '전체' %}" hx-swap="innerHTML">
+                            {{ PSAT_ICON_SET.all|safe }} 전체
+                        </span>
+                    {% /nav_tab %}
+
+{#                    {% #nav_tab id='1' %}#}
+{#                        <span hx-trigger="load delay:0.3s" hx-target="#navContent1"#}
+{#                              hx-get="{{ info.menu_url.eoneo }}" hx-swap="innerHTML">#}
+{#                            {{ PSAT_ICON_SET.eoneo|safe }} 언어#}
+{#                        </span>#}
+{#                    {% /nav_tab %}#}
+{##}
+{#                    {% #nav_tab id='2' %}#}
+{#                        <span hx-trigger="load delay:0.6s" hx-target="#navContent2"#}
+{#                              hx-get="{{ info.menu_url.jaryo }}" hx-swap="innerHTML">#}
+{#                            {{ PSAT_ICON_SET.jaryo|safe }} 자료#}
+{#                        </span>#}
+{#                    {% /nav_tab %}#}
+{##}
+{#                    {% #nav_tab id='3' %}#}
+{#                        <span hx-trigger="load delay:0.9s" hx-target="#navContent3"#}
+{#                              hx-get="{{ info.menu_url.sanghwang }}" hx-swap="innerHTML">#}
+{#                            {{ PSAT_ICON_SET.sanghwang|safe }} 상황#}
+{#                        </span>#}
+{#                    {% /nav_tab %}#}
+                </div>
+            </nav><!-- Navigation End -->
+            <div class="tab-content" id="nav-tabContent">
+                {% nav_content id='0' %}<!-- All Subject Tab End -->
+{#                {% nav_content id='1' %}<!-- Eoneo Tab End -->#}
+{#                {% nav_content id='2' %}<!-- Jaryo Tab End -->#}
+{#                {% nav_content id='3' %}<!-- Sanghwang Tab End -->#}
+            </div>
+        {% /content_row %}
+        </section>
+    </section><!-- Main Content End -->
+{% endblock %}
+
+{% block page_script %}
+    <script type="module" src="{% static 'js/psat.js' %}"></script>
+{% endblock %}
