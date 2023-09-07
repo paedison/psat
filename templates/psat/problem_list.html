@@ -20,28 +20,28 @@
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
                     {% #nav_tab id='0' %}
                         <span hx-trigger="load delay:0s" hx-target="#navContent0"
-                              hx-get="{{ info.menu_url.total }}" hx-swap="innerHtml">
+                              hx-get="{{ info.menu_url.total }}" hx-swap="innerHTML">
                             {{ PSAT_ICON_SET.all|safe }} 전체
                         </span>
                     {% /nav_tab %}
 
                     {% #nav_tab id='1' %}
                         <span hx-trigger="load delay:0.3s" hx-target="#navContent1"
-                              hx-get="{{ info.menu_url.eoneo }}" hx-swap="innerHtml">
+                              hx-get="{{ info.menu_url.eoneo }}" hx-swap="innerHTML">
                             {{ PSAT_ICON_SET.eoneo|safe }} 언어
                         </span>
                     {% /nav_tab %}
 
                     {% #nav_tab id='2' %}
                         <span hx-trigger="load delay:0.6s" hx-target="#navContent2"
-                              hx-get="{{ info.menu_url.jaryo }}" hx-swap="innerHtml">
+                              hx-get="{{ info.menu_url.jaryo }}" hx-swap="innerHTML">
                             {{ PSAT_ICON_SET.jaryo|safe }} 자료
                         </span>
                     {% /nav_tab %}
 
                     {% #nav_tab id='3' %}
                         <span hx-trigger="load delay:0.9s" hx-target="#navContent3"
-                              hx-get="{{ info.menu_url.sanghwang }}" hx-swap="innerHtml">
+                              hx-get="{{ info.menu_url.sanghwang }}" hx-swap="innerHTML">
                             {{ PSAT_ICON_SET.sanghwang|safe }} 상황
                         </span>
                     {% /nav_tab %}

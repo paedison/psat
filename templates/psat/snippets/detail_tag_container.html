@@ -1,9 +1,11 @@
 {% load i18n %}
 {% load taggit_templatetags2_tags %}
 {% load partials %}
-{% load psat_filter %}
 
-{# context: my_tag, all_tags #}
+{# ProblemTagContainerView -> context: my_tag, my_tag_list, all_tags, problem #}
+{# ProblemTagCreateView -> context: all_tags, problem #}
+{# ProblemTagAddView -> context: all_tags, problem #}
+
 <div id="myTags" class="htmx-fade-in htmx-fade-out">
     <div class="badge bg-success m-2">MY TAGS</div>
     <div class="mb-2 mx-2">
@@ -15,7 +17,7 @@
                        value="{{ my_tag.problem.id }}" aria-label="Problem" hidden/>
                 <input name="tags" type="text" aria-label="Tag input" required
                        class="form-control form-control-sm" placeholder="{% trans 'Leave tags' %}"/>
-                <button class="btn btn-sm btn-outline-primary" href=""
+                <button class="btn btn-sm btn-outline-primary"
                         hx-post="{% url 'psat:tag_add' my_tag.id %}"
                         hx-include=".tag-info" hx-target="#detailTags" hx-swap="innerHTML">
                     {% trans 'Add' %}
@@ -26,7 +28,6 @@
     <div class="d-flex align-items-start mb-2 mx-2">
         <div class="border-start border-secondary-subtle ps-2">
             {% get_tags_for_object my_tag as "tags" %}
-{#            {% get_sorted_tags_for_object my_tag as "tags" %}#}
             {% for tag in tags %}
                 <div class="btn-group">
                     <span class="badge rounded-pill bg-primary dropdown-toggle" type="button"

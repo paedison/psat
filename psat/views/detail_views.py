@@ -1,15 +1,12 @@
-# Python Standard Function Import
 import json
 
 from django.core.handlers.wsgi import WSGIRequest
-# Django Core Import
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from vanilla import DetailView
 
-# Custom App Import
 from common.constants import icon, color
 from .list_views import get_evaluation_info
 from ..models import Problem, Evaluation, ProblemMemo, ProblemTag
@@ -37,6 +34,12 @@ class PSATDetailInfoMixIn:
     def my_tag(self) -> ProblemTag | None:
         if self.request.user.is_authenticated:
             return ProblemTag.objects.filter(user=self.request.user, problem=self.problem).first()
+        return None
+
+    @property
+    def problem_memo(self) -> ProblemMemo | None:
+        if self.request.user.is_authenticated:
+            return ProblemMemo.objects.filter(user=self.request.user, problem=self.problem).first()
         return None
 
     def get_problem_url(self, problem_id) -> reverse_lazy:
@@ -115,18 +118,9 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
             obj.update_answer(val)
         return obj
 
-    def get_problem_memo(self) -> ProblemMemo:
-        user = self.request.user
-        problem = self.object
-        problem_memo = None
-        if user.is_authenticated:
-            problem_memo = ProblemMemo.objects.filter(
-                user=user, problem=problem).first()
-        return problem_memo
-
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
-        context['problem_memo'] = self.get_problem_memo()
+        context['problem_memo'] = self.problem_memo
         context['my_tag'] = self.my_tag
         context['anchor_id'] = self.problem_id - int(self.object.number)
         context['problem'] = get_evaluation_info(self.request.user, self.object)

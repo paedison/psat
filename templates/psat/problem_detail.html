@@ -50,7 +50,11 @@
     {% if user.is_authenticated %}
         <tr>
             <td class="p-0">
-                {% include 'psat/snippets/detail_memo_container.html' %}
+                <div id="detailMemo" hx-trigger="load delay:0s"
+                    {% if problem_memo is None %}
+                        hx-get="{% url 'psat:memo_create' problem.id %}"
+                    {% else %} hx-get="{% url 'psat:memo_detail' problem_memo.id %}"
+                    {% endif %} hx-swap="innerHTML"></div>
             </td>
         </tr>
         <tr>

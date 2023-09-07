@@ -58,15 +58,15 @@ urlpatterns = [
          name='search_content_page'),
 
     # Memo
-    path('memo/create/', problem_memo_create_view, name='memo_create'),
-    path('memo/<int:pk>/', problem_memo_detail_view, name='memo_detail'),
-    path('memo/<int:pk>/update/', problem_memo_update_view, name='memo_update'),
-    path('memo/<int:pk>/delete/', problem_memo_delete_view, name='memo_delete'),
+    path('memo/create/problem<int:problem_id>/', problem_memo_create_view, name='memo_create'),
+    path('memo/detail/memo<int:memo_id>/', problem_memo_detail_view, name='memo_detail'),
+    path('memo/update/memo<int:memo_id>/', problem_memo_update_view, name='memo_update'),
+    path('memo/delete/memo<int:memo_id>/', problem_memo_delete_view, name='memo_delete'),
 
     # Tag
     path('tag/create/problem<int:problem_id>/', problem_tag_create_view, name='tag_create'),
     path('tag/container/tag<int:tag_id>/', problem_tag_container_view, name='tag_container'),
     path('tag/add/tag<int:tag_id>/', problem_tag_add_view, name='tag_add'),
-    path('tag/del/tag<int:tag_id>/<str:tag_name>/', problem_tag_delete_view, name='tag_delete'),
+    path('tag/delete/tag<int:tag_id>/<str:tag_name>/', problem_tag_delete_view, name='tag_delete'),
     path('tag/cloud/', problem_tag_cloud_view, name='tag_cloud'),
 ]

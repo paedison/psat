@@ -1,14 +1,9 @@
-# Django Core Import
-from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-
-# Third Party Library Import
 from searchview import views as search_view
 from vanilla import ListView
 
-# Custom App Import
 from common.constants import icon, color, psat
 from ..forms import ProblemSearchForm
 from ..models import Problem, Evaluation, ProblemData

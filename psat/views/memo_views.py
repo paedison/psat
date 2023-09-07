@@ -1,62 +1,54 @@
-# Python Standard Function Import
-
-# Django Core Import
-from django.http import JsonResponse
-from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views import generic
+from vanilla import DetailView, CreateView, UpdateView, DeleteView
 
-# Custom App Import
 from ..forms import ProblemMemoForm
-from ..models import ProblemMemo
+from ..models import ProblemMemo, Problem
 
 
-class ProblemMemoDetailView(generic.DetailView):
-    model = ProblemMemo
-    context_object_name = 'problem_memo'
-    template_name = 'psat/snippets/detail_memo_container.html#content'
-    object: object
+class MemoSettingMixIn:
+    """Setting mixin for Memo views."""
+    kwargs: dict
 
-    def get(self, request, *args, **kwargs) -> render:
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
-        html = render(request, self.template_name, context)
-        return html
-
-
-class ProblemMemoCreateView(generic.CreateView):
     model = ProblemMemo
     form_class = ProblemMemoForm
     context_object_name = 'problem_memo'
-    template_name = 'psat/snippets/detail_memo_container.html#create'
+    lookup_field = 'id'
+    lookup_url_kwarg = 'memo_id'
 
-    def get_success_url(self):
-        return reverse_lazy(f'psat:memo_detail', args=[self.object.id])
+    @property
+    def problem_id(self) -> int | None:
+        """Get problem_id in case of memo_create."""
+        problem_id = self.kwargs.get('problem_id')
+        return int(problem_id) if problem_id else None
+
+    @property
+    def problem(self) -> Problem | None:
+        """Return problem in the Problem model if problem_id exists."""
+        if self.problem_id:
+            return Problem.objects.get(id=self.problem_id)
 
 
-class ProblemMemoUpdateView(generic.UpdateView):
-    model = ProblemMemo
-    form_class = ProblemMemoForm
-    context_object_name = 'problem_memo'
+class ProblemMemoDetailView(MemoSettingMixIn, DetailView):
+    template_name = 'psat/snippets/detail_memo_container.html'
+
+
+class ProblemMemoCreateView(MemoSettingMixIn, CreateView):
+    template_name = 'psat/snippets/detail_memo_container.html'
+    def get_success_url(self) -> reverse_lazy: return reverse_lazy(f'psat:memo_detail', args=[self.object.id])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['problem'] = self.problem
+        return context
+
+
+class ProblemMemoUpdateView(MemoSettingMixIn, UpdateView):
     template_name = 'psat/snippets/detail_memo_container.html#update'
-    object: object
-
-    def get_success_url(self):
-        return reverse_lazy(f'psat:memo_detail', args=[self.object.id])
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        return render(request, self.template_name, context)
+    def get_success_url(self) -> reverse_lazy: return reverse_lazy(f'psat:memo_detail', args=[self.object.id])
 
 
-class ProblemMemoDeleteView(generic.DeleteView):
-    model = ProblemMemo
-    form_class = ProblemMemoForm
-    context_object_name = 'problem_memo'
-
-    def get_success_url(self):
-        return reverse_lazy(f'psat:memo_create')
+class ProblemMemoDeleteView(MemoSettingMixIn, DeleteView):
+    def get_success_url(self) -> reverse_lazy: return reverse_lazy(f'psat:memo_create')
 
 
 problem_memo_create_view = ProblemMemoCreateView.as_view()

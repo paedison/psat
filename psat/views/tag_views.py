@@ -100,8 +100,8 @@ class ProblemTagCreateView(TagSettingMixIn, CreateView):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
-        context['problem'] = self.problem
         context['all_tags'] = self.all_tags
+        context['problem'] = self.problem
         return context
 
 
@@ -121,8 +121,8 @@ class ProblemTagAddView(TagSettingMixIn, UpdateView):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
-        context['problem'] = self.problem
         context['all_tags'] = self.all_tags
+        context['problem'] = self.problem
         return context
 
 
