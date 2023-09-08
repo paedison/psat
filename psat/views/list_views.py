@@ -1,3 +1,4 @@
+from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -50,30 +51,28 @@ class PSATListInfoMixIn:
     """
     kwargs: dict
     view_type: str
-    object_list: any
+    title: str
+    request: WSGIRequest
+    pagination_url: str
 
-    title_dict = {
-        'problem': '',
-        'like': 'PSAT 즐겨찾기',
-        'rate': 'PSAT 난이도',
-        'answer': 'PSAT 정답확인',
-        'search': 'PSAT 검색'
-    }
     list_template = 'psat/problem_list.html'
     list_content_template = 'psat/problem_list_content.html'
 
     @property
+    def category(self) -> int: return self.url['sub_code']
+
+    @property
     def url(self) -> dict:
-        year = self.kwargs.get('year')
-        year = year if year == '전체' or year is None else int(year)
-        ex = self.kwargs.get('ex')
+        year = self.kwargs.get('year', '전체')
+        year = year if year == '전체' else int(year)
+        ex = self.kwargs.get('ex', '전체')
         exam2 = next((i['exam2'] for i in psat.TOTAL['exam_list']
-                      if i['ex'] == ex), None)
-        sub = self.kwargs.get('sub')
+                      if i['ex'] == ex), '전체')
+        sub = self.kwargs.get('sub', '전체')
         subject = next((i['subject'] for i in psat.TOTAL['subject_list']
-                        if i['sub'] == sub), None)
+                        if i['sub'] == sub), '전체')
         sub_code = next((i['sub_code'] for i in psat.TOTAL['subject_list']
-                         if i['sub'] == sub), None)
+                         if i['sub'] == sub), 0)
         return {
             'year': year,
             'ex': ex,
@@ -84,106 +83,74 @@ class PSATListInfoMixIn:
         }
 
     @property
-    def option(self) -> dict:
-        return {
-            'problem': None,
-            'like': self.kwargs.get('is_liked'),
-            'rate': self.kwargs.get('star_count'),
-            'answer': self.kwargs.get('is_correct'),
-            'search': None,
-        }
+    def year(self): return self.url['year']
+    @property
+    def sub(self): return self.url['sub']
+    @property
+    def sub_code(self): return self.url['sub_code']
+    @property
+    def ex(self): return self.url['ex']
 
     @property
-    def title(self) -> str:
-        year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
-        exam2, subject = self.url['exam2'], self.url['subject']
-        title = self.title_dict[self.view_type]
-        title_parts = []
+    def url_name(self) -> str: return f'psat:{self.view_type}_list'
 
-        if year != '전체' and year is not None:
-            title_parts.append(f"{year}년")
-        if ex != '전체' and ex is not None:
-            title_parts.append(exam2)
-        if sub != '전체' and sub is not None:
-            title_parts.append(subject)
-        title_parts.append('PSAT 기출문제')
-        if self.view_type == 'problem' and title_parts is not None:
-            title = ' '.join(title_parts)
-
-        return title
-
-    @property
-    def pagination_url(self) -> reverse_lazy:
-        year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
-        opt = self.option[self.view_type]
-        url_pattern = f'psat:{self.view_type}_list'
-        if self.view_type == 'problem':
-            if sub is None:
-                return None
-            return reverse_lazy(f'psat:{self.view_type}_list', args=[year, ex, sub])
-        else:
-            sub = sub if sub != '전체' else None
-            args = [opt, sub]
-            args = [value for value in args if value is not None]
-            _opt = '_opt' if opt else ''
-            _sub = '_sub' if sub else ''
-            if args:
-                return reverse_lazy(f'{url_pattern}{_opt}{_sub}', args=args)
-            else:
-                return reverse_lazy(url_pattern)
-
-    @property
-    def category(self) -> int: return self.url['sub_code']
+    def get_reverse_lazy(self, sub, opt=None) -> reverse_lazy:
+        args = [opt, sub]
+        args = [value for value in args if value is not None]
+        _opt = '_opt' if opt else ''
+        _sub = '_sub' if sub else ''
+        return reverse_lazy(f'{self.url_name}{_opt}{_sub}', args=args)
 
     @property
     def menu_url(self) -> dict:
         if self.view_type == 'problem':
             return {
-                'total': reverse_lazy('psat:problem_list', args=['전체', '전체', '전체']),
-                'eoneo': reverse_lazy('psat:problem_list', args=['전체', '전체', '언어']),
-                'jaryo': reverse_lazy('psat:problem_list', args=['전체', '전체', '자료']),
-                'sanghwang': reverse_lazy('psat:problem_list', args=['전체', '전체', '상황']),
+                'eoneo': reverse_lazy(self.url_name, args=['전체', '전체', '언어']),
+                'jaryo': reverse_lazy(self.url_name, args=['전체', '전체', '자료']),
+                'sanghwang': reverse_lazy(self.url_name, args=['전체', '전체', '상황']),
             }
-        elif self.view_type == 'like':
+        else:
             return {
-                'total': reverse_lazy('psat:like_list_sub', args=['전체']),
-                'eoneo': reverse_lazy('psat:like_list_sub', args=['언어']),
-                'jaryo': reverse_lazy('psat:like_list_sub', args=['자료']),
-                'sanghwang': reverse_lazy('psat:like_list_sub', args=['상황']),
+                'eoneo': self.get_reverse_lazy('언어'),
+                'jaryo': self.get_reverse_lazy('자료'),
+                'sanghwang': self.get_reverse_lazy('상황'),
             }
-        elif self.view_type == 'rate':
-            return {
-                'total': reverse_lazy('psat:rate_list_sub', args=['전체']),
-                'eoneo': reverse_lazy('psat:rate_list_sub', args=['언어']),
-                'jaryo': reverse_lazy('psat:rate_list_sub', args=['자료']),
-                'sanghwang': reverse_lazy('psat:rate_list_sub', args=['상황']),
-            }
-        elif self.view_type == 'answer':
-            return {
-                'total': reverse_lazy('psat:answer_list_sub', args=['전체']),
-                'eoneo': reverse_lazy('psat:answer_list_sub', args=['언어']),
-                'jaryo': reverse_lazy('psat:answer_list_sub', args=['자료']),
-                'sanghwang': reverse_lazy('psat:answer_list_sub', args=['상황']),
-            }
+
+    def get_filtered_queryset(self, field, value) -> Problem:
+        """ Get filtered queryset for like, rate, answer views. """
+        problem_filter = Q(evaluation__user=self.request.user)
+        if self.sub != '전체' and self.sub is not None:
+            problem_filter &= Q(exam__sub=self.sub)
+        if value is None:
+            problem_filter &= Q(**{field+'__isnull': False})
+        else:
+            problem_filter &= Q(**{field: value})
+        return Problem.objects.filter(problem_filter)
+
+    @property
+    def is_liked(self) -> bool | None: return self.kwargs.get('is_liked')
+    @property
+    def star_count(self) -> bool | None: return self.kwargs.get('star_count')
+    @property
+    def is_correct(self) -> bool | None: return self.kwargs.get('is_correct')
 
     @property
     def info(self) -> dict:
         return {
-            'menu': 'psat',
+            'menu': self.view_type,
             'menu_url': self.menu_url,
             'category': self.category,
             'view_type': self.view_type,
             'type': f'{self.view_type}List',
             'title': self.title,
-            'sub': self.url['sub'],
-            'sub_code': self.url['sub_code'],
+            'sub': self.sub,
+            'sub_code': self.sub_code,
             'pagination_url': self.pagination_url,
-            'target_id': f'{self.view_type}ListContent{self.url["sub_code"]}',
             'icon': icon.MENU_ICON_SET[self.view_type],
             'color': color.COLOR_SET[self.view_type],
-            'is_liked': self.option['like'],
-            'star_count': self.option['rate'],
-            'is_correct': self.option['answer'],
+            'is_liked': self.is_liked,
+            'star_count': self.star_count,
+            'is_correct': self.is_correct,
         }
 
 
@@ -194,85 +161,95 @@ class BaseListView(PSATListInfoMixIn, ListView):
     paginate_by = 10
     view_type: str
 
+    def get_template_names(self) -> str:
+        return self.list_content_template if self.request.htmx else self.list_template
+
     def get_elided_page_range(self, page_number):
         paginator = self.get_paginator(self.get_queryset(), self.paginate_by)
         elided_page_range = paginator.get_elided_page_range(
             number=page_number, on_each_side=3, on_ends=1)
         return elided_page_range
 
-    def get(self, request, *args, **kwargs):
-        page = self.paginate_queryset(self.get_queryset(), self.paginate_by)
-        self.object_list = page.object_list
-        for obj in page:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        page_obj = context['page_obj']
+        for obj in page_obj:
             get_evaluation_info(self.request.user, obj)
 
         page_number = self.request.GET.get('page', 1)
         page_range = self.get_elided_page_range(page_number)
 
-        context = self.get_context_data(
-            url=self.url,
-            info=self.info,
-            page_obj=page,
-            is_paginated=page.has_other_pages(),
-            paginator=page.paginator,
-            page_range=page_range,
-        )
+        context['url'] = self.url
+        context['info'] = self.info
+        context['page_range'] = page_range
 
-        return self.render_to_response(context)
-
-    def get_template_names(self):
-        if self.url['sub'] is None:
-            return self.list_template
-        else:
-            return self.list_content_template
-
-    def get_queryset(self) -> Problem.objects:
-        year, ex, sub = self.url['year'], self.url['ex'], self.url['sub']
-        field = value = None
-        problem_filter = Q()
-
-        if self.view_type == 'problem':
-            if year != '전체':
-                problem_filter &= Q(exam__year=year)
-            if ex != '전체':
-                problem_filter &= Q(exam__ex=ex)
-            if sub != '전체':
-                problem_filter &= Q(exam__sub=sub)
-        else:
-            problem_filter = Q(evaluation__user=self.request.user)
-            if sub != '전체' and sub is not None:
-                problem_filter &= Q(exam__sub=sub)
-            if self.view_type == 'like':
-                field = 'evaluation__is_liked'
-                value = self.kwargs.get('is_liked')
-            elif self.view_type == 'rate':
-                field = 'evaluation__difficulty_rated'
-                value = self.kwargs.get('star_count')
-            elif self.view_type == 'answer':
-                field = 'evaluation__is_correct'
-                value = self.kwargs.get('is_correct')
-
-            if value is None:
-                problem_filter &= Q(**{field+'__isnull': False})
-            else:
-                problem_filter &= Q(**{field: value})
-        return Problem.objects.filter(problem_filter)
+        return context
 
 
 class ProblemListView(BaseListView):
     view_type = 'problem'
 
+    @property
+    def title(self) -> str:
+        title_parts = []
+        if self.year != '전체' and self.year is not None:
+            title_parts.append(f"{self.year}년")
+        if self.ex != '전체' and self.ex is not None:
+            title_parts.append(self.url['exam2'])
+        if self.sub != '전체' and self.sub is not None:
+            title_parts.append(self.url['subject'])
+        title_parts.append('PSAT 기출문제')
+        return ' '.join(title_parts)
+
+    @property
+    def pagination_url(self) -> reverse_lazy:
+        return reverse_lazy(self.url_name, args=[self.year, self.ex, self.sub])
+
+    def get_queryset(self) -> Problem:
+        if self.request.htmx:
+            problem_filter = Q()
+            if self.year != '전체':
+                problem_filter &= Q(exam__year=self.year)
+            if self.ex != '전체':
+                problem_filter &= Q(exam__ex=self.ex)
+            if self.sub != '전체':
+                problem_filter &= Q(exam__sub=self.sub)
+            return Problem.objects.filter(problem_filter)
+        else:
+            return Problem.objects.all()
+
 
 class LikeListView(BaseListView):
     view_type = 'like'
+    title = 'PSAT 즐겨찾기'
+
+    @property
+    def pagination_url(self) -> reverse_lazy: return self.get_reverse_lazy(self.sub, self.is_liked)
+
+    def get_queryset(self) -> Problem:
+        return self.get_filtered_queryset('evaluation__is_liked', self.is_liked)
 
 
 class RateListView(BaseListView):
     view_type = 'rate'
+    title = 'PSAT 난이도'
+
+    @property
+    def pagination_url(self) -> reverse_lazy: return self.get_reverse_lazy(self.sub, self.star_count)
+
+    def get_queryset(self) -> Problem:
+        return self.get_filtered_queryset('evaluation__difficulty_rated', self.star_count)
 
 
 class AnswerListView(BaseListView):
     view_type = 'answer'
+    title = 'PSAT 정답확인'
+
+    @property
+    def pagination_url(self) -> reverse_lazy: return self.get_reverse_lazy(self.sub, self.is_correct)
+
+    def get_queryset(self) -> Problem:
+        return self.get_filtered_queryset('evaluation__is_correct', self.is_correct)
 
 
 class ProblemSearchView(PSATListInfoMixIn, search_view.SearchView):
@@ -282,15 +259,13 @@ class ProblemSearchView(PSATListInfoMixIn, search_view.SearchView):
     paginate_by = 10
     first_display_all_list = False
     ordering = '-problem__exam__year'
+
     view_type = 'search'
     category = 0
+    title = 'PSAT 검색'
 
     @property
-    def log_title(self) -> str: return self.title_dict[self.view_type]
-
-    @property
-    def pagination_url(self) -> reverse_lazy:
-        return reverse_lazy('psat:search_content')
+    def pagination_url(self) -> reverse_lazy: return reverse_lazy('psat:search_content')
 
     @property
     def info(self) -> dict:
@@ -298,7 +273,7 @@ class ProblemSearchView(PSATListInfoMixIn, search_view.SearchView):
             'menu': self.view_type,
             'view_type': self.view_type,
             'type': f'{self.view_type}List',
-            'title': self.log_title,
+            'title': self.title,
             'pagination_url': self.pagination_url,
             'target_id': f'{self.view_type}ListContent',
             'icon': icon.MENU_ICON_SET[self.view_type],
@@ -313,20 +288,22 @@ class ProblemSearchView(PSATListInfoMixIn, search_view.SearchView):
         return super().post(request, *args, **kwargs)
 
     def get_context_data(self, *, object_list=None, **kwargs) -> dict:
-        context = super().get_context_data()
+        context = super().get_context_data(object_list=None, **kwargs)
         page_obj = context['page_obj']
         paginator = context['paginator']
         page_range = paginator.get_elided_page_range(page_obj.number, on_ends=1)
         for obj in page_obj:
             get_evaluation_info(self.request.user, obj)
+
         context['url'] = self.url
         context['info'] = self.info
         context['page_range'] = page_range
+
         return context
 
 
 class ProblemSearchContentView(ProblemSearchView):
-    template_name = 'psat/problem_search.html#search_content'
+    template_name = 'psat/problem_search.html#content'
 
 
 problem_list_view = ProblemListView.as_view()

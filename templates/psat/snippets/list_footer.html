@@ -5,7 +5,7 @@
     </div>
     {% if info.view_type != 'search' %}
         <div class="p-2">
-            {% if info.menu == 'psat' %}
+            {% if info.menu == 'problem' or info.menu == 'like' or info.menu == 'rate' or info.menu == 'answer' %}
                 {% include 'psat/snippets/list_filter_container.html' %}
             {% elif info.menu == 'dashboard' %}
                 {% include 'dashboard/snippets/list_filter_container.html' %}

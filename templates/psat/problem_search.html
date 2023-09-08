@@ -1,14 +1,20 @@
 {% load static %}
 {% load i18n %}
-{% load psat_filter %}
 {% load slippers %}
+{% load partials %}
+
+{% startpartial content %}
+    {% #nav_content id='0' %}
+        {% include 'psat/problem_list_content.html' %}
+    {% /nav_content %}
+{% endpartial %}
 
 <section>
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>
-            {{ PSAT_ICON_SET.search|safe }}
-            {% trans 'Search Result' %}
+            {{ info.icon|safe }}
+            {{ info.title }}
         </h1>
     </div><!-- Page Title End -->
     <section class="section htmx-fade-out">
@@ -16,17 +22,13 @@
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
                 {% #nav_tab id='0' %}
-                    <span class="fw-bold small text-primary">
-                        {{ PSAT_ICON_SET.search|safe }}
-                        {% trans 'Search Result' %}
-                    </span>
+                    {{ PSAT_ICON_SET.search|safe }}
+                    {% trans 'Search Result' %}
                 {% /nav_tab %}
             </div>
         </nav><!-- Navigation End -->
         <div class="tab-content" id="nav-tabContent">
-            {% #nav_content id='0' %}
-                {% include 'psat/problem_list_content.html' %}
-            {% /nav_content %}
+            {% partial content %}
         </div><!-- Navigation Content End -->
     {% /content_row %}
     </section>

@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'vanilla',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django_htmx',
 
     # My Apps
     'common',
@@ -107,6 +108,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
 
     # Default Django Apps
     'django.middleware.security.SecurityMiddleware',

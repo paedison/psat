@@ -203,10 +203,6 @@ class Problem(AddInfo, models.Model):
     number = models.IntegerField()
     question = models.TextField()
     answer = models.IntegerField()
-    tags = TaggableManager()
-    # tags = TaggableManager(
-    #     verbose_name=_('tags'), blank=True,through=TaggedProblem,
-    #     help_text=_('A comma-separated list of tags.'))
 
     class Meta:
         ordering = ['-exam__year', 'id']
@@ -265,6 +261,7 @@ class Evaluation(AddInfo, UpdateInfo, models.Model):
 
     class Meta:
         ordering = ['-problem__exam__year', 'problem__exam__id', 'problem__number']
+        unique_together = [["user", "problem"]]
 
 
 class ProblemMemo(models.Model):

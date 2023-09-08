@@ -1,12 +1,11 @@
 {% extends 'list.html' %}
 {% load static %}
-{% load psat_filter %}
 {% load slippers %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
 {% block main %}
-    <section id="{{ info.target_id }}">
+    <section>
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
             <h1>
@@ -19,10 +18,7 @@
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
                     {% #nav_tab id='0' %}
-                        <span hx-trigger="load delay:0s" hx-target="#navContent0"
-                              hx-get="{{ info.menu_url.total }}" hx-swap="innerHTML">
-                            {{ PSAT_ICON_SET.all|safe }} 전체
-                        </span>
+                        {{ PSAT_ICON_SET.all|safe }} 전체
                     {% /nav_tab %}
 
                     {% #nav_tab id='1' %}
@@ -48,7 +44,9 @@
                 </div>
             </nav><!-- Navigation End -->
             <div class="tab-content" id="nav-tabContent">
-                {% nav_content id='0' %}<!-- All Subject Tab End -->
+                {% #nav_content id='0' %}
+                    {% include 'psat/problem_list_content.html' %}
+                {% /nav_content id='0' %}<!-- All Subject Tab End -->
                 {% nav_content id='1' %}<!-- Eoneo Tab End -->
                 {% nav_content id='2' %}<!-- Jaryo Tab End -->
                 {% nav_content id='3' %}<!-- Sanghwang Tab End -->
