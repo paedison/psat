@@ -26,64 +26,81 @@ DIFFICULTY_CHOICES = [
 
 class AddInfo:
     is_liked = difficulty_rated = is_correct = None
+    problem: any
 
-    def exam_id(self):
+    @property
+    def exam_id(self) -> int:
         return self.exam.id if isinstance(self, Problem) else self.problem.exam.id
 
-    def year(self):
+    @property
+    def year(self) -> int:
         return self.exam.year if isinstance(self, Problem) else self.problem.exam.year
 
-    def ex(self):
+    @property
+    def ex(self) -> str:
         return self.exam.ex if isinstance(self, Problem) else self.problem.exam.ex
 
-    def exam1(self):
+    @property
+    def exam1(self) -> str:
         return self.exam.exam1 if isinstance(self, Problem) else self.problem.exam.exam1
 
-    def exam2(self):
+    @property
+    def exam2(self) -> str:
         return self.exam.exam2 if isinstance(self, Problem) else self.problem.exam.exam2
 
-    def sub(self):
+    @property
+    def sub(self) -> str:
         return self.exam.sub if isinstance(self, Problem) else self.problem.exam.sub
 
-    def subject(self):
+    @property
+    def subject(self) -> str:
         return self.exam.subject if isinstance(self, Problem) else self.problem.exam.subject
 
-    def year_ex_sub(self):
+    @property
+    def year_ex_sub(self) -> str:
         return self.exam.year_ex_sub if isinstance(self, Problem) else self.problem.exam.year_ex_sub
 
-    def year_ex_sub_hyphen(self):
+    @property
+    def year_ex_sub_hyphen(self) -> str:
         year_ex_sub = self.exam.year_ex_sub if isinstance(self, Problem) else self.problem.exam.year_ex_sub
         year, ex, sub = year_ex_sub[:4], year_ex_sub[4:6], year_ex_sub[6:8]
         return f"{year}-{ex}-{sub}"
 
-    def year_ex_sub_hyphen_number(self):
+    @property
+    def year_ex_sub_hyphen_number(self) -> str:
         year_ex_sub = self.exam.year_ex_sub if isinstance(self, Problem) else self.problem.exam.year_ex_sub
         year, ex, sub = year_ex_sub[:4], year_ex_sub[4:6], year_ex_sub[6:8]
         number = self.number if isinstance(self, Problem) else self.problem.number
         return f"{year}-{ex}-{sub} {number}번"
 
-    def full_title(self):
+    @property
+    def full_title(self) -> str:
         year = self.exam.year if isinstance(self, Problem) else self.problem.exam.year
         exam2 = self.exam.exam2 if isinstance(self, Problem) else self.problem.exam.exam2
         subject = self.exam.subject if isinstance(self, Problem) else self.problem.exam.subject
         number = self.number if isinstance(self, Problem) else self.problem.number
         return f"{year}년 '{exam2}' {subject} {number}번"
 
-    def prob_id(self):
+    @property
+    def prob_id(self) -> int:
         return self.id if isinstance(self, Problem) else self.problem.id
 
-    def problem_number(self):
+    @property
+    def problem_number(self) -> int:
         return self.number if isinstance(self, Problem) else self.problem.number
 
-    def problem_question(self):
+    @property
+    def problem_question(self) -> str:
         return self.question if isinstance(self, Problem) else self.problem.question
 
-    def correct_answer(self):
+    @property
+    def correct_answer(self) -> int:
         return self.answer if isinstance(self, Problem) else self.problem.answer
 
-    def image_file(self):
-        year, year_ex_sub = self.year(), self.year_ex_sub()
-        number = f'{self.problem_number():02}'
+    @property
+    def image_file(self) -> dict:
+        year, year_ex_sub = self.year, self.year_ex_sub
+        number = f'{self.problem_number:02}'
         static_path = BASE_DIR / 'static'
 
         preparing_image = static('image/preparing.png')
@@ -186,13 +203,20 @@ class Exam(AddInfo, models.Model):
         ordering = ['-year']
 
     def __str__(self):
-        return self.year_ex_sub_hyphen()
+        return self.year_ex_sub_hyphen
 
     def get_absolute_url(self):
         return reverse_lazy('psat:problem_list', args=[self.year, self.ex, self.sub])
 
-    def year_ex_sub_hyphen(self):
-        return f"{self.year}-{self.ex}-{self.sub}"
+    @property
+    def year_ex_sub_hyphen(self) -> str: return f'{self.year}-{self.ex}-{self.sub}'
+
+    @property
+    def full_title(self) -> str:
+        year = self.year
+        exam2 = self.exam2
+        subject = self.subject
+        return f"{year}년 '{exam2}' {subject}"
 
 
 class Problem(AddInfo, models.Model):
@@ -208,7 +232,7 @@ class Problem(AddInfo, models.Model):
         ordering = ['-exam__year', 'id']
 
     def __str__(self):
-        return self.year_ex_sub_hyphen_number()
+        return self.year_ex_sub_hyphen_number
 
     def get_absolute_url(self):
         return reverse_lazy('psat:problem_detail', args=[self.id])

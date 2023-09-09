@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from vanilla import ListView, CreateView
 
-from common.constants import psat
+from common.constants import psat, color, icon
+from psat.models import Exam, Problem
 from score.forms import TemporaryAnswerForm
 from score.models import TemporaryAnswer
 
@@ -76,3 +77,37 @@ class TemporaryAnswerCreateView(CreateView):
     model = TemporaryAnswer
     form_class = TemporaryAnswerForm
     template_name = 'score/answer_form.html'
+    context_object_name = 'problems'
+
+    @property
+    def year(self) -> int: return int(self.kwargs.get('year'))
+    @property
+    def ex(self) -> str: return self.kwargs.get('ex')
+    @property
+    def sub(self) -> str: return self.kwargs.get('sub')
+    @property
+    def exam(self) -> Exam: return Exam.objects.get(year=self.year, ex=self.ex, sub=self.sub)
+    @property
+    def problems(self) -> Problem: return Problem.objects.filter(exam=self.exam)
+    @property
+    def object_list(self) -> Problem: return self.problems
+
+    @property
+    def info(self) -> dict:
+        return {
+            'menu': 'score',
+            'title': self.exam.full_title,
+            'sub': self.sub,
+            # 'sub_code': self.sub_code,
+            # 'pagination_url': self.pagination_url,
+            'icon': icon.MENU_ICON_SET['answer'],
+            'color': color.COLOR_SET['answer'],
+            # 'is_liked': self.is_liked,
+            # 'star_count': self.star_count,
+            # 'is_correct': self.is_correct,
+        }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['info'] = self.info
+        return context

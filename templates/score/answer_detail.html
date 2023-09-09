@@ -7,6 +7,39 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
+{% block main %}
+    <section>
+        {{ info|json_script:'info' }}
+        <div class="pagetitle my-2">
+            <h1>
+                <div class="d-flex align-items-center pb-2 fs-6">
+                    <div>
+                        <div class="input-group me-2">
+                            {% include 'psat/snippets/detail_nav_container.html' %}
+                            {% include 'psat/snippets/detail_filter_container.html' %}
+                        </div>
+                    </div>
+                    <div class="small">
+                        {% include 'psat/snippets/icon_container.html' %}
+                    </div>
+                </div>
+                {{ info.title }}
+            </h1>
+        </div><!-- Page Title End -->
+        <section class="section">
+        {% #content_row class3='p-4' %}
+            <table class="table my-4">
+                {% if problem %}
+                    <thead>{% partial thead %}</thead>
+                    <tbody>{% partial tbody %}</tbody>
+                {% endif %}
+            </table>
+        {% /content_row %}
+        </section>
+    </section><!-- Main Content End -->
+{% endblock %}
+
+
 {% startpartial thead %}
     <tr>
         <th class="p-0">
@@ -23,6 +56,7 @@
         </th>
     </tr>
 {% endpartial %}
+
 
 {% startpartial tbody %}
     <tr>
@@ -69,38 +103,6 @@
     {% endif %}
 {% endpartial %}
 
-
-{% block main %}
-    <section>
-        {{ info|json_script:'info' }}
-        <div class="pagetitle my-2">
-            <h1>
-                <div class="d-flex align-items-center pb-2 fs-6">
-                    <div>
-                        <div class="input-group me-2">
-                            {% include 'psat/snippets/detail_nav_container.html' %}
-                            {% include 'psat/snippets/detail_filter_container.html' %}
-                        </div>
-                    </div>
-                    <div class="small">
-                        {% include 'psat/snippets/icon_container.html' %}
-                    </div>
-                </div>
-                {{ info.title }}
-            </h1>
-        </div><!-- Page Title End -->
-        <section class="section">
-        {% #content_row %}
-            <table class="table my-4">
-                {% if problem %}
-                    <thead>{% partial thead %}</thead>
-                    <tbody>{% partial tbody %}</tbody>
-                {% endif %}
-            </table>
-        {% /content_row %}
-        </section>
-    </section><!-- Main Content End -->
-{% endblock %}
 
 {% block page_script %}
     <script type="module" src="{% static 'js/psat.js' %}"></script>

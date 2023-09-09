@@ -53,7 +53,7 @@ class ProblemLog(models.Model):
     problem_id = models.IntegerField()
 
     def __str__(self):
-        return f'{self.timestamp}(User {self.user_id} - {self.evaluation.full_title()} &raquo; Opened'
+        return f'{self.timestamp}(User {self.user_id} - {self.evaluation.full_title} &raquo; Opened'
 
 
 class LikeLog(models.Model):
@@ -67,7 +67,7 @@ class LikeLog(models.Model):
     is_liked = models.BooleanField()
 
     def __str__(self):
-        return f'{self.timestamp}(User {self.user_id} - {self.evaluation.full_title()} &raquo; Is liked:{self.is_liked}'
+        return f'{self.timestamp}(User {self.user_id} - {self.evaluation.full_title} &raquo; Is liked:{self.is_liked}'
 
 
 class RateLog(models.Model):
@@ -81,7 +81,7 @@ class RateLog(models.Model):
     difficulty_rated = models.IntegerField(choices=DIFFICULTY_CHOICES)
 
     def __str__(self):
-        return f'{self.timestamp}(User {self.user_id} - {self.evaluation.full_title()} &raquo; Difficulty rated:{self.difficulty_rated}'
+        return f'{self.timestamp}(User {self.user_id} - {self.evaluation.full_title} &raquo; Difficulty rated:{self.difficulty_rated}'
 
 
 class AnswerLog(models.Model):
@@ -96,4 +96,4 @@ class AnswerLog(models.Model):
     is_correct = models.BooleanField()
 
     def __str__(self):
-        return f'{self.timestamp}(User {self.user_id} - {self.evaluation.full_title()} &raquo; Submitted answer:{self.submitted_answer}, Is correct:{self.is_correct}'
+        return f'{self.timestamp}(User {self.user_id} - {self.evaluation.full_title} &raquo; Submitted answer:{self.submitted_answer}, Is correct:{self.is_correct}'

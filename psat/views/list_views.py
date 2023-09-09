@@ -15,7 +15,7 @@ def index(request):
 
 
 def get_evaluation_info(user, obj: Problem) -> Problem:
-    problem_id = obj.prob_id()
+    problem_id = obj.prob_id
     like_none_icon = icon.PSAT_ICON_SET['likeNone']
     star_none_icon = icon.PSAT_ICON_SET['starNone']
 

@@ -7,7 +7,7 @@ app_name = 'score'
 urlpatterns = [
     path('list/', TemporaryAnswerListView.as_view(), name='list'),
     path('list/<str:sub>/', TemporaryAnswerListView.as_view(), name='list_content'),
-    path('answer/', TemporaryAnswerCreateView.as_view(), name='list_content'),
+    path('answer/<int:year>/<str:ex>/<str:sub>/', TemporaryAnswerCreateView.as_view(), name='list_content'),
     # path('', index),
     # path('list/', DataListView.as_view(), name='list'),
     # path('detail/<int:copy_id>/', DataDetailView.as_view(), name='detail')

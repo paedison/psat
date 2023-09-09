@@ -42,11 +42,11 @@ class PSATDetailInfoMixIn:
         return Evaluation.objects.get_or_create(
             user=self.request.user, problem=self.problem)[0]
 
-    def get_detail_list(self, prob_data: object) -> list:
+    def get_detail_list(self, prob_data: any) -> list:
         organized_dict: dict = self.get_organized_dict(prob_data)
         return get_organized_list(organized_dict)
 
-    def get_organized_dict(self, prob_data: object) -> dict:
+    def get_organized_dict(self, prob_data: any) -> dict:
         """ Return a dictionary sorted by exam. """
         organized_dict = {}
         for prob in prob_data:
@@ -126,7 +126,7 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
     lookup_url_kwarg = 'problem_id'
 
     @property
-    def title(self) -> str: return self.object.full_title()
+    def title(self) -> str: return self.object.full_title
     def get_object(self) -> Problem: return self.problem
 
     def get_template_names(self):
@@ -225,7 +225,7 @@ class AnswerDetailModalView(PSATDetailInfoMixIn, TemplateView):
 
     @property
     def is_correct(self) -> bool | None:
-        return None if self.answer is None else (self.answer == self.evaluation.correct_answer())
+        return None if self.answer is None else (self.answer == self.evaluation.correct_answer)
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
