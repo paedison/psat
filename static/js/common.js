@@ -31,24 +31,41 @@ let menu = info['menu'] || $('#info').text();
 export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 
 
-/* Collapse & activate menu */
-function collapseMenu(target) {
-    let nav_content = $(target).closest('ul');
-    let nav_link = nav_content.prev('a');
-    let bullet_point = $(target).children().first()
+/* Expand & activate menu */
+function expandMenu(target) {
+    const navContent = $(target).closest('ul');
+    const navLink = navContent.prev('a');
+    const bulletPoint = $(target).children().first();
 
-    nav_link.removeClass('collapsed').attr('aria-expanded', 'true');
-    nav_content.addClass('show');
+    navLink.removeClass('collapsed').attr('aria-expanded', 'true');
+    navContent.addClass('show');
     $(target).addClass('active');
-    bullet_point.removeClass('fa-regular').addClass('fa-solid')
+    bulletPoint.removeClass('fa-regular').addClass('fa-solid');
 }
 
+$(document).on('click', '.nav-link', function() {
+    $('.nav-link').addClass('collapsed').attr('aria-expanded', 'false');
+    $(this).removeClass('collapsed').attr('aria-expanded', 'true');
+    $('#psat-nav').removeClass('show');
+    $('.aside-nav-icon').removeClass('active').find('i').removeClass('fa-solid').addClass('fa-regular');
+});
+
+$(document).on('click', '.aside-nav-icon', function() {
+    $('.nav-link').addClass('collapsed').attr('aria-expanded', 'false');
+    $(this).closest('ul').prev('a').removeClass('collapsed').attr('aria-expanded', 'true');
+
+    $(this).closest('li').children().removeClass('active');
+    $(this).closest('li').children().find('i').removeClass('fa-solid').addClass('fa-regular');
+
+    $(this).addClass('active').find('i').removeClass('fa-regular').addClass('fa-solid');
+});
+
 $(document).ready(function() {
-    let target_link = `#${menu}List`
+    const targetLink = `#${menu}List`;
     if (psat_menu.includes(menu)) {
-        collapseMenu(target_link);
+        expandMenu(targetLink);
     } else {
-        $(target_link).removeClass('collapsed');
+        $(targetLink).removeClass('collapsed');
     }
 });
 

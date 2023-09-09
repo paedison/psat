@@ -2,12 +2,6 @@
 {% load psat_filter %}
 {% load partials %}
 
-{% startpartial datetime %}
-    <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
-        {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
-    </td>
-{% endpartial %}
-
 <section class="htmx-fade-in">
     {{ info|json_script:'info' }}
     <div class="table-responsive">
@@ -49,3 +43,11 @@
     </div>
     {% include 'psat/snippets/list_footer.html' %}
 </section>
+
+
+{% startpartial datetime %}
+    <td class="text-start text-nowrap text-primary fw-bold px-2" colspan="5">
+        {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+    </td>
+{% endpartial %}
+

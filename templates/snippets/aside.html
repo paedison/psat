@@ -4,14 +4,18 @@
     <ul id="sidebar-nav" class="sidebar-nav">
         {% if user.is_authenticated %}
             <li class="nav-item">
-                <a id="noticeList" class="nav-link collapsed" href="{{ MENU_URL_SET.notice }}">
+                <a id="noticeList" hx-post="{{ MENU_URL_SET.notice }}"
+                   class="nav-link collapsed" href="" hx-push-url="true"
+                   hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     {{ MENU_ICON_SET.notice|safe }}
                     <span>Notice</span>
                 </a>
             </li><!-- Notice Nav End -->
 
             <li class="nav-item">
-                <a id="dashboardList" class="nav-link collapsed" href="{{ MENU_URL_SET.dashboard }}">
+                <a id="dashboardList" hx-post="{{ MENU_URL_SET.dashboard }}"
+                   class="nav-link collapsed" href="" hx-push-url="true"
+                   hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     {{ MENU_ICON_SET.dashboard|safe }}
                     <span>Dashboard</span>
                 </a>
@@ -25,7 +29,7 @@
             </li>
             {% endcomment %}
             <li class="nav-item" role="menuitem" aria-label="PSAT Menu">
-                <a class="nav-link collapsed" href="#" aria-expanded="false"
+                <a class="nav-link collapsed" href="" aria-expanded="false"
                    data-bs-target="#psat-nav" data-bs-toggle="collapse">
                     {{ MENU_ICON_SET.psat|safe }}
                     <span>PSAT</span>
@@ -33,24 +37,28 @@
                 </a>
                 <ul id="psat-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
                     <li>
-                        <a id="problemList" href="{{ MENU_URL_SET.problem }}">
-                            <i class="fa-regular fa-circle"></i>
-                            {{ MENU_ICON_SET.problem|safe }}
+                        <a id="problemList" hx-post="{{ MENU_URL_SET.problem }}"
+                           class="aside-nav-icon" href="" hx-push-url="true"
+                           hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                            <i class="fa-file-lines fa-fw fa-regular"></i>
                             <span>기출문제</span>
                         </a>
-                        <a id="likeList" href="{{ MENU_URL_SET.like }}">
-                            <i class="fa-regular fa-circle"></i>
-                            {{ MENU_ICON_SET.like|safe }}
+                        <a id="likeList" hx-post="{{ MENU_URL_SET.like }}"
+                           class="aside-nav-icon" href="" hx-push-url="true"
+                           hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                            <i class="fa-heart fa-fw fa-regular"></i>
                             <span>즐겨찾기</span>
                         </a>
-                        <a id="rateList" href="{{ MENU_URL_SET.rate }}">
-                            <i class="fa-regular fa-circle"></i>
-                            {{ MENU_ICON_SET.rate|safe }}
+                        <a id="rateList" hx-post="{{ MENU_URL_SET.rate }}"
+                           class="aside-nav-icon" href="" hx-push-url="true"
+                           hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                            <i class="fa-star fa-fw fa-regular"></i>
                             <span>난이도</span>
                         </a>
-                        <a id="answerList" href="{{ MENU_URL_SET.answer }}">
-                            <i class="fa-regular fa-circle"></i>
-                            {{ MENU_ICON_SET.answer|safe }}
+                        <a id="answerList" hx-post="{{ MENU_URL_SET.answer }}"
+                           class="aside-nav-icon" href="" hx-push-url="true"
+                           hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                            <i class="fa-circle-check fa-fw fa-regular"></i>
                             <span>정답확인</span>
                         </a>
                         {% comment %}
@@ -64,7 +72,9 @@
             </li><!-- PSAT Nav End -->
 
             <li class="nav-item">
-                <a id="scheduleList" class="nav-link collapsed" href="{{ MENU_URL_SET.schedule }}">
+                <a id="scheduleList" hx-post="{{ MENU_URL_SET.schedule }}"
+                   class="nav-link collapsed" href="" hx-push-url="true"
+                   hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     {{ MENU_ICON_SET.schedule|safe }}
                     <span>Schedule</span>
                 </a>
@@ -72,19 +82,25 @@
 
         {% else %}
             <li class="nav-item">
-                <a id="noticeList" class="nav-link collapsed" href="{{ MENU_URL_SET.notice }}">
+                <a id="noticeList" hx-post="{{ MENU_URL_SET.notice }}"
+                   class="nav-link collapsed" href="" hx-push-url="true"
+                   hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     {{ MENU_ICON_SET.notice|safe }}
                     <span>Notice</span>
                 </a>
             </li><!-- Notice Nav End -->
             <li class="nav-item">
-                <a id="problemList" class="nav-link collapsed" href="{{ MENU_URL_SET.problem }}">
+                <a id="problemList" hx-post="{{ MENU_URL_SET.problem }}"
+                   class="nav-link collapsed" href="" hx-push-url="true"
+                   hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     {{ MENU_ICON_SET.psat|safe }}
                     <span>PSAT</span>
                 </a>
             </li><!-- PSAT Nav End -->
             <li class="nav-item">
-                <a id="scheduleList" class="nav-link collapsed" href="{{ MENU_URL_SET.schedule }}">
+                <a id="scheduleList" hx-post="{{ MENU_URL_SET.schedule }}"
+                   class="nav-link collapsed" href="" hx-push-url="true"
+                   hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     {{ MENU_ICON_SET.schedule|safe }}
                     <span>Schedule</span>
                 </a>

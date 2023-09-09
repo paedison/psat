@@ -1,6 +1,42 @@
 {% load static %}
 {% load partials %}
 
+<section id="{{ info.target_id }}" class="htmx-fade-in">
+    {{ info|json_script:'info' }}
+    <div class="table-responsive" hx-boost="true" hx-target="section .section"
+         hx-swap="outerHTML swap:0.25s">
+        <table class="table small">
+            <thead>{% partial thead %}</thead>
+            <tbody>
+                {% if top_fixed %}
+                    {% for post in top_fixed %}{% partial tbody %}{% endfor %}
+                {% endif %}
+                {% if page_obj %}
+                    {% for post in page_obj %}
+                        {% if not post.top_fixed %}{% partial tbody %}{% endif %}
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td class="text-center text-nowrap px-2" colspan="5">
+                            추가된 자료가 없습니다.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <section class="d-flex flex-wrap">
+        <div class="p-2 me-auto ms-auto">
+            {% include 'psat/snippets/list_pagination.html' %}
+        </div>
+        {% if info.staff_menu %}
+            {% if user.is_admin %}{% partial create_button %}{% endif %}
+        {% else %}
+            {% partial create_button %}
+        {% endif %}
+    </section>
+</section>
+
 {% startpartial thead %}
     <tr>
         <th class="text-center text-nowrap px-2">제목</th>
@@ -58,39 +94,3 @@
         </a>
     </div>
 {% endpartial %}
-
-<section id="{{ info.target_id }}" class="htmx-fade-in">
-    {{ info|json_script:'info' }}
-    <div class="table-responsive" hx-boost="true" hx-target="section .section"
-         hx-swap="outerHTML swap:0.25s">
-        <table class="table small">
-            <thead>{% partial thead %}</thead>
-            <tbody>
-                {% if top_fixed %}
-                    {% for post in top_fixed %}{% partial tbody %}{% endfor %}
-                {% endif %}
-                {% if page_obj %}
-                    {% for post in page_obj %}
-                        {% if not post.top_fixed %}{% partial tbody %}{% endif %}
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td class="text-center text-nowrap px-2" colspan="5">
-                            추가된 자료가 없습니다.
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-    <section class="d-flex flex-wrap">
-        <div class="p-2 me-auto ms-auto">
-            {% include 'psat/snippets/list_pagination.html' %}
-        </div>
-        {% if info.staff_menu %}
-            {% if user.is_admin %}{% partial create_button %}{% endif %}
-        {% else %}
-            {% partial create_button %}
-        {% endif %}
-    </section>
-</section>

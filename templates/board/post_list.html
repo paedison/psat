@@ -1,66 +1,19 @@
 {% extends 'list.html' %}
 {% load static %}
+{% load slippers %}
 {% load psat_filter %}
 {% load partials %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% startpartial navigation_menu %}
-    {% if category_list %}
-        {% for category in category_list %}
-            <button id="navCategory{{ category.choice }}"
-                    class="nav-link p-2{% if not category.choice %} active{% endif %}"
-                    type="button" role="tab" data-bs-toggle="tab"
-                    data-bs-target="#navContent{{ category.choice }}"
-                    aria-controls="navContent{{ c }}"
-                    aria-selected="{% if not category.choice %}true{% else %}false{% endif %}">
-                <span class="fw-bold small text-primary"
-                      hx-get="{{ category.url }}" hx-swap="innerHtml"
-                      hx-target="#navContent{{ category.choice }}"
-                      hx-trigger="load delay:0.5*{{ category.choice }}s">
-                    {{ category.name }}
-                </span>
-            </button>
-        {% endfor %}
-    {% endif %}
-{% endpartial %}
-
-{% startpartial navigation_container %}
-    {% if category_list %}
-        {% for category in category_list %}
-            <div id="navContent{{ category.choice }}"
-                 class="tab-pane fade{% if not category.choice %} show active{% endif %}"
-                 role="tabpanel" aria-labelledby="navCategory{{ category.choice }}">
-            </div><!-- Category{{ category.choice }} End -->
-        {% endfor %}
-    {% endif %}
-{% endpartial %}
-
-{% startpartial navigation %}
-    <section class="section htmx-fade-out">
-        {{ info|json_script:'info' }}
-        <div class="row">
-            <div class="col-12 my-2">
-                <div class="card m-0">
-                    <div class="card-body">
-                        <nav class="mt-4">
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                {% partial navigation_menu %}
-                            </div>
-                        </nav><!-- Navigation End -->
-                        <div class="tab-content" id="nav-tabContent">
-                            {% partial navigation_container %}
-                        </div><!-- Category End -->
-                    </div>
-                </div>
-            </div>
-        </div><!-- Content Row End -->
-    </section>
-{% endpartial %}
-
-
 {% block main %}
-    <section id="{{ info.target_id }}">
+    {% partial list_main %}
+{% endblock %}
+
+
+{# Partial Template for POST request #}
+{% startpartial list_main %}
+    <section>
         <div class="pagetitle my-2">
             <a hx-target="section .section" href="" title="{{ info.menu|capfirst }}"
                hx-boost="true" hx-swap="outerHTML swap:0.25s"
@@ -71,7 +24,55 @@
         </div><!-- Page Title End -->
         {% partial navigation %}
     </section><!-- Main Content End -->
-{% endblock %}
+{% endpartial %}
+
+
+{# Partial Template for HTMX request #}
+{% startpartial navigation %}
+    <section class="section htmx-fade-out">
+        {{ info|json_script:'info' }}
+        {% #content_row class3='p-4' %}
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    {% #nav_tab id='0' %}
+                        {{ PSAT_ICON_SET.all|safe }} 전체
+                    {% /nav_tab %}
+                    {% if category_list %}
+                        {% for category in category_list %}
+                            <button id="navCategory{{ category.choice }}"
+                                    class="nav-link p-2{% if not category.choice %} active{% endif %}"
+                                    type="button" role="tab" data-bs-toggle="tab"
+                                    data-bs-target="#navContent{{ category.choice }}"
+                                    aria-controls="navContent{{ c }}"
+                                    aria-selected="{% if not category.choice %}true{% else %}false{% endif %}">
+                                <span class="fw-bold small text-primary"
+                                      hx-get="{{ category.url }}" hx-swap="innerHtml"
+                                      hx-target="#navContent{{ category.choice }}"
+                                      hx-trigger="load delay:0.5*{{ category.choice }}s">
+                                    {{ category.name }}
+                                </span>
+                            </button>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </nav><!-- Navigation End -->
+            <div class="tab-content" id="nav-tabContent">
+                {% #nav_content id='0' %}
+                    {% include 'board/post_list_content.html' %}
+                {% /nav_content id='0' %}<!-- All Category End -->
+                {% if category_list %}
+                    {% for category in category_list %}
+                        <div id="navContent{{ category.choice }}"
+                             class="tab-pane fade{% if not category.choice %} show active{% endif %}"
+                             role="tabpanel" aria-labelledby="navCategory{{ category.choice }}">
+                        </div><!-- Category{{ category.choice }} End -->
+                    {% endfor %}
+                {% endif %}
+            </div><!-- Category End -->
+        {% /content_row %}
+    </section>
+{% endpartial %}
+
 
 {% block page_script %}
     <script type="module" src="{% static 'js/board.js' %}"></script>

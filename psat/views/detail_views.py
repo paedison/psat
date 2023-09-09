@@ -1,7 +1,3 @@
-import json
-
-from django.http import HttpResponse
-from django.shortcuts import render
 from django.urls import reverse_lazy
 from vanilla import DetailView, TemplateView
 
@@ -11,21 +7,23 @@ from ..models import Problem, Evaluation, ProblemMemo, ProblemTag
 
 
 class PSATDetailInfoMixIn:
-    """ Represent PSAT detail information mixin. """
+    """
+    Represent PSAT detail information mixin.
+    view_type(str): One of [ problem, like, rate, answer ]
+    """
     kwargs: dict
     view_type: str
-    prob_data: Problem.objects
+    title: str
     request: any
+    prob_data: Problem.objects
 
     icon_container = 'psat/snippets/icon_container.html'
-    base_template = 'psat/problem_detail.html'
+    detail_template = 'psat/problem_detail.html'
 
     @property
     def problem_id(self) -> int: return int(self.kwargs.get('problem_id'))
     @property
     def problem(self) -> Problem: return Problem.objects.get(id=self.problem_id)
-    @property
-    def object(self) -> Problem: return self.problem
     @property
     def icon_id(self) -> str: return self.request.GET.get('id')
     @property
@@ -34,14 +32,10 @@ class PSATDetailInfoMixIn:
     def prob_list(self) -> list: return self.prob_data.values_list('id', flat=True)
     @property
     def list_data(self) -> list: return self.get_detail_list(self.prob_data)
-
     @property
-    def prev_prob(self) -> Problem:
-        return self.get_probs(self.prob_data, self.prob_list)[0]
-
+    def prev_prob(self) -> Problem: return self.get_probs(self.prob_data, self.prob_list)[0]
     @property
-    def next_prob(self) -> Problem:
-        return self.get_probs(self.prob_data, self.prob_list)[1]
+    def next_prob(self) -> Problem: return self.get_probs(self.prob_data, self.prob_list)[1]
 
     @property
     def evaluation(self) -> Evaluation:
@@ -103,7 +97,7 @@ class PSATDetailInfoMixIn:
             'menu': self.view_type,
             'view_type': self.view_type,
             'type': f'{self.view_type}Detail',
-            'title': self.object.full_title(),
+            'title': self.title,
             'current_url': self.get_reverse_lazy(self.problem_id),
             'icon': icon.MENU_ICON_SET[self.view_type],
             'color': color.COLOR_SET[self.view_type],
@@ -128,19 +122,20 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
     """Represent PSAT base detail view."""
     model = Problem
     context_object_name = 'problem'
+    lookup_field = 'id'
+    lookup_url_kwarg = 'problem_id'
 
     @property
-    def template_name(self):
-        if self.request.method == 'GET':
-            return self.base_template
-        elif self.request.method == 'POST':
-            return self.icon_template
+    def title(self) -> str: return self.object.full_title()
+    def get_object(self) -> Problem: return self.problem
+
+    def get_template_names(self):
+        return self.detail_template if self.request.method == 'GET' else self.icon_template
 
     def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
         if request.user.is_authenticated:
             self.evaluation.update_open()
-        return self.render_to_response(context)
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
@@ -153,10 +148,6 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
             context['prev_prob'] = self.prev_prob
             context['next_prob'] = self.next_prob
             context['list_data'] = self.list_data
-        if self.request.htmx:
-            icon_id = self.request.GET.get('id')
-            context['problem_id'] = self.problem_id
-            context['icon_id'] = icon_id
         return context
 
 
@@ -171,8 +162,8 @@ class LikeDetailView(BaseDetailView):
 
     @property
     def prob_data(self):
-        return Problem.objects.filter(evaluation__user=self.request.user,
-                                      evaluation__is_liked__gte=1)
+        return Problem.objects.filter(
+            evaluation__user=self.request.user, evaluation__is_liked__gte=1)
 
     def post(self, request, *args, **kwargs):
         self.evaluation.update_like()
@@ -186,16 +177,9 @@ class RateDetailView(BaseDetailView):
     def difficulty(self) -> int: return int(self.request.POST.get('difficulty'))
 
     @property
-    def template_name(self):
-        if self.request.method == 'GET':
-            return self.base_template
-        elif self.request.method == 'POST':
-            return self.icon_template
-
-    @property
     def prob_data(self):
-        return Problem.objects.filter(evaluation__user=self.request.user,
-                                      evaluation__difficulty_rated__gte=0)
+        return Problem.objects.filter(
+            evaluation__user=self.request.user, evaluation__difficulty_rated__gte=0)
 
     def post(self, request, *args, **kwargs):
         self.evaluation.update_rate(self.difficulty)
@@ -207,10 +191,7 @@ class AnswerDetailView(BaseDetailView):
     view_type = 'answer'
 
     @property
-    def answer(self) -> int | None:
-        answer = self.request.POST.get('answer')
-        answer = int(answer) if answer else None
-        return answer
+    def answer(self) -> int: return int(self.request.POST.get('answer'))
 
     @property
     def prob_data(self) -> object:
@@ -244,8 +225,7 @@ class AnswerDetailModalView(PSATDetailInfoMixIn, TemplateView):
 
     @property
     def is_correct(self) -> bool | None:
-        return None if self.answer is None else (
-                self.answer == self.evaluation.correct_answer())
+        return None if self.answer is None else (self.answer == self.evaluation.correct_answer())
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)

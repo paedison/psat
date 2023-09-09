@@ -3,12 +3,6 @@
 {% load slippers %}
 {% load partials %}
 
-{% startpartial content %}
-    {% #nav_content id='0' %}
-        {% include 'psat/problem_list_content.html' %}
-    {% /nav_content %}
-{% endpartial %}
-
 <section>
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
@@ -33,3 +27,10 @@
     {% /content_row %}
     </section>
 </section><!-- Main Content End -->
+
+
+{% startpartial content %}
+    {% #nav_content id='0' %}
+        {% include 'psat/problem_list_content.html' %}
+    {% /nav_content %}
+{% endpartial %}

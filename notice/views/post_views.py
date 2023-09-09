@@ -1,10 +1,8 @@
-# Django Core Import
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from vanilla.model_views import (
     ListView, DetailView, UpdateView, CreateView, DeleteView)
 
-# Custom App Import
 from common.constants import icon, color
 from ..forms import PostForm  # Should Change Module
 from ..models import Post  # Should Change Module
@@ -58,11 +56,12 @@ class PostViewMixIn:
 
     # Category list
     category_choices = model.CATEGORY_CHOICES.copy()
-    category_list = [{
-        'choice': 0,
-        'name': '전체',
-        'url': reverse_lazy(f'{app_name}:list_content', args=[0]),
-    }]
+    category_list = []
+    # category_list = [{
+    #     'choice': 0,
+    #     'name': '전체',
+    #     'url': reverse_lazy(f'{app_name}:list_content', args=[0]),
+    # }]
     for category in category_choices:
         category_list.append({
             'choice': category[0],
@@ -71,7 +70,10 @@ class PostViewMixIn:
         })
 
     @property
-    def category(self) -> str: return self.kwargs.get('category')
+    def category(self) -> int:
+        category = self.kwargs.get('category', 0)
+        return category if isinstance(category, int) else int(category)
+
     @property
     def post_id(self) -> int: return self.kwargs.get('post_id')
     @property
@@ -171,11 +173,23 @@ class PostListView(PostViewMixIn, ListView):
         context['page_range'] = page_range
         return context
 
-    def get_template_names(self):
-        if self.category is None:
-            return self.list_template
-        else:
-            return self.list_content_template
+    def post(self, request, *args, **kwargs):
+        return self.get(request, *args, **kwargs)
+
+    # def get_template_names(self):
+    #     if self.category is None:
+    #         return self.list_template
+    #     else:
+    #         return self.list_content_template
+    #
+    def get_template_names(self) -> str:
+        if self.request.method == 'GET':
+            if self.request.htmx:
+                return self.list_content_template
+            else:
+                return self.list_template
+        elif self.request.method == 'POST':
+            return f'{self.list_template}#list_main'
 
 
 class PostListNavigationView(PostListView):

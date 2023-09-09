@@ -1,42 +1,52 @@
 {% extends 'list.html' %}
 {% load static %}
 {% load psat_filter %}
+{% load slippers %}
+{% load partials %}
 
 {% block head_title %}시험 일정{% endblock head_title %}
 
 {% block main %}
-<section id="{{ info.target_id }}">
-    {{ info|json_script:'info' }}
-    <div class="pagetitle my-2">
-        <h1>{{ info.icon|safe }} {{ info.title }}</h1>
-    </div><!-- End Page Title -->
+    {% partial list_main %}
+{% endblock %}
 
-    <section class="section">
-        <div class="row">
-            <div class="col-12 my-2">
-                <div class="card m-0">
-                    <div class="card-body p-4">
-                        <div class="p-0 my-2 d-flex justify-content-between">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'schedule:base' %}?{{ prev_month }}">
-                                이전 달
-                            </a>
-                        {% if user.is_admin %}
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'schedule:new' %}">
-                                새 일정
-                            </a>
-                        {% endif %}
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'schedule:base' %}?{{ next_month }}">
-                                다음 달
-                            </a>
-                        </div>
-                        {{ calendar }}
-                    </div>
-                </div>
-            </div>
-        </div><!-- End Content Row -->
+
+{# Partial Template for POST request #}
+{% startpartial list_main %}
+    <section>
+        {{ info|json_script:'info' }}
+        <div class="pagetitle my-2">
+            <h1>{{ info.icon|safe }} {{ info.title }}</h1>
+        </div><!-- End Page Title -->
+        {% partial list_content %}
+    </section><!-- End Main Content -->
+{% endpartial %}
+
+
+{# Partial Template for HTMX request #}
+{% startpartial list_content %}
+    <section class="section htmx-fade-out">
+    {% #content_row class3='p-4' %}
+        <div class="p-0 my-2 d-flex justify-content-between">
+            <a class="btn btn-outline-primary btn-sm" href=""
+               hx-get="{% url 'schedule:base' %}?{{ prev_month }}"
+               hx-target="section .section" hx-swap="innerHTML swap:0.25s">
+                이전 달
+            </a>
+        {% if user.is_admin %}
+            <a class="btn btn-outline-primary btn-sm" href=""
+               hx-get="{% url 'schedule:new' %}" hx-push-url="true"
+               hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                새 일정
+            </a>
+        {% endif %}
+            <a class="btn btn-outline-primary btn-sm" href=""
+               hx-get="{% url 'schedule:base' %}?{{ next_month }}"
+               hx-target="section .section" hx-swap="innerHTML swap:0.25s">
+                다음 달
+            </a>
+        </div>
+        {{ calendar }}
+    {% /content_row %}
     </section>
-</section><!-- End Main Content -->
-{% endblock %}
-
-{% block page_script %}
-{% endblock %}
+{% endpartial %}

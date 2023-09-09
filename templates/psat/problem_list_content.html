@@ -2,12 +2,6 @@
 {% load psat_filter %}
 {% load partials %}
 
-{% startpartial reference %}
-    <td class="text-start text-nowrap text-primary fw-bold p-2" colspan="5">
-        {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
-    </td>
-{% endpartial %}
-
 <section class="htmx-fade-in htmx-fade-out">
     {{ info|json_script:'info' }}
     <div class="table-responsive">
@@ -39,3 +33,10 @@
     </div>
     {% include 'psat/snippets/list_footer.html' %}
 </section>
+
+
+{% startpartial reference %}
+    <td class="text-start text-nowrap text-primary fw-bold p-2" colspan="5">
+        {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
+    </td>
+{% endpartial %}

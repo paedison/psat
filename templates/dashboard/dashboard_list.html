@@ -2,10 +2,18 @@
 {% load static %}
 {% load psat_filter %}
 {% load slippers %}
+{% load partials %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
+
 {% block main %}
+    {% partial list_main %}
+{% endblock %}
+
+
+{# Partial Template for POST request #}
+{% startpartial list_main %}
     <section>
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
@@ -19,11 +27,7 @@
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
                     {% #nav_tab id='0' %}
-                        <span hx-trigger="load delay:0s" hx-target="#navContent0"
-                              hx-get="{% url 'dashboard:like_all' %}"
-                              hx-swap="innerHtml">
-                            {{ MENU_ICON_SET.like|safe }} 즐겨찾기
-                        </span>
+                        {{ MENU_ICON_SET.like|safe }} 즐겨찾기
                     {% /nav_tab %}
 
                     {% #nav_tab id='1' %}
@@ -44,11 +48,13 @@
                 </div>
             </nav><!-- Navigation End -->
             <div class="tab-content" id="nav-tabContent">
-                {% nav_content id='0' %}<!-- Like Tab End -->
+                {% #nav_content id='0' %}
+                    {% include 'dashboard/dashboard_list_content.html' %}
+                {% /nav_content id='0' %}<!-- Like Tab End -->
                 {% nav_content id='1' %}<!-- Rate End -->
                 {% nav_content id='2' %}<!-- Answer Tab End -->
             </div>
         {% /content_row %}
         </section>
     </section><!-- Main Content End -->
-{% endblock %}
+{% endpartial %}

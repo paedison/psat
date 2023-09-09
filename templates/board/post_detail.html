@@ -7,6 +7,48 @@
 
 {% block head_title %}{{ post.title }}{% endblock head_title %}
 
+{% block main %}
+    <section>
+        <div class="pagetitle my-2">
+            <a hx-target="section .section" href="" title="{{ info.menu|capfirst }}"
+               hx-boost="true" hx-swap="outerHTML swap:0.25s"
+               hx-get="{{ info.post_list_navigation_url }}"
+               hx-push-url="{{ info.post_list_url }}">
+                <h1>{{ info.icon|safe }} {{ info.menu|capfirst }}</h1>
+            </a>
+        </div><!-- Page Title End -->
+        {% partial container %}
+    </section><!-- Main Content End -->
+{% endblock %}
+
+
+{% startpartial container %}
+    <section id="{{ info.target_id }}" class="section htmx-fade-in htmx-fade-out">
+        {{ info|json_script:'info' }}
+        <div class="row">
+            <div class="col-12 my-2">
+                <div class="card m-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between">
+                            {% partial buttons %}
+                        </div>
+
+                        <hr class="my-2">
+                        {% partial post_header %}
+                        <hr class="my-2">
+
+                        <div class="my-4">
+                            {{ post.content|safe }}
+                        </div>
+                        {% include 'board/comment_list.html' %}
+                    </div>
+                </div>
+            </div>
+        </div><!-- Content Row End -->
+    </section>
+{% endpartial %}
+
+
 {% startpartial buttons %}
     <div class="left-button col-auto px-0" hx-target="section .section"
          hx-boost="true" hx-swap="outerHTML swap:0.25s">
@@ -57,6 +99,7 @@
     </div>
 {% endpartial %}
 
+
 {% startpartial post_header %}
     <h6 class="text-primary fw-bold">
         {% if post.top_fixed %}
@@ -84,46 +127,6 @@
     </div>
 {% endpartial %}
 
-{% startpartial container %}
-    <section id="{{ info.target_id }}" class="section htmx-fade-in htmx-fade-out">
-        {{ info|json_script:'info' }}
-        <div class="row">
-            <div class="col-12 my-2">
-                <div class="card m-0">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between">
-                            {% partial buttons %}
-                        </div>
-
-                        <hr class="my-2">
-                        {% partial post_header %}
-                        <hr class="my-2">
-
-                        <div class="my-4">
-                            {{ post.content|safe }}
-                        </div>
-                        {% include 'board/comment_list.html' %}
-                    </div>
-                </div>
-            </div>
-        </div><!-- Content Row End -->
-    </section>
-{% endpartial %}
-
-
-{% block main %}
-    <section>
-        <div class="pagetitle my-2">
-            <a hx-target="section .section" href="" title="{{ info.menu|capfirst }}"
-               hx-boost="true" hx-swap="outerHTML swap:0.25s"
-               hx-get="{{ info.post_list_navigation_url }}"
-               hx-push-url="{{ info.post_list_url }}">
-                <h1>{{ info.icon|safe }} {{ info.menu|capfirst }}</h1>
-            </a>
-        </div><!-- Page Title End -->
-        {% partial container %}
-    </section><!-- Main Content End -->
-{% endblock %}
 
 {% block page_script %}
     <script type="module" src="{% static 'js/board.js' %}"></script>

@@ -1,7 +1,9 @@
 {% load static %}
 
-<a href="{% if user.is_authenticated %}{{ MENU_URL_SET.dashboard }}{% else %}{{ MENU_URL_SET.problem }}{% endif %}"
-   class="logo d-flex align-items-center" role="banner">
+<a class="logo d-flex align-items-center" role="banner"
+    hx-post="{% if user.is_authenticated %}{{ MENU_URL_SET.dashboard }}
+    {% else %}{{ MENU_URL_SET.problem }}{% endif %}"
+    href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
     <span class="d-none d-sm-block">Paedison</span>
 </a>

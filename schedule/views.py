@@ -1,15 +1,12 @@
-# Python Standard Function Import
 import calendar
 from datetime import datetime, timedelta, date
 
-# Django Core Import
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.safestring import mark_safe
-from django.views import generic
+from vanilla import ListView
 
-# Custom App Import
 from common.constants import icon
 from .forms import EventForm
 from .models import Calendar, Event
@@ -20,17 +17,18 @@ def index(request):
     return HttpResponse('hello')
 
 
-class CalendarView(generic.ListView):
+class CalendarView(ListView):
     model = Event
-    app_name = 'schedule'
     category = 'schedule'
     template_name = 'schedule/calendar.html'
+    list_template = 'schedule/calendar.html'
+    list_main_template = f'{list_template}#list_main'
+    list_content_template = f'{list_template}#list_content'
 
     @property
     def info(self) -> dict:
         """ Return information dictionary of the Dashboard main list. """
         return {
-            'app_name': self.app_name,
             'menu': self.category,
             'category': self.category,
             'type': f'{self.category}List',
@@ -40,6 +38,18 @@ class CalendarView(generic.ListView):
             'icon': icon.MENU_ICON_SET[self.category],
             'color': 'primary',
         }
+
+    def post(self, request, *args, **kwargs):
+        return self.get(request, *args, **kwargs)
+
+    def get_template_names(self) -> str:
+        if self.request.method == 'GET':
+            if self.request.htmx:
+                return self.list_content_template
+            else:
+                return self.list_template
+        elif self.request.method == 'POST':
+            return self.list_main_template
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -1,9 +1,7 @@
-# Django Core Import
 from django.urls import reverse_lazy
-from vanilla import TemplateView
 
-# Custom App Import
 from common.constants import icon, color
+from psat.models import Problem
 from psat.views.list_views import BaseListView
 
 
@@ -14,40 +12,40 @@ class CardInfoMixIn:
     """
     kwargs: dict
     view_type: str
-    object: any
-    object_list: any
+    title: str
+    request: any
+    category: int
+    pagination_url: str
 
-    title_dict = {
-        'like': 'PSAT 즐겨찾기',
-        'rate': 'PSAT 난이도',
-        'answer': 'PSAT 정답확인',
-    }
-    category_dict = {'like': 0, 'rate': 1, 'answer': 2}
-    content_template = 'dashboard/dashboard_card_content.html'
+    list_template = 'dashboard/dashboard_list.html'
+    list_main_template = f'{list_template}#list_main'
+    list_content_template = 'dashboard/dashboard_list_content.html'
 
-    @property
-    def title(self) -> str: return self.title_dict[self.view_type]
-    @property
-    def category(self) -> int: return self.category_dict[self.view_type]
-    def get_template_names(self) -> str: return self.content_template
-
-    @property
-    def option(self) -> dict:
-        return {
-            'like': self.kwargs.get('is_liked'),
-            'rate': self.kwargs.get('star_count'),
-            'answer': self.kwargs.get('is_correct'),
-        }
+    def get_template_names(self) -> str:
+        if self.request.method == 'GET':
+            if self.request.htmx:
+                return self.list_content_template
+            else:
+                return self.list_template
+        elif self.request.method == 'POST':
+            return self.list_main_template
 
     @property
-    def pagination_url(self) -> reverse_lazy:
-        opt = self.option[self.view_type]
+    def url_name(self) -> str: return f'dashboard:{self.view_type}'
+
+    def get_reverse_lazy(self, opt) -> reverse_lazy:
         args = [opt] if opt else None
-        url_pattern = f'dashboard:{self.view_type}'
         if args:
-            return reverse_lazy(url_pattern, args=args)
+            return reverse_lazy(self.url_name, args=args)
         else:
-            return reverse_lazy(f'{url_pattern}_all')
+            return reverse_lazy(f'{self.url_name}_all')
+
+    @property
+    def is_liked(self) -> bool | None: return self.kwargs.get('is_liked')
+    @property
+    def star_count(self) -> bool | None: return self.kwargs.get('star_count')
+    @property
+    def is_correct(self) -> bool | None: return self.kwargs.get('is_correct')
 
     @property
     def info(self) -> dict:
@@ -60,50 +58,65 @@ class CardInfoMixIn:
             'pagination_url': self.pagination_url,
             'icon': icon.MENU_ICON_SET[self.view_type],
             'color': color.COLOR_SET[self.view_type],
-            'is_liked': self.option['like'],
-            'star_count': self.option['rate'],
-            'is_correct': self.option['answer'],
+            'is_liked': self.is_liked,
+            'star_count': self.star_count,
+            'is_correct': self.is_correct,
         }
 
 
-class DashboardMainView(TemplateView):
+class DashboardMainView(CardInfoMixIn, BaseListView):
     """ Represent Dashboard main view. """
-    view_type = 'dashboard'
-    template_name = 'dashboard/dashboard_main.html'
+    view_type = 'like'
+    category = 0
+    title = 'Dashboard'
+
+    # def get_template_names(self) -> str: return self.list_template
+
+    @property
+    def pagination_url(self) -> reverse_lazy: return self.get_reverse_lazy(self.kwargs.get('is_liked'))
+
+    def get_queryset(self) -> Problem.objects:
+        return self.get_filtered_queryset(
+            'evaluation__is_liked', self.is_liked).order_by('-evaluation__liked_at')
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
-        context['info'] = {
-            'menu': self.view_type,
-            'view_type': self.view_type,
-            'type': f'{self.view_type}Main',
-            'title': self.view_type.capitalize(),
-            'url': reverse_lazy(f'{self.view_type}:base'),
-            'icon': icon.MENU_ICON_SET[self.view_type],
-            'color': 'primary',
-        }
+        context['info']['icon'] = icon.MENU_ICON_SET['dashboard']
+        context['info']['color'] = color.COLOR_SET['dashboard']
         return context
 
 
 class LikeDashboardView(CardInfoMixIn, BaseListView):
     view_type = 'like'
     category = 0
+    title = 'PSAT 즐겨찾기'
+    @property
+    def pagination_url(self) -> reverse_lazy: return self.get_reverse_lazy(self.kwargs.get('is_liked'))
 
-    def get_queryset(self) -> object:
-        return super().get_queryset().order_by('-evaluation__liked_at')
+    def get_queryset(self) -> Problem.objects:
+        return self.get_filtered_queryset(
+            'evaluation__is_liked', self.is_liked).order_by('-evaluation__liked_at')
 
 
 class RateDashboardView(CardInfoMixIn, BaseListView):
     view_type = 'rate'
     category = 1
+    title = 'PSAT 난이도'
+    @property
+    def pagination_url(self) -> reverse_lazy: return self.get_reverse_lazy(self.kwargs.get('star_count'))
 
-    def get_queryset(self) -> object:
-        return super().get_queryset().order_by('-evaluation__rated_at')
+    def get_queryset(self) -> Problem.objects:
+        return self.get_filtered_queryset(
+            'evaluation__difficulty_rated', self.star_count).order_by('-evaluation__rated_at')
 
 
 class AnswerDashboardView(CardInfoMixIn, BaseListView):
     view_type = 'answer'
     category = 2
+    title = 'PSAT 정답확인'
+    @property
+    def pagination_url(self) -> reverse_lazy: return self.get_reverse_lazy(self.kwargs.get('is_correct'))
 
-    def get_queryset(self) -> object:
-        return super().get_queryset().order_by('-evaluation__answered_at')
+    def get_queryset(self) -> Problem.objects:
+        return self.get_filtered_queryset(
+            'evaluation__submitted_answer', self.is_correct).order_by('-evaluation__answered_at')

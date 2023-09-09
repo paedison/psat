@@ -3,6 +3,19 @@
 {% load psat_filter %}
 {% load partials %}
 
+<section id="commentContainer" class="bg-secondary-light small p-3">
+    {% if comments %}
+        {% for comment in comments %}
+            <div id="commentContents">
+                {% partial contents %}
+            </div>
+            <hr class="my-2">
+        {% endfor %}
+    {% endif %}
+    {% include 'board/comment_create.html' %}
+</section>
+
+
 {% startpartial contents %}
     <div id="comment{{ comment.id }}" class="htmx-fade-out htmx-fade-in p-2">
         <div class="d-flex justify-content-between">
@@ -45,15 +58,3 @@
 
     </div>
 {% endpartial %}
-
-<section id="commentContainer" class="bg-secondary-light small p-3">
-    {% if comments %}
-        {% for comment in comments %}
-            <div id="commentContents">
-                {% partial contents %}
-            </div>
-            <hr class="my-2">
-        {% endfor %}
-    {% endif %}
-    {% include 'board/comment_create.html' %}
-</section>

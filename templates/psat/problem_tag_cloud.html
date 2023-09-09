@@ -6,14 +6,6 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% startpartial tag_cloud %}
-    {% for tag in tags %}
-        <span class="tag-{{ tag.weight|floatformat:0 }}">
-            <a href="">{{ tag.name }}({{ tag.num_times }})</a>
-        </span>
-    {% endfor %}
-{% endpartial %}
-
 {% block main %}
     <section>
         {{ info|json_script:'info' }}
@@ -101,6 +93,16 @@
         </section>
     </section><!-- Main Content End -->
 {% endblock %}
+
+
+{% startpartial tag_cloud %}
+    {% for tag in tags %}
+        <span class="tag-{{ tag.weight|floatformat:0 }}">
+            <a href="">{{ tag.name }}({{ tag.num_times }})</a>
+        </span>
+    {% endfor %}
+{% endpartial %}
+
 
 {% block page_script %}
     <script type="module" src="{% static 'js/psat.js' %}"></script>

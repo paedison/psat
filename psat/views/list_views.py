@@ -1,8 +1,7 @@
-from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from searchview import views as search_view
+from searchview.views import SearchView
 from vanilla import ListView
 
 from common.constants import icon, color, psat
@@ -52,44 +51,49 @@ class PSATListInfoMixIn:
     kwargs: dict
     view_type: str
     title: str
-    request: WSGIRequest
+    request: any
     pagination_url: str
 
     list_template = 'psat/problem_list.html'
+    list_main_template = f'{list_template}#list_main'
     list_content_template = 'psat/problem_list_content.html'
 
     @property
     def category(self) -> int: return self.url['sub_code']
 
     @property
-    def url(self) -> dict:
+    def year(self) -> int | str:
         year = self.kwargs.get('year', '전체')
-        year = year if year == '전체' else int(year)
-        ex = self.kwargs.get('ex', '전체')
-        exam2 = next((i['exam2'] for i in psat.TOTAL['exam_list']
-                      if i['ex'] == ex), '전체')
-        sub = self.kwargs.get('sub', '전체')
-        subject = next((i['subject'] for i in psat.TOTAL['subject_list']
-                        if i['sub'] == sub), '전체')
-        sub_code = next((i['sub_code'] for i in psat.TOTAL['subject_list']
-                         if i['sub'] == sub), 0)
-        return {
-            'year': year,
-            'ex': ex,
-            'exam2': exam2,
-            'sub': sub,
-            'subject': subject,
-            'sub_code': sub_code,
-        }
+        return year if year == '전체' else int(year)
 
     @property
-    def year(self): return self.url['year']
+    def ex(self) -> str: return self.kwargs.get('ex', '전체')
+
     @property
-    def sub(self): return self.url['sub']
+    def exam2(self) -> str:
+        return next((i['exam2'] for i in psat.TOTAL['exam_list'] if i['ex'] == self.ex), '전체')
+
     @property
-    def sub_code(self): return self.url['sub_code']
+    def sub(self) -> str: return self.kwargs.get('sub', '전체')
+
     @property
-    def ex(self): return self.url['ex']
+    def subject(self) -> str:
+        return next((i['subject'] for i in psat.TOTAL['subject_list'] if i['sub'] == self.sub), '전체')
+
+    @property
+    def sub_code(self) -> int:
+        return next((int(i['sub_code']) for i in psat.TOTAL['subject_list'] if i['sub'] == self.sub), 0)
+
+    @property
+    def url(self) -> dict:
+        return {
+            'year': self.year,
+            'ex': self.ex,
+            'exam2': self.exam2,
+            'sub': self.sub,
+            'subject': self.subject,
+            'sub_code': self.sub_code,
+        }
 
     @property
     def url_name(self) -> str: return f'psat:{self.view_type}_list'
@@ -103,20 +107,14 @@ class PSATListInfoMixIn:
 
     @property
     def menu_url(self) -> dict:
-        if self.view_type == 'problem':
-            return {
-                'eoneo': reverse_lazy(self.url_name, args=['전체', '전체', '언어']),
-                'jaryo': reverse_lazy(self.url_name, args=['전체', '전체', '자료']),
-                'sanghwang': reverse_lazy(self.url_name, args=['전체', '전체', '상황']),
-            }
-        else:
-            return {
-                'eoneo': self.get_reverse_lazy('언어'),
-                'jaryo': self.get_reverse_lazy('자료'),
-                'sanghwang': self.get_reverse_lazy('상황'),
-            }
+        """ Return the navigation tab URLs for LikeListView, RateListView, AnswerListView. """
+        return {
+            'eoneo': self.get_reverse_lazy('언어'),
+            'jaryo': self.get_reverse_lazy('자료'),
+            'sanghwang': self.get_reverse_lazy('상황'),
+        }
 
-    def get_filtered_queryset(self, field, value) -> Problem:
+    def get_filtered_queryset(self, field, value) -> Problem.objects:
         """ Get filtered queryset for like, rate, answer views. """
         problem_filter = Q(evaluation__user=self.request.user)
         if self.sub != '전체' and self.sub is not None:
@@ -161,8 +159,17 @@ class BaseListView(PSATListInfoMixIn, ListView):
     paginate_by = 10
     view_type: str
 
+    def post(self, request, *args, **kwargs):
+        return self.get(request, *args, **kwargs)
+
     def get_template_names(self) -> str:
-        return self.list_content_template if self.request.htmx else self.list_template
+        if self.request.method == 'GET':
+            if self.request.htmx:
+                return self.list_content_template
+            else:
+                return self.list_template
+        elif self.request.method == 'POST':
+            return self.list_main_template
 
     def get_elided_page_range(self, page_number):
         paginator = self.get_paginator(self.get_queryset(), self.paginate_by)
@@ -204,6 +211,15 @@ class ProblemListView(BaseListView):
     @property
     def pagination_url(self) -> reverse_lazy:
         return reverse_lazy(self.url_name, args=[self.year, self.ex, self.sub])
+
+    @property
+    def menu_url(self) -> dict:
+        """ Return the navigation tab URLs for ProblemListView. """
+        return {
+            'eoneo': reverse_lazy(self.url_name, args=['전체', '전체', '언어']),
+            'jaryo': reverse_lazy(self.url_name, args=['전체', '전체', '자료']),
+            'sanghwang': reverse_lazy(self.url_name, args=['전체', '전체', '상황']),
+        }
 
     def get_queryset(self) -> Problem:
         if self.request.htmx:
@@ -252,7 +268,7 @@ class AnswerListView(BaseListView):
         return self.get_filtered_queryset('evaluation__is_correct', self.is_correct)
 
 
-class ProblemSearchView(PSATListInfoMixIn, search_view.SearchView):
+class ProblemSearchView(PSATListInfoMixIn, SearchView):
     model = ProblemData
     template_name = 'psat/problem_search.html'
     form_class = ProblemSearchForm
