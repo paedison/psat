@@ -1,0 +1,73 @@
+{% load psat_filter %}
+{% load slippers %}
+{% load partials %}
+
+{% startpartial rate %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    문제 난이도를 선택해주세요.
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <form id="rateButton">
+                {% csrf_token %}
+                    <fieldset>
+                        {% for i in '12345' %}
+                            <input type="radio" name="difficulty" id="star{{ i }}"
+                                   value="{{ i|abstract:6 }}">
+                            <label for="star{{ i }}"><i class="fa fa-star"></i></label>
+                        {% endfor %}
+                    </fieldset>
+                    <button class="btn btn-primary m-1" data-bs-dismiss="modal"
+                            hx-post="{% url 'psat:rate_detail' problem_id %}"
+                            hx-trigger="click" hx-target="#{{ icon_id }}" type="button"
+                            hx-swap="innerHTML">
+                        입력
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartial %}
+
+{% startpartial answer %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    정답 확인
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <input id="answer" type="text" name="answer" value="{{ answer }}"
+                       hidden aria-label="Answer"/>
+                {% if is_correct is None %}
+                    <h5 class="modal-title fw-bold text-danger">
+                        정답을 선택해주세요.
+                    </h5>
+                {% else %}
+                    {% if is_correct %}
+                        <h5 class="modal-title mx-auto fw-bold text-success"
+                            hx-post="{% url 'psat:answer_detail' problem_id %}"
+                            hx-include="#answer" hx-trigger="load delay:0s"
+                            hx-target="#psatAnswer{{ problem_id }}" hx-swap="innerHTML">
+                            정답입니다.</h5>
+                    {% else %}
+                        <h5 class="modal-title mx-auto fw-bold text-danger"
+                            hx-post="{% url 'psat:answer_detail' problem_id %}"
+                            hx-include="#answer" hx-trigger="load delay:0s"
+                            hx-target="#psatAnswer{{ problem_id }}" hx-swap="innerHTML">
+                            오답입니다.</h5>
+                        <p class="text-secondary small">다시 풀어보세요.</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endpartial %}

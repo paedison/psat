@@ -14,24 +14,3 @@
     {{ cancel_button }}
     <a id="accountLogout" class="btn btn-primary" href="{% url 'account_logout' %}">로그아웃</a>
 {% /modal %}
-
-{% fragment as gray_star %}<i class="fa fa-star"></i>{% endfragment %}
-{% #modal name='rate' header='문제 난이도를 선택해주세요.' %}
-    <form class="rateButton" id="rateButton" method="post" data-url="" data-target="">
-    {% csrf_token %}
-        <fieldset>
-            {% for i in '12345' %}
-                <label for="star{{ i }}">
-                    {{ gray_star }}
-                    <input id="star{{ i }}" type="radio" name="difficulty"
-                           value="{{ i|abstract:6 }}">
-                </label>
-            {% endfor %}
-        </fieldset>
-    </form>
-    {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
-{% /modal %}
-
-{% #modal name='answer' header='정답 확인' %}
-    <h5 id="answerResult" class="modal-title fw-bold"></h5>
-{% /modal %}

@@ -1,53 +1,5 @@
 import { csrf_token } from './common.js'
 
-let rateButton = $('#rateButton');
-
-
-/* Ajax for rate */
-$(document).on('click', '.rate-button', function(){
-    let url = $(this).attr('href');
-    let id = $(this).attr('id');
-    rateButton.data('url', url);
-    rateButton.data('target', `#${id}`);
-});
-
-$(document).on('click', 'input[name="difficulty"]', function(event) {
-    event.preventDefault();
-    let difficulty = $(this).attr('value');
-    let url = rateButton.data('url');
-    let target = rateButton.data('target');
-    $.ajax({
-        url: url,
-        type: 'POST',
-        data: { 'difficulty': difficulty },
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $('.btn-close').click();
-            $(target).replaceWith(data);
-        }
-    });
-});
-
-
-/* Ajax for answer */
-$(document).on('click', '.answer-button', function(event) {
-    event.preventDefault();
-    let url = $(this).attr('href');
-    let target = $(this).data('target');
-    let answer = $('input[name="answer"]:checked').val();
-    $.ajax({
-        url: url,
-        type: 'POST',
-        data: { 'answer': answer },
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $('#answerResult').html(data['message']);
-            $(target).replaceWith(data['html']);
-        }
-    });
-});
-
-
 /* Ajax for search */
 $(document).ready(function() {
     $(document).on('keypress', '#id_data__contains', function(event) {

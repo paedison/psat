@@ -41,6 +41,8 @@ urlpatterns = [
     re_path(re_rate_list_sub, rate_list_view, name='rate_list_sub'),
     re_path(re_rate_list_opt_sub, rate_list_view, name='rate_list_opt_sub'),
     path('rate/detail/<int:problem_id>/', rate_detail_view, name='rate_detail'),
+    path('rate/detail/<int:problem_id>/modal/', rate_detail_modal_view,
+         name='rate_detail_modal'),
 
     # Answer
     path('answer/', answer_list_view, name='answer'),
@@ -50,6 +52,8 @@ urlpatterns = [
     re_path(re_answer_list_sub, answer_list_view, name='answer_list_sub'),
     re_path(re_answer_list_opt_sub, answer_list_view, name='answer_list_opt_sub'),
     path('answer/detail/<int:problem_id>/', answer_detail_view, name='answer_detail'),
+    path('answer/detail/<int:problem_id>/modal', answer_detail_modal_view,
+         name='answer_detail_modal'),
 
     # Search
     path('search/', problem_search_view, name='search'),

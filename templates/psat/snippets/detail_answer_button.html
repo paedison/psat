@@ -19,12 +19,13 @@
         <input type="radio" class="btn-check" name="answer" id="answer5" value="5">
         <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer5">5</label>
     {% if user.is_authenticated %}
-        <a class="answer-button" href="{% url 'psat:answer_detail' problem.prob_id %}"
-           data-bs-toggle="modal" data-bs-target="#answerModal"
-           data-target="#psatAnswer{{ problem.prob_id }}">
-            <button class="btn btn-circle btn-success btn-sm fs-6">
-                {{ PSAT_ICON_SET.answerCheck|safe }}
-            </button>
+        <input type="text" name="icon_id" value="#psatAnswer{{ problem.prob_id }}"
+               aria-label="Input ID" hidden/>
+        <a class="btn btn-circle btn-success btn-sm fs-6"
+           hx-post="{% url 'psat:answer_detail_modal' problem.prob_id %}"
+           hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
+            {{ PSAT_ICON_SET.answerCheck|safe }}
         </a>
     {% else %}
         <a class="answer-button" href="" data-bs-toggle="modal" data-bs-target="#loginModal">

@@ -1,50 +1,45 @@
 {% load partials %}
 
 {% startpartial like %}
+    {{ problem.like_icon|safe }}
+{% endpartial %}
+
+{% startpartial rate %}
+    {{ problem.rate_icon|safe }}
+{% endpartial %}
+
+{% startpartial answer %}
+    {{ problem.answer_icon|safe }}
+{% endpartial %}
+
+<div class="td-div-xs" aria-label="Like">
     {% if user.is_authenticated %}
-        <div>
-            <a hx-post="{% url 'psat:like_detail' problem.prob_id %}"
-               hx-target="closest div" hx-swap="outerHTML"
-               hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-                {{ problem.like_icon|safe }}
-            </a>
-        </div>
+        <a hx-post="{% url 'psat:like_detail' problem.prob_id %}"
+           hx-target="this" hx-swap="innerHTML">
+            {% partial like %}
+        </a>
     {% else %}
         <a href="" data-bs-toggle="modal" data-bs-target="#loginModal">
             {{ PSAT_ICON_SET.likeNone|safe }}
         </a>
     {% endif %}
-{% endpartial %}
-
-{% startpartial rate %}
+</div>
+<div class="td-div-lg" aria-label="Rate">
     {% if user.is_authenticated %}
-        <a id="psatRate{{ problem.prob_id }}{{ info.sub_code }}" class="rate-button"
-           href="{% url 'psat:rate_detail' problem.prob_id %}"
-           data-bs-toggle="modal" data-bs-target="#rateModal">
-            {{ problem.rate_icon|safe }}
+        <a id="psatRate{{ problem.prob_id }}_{{ info.sub_code }}" href=""
+           hx-get="{% url 'psat:rate_detail_modal' problem.prob_id %}?id=psatRate{{ problem.prob_id }}_{{ info.sub_code }}"
+           hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
+            {% partial rate %}
         </a>
     {% else %}
         <a href="" data-bs-toggle="modal" data-bs-target="#loginModal">
             {{ PSAT_ICON_SET.starNone|safe }}
         </a>
     {% endif %}
-{% endpartial %}
-
-{% startpartial answer %}
-    {% if user.is_authenticated %}
-        <a id="psatAnswer{{ problem.prob_id }}{{ info.sub_code }}" href="">
-            {{ problem.answer_icon|safe }}
-        </a>
-    {% endif %}
-{% endpartial %}
-
-<div class="td-div-xs" aria-label="Like">
-    {% partial like %}
-</div>
-<div class="td-div-lg" aria-label="Rate">
-    {% partial rate %}
 </div>
 <div class="td-div-xs" aria-label="Answer">
-    {% partial answer %}
+    {% if user.is_authenticated %}
+        <span id="psatAnswer{{ problem.prob_id }}">{% partial answer %}</span>
+    {% endif %}
 </div>
-

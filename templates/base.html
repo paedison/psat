@@ -54,6 +54,12 @@
 
 {% block footer %}{% endblock footer %}
 {% include 'snippets/modal.html' %}
+<div id="modalContainer" class="modal fade" style="display: none"
+     aria-hidden="true" tabindex="-1" aria-labelledby="modalContainerLabel">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
 
 <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
     <i class="fas fa-angle-up"></i>
