@@ -3,10 +3,11 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from vanilla import ListView, CreateView
 
-from common.constants import psat, color, icon
+from common.constants import color, icon
+from common.models import User
 from psat.models import Exam, Problem
-from score.forms import TemporaryAnswerForm
-from score.models import TemporaryAnswer
+from .forms import TemporaryAnswerForm
+from .models import TemporaryAnswer
 
 
 class TemporaryAnswerListView(ListView):
@@ -98,6 +99,8 @@ class TemporaryAnswerCreateView(CreateView):
         return {
             'menu': 'score',
             'title': self.exam.full_title,
+            'year': self.year,
+            'ex': self.ex,
             'sub': self.sub,
             # 'sub_code': self.sub_code,
             # 'pagination_url': self.pagination_url,
@@ -114,31 +117,79 @@ class TemporaryAnswerCreateView(CreateView):
         return context
 
 
-def temporary_answer_create(request, problem_id):
-    basic_template = 'score/answer_form.html'
-    answer_form_template = f'{basic_template}#answer_form'
-    answered_template = f'{basic_template}#answered_problem'
+def get_template() -> (str, str, str):
+    basic = 'score/answer_form.html'
+    answer_form = f'{basic}#answer_form'
+    answered = f'{basic}#answered_problem'
+    return basic, answer_form, answered
 
+
+def get_answer_obj(user: User, problem: Problem) -> TemporaryAnswer:
+    return TemporaryAnswer.objects.filter(
+        user=user, problem=problem, is_confirmed=False).first()
+
+
+def get_answer_objects(user: User, exam: Exam) -> TemporaryAnswer.objects:
+    return TemporaryAnswer.objects.filter(
+        user=user, problem__exam=exam, is_confirmed=False)
+
+
+def answer_detail(request, exam_id: int) -> render:
+    basic_template = get_template()[0]
+    exam = Exam.objects.get(id=exam_id)
+    problems = exam.problems.all()
+    answer_objects_ids = get_answer_objects(request.user, exam).order_by(
+        'problem').values_list('problem', flat=True)
+
+    for prob in problems:
+        if prob.id in answer_objects_ids:
+            prob.submitted_answer = get_answer_obj(request.user, prob).answer
+
+    info = {
+        'menu': 'score',
+        'title': exam.full_title,
+        'exam_id': exam_id,
+        'icon': icon.MENU_ICON_SET['answer'],
+        'color': color.COLOR_SET['answer'],
+    }
+    context = {
+        'info': info,
+        'problems': problems,
+    }
+    return render(request, basic_template, context)
+
+
+def answer_submit(request, problem_id: int) -> render:
+    answer_form_template = get_template()[1]
+    answered_template = get_template()[2]
     problem = Problem.objects.get(id=problem_id)
 
     if request.method == 'GET':
         return render(request, answer_form_template, {'problem': problem})
     elif request.method == 'POST':
         form = TemporaryAnswerForm(request.POST)
-        answer = int(request.POST.get('answer'))
-
-        temporary_answer = TemporaryAnswer.objects.filter(
-            user=request.user, problem=problem, is_confirmed=False).first()
-        if temporary_answer is None:
+        submitted_answer: int = int(request.POST.get('answer'))
+        answer_obj: TemporaryAnswer = get_answer_obj(request.user, problem)
+        if answer_obj is None:
             form.user = request.user.id
-            # form.problem_id = problem_id
             if form.is_valid():
                 answered = form.save()
             else:
                 print(form.errors)
                 return render(request, answer_form_template, {'problem': problem})
         else:
-            temporary_answer.answer = answer
-            temporary_answer.save()
-            answered = temporary_answer
+            answer_obj.answer = submitted_answer
+            answer_obj.save()
+            answered = answer_obj
         return render(request, answered_template, {'answered': answered})
+
+
+def answer_confirm(request, exam_id: int):
+    exam = Exam.objects.get(id=exam_id)
+    answer_objects = get_answer_objects(request.user, exam)
+    if exam.problems.count() != answer_objects.count():
+        return HttpResponse('모든 문제의 정답을 제출해주세요.')
+    for obj in answer_objects:
+        obj.is_confirmed = True
+        obj.save()
+    return HttpResponse('정답이 정상적으로 제출되었습니다.')

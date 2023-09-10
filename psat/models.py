@@ -6,7 +6,6 @@ from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
-
 from taggit.managers import TaggableManager
 
 from _config.settings.base import BASE_DIR
@@ -223,7 +222,9 @@ class Problem(AddInfo, models.Model):
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, db_column="exam_id")
+    exam = models.ForeignKey(
+        Exam, on_delete=models.CASCADE,
+        related_name='problems', db_column="exam_id")
     number = models.IntegerField()
     question = models.TextField()
     answer = models.IntegerField()
