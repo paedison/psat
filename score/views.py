@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from vanilla import ListView, CreateView
@@ -111,3 +112,33 @@ class TemporaryAnswerCreateView(CreateView):
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
         return context
+
+
+def temporary_answer_create(request, problem_id):
+    basic_template = 'score/answer_form.html'
+    answer_form_template = f'{basic_template}#answer_form'
+    answered_template = f'{basic_template}#answered_problem'
+
+    problem = Problem.objects.get(id=problem_id)
+
+    if request.method == 'GET':
+        return render(request, answer_form_template, {'problem': problem})
+    elif request.method == 'POST':
+        form = TemporaryAnswerForm(request.POST)
+        answer = int(request.POST.get('answer'))
+
+        temporary_answer = TemporaryAnswer.objects.filter(
+            user=request.user, problem=problem, is_confirmed=False).first()
+        if temporary_answer is None:
+            form.user = request.user.id
+            # form.problem_id = problem_id
+            if form.is_valid():
+                answered = form.save()
+            else:
+                print(form.errors)
+                return render(request, answer_form_template, {'problem': problem})
+        else:
+            temporary_answer.answer = answer
+            temporary_answer.save()
+            answered = temporary_answer
+        return render(request, answered_template, {'answered': answered})

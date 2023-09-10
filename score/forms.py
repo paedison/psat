@@ -6,10 +6,11 @@ from score.models import TemporaryAnswer
 
 class TemporaryAnswerForm(forms.ModelForm):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.helper = FormHelper(self)
+    #
     class Meta:
         model = TemporaryAnswer
-        fields = ['user', 'problem', 'answer']
+        fields = ['problem', 'answer']
+        # fields = ['user', 'problem', 'answer']

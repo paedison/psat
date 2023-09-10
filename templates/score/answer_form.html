@@ -18,29 +18,12 @@
         </div><!-- Page Title End -->
         <section class="section">
         {% #content_row class3='p-4' %}
-            <div class="col-12 d-flex flex-wrap justify-content-around">
+            <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
                 <div class="col-md-6 justify-content-center">
                 {% for problem in problems %}
-{#                    {% if forloop.counter0|divisibleby:5 %}#}
-{#                        <hr>#}
-{#                    {% endif %}#}
-                    <div class="col-md-12 justify-content-center">
-                        <form method="post">
-                            <div class="d-flex justify-content-center align-content-center">
-                            {% csrf_token %}
-                                <p class="fw-bold text-secondary text-nowrap m-2">문 {{ problem.number|add_0 }}.</p>
-                                <div class="d-flex justify-content-center align-content-center">
-                                    {% for i in '12345' %}
-                                        <input type="radio" class="btn-check" name="p{{ problem.id }}"
-                                               id="p{{ problem.id }}_answer{{ i }}" value="{{ i }}">
-                                        <label class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                                               for="p{{ problem.id }}_answer{{ i }}">{{ i }}</label>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                    {% partial answer_form %}
                     {% if forloop.counter|divisibleby:5 %}
+                <hr/>
                 </div>
                         {% if not forloop.last %}
                 <div class="col-md-6 justify-content-center">
@@ -51,6 +34,46 @@
         </section>
     </section><!-- Main Content End -->
 {% endblock %}
+
+
+{% startpartial answer_form %}
+    <div class="col-md-12 justify-content-center">
+        <form>
+            {% csrf_token %}
+            <div class="d-flex justify-content-center align-content-center">
+                <p class="fw-bold text-secondary text-nowrap m-2">문 {{ problem.number|add_0 }}.</p>
+                <div class="d-flex justify-content-center align-content-center"
+                     hx-post="{% url 'score:answer_create_content' problem.id %}"
+                     hx-include="input[name='answer']:checked" hx-target="this" hx-swap="innerHTML"
+                     hx-vals='{"problem": {{ problem.id }}}'
+                     hx-trigger="change">
+                    {% for i in '12345' %}
+                        <input id="p{{ problem.id }}_answer{{ i }}" type="radio"
+                               class="btn-check" name="answer" value="{{ i }}"/>
+                        <label class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
+                               for="p{{ problem.id }}_answer{{ i }}">{{ i }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+        </form>
+    </div>
+{% endpartial %}
+
+
+{% startpartial answered_problem %}
+    {% for i in '12345' %}
+        <input id="p{{ answered.problem.id }}_answer{{ i }}" type="radio"
+               class="btn-check" name="answer" value="{{ i }}">
+        {% if i|add:0 == answered.answer %}
+            <label class="btn btn-circle btn-success btn-sm fs-6 mx-1 my-2"
+                   for="p{{ answered.problem.id }}_answer{{ i }}">{{ i }}</label>
+        {% else %}
+            <label class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
+                   for="p{{ answered.problem.id }}_answer{{ i }}">{{ i }}</label>
+        {% endif %}
+    {% endfor %}
+{% endpartial %}
+
 
 {% block page_script %}
     <script type="module" src="{% static 'js/psat.js' %}"></script>
