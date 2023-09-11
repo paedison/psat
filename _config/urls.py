@@ -32,7 +32,7 @@ urlpatterns = [
     path('notice/', include('notice.urls')),  # 공지사항
     path('common/', include('common.urls.base')),  # 공용 페이지
     path('dashboard/', include('common.urls.dashboard')),  # 공용 페이지
-    # path('account/', include('common.urls.account')),  # 로그인, 로그아웃, 회원가입, 비밀번호 변경 등
+    path('account/', include('common.urls.account')),  # 로그인, 로그아웃, 회원가입, 비밀번호 변경 등
     path('account/', include('allauth.urls')),
     path('psat/', include('psat.urls')),  # PSAT 기출문제 관리
     path('schedule/', include('schedule.urls')),  # 시험 일정

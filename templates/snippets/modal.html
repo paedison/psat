@@ -1,16 +1,134 @@
 {% load psat_filter %}
 {% load slippers %}
+{% load partials %}
 
-{% fragment as cancel_button %}
-    {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
-{% endfragment %}
+{% startpartial login %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    로그인이 필요합니다.
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
+                <a class="btn btn-primary" href="{% url 'account_login' %}">로그인</a>
+            </div>
+        </div>
+    </div>
+{% endpartial %}
 
-{% #modal name='login' header='로그인이 필요합니다.' %}
-    {{ cancel_button }}
-    <a class="btn btn-primary" href="{% url 'account_login' %}">로그인</a>
-{% /modal %}
+{% startpartial logout %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    로그아웃 하시겠습니까?
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
+                <a id="accountLogout" class="btn btn-primary" href="{% url 'account_logout' %}">로그아웃</a>
+            </div>
+        </div>
+    </div>
+{% endpartial %}
 
-{% #modal name='logout' header='로그아웃 하시겠습니까?' %}
-    {{ cancel_button }}
-    <a id="accountLogout" class="btn btn-primary" href="{% url 'account_logout' %}">로그아웃</a>
-{% /modal %}
+{% startpartial rate %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    문제 난이도를 선택해주세요.
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <form id="rateButton">
+                {% csrf_token %}
+                    <fieldset>
+                        {% for i in '12345' %}
+                            <input type="radio" name="difficulty" id="star{{ i }}"
+                                   value="{{ i|abstract:6 }}">
+                            <label for="star{{ i }}"><i class="fa fa-star"></i></label>
+                        {% endfor %}
+                    </fieldset>
+                    <button class="btn btn-primary m-1" data-bs-dismiss="modal"
+                            hx-post="{% url 'psat:rate_detail' problem_id %}"
+                            hx-trigger="click" hx-target="#{{ icon_id }}" type="button"
+                            hx-swap="innerHTML">
+                        입력
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartial %}
+
+{% startpartial answer %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    정답 확인
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <input id="answer" type="text" name="answer" value="{{ answer }}"
+                       hidden aria-label="Answer"/>
+                {% if is_correct is None %}
+                    <h5 class="modal-title fw-bold text-danger">
+                        정답을 선택해주세요.
+                    </h5>
+                {% else %}
+                    {% if is_correct %}
+                        <h5 class="modal-title mx-auto fw-bold text-success"
+                            hx-post="{% url 'psat:answer_detail' problem_id %}"
+                            hx-include="#answer" hx-trigger="load delay:0s"
+                            hx-target="#psatAnswer{{ problem_id }}" hx-swap="innerHTML">
+                            정답입니다.</h5>
+                    {% else %}
+                        <h5 class="modal-title mx-auto fw-bold text-danger"
+                            hx-post="{% url 'psat:answer_detail' problem_id %}"
+                            hx-include="#answer" hx-trigger="load delay:0s"
+                            hx-target="#psatAnswer{{ problem_id }}" hx-swap="innerHTML">
+                            오답입니다.</h5>
+                        <p class="text-secondary small">다시 풀어보세요.</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endpartial %}
+
+{% startpartial score_confirm %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    최종 답안 제출
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                {% if all_confirmed %}
+                    <h5 class="modal-title mx-auto fw-bold text-success"
+                        hx-get="{% url 'score:confirm' exam_id %}" hx-target="#main"
+                        hx-trigger="load delay:1s" hx-swap="innerHTML">
+                        정답이 정상적으로 제출되었습니다.</h5>
+                {% else %}
+                    <h5 class="modal-title mx-auto fw-bold text-danger">
+                        모든 문제의 정답을 제출해주세요.</h5>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endpartial %}

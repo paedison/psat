@@ -29,15 +29,18 @@
                    hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
                     {{ BOARD_ICON_SET.list|safe }}
                 </a>
-                <button class="btn btn-primary" hx-target="#result" hx-swap="innerHTML"
-                        hx-post="{% url 'score:confirm' info.exam_id %}">
+                <button class="btn btn-primary" hx-target="#modalContainer"
+                        hx-post="{% url 'score:confirm' info.exam_id %}" hx-swap="innerHTML"
+                        data-bs-toggle="modal" data-bs-target="#modalContainer">
                     최종 답안 제출
                 </button>
             </div>
             <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
                 <div class="col-md-6 col-lg-4 justify-content-center pb-2">
                 {% for problem in problems %}
-                    {% partial answer_form %}
+
+                    {% partial score_form %}
+
                     {% if forloop.counter|divisibleby:5 %}
                 <hr/>
                 </div>
@@ -45,6 +48,7 @@
                 <div class="col-md-6 col-lg-4 justify-content-center pb-2">
                         {% endif %}
                     {% endif %}
+
                 {% endfor %}
                 <div id="result"></div>
         {% /content_row %}
@@ -53,7 +57,7 @@
 {% endpartial %}
 
 
-{% startpartial answer_form %}
+{% startpartial score_form %}
     <div class="col-12 justify-content-center">
         <form>
             {% csrf_token %}
@@ -93,15 +97,11 @@
     {% endif %}
 {% endpartial %}
 
-{% startpartial answered_problem %}
+
+{% startpartial scored_problem %}
     {% for i in '12345' %}
         {% with target_answer=answered.answer target_problem=answered.problem %}
             {% partial answer_buttons %}
         {% endwith %}
     {% endfor %}
 {% endpartial %}
-
-
-{% block page_script %}
-    <script type="module" src="{% static 'js/psat.js' %}"></script>
-{% endblock %}

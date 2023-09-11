@@ -19,7 +19,9 @@
             {% partial like %}
         </a>
     {% else %}
-        <a href="" data-bs-toggle="modal" data-bs-target="#loginModal">
+        <a hx-get="{% url 'account_login_modal' %}" href=""
+           hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
             {{ PSAT_ICON_SET.likeNone|safe }}
         </a>
     {% endif %}
@@ -33,7 +35,9 @@
             {% partial rate %}
         </a>
     {% else %}
-        <a href="" data-bs-toggle="modal" data-bs-target="#loginModal">
+        <a hx-get="{% url 'account_login_modal' %}" href=""
+           hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
             {{ PSAT_ICON_SET.starNone|safe }}
         </a>
     {% endif %}

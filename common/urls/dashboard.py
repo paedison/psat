@@ -1,7 +1,5 @@
-# Django Core Import
 from django.urls import path
 
-# Custom App Import
 from common.views.dashboard_views import (
     DashboardMainView, LikeDashboardView, RateDashboardView, AnswerDashboardView
 )

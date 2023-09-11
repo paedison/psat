@@ -205,7 +205,7 @@ class AnswerDetailView(BaseDetailView):
 
 
 class RateDetailModalView(PSATDetailInfoMixIn, TemplateView):
-    template_name = 'psat/snippets/modal_container.html#rate'
+    template_name = 'snippets/modal.html#rate'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -215,7 +215,7 @@ class RateDetailModalView(PSATDetailInfoMixIn, TemplateView):
 
 
 class AnswerDetailModalView(PSATDetailInfoMixIn, TemplateView):
-    template_name = 'psat/snippets/modal_container.html#answer'
+    template_name = 'snippets/modal.html#answer'
 
     @property
     def answer(self) -> int | None:

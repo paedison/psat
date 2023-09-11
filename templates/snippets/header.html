@@ -35,33 +35,20 @@
                 {% if user.is_admin %}
                     <li class="nav-item dropdown no-arrow">
                         <a class="nav-link px-1" href="{{ MENU_URL_SET.admin }}"
-                           target="admin">{{ MENU_ICON_SET.admin|safe }}</a>
-                    </li>
+                           target="admin">{{ MENU_ICON_SET.admin|safe }}</a></li>
                 {% endif %}
                 <li class="nav-item dropdown no-arrow">
                     <a class="nav-link px-1" href="{{ MENU_URL_SET.problem }}">
-                        {{ MENU_ICON_SET.problem|safe }}
-                    </a>
-                </li>
-
+                        {{ MENU_ICON_SET.problem|safe }}</a></li>
                 <li class="nav-item dropdown no-arrow">
                     <a class="nav-link px-1" href="{{ MENU_URL_SET.like }}">
-                        {{ MENU_ICON_SET.like|safe }}
-                    </a>
-                </li>
-
+                        {{ MENU_ICON_SET.like|safe }}</a></li>
                 <li class="nav-item dropdown no-arrow">
                     <a class="nav-link px-1" href="{{ MENU_URL_SET.rate }}">
-                        {{ MENU_ICON_SET.rate|safe }}
-                    </a>
-                </li>
-
+                        {{ MENU_ICON_SET.rate|safe }}</a></li>
                 <li class="nav-item dropdown no-arrow">
                     <a class="nav-link ps-1" href="{{ MENU_URL_SET.answer }}">
-                        {{ MENU_ICON_SET.answer|safe }}
-                    </a>
-                </li>
-
+                        {{ MENU_ICON_SET.answer|safe }}</a></li>
                 <div class="topbar-divider"></div>
             {% endif %}
 
@@ -80,32 +67,30 @@
                         <li>
                             <a class="dropdown-item d-flex align-items-center"
                                href="{{ MENU_URL_SET.dashboard }}">
-                                {{ MENU_ICON_SET.dashboard|safe }}
-                                <span>Dashboard</span>
+                                {{ MENU_ICON_SET.dashboard|safe }} <span>Dashboard</span>
                             </a>
                         </li>
                         {{ divider }}
                         <li>
                             <a class="dropdown-item d-flex align-items-center" href=""
-                               data-bs-toggle="modal" data-bs-target="#logoutModal">
-                                {{ MENU_ICON_SET.logout|safe }}
-                                <span>{% trans 'Logout' %}</span>
+                               hx-get="{% url 'account_logout_modal' %}"
+                               hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+                               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                {{ MENU_ICON_SET.logout|safe }} <span>{% trans 'Logout' %}</span>
                             </a>
                         </li>
                     {% else %}
                         <li>
                             <a class="dropdown-item d-flex align-items-center"
                                href="{% url 'account_login' %}">
-                                {{ MENU_ICON_SET.login|safe }}
-                                <span>{% trans 'Login' %}</span>
+                                {{ MENU_ICON_SET.login|safe }} <span>{% trans 'Login' %}</span>
                             </a>
                         </li>
                         {{ divider }}
                         <li>
                             <a class="dropdown-item d-flex align-items-center"
                                href="{% url 'account_signup' %}">
-                                {{ MENU_ICON_SET.signup|safe }}
-                                <span>{% trans 'Signup' %}</span>
+                                {{ MENU_ICON_SET.signup|safe }} <span>{% trans 'Signup' %}</span>
                             </a>
                         </li>
                     {% endif %}

@@ -1,0 +1,75 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% block main %}
+    {% partial confirmed_content %}
+{% endblock %}
+
+
+{% startpartial confirmed_content %}
+    <section class="htmx-fade-in htmx-fade-out">
+        {{ info|json_script:'info' }}
+        <div class="pagetitle my-2">
+            <h1>
+                {{ info.icon|safe }}
+                {{ info.title }}
+            </h1>
+        </div><!-- Page Title End -->
+        <section class="section">
+        {% #content_row class3='p-4' %}
+            <div class="col-12 d-flex justify-content-between pb-2">
+                <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
+                   hx-post="{% url 'score:list' %}" hx-target="#main"
+                   hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
+                    {{ BOARD_ICON_SET.list|safe }}
+                </a>
+            </div>
+            <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
+                <div class="col-md-6 col-lg-4 justify-content-center pb-2">
+                {% for confirmed in confirmed_objects %}
+
+                    {% partial confirmed_answer %}
+
+                    {% if forloop.counter|divisibleby:5 %}
+                <hr/>
+                </div>
+                        {% if not forloop.last %}
+                <div class="col-md-6 col-lg-4 justify-content-center pb-2">
+                        {% endif %}
+                    {% endif %}
+
+                {% endfor %}
+                <div id="result"></div>
+        {% /content_row %}
+        </section>
+    </section><!-- Main Content End -->
+{% endpartial %}
+
+
+{% startpartial confirmed_answer %}
+    <div class="col-12 justify-content-center">
+        <div class="d-flex justify-content-center align-content-center">
+            <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
+                문 {{ confirmed.problem.number|add_0 }}.</p>
+            <div class="d-flex justify-content-center align-content-center me-3">
+                {% for i in '12345' %}
+                    {% if i|add:0 == confirmed.answer %}
+                        {% if confirmed.answer == confirmed.problem.answer %}
+                            <div class="btn btn-circle btn-success btn-sm fs-6 mx-1 my-2">{{ i }}</div>
+                        {% else %}
+                            <div class="btn btn-circle btn-danger btn-sm fs-6 mx-1 my-2">{{ i }}</div>
+                        {% endif %}
+                    {% else %}
+                        <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2">{{ i }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endpartial %}

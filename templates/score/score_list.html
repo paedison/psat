@@ -95,25 +95,22 @@
 {% startpartial process_badge %}
     {% if target.status is None %}
         <a class="badge rounded-pill text-bg-primary" href=""
-              hx-get="{% url 'score:detail' target.exam_id %}"
-              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+           hx-get="{% url 'score:detail' target.exam_id %}"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             작성 전
         </a>
     {% elif target.status is False %}
         <a class="badge rounded-pill text-bg-warning" href=""
-              hx-get="{% url 'score:detail' target.exam_id %}"
-              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+           hx-get="{% url 'score:detail' target.exam_id %}"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             작성 중
         </a>
     {% elif target.status is True %}
-        <span class="badge rounded-pill text-bg-success">
+        <a class="badge rounded-pill text-bg-success" href=""
+           hx-get="{% url 'score:confirm' target.exam_id %}"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             제출 완료
-        </span>
+        </a>
     {% else %}
     {% endif %}
 {% endpartial %}
-
-
-{% block page_script %}
-    <script type="module" src="{% static 'js/psat.js' %}"></script>
-{% endblock %}
