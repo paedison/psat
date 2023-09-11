@@ -12,6 +12,7 @@ MENU_ICON_SET = {
     'rate': '<i class="fa-solid fa-star fa-fw"></i>',
     'answer': '<i class="fa-solid fa-circle-check fa-fw"></i>',
     'qna': '<i class="fa-solid fa-clipboard-question fa-fw"></i>',
+    'score': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
     'schedule': '<i class="fa-regular fa-calendar-days fa-fw"></i>',
     'signup': '<i class="fa-solid fa-door-open fa-fw"></i>',
     'login': '<i class="fa-solid fa-sign-in-alt fa-fw"></i>',

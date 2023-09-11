@@ -8,99 +8,97 @@
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
 {% block main %}
-    <section>
+    {% partial detail_content %}
+{% endblock %}
+
+
+{% startpartial detail_content %}
+    <section class="htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
             <h1>
-                <div class="d-flex align-items-center pb-2 fs-6">
-                    <div>
-                        <div class="input-group me-2">
-                            {% include 'psat/snippets/detail_nav_container.html' %}
-                            {% include 'psat/snippets/detail_filter_container.html' %}
-                        </div>
-                    </div>
-                    <div class="small">
-                        {% include 'psat/snippets/icon_container.html' %}
-                    </div>
-                </div>
+                {{ info.icon|safe }}
                 {{ info.title }}
             </h1>
         </div><!-- Page Title End -->
         <section class="section">
         {% #content_row class3='p-4' %}
-            <table class="table my-4">
-                {% if problem %}
-                    <thead>{% partial thead %}</thead>
-                    <tbody>{% partial tbody %}</tbody>
-                {% endif %}
-            </table>
+            <div class="col-12 d-flex justify-content-between pb-2">
+                <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
+                   hx-post="{% url 'score:list' %}" hx-target="#main"
+                   hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
+                    {{ BOARD_ICON_SET.list|safe }}
+                </a>
+                <button class="btn btn-primary" hx-target="#result" hx-swap="innerHTML"
+                        hx-post="{% url 'score:confirm' info.exam_id %}">
+                    최종 답안 제출
+                </button>
+            </div>
+            <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
+                <div class="col-md-6 col-lg-4 justify-content-center pb-2">
+                {% for problem in problems %}
+                    {% partial answer_form %}
+                    {% if forloop.counter|divisibleby:5 %}
+                <hr/>
+                </div>
+                        {% if not forloop.last %}
+                <div class="col-md-6 col-lg-4 justify-content-center pb-2">
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <div id="result"></div>
         {% /content_row %}
         </section>
     </section><!-- Main Content End -->
-{% endblock %}
-
-
-{% startpartial thead %}
-    <tr>
-        <th class="p-0">
-            {% if problem.image_file.tag1 == 'Preparing Image' %}
-                <div class="d-flex">
-                    <h6 class="lh-base text-nowrap me-2 fw-bold text-primary">
-                        문&nbsp;{{ problem.problem_number|add_space }}.
-                    </h6>
-                    <h6 class="lh-base fw-bold text-secondary">
-                        {{ problem.problem_question }}
-                    </h6>
-                </div>
-            {% endif %}
-        </th>
-    </tr>
 {% endpartial %}
 
 
-{% startpartial tbody %}
-    <tr>
-        <td class="px-0">
-            <div class="d-flex justify-content-end pb-2">
-                {% include 'psat/snippets/detail_answer_button.html' %}
+{% startpartial answer_form %}
+    <div class="col-12 justify-content-center">
+        <form>
+            {% csrf_token %}
+            <div class="d-flex justify-content-center align-content-center">
+                <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
+                    문 {{ problem.number|add_0 }}.</p>
+                <div class="d-flex justify-content-center align-content-center me-3"
+                     hx-post="{% url 'score:submit' problem.id %}"
+                     hx-include="input[name='answer']:checked" hx-target="this" hx-swap="innerHTML"
+                     hx-vals='{"problem": {{ problem.id }}}' hx-trigger="change">
+                    {% for i in '12345' %}
+                        {% with target_answer=problem.submitted_answer target_problem=problem %}
+                            {% partial answer_buttons %}
+                        {% endwith %}
+                    {% endfor %}
+                </div>
             </div>
-            <div class="d-flex flex-wrap align-items-start justify-content-center">
-                {% with image=problem.image_file %}
-                    {% if image.tag1 == 'Preparing Image' %}
-                        <img class="mw-100" alt="{{ image.tag1 }}"
-                             src="{{ image.name1 }}"/>
-                    {% else %}
-                        <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag1 }}"
-                             src="{{ image.name1 }}"/>
-                    {% endif %}
-                    {% if problem.image_file.name2 %}
-                        <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag2 }}"
-                             src="{{ image.name2 }}"/>
-                    {% endif %}
-                {% endwith %}
-            </div>
-        </td>
-    </tr>
-    {% if user.is_authenticated %}
-        <tr>
-            <td class="p-0">
-                <div id="detailMemo" hx-trigger="load delay:0s"
-                    {% if problem_memo is None %}
-                        hx-get="{% url 'psat:memo_create' problem.id %}"
-                    {% else %} hx-get="{% url 'psat:memo_detail' problem_memo.id %}"
-                    {% endif %} hx-swap="innerHTML"></div>
-            </td>
-        </tr>
-        <tr>
-            <td class="p-0">
-                <div id="detailTags" hx-trigger="load delay:0s"
-                    {% if my_tag is None %}
-                        hx-get="{% url 'psat:tag_create' problem.id %}"
-                    {% else %} hx-get="{% url 'psat:tag_container' my_tag.id %}"
-                    {% endif %} hx-swap="innerHTML"></div>
-            </td>
-        </tr>
+        </form>
+    </div>
+{% endpartial %}
+
+
+{% startpartial answer_buttons %}
+    <input id="p{{ target_problem.id }}_answer{{ i }}" type="radio"
+           class="btn-check" name="answer" value="{{ i }}"/>
+    {% if i|add:0 == target_answer %}
+        {% if target_answer == target_problem.answer %}
+            <label class="btn btn-circle btn-success btn-sm fs-6 mx-1 my-2"
+                   for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
+        {% else %}
+            <label class="btn btn-circle btn-danger btn-sm fs-6 mx-1 my-2"
+                   for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
+        {% endif %}
+    {% else %}
+        <label class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
+               for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
     {% endif %}
+{% endpartial %}
+
+{% startpartial answered_problem %}
+    {% for i in '12345' %}
+        {% with target_answer=answered.answer target_problem=answered.problem %}
+            {% partial answer_buttons %}
+        {% endwith %}
+    {% endfor %}
 {% endpartial %}
 
 

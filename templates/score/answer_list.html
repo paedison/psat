@@ -2,11 +2,17 @@
 {% load static %}
 {% load psat_filter %}
 {% load slippers %}
+{% load partials %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
 {% block main %}
-    <section>
+    {% partial list_main %}
+{% endblock %}
+
+
+{% startpartial list_main %}
+    <section class="htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
             <h1>
@@ -19,44 +25,94 @@
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
                     {% #nav_tab id='0' %}
-                        <span hx-trigger="load delay:0s" hx-target="#navContent0"
-                              hx-get="{% url 'score:list_content' '전체' %}" hx-swap="innerHTML">
-                            {{ PSAT_ICON_SET.all|safe }} 전체
-                        </span>
+                        {{ PSAT_ICON_SET.all|safe }} 전체
                     {% /nav_tab %}
-
-{#                    {% #nav_tab id='1' %}#}
-{#                        <span hx-trigger="load delay:0.3s" hx-target="#navContent1"#}
-{#                              hx-get="{{ info.menu_url.eoneo }}" hx-swap="innerHTML">#}
-{#                            {{ PSAT_ICON_SET.eoneo|safe }} 언어#}
-{#                        </span>#}
-{#                    {% /nav_tab %}#}
-{##}
-{#                    {% #nav_tab id='2' %}#}
-{#                        <span hx-trigger="load delay:0.6s" hx-target="#navContent2"#}
-{#                              hx-get="{{ info.menu_url.jaryo }}" hx-swap="innerHTML">#}
-{#                            {{ PSAT_ICON_SET.jaryo|safe }} 자료#}
-{#                        </span>#}
-{#                    {% /nav_tab %}#}
-{##}
-{#                    {% #nav_tab id='3' %}#}
-{#                        <span hx-trigger="load delay:0.9s" hx-target="#navContent3"#}
-{#                              hx-get="{{ info.menu_url.sanghwang }}" hx-swap="innerHTML">#}
-{#                            {{ PSAT_ICON_SET.sanghwang|safe }} 상황#}
-{#                        </span>#}
-{#                    {% /nav_tab %}#}
                 </div>
             </nav><!-- Navigation End -->
             <div class="tab-content" id="nav-tabContent">
-                {% nav_content id='0' %}<!-- All Subject Tab End -->
-{#                {% nav_content id='1' %}<!-- Eoneo Tab End -->#}
-{#                {% nav_content id='2' %}<!-- Jaryo Tab End -->#}
-{#                {% nav_content id='3' %}<!-- Sanghwang Tab End -->#}
+                {% #nav_content id='0' %}
+                    {% partial list_content %}
+                {% /nav_content id='0' %}<!-- All Subject Tab End -->
             </div>
         {% /content_row %}
         </section>
     </section><!-- Main Content End -->
-{% endblock %}
+{% endpartial %}
+
+
+{% startpartial list_content %}
+<section class="htmx-fade-in htmx-fade-out">
+        {{ info|json_script:'info' }}
+        <div class="table-responsive">
+            <table class="table small">
+                <thead>
+                    <tr class="text-center table-warning">
+                        <th class="text-primary text-nowrap p-2 col-1">연도</th>
+                        <th class="text-primary text-nowrap p-2 col-1">시험</th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ PSAT_ICON_SET.eoneo|safe }} 언어논리
+                        </th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ PSAT_ICON_SET.jaryo|safe }} 자료해석
+                        </th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ PSAT_ICON_SET.sanghwang|safe }} 상황판단
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2 col-1">{{ obj.year }}년</td>
+                            <td class="text-nowrap p-2 col-1">{{ obj.exam2 }}</td>
+                            <td class="text-nowrap p-2 col-1">
+                                {% with target=obj.eoneo %}
+                                    {% partial process_badge %}
+                                {% endwith %}
+                            </td>
+                            <td class="text-nowrap p-2 col-1">
+                                {% with target=obj.jaryo %}
+                                    {% partial process_badge %}
+                                {% endwith %}
+                            </td>
+                            <td class="text-nowrap p-2 col-1">
+                                {% with target=obj.sanghwang %}
+                                    {% partial process_badge %}
+                                {% endwith %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+        {% include 'psat/snippets/list_footer.html' %}
+    </section>
+{% endpartial %}
+
+
+{% startpartial process_badge %}
+    {% if target.status is None %}
+        <a class="badge rounded-pill text-bg-primary" href=""
+              hx-get="{% url 'score:detail' target.exam_id %}"
+              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            작성 전
+        </a>
+    {% elif target.status is False %}
+        <a class="badge rounded-pill text-bg-warning" href=""
+              hx-get="{% url 'score:detail' target.exam_id %}"
+              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            작성 중
+        </a>
+    {% elif target.status is True %}
+        <span class="badge rounded-pill text-bg-success">
+            제출 완료
+        </span>
+    {% else %}
+    {% endif %}
+{% endpartial %}
+
 
 {% block page_script %}
     <script type="module" src="{% static 'js/psat.js' %}"></script>

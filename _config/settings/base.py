@@ -109,6 +109,7 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 
     # Default Django Apps
     'django.middleware.security.SecurityMiddleware',
