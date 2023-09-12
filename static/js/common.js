@@ -50,11 +50,14 @@ function expandMenu(target) {
 }
 
 $(document).on('click', '#sidebar-nav .nav-link', function() {
+    let bsTarget = $(this).data('bsTarget');
     $('.nav-link').addClass('collapsed').attr('aria-expanded', 'false');
     $(this).removeClass('collapsed').attr('aria-expanded', 'true');
     $('#psat-nav').removeClass('show');
     $('.aside-nav-icon').removeClass('active').find('i').removeClass('fa-solid').addClass('fa-regular');
-    $("body").toggleClass("toggle-sidebar");
+    if (bsTarget !== '#psat-nav') {
+        $("body").toggleClass("toggle-sidebar");
+    }
 });
 
 $(document).on('click', '.aside-nav-icon', function() {

@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load psat_filter %}
 {% load taggit_templatetags2_tags %}
 {% load partials %}
 
@@ -27,7 +28,7 @@
     </div>
     <div class="d-flex align-items-start mb-2 mx-2">
         <div class="border-start border-secondary-subtle ps-2">
-            {% get_tags_for_object my_tag as "tags" %}
+            {% get_sorted_tags_for_object my_tag as "tags" %}
             {% for tag in tags %}
                 <div class="btn-group">
                     <span class="badge rounded-pill bg-primary dropdown-toggle" type="button"

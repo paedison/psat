@@ -14,8 +14,8 @@
 
 <div class="td-div-xs" aria-label="Like">
     {% if user.is_authenticated %}
-        <a hx-post="{% url 'psat:like_detail' problem.prob_id %}"
-           hx-target="this" hx-swap="innerHTML">
+        <a hx-post="{% url 'psat:like_detail' problem.prob_id %}" href=""
+           class="htmx-fade-in htmx-fade-out" hx-target="this" hx-swap="innerHTML swap:0.25s">
             {% partial like %}
         </a>
     {% else %}
@@ -28,8 +28,8 @@
 </div>
 <div class="td-div-lg" aria-label="Rate">
     {% if user.is_authenticated %}
-        <a id="psatRate{{ problem.prob_id }}_{{ info.sub_code }}" href=""
-           hx-get="{% url 'psat:rate_detail_modal' problem.prob_id %}?id=psatRate{{ problem.prob_id }}_{{ info.sub_code }}"
+        <a id="psatRate{{ problem.prob_id }}_{{ info.sub_code }}" href="" class="htmx-fade-in htmx-fade-out"
+           hx-get="{% url 'psat:rate_detail_modal' problem.prob_id %}?icon_id=psatRate{{ problem.prob_id }}_{{ info.sub_code }}"
            hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
            data-bs-toggle="modal" data-bs-target="#modalContainer">
             {% partial rate %}
@@ -44,6 +44,7 @@
 </div>
 <div class="td-div-xs" aria-label="Answer">
     {% if user.is_authenticated %}
-        <span id="psatAnswer{{ problem.prob_id }}">{% partial answer %}</span>
+        <span id="psatAnswer{{ problem.prob_id }}" class="htmx-fade-in htmx-fade-out">
+            {% partial answer %}</span>
     {% endif %}
 </div>

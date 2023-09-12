@@ -27,7 +27,7 @@ class PSATDetailInfoMixIn:
     @property
     def object(self) -> Problem: return self.problem
     @property
-    def icon_id(self) -> str: return self.request.GET.get('id')
+    def icon_id(self) -> str: return self.request.GET.get('icon_id')
     @property
     def icon_template(self) -> str: return f'{self.icon_container}#{self.view_type}'
     @property
@@ -137,7 +137,8 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             self.evaluation.update_open()
-        return super().get(request, *args, **kwargs)
+        context = self.get_context_data()
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)

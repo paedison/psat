@@ -1,6 +1,6 @@
 {% load psat_filter %}
 
-<div class="td-div-xl" aria-label="Reference">
+<div class="td-div-xl text-start" aria-label="Reference">
     {% if info.type == 'problemList' or info.type == 'searchList' %}
         <a class="text-decoration-none fw-bold" href="{{ problem.get_problem_url }}">
             {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}

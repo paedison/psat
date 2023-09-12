@@ -179,7 +179,7 @@ class UpdateInfo:
         self.answered_at = now
         self.answered_times = answered_times + 1
         self.submitted_answer = answer
-        if answer == self.correct_answer():
+        if answer == self.correct_answer:
             self.is_correct = True
         else:
             self.is_correct = False
