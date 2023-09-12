@@ -31,8 +31,11 @@
                         aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
-                <a id="accountLogout" class="btn btn-primary" href="{% url 'account_logout' %}">로그아웃</a>
+                <form action="{% url 'account_logout' %}" method="POST">
+                    {% csrf_token %}
+                    {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
+                    <button class="btn btn-primary" type="submit">로그아웃</button>
+                </form>
             </div>
         </div>
     </div>

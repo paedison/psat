@@ -25,6 +25,8 @@ class PSATDetailInfoMixIn:
     @property
     def problem(self) -> Problem: return Problem.objects.get(id=self.problem_id)
     @property
+    def object(self) -> Problem: return self.problem
+    @property
     def icon_id(self) -> str: return self.request.GET.get('id')
     @property
     def icon_template(self) -> str: return f'{self.icon_container}#{self.view_type}'

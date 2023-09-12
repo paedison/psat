@@ -31,6 +31,12 @@ let menu = info['menu'] || $('#info').text();
 export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 
 
+// Toggle the side navigation
+$("#sidebarToggle").on('click', function() {
+    $("body").toggleClass("toggle-sidebar");
+});
+
+
 /* Expand & activate menu */
 function expandMenu(target) {
     const navContent = $(target).closest('ul');
@@ -43,11 +49,12 @@ function expandMenu(target) {
     bulletPoint.removeClass('fa-regular').addClass('fa-solid');
 }
 
-$(document).on('click', '.nav-link', function() {
+$(document).on('click', '#sidebar-nav .nav-link', function() {
     $('.nav-link').addClass('collapsed').attr('aria-expanded', 'false');
     $(this).removeClass('collapsed').attr('aria-expanded', 'true');
     $('#psat-nav').removeClass('show');
     $('.aside-nav-icon').removeClass('active').find('i').removeClass('fa-solid').addClass('fa-regular');
+    $("body").toggleClass("toggle-sidebar");
 });
 
 $(document).on('click', '.aside-nav-icon', function() {
@@ -58,6 +65,7 @@ $(document).on('click', '.aside-nav-icon', function() {
     $(this).closest('li').children().find('i').removeClass('fa-solid').addClass('fa-regular');
 
     $(this).addClass('active').find('i').removeClass('fa-regular').addClass('fa-solid');
+    $("body").toggleClass("toggle-sidebar");
 });
 
 $(document).ready(function() {
@@ -70,56 +78,17 @@ $(document).ready(function() {
 });
 
 
-/* Logout */
-$(document).on('click', '#accountLogout', function(event) {
-    event.preventDefault();
-    let url = $(this).attr('href');
-    $.ajax({
-        url: url,
-        type: 'POST',
-        data: {
-        },
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function() {
-              window.location.href = urls['psat'];
-        }
-    });
-});
-
-
-/* Ajax for list filter */
-$(document).on('click', '.list-filter', function(event) {
-    event.preventDefault();
-    let url = $(this).attr('href');
-    let target = $(this).closest('section').data('target');
-    $.ajax({
-        url: url,
-        type: 'POST',
-        headers: { 'X-CSRFToken': csrf_token },
-        success: function(data) {
-            $(target).replaceWith(data);
-        }
-    });
-});
-
-
 /* Hide header bar */
-$(document).ready(function() {
-    let prevScrollPos = $(window).scrollTop();
-
-    $(window).scroll(function() {
-        const currentScrollPos = $(window).scrollTop();
-        if (prevScrollPos < currentScrollPos) {
-            $('.header').addClass('hide');
-        } else {
-            $('.header').removeClass('hide');
-        }
-        prevScrollPos = currentScrollPos;
-    });
-});
-
-
-// Toggle the side navigation
-$("#sidebarToggle").on('click', function() {
-    $("body").toggleClass("toggle-sidebar");
-});
+// $(document).ready(function() {
+//     let prevScrollPos = $(window).scrollTop();
+//
+//     $(window).scroll(function() {
+//         const currentScrollPos = $(window).scrollTop();
+//         if (prevScrollPos < currentScrollPos) {
+//             $('.header').addClass('hide');
+//         } else {
+//             $('.header').removeClass('hide');
+//         }
+//         prevScrollPos = currentScrollPos;
+//     });
+// });

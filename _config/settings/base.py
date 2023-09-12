@@ -362,3 +362,9 @@ LOGGING = {
 # django-crispy-forms settings
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
+
+# django-debug-toolbar settings
+DEBUG_TOOLBAR_CONFIG = {
+    "ROOT_TAG_EXTRA_ATTRS": "hx-preserve"
+}
