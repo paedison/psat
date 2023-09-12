@@ -100,7 +100,7 @@
 
 {% startpartial scored_problem %}
     {% for i in '12345' %}
-        {% with target_answer=answered.answer target_problem=answered.problem %}
+        {% with target_answer=scored.answer target_problem=scored.problem %}
             {% partial answer_buttons %}
         {% endwith %}
     {% endfor %}

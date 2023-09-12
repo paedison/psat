@@ -111,6 +111,6 @@
            hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             제출 완료
         </a>
-    {% else %}
+    {% elif target.status == 'N/A' %}
     {% endif %}
 {% endpartial %}

@@ -4,14 +4,13 @@ from django.shortcuts import render
 
 from common.constants import color, icon
 from common.constants.psat import TOTAL
-from common.models import User
 from psat.models import Exam, Problem
 from .forms import TemporaryAnswerForm
 from .models import TemporaryAnswer, ConfirmedAnswer
 
 
-def get_template() -> dict:
-    """ Return the appropriate templates. """
+class ScoreTemplate:
+    """ Represent the appropriate templates. """
     list_base = 'score/score_list.html'  # score_list_view
     list_main = f'{list_base}#list_main'  # score_list_view
     list_content = f'{list_base}#list_content'  # score_list_view
@@ -20,65 +19,73 @@ def get_template() -> dict:
     score_form = f'{detail_base}#score_form'  # score_submit_form
     scored_problem = f'{detail_base}#scored_problem'  # score_submit_form
     score_confirm_modal = 'snippets/modal.html#score_confirm'  #
-    score_confirmed = 'score/score_confirmed.html'  #
-    score_confirmed_content = f'{score_confirmed}#confirmed_content'  # score_submit_form
-    return {
-        'list_base': list_base,
-        'list_main': list_main,
-        'list_content': list_content,
-        'detail_base': detail_base,
-        'detail_content': detail_content,
-        'score_form': score_form,
-        'scored_problem': scored_problem,
-        'score_confirm_modal': score_confirm_modal,
-        'score_confirmed': score_confirmed,
-        'score_confirmed_content': score_confirmed_content,
-    }
+    score_confirmed_base = 'score/score_confirmed.html'  #
+    score_confirmed_content = f'{score_confirmed_base}#confirmed_content'  # score_submit_form
 
 
-def get_temporary_obj(user: User, problem: Problem) -> TemporaryAnswer:
-    """ Return the one TemporaryAnswer object. """
-    return TemporaryAnswer.objects.filter(
-        user=user, problem=problem, is_confirmed=False).first()
+class TargetAnswer:
+    def __init__(self, request, problem=None, exam=None):
+        self.request = request
+        self.problem = problem
+        self.exam = exam
 
+    def get_exam_ids(self, boolean: bool) -> set[int]:
+        return set(TemporaryAnswer.objects.filter(
+            user=self.request.user, is_confirmed=boolean).order_by(
+            'problem__id').values_list('problem__exam__id', flat=True))
 
-def get_temporary_objects(user: User, exam: Exam) -> TemporaryAnswer.objects:
-    """ Return the TemporaryAnswer objects. """
-    return TemporaryAnswer.objects.filter(
-        user=user, problem__exam=exam, is_confirmed=False).order_by('problem__id')
+    @property
+    def temporary_exam_ids(self) -> set[int]: return self.get_exam_ids(False)
+    @property
+    def confirmed_exam_ids(self) -> set[int]: return self.get_exam_ids(True)
 
+    @property
+    def temporary_ans(self) -> TemporaryAnswer:
+        """ Return the one TemporaryAnswer object. """
+        if self.problem:
+            return TemporaryAnswer.objects.filter(
+                user=self.request.user, problem=self.problem,
+                is_confirmed=False).first()
 
-def get_confirmed_objects(user: User, exam: Exam) -> TemporaryAnswer.objects:
-    """ Return the TemporaryAnswer objects. """
-    confirmed_times = ConfirmedAnswer.objects.filter(
-        user=user, problem__exam=exam).aggregate(Max('confirmed_times'))['confirmed_times__max']
-    return ConfirmedAnswer.objects.filter(
-        user=user, problem__exam=exam, confirmed_times=confirmed_times).order_by('problem__id')
+    @property
+    def temporary_answers(self) -> TemporaryAnswer.objects:
+        """ Return the TemporaryAnswer objects. """
+        if self.exam:
+            return TemporaryAnswer.objects.filter(
+                user=self.request.user, problem__exam=self.exam,
+                is_confirmed=False).order_by('problem__id')
 
+    @property
+    def temporary_answers_problem_ids(self) -> list:
+        if self.temporary_answers:
+            return self.temporary_answers.values_list('problem', flat=True)
 
-def get_confirmed_times(user: User, exam: Exam) -> int:
-    """ Return the TemporaryAnswer objects. """
-    return ConfirmedAnswer.objects.filter(
-        user=user, problem__exam=exam).aggregate(Max('confirmed_times'))['confirmed_times__max']
+    @property
+    def confirmed_answers(self) -> TemporaryAnswer.objects:
+        """ Return the TemporaryAnswer objects. """
+        if self.exam is not None:
+            confirmed_times = ConfirmedAnswer.objects.filter(
+                user=self.request.user, problem__exam=self.exam
+            ).aggregate(Max('confirmed_times'))['confirmed_times__max']
+            return ConfirmedAnswer.objects.filter(
+                user=self.request.user, problem__exam=self.exam,
+                confirmed_times=confirmed_times).order_by('problem__id')
 
 
 def score_list_view(request) -> render:
     # Get the template name
-    if request.method == 'GET':
-        if request.htmx:
-            template_name = get_template()['list_content']
-        else:
-            template_name = get_template()['list_base']
+    if request.method == 'POST':
+        template_name = ScoreTemplate.list_main
     else:
-        template_name = get_template()['list_main']
+        if request.htmx:
+            template_name = ScoreTemplate.list_content
+        else:
+            template_name = ScoreTemplate.list_base
 
     # Get the temporary and confirmed answers list
-    temporary_exams_ids = TemporaryAnswer.objects.filter(
-        user=request.user, is_confirmed=False).order_by(
-        'problem__id').values_list('problem__exam__id', flat=True).distinct()
-    confirmed_exams_ids = TemporaryAnswer.objects.filter(
-        user=request.user, is_confirmed=True).order_by(
-        'problem__id').values_list('problem__exam__id', flat=True).distinct()
+    target_answer = TargetAnswer(request)
+    temporary_exam_ids = target_answer.temporary_exam_ids
+    confirmed_exam_ids = target_answer.confirmed_exam_ids
 
     # Get paginator for total exam list
     exam_list = TOTAL['list']
@@ -92,14 +99,14 @@ def score_list_view(request) -> render:
     # Return the current status of the target exam
     def get_status(target_exam):
         try:
-            if target_exam.id in temporary_exams_ids:
-                return False  # 작성 전
-            elif target_exam.id in confirmed_exams_ids:
-                return True  # 작성 중
+            if target_exam.id in temporary_exam_ids:
+                return False  # 작성 중
+            elif target_exam.id in confirmed_exam_ids:
+                return True  # 제출 완료
             else:
-                return None  # 제출 완료
+                return None  # 작성 전
         except AttributeError:
-            return 'N/A'
+            return 'N/A'  # 해당 사항 없음(시험에서 제외된 과목)
 
     # Get additional information of page_obj
     exams = Exam.objects.all()
@@ -139,18 +146,20 @@ def score_list_view(request) -> render:
 def score_detail_view(request, exam_id: int) -> render:
     # Get the template name
     if request.htmx:
-        template_name = get_template()['detail_content']
+        template_name = ScoreTemplate.detail_content
     else:
-        template_name = get_template()['detail_base']
+        template_name = ScoreTemplate.detail_base
 
     exam = Exam.objects.get(id=exam_id)
-    problems = exam.problems.all()
-    temporary_objects_ids = get_temporary_objects(
-        request.user, exam).values_list('problem', flat=True)
+    target_answer = TargetAnswer(request, exam=exam)
+    temporary_answers_problem_ids = target_answer.temporary_answers_problem_ids
 
-    for prob in problems:
-        if prob.id in temporary_objects_ids:
-            prob.submitted_answer = get_temporary_obj(request.user, prob).answer
+    problems = exam.problems.all()
+    for problem in problems:
+        if temporary_answers_problem_ids:
+            if problem.id in temporary_answers_problem_ids:
+                target_answer2 = TargetAnswer(request, exam=exam, problem=problem)
+                problem.submitted_answer = target_answer2.temporary_ans.answer
 
     info = {
         'menu': 'score',
@@ -167,46 +176,53 @@ def score_detail_view(request, exam_id: int) -> render:
 
 
 def score_submit_form(request, problem_id: int) -> render:
-    answer_form_template = get_template()['score_form']
-    answered_problem_template = get_template()['scored_problem']
-
     problem = Problem.objects.get(id=problem_id)
+    target_answer = TargetAnswer(request, problem=problem)
 
     if request.method == 'GET':
+        template_name = ScoreTemplate.score_form  # template_name
         context = {'problem': problem}
-        template_name = answer_form_template
     else:
         form = TemporaryAnswerForm(request.POST)
         submitted_answer: int = int(request.POST.get('answer'))
-        temporary_obj: TemporaryAnswer = get_temporary_obj(request.user, problem)
-        if temporary_obj is None:
+        temporary_ans: TemporaryAnswer = target_answer.temporary_ans
+        if temporary_ans is None:
             form.user = request.user.id
             if form.is_valid():
-                answered = form.save()
-                context = {'answered': answered}
-                template_name = answered_problem_template
+                template_name = ScoreTemplate.scored_problem  # template_name
+                scored = form.save()
+                context = {'scored': scored}
             else:
-                print(form.errors)
+                template_name = ScoreTemplate.score_form  # template_name
                 context = {'problem': problem}
-                template_name = answer_form_template
         else:
-            temporary_obj.answer = submitted_answer
-            temporary_obj.save()
-            answered = temporary_obj
-            context = {'answered': answered}
-            template_name = answered_problem_template
+            template_name = ScoreTemplate.scored_problem  # template_name
+            temporary_ans.answer = submitted_answer
+            temporary_ans.save()
+            scored = temporary_ans
+            context = {'scored': scored}
     return render(request, template_name, context)
 
 
 def score_confirm(request, exam_id: int):
-    exam = Exam.objects.get(id=exam_id)
+    # Get the template name
     if request.method == 'POST':
-        template_name = get_template()['score_confirm_modal']
-        temporary_objects: TemporaryAnswer.objects = get_temporary_objects(request.user, exam)
-        if exam.problems.count() != temporary_objects.count():
+        template_name = ScoreTemplate.score_confirm_modal
+    else:
+        if request.htmx:
+            template_name = ScoreTemplate.score_confirmed_content
+        else:
+            template_name = ScoreTemplate.score_confirmed_base
+
+    exam = Exam.objects.get(id=exam_id)
+    target_answer = TargetAnswer(request, exam=exam)
+
+    if request.method == 'POST':
+        temporary_answers = target_answer.temporary_answers
+        if exam.problems.count() != temporary_answers.count():
             all_confirmed = False
         else:
-            for obj in temporary_objects:
+            for obj in temporary_answers:
                 obj.is_confirmed = True
                 obj.save()
                 ConfirmedAnswer.objects.get_or_create(
@@ -218,15 +234,7 @@ def score_confirm(request, exam_id: int):
         }
         return render(request, template_name, context)
     else:
-        # Get the template name
-        if request.htmx:
-            template_name = get_template()['score_confirmed_content']
-        else:
-            template_name = get_template()['score_confirmed']
-
-        exam = Exam.objects.get(id=exam_id)
-        confirmed_objects = get_confirmed_objects(request.user, exam)
-
+        confirmed_answers = target_answer.confirmed_answers
         info = {
             'menu': 'score',
             'title': exam.full_title,
@@ -236,6 +244,6 @@ def score_confirm(request, exam_id: int):
         }
         context = {
             'info': info,
-            'confirmed_objects': confirmed_objects,
+            'confirmed_answers': confirmed_answers,
         }
         return render(request, template_name, context)

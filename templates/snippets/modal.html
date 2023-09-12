@@ -72,7 +72,7 @@
         {% if all_confirmed %}
             <h5 class="modal-title mx-auto fw-bold text-success"
                 hx-get="{% url 'score:confirm' exam_id %}" hx-target="#main"
-                hx-trigger="load delay:1s" hx-swap="innerHTML">
+                hx-trigger="load delay:0.25s" hx-swap="innerHTML">
                 정답이 정상적으로 제출되었습니다.</h5>
         {% else %}
             <h5 class="modal-title mx-auto fw-bold text-danger">
