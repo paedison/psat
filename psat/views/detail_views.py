@@ -1,9 +1,12 @@
 from django.urls import reverse_lazy
 from vanilla import DetailView, TemplateView
 
-from common.constants import icon, color
+from common import constants
 from .list_views import get_evaluation_info
 from ..models import Problem, Evaluation, ProblemMemo, ProblemTag
+
+menu_icon_set = constants.icon.MENU_ICON_SET
+color_set = constants.color.COLOR_SET
 
 
 class PSATDetailInfoMixIn:
@@ -101,8 +104,8 @@ class PSATDetailInfoMixIn:
             'type': f'{self.view_type}Detail',
             'title': self.title,
             'current_url': self.get_reverse_lazy(self.problem_id),
-            'icon': icon.MENU_ICON_SET[self.view_type],
-            'color': color.COLOR_SET[self.view_type],
+            'icon': menu_icon_set[self.view_type],
+            'color': color_set[self.view_type],
             'problem_id': self.problem_id,
         }
 
@@ -222,9 +225,9 @@ class AnswerDetailModalView(PSATDetailInfoMixIn, TemplateView):
 
     @property
     def answer(self) -> int | None:
-        answer = self.request.POST.get('answer')
-        answer = int(answer) if answer else None
-        return answer
+        answer_ = self.request.POST.get('answer')
+        answer_ = int(answer_) if answer_ else None
+        return answer_
 
     @property
     def is_correct(self) -> bool | None:
@@ -242,9 +245,9 @@ class AnswerDetailModalView(PSATDetailInfoMixIn, TemplateView):
         return context
 
 
-problem_detail_view = ProblemDetailView.as_view()
-like_detail_view = LikeDetailView.as_view()
-rate_detail_view = RateDetailView.as_view()
-answer_detail_view = AnswerDetailView.as_view()
-rate_detail_modal_view = RateDetailModalView.as_view()
-answer_detail_modal_view = AnswerDetailModalView.as_view()
+problem = ProblemDetailView.as_view()
+like = LikeDetailView.as_view()
+rate = RateDetailView.as_view()
+answer = AnswerDetailView.as_view()
+rate_modal = RateDetailModalView.as_view()
+answer_modal = AnswerDetailModalView.as_view()

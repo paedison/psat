@@ -226,8 +226,8 @@ class ProblemTagCloudView(TagSettingMixIn, TemplateView):
         return context
 
 
-problem_tag_container_view = ProblemTagContainerView.as_view()
-problem_tag_create_view = ProblemTagCreateView.as_view()
-problem_tag_add_view = ProblemTagAddView.as_view()
-problem_tag_delete_view = ProblemTagDeleteView.as_view()
-problem_tag_cloud_view = ProblemTagCloudView.as_view()
+container = ProblemTagContainerView.as_view()
+create = ProblemTagCreateView.as_view()
+add = ProblemTagAddView.as_view()
+delete = ProblemTagDeleteView.as_view()
+cloud = ProblemTagCloudView.as_view()

@@ -4,9 +4,19 @@ from django.urls import reverse_lazy
 from searchview.views import SearchView
 from vanilla import ListView
 
-from common.constants import icon, color, psat
+from common import constants
 from ..forms import ProblemSearchForm
 from ..models import Problem, Evaluation, ProblemData
+
+psat_icon_set = constants.icon.PSAT_ICON_SET
+like_none_icon = psat_icon_set['likeNone']
+star_none_icon = psat_icon_set['starNone']
+
+menu_icon_set = constants.icon.MENU_ICON_SET
+color_set = constants.color.COLOR_SET
+
+exam_list = constants.psat.TOTAL['exam_list']
+subject_list = constants.psat.TOTAL['subject_list']
 
 
 def index(request):
@@ -16,9 +26,6 @@ def index(request):
 
 def get_evaluation_info(user, obj: Problem) -> Problem:
     problem_id = obj.prob_id
-    like_none_icon = icon.PSAT_ICON_SET['likeNone']
-    star_none_icon = icon.PSAT_ICON_SET['starNone']
-
     source = None
     if user.is_authenticated:
         source = Evaluation.objects.filter(
@@ -71,18 +78,18 @@ class PSATListInfoMixIn:
 
     @property
     def exam2(self) -> str:
-        return next((i['exam2'] for i in psat.TOTAL['exam_list'] if i['ex'] == self.ex), '전체')
+        return next((i['exam2'] for i in exam_list if i['ex'] == self.ex), '전체')
 
     @property
     def sub(self) -> str: return self.kwargs.get('sub', '전체')
 
     @property
     def subject(self) -> str:
-        return next((i['subject'] for i in psat.TOTAL['subject_list'] if i['sub'] == self.sub), '전체')
+        return next((i['subject'] for i in subject_list if i['sub'] == self.sub), '전체')
 
     @property
     def sub_code(self) -> int:
-        return next((int(i['sub_code']) for i in psat.TOTAL['subject_list'] if i['sub'] == self.sub), 0)
+        return next((int(i['sub_code']) for i in subject_list if i['sub'] == self.sub), 0)
 
     @property
     def url(self) -> dict:
@@ -126,11 +133,11 @@ class PSATListInfoMixIn:
         return Problem.objects.filter(problem_filter)
 
     @property
-    def is_liked(self) -> bool | None: return self.kwargs.get('is_liked')
+    def is_liked(self) -> str | None: return self.kwargs.get('is_liked')
     @property
-    def star_count(self) -> bool | None: return self.kwargs.get('star_count')
+    def star_count(self) -> str | None: return self.kwargs.get('star_count')
     @property
-    def is_correct(self) -> bool | None: return self.kwargs.get('is_correct')
+    def is_correct(self) -> str | None: return self.kwargs.get('is_correct')
 
     @property
     def info(self) -> dict:
@@ -144,8 +151,8 @@ class PSATListInfoMixIn:
             'sub': self.sub,
             'sub_code': self.sub_code,
             'pagination_url': self.pagination_url,
-            'icon': icon.MENU_ICON_SET[self.view_type],
-            'color': color.COLOR_SET[self.view_type],
+            'icon': menu_icon_set[self.view_type],
+            'color': color_set[self.view_type],
             'is_liked': self.is_liked,
             'star_count': self.star_count,
             'is_correct': self.is_correct,
@@ -292,8 +299,8 @@ class ProblemSearchView(PSATListInfoMixIn, SearchView):
             'title': self.title,
             'pagination_url': self.pagination_url,
             'target_id': f'{self.view_type}ListContent',
-            'icon': icon.MENU_ICON_SET[self.view_type],
-            'color': color.COLOR_SET[self.view_type],
+            'icon': menu_icon_set[self.view_type],
+            'color': color_set[self.view_type],
         }
 
     def post(self, request, *args, **kwargs):
@@ -322,9 +329,9 @@ class ProblemSearchContentView(ProblemSearchView):
     template_name = 'psat/problem_search.html#content'
 
 
-problem_list_view = ProblemListView.as_view()
-like_list_view = LikeListView.as_view()
-rate_list_view = RateListView.as_view()
-answer_list_view = AnswerListView.as_view()
-problem_search_view = ProblemSearchView.as_view()
-problem_search_content_view = ProblemSearchContentView.as_view()
+problem = ProblemListView.as_view()
+like = LikeListView.as_view()
+rate = RateListView.as_view()
+answer = AnswerListView.as_view()
+search = ProblemSearchView.as_view()
+search_content = ProblemSearchContentView.as_view()

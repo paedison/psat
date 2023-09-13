@@ -51,7 +51,7 @@ class ProblemMemoDeleteView(MemoSettingMixIn, DeleteView):
     def get_success_url(self) -> reverse_lazy: return reverse_lazy(f'psat:memo_create')
 
 
-problem_memo_create_view = ProblemMemoCreateView.as_view()
-problem_memo_detail_view = ProblemMemoDetailView.as_view()
-problem_memo_update_view = ProblemMemoUpdateView.as_view()
-problem_memo_delete_view = ProblemMemoDeleteView.as_view()
+create = ProblemMemoCreateView.as_view()
+detail = ProblemMemoDetailView.as_view()
+update = ProblemMemoUpdateView.as_view()
+delete = ProblemMemoDeleteView.as_view()

@@ -1,9 +1,6 @@
 from django.urls import path, re_path
 
-from .views.list_views import *
-from .views.detail_views import *
-from .views.memo_views import *
-from .views.tag_views import *
+from .views import list_views, detail_views, memo_views, tag_views
 
 app_name = 'psat'
 
@@ -21,56 +18,56 @@ re_answer_list_opt_sub = (r'answer/list/(?P<is_correct>[01])correct/'
 
 urlpatterns = [
     # Problem
-    path('', problem_list_view, name='base'),
-    path('list/', problem_list_view, name='problem'),
-    re_path(re_problem_list, problem_list_view, name='problem_list'),
-    path('detail/<int:problem_id>/', problem_detail_view, name='problem_detail'),
+    path('', list_views.problem, name='base'),
+    path('list/', list_views.problem, name='problem'),
+    re_path(re_problem_list, list_views.problem, name='problem_list'),
+
+    path('detail/<int:problem_id>/', detail_views.problem, name='problem_detail'),
 
     # Like
-    path('like/', like_list_view, name='like'),
-    path('like/list/', like_list_view, name='like_list'),
-    path('like/list/<int:is_liked>liked/', like_list_view, name='like_list_opt'),
-    re_path(re_like_list_sub, like_list_view, name='like_list_sub'),
-    re_path(re_like_list_opt_sub, like_list_view, name='like_list_opt_sub'),
-    path('like/detail/<int:problem_id>/', like_detail_view, name='like_detail'),
+    path('like/', list_views.like, name='like'),
+    path('like/list/', list_views.like, name='like_list'),
+    path('like/list/<int:is_liked>liked/', list_views.like, name='like_list_opt'),
+    re_path(re_like_list_sub, list_views.like, name='like_list_sub'),
+    re_path(re_like_list_opt_sub, list_views.like, name='like_list_opt_sub'),
+
+    path('like/detail/<int:problem_id>/', detail_views.like, name='like_detail'),
 
     # Rate
-    path('rate/', rate_list_view, name='rate'),
-    path('rate/list/', rate_list_view, name='rate_list'),
-    path('rate/list/<int:star_count>star/', rate_list_view, name='rate_list_opt'),
-    re_path(re_rate_list_sub, rate_list_view, name='rate_list_sub'),
-    re_path(re_rate_list_opt_sub, rate_list_view, name='rate_list_opt_sub'),
-    path('rate/detail/<int:problem_id>/', rate_detail_view, name='rate_detail'),
-    path('rate/detail/<int:problem_id>/modal/', rate_detail_modal_view,
-         name='rate_detail_modal'),
+    path('rate/', list_views.rate, name='rate'),
+    path('rate/list/', list_views.rate, name='rate_list'),
+    path('rate/list/<int:star_count>star/', list_views.rate, name='rate_list_opt'),
+    re_path(re_rate_list_sub, list_views.rate, name='rate_list_sub'),
+    re_path(re_rate_list_opt_sub, list_views.rate, name='rate_list_opt_sub'),
+
+    path('rate/detail/<int:problem_id>/', detail_views.rate, name='rate_detail'),
+    path('rate/detail/<int:problem_id>/modal/', detail_views.rate_modal, name='rate_detail_modal'),
 
     # Answer
-    path('answer/', answer_list_view, name='answer'),
-    path('answer/list/', answer_list_view, name='answer_list'),
-    path('answer/list/<int:is_correct>correct/', answer_list_view,
-         name='answer_list_opt'),
-    re_path(re_answer_list_sub, answer_list_view, name='answer_list_sub'),
-    re_path(re_answer_list_opt_sub, answer_list_view, name='answer_list_opt_sub'),
-    path('answer/detail/<int:problem_id>/', answer_detail_view, name='answer_detail'),
-    path('answer/detail/<int:problem_id>/modal', answer_detail_modal_view,
-         name='answer_detail_modal'),
+    path('answer/', list_views.answer, name='answer'),
+    path('answer/list/', list_views.answer, name='answer_list'),
+    path('answer/list/<int:is_correct>correct/', list_views.answer, name='answer_list_opt'),
+    re_path(re_answer_list_sub, list_views.answer, name='answer_list_sub'),
+    re_path(re_answer_list_opt_sub, list_views.answer, name='answer_list_opt_sub'),
+
+    path('answer/detail/<int:problem_id>/', detail_views.answer, name='answer_detail'),
+    path('answer/detail/<int:problem_id>/modal', detail_views.answer_modal, name='answer_detail_modal'),
 
     # Search
-    path('search/', problem_search_view, name='search'),
-    path('search/content/', problem_search_content_view, name='search_content'),
-    path('search/content/<int:page>/', problem_search_content_view,
-         name='search_content_page'),
+    path('search/', list_views.search, name='search'),
+    path('search/content/', list_views.search_content, name='search_content'),
+    path('search/content/<int:page>/', list_views.search_content, name='search_content_page'),
 
     # Memo
-    path('memo/create/problem<int:problem_id>/', problem_memo_create_view, name='memo_create'),
-    path('memo/detail/memo<int:memo_id>/', problem_memo_detail_view, name='memo_detail'),
-    path('memo/update/memo<int:memo_id>/', problem_memo_update_view, name='memo_update'),
-    path('memo/delete/memo<int:memo_id>/', problem_memo_delete_view, name='memo_delete'),
+    path('memo/create/problem<int:problem_id>/', memo_views.create, name='memo_create'),
+    path('memo/detail/memo<int:memo_id>/', memo_views.detail, name='memo_detail'),
+    path('memo/update/memo<int:memo_id>/', memo_views.update, name='memo_update'),
+    path('memo/delete/memo<int:memo_id>/', memo_views.delete, name='memo_delete'),
 
     # Tag
-    path('tag/create/problem<int:problem_id>/', problem_tag_create_view, name='tag_create'),
-    path('tag/container/tag<int:tag_id>/', problem_tag_container_view, name='tag_container'),
-    path('tag/add/tag<int:tag_id>/', problem_tag_add_view, name='tag_add'),
-    path('tag/delete/tag<int:tag_id>/<str:tag_name>/', problem_tag_delete_view, name='tag_delete'),
-    path('tag/cloud/', problem_tag_cloud_view, name='tag_cloud'),
+    path('tag/create/problem<int:problem_id>/', tag_views.create, name='tag_create'),
+    path('tag/container/tag<int:tag_id>/', tag_views.container, name='tag_container'),
+    path('tag/add/tag<int:tag_id>/', tag_views.add, name='tag_add'),
+    path('tag/delete/tag<int:tag_id>/<str:tag_name>/', tag_views.delete, name='tag_delete'),
+    path('tag/cloud/', tag_views.cloud, name='tag_cloud'),
 ]
