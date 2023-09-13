@@ -33,7 +33,6 @@ class CalendarView(ListView):
             'category': self.category,
             'type': f'{self.category}List',
             'title': self.category.capitalize(),
-            'target_id': f'{self.category}List',
             'url': reverse_lazy(f'{self.category}:base'),
             'icon': icon.MENU_ICON_SET[self.category],
             'color': 'primary',
@@ -44,10 +43,7 @@ class CalendarView(ListView):
 
     def get_template_names(self) -> str:
         if self.request.method == 'GET':
-            if self.request.htmx:
-                return self.list_content_template
-            else:
-                return self.list_template
+            return self.list_content_template if self.request.htmx else self.list_template
         elif self.request.method == 'POST':
             return self.list_main_template
 

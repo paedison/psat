@@ -33,7 +33,7 @@
     </tr>
 {% endpartial %}
 
-<section id="{{ info.target_id }}" class="htmx-fade-in">
+<section class="htmx-fade-in">
     {{ info|json_script:'info' }}
     <div class="table-responsive" hx-boost="true" hx-target="section .section"
          hx-swap="outerHTML swap:0.25s">

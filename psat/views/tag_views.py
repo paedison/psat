@@ -160,7 +160,6 @@ class ProblemTagCloudView(TagSettingMixIn, TemplateView):
             # 'sub': self.url['sub'],
             # 'sub_code': self.url['sub_code'],
             # 'pagination_url': self.pagination_url,
-            # 'target_id': f'{self.view_type}ListContent{self.url["sub_code"]}',
             'icon': icon.MENU_ICON_SET['tag'],
             'color': color.COLOR_SET['tag'],
         }

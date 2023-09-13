@@ -4,21 +4,16 @@ from django.utils.translation import gettext_lazy as _
 from taggit_templatetags2 import settings
 from taggit_templatetags2.templatetags.taggit_templatetags2_tags import GetTagForObject
 
-from psat.models import Exam, Problem
-
 register = Library()
-exam = Exam.objects
-problem = Problem.objects
 
 
 @register.filter
-def add_0(content):  # Convert to 2-Digit Number
-    content = str(content).zfill(2)
-    return content
+def add_0(content) -> str:  # Convert to 2-Digit Number
+    return str(content).zfill(2)
 
 
 @register.filter
-def abstract(content, base):  # Abstract content from base
+def abstract(content, base) -> int:  # Abstract content from base
     return base - int(content)
 
 

@@ -1,7 +1,5 @@
-# Django Core Import
 from django import forms
 
-# Custom App Import
 from .models import Post, Comment
 
 

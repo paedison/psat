@@ -87,3 +87,7 @@ class DataDetailView(DetailView):
         context['total02_answer_list'] = total02_answer_list
         context['total03_answer_list'] = total03_answer_list
         return context
+
+
+list_view = DataListView.as_view()
+detail = DataDetailView.as_view()

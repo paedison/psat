@@ -1,9 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from vanilla.model_views import (
-    ListView, DetailView, UpdateView, CreateView, DeleteView)
+from vanilla import model_views
 
-from common.constants import icon, color
+from common import constants
 from ..forms import PostForm  # Should Change Module
 from ..models import Post  # Should Change Module
 
@@ -51,17 +50,12 @@ class PostViewMixIn:
     post_create_content_url = reverse_lazy(f'{app_name}:create_content')
 
     # Icon and color
-    base_icon = icon.MENU_ICON_SET[app_name]
-    base_color = color.COLOR_SET[app_name]
+    base_icon = constants.icon.MENU_ICON_SET[app_name]
+    base_color = constants.color.COLOR_SET[app_name]
 
     # Category list
     category_choices = model.CATEGORY_CHOICES.copy()
     category_list = []
-    # category_list = [{
-    #     'choice': 0,
-    #     'name': '전체',
-    #     'url': reverse_lazy(f'{app_name}:list_content', args=[0]),
-    # }]
     for category in category_choices:
         category_list.append({
             'choice': category[0],
@@ -106,16 +100,6 @@ class PostViewMixIn:
         return string
 
     @property
-    def target_id(self) -> str:
-        category = self.category
-        if category is not None:
-            category = category if type(category) == int else category[0]
-        string = f'{self.view_type}Content{category}'
-        string += f'-post{self.post_id}' if self.post_id else ''
-        string += f'-comment{self.comment_id}' if self.comment_id else ''
-        return string
-
-    @property
     def info(self) -> dict:
         return {
             'app_name': self.app_name,
@@ -124,7 +108,6 @@ class PostViewMixIn:
             'type': self.view_type,
             'title': self.title,
             'pagination_url': self.post_list_content_url,
-            'target_id': self.target_id,
             'icon': self.base_icon,
             'color': self.base_color,
             'post_id': self.post_id,
@@ -140,7 +123,7 @@ class PostViewMixIn:
         }
 
 
-class PostListView(PostViewMixIn, ListView):
+class PostListView(PostViewMixIn, model_views.ListView):
     view_type = 'postList'
 
     def get_filtered_queryset(self):
@@ -176,18 +159,9 @@ class PostListView(PostViewMixIn, ListView):
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
 
-    # def get_template_names(self):
-    #     if self.category is None:
-    #         return self.list_template
-    #     else:
-    #         return self.list_content_template
-    #
     def get_template_names(self) -> str:
         if self.request.method == 'GET':
-            if self.request.htmx:
-                return self.list_content_template
-            else:
-                return self.list_template
+            return self.list_content_template if self.request.htmx else self.list_template
         elif self.request.method == 'POST':
             return f'{self.list_template}#list_main'
 
@@ -197,7 +171,7 @@ class PostListNavigationView(PostListView):
     def get_template_names(self) -> str: return self.list_navigation_template
 
 
-class PostDetailView(PostViewMixIn, DetailView):
+class PostDetailView(PostViewMixIn, model_views.DetailView):
     view_type = 'postDetail'
     def get_template_names(self) -> str: return self.detail_template
 
@@ -227,7 +201,7 @@ class PostDetailContentView(PostDetailView):
     def get_template_names(self) -> str: return self.detail_content_template
 
 
-class PostCreateView(LoginRequiredMixin, PostViewMixIn, CreateView):
+class PostCreateView(LoginRequiredMixin, PostViewMixIn, model_views.CreateView):
     view_type = 'postCreate'
     def get_template_names(self) -> str: return self.create_template
     def get_success_url(self) -> reverse_lazy: return self.object.post_detail_url
@@ -243,7 +217,7 @@ class PostCreateContentView(PostCreateView):
     def get_template_names(self) -> str: return self.create_content_template
 
 
-class PostUpdateView(LoginRequiredMixin, PostViewMixIn, UpdateView):
+class PostUpdateView(LoginRequiredMixin, PostViewMixIn, model_views.UpdateView):
     view_type = 'postUpdate'
     def get_template_names(self) -> str: return self.create_template
     def get_success_url(self) -> reverse_lazy: return self.post_detail_url
@@ -259,6 +233,17 @@ class PostUpdateContentView(PostUpdateView):
     def get_template_names(self) -> str: return self.create_content_template
 
 
-class PostDeleteView(LoginRequiredMixin, PostViewMixIn, DeleteView):
+class PostDeleteView(LoginRequiredMixin, PostViewMixIn, model_views.DeleteView):
     view_type = 'postDelete'
     def get_success_url(self) -> reverse_lazy: return self.post_list_navigation_url
+
+
+list_view = PostListView.as_view()
+list_navigation = PostListNavigationView.as_view()
+create = PostCreateView.as_view()
+create_content = PostCreateContentView.as_view()
+detail = PostDetailView.as_view()
+detail_content = PostDetailContentView.as_view()
+update = PostUpdateView.as_view()
+update_content = PostUpdateContentView.as_view()
+delete = PostDeleteView.as_view()

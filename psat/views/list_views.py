@@ -298,7 +298,6 @@ class ProblemSearchView(PSATListInfoMixIn, SearchView):
             'type': f'{self.view_type}List',
             'title': self.title,
             'pagination_url': self.pagination_url,
-            'target_id': f'{self.view_type}ListContent',
             'icon': menu_icon_set[self.view_type],
             'color': color_set[self.view_type],
         }

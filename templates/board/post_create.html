@@ -7,7 +7,7 @@
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
 {% block main %}
-    <section id="{{ info.target_id }}">
+    <section>
         <div class="pagetitle my-2">
             <a hx-target="section .section" href="" title="{{ info.menu|capfirst }}"
                hx-boost="true" hx-swap="outerHTML swap:0.25s"

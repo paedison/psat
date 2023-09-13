@@ -1,11 +1,8 @@
-# Django Core Import
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from vanilla import CreateView, UpdateView, TemplateView, DeleteView
+from vanilla import model_views, views
 
-# Custom App Import
-from common.constants import icon, color
+from common import constants
 from ..forms import CommentForm, PostForm  # Should Change App Name
 from ..models import Comment, Post  # Should Change App Name
 
@@ -42,27 +39,20 @@ class CommentViewMixIn:
     list_template = f'{folder}/comment_list.html'  # CommentListView
     create_template = f'{folder}/comment_create.html'  # CommentCreateView
 
+    # Icon and color
+    base_icon = constants.icon.MENU_ICON_SET[app_name]
+    base_color = constants.color.COLOR_SET[app_name]
+
     @property
     def post_id(self) -> int: return self.kwargs.get('post_id')
     @property
     def comment_id(self) -> int: return self.kwargs.get('comment_id')
-    @property
-    def base_icon(self) -> str: return icon.MENU_ICON_SET[self.app_name]
-    @property
-    def base_color(self) -> str: return color.COLOR_SET[self.app_name]
 
     @property
     def title(self) -> str:
         string = self.menu
         string += f' {self.post_id}' if self.post_id else ''
         string += f' - {self.comment_id}' if self.comment_id else ''
-        return string
-
-    @property
-    def target_id(self) -> str:
-        string = f'{self.view_type}Content'
-        string += f'-post{self.post_id}' if self.post_id else ''
-        string += f'-comment{self.comment_id}' if self.comment_id else ''
         return string
 
     @property
@@ -85,7 +75,6 @@ class CommentViewMixIn:
             'menu': self.menu,
             'type': self.view_type,
             'title': self.title,
-            'target_id': self.target_id,
             'icon': self.base_icon,
             'color': self.base_color,
             'post_id': self.post_id,
@@ -95,7 +84,7 @@ class CommentViewMixIn:
         }
 
 
-class CommentListView(CommentViewMixIn, TemplateView):
+class CommentListView(CommentViewMixIn, views.TemplateView):
     paginate_by = 10
     view_type = 'commentList'
     def get_template_names(self) -> str: return self.list_template
@@ -108,7 +97,7 @@ class CommentListView(CommentViewMixIn, TemplateView):
         return context
 
 
-class CommentCreateView(LoginRequiredMixin, CommentViewMixIn, CreateView):
+class CommentCreateView(LoginRequiredMixin, CommentViewMixIn, model_views.CreateView):
     view_type = 'commentCreate'
     def get_template_names(self) -> str: return self.create_template
     def get_success_url(self) -> reverse_lazy: return self.comment_list_url
@@ -119,7 +108,7 @@ class CommentCreateView(LoginRequiredMixin, CommentViewMixIn, CreateView):
         return context
 
 
-class CommentUpdateView(LoginRequiredMixin, CommentViewMixIn, UpdateView):
+class CommentUpdateView(LoginRequiredMixin, CommentViewMixIn, model_views.UpdateView):
     view_type = 'commentUpdate'
     def get_template_names(self) -> str: return self.create_template
     def get_success_url(self) -> reverse_lazy: return self.comment_list_url
@@ -131,6 +120,12 @@ class CommentUpdateView(LoginRequiredMixin, CommentViewMixIn, UpdateView):
         return context
 
 
-class CommentDeleteView(LoginRequiredMixin, CommentViewMixIn, DeleteView):
+class CommentDeleteView(LoginRequiredMixin, CommentViewMixIn, model_views.DeleteView):
     view_type = 'commentDelete'
     def get_success_url(self) -> reverse_lazy: return self.comment_list_url
+
+
+list_view = CommentListView.as_view()
+create = CommentCreateView.as_view()
+update = CommentUpdateView.as_view()
+delete = CommentDeleteView.as_view()

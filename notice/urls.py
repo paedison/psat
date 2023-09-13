@@ -1,42 +1,30 @@
-from django.urls import path, re_path
+from django.urls import path
 
-from .views.comment_views import (
-    CommentListView,
-    CommentCreateView,
-    CommentUpdateView,
-    CommentDeleteView,
-)
-from .views.post_views import (
-    PostListView, PostListNavigationView,
-    PostCreateView, PostCreateContentView,
-    PostDetailView, PostDetailContentView,
-    PostUpdateView, PostUpdateContentView,
-    PostDeleteView,
-)
+from .views import post_views, comment_views
 
 app_name = 'notice'
 
 urlpatterns = [
     # Post views
-    path('', PostListView.as_view(), name='base'),
-    path('list/', PostListView.as_view(), name='list'),
-    path('list/<int:category>/', PostListView.as_view(), name='list_content'),
-    path('list/nav/', PostListNavigationView.as_view(), name='list_navigation'),
+    path('', post_views.list_view, name='base'),
+    path('list/', post_views.list_view, name='list'),
+    path('list/<int:category>/', post_views.list_view, name='list_content'),
+    path('list/nav/', post_views.list_navigation, name='list_navigation'),
 
-    path('create/', PostCreateView.as_view(), name='create'),
-    path('create/content/', PostCreateContentView.as_view(), name='create_content'),
+    path('create/', post_views.create, name='create'),
+    path('create/content/', post_views.create_content, name='create_content'),
 
-    path('<int:post_id>/', PostDetailView.as_view(), name='detail'),
-    path('<int:post_id>/content/', PostDetailContentView.as_view(), name='detail_content'),
+    path('<int:post_id>/', post_views.detail, name='detail'),
+    path('<int:post_id>/content/', post_views.detail_content, name='detail_content'),
 
-    path('<int:post_id>/update/', PostUpdateView.as_view(), name='update'),
-    path('<int:post_id>/update/content/', PostUpdateContentView.as_view(), name='update_content'),
+    path('<int:post_id>/update/', post_views.update, name='update'),
+    path('<int:post_id>/update/content/', post_views.update_content, name='update_content'),
 
-    path('<int:post_id>/delete/', PostDeleteView.as_view(), name='delete'),
+    path('<int:post_id>/delete/', post_views.delete, name='delete'),
 
     # Comment views
-    path('<int:post_id>/comment/', CommentListView.as_view(), name='comment_list'),
-    path('<int:post_id>/comment/create/', CommentCreateView.as_view(), name='comment_create'),
-    path('<int:post_id>/comment/<int:comment_id>/update/', CommentUpdateView.as_view(), name='comment_update'),
-    path('<int:post_id>/comment/<int:comment_id>/delete/', CommentDeleteView.as_view(), name='comment_delete'),
+    path('<int:post_id>/comment/', comment_views.list_view, name='comment_list'),
+    path('<int:post_id>/comment/create/', comment_views.create, name='comment_create'),
+    path('<int:post_id>/comment/<int:comment_id>/update/', comment_views.update, name='comment_update'),
+    path('<int:post_id>/comment/<int:comment_id>/delete/', comment_views.delete, name='comment_delete'),
 ]
