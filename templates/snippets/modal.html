@@ -2,12 +2,14 @@
 {% load slippers %}
 {% load partials %}
 
+
 {% startpartial login %}
     {% #modal header='로그인이 필요합니다.' %}
         {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
         <a class="btn btn-primary" href="{% url 'account_login' %}">로그인</a>
     {% /modal %}
 {% endpartial %}
+
 
 {% startpartial logout %}
     {% #modal header='로그아웃 하시겠습니까?' %}
@@ -18,6 +20,7 @@
         </form>
     {% /modal %}
 {% endpartial %}
+
 
 {% startpartial rate %}
     {% #modal header='문제 난이도를 선택해주세요.' %}
@@ -39,6 +42,7 @@
         </form>
     {% /modal %}
 {% endpartial %}
+
 
 {% startpartial answer %}
     {% #modal header='정답 확인' %}
@@ -67,16 +71,17 @@
     {% /modal %}
 {% endpartial %}
 
-{% startpartial score_confirm %}
+
+{% startpartial score_confirmed %}
     {% #modal header='최종 답안 제출' %}
-        {% if all_confirmed %}
-            <h5 class="modal-title mx-auto fw-bold text-success"
-                hx-get="{% url 'score:confirm' exam_id %}" hx-target="#main"
-                hx-trigger="load delay:0.25s" hx-swap="innerHTML">
-                정답이 정상적으로 제출되었습니다.</h5>
-        {% else %}
-            <h5 class="modal-title mx-auto fw-bold text-danger">
-                모든 문제의 정답을 제출해주세요.</h5>
-        {% endif %}
+        <h5 class="modal-title mx-auto fw-bold">
+            {% if all_confirmed %}
+                <span class="text-success" hx-trigger="load delay:0.25s"
+                    hx-get="{% url 'score:confirmed' exam_id %}" hx-target="#main"
+                    hx-swap="innerHTML"hx-push-url="true">{{ message|safe }}</span>
+            {% else %}
+                <span class="text-danger">{{ message|safe }}</span>
+            {% endif %}
+        </h5>
     {% /modal %}
 {% endpartial %}

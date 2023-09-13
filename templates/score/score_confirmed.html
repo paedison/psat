@@ -7,12 +7,10 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %}
-    {% partial confirmed_content %}
-{% endblock %}
+{% block main %}{% partial content %}{% endblock %}
 
 
-{% startpartial confirmed_content %}
+{% startpartial content %}
     <section class="htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
@@ -33,9 +31,7 @@
             <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
                 <div class="col-md-6 col-lg-4 justify-content-center pb-2">
                 {% for confirmed in confirmed_answers %}
-
-                    {% partial confirmed_answer %}
-
+                    <div class="col-12 justify-content-center">{% partial confirmed %}</div>
                     {% if forloop.counter|divisibleby:5 %}
                 <hr/>
                 </div>
@@ -43,7 +39,6 @@
                 <div class="col-md-6 col-lg-4 justify-content-center pb-2">
                         {% endif %}
                     {% endif %}
-
                 {% endfor %}
                 <div id="result"></div>
         {% /content_row %}
@@ -52,24 +47,23 @@
 {% endpartial %}
 
 
-{% startpartial confirmed_answer %}
-    <div class="col-12 justify-content-center">
-        <div class="d-flex justify-content-center align-content-center">
-            <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-                문 {{ confirmed.problem.number|add_0 }}.</p>
-            <div class="d-flex justify-content-center align-content-center me-3">
-                {% for i in '12345' %}
-                    {% if i|add:0 == confirmed.answer %}
-                        {% if confirmed.answer == confirmed.problem.answer %}
-                            <div class="btn btn-circle btn-success btn-sm fs-6 mx-1 my-2">{{ i }}</div>
-                        {% else %}
-                            <div class="btn btn-circle btn-danger btn-sm fs-6 mx-1 my-2">{{ i }}</div>
-                        {% endif %}
-                    {% else %}
-                        <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2">{{ i }}</div>
-                    {% endif %}
-                {% endfor %}
-            </div>
+{% startpartial confirmed %}
+    <div class="d-flex justify-content-center align-content-center">
+        <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
+            문 {{ confirmed.problem.number|add_0 }}.</p>
+        <div class="d-flex justify-content-center align-content-center me-3">
+            {% for i in '12345' %}
+                {% if i|add:0 == confirmed.answer %}
+                    <div class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                        {% if confirmed.answer == confirmed.problem.answer %}btn-success
+                        {% else %}btn-danger{% endif %}">{{ i }}</div>
+                {% else %}
+                    <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
+                         hx-get="{% url 'score:modal' %}" hx-swap="innerHTML"
+                         hx-target="#modalContainer" data-bs-toggle="modal"
+                         data-bs-target="#modalContainer">{{ i }}</div>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
 {% endpartial %}

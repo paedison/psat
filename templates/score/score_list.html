@@ -1,17 +1,16 @@
 {% extends 'list.html' %}
 {% load static %}
+{% load i18n %}
 {% load psat_filter %}
-{% load slippers %}
 {% load partials %}
+{% load slippers %}
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %}
-    {% partial list_main %}
-{% endblock %}
+{% block main %}{% partial main %}{% endblock %}
 
 
-{% startpartial list_main %}
+{% startpartial main %}
     <section class="htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
@@ -31,7 +30,7 @@
             </nav><!-- Navigation End -->
             <div class="tab-content" id="nav-tabContent">
                 {% #nav_content id='0' %}
-                    {% partial list_content %}
+                    {% partial content %}
                 {% /nav_content id='0' %}<!-- All Subject Tab End -->
             </div>
         {% /content_row %}
@@ -40,7 +39,7 @@
 {% endpartial %}
 
 
-{% startpartial list_content %}
+{% startpartial content %}
 <section class="htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="table-responsive">
@@ -67,19 +66,13 @@
                             <td class="text-nowrap p-2 col-1">{{ obj.year }}년</td>
                             <td class="text-nowrap p-2 col-1">{{ obj.exam2 }}</td>
                             <td class="text-nowrap p-2 col-1">
-                                {% with target=obj.eoneo %}
-                                    {% partial process_badge %}
-                                {% endwith %}
+                                {% with target=obj.eoneo %}{% partial process_badge %}{% endwith %}
                             </td>
                             <td class="text-nowrap p-2 col-1">
-                                {% with target=obj.jaryo %}
-                                    {% partial process_badge %}
-                                {% endwith %}
+                                {% with target=obj.jaryo %}{% partial process_badge %}{% endwith %}
                             </td>
                             <td class="text-nowrap p-2 col-1">
-                                {% with target=obj.sanghwang %}
-                                    {% partial process_badge %}
-                                {% endwith %}
+                                {% with target=obj.sanghwang %}{% partial process_badge %}{% endwith %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -94,21 +87,18 @@
 
 {% startpartial process_badge %}
     {% if target.status is None %}
-        <a class="badge rounded-pill text-bg-primary" href=""
-           hx-get="{% url 'score:detail' target.exam_id %}"
-           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <a class="badge rounded-pill text-bg-primary" href="" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'score:detail' target.exam_id %}" hx-target="#main" hx-push-url="true">
             작성 전
         </a>
     {% elif target.status is False %}
-        <a class="badge rounded-pill text-bg-warning" href=""
-           hx-get="{% url 'score:detail' target.exam_id %}"
-           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <a class="badge rounded-pill text-bg-warning" href="" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'score:detail' target.exam_id %}" hx-target="#main" hx-push-url="true">
             작성 중
         </a>
     {% elif target.status is True %}
-        <a class="badge rounded-pill text-bg-success" href=""
-           hx-get="{% url 'score:confirm' target.exam_id %}"
-           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <a class="badge rounded-pill text-bg-success" href="" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'score:confirmed' target.exam_id %}" hx-target="#main" hx-push-url="true">
             제출 완료
         </a>
     {% elif target.status == 'N/A' %}

@@ -7,12 +7,10 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %}
-    {% partial detail_content %}
-{% endblock %}
+{% block main %}{% partial content %}{% endblock %}
 
 
-{% startpartial detail_content %}
+{% startpartial content %}
     <section class="htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
@@ -29,18 +27,20 @@
                    hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
                     {{ BOARD_ICON_SET.list|safe }}
                 </a>
-                <button class="btn btn-primary" hx-target="#modalContainer"
-                        hx-post="{% url 'score:confirm' info.exam_id %}" hx-swap="innerHTML"
-                        data-bs-toggle="modal" data-bs-target="#modalContainer">
-                    최종 답안 제출
-                </button>
+                <form>
+                    {% csrf_token %}
+                    <input type="text" name="exam" value="{{ info.exam_id }}" aria-label="Exam ID" hidden/>
+                    <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
+                            hx-post="{% url 'score:modal' %}" hx-swap="innerHTML" hx-trigger="click"
+                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                        최종 답안 제출
+                    </button>
+                </form>
             </div>
             <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
                 <div class="col-md-6 col-lg-4 justify-content-center pb-2">
                 {% for problem in problems %}
-
-                    {% partial score_form %}
-
+                    <div class="col-12 justify-content-center">{% partial form %}</div>
                     {% if forloop.counter|divisibleby:5 %}
                 <hr/>
                 </div>
@@ -48,7 +48,6 @@
                 <div class="col-md-6 col-lg-4 justify-content-center pb-2">
                         {% endif %}
                     {% endif %}
-
                 {% endfor %}
                 <div id="result"></div>
         {% /content_row %}
@@ -57,51 +56,48 @@
 {% endpartial %}
 
 
-{% startpartial score_form %}
-    <div class="col-12 justify-content-center">
-        <form>
-            {% csrf_token %}
-            <div class="d-flex justify-content-center align-content-center">
-                <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-                    문 {{ problem.number|add_0 }}.</p>
-                <div class="d-flex justify-content-center align-content-center me-3"
-                     hx-post="{% url 'score:submit' problem.id %}"
-                     hx-include="input[name='answer']:checked" hx-target="this" hx-swap="innerHTML"
-                     hx-vals='{"problem": {{ problem.id }}}' hx-trigger="change">
-                    {% for i in '12345' %}
-                        {% with target_answer=problem.submitted_answer target_problem=problem %}
-                            {% partial answer_buttons %}
-                        {% endwith %}
-                    {% endfor %}
-                </div>
+{% startpartial form %}
+    <form>
+        {% csrf_token %}
+        <div class="d-flex justify-content-center align-content-center">
+            <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
+                문 {{ problem.number|add_0 }}.</p>
+            <div class="d-flex justify-content-center align-content-center me-3" hx-target="this"
+                 hx-post="{% url 'score:submit' problem.id %}" hx-swap="innerHTML"
+                 hx-include="input[name='answer']:checked input[name='problem']" hx-trigger="change">
+                <input id="p{{ target_problem.id }}" type="text" name="problem"
+                       value="{{ problem.id }}" aria-label="Problem ID" hidden/>
+                {% partial initial_form %}
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
+{% endpartial %}
+
+
+{% startpartial initial_form %}
+    {% with target_answer=problem.submitted_answer target_problem=problem %}
+        {% for i in '12345' %}
+            {% partial answer_buttons %}
+        {% endfor %}
+    {% endwith %}
+{% endpartial %}
+
+
+{% startpartial scored_form %}
+    {% with target_answer=scored.answer target_problem=scored.problem %}
+        {% for i in '12345' %}
+            {% partial answer_buttons %}
+        {% endfor %}
+    {% endwith %}
 {% endpartial %}
 
 
 {% startpartial answer_buttons %}
     <input id="p{{ target_problem.id }}_answer{{ i }}" type="radio"
            class="btn-check" name="answer" value="{{ i }}"/>
-    {% if i|add:0 == target_answer %}
-        {% if target_answer == target_problem.answer %}
-            <label class="btn btn-circle btn-success btn-sm fs-6 mx-1 my-2"
-                   for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
-        {% else %}
-            <label class="btn btn-circle btn-danger btn-sm fs-6 mx-1 my-2"
-                   for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
-        {% endif %}
-    {% else %}
-        <label class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-               for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
-    {% endif %}
-{% endpartial %}
-
-
-{% startpartial scored_problem %}
-    {% for i in '12345' %}
-        {% with target_answer=scored.answer target_problem=scored.problem %}
-            {% partial answer_buttons %}
-        {% endwith %}
-    {% endfor %}
+    <label class="btn btn-circle btn-sm fs-6 mx-1 my-2
+        {% if i|add:0 == target_answer %}
+           {% if target_answer == target_problem.answer %}btn-success{% else %}btn-danger{% endif %}
+        {% else %} btn-outline-secondary{% endif %}"
+           for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
 {% endpartial %}
