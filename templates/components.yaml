@@ -4,3 +4,5 @@ components:
   nav_tab: 'slippers/nav_tab_base.html'
   nav_content: 'slippers/nav_content_base.html'
   content_row: 'slippers/content_row_base.html'
+  responsive_table: 'slippers/responsive_table_base.html'
+  pagination_nav: 'slippers/pagination_nav_base.html'

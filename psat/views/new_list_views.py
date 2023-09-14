@@ -10,16 +10,16 @@ from ..models import Problem, Exam
 menu_icon_set = constants.icon.MENU_ICON_SET
 color_set = constants.color.COLOR_SET
 
-exam_list = constants.psat.TOTAL['exam_list']
-subject_list = constants.psat.TOTAL['subject_list']
-
 
 def problem(request):
     template_name = 'psat/new_problem_list.html#content' if request.htmx else 'psat/new_problem_list.html'
     view_type = 'problem'
     problem_filter = PsatProblemFilter(request.GET, queryset=Problem.objects.all())
     base_url = reverse_lazy('psat:new_problem_list')
-    year, ex, sub = request.GET.get('exam__year'), request.GET.get('exam__ex'), request.GET.get('exam__sub')
+
+    year = request.GET.get('exam__year', '')
+    ex = request.GET.get('exam__ex', '')
+    sub = request.GET.get('exam__sub', '')
     pagination_url = f'{base_url}?exam__year={year}&exam__ex={ex}&exam__sub={sub}'
 
     exam_objects = Exam.objects.all()
@@ -30,7 +30,10 @@ def problem(request):
     if sub:
         exam_objects = exam_objects.filter(sub=sub)
 
-    year_list = exam_objects.values_list('year', flat=True).distinct()
+    year_list_raw = exam_objects.values_list('year', flat=True).distinct()
+    year_list = []
+    for y in year_list_raw:
+        year_list.append((f'{y}', f'{y}년'))
 
     ex_list_raw = exam_objects.values_list('ex', 'exam2')
     ex_list = []
@@ -43,10 +46,6 @@ def problem(request):
     for s in sub_list_raw:
         if s not in sub_list:
             sub_list.append(s)
-
-    exam2 = next((i['exam2'] for i in exam_list if i['ex'] == ex), '전체'),
-    subject = next((i['subject'] for i in subject_list if i['sub'] == sub), '전체'),
-    sub_code = next((int(i['sub_code']) for i in subject_list if i['sub'] == sub), 0),
 
     # Get paginator for total exam list
     paginate_by = 10
