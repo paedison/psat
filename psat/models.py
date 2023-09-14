@@ -187,12 +187,47 @@ class UpdateInfo:
 
 
 class Exam(AddInfo, models.Model):
+    class Years(models.IntegerChoices):
+        YEAR2004 = 2004, '2004년'
+        YEAR2005 = 2005, '2005년'
+        YEAR2006 = 2006, '2006년'
+        YEAR2007 = 2007, '2007년'
+        YEAR2008 = 2008, '2008년'
+        YEAR2009 = 2009, '2009년'
+        YEAR2010 = 2010, '2010년'
+        YEAR2011 = 2011, '2011년'
+        YEAR2012 = 2012, '2012년'
+        YEAR2013 = 2013, '2013년'
+        YEAR2014 = 2014, '2014년'
+        YEAR2015 = 2015, '2015년'
+        YEAR2016 = 2016, '2016년'
+        YEAR2017 = 2017, '2017년'
+        YEAR2018 = 2018, '2018년'
+        YEAR2019 = 2019, '2019년'
+        YEAR2020 = 2020, '2020년'
+        YEAR2021 = 2021, '2021년'
+        YEAR2022 = 2022, '2022년'
+        YEAR2023 = 2023, '2023년'
+
+    class Exams(models.TextChoices):
+        HAENG_SI = '행시', '5급공채/행정고시'
+        OE_SI = '외시', '외교원/외무고시'
+        CHIL_GEUP = '칠급', '7급공채'
+        MIN_GYUNG = '민경', '민간경력'
+        GYUN_SEUP = '견습', '견습'
+        IP_SI = '입시', '입법고시'
+
+    class Subjects(models.TextChoices):
+        EO_NEO = '언어', '언어논리'
+        JA_RYO = '자료', '자료해석'
+        SANG_HWANG = '상황', '상황판단'
+
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
-    year = models.IntegerField()
-    ex = models.CharField(max_length=2)
-    sub = models.CharField(max_length=2)
+    year = models.IntegerField(choices=Years.choices)
+    ex = models.CharField(max_length=2, choices=Exams.choices)
+    sub = models.CharField(max_length=2, choices=Subjects.choices)
     exam1 = models.CharField(max_length=20)
     exam2 = models.CharField(max_length=20)
     subject = models.CharField(max_length=4)

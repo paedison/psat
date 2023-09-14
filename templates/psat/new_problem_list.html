@@ -1,0 +1,235 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+{% load widget_tweaks %}
+
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% block main %}
+    <section>
+        {{ info|json_script:'info' }}
+        <div class="pagetitle my-2">
+            <h1>
+                {{ info.icon|safe }}
+                {{ info.title }}
+            </h1>
+        </div><!-- Page Title End -->
+        {% partial content %}
+    </section><!-- Main Content End -->
+
+{% endblock %}
+
+
+{% startpartial content %}
+    <section class="section htmx-fade-in htmx-fade-out">
+        {% #content_row class3='p-4' %}
+        <section>
+        {#    {{ info|json_script:'info' }}#}
+            {% partial form %}
+            <div class="table-responsive">
+                <table class="table small">
+                    <thead>{% partial table_header %}</thead>
+                    <tbody>
+                        {% if page_obj %}
+                            {% for problem in page_obj %}
+                                {% if not search %}
+                                    {% ifchanged %}
+                                        <tr class="table-warning">{% partial list_divider %}</tr>
+                                    {% endifchanged %}
+                                {% endif %}
+                                <tr>
+                                    <td class="text-nowrap p-2 col-1">
+                                        <div class="td-div-xl text-start" aria-label="Reference">
+                                            {% partial reference_content %}
+                                        </div>
+                                        {% include 'psat/snippets/icon_container.html' %}
+                                        <div class="d-sm-none pt-2">
+                                            {% partial question_content %}
+                                        </div>
+                                    </td>
+                                    <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
+                                        {% partial question_content %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex flex-wrap">
+                <div class="p-2 me-auto ms-auto">
+    {#                {% include 'psat/snippets/list_pagination.html' %}#}
+                    {% partial pagination %}
+                </div>
+            </div>
+        </section>
+        {% /content_row %}
+    </section>
+{% endpartial %}
+
+
+{% startpartial form %}
+    <div class="mx-auto mb-3 col-md-8 col-lg-6">
+        <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
+              hx-trigger="change" hx-boost="true" hx-target="section.section" swap="outerHTML swap:0.25s">
+            <select name="exam__year" class="form-select form-select-sm d-inline-block"
+                    aria-label="Year">
+                <option value="">전체 연도</option>
+                {% for y in year_list %}
+                    {% if y == year|add:0 %}<option value="{{ y }}" selected>{{ y }}년</option>
+                    {% else %}<option value="{{ y }}">{{ y }}년</option>{% endif %}
+                {% endfor %}
+            </select>
+            <select name="exam__ex" class="form-select form-select-sm d-inline-block"
+                    aria-label="Exam">
+                <option value="">전체 시험</option>
+                {% for e in ex_list %}
+                    {% if e.0 == ex %}<option value="{{ e.0 }}" selected>{{ e.1 }}</option>
+                    {% else %}<option value="{{ e.0 }}">{{ e.1 }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <select name="exam__sub" class="form-select form-select-sm d-inline-block"
+                    aria-label="Subject">
+                <option value="">전체 과목</option>
+                {% for s in sub_list %}
+                    {% if s.0 == sub %}<option value="{{ s.0 }}" selected>{{ s.1 }}</option>
+                    {% else %}<option value="{{ s.0 }}">{{ s.1 }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+{% endpartial %}
+
+
+{% startpartial table_header %}
+    <tr class="d-none d-sm-table-row">
+        <th class="text-nowrap p-2 col-1">
+            <div class="td-div-xl" aria-label="Reference">문제 출처</div>
+            <div class="td-div-xs" aria-label="Like">{{ PSAT_ICON_SET.likeTrue|safe }}</div>
+            <div class="td-div-lg" aria-label="Rate">난이도</div>
+            <div class="td-div-xs" aria-label="Answer">{{ PSAT_ICON_SET.answerTrue|safe }}</div>
+        </th>
+        <th class="text-start text-nowrap p-2">문제</th>
+    </tr>
+{% endpartial %}
+
+
+{% startpartial list_divider %}
+    <td class="text-start text-nowrap text-primary fw-bold p-2" colspan="5">
+        {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
+    </td>
+{% endpartial %}
+
+
+{% startpartial reference %}
+    <a class="text-decoration-none fw-bold" href="{{ url }}">
+        {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
+    </a>
+{% endpartial %}
+
+{% startpartial reference_content %}
+    {% if problem_list or search_list %}
+        {% with url=problem.get_problem_url %}{% partial reference %}{% endwith %}
+    {% endif %}
+
+    {% if like_list or like_dashboard %}
+        {% if problem.is_liked %}
+            {% with url=problem.get_like_url %}{% partial reference %}{% endwith %}
+        {% else %}
+            {% with url=problem.get_problem_url %}{% partial reference %}{% endwith %}
+        {% endif %}
+    {% endif %}
+
+    {% if rate_list or rate_dashboard %}
+        {% with url=problem.get_rate_url %}{% partial reference %}{% endwith %}
+    {% endif %}
+
+    {% if answer_list or answer_dashboard %}
+        {% with url=problem.get_answer_url %}{% partial reference %}{% endwith %}
+    {% endif %}
+{% endpartial %}
+
+
+{% startpartial question %}
+    <a class="text-decoration-none d-md-none" href="{{ url }}">
+        {{ problem.problem_question|truncatechars:30 }}
+    </a>
+    <a class="text-decoration-none d-none d-md-inline d-lg-none" href="{{ url }}">
+        {{ problem.problem_question|truncatechars:40 }}
+    </a>
+    <a class="text-decoration-none d-none d-lg-inline" href="{{ url }}">
+        {{ problem.problem_question|truncatechars:50 }}
+    </a>
+{% endpartial %}
+
+{% startpartial question_content %}
+    {% if problem_list or search_list %}
+        {% with url=problem.get_problem_url %}{% partial question %}{% endwith %}
+    {% endif %}
+
+    {% if like_list or like_dashboard %}
+        {% if problem.is_liked %}
+            {% with url=problem.get_like_url %}{% partial question %}{% endwith %}
+        {% else %}
+            {% with url=problem.get_problem_url %}{% partial question %}{% endwith %}
+        {% endif %}
+    {% endif %}
+
+    {% if rate_list or rate_dashboard %}
+        {% with url=problem.get_rate_url %}{% partial question %}{% endwith %}
+    {% endif %}
+
+    {% if answer_list or answer_dashboard %}
+        {% with url=problem.get_answer_url %}{% partial question %}{% endwith %}
+    {% endif %}
+{% endpartial %}
+
+
+{% startpartial pagination %}
+<div role="navigation" aria-label="pagination"
+     hx-boost="true" hx-target="section.section" swap="outerHTML swap:0.25s">
+    <ul class="pagination pagination-sm justify-content-center m-0">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="{{ pagination_url }}&page={{ page_obj.number|add:-1 }}">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+            </li>
+        {% endif %}
+        {% for number in page_range %}
+            {% if number == page_obj.number %}
+                <li class="page-item active" aria-current="page">
+                    <a class="page-link" href="{{ pagination_url }}&page={{ number }}">
+                    {{ number }}</a>
+                </li>
+            {% elif number == page_obj.paginator.ELLIPSIS %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="" tabindex="-1" aria-disabled="true">
+                        {{ number }}
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ pagination_url }}&page={{ number }}">
+                    {{ number }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ pagination_url }}&page={{ page_obj.number|add:1 }}">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</div><!-- Pagination End -->
+{% endpartial %}

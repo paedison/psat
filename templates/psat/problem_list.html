@@ -5,6 +5,11 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
+{% block main %}
+    {% partial list_main %}
+{% endblock %}
+
+
 {# Partial Template for POST request #}
 {% startpartial list_main %}
     <section class="section htmx-fade-out">
@@ -57,7 +62,3 @@
         </section>
     </section><!-- Main Content End -->
 {% endpartial %}
-
-{% block main %}
-    {% partial list_main %}
-{% endblock %}

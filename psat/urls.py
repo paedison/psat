@@ -1,6 +1,6 @@
 from django.urls import path, re_path
 
-from .views import list_views, detail_views, memo_views, tag_views
+from .views import list_views, detail_views, memo_views, tag_views, new_list_views
 
 app_name = 'psat'
 
@@ -17,6 +17,7 @@ re_answer_list_opt_sub = (r'answer/list/(?P<is_correct>[01])correct/'
                           r'(?P<sub>언어|자료|상황|전체)/$')
 
 urlpatterns = [
+    path('new_list/', new_list_views.problem, name='new_problem_list'),
     # Problem
     path('', list_views.problem, name='base'),
     path('list/', list_views.problem, name='problem'),
