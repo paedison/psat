@@ -17,7 +17,11 @@ re_answer_list_opt_sub = (r'answer/list/(?P<is_correct>[01])correct/'
                           r'(?P<sub>언어|자료|상황|전체)/$')
 
 urlpatterns = [
-    path('new_list/', new_list_views.problem, name='new_problem_list'),
+    path('list/problem/', new_list_views.problem, name='new_problem_list'),
+    path('list/like/', new_list_views.like, name='new_like_list'),
+    path('list/rate/', new_list_views.rate, name='new_rate_list'),
+    path('list/answer/', new_list_views.answer, name='new_answer_list'),
+
     # Problem
     path('', list_views.problem, name='base'),
     path('list/', list_views.problem, name='problem'),

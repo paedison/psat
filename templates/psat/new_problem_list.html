@@ -22,7 +22,7 @@
     {% #content_row class3='p-4' %}
         {% partial form %}
         {% #responsive_table %}
-            {% partial table_head %}
+{#            {% partial table_head %}#}
             <tbody>
                 {% if page_obj %}
                     {% for problem in page_obj %}
@@ -57,8 +57,8 @@
 
 {% startpartial form_option %}
     <select class="form-select form-select-sm d-inline-block"
-            name="exam__{{ name }}" aria-label="{{ name|title }}">
-        <option value="">전체 {{ total }}</option>
+            name="{{ name }}" aria-label="{{ name|title }}">
+        <option value="">{{ total }}</option>
         {% for i in target_list %}
             {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>
             {% else %}<option value="{{ i.0 }}">{{ i.1 }}</option>{% endif %}
@@ -66,20 +66,61 @@
     </select>
 {% endpartial %}
 {% startpartial form %}
-    <nav class="mx-auto mb-3 col-md-8 col-lg-6" aria-label="Exam Navigation">
-        <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
-              hx-trigger="change" hx-get="">
-            {% with name='year' total='연도' target_list=year_list current=year %}
-                {% partial form_option %}
-            {% endwith %}
-            {% with name='ex' total='시험' target_list=ex_list current=ex %}
-                {% partial form_option %}
-            {% endwith %}
-            {% with name='sub' total='과목' target_list=sub_list current=sub %}
-                {% partial form_option %}
-            {% endwith %}
-        </form>
-    </nav>
+    {% if problem_list %}
+        <nav class="mx-auto mb-3 col-md-8 col-lg-6" aria-label="Exam Navigation">
+            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
+                  hx-trigger="change" hx-get="">
+                {% with name='exam__year' total='전체 연도' target_list=info.year_list current=info.year %}
+                    {% partial form_option %}
+                {% endwith %}
+                {% with name='exam__ex' total='전체 시험' target_list=info.ex_list current=info.ex %}
+                    {% partial form_option %}
+                {% endwith %}
+                {% with name='exam__sub' total='전체 과목' target_list=info.sub_list current=info.sub %}
+                    {% partial form_option %}
+                {% endwith %}
+            </form>
+        </nav>
+    {% endif %}
+    {% if like_list %}
+        <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
+            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
+                  hx-trigger="change" hx-get="">
+                {% with name='exam__sub' total='전체 과목' target_list=info.sub_list current=info.sub %}
+                    {% partial form_option %}
+                {% endwith %}
+                {% with name='evaluation__is_liked' total='즐겨찾기 전체 문제' target_list=info.liked_list current=info.is_liked %}
+                    {% partial form_option %}
+                {% endwith %}
+            </form>
+        </nav>
+    {% endif %}
+    {% if rate_list %}
+        <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
+            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
+                  hx-trigger="change" hx-get="">
+                {% with name='exam__sub' total='전체 과목' target_list=info.sub_list current=info.sub %}
+                    {% partial form_option %}
+                {% endwith %}
+                {% with name='evaluation__difficulty_rated' total='전체 문제' target_list=info.rated_list current=info.difficulty_rated %}
+                    {% partial form_option %}
+                {% endwith %}
+            </form>
+        </nav>
+    {% endif %}
+    {% if answer_list %}
+        <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
+            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
+                  hx-trigger="change" hx-get="">
+                {% with name='exam__sub' total='전체 과목' target_list=info.sub_list current=info.sub %}
+                    {% partial form_option %}
+                {% endwith %}
+                {% with name='evaluation__is_correct' total='전체 문제' target_list=info.answered_list current=info.is_correct %}
+                    {% partial form_option %}
+                {% endwith %}
+            </form>
+        </nav>
+    {% endif %}
 {% endpartial %}
 
 {% startpartial table_head %}
@@ -102,17 +143,18 @@
 
 
 {% startpartial list_divider %}
-    {% if not search %}
-        {% ifchanged %}
-            <tr class="table-warning">
-                <td class="text-start text-nowrap text-primary p-2" colspan="5">
-                    <h2 class="fs-6 fw-bold m-0">
+    {% if not search %}{% ifchanged %}
+        <tr class="table-warning">
+            <td class="text-start text-nowrap text-primary p-2" colspan="5">
+                <h2 class="fs-6 fw-bold m-0">
+                    <a hx-get="{{ base_url }}?exam__year={{ problem.year }}
+                        &exam__ex={{ problem.ex }}&exam__sub={{ problem.sub }}" href="">
                         {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
-                    </h2>
-                </td>
-            </tr>
-        {% endifchanged %}
-    {% endif %}
+                    </a>
+                </h2>
+            </td>
+        </tr>
+    {% endifchanged %}{% endif %}
 {% endpartial %}
 
 
