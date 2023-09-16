@@ -5,8 +5,8 @@ from searchview.views import SearchView
 from vanilla import ListView
 
 from common import constants
-from ..forms import ProblemSearchForm
-from ..models import Problem, Evaluation, ProblemData
+from psat.forms import ProblemSearchForm
+from psat.models import Problem, Evaluation, ProblemData
 
 psat_icon_set = constants.icon.PSAT_ICON_SET
 like_none_icon = psat_icon_set['likeNone']

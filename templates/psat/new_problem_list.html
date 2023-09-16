@@ -8,12 +8,17 @@
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
 {% block main %}
+    {% partial list_main %}
+{% endblock %}
+
+
+{% startpartial list_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>{{ info.icon|safe }} {{ info.title }}</h1>
     </div><!-- Page Title End -->
     {% partial content %}
-{% endblock %}
+{% endpartial %}
 
 
 {% startpartial content %}
@@ -59,69 +64,123 @@
     <select class="form-select form-select-sm d-inline-block"
             name="{{ name }}" aria-label="{{ name|title }}">
         <option value="">{{ total }}</option>
-        {% for i in target_list %}
+        {% for i in target_option %}
             {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>
             {% else %}<option value="{{ i.0 }}">{{ i.1 }}</option>{% endif %}
         {% endfor %}
     </select>
 {% endpartial %}
+
 {% startpartial form %}
     {% if problem_list %}
         <nav class="mx-auto mb-3 col-md-8 col-lg-6" aria-label="Exam Navigation">
             <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
                   hx-trigger="change" hx-get="">
-                {% with name='exam__year' total='전체 연도' target_list=info.year_list current=info.year %}
+                {% with name='exam__year' total='전체 연도' target_option=info.year_option current=info.year %}
                     {% partial form_option %}
                 {% endwith %}
-                {% with name='exam__ex' total='전체 시험' target_list=info.ex_list current=info.ex %}
+                {% with name='exam__ex' total='전체 시험' target_option=info.ex_option current=info.ex %}
                     {% partial form_option %}
                 {% endwith %}
-                {% with name='exam__sub' total='전체 과목' target_list=info.sub_list current=info.sub %}
+                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
                     {% partial form_option %}
                 {% endwith %}
             </form>
         </nav>
     {% endif %}
+
     {% if like_list %}
         <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
             <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
                   hx-trigger="change" hx-get="">
-                {% with name='exam__sub' total='전체 과목' target_list=info.sub_list current=info.sub %}
+                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
                     {% partial form_option %}
                 {% endwith %}
-                {% with name='evaluation__is_liked' total='즐겨찾기 전체 문제' target_list=info.liked_list current=info.is_liked %}
-                    {% partial form_option %}
+                {% with name='evaluation__is_liked' total='즐겨찾기 전체 문제' target_option=info.like_option current=info.is_liked %}
+                    {% if info.is_liked != '' %}
+                        <select class="form-select form-select-sm d-inline-block"
+                                name="{{ name }}" aria-label="{{ name|title }}">
+                            <option value="">{{ total }}</option>
+                            {% for i in target_option %}
+                                {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>{% endif %}
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        {% partial form_option %}
+                    {% endif %}
                 {% endwith %}
             </form>
         </nav>
     {% endif %}
+
     {% if rate_list %}
         <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
             <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
                   hx-trigger="change" hx-get="">
-                {% with name='exam__sub' total='전체 과목' target_list=info.sub_list current=info.sub %}
+                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
                     {% partial form_option %}
                 {% endwith %}
-                {% with name='evaluation__difficulty_rated' total='전체 문제' target_list=info.rated_list current=info.difficulty_rated %}
-                    {% partial form_option %}
+                {% with name='evaluation__difficulty_rated' total='전체 문제' target_option=info.rate_option current=info.difficulty_rated %}
+                    {% if info.difficulty_rated != '' %}
+                        <select class="form-select form-select-sm d-inline-block"
+                                name="{{ name }}" aria-label="{{ name|title }}">
+                            <option value="">{{ total }}</option>
+                            {% for i in target_option %}
+                                {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>{% endif %}
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        {% partial form_option %}
+                    {% endif %}
                 {% endwith %}
             </form>
         </nav>
     {% endif %}
+
     {% if answer_list %}
         <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
             <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
                   hx-trigger="change" hx-get="">
-                {% with name='exam__sub' total='전체 과목' target_list=info.sub_list current=info.sub %}
+                <input type="text" name="evaluation__user" value="{{ user }}" aria-label="User" hidden>
+                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
                     {% partial form_option %}
                 {% endwith %}
-                {% with name='evaluation__is_correct' total='전체 문제' target_list=info.answered_list current=info.is_correct %}
+                {% with name='evaluation__is_correct' total='전체 문제' target_option=info.answer_option current=info.is_correct %}
+                    {% if info.is_correct != '' %}
+                        <select class="form-select form-select-sm d-inline-block"
+                                name="{{ name }}" aria-label="{{ name|title }}">
+                            <option value="">{{ total }}</option>
+                            {% for i in target_option %}
+                                {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>{% endif %}
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        {% partial form_option %}
+                    {% endif %}
+                {% endwith %}
+            </form>
+        </nav>
+    {% endif %}
+
+    {% if search_list %}
+        <nav class="mx-auto mb-3 col-md-8 col-lg-6" aria-label="Exam Navigation">
+            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
+                  hx-trigger="change" hx-get="{% url 'psat:search' %}">
+                <input type="text" name="data" value="{{ info.data }}" aria-label="Data" hidden>
+                {% with name='exam__year' total='전체 연도' target_option=info.year_option current=info.year %}
+                    {% partial form_option %}
+                {% endwith %}
+                {% with name='exam__ex' total='전체 시험' target_option=info.ex_option current=info.ex %}
+                    {% partial form_option %}
+                {% endwith %}
+                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
                     {% partial form_option %}
                 {% endwith %}
             </form>
         </nav>
     {% endif %}
 {% endpartial %}
+
 
 {% startpartial table_head %}
     <thead>
@@ -147,7 +206,7 @@
         <tr class="table-warning">
             <td class="text-start text-nowrap text-primary p-2" colspan="5">
                 <h2 class="fs-6 fw-bold m-0">
-                    <a hx-get="{{ base_url }}?exam__year={{ problem.year }}
+                    <a hx-get="{{ info.base_url }}?exam__year={{ problem.year }}
                         &exam__ex={{ problem.ex }}&exam__sub={{ problem.sub }}" href="">
                         {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
                     </a>
@@ -190,6 +249,7 @@
         {{ problem.problem_question|truncatechars:chars }}
     </h3>
 {% endpartial %}
+
 {% startpartial question %}
     <a class="text-decoration-none d-md-none" href="{{ url }}">
         {% with chars=30 %}{% partial q %}{% endwith %}
@@ -201,31 +261,23 @@
         {% with chars=50 %}{% partial q %}{% endwith %}
     </a>
 {% endpartial %}
-{% startpartial problem_question_content %}
-    {% with url=problem.get_problem_url %}{% partial question %}{% endwith %}
-{% endpartial %}
-{% startpartial like_question_content %}
-    {% with url=problem.get_like_url %}{% partial question %}{% endwith %}
-{% endpartial %}
-{% startpartial rate_question_content %}
-    {% with url=problem.get_rate_url %}{% partial question %}{% endwith %}
-{% endpartial %}
-{% startpartial answer_question_content %}
-    {% with url=problem.get_answer_url %}{% partial question %}{% endwith %}
-{% endpartial %}
+
 {% startpartial question_content %}
     {% if problem_list or search_list %}
-        {% partial problem_question_content %}
+        {% with url=problem.get_problem_url %}{% partial question %}{% endwith %}
     {% endif %}
     {% if like_list or like_dashboard %}
-        {% if problem.is_liked %}{% partial like_question_content %}
-        {% else %}{% partial problem_question_content %}{% endif %}
+        {% if problem.is_liked %}
+            {% with url=problem.get_like_url %}{% partial question %}{% endwith %}
+        {% else %}
+            {% with url=problem.get_problem_url %}{% partial question %}{% endwith %}
+        {% endif %}
     {% endif %}
     {% if rate_list or rate_dashboard %}
-        {% partial rate_question_content %}
+        {% with url=problem.get_rate_url %}{% partial question %}{% endwith %}
     {% endif %}
     {% if answer_list or answer_dashboard %}
-        {% partial answer_question_content %}
+        {% with url=problem.get_answer_url %}{% partial question %}{% endwith %}
     {% endif %}
 {% endpartial %}
 
@@ -235,12 +287,13 @@
         class="page-item {{ status }}">
         <a class="page-link" href=""
            {% if status == 'disabled' %}tabindex="-1" aria-disabled="true"
-           {% else %}hx-get="{{ pagination_url }}&page={{ page_num }}"{% endif %}>
+           {% else %}hx-get="{{ info.pagination_url }}&page={{ page_num }}"{% endif %}>
             {% if chevron %}<i class="fa-solid fa-chevron-{{ chevron }}"></i>
             {% else %}{{ anchor_text }}{% endif %}
         </a>
     </li>
 {% endpartial %}
+
 {% startpartial pagination %}
     {% #pagination_nav %}
         {% if page_obj.has_previous %}

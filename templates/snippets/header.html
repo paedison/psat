@@ -14,9 +14,9 @@
     </div><!-- Logo End -->
 
     <div class="search-bar">
-        <form class="search-form d-flex align-items-center" method="POST" action="#">
+        <form class="search-form d-flex align-items-center">
             {% csrf_token %}
-            <input id="id_data__contains" type="text" name="data__contains"
+            <input id="id_data" type="text" name="data"
                    placeholder="{% trans 'Enter search keyword' %}"
                    title="{% trans 'Enter search keyword' %}">
             <button type="submit" title="Search" hx-swap="innerHtml swap:0.5s"
