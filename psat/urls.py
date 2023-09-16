@@ -11,6 +11,7 @@ urlpatterns = [
     path('like/', new_list_views.like, name='like_list'),
     path('rate/', new_list_views.rate, name='rate_list'),
     path('answer/', new_list_views.answer, name='answer_list'),
+    path('search/', new_list_views.search, name='search_list'),
 
     # Detail Views
     path('detail/<int:problem_id>/', detail_views.problem, name='problem_detail'),
@@ -19,11 +20,6 @@ urlpatterns = [
     path('rate/detail/<int:problem_id>/modal/', detail_views.rate_modal, name='rate_detail_modal'),
     path('answer/detail/<int:problem_id>/', detail_views.answer, name='answer_detail'),
     path('answer/detail/<int:problem_id>/modal', detail_views.answer_modal, name='answer_detail_modal'),
-
-    # Search Views
-    path('search/', new_list_views.search, name='search'),
-    path('search/content/', new_list_views.search, name='search_content'),
-    path('search/content/<int:page>/', new_list_views.search, name='search_content_page'),
 
     # Memo Views
     path('memo/create/problem<int:problem_id>/', memo_views.create, name='memo_create'),

@@ -20,7 +20,7 @@
                    placeholder="{% trans 'Enter search keyword' %}"
                    title="{% trans 'Enter search keyword' %}">
             <button type="submit" title="Search" hx-swap="innerHtml swap:0.5s"
-                    hx-post="{% url 'psat:search' %}" hx-target="#main">
+                    hx-post="{% url 'psat:search_list' %}" hx-target="#main">
                 {{ search_icon }}
             </button>
         </form>
