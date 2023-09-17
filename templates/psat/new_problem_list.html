@@ -26,12 +26,18 @@
              hx-target="this" hx-swap="outerHTML swap:0.25s">
     {% #content_row class3='p-4' %}
         <div class="d-flex flex-wrap">
-            <div class="dropdown p-2 me-auto ms-auto">
-                {% if problem_list %}{% partial problem_filter %}{% endif %}
+            <div class="dropdown py-2 me-auto">
+                {% if info.menu == 'dashboard' %}{% partial dashboard_filter %}{% endif %}
+                {% if like_list or like_dashboard %}{% partial like_filter %}{% endif %}
+                {% if rate_list or rate_dashboard %}{% partial rate_filter %}{% endif %}
+                {% if answer_list or answer_dashboard %}{% partial answer_filter %}{% endif %}
+            </div>
+            <div class="dropdown py-2 ms-auto">
+                {% partial problem_filter %}
             </div>
         </div>
-        {% partial form %}
         {% #responsive_table %}
+            {% partial table_head %}
             <tbody>
                 {% if page_obj %}
                     {% for problem in page_obj %}
@@ -64,26 +70,72 @@
 {% endpartial %}
 
 
-{% startpartial problem_filter_snippet %}
+{% startpartial dashboard_filter %}
+    <button id="dropdownDashboardLink" type="button"
+            class="btn btn-sm btn-outline-primary dropdown-toggle"
+            data-bs-toggle="dropdown" aria-expanded="false">
+        메뉴
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownDashboardLink">
+        <li>
+            <a class="dropdown-item text-start ps-4
+               {% if info.view_type == 'like' %}active{% endif %}" href=""
+               hx-get="{% url 'dashboard:list' 'like' %}">
+                {{ MENU_ICON_SET.like|safe }}즐겨찾기
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item text-start ps-4
+               {% if info.view_type == 'rate' %}active{% endif %}" href=""
+               hx-get="{% url 'dashboard:list' 'rate' %}">
+                {{ MENU_ICON_SET.rate|safe }}난이도
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item text-start ps-4
+               {% if info.view_type == 'answer' %}active{% endif %}" href=""
+               hx-get="{% url 'dashboard:list' 'answer' %}">
+                {{ MENU_ICON_SET.answer|safe }}정답확인
+            </a>
+        </li>
+    </ul>
+{% endpartial %}
+
+
+{% startpartial filter_snippet %}
     <button id="dropdown{{ var|title }}Link" type="button"
             class="btn btn-sm btn-outline-primary dropdown-toggle"
             data-bs-toggle="dropdown" aria-expanded="false">
-        {{ text }}별로 보기
+        {{ text }}
     </button>
     <ul class="dropdown-menu" aria-labelledby="dropdown{{ var|title }}Link">
         <li>
             <a class="dropdown-item text-center p-1
                {% if current == '' %}active{% endif %}" href=""
-               hx-get="{% url 'psat:problem_list' %}?exam__year={% if var != 'year' %}{{ info.year }}{% endif %}&exam__ex={% if var != 'ex' %}{{ info.ex }}{% endif %}&exam__sub={% if var != 'sub' %}{{ info.sub }}{% endif %}">
-                전체 {{ text }}
+               hx-get="{{ info.base_url }}
+?year={% if var != 'year' %}{{ info.year }}{% endif %}
+&ex={% if var != 'ex' %}{{ info.ex }}{% endif %}
+&sub={% if var != 'sub' %}{{ info.sub }}{% endif %}
+&is_liked={% if var != 'like' %}{{ info.is_liked }}{% endif %}
+&star_count={% if var != 'rate' %}{{ info.star_count }}{% endif %}
+&is_correct={% if var != 'answer' %}{{ info.is_correct }}{% endif %}
+&data={{ info.data }}&date={{ info.date }}">
+                {{ PSAT_ICON_SET.filterAll|safe }}{{ total }}
             </a>
         </li>
         {% for opt in option %}
             <li>
                 <a class="dropdown-item text-center p-1
                    {% if opt.0 == current %}active{% endif %}" href=""
-                   hx-get="{% url 'psat:problem_list' %}?exam__year={% if var == 'year' %}{{ opt.0 }}{% else %}{{ info.year }}{% endif %}&exam__ex={% if var == 'ex' %}{{ opt.0 }}{% else %}{{ info.ex }}{% endif %}&exam__sub={% if var == 'sub' %}{{ opt.0 }}{% else %}{{ info.sub }}{% endif %}">
-                    {{ opt.1 }}
+                   hx-get="{{ info.base_url }}
+?year={% if var == 'year' %}{{ opt.0 }}{% else %}{{ info.year }}{% endif %}
+&ex={% if var == 'ex' %}{{ opt.0 }}{% else %}{{ info.ex }}{% endif %}
+&sub={% if var == 'sub' %}{{ opt.0 }}{% else %}{{ info.sub }}{% endif %}
+&is_liked={% if var == 'like' %}{{ opt.0 }}{% else %}{{ info.is_liked }}{% endif %}
+&star_count={% if var == 'rate' %}{{ opt.0 }}{% else %}{{ info.star_count }}{% endif %}
+&is_correct={% if var == 'answer' %}{{ opt.0 }}{% else %}{{ info.is_correct }}{% endif %}
+&data={{ info.data }}&date={{ info.date }}">
+                    {{ opt.1|safe }}
                 </a>
             </li>
         {% endfor %}
@@ -91,262 +143,83 @@
 {% endpartial %}
 
 {% startpartial problem_filter %}
-    <a type="button" class="btn btn-sm btn-primary"
-       hx-get="{% url 'psat:problem_list' %}" href="">
-        전체 보기
-    </a>
-    {% with var='year' text='연도' current=info.year option=info.year_option %}
-        {% partial problem_filter_snippet %}
+    <a type="button" class="btn btn-sm btn-primary" href=""
+       hx-get="{{ info.base_url }}">전체</a>
+    {% with var='year' text='연도' total='전체 연도' current=info.year option=info.year_option %}
+        {% partial filter_snippet %}
     {% endwith %}
 
-    {% with var='ex' text='시험' current=info.ex option=info.ex_option %}
-        {% partial problem_filter_snippet %}
+    {% with var='ex' text='시험' total='전체 시험' current=info.ex option=info.ex_option %}
+        {% partial filter_snippet %}
     {% endwith %}
 
-    {% with var='sub' text='과목' current=info.sub option=info.sub_option %}
-        {% partial problem_filter_snippet %}
+    {% with var='sub' text='과목' total='전체 과목' current=info.sub option=info.sub_option %}
+        {% partial filter_snippet %}
     {% endwith %}
 {% endpartial %}
-
 
 {% startpartial like_filter %}
-    <a id="dropdownLikeLink" href="" role="button"
-       class="btn btn-sm btn-outline-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false">
-        {{ PSAT_ICON_SET.filter|safe }}
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="dropdownLikeLink">
-        <li>
-            <a class="dropdown-item text-center{% if info.is_liked is None %} active{% endif %}"
-               hx-get="{% url 'psat:like_list_sub' sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.filterAll|safe }} 즐겨찾기 전체 문제
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.is_liked == '1' %} active{% endif %}"
-               hx-get="{% url 'psat:like_list_opt_sub' is_liked=1 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.likeTrue|safe }} 즐겨찾기 추가 문제
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.is_liked == '0' %} active{% endif %}"
-               hx-get="{% url 'psat:like_list_opt_sub' is_liked=0 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.likeFalse|safe }} 즐겨찾기 제외 문제
-            </a>
-        </li>
-    </ul>
+    {% with var='like' text=PSAT_ICON_SET.filter|safe total='즐겨찾기 전체 문제' current=info.is_liked option=info.like_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
+{% endpartial %}
+
+{% startpartial rate_filter %}
+    {% with var='rate' text=PSAT_ICON_SET.filter|safe total='전체 문제' current=info.star_count option=info.rate_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
+{% endpartial %}
+
+{% startpartial answer_filter %}
+    {% with var='answer' text=PSAT_ICON_SET.filter|safe total='전체 문제' current=info.is_correct option=info.answer_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
 {% endpartial %}
 
 
-{% startpartial rate %}
-    <a id="dropdownRateLink" href="" role="button"
-       class="btn btn-sm btn-outline-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false">
-        {{ PSAT_ICON_SET.filter|safe }}
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="dropdownRateLink">
-        <li>
-            <a class="dropdown-item text-center{% if info.star_count is None %} active{% endif %}"
-               hx-get="{% url 'psat:rate_list_sub' sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.filterAll|safe }} 전체 문제
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.star_count == '1' %} active{% endif %}"
-               hx-get="{% url 'psat:rate_list_opt_sub' star_count=1 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.star1|safe }}
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.star_count == '2' %} active{% endif %}"
-               hx-get="{% url 'psat:rate_list_opt_sub' star_count=2 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.star2|safe }}
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.star_count == '3' %} active{% endif %}"
-               hx-get="{% url 'psat:rate_list_opt_sub' star_count=3 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.star3|safe }}
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.star_count == '4' %} active{% endif %}"
-               hx-get="{% url 'psat:rate_list_opt_sub' star_count=4 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.star4|safe }}
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.star_count == '5' %} active{% endif %}"
-               hx-get="{% url 'psat:rate_list_opt_sub' star_count=5 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.star5|safe }}
-            </a>
-        </li>
-    </ul>
-{% endpartial %}
-
-{% startpartial answer %}
-    <a id="dropdownAnswerLink" href="" role="button"
-       class="btn btn-sm btn-outline-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false">
-        {{ PSAT_ICON_SET.filter|safe }}
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="dropdownAnswerLink">
-        <li>
-            <a class="dropdown-item text-center{% if info.is_correct is None %} active{% endif %}"
-               hx-get="{% url 'psat:answer_list_sub' sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.filterAll|safe }} 전체 문제
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.is_correct == '1' %} active{% endif %}"
-               hx-get="{% url 'psat:answer_list_opt_sub' is_correct=1 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.answerTrue|safe }} 맞힌 문제
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item text-center{% if info.is_correct == '0' %} active{% endif %}"
-               hx-get="{% url 'psat:answer_list_opt_sub' is_correct=0 sub=info.sub %}" href="">
-                {{ PSAT_ICON_SET.answerFalse|safe }} 틀린 문제
-            </a>
-        </li>
-    </ul>
+{% startpartial table_head %}
+<tr class="d-none d-sm-table-row">
+    <th class="text-nowrap p-2 col-1">
+        <div class="td-div-xl" aria-label="Reference">문제 출처</div>
+        <div class="td-div-xs" aria-label="Like">{{ PSAT_ICON_SET.likeTrue|safe }}</div>
+        <div class="td-div-lg" aria-label="Rate">난이도</div>
+        <div class="td-div-xs" aria-label="Answer">{{ PSAT_ICON_SET.answerTrue|safe }}</div>
+    </th>
+    <th class="text-start text-nowrap p-2">문제</th>
+</tr>
 {% endpartial %}
 
 
-{% startpartial form_option %}
-    <select class="form-select form-select-sm d-inline-block"
-            name="{{ name }}" aria-label="{{ name|title }}">
-        <option value="">{{ total }}</option>
-        {% for i in target_option %}
-            {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>
-            {% else %}<option value="{{ i.0 }}">{{ i.1 }}</option>{% endif %}
-        {% endfor %}
-    </select>
+{% startpartial datetime %}
+    {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
 {% endpartial %}
-
-{% startpartial form %}
-    {% if problem_list %}
-        <nav class="mx-auto mb-3 col-md-8 col-lg-6" aria-label="Exam Navigation">
-            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
-                  hx-trigger="change" hx-get="">
-                {% with name='exam__year' total='전체 연도' target_option=info.year_option current=info.year %}
-                    {% partial form_option %}
-                {% endwith %}
-                {% with name='exam__ex' total='전체 시험' target_option=info.ex_option current=info.ex %}
-                    {% partial form_option %}
-                {% endwith %}
-                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
-                    {% partial form_option %}
-                {% endwith %}
-            </form>
-        </nav>
-    {% endif %}
-
-    {% if like_list %}
-        <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
-            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
-                  hx-trigger="change" hx-get="">
-                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
-                    {% partial form_option %}
-                {% endwith %}
-                {% with name='evaluation__is_liked' total='즐겨찾기 전체 문제' target_option=info.like_option current=info.is_liked %}
-                    {% if info.is_liked != '' %}
-                        <select class="form-select form-select-sm d-inline-block"
-                                name="{{ name }}" aria-label="{{ name|title }}">
-                            <option value="">{{ total }}</option>
-                            {% for i in target_option %}
-                                {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>{% endif %}
-                            {% endfor %}
-                        </select>
-                    {% else %}
-                        {% partial form_option %}
-                    {% endif %}
-                {% endwith %}
-            </form>
-        </nav>
-    {% endif %}
-
-    {% if rate_list %}
-        <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
-            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
-                  hx-trigger="change" hx-get="">
-                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
-                    {% partial form_option %}
-                {% endwith %}
-                {% with name='evaluation__difficulty_rated' total='전체 문제' target_option=info.rate_option current=info.difficulty_rated %}
-                    {% if info.difficulty_rated != '' %}
-                        <select class="form-select form-select-sm d-inline-block"
-                                name="{{ name }}" aria-label="{{ name|title }}">
-                            <option value="">{{ total }}</option>
-                            {% for i in target_option %}
-                                {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>{% endif %}
-                            {% endfor %}
-                        </select>
-                    {% else %}
-                        {% partial form_option %}
-                    {% endif %}
-                {% endwith %}
-            </form>
-        </nav>
-    {% endif %}
-
-    {% if answer_list %}
-        <nav class="mx-auto mb-3 col-md-6 col-lg-4" aria-label="Exam Navigation">
-            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
-                  hx-trigger="change" hx-get="">
-                <input type="text" name="evaluation__user" value="{{ user }}" aria-label="User" hidden>
-                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
-                    {% partial form_option %}
-                {% endwith %}
-                {% with name='evaluation__is_correct' total='전체 문제' target_option=info.answer_option current=info.is_correct %}
-                    {% if info.is_correct != '' %}
-                        <select class="form-select form-select-sm d-inline-block"
-                                name="{{ name }}" aria-label="{{ name|title }}">
-                            <option value="">{{ total }}</option>
-                            {% for i in target_option %}
-                                {% if i.0 == current %}<option value="{{ i.0 }}" selected>{{ i.1 }}</option>{% endif %}
-                            {% endfor %}
-                        </select>
-                    {% else %}
-                        {% partial form_option %}
-                    {% endif %}
-                {% endwith %}
-            </form>
-        </nav>
-    {% endif %}
-
-    {% if search_list %}
-        <nav class="mx-auto mb-3 col-md-8 col-lg-6" aria-label="Exam Navigation">
-            <form class="htmx-fade-out htmx-fade-in d-flex justify-content-center col-12"
-                  hx-trigger="change" hx-get="{% url 'psat:search_list' %}">
-                <input type="text" name="data" value="{{ info.data }}" aria-label="Data" hidden>
-                {% with name='exam__year' total='전체 연도' target_option=info.year_option current=info.year %}
-                    {% partial form_option %}
-                {% endwith %}
-                {% with name='exam__ex' total='전체 시험' target_option=info.ex_option current=info.ex %}
-                    {% partial form_option %}
-                {% endwith %}
-                {% with name='exam__sub' total='전체 과목' target_option=info.sub_option current=info.sub %}
-                    {% partial form_option %}
-                {% endwith %}
-            </form>
-        </nav>
-    {% endif %}
-{% endpartial %}
-
 
 {% startpartial list_divider %}
-    {% if not search %}{% ifchanged %}
-        <tr class="table-warning">
-            <td class="text-start text-nowrap text-primary p-2" colspan="5">
-                <h2 class="fs-6 fw-bold m-0">
-                    <a hx-get="{{ info.base_url }}?exam__year={{ problem.year }}
-                        &exam__ex={{ problem.ex }}&exam__sub={{ problem.sub }}" href="">
-                        {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
-                    </a>
-                </h2>
-            </td>
-        </tr>
+    {% if info.menu == 'psat' %}{% if not search_list %}{% ifchanged %}
+        {% #list_divider %}
+            <a hx-get="{{ info.base_url }}?exam__year={{ problem.year }}
+                &exam__ex={{ problem.ex }}&exam__sub={{ problem.sub }}" href="">
+                {{ problem.year }}년 {{ problem.exam1 }} {{ problem.subject }}
+            </a>
+        {% /list_divider %}
+    {% endifchanged %}{% endif %}{% endif %}
+
+    {% if like_dashboard %}{% ifchanged %}
+        {% #list_divider %}
+            {% with timestamp=problem.liked_at %}{% partial datetime %}{% endwith %}
+        {% /list_divider %}
+    {% endifchanged %}{% endif %}
+
+    {% if rate_dashboard %}{% ifchanged %}
+        {% #list_divider %}
+            {% with timestamp=problem.rated_at %}{% partial datetime %}{% endwith %}
+        {% /list_divider %}
+    {% endifchanged %}{% endif %}
+
+    {% if answer_dashboard %}{% ifchanged %}
+        {% #list_divider %}
+            {% with timestamp=problem.answered_at %}{% partial datetime %}{% endwith %}
+        {% /list_divider %}
     {% endifchanged %}{% endif %}
 {% endpartial %}
 
@@ -391,8 +264,11 @@
     <a class="text-decoration-none d-none d-md-inline d-lg-none" href="{{ url }}">
         {% with chars=40 %}{% partial q %}{% endwith %}
     </a>
-    <a class="text-decoration-none d-none d-lg-inline" href="{{ url }}">
+    <a class="text-decoration-none d-none d-lg-inline d-xl-none" href="{{ url }}">
         {% with chars=50 %}{% partial q %}{% endwith %}
+    </a>
+    <a class="text-decoration-none d-none d-xl-inline" href="{{ url }}">
+        {% with chars=60 %}{% partial q %}{% endwith %}
     </a>
 {% endpartial %}
 

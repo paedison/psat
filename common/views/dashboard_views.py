@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 
 from common import constants
 from psat.models import Problem
-from psat.views.list_views import BaseListView
+from psat.views.old_list_views import BaseListView
 
 menu_icon_set = constants.icon.MENU_ICON_SET
 color_set = constants.color.COLOR_SET

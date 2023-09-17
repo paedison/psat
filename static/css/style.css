@@ -19,14 +19,12 @@ i.fa-solid.fa-heart {
 i.fa-regular.fa-star {
     color: #ddd;
     cursor: pointer;
-    margin-right: 0;
 }
 
 /* Solid Yellow Star */
 i.fa-solid.fa-star {
     color: #f6c23e;  /* Warning */
     cursor: pointer;
-    margin-right: 0;
 }
 
 /* Solid Yellow Crown */

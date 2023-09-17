@@ -28,12 +28,24 @@ PSAT_ICON_SET = {
     'likeTrue': '<i class="fa-solid fa-heart"></i>',
     'rate0': '<i class="fa-regular fa-star"></i>',
     'rate1': '<i class="fa-solid fa-star"></i>',
-    'starNone': '<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>',
-    'star1': '<i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>',
-    'star2': '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>',
-    'star3': '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>',
-    'star4': '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>',
-    'star5': '<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>',
+    'starNone': f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
+                f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
+                f'<i class="fa-regular fa-star"></i>',
+    'star1': f'<i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>'
+             f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
+             f'<i class="fa-regular fa-star"></i>',
+    'star2': f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
+             f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
+             f'<i class="fa-regular fa-star"></i>',
+    'star3': f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
+             f'<i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>'
+             f'<i class="fa-regular fa-star"></i>',
+    'star4': f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
+             f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
+             f'<i class="fa-regular fa-star"></i>',
+    'star5': f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
+             f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
+             f'<i class="fa-solid fa-star"></i>',
     'answerNone': '',
     'answerFalse': '<i class="fa-solid fa-circle-xmark"></i>',
     'answerTrue': '<i class="fa-solid fa-circle-check"></i>',

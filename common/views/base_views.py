@@ -1,9 +1,14 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils.datetime_safe import datetime
 from django.utils.timezone import make_aware
 
 now = make_aware(datetime.now())
+
+
+def index(request):
+    if request:
+        return redirect('psat:base')
 
 
 def page_not_found(request, exception):

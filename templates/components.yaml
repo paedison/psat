@@ -6,3 +6,4 @@ components:
   content_row: 'slippers/content_row_base.html'
   responsive_table: 'slippers/responsive_table_base.html'
   pagination_nav: 'slippers/pagination_nav_base.html'
+  list_divider: 'slippers/list_divider.html'

@@ -25,9 +25,11 @@ export const urls = {
     'scheduleList': '/schedule/',
 }
 const psat_menu = ['problem', 'like', 'rate', 'answer']
+const psat_type = ['problemList', 'likeList', 'rateList', 'answerList']
 
 export let info = JSON.parse($('#info').text());
 let menu = info['menu'] || $('#info').text();
+let type = info['type'] || $('#info').text();
 export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();
 
 
@@ -81,6 +83,26 @@ $(document).ready(function() {
 });
 
 
+$(document).ready(function() {
+    const targetLink = `#${type}`;
+    if (psat_type.includes(type)) {
+        expandMenu(targetLink);
+    } else {
+        $(targetLink).removeClass('collapsed');
+    }
+});
+
+
+// $(document).ready(function() {
+//     const targetLink = `#${menu}List`;
+//     if (psat_menu.includes(menu)) {
+//         expandMenu(targetLink);
+//     } else {
+//         $(targetLink).removeClass('collapsed');
+//     }
+// });
+//
+//
 /* Hide header bar */
 // $(document).ready(function() {
 //     let prevScrollPos = $(window).scrollTop();

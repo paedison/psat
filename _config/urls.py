@@ -3,13 +3,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-from common.views.base_views import ads, privacy
-from psat.views.list_views import index
+from common.views import base_views
 
 urlpatterns = [
-    path('', index),
-    path('ads.txt', ads),
-    path('privacy/', privacy, name='privacy_policy'),  # Privacy Policy
+    path('', base_views.index),
+    path('ads.txt', base_views.ads),
+    path('privacy/', base_views.privacy, name='privacy_policy'),  # Privacy Policy
 
     path('ckeditor/', include('ckeditor_uploader.urls')),  # CKEditor URLs
 
