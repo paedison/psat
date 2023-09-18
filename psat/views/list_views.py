@@ -188,6 +188,15 @@ class ListViewSetting:
     @property
     def info(self) -> dict:
         """ Get all the info for the current view. """
+        return {
+            'menu': self.menu,
+            'view_type': self.view_type,
+            'type': f'{self.view_type}List',  # Different in dashboard views
+        }
+
+    @property
+    def context(self) -> dict:
+        """ Get the context data. """
         title = {
             'problem': 'PSAT 기출문제',
             'like': 'PSAT 즐겨찾기',
@@ -196,34 +205,27 @@ class ListViewSetting:
             'search': 'PSAT 검색 결과',
         }
         return {
-            'menu': self.menu,
-            'view_type': self.view_type,
-            'type': f'{self.view_type}List',
-            'title': title[self.view_type],
-            'icon': menu_icon_set[self.view_type],
-            'color': color_set[self.view_type],
+            'info': self.info,
+            'title': title[self.view_type],  # Different in dashboard views
+            'icon': menu_icon_set[self.view_type],  # Different in dashboard views
             'base_url': self.base_url,
             'pagination_url': self.pagination_url,
-            'year': self.year,
-            'ex': self.ex,
-            'sub': self.sub,
+
+            'exam_year': self.year,
+            'exam_ex': self.ex,
+            'exam_sub': self.sub,
             'year_option': self.year_option,
             'ex_option': self.ex_option,
             'sub_option': self.sub_option,
+
             'is_liked': self.is_liked,
             'like_option': self.like_option,
             'star_count': self.star_count,
             'rate_option': self.rate_option,
             'is_correct': self.is_correct,
             'answer_option': self.answer_option,
-            'data': self.search_data,
-        }
+            'search_data': self.search_data,
 
-    @property
-    def context(self) -> dict:
-        """ Get the context data. """
-        return {
-            'info': self.info,
             'page_obj': self.page_obj,
             'page_range': self.page_range,
             'problem_list': self.view_type == 'problem',

@@ -106,7 +106,6 @@ $(document).on('click', '.aside-nav-icon', function() {
 //         prevScrollPos = currentScrollPos;
 //     });
 // });
-
 // export const urls = {
 //     // Category or Menu
 //     'dashboard': '/dashboard/',
@@ -133,3 +132,10 @@ $(document).on('click', '.aside-nav-icon', function() {
 //     'answerDetail': '/psat/answer/',
 //     'scheduleList': '/schedule/',
 // }
+// const psat_menu = ['problem', 'like', 'rate', 'answer']
+// const psat_type = ['problemList', 'likeList', 'rateList', 'answerList']
+//
+// export let info = JSON.parse($('#info').text());
+// let menu = info['menu'] || $('#info').text();
+// let type = info['type'] || $('#info').text();
+// export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();

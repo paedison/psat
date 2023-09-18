@@ -37,22 +37,19 @@ class DashboardViewSetting(list_views.ListViewSetting):
     def info(self) -> dict:
         info = super().info
         info['type'] = f'{self.view_type}Dashboard'
-        info['title'] = 'Dashboard'
-        info['icon'] = menu_icon_set['dashboard']
-        info['color'] = color_set['dashboard']
-        info['date'] = self.search_date
         return info
 
     @property
     def context(self) -> dict:
-        return {
-            'info': self.info,
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-            'like_dashboard': self.view_type == 'like',
-            'rate_dashboard': self.view_type == 'rate',
-            'answer_dashboard': self.view_type == 'answer',
-        }
+        context = super().context
+        context['title'] = 'Dashboard'
+        context['icon'] = menu_icon_set['dashboard']
+        context['search_date'] = self.search_date
+        context['like_dashboard'] = self.view_type == 'like'
+        context['rate_dashboard'] = self.view_type == 'rate'
+        context['answer_dashboard'] = self.view_type == 'answer'
+
+        return context
 
 
 def base_view(request, view_type='like'):

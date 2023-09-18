@@ -27,7 +27,7 @@
     </div>
     <section class="d-flex flex-wrap">
         <div class="p-2 me-auto ms-auto">
-            {% include 'psat/snippets/old/list_pagination.html' %}
+            {% include 'board/list_pagination.html' %}
         </div>
         {% if info.staff_menu %}
             {% if user.is_admin %}{% partial create_button %}{% endif %}
