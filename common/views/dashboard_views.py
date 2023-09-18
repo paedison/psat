@@ -1,10 +1,6 @@
 from datetime import datetime
 
-from django.shortcuts import render
-from django.urls import reverse_lazy
-
 from common import constants
-from psat import models
 from psat.views import list_views
 
 menu_icon_set = constants.icon.MENU_ICON_SET
@@ -13,10 +9,7 @@ color_set = constants.color.COLOR_SET
 
 class DashboardViewSetting(list_views.ListViewSetting):
     menu = 'dashboard'
-    list_base_template = 'psat/new_problem_list.html'
-
-    @property
-    def base_url(self) -> str: return reverse_lazy('dashboard:list', args=[self.view_type])
+    url_name = 'dashboard:list'
 
     @property
     def search_date(self) -> datetime.date:
@@ -34,7 +27,7 @@ class DashboardViewSetting(list_views.ListViewSetting):
         }
         return sort_dict[self.view_type]
 
-    def get_filtered_queryset(self, field='', value='') -> models.Problem.objects:
+    def get_filtered_queryset(self, field='', value=''):
         filtered_queryset = super().get_filtered_queryset(field, value)
         if self.search_date:
             filtered_queryset = filtered_queryset.filter(**{self.timestamp[0]: self.search_date})
@@ -60,9 +53,6 @@ class DashboardViewSetting(list_views.ListViewSetting):
             'rate_dashboard': self.view_type == 'rate',
             'answer_dashboard': self.view_type == 'answer',
         }
-
-    def rendering(self) -> render:
-        return render(self.request, self.template_name, self.context)
 
 
 def base_view(request, view_type='like'):

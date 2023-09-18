@@ -15,14 +15,15 @@ color_set = constants.color.COLOR_SET
 class ListViewSetting:
     """ Represent all properties and methods for list views. """
     menu = 'psat'
-    list_base_template = 'psat/new_problem_list.html'
+    url_name = 'psat:list'
+    list_base_template = 'psat/problem_list.html'
 
     def __init__(self, request, view_type):
         self.request = request
         self.view_type = view_type
 
     @property
-    def base_url(self) -> str: return reverse_lazy('psat:list', args=[self.view_type])
+    def base_url(self) -> str: return reverse_lazy(self.url_name, args=[self.view_type])
 
     @property
     def pagination_url(self) -> str:

@@ -277,7 +277,7 @@ class AnswerListView(BaseListView):
 
 class ProblemSearchView(PSATListInfoMixIn, SearchView):
     model = ProblemData
-    template_name = 'psat/problem_search.html'
+    template_name = 'psat/old/problem_search.html'
     form_class = ProblemSearchForm
     paginate_by = 10
     first_display_all_list = False
