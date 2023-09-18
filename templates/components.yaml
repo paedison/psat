@@ -7,3 +7,4 @@ components:
   responsive_table: 'slippers/responsive_table_base.html'
   pagination_nav: 'slippers/pagination_nav_base.html'
   list_divider: 'slippers/list_divider.html'
+  header_icon_link: 'slippers/header_icon_link.html'

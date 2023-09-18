@@ -1,6 +1,7 @@
 {% load static %}
 {% load i18n %}
 {% load widget_tweaks %}
+{% load partials %}
 {% load slippers %}
 
 {% fragment as search_icon %}{{ PSAT_ICON_SET.search|safe }}{% endfragment %}
@@ -8,10 +9,7 @@
 
 <!-- ======= Main Header ======= -->
 <header id="header" class="header fixed-top d-flex align-items-center">
-    <div class="d-flex align-items-center justify-content-between">
-        {% include 'snippets/logo.html' %}
-        <i class="fa fa-bars toggle-sidebar-btn"></i>
-    </div><!-- Logo End -->
+    {% partial logo %}
 
     <div class="search-bar">
         <form class="search-form d-flex align-items-center">
@@ -34,21 +32,14 @@
             {% if user.is_authenticated %}
                 {% if user.is_admin %}
                     <li class="nav-item dropdown no-arrow">
-                        <a class="nav-link px-1" href="{{ MENU_URL_SET.admin }}"
-                           target="admin">{{ MENU_ICON_SET.admin|safe }}</a></li>
+                        <a class="nav-link px-1" href="/admin/" target="#admin">
+                            {{ MENU_ICON_SET.admin|safe }}</a>
+                    </li>
                 {% endif %}
-                <li class="nav-item dropdown no-arrow">
-                    <a class="nav-link px-1" href="{{ MENU_URL_SET.problem }}">
-                        {{ MENU_ICON_SET.problem|safe }}</a></li>
-                <li class="nav-item dropdown no-arrow">
-                    <a class="nav-link px-1" href="{{ MENU_URL_SET.like }}">
-                        {{ MENU_ICON_SET.like|safe }}</a></li>
-                <li class="nav-item dropdown no-arrow">
-                    <a class="nav-link px-1" href="{{ MENU_URL_SET.rate }}">
-                        {{ MENU_ICON_SET.rate|safe }}</a></li>
-                <li class="nav-item dropdown no-arrow">
-                    <a class="nav-link ps-1" href="{{ MENU_URL_SET.answer }}">
-                        {{ MENU_ICON_SET.answer|safe }}</a></li>
+                {% header_icon_link url='/psat/' icon=MENU_ICON_SET.problem|safe %}
+                {% header_icon_link url='/psat/like/' icon=MENU_ICON_SET.like|safe %}
+                {% header_icon_link url='/psat/rate/' icon=MENU_ICON_SET.rate|safe %}
+                {% header_icon_link url='/psat/answer/' icon=MENU_ICON_SET.answer|safe %}
                 <div class="topbar-divider"></div>
             {% endif %}
 
@@ -57,45 +48,75 @@
                    href="" data-bs-toggle="dropdown">
                     <img src="{% static 'image/undraw_profile.jpg' %}"
                          alt="Profile" class="img-profile rounded-circle">
-                    <span class="d-none d-md-block dropdown-toggle ps-2">
-                        {{ user.username }}
-                    </span>
+                    <span class="d-none d-md-block dropdown-toggle ps-2">{{ user.username }}</span>
                 </a><!-- Profile Image Icon End -->
-
-                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-                    {% if user.is_authenticated %}
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center"
-                               href="{{ MENU_URL_SET.dashboard }}">
-                                {{ MENU_ICON_SET.dashboard|safe }} <span>Dashboard</span>
-                            </a>
-                        </li>
-                        {{ divider }}
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href=""
-                               hx-get="{% url 'account_logout_modal' %}"
-                               hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
-                               data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                {{ MENU_ICON_SET.logout|safe }} <span>{% trans 'Logout' %}</span>
-                            </a>
-                        </li>
-                    {% else %}
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center"
-                               href="{% url 'account_login' %}">
-                                {{ MENU_ICON_SET.login|safe }} <span>{% trans 'Login' %}</span>
-                            </a>
-                        </li>
-                        {{ divider }}
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center"
-                               href="{% url 'account_signup' %}">
-                                {{ MENU_ICON_SET.signup|safe }} <span>{% trans 'Signup' %}</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul><!-- Profile Dropdown Items End -->
+                {% partial profile %}
             </li><!-- Profile Nav End -->
         </ul>
     </nav><!-- Icons Navigation End -->
 </header><!-- Main Header End -->
+
+
+{% startpartial logo_image %}
+    <div class="d-flex align-items-center justify-content-between"
+         hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            <a class="logo d-flex align-items-center" role="banner"
+               hx-post="{{ url }}" href="" data-target="{{ target }}">
+                <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
+                <span class="d-none d-sm-block">Paedison</span>
+            </a>
+        <i class="fa fa-bars toggle-sidebar-btn"></i>
+    </div><!-- Logo End -->
+{% endpartial %}
+
+{% startpartial logo %}
+    {% if user.is_authenticated %}
+        {% with url='/dashboard/' target='#dashboardList' %}{% partial logo_image %}{% endwith %}
+    {% else %}
+        {% with url='/psat/' target='#problemList' %}{% partial logo_image %}{% endwith %}
+    {% endif %}
+{% endpartial %}
+
+
+{% startpartial icon_link %}
+    <li class="nav-item dropdown no-arrow">
+        <a class="nav-link px-1" hx-post="{{ url }}" href="" hx-push-url="true"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s">{{ icon }}</a>
+    </li>
+{% endpartial %}
+
+
+{% startpartial profile %}
+    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+        {% if user.is_authenticated %}
+            <li>
+                <a class="dropdown-item d-flex align-items-center"
+                   hx-post="{{ MENU_URL_SET.dashboard }}" href=""
+                   hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    {{ MENU_ICON_SET.dashboard|safe }} <span>Dashboard</span>
+                </a>
+            </li>
+            {{ divider }}
+            <li>
+                <a class="dropdown-item d-flex align-items-center" href=""
+                   hx-get="{% url 'account_logout_modal' %}"
+                   hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+                   data-bs-toggle="modal" data-bs-target="#modalContainer">
+                    {{ MENU_ICON_SET.logout|safe }} <span>{% trans 'Logout' %}</span>
+                </a>
+            </li>
+        {% else %}
+            <li>
+                <a class="dropdown-item d-flex align-items-center" href="{% url 'account_login' %}">
+                    {{ MENU_ICON_SET.login|safe }} <span>{% trans 'Login' %}</span>
+                </a>
+            </li>
+            {{ divider }}
+            <li>
+                <a class="dropdown-item d-flex align-items-center" href="{% url 'account_signup' %}">
+                    {{ MENU_ICON_SET.signup|safe }} <span>{% trans 'Signup' %}</span>
+                </a>
+            </li>
+        {% endif %}
+    </ul><!-- Profile Dropdown Items End -->
+{% endpartial %}
