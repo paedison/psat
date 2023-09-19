@@ -24,6 +24,7 @@ urlpatterns = [
     path('log/', include('log.urls')),  # Log
     path('analysis/', include('analysis.urls')),  # Analysis
     path('score/', include('score.urls')),  # Score
+    path('study/', include('study.urls')),  # Score
 
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
 ]

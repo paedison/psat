@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     'notice',
     'analysis',
     'score',
+    'study',
 ]
 
 MIDDLEWARE = [

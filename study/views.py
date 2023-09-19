@@ -1,26 +1,22 @@
-from django.core.paginator import Paginator
 from django.db.models import F, Value, CharField, Q
 from django.db.models.functions import Concat, Cast
 from django.shortcuts import render
 from django.urls import reverse_lazy
 
 from common import constants
-from .. import models
+from psat.views.list_views import ListViewSetting
+from . import models
 
 psat_icon_set = constants.icon.PSAT_ICON_SET
 menu_icon_set = constants.icon.MENU_ICON_SET
 color_set = constants.color.COLOR_SET
 
 
-class ListViewSetting:
+class StudyViewSetting(ListViewSetting):
     """ Represent all properties and methods for list views. """
-    menu = 'psat'
-    url_name = 'psat:list'
-    list_base_template = 'psat/problem_list.html'
-
-    def __init__(self, request, view_type):
-        self.request = request
-        self.view_type = view_type
+    menu = 'study'
+    url_name = 'study:list'
+    list_base_template = 'study/problem_list.html'
 
     @property
     def base_url(self) -> str: return reverse_lazy(self.url_name, args=[self.view_type])
@@ -32,6 +28,8 @@ class ListViewSetting:
                 f'&star_count={self.star_count}&is_correct={self.is_correct}'
                 f'&data={self.search_data}')
 
+    @property
+    def chapter(self) -> str: return self.request.GET.get('chapter', '')
     @property
     def year_str(self) -> str: return self.request.GET.get('year', '')
     @property
@@ -88,7 +86,8 @@ class ListViewSetting:
     @property
     def problem_filter(self) -> Q:
         """ Get problem filter corresponding to the year, ex, sub. """
-        problem_filter = Q()
+        ids_list = list(models.AlphaQuestion.objects.values_list('problem_id', flat=True))
+        problem_filter = Q(id__in=ids_list)
         if self.year != '':
             problem_filter &= Q(exam__year=self.year)
         if self.ex != '':
@@ -109,41 +108,42 @@ class ListViewSetting:
                     problem_filter &= Q(**{field + '__isnull': False})
                 else:
                     problem_filter &= Q(**{field: value})
-        return models.Problem.objects.filter(problem_filter)
+        return models.Problem.objects.filter(problem_filter).order_by(
+            'study_alphaquestions__id')
 
-    @property
-    def queryset(self) -> models.Problem.objects:
-        opt_dict = {
-            'problem': ('', ''),
-            'like': ('evaluation__is_liked', self.is_liked),
-            'rate': ('evaluation__difficulty_rated', self.star_count),
-            'answer': ('evaluation__is_correct', self.is_correct),
-            'search': ('', '')
-        }
-        return self.get_filtered_queryset(*opt_dict[self.view_type])
-
-    @property
-    def year_list(self) -> queryset:
-        return self.queryset.annotate(
-            year_suffix=Cast(
-                Concat(F('exam__year'), Value('년')), CharField()
-            )).values_list('exam__year', 'year_suffix')
-
-    @property
-    def ex_list(self) -> queryset:
-        return self.queryset.values_list('exam__ex', 'exam__exam2')
-
-    @property
-    def sub_list(self) -> queryset:
-        return self.queryset.values_list('exam__sub', 'exam__subject')
-
-    @staticmethod
-    def get_option(target) -> list[tuple]:
-        target_option = []
-        for t in target:
-            if t not in target_option:
-                target_option.append(t)
-        return target_option
+    # @property
+    # def queryset(self) -> models.Problem.objects:
+    #     opt_dict = {
+    #         'problem': ('', ''),
+    #         'like': ('evaluation__is_liked', self.is_liked),
+    #         'rate': ('evaluation__difficulty_rated', self.star_count),
+    #         'answer': ('evaluation__is_correct', self.is_correct),
+    #         'search': ('', '')
+    #     }
+    #     return self.get_filtered_queryset(*opt_dict[self.view_type])
+    #
+    # @property
+    # def year_list(self) -> queryset:
+    #     return self.queryset.annotate(
+    #         year_suffix=Cast(
+    #             Concat(F('exam__year'), Value('년')), CharField()
+    #         )).values_list('exam__year', 'year_suffix')
+    #
+    # @property
+    # def ex_list(self) -> queryset:
+    #     return self.queryset.values_list('exam__ex', 'exam__exam2')
+    #
+    # @property
+    # def sub_list(self) -> queryset:
+    #     return self.queryset.values_list('exam__sub', 'exam__subject')
+    #
+    # @staticmethod
+    # def get_option(target) -> list[tuple]:
+    #     target_option = []
+    #     for t in target:
+    #         if t not in target_option:
+    #             target_option.append(t)
+    #     return target_option
 
     @property
     def year_option(self) -> list[tuple]: return self.get_option(self.year_list)
@@ -170,99 +170,27 @@ class ListViewSetting:
                 (2, psat_icon_set['star2']),
                 (1, psat_icon_set['star1'])]
 
-    def get_paginator_info(self) -> tuple[object, object]:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        paginator = Paginator(self.queryset, 10)
-        page_obj = paginator.get_page(page_number)
-        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-        for obj in page_obj:
-            get_evaluation_info(self.request.user, obj)
-        return page_obj, page_range
-
     @property
     def page_obj(self) -> object: return self.get_paginator_info()[0]
     @property
     def page_range(self) -> object: return self.get_paginator_info()[1]
 
     @property
-    def info(self) -> dict:
-        """ Get all the info for the current view. """
-        return {
-            'menu': self.menu,
-            'view_type': self.view_type,
-            'type': f'{self.view_type}List',  # Different in dashboard views
-        }
-
-    @property
     def context(self) -> dict:
-        """ Get the context data. """
-        title = {
-            'problem': 'PSAT 기출문제',
-            'like': 'PSAT 즐겨찾기',
-            'rate': 'PSAT 난이도',
-            'answer': 'PSAT 정답확인',
-            'search': 'PSAT 검색 결과',
-        }
-        return {
-            'info': self.info,
-            'title': title[self.view_type],  # Different in dashboard views
-            'icon': menu_icon_set[self.view_type],  # Different in dashboard views
-            'base_url': self.base_url,
-            'pagination_url': self.pagination_url,
+        context = super().context
+        context['title'] = 'Study'
+        context['icon'] = menu_icon_set['dashboard']
+        context['problem_study'] = self.view_type == 'problem'
+        context['like_study'] = self.view_type == 'like'
+        context['rate_study'] = self.view_type == 'rate'
+        context['answer_study'] = self.view_type == 'answer'
 
-            'exam_year': self.year,
-            'exam_ex': self.ex,
-            'exam_sub': self.sub,
-            'year_option': self.year_option,
-            'ex_option': self.ex_option,
-            'sub_option': self.sub_option,
-
-            'is_liked': self.is_liked,
-            'like_option': self.like_option,
-            'star_count': self.star_count,
-            'rate_option': self.rate_option,
-            'is_correct': self.is_correct,
-            'answer_option': self.answer_option,
-            'search_data': self.search_data,
-
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-            'problem_list': self.view_type == 'problem',
-            'like_list': self.view_type == 'like',
-            'rate_list': self.view_type == 'rate',
-            'answer_list': self.view_type == 'answer',
-            'search_list': self.view_type == 'search',
-        }
+        return context
 
     def rendering(self) -> render:
         return render(self.request, self.template_name, self.context)
 
 
-def get_evaluation_info(user, obj) -> models.Problem:
-    problem_id = obj.id if isinstance(obj, models.Problem) else obj.problem.id
-
-    if user.is_authenticated:
-        source = models.Evaluation.objects.filter(
-            user=user, problem_id=problem_id).first()
-        obj.opened_at = source.opened_at if source else None
-        obj.opened_times = source.opened_times if source else 0
-
-        obj.liked_at = source.liked_at if source else None
-        obj.is_liked = source.is_liked if source else None
-        obj.like_icon = source.like_icon() if source else psat_icon_set['likeNone']
-
-        obj.rated_at = source.rated_at if source else None
-        obj.difficulty_rated = source.difficulty_rated if source else None
-        obj.rate_icon = source.rate_icon() if source else psat_icon_set['starNone']
-
-        obj.answered_at = source.answered_at if source else None
-        obj.submitted_answered = source.submitted_answer if source else None
-        obj.is_correct = source.is_correct if source else None
-        obj.answer_icon = source.answer_icon() if source else ''
-    return obj
-
-
 def base_view(request, view_type='problem'):
-    list_view_setting = ListViewSetting(request, view_type)
-    return list_view_setting.rendering()
+    study_view_setting = StudyViewSetting(request, view_type)
+    return study_view_setting.rendering()
