@@ -26,9 +26,13 @@ class User(AbstractBaseUser):
     joined_at = models.DateTimeField('가입일', auto_now_add=True)
     is_active = models.BooleanField('활동 회원', default=True)
     is_admin = models.BooleanField('운영자 여부', default=False)
+    is_staff = models.BooleanField('스탭 여부', default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
+
+    class Meta:
+        ordering = ['id']
 
     def __str__(self):
         return self.email
@@ -38,15 +42,3 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
-
-    @property
-    def is_staff(self):
-        return self.is_admin
-
-
-class Post:
-    pass
-
-
-class Comment:
-    pass

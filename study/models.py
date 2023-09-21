@@ -129,7 +129,7 @@ class Comment(CommentInfo, models.Model):
         db_column="user_id", related_name="study_user_comments")
     post = models.ForeignKey(
         Post, on_delete=models.CASCADE, verbose_name="게시글",
-        db_column="post_id", related_name="study_post_comments")
+        db_column="post_id", related_name="post_comments")
     content = models.TextField("내용")
     created_at = models.DateTimeField("작성일", auto_now_add=True)
     modified_at = models.DateTimeField("수정일", auto_now=True)

@@ -108,7 +108,6 @@ class PostViewMixIn:
             'title': self.title,
             'pagination_url': self.post_list_content_url,
             'icon': self.base_icon,
-            'color': self.base_color,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
             'post_list_url': self.post_list_url,
