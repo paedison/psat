@@ -9,7 +9,6 @@ from .. import models
 
 psat_icon_set = constants.icon.PSAT_ICON_SET
 menu_icon_set = constants.icon.MENU_ICON_SET
-color_set = constants.color.COLOR_SET
 
 
 class ListViewSetting:

@@ -9,16 +9,73 @@ from psat import models as psat_models
 from .forms import TemporaryAnswerForm
 
 
-score_color = constants.color.COLOR_SET['answer']
 score_icon = constants.icon.MENU_ICON_SET['answer']
-exam_list = constants.psat.TOTAL['list']
+exam_list = [
+        {'year': 2023, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2023, 'ex': '칠급', 'exam2': '7급공채'},
+        {'year': 2023, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2022, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2022, 'ex': '칠급', 'exam2': '7급공채'},
+        {'year': 2022, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2021, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2021, 'ex': '칠급', 'exam2': '7급공채'},
+        {'year': 2021, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2021, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2020, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2020, 'ex': '칠급', 'exam2': '7급공채'},
+        {'year': 2020, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2020, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2019, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2019, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2019, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2018, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2018, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2018, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2017, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2017, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2017, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2016, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2016, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2016, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2015, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2015, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2015, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2014, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2014, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2014, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2013, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2013, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2013, 'ex': '외시', 'exam2': '외교원/외무고시'},
+        {'year': 2013, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2012, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2012, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2012, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2011, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2011, 'ex': '민경', 'exam2': '민간경력'},
+        {'year': 2011, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2010, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2010, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2009, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2009, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2008, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2008, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2007, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2007, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2006, 'ex': '행시', 'exam2': '5급공채/행정고시'},
+        {'year': 2006, 'ex': '견습', 'exam2': '견습'},
+        {'year': 2006, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2005, 'ex': '견습', 'exam2': '견습'},
+        {'year': 2005, 'ex': '외시', 'exam2': '외교원/외무고시'},
+        {'year': 2005, 'ex': '입시', 'exam2': '입법고시'},
+        {'year': 2004, 'ex': '외시', 'exam2': '외교원/외무고시'},
+]
 
 
 class ScoreTemplate:
     """ Represent the appropriate templates. """
     list_base = 'score/score_list.html'  # score_list_view w/ GET and no htmx
     list_content = f'{list_base}#content'  # score_list_view w/ GET and htmx
-    list_main = f'{list_base}#main'  # score_list_view w/ POST
+    list_main = f'{list_base}#list_main'  # score_list_view w/ POST
 
     detail_base = 'score/score_detail.html'  # score_detail_view w/ no htmx
     detail_content = f'{detail_base}#content'  # score_detail_view w/ htmx
@@ -189,7 +246,6 @@ def score_detail(request, exam_id: int) -> render:
         'title': f'{exam.full_title} 답안 제출',
         'exam_id': exam_id,
         'icon': score_icon,
-        'color': score_color,
     }
     context = {
         'info': info,
@@ -266,7 +322,6 @@ def score_confirmed(request, exam_id: int):
             'title': f'{exam.full_title} 성적 확인',
             'exam_id': exam_id,
             'icon': score_icon,
-            'color': score_color,
         }
         context = {
             'info': info,

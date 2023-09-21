@@ -68,33 +68,28 @@
 {% endpartial %}
 
 
+{% fragment as like_menu %}<i class="fa-solid fa-heart fa-fw"></i>즐겨찾기{% endfragment %}
+{% fragment as rate_menu %}<i class="fa-solid fa-star fa-fw"></i>난이도{% endfragment %}
+{% fragment as answer_menu %}<i class="fa-solid fa-circle-check fa-fw"></i>정답확인{% endfragment %}
 {% startpartial dashboard_filter %}
     <button id="dropdownDashboardLink" type="button"
             class="btn btn-sm btn-outline-primary dropdown-toggle"
-            data-bs-toggle="dropdown" aria-expanded="false">
-        메뉴
-    </button>
+            data-bs-toggle="dropdown" aria-expanded="false">메뉴</button>
     <ul class="dropdown-menu" aria-labelledby="dropdownDashboardLink">
         <li>
             <a class="dropdown-item text-start ps-4
                {% if info.view_type == 'like' %}active{% endif %}" href=""
-               hx-get="{% url 'dashboard:list' 'like' %}">
-                {{ MENU_ICON_SET.like|safe }}즐겨찾기
-            </a>
+               hx-get="{% url 'dashboard:list' 'like' %}">{{ like_menu|safe }}</a>
         </li>
         <li>
             <a class="dropdown-item text-start ps-4
                {% if info.view_type == 'rate' %}active{% endif %}" href=""
-               hx-get="{% url 'dashboard:list' 'rate' %}">
-                {{ MENU_ICON_SET.rate|safe }}난이도
-            </a>
+               hx-get="{% url 'dashboard:list' 'rate' %}">{{ rate_menu|safe }}</a>
         </li>
         <li>
             <a class="dropdown-item text-start ps-4
                {% if info.view_type == 'answer' %}active{% endif %}" href=""
-               hx-get="{% url 'dashboard:list' 'answer' %}">
-                {{ MENU_ICON_SET.answer|safe }}정답확인
-            </a>
+               hx-get="{% url 'dashboard:list' 'answer' %}">{{ answer_menu|safe }}</a>
         </li>
     </ul>
 {% endpartial %}

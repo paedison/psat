@@ -69,7 +69,12 @@
 {% endpartial %}
 
 <a id="problemChoiceLink" href="#" role="button"
-   class="btn btn-circle btn-{{ info.color }} dropdown-toggle"
+   class="btn btn-circle
+   {% if info.view_type == 'problem' %}btn-primary
+   {% elif info.view_type == 'like' %}btn-danger
+   {% elif info.view_type == 'rate' %}btn-warning
+   {% elif info.view_type == 'answer' %}btn-success{% endif %}
+   dropdown-toggle"
    data-bs-toggle="dropdown" aria-expanded="false">
     {{ PSAT_ICON_SET.list|safe }}
 </a>

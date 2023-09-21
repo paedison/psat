@@ -51,7 +51,6 @@ class PostViewMixIn:
 
     # Icon and color
     base_icon = constants.icon.MENU_ICON_SET[app_name]
-    base_color = constants.color.COLOR_SET[app_name]
 
     # Category list
     category_choices = model.CATEGORY_CHOICES.copy()
@@ -109,7 +108,6 @@ class PostViewMixIn:
             'title': self.title,
             'pagination_url': self.post_list_content_url,
             'icon': self.base_icon,
-            'color': self.base_color,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
             'post_list_url': self.post_list_url,

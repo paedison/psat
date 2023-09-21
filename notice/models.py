@@ -4,8 +4,6 @@ from django.urls import reverse_lazy
 
 from common.models import User
 
-app_name = 'notice'
-
 
 class PostInfo:
     app_name = 'notice'
@@ -47,17 +45,17 @@ class CommentInfo:
 
     @property
     def comment_update_url(self):
-        return reverse_lazy(f'{app_name}:comment_update',
+        return reverse_lazy(f'{self.app_name}:comment_update',
                             kwargs={'post_id': self.post.id, 'comment_id': self.id})
 
     @property
     def comment_delete_url(self):
-        return reverse_lazy(f'{app_name}:comment_delete',
+        return reverse_lazy(f'{self.app_name}:comment_delete',
                             kwargs={'post_id': self.post.id, 'comment_id': self.id})
 
     @property
     def post_detail_url(self):
-        return reverse_lazy(f'{app_name}:detail', args=[self.post.id])
+        return reverse_lazy(f'{self.app_name}:detail', args=[self.post.id])
 
 
 class Post(PostInfo, models.Model):

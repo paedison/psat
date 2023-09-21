@@ -4,7 +4,6 @@ from common import constants
 from psat.views import list_views
 
 menu_icon_set = constants.icon.MENU_ICON_SET
-color_set = constants.color.COLOR_SET
 
 
 class DashboardViewSetting(list_views.ListViewSetting):

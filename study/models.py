@@ -1,43 +1,138 @@
-from django.db import models
+import os
 
+from ckeditor_uploader.fields import RichTextUploadingField
+from django.db import models
+from django.urls import reverse_lazy
+
+from _config.settings.base import BASE_DIR
+from common.models import User
 from psat.models import Problem
 
 
-class QuestionInfo(models.Model):
-    class ChapterChoices(models.IntegerChoices):
-        FIRST = 1, '미니테스트 1회'
-        SECOND = 2, '미니테스트 2회'
-        THIRD = 3, '미니테스트 3회'
-        FOURTH = 4, '미니테스트 4회'
-        FIFTH = 5, '미니테스트 5회'
-        SIXTH = 6, '미니테스트 6회'
-        SEVENTH = 7, '미니테스트 7회'
-        EIGHTH = 8, '미니테스트 8회'
-        NINTH = 9, '미니테스트 9회'
-        TENTH = 10, '미니테스트 10회'
-        ELEVENTH = 11, '미니테스트 11회'
-        TWELFTH = 12, '미니테스트 12회'
-        THIRTEENTH = 13, '미니테스트 13회'
-        FOURTEENTH = 14, '미니테스트 14회'
-        FIFTEENTH = 15, '미니테스트 15회'
-        SIXTEENTH = 16, '미니테스트 16회'
-        SEVENTEENTH = 17, '실전모의고사 1회'
-        EIGHTEENTH = 18, '실전모의고사 2회'
+class Chapter(models.Model):
+    class CategoryChoices(models.IntegerChoices):
+        FIRST = 1, '기본 과정'
+        SECOND = 2, '심화 과정'
 
-    chapter = models.PositiveSmallIntegerField(choices=ChapterChoices.choices)
-    question_num = models.PositiveSmallIntegerField()
-    problem = models.ForeignKey(
-        Problem, on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)ss')
+    category = models.PositiveSmallIntegerField(choices=CategoryChoices.choices)
+    chapter = models.PositiveSmallIntegerField()
+    name = models.CharField(max_length=200)
 
     class Meta:
-        abstract = True
-        ordering = ['chapter', 'question_num']
+        ordering = ['category', 'chapter']
+
+    @property
+    def chapter_path(self):
+        return BASE_DIR / f'static/study/{self.category}'
+
+    @property
+    def problem_file(self):
+        return os.path.join(self.chapter_path, 'problem', f'{self.name}.pdf')
 
 
-class AlphaQuestion(QuestionInfo):
-    pass
+class Question(models.Model):
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name='questions')
+    number = models.PositiveSmallIntegerField()
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='study_questions')
+
+    class Meta:
+        ordering = ['chapter', 'number']
 
 
-class BetaQuestion(QuestionInfo):
-    pass
+class PostInfo:
+    app_name = 'study'
+    id: int
+    hit: int
+    post_comments: any
+
+    def get_absolute_url(self): return reverse_lazy(f'{self.app_name}:detail', args=[self.id])
+    @property
+    def post_detail_url(self): return reverse_lazy(f'{self.app_name}:detail', args=[self.id])
+    @property
+    def post_detail_content_url(self): return reverse_lazy(f'{self.app_name}:detail_content', args=[self.id])
+    @property
+    def post_list_url(self): return reverse_lazy(f'{self.app_name}:list')
+    @property
+    def post_list_navigation_url(self): return reverse_lazy(f'{self.app_name}:list_navigation')
+    @property
+    def post_update_url(self): return reverse_lazy(f'{self.app_name}:update', args=[self.id])
+    @property
+    def post_update_content_url(self): return reverse_lazy(f'{self.app_name}:update_content', args=[self.id])
+    @property
+    def post_delete_url(self): return reverse_lazy(f'{self.app_name}:delete', args=[self.id])
+    @property
+    def comment_create_url(self): return reverse_lazy(f'{self.app_name}:comment_create', args=[self.id])
+
+    @property
+    def comment_count(self): return self.post_comments.count()
+
+    def update_hit(self):
+        hit = self.hit
+        self.hit = hit + 1
+        self.save()
+
+
+class CommentInfo:
+    app_name = 'study'
+    id: int
+    post: any
+
+    @property
+    def comment_update_url(self):
+        return reverse_lazy(f'{self.app_name}:comment_update',
+                            kwargs={'post_id': self.post.id, 'comment_id': self.id})
+
+    @property
+    def comment_delete_url(self):
+        return reverse_lazy(f'{self.app_name}:comment_delete',
+                            kwargs={'post_id': self.post.id, 'comment_id': self.id})
+
+    @property
+    def post_detail_url(self):
+        return reverse_lazy(f'{self.app_name}:detail', args=[self.post.id])
+
+
+class Post(PostInfo, models.Model):
+    CATEGORY_CHOICES = [
+        (1, '공지'),
+    ]
+
+    objects = models.Manager()
+
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="사용자 ID",
+        db_column="user_id", related_name='study_user')
+    category = models.IntegerField(
+        "카테고리", choices=CATEGORY_CHOICES, default=1)
+    title = models.CharField("제목", max_length=50)
+    content = RichTextUploadingField()
+    hit = models.IntegerField("조회수", default=1)
+    created_at = models.DateTimeField("작성일", auto_now_add=True)
+    modified_at = models.DateTimeField("수정일", auto_now=True)
+    top_fixed = models.BooleanField("상단 고정", default=False)
+    is_hidden = models.BooleanField("비밀글", default=False)
+
+    class Meta:
+        ordering = ["-id"]
+
+    def __str__(self):
+        return self.title
+
+
+class Comment(CommentInfo, models.Model):
+    objects = models.Manager()
+
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="사용자 ID",
+        db_column="user_id", related_name="study_user_comments")
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, verbose_name="게시글",
+        db_column="post_id", related_name="study_post_comments")
+    content = models.TextField("내용")
+    created_at = models.DateTimeField("작성일", auto_now_add=True)
+    modified_at = models.DateTimeField("수정일", auto_now=True)
+
+    class Meta:
+        ordering = ["-id"]

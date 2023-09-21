@@ -41,7 +41,6 @@ class CommentViewMixIn:
 
     # Icon and color
     base_icon = constants.icon.MENU_ICON_SET[app_name]
-    base_color = constants.color.COLOR_SET[app_name]
 
     @property
     def post_id(self) -> int: return self.kwargs.get('post_id')
@@ -76,7 +75,6 @@ class CommentViewMixIn:
             'type': self.view_type,
             'title': self.title,
             'icon': self.base_icon,
-            'color': self.base_color,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
             'comment_create_url': self.comment_create_url,

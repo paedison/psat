@@ -18,7 +18,8 @@ MENU_ICON_SET = {
     'login': '<i class="fa-solid fa-sign-in-alt fa-fw"></i>',
     'logout': '<i class="fa-solid fa-sign-out-alt fa-fw"></i>',
     'search': '<i class="fa-solid fa-magnifying-glass fa-fw"></i>',
-    'tag': '<i class="fa-solid fa-tag fa-fw"></i>'
+    'tag': '<i class="fa-solid fa-tag fa-fw"></i>',
+    'study': '<i class="fa-solid fa-tag fa-fw"></i>'
 }
 
 PSAT_ICON_SET = {

@@ -6,7 +6,7 @@ from taggit.models import Tag
 from taggit_templatetags2.templatetags.taggit_templatetags2_tags import get_weight_fun
 from vanilla import DetailView, TemplateView, CreateView, DeleteView, UpdateView
 
-from common.constants import icon, color
+from common import constants
 from ..forms import ProblemTagForm
 from ..models import ProblemTag, Problem, Exam
 
@@ -160,8 +160,7 @@ class ProblemTagCloudView(TagSettingMixIn, TemplateView):
             # 'sub': self.url['sub'],
             # 'sub_code': self.url['sub_code'],
             # 'pagination_url': self.pagination_url,
-            'icon': icon.MENU_ICON_SET['tag'],
-            'color': color.COLOR_SET['tag'],
+            'icon': constants.icon.MENU_ICON_SET['tag'],
         }
 
     @property

@@ -4,7 +4,12 @@
 {% load partials %}
 {% load slippers %}
 
-{% fragment as search_icon %}{{ PSAT_ICON_SET.search|safe }}{% endfragment %}
+{% fragment as search_icon %}<i class="fa-solid fa-magnifying-glass fa-fw"></i>{% endfragment %}
+{% fragment as admin_icon %}<i class="fa-solid fa-crown fa-fw"></i>{% endfragment %}
+{% fragment as problem_icon %}<i class="fa-solid fa-file-lines fa-fw"></i>{% endfragment %}
+{% fragment as like_icon %}<i class="fa-solid fa-heart fa-fw"></i>{% endfragment %}
+{% fragment as rate_icon %}<i class="fa-solid fa-star fa-fw"></i>{% endfragment %}
+{% fragment as answer_icon %}<i class="fa-solid fa-circle-check fa-fw"></i>{% endfragment %}
 {% fragment as divider %}<li><hr class="dropdown-divider"></li>{% endfragment %}
 
 <!-- ======= Main Header ======= -->
@@ -19,7 +24,7 @@
                    title="{% trans 'Enter search keyword' %}">
             <button type="submit" title="Search" hx-swap="innerHtml swap:0.5s"
                     hx-post="{% url 'psat:list' 'search' %}" hx-target="#main">
-                {{ search_icon }}
+                {{ search_icon|safe }}
             </button>
         </form>
     </div>
@@ -33,13 +38,13 @@
                 {% if user.is_admin %}
                     <li class="nav-item dropdown no-arrow">
                         <a class="nav-link px-1" href="/admin/" target="#admin">
-                            {{ MENU_ICON_SET.admin|safe }}</a>
+                            {{ admin_icon|safe }}</a>
                     </li>
                 {% endif %}
-                {% header_icon_link url='/psat/' icon=MENU_ICON_SET.problem|safe %}
-                {% header_icon_link url='/psat/like/' icon=MENU_ICON_SET.like|safe %}
-                {% header_icon_link url='/psat/rate/' icon=MENU_ICON_SET.rate|safe %}
-                {% header_icon_link url='/psat/answer/' icon=MENU_ICON_SET.answer|safe %}
+                {% header_icon_link url='/psat/' icon=problem_icon|safe %}
+                {% header_icon_link url='/psat/like/' icon=like_icon|safe %}
+                {% header_icon_link url='/psat/rate/' icon=rate_icon|safe %}
+                {% header_icon_link url='/psat/answer/' icon=answer_icon|safe %}
                 <div class="topbar-divider"></div>
             {% endif %}
 
@@ -86,14 +91,19 @@
 {% endpartial %}
 
 
+{% fragment as dashboard_icon %}<i class="fa-solid fa-list fa-fw"></i>{% endfragment %}
+{% fragment as logout_icon %}<i class="fa-solid fa-sign-out-alt fa-fw"></i>{% endfragment %}
+{% fragment as login_icon %}<i class="fa-solid fa-sign-in-alt fa-fw"></i>{% endfragment %}
+{% fragment as signup_icon %}<i class="fa-solid fa-door-open fa-fw"></i>{% endfragment %}
+
 {% startpartial profile %}
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
         {% if user.is_authenticated %}
             <li>
                 <a class="dropdown-item d-flex align-items-center"
-                   hx-post="{{ MENU_URL_SET.dashboard }}" href=""
+                   hx-post="/dashboard/" href=""
                    hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    {{ MENU_ICON_SET.dashboard|safe }} <span>Dashboard</span>
+                    {{ dashboard_icon|safe }} <span>Dashboard</span>
                 </a>
             </li>
             {{ divider }}
@@ -102,19 +112,19 @@
                    hx-get="{% url 'account_logout_modal' %}"
                    hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
                    data-bs-toggle="modal" data-bs-target="#modalContainer">
-                    {{ MENU_ICON_SET.logout|safe }} <span>{% trans 'Logout' %}</span>
+                    {{ logout_icon|safe }} <span>{% trans 'Logout' %}</span>
                 </a>
             </li>
         {% else %}
             <li>
                 <a class="dropdown-item d-flex align-items-center" href="{% url 'account_login' %}">
-                    {{ MENU_ICON_SET.login|safe }} <span>{% trans 'Login' %}</span>
+                    {{ login_icon|safe }} <span>{% trans 'Login' %}</span>
                 </a>
             </li>
             {{ divider }}
             <li>
                 <a class="dropdown-item d-flex align-items-center" href="{% url 'account_signup' %}">
-                    {{ MENU_ICON_SET.signup|safe }} <span>{% trans 'Signup' %}</span>
+                    {{ signup_icon|safe }} <span>{% trans 'Signup' %}</span>
                 </a>
             </li>
         {% endif %}

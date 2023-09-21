@@ -19,12 +19,13 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"Model '{model_name}' not found."))
             return
 
-        with open(csv_file_path, 'r') as csv_file:
+        with open(csv_file_path, 'r', encoding='utf-8-sig') as csv_file:
             # Assuming the first row contains field names
             field_names = csv_file.readline().strip().split(',')
             for row in csv_file:
                 data = row.strip().split(',')
-                instance = model(chapter=data[0], question_num=data[1], problem_id=data[2])
-                # Create an instance of your model using the CSV data
-                # instance = model(**dict(zip(field_names, data)))
+                if model_name == 'question':
+                    instance = model(chapter_id=data[0], number=data[1], problem_id=data[2])
+                else:
+                    instance = model(**dict(zip(field_names, data)))
                 instance.save()

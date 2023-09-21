@@ -7,41 +7,22 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% block main %}{% partial main %}{% endblock %}
+{% block main %}{% partial list_main %}{% endblock %}
 
 
-{% startpartial main %}
-    <section class="htmx-fade-in htmx-fade-out">
-        {{ info|json_script:'info' }}
-        <div class="pagetitle my-2">
-            <h1>
-                {{ info.icon|safe }}
-                {{ info.title }}
-            </h1>
-        </div><!-- Page Title End -->
-        <section class="section htmx-fade-out">
-        {% #content_row class3='p-4' %}
-            <nav>
-                <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                    {% #nav_tab id='0' %}
-                        {{ PSAT_ICON_SET.all|safe }} 전체
-                    {% /nav_tab %}
-                </div>
-            </nav><!-- Navigation End -->
-            <div class="tab-content" id="nav-tabContent">
-                {% #nav_content id='0' %}
-                    {% partial content %}
-                {% /nav_content id='0' %}<!-- All Subject Tab End -->
-            </div>
-        {% /content_row %}
-        </section>
-    </section><!-- Main Content End -->
+{% startpartial list_main %}
+    {{ info|json_script:'info' }}
+    <div class="pagetitle my-2">
+        <h1>{{ info.icon|safe }} {{ info.title }}</h1>
+    </div><!-- Page Title End -->
+    {% partial content %}
 {% endpartial %}
 
 
 {% startpartial content %}
-<section class="htmx-fade-in htmx-fade-out">
-        {{ info|json_script:'info' }}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="this" hx-swap="outerHTML swap:0.25s">
+    {% #content_row class3='p-4' %}
         <div class="table-responsive">
             <table class="table small">
                 <thead>
@@ -80,7 +61,8 @@
                 </tbody>
             </table>
         </div>
-        {% include 'psat/snippets/old/list_footer.html' %}
+        {% partial pagination %}
+    {% /content_row %}
     </section>
 {% endpartial %}
 
@@ -103,4 +85,43 @@
         </a>
     {% elif target.status == 'N/A' %}
     {% endif %}
+{% endpartial %}
+
+
+{% startpartial pagination_li %}
+    <li {% if status == 'active' %}aria-current="page"{% endif %}
+        class="page-item {{ status }}">
+        <a class="page-link" href=""
+           {% if status == 'disabled' %}tabindex="-1" aria-disabled="true"
+           {% else %}hx-get="{{ pagination_url }}?page={{ page_num }}"{% endif %}>
+            {% if chevron %}<i class="fa-solid fa-chevron-{{ chevron }}"></i>
+            {% else %}{{ anchor_text }}{% endif %}
+        </a>
+    </li>
+{% endpartial %}
+
+{% startpartial pagination %}
+    {% #pagination_nav %}
+        {% if page_obj.has_previous %}
+            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+                {% partial pagination_li %}
+            {% endwith %}
+        {% endif %}
+        {% for number in page_range %}
+            {% with page_num=number anchor_text=number %}
+                {% if number == page_obj.number %}
+                    {% with status='active' %}{% partial pagination_li %}{% endwith %}
+                {% elif number == page_obj.paginator.ELLIPSIS %}
+                    {% with status='disabled' %}{% partial pagination_li %}{% endwith %}
+                {% else %}
+                    {% partial pagination_li %}
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            {% with page_num=page_obj.number|add:1 chevron='right' %}
+                {% partial pagination_li %}
+            {% endwith %}
+        {% endif %}
+    {% /pagination_nav %}
 {% endpartial %}

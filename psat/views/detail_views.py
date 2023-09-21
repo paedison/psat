@@ -6,7 +6,6 @@ from .list_views import get_evaluation_info
 from ..models import Problem, Evaluation, ProblemMemo, ProblemTag
 
 menu_icon_set = constants.icon.MENU_ICON_SET
-color_set = constants.color.COLOR_SET
 
 
 class PSATDetailInfoMixIn:
@@ -105,7 +104,6 @@ class PSATDetailInfoMixIn:
             'title': self.title,
             'current_url': self.get_reverse_lazy(self.problem_id),
             'icon': menu_icon_set[self.view_type],
-            'color': color_set[self.view_type],
             'problem_id': self.problem_id,
         }
 

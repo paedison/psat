@@ -1,1 +1,1 @@
-from . import color, icon, psat, urls
+from . import icon
