@@ -1,6 +1,29 @@
 {% load static %}
 {% load psat_filter %}
 {% load partials %}
+{% load slippers %}
+
+{% fragment as button_color %}
+    {% if info.view_type == 'problem' %}btn-primary
+    {% elif info.view_type == 'like' %}btn-danger
+    {% elif info.view_type == 'rate' %}btn-warning
+    {% elif info.view_type == 'answer' %}btn-success{% endif %}
+{% endfragment %}
+
+<a id="problemChoiceLink" href="#" role="button"
+   class="btn btn-circle {{ button_color }} dropdown-toggle"
+   data-bs-toggle="dropdown" aria-expanded="false">
+    {{ PSAT_ICON_SET.list|safe }}
+</a>
+<div class="dropdown-menu" aria-labelledby="problemChoiceLink">
+    <div class="dropdown" role="option">
+        {% if info.type == 'problemDetail' %}
+            {% partial problem_filter %}
+        {% else %}
+            {% partial other_filter %}
+        {% endif %}
+    </div>
+</div>
 
 {% startpartial problem_filter %}
     <div class="container p-0" style="min-width: 300px;">
@@ -67,23 +90,3 @@
         {% endfor %}
     </div>
 {% endpartial %}
-
-<a id="problemChoiceLink" href="#" role="button"
-   class="btn btn-circle
-   {% if info.view_type == 'problem' %}btn-primary
-   {% elif info.view_type == 'like' %}btn-danger
-   {% elif info.view_type == 'rate' %}btn-warning
-   {% elif info.view_type == 'answer' %}btn-success{% endif %}
-   dropdown-toggle"
-   data-bs-toggle="dropdown" aria-expanded="false">
-    {{ PSAT_ICON_SET.list|safe }}
-</a>
-<div class="dropdown-menu" aria-labelledby="problemChoiceLink">
-    <div class="dropdown" role="option">
-        {% if info.type == 'problemDetail' %}
-            {% partial problem_filter %}
-        {% else %}
-            {% partial other_filter %}
-        {% endif %}
-    </div>
-</div>
