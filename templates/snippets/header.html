@@ -12,6 +12,11 @@
 {% fragment as answer_icon %}<i class="fa-solid fa-circle-check fa-fw"></i>{% endfragment %}
 {% fragment as divider %}<li><hr class="dropdown-divider"></li>{% endfragment %}
 
+{% fragment as dashboard_icon %}<i class="fa-solid fa-list fa-fw"></i>{% endfragment %}
+{% fragment as logout_icon %}<i class="fa-solid fa-sign-out-alt fa-fw"></i>{% endfragment %}
+{% fragment as login_icon %}<i class="fa-solid fa-sign-in-alt fa-fw"></i>{% endfragment %}
+{% fragment as signup_icon %}<i class="fa-solid fa-door-open fa-fw"></i>{% endfragment %}
+
 <!-- ======= Main Header ======= -->
 <header id="header" class="header fixed-top d-flex align-items-center">
     {% partial logo %}
@@ -90,11 +95,6 @@
     </li>
 {% endpartial %}
 
-
-{% fragment as dashboard_icon %}<i class="fa-solid fa-list fa-fw"></i>{% endfragment %}
-{% fragment as logout_icon %}<i class="fa-solid fa-sign-out-alt fa-fw"></i>{% endfragment %}
-{% fragment as login_icon %}<i class="fa-solid fa-sign-in-alt fa-fw"></i>{% endfragment %}
-{% fragment as signup_icon %}<i class="fa-solid fa-door-open fa-fw"></i>{% endfragment %}
 
 {% startpartial profile %}
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">

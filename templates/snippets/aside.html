@@ -63,7 +63,7 @@
                 </a>
             </li><!-- Schedule Nav End -->
 
-            {% if user.is_admin %}
+            {% if user.is_admin or user.is_staff %}
                 <li class="nav-item">
                     <a id="scoreList" hx-post="{% url 'score:list' %}" class="nav-link collapsed"
                        href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
