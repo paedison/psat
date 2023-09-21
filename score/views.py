@@ -4,12 +4,10 @@ from django.db.models import Max
 from django.shortcuts import render, redirect
 
 from . import models as score_models
-from common import constants
 from psat import models as psat_models
 from .forms import TemporaryAnswerForm
 
 
-score_icon = constants.icon.MENU_ICON_SET['answer']
 exam_list = [
         {'year': 2023, 'ex': '행시', 'exam2': '5급공채/행정고시'},
         {'year': 2023, 'ex': '칠급', 'exam2': '7급공채'},
@@ -159,7 +157,7 @@ def score_list(request) -> render:
     if request.method == 'POST':
         template_name = ScoreTemplate.list_main
     else:
-        template_name = ScoreTemplate.list_content if request.htmx else ScoreTemplate.list_base
+        template_name = ScoreTemplate.list_main if request.htmx else ScoreTemplate.list_base
 
     # Get the temporary and confirmed answers list
     target_answer = TargetAnswer(request)  # Get TargetAnswer class instance
@@ -193,14 +191,17 @@ def score_list(request) -> render:
         exam_jaryo = exams.filter(year=obj['year'], ex=obj['ex'], sub='자료').first()
         exam_sanghwang = exams.filter(year=obj['year'], ex=obj['ex'], sub='상황').first()
         obj['eoneo'] = {
+            'sub': '언어',
             'exam_id': exam_eoneo.id if exam_eoneo else None,
             'status': get_status(exam_eoneo),
         }
         obj['jaryo'] = {
+            'sub': '자료',
             'exam_id': exam_jaryo.id if exam_jaryo else None,
             'status': get_status(exam_jaryo),
         }
         obj['sanghwang'] = {
+            'sub': '상황',
             'exam_id': exam_sanghwang.id if exam_sanghwang else None,
             'status': get_status(exam_sanghwang),
         }
@@ -209,8 +210,7 @@ def score_list(request) -> render:
     info = {
         'menu': 'score',
         'title': 'Score',
-        'icon': '<i class="fa-solid fa-circle-check"></i>',
-        'color': 'primary',
+        'icon': '<i class="fa-solid fa-circle-check fa-fw"></i>',
     }
     context = {
         'info': info,
@@ -245,7 +245,7 @@ def score_detail(request, exam_id: int) -> render:
         'menu': 'score',
         'title': f'{exam.full_title} 답안 제출',
         'exam_id': exam_id,
-        'icon': score_icon,
+        'icon': '<i class="fa-solid fa-circle-check fa-fw"></i>',
     }
     context = {
         'info': info,
@@ -321,7 +321,7 @@ def score_confirmed(request, exam_id: int):
             'menu': 'score',
             'title': f'{exam.full_title} 성적 확인',
             'exam_id': exam_id,
-            'icon': score_icon,
+            'icon': '<i class="fa-solid fa-circle-check fa-fw"></i>',
         }
         context = {
             'info': info,

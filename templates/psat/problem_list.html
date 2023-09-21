@@ -13,7 +13,9 @@
 {% startpartial list_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
-        <h1>{{ icon|safe }} {{ title }}</h1>
+        <h1>{{ icon|safe }} {{ title }}
+            <span class="fs-6 text-bg-primary">{{ sub_title }}</span>
+        </h1>
     </div><!-- Page Title End -->
     {% partial content %}
 {% endpartial %}
@@ -21,7 +23,8 @@
 
 {% startpartial content %}
     <section class="section htmx-fade-in htmx-fade-out"
-             hx-target="this" hx-swap="outerHTML swap:0.25s">
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+{#             hx-target="this" hx-swap="outerHTML swap:0.25s">#}
     {% #content_row class3='p-4' %}
         <div class="d-flex flex-wrap">
             <div class="dropdown py-2 me-auto">

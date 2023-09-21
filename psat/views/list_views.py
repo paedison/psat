@@ -80,7 +80,8 @@ class ListViewSetting:
             return content if method == 'GET' else main
         else:
             if method == 'GET':
-                return content if self.request.htmx else base
+                return main if self.request.htmx else base
+                # return content if self.request.htmx else base
             else:
                 return main
 
@@ -194,6 +195,34 @@ class ListViewSetting:
         }
 
     @property
+    def sub_title(self):
+        exam_list = {
+            '행시': '5급공채/행정고시',
+            '칠급': '7급공채',
+            '견습': '견습',
+            '민경': '민간경력',
+            '외시': '외교원/외무고시',
+            '입시': '입법고시',
+        }
+        subject_list = {
+            '언어': '언어논리',
+            '자료': '자료해석',
+            '상황': '상황판단',
+        }
+        title_parts = []
+        sub_title = ''
+        if self.view_type == 'problem':
+            if self.year or self.ex or self.sub:
+                if self.year != '':
+                    title_parts.append(f'{self.year}년')
+                if self.ex != '':
+                    title_parts.append(f'"{exam_list[self.ex]}"')
+                if self.sub != '':
+                    title_parts.append(subject_list[self.sub])
+                sub_title = f'[{" ".join(title_parts)}]'
+        return sub_title
+
+    @property
     def context(self) -> dict:
         """ Get the context data. """
         title = {
@@ -206,6 +235,7 @@ class ListViewSetting:
         return {
             'info': self.info,
             'title': title[self.view_type],  # Different in dashboard views
+            'sub_title': self.sub_title,  # Different in dashboard views
             'icon': menu_icon_set[self.view_type],  # Different in dashboard views
             'base_url': self.base_url,
             'pagination_url': self.pagination_url,

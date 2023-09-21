@@ -21,7 +21,8 @@
 
 {% startpartial content %}
     <section class="section htmx-fade-in htmx-fade-out"
-             hx-target="this" hx-swap="outerHTML swap:0.25s">
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+{#             hx-target="this" hx-swap="outerHTML swap:0.25s">#}
     {% #content_row class3='p-4' %}
         <div class="table-responsive">
             <table class="table small">
@@ -44,8 +45,20 @@
                 {% if page_obj %}
                     {% for obj in page_obj %}
                         <tr class="text-center">
-                            <td class="text-nowrap p-2 col-1">{{ obj.year }}년</td>
-                            <td class="text-nowrap p-2 col-1">{{ obj.exam2 }}</td>
+                            <td class="text-nowrap p-2 col-1">
+                                <a href="" hx-push-url="{% url 'psat:base' %}" hx-target="#main"
+                                   hx-get="{% url 'psat:base' %}?year={{ obj.year }}"
+                                   hx-swap="innerHTML swap:0.25s">
+                                    {{ obj.year }}년
+                                </a>
+                            </td>
+                            <td class="text-nowrap p-2 col-1">
+                                <a href="" hx-push-url="{% url 'psat:base' %}" hx-target="#main"
+                                   hx-get="{% url 'psat:base' %}?year={{ obj.year }}&ex={{ obj.ex }}"
+                                   hx-swap="innerHTML swap:0.25s">
+                                    {{ obj.exam2 }}
+                                </a>
+                            </td>
                             <td class="text-nowrap p-2 col-1">
                                 {% with target=obj.eoneo %}{% partial process_badge %}{% endwith %}
                             </td>
@@ -85,6 +98,11 @@
         </a>
     {% elif target.status == 'N/A' %}
     {% endif %}
+    <a class="badge rounded-pill text-bg-secondary" href="" hx-swap="innerHTML swap:0.25s"
+       hx-get="{% url 'psat:base' %}?year={{ obj.year }}&ex={{ obj.ex }}&sub={{ target.sub }}"
+       hx-target="#main" hx-push-url="{% url 'psat:base' %}">
+        문제 보기
+    </a>
 {% endpartial %}
 
 
