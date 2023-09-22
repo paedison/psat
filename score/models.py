@@ -6,7 +6,7 @@ from psat.models import Problem
 
 class TemporaryAnswer(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.SET_DEFAULT, verbose_name="사용자 ID", default=1)
+        User, on_delete=models.CASCADE, verbose_name="사용자 ID")
     problem = models.ForeignKey(
         Problem, on_delete=models.CASCADE,
         related_name='temporary_answers', verbose_name="문제 ID")

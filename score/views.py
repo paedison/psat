@@ -265,7 +265,7 @@ def score_submit(request, problem_id: int) -> render:
         temporary_ans = target_answer.temporary_ans  # Get the one TemporaryAnswer object
         if temporary_ans is None:
             form = TemporaryAnswerForm(request.POST)  # Get the submitted form
-            form.user = request.user.id
+            form.user = request.user
             if form.is_valid():
                 template_name = ScoreTemplate.scored_form  # Get template name
                 scored = form.save()
