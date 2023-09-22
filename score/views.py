@@ -279,8 +279,7 @@ def score_submit(request, problem_id: int) -> render:
             temporary_ans.save()
             scored = temporary_ans
             context = {'scored': scored}  # Get context data
-    # return render(request, template_name, context)
-    return render(request, template_name, '')
+    return render(request, template_name, context)
 
 
 def score_confirmed(request, exam_id: int):

@@ -62,11 +62,12 @@
         <div class="d-flex justify-content-center align-content-center">
             <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
                 문 {{ problem.number|add_0 }}.</p>
-            <div class="d-flex justify-content-center align-content-center me-3" hx-target="this"
+            <input id="p{{ problem.id }}" type="text" name="problem"
+                   value="{{ problem.id }}" aria-label="Problem ID" hidden/>
+            <div id="p{{ problem.id }}_answer" class="d-flex justify-content-center align-content-center me-3"
                  hx-post="{% url 'score:submit' problem.id %}" hx-swap="innerHTML"
-                 hx-include="input[name='answer']:checked input[name='problem']" hx-trigger="change">
-                <input id="p{{ target_problem.id }}" type="text" name="problem"
-                       value="{{ problem.id }}" aria-label="Problem ID" hidden/>
+                 hx-include="#p{{ problem.id }}_answer>input[name='answer']:checked"
+                 hx-include="#p{{ problem.id }}" hx-trigger="change">
                 {% partial initial_form %}
             </div>
         </div>
@@ -96,8 +97,7 @@
     <input id="p{{ target_problem.id }}_answer{{ i }}" type="radio"
            class="btn-check" name="answer" value="{{ i }}"/>
     <label class="btn btn-circle btn-sm fs-6 mx-1 my-2
-        {% if i|add:0 == target_answer %}
-           {% if target_answer == target_problem.answer %}btn-success{% else %}btn-danger{% endif %}
-        {% else %} btn-outline-secondary{% endif %}"
+           {% if i|add:0 == target_answer %}btn-secondary
+           {% else %} btn-outline-secondary{% endif %}"
            for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
 {% endpartial %}
