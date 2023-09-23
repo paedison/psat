@@ -58,14 +58,18 @@ function initialMenu(target) {
 // When clicked the logo
 $(document).on('click', '.logo', function() {
     initialMenu($(this).data('target'));
-    $('body').removeClass('toggle-sidebar');
+    if ($(window).width() < 1200) {
+        $('body').removeClass('toggle-sidebar');
+    }
 });
 
 // When clicked the main menu [Notice, Dashboard, PSAT, Schedule, Score]
 $(document).on('click', '#sidebar-nav .nav-link', function() {
     initialMenu(this);
     if ($(this).data('bsTarget') !== '#psat-nav') {
-        $('body').toggleClass('toggle-sidebar');
+        if ($(window).width() < 1200) {
+            $('body').removeClass('toggle-sidebar');
+        }
     }
 });
 
@@ -78,7 +82,9 @@ $(document).on('click', '.aside-nav-icon', function() {
     $(this).closest('li').children().find('i').removeClass('fa-solid').addClass('fa-regular');
 
     $(this).addClass('active').find('i').removeClass('fa-regular').addClass('fa-solid');
-    $('body').toggleClass('toggle-sidebar');
+    if ($(window).width() < 1200) {
+        $('body').removeClass('toggle-sidebar');
+    }
 });
 
 
