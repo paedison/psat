@@ -1,22 +1,14 @@
 from django.urls import path
 
-from .views import detail_views, memo_views, tag_views, list_views
+from .views import list_views, detail_views, memo_views, tag_views
 
 app_name = 'psat'
 
 urlpatterns = [
-    # List Views
-    # view_type: problem, like, rate, answer, search
+    # List Views [view_type: problem, like, rate, answer, search]
     path('', list_views.base_view, name='base'),
     path('<str:view_type>/', list_views.base_view, name='list'),
 
-    # path('', new_list_views.problem, name='base'),
-    # path('problem/', new_list_views.problem, name='problem_list'),
-    # path('like/', new_list_views.like, name='like_list'),
-    # path('rate/', new_list_views.rate, name='rate_list'),
-    # path('answer/', new_list_views.answer, name='answer_list'),
-    # path('search/', new_list_views.search, name='search_list'),
-    #
     # Detail Views
     path('detail/<int:problem_id>/', detail_views.problem, name='problem_detail'),
     path('like/detail/<int:problem_id>/', detail_views.like, name='like_detail'),

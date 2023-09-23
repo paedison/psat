@@ -1,13 +1,13 @@
 from django.urls import path
 
-from . import views
+from .views import list_views, detail_views, confirm_views
 
 app_name = 'score'
 
 urlpatterns = [
-    path('list/', views.score_list, name='list'),
-    path('detail/<int:exam_id>/', views.score_detail, name='detail'),
-    path('submit/<int:problem_id>/', views.score_submit, name='submit'),
-    path('modal/', views.score_modal, name='modal'),
-    path('confirmed/<int:exam_id>/', views.score_confirmed, name='confirmed'),
+    path('list/', list_views.base, name='list'),
+    path('detail/<int:exam_id>/', detail_views.detail, name='detail'),
+    path('submit/<int:problem_id>/', detail_views.submit, name='submit'),
+    path('modal/<int:exam_id>/', confirm_views.modal, name='modal'),
+    path('confirmed/<int:exam_id>/', confirm_views.confirmed, name='confirmed'),
 ]

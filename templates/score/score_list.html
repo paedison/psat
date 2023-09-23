@@ -5,7 +5,7 @@
 {% load partials %}
 {% load slippers %}
 
-{% block head_title %}{{ info.title }}{% endblock head_title %}
+{% block head_title %}{{ title }}{% endblock head_title %}
 
 {% block main %}{% partial list_main %}{% endblock %}
 
@@ -13,7 +13,7 @@
 {% startpartial list_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
-        <h1>{{ info.icon|safe }} {{ info.title }}</h1>
+        <h1>{{ icon|safe }} {{ title }}</h1>
     </div><!-- Page Title End -->
     {% partial content %}
 {% endpartial %}
@@ -22,7 +22,6 @@
 {% startpartial content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
-{#             hx-target="this" hx-swap="outerHTML swap:0.25s">#}
     {% #content_row class3='p-4' %}
         <div class="table-responsive">
             <table class="table small">

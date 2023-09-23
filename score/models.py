@@ -13,7 +13,6 @@ class TemporaryAnswer(models.Model):
     answer = models.IntegerField("제출 답안")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_confirmed = models.BooleanField("확정 여부", default=False)
 
 
 class ConfirmedAnswer(models.Model):
