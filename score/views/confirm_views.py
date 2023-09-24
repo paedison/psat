@@ -31,7 +31,7 @@ class ModalView(BaseMixin, TemplateView):
 
         if self.exam.problems.count() != temporary.count():
             context = self.get_context_data(
-                all_confirmed=False, message='모든 문제의 정답을<br/>제출해주세요.')
+                all_confirmed=False, message='모든 문제의 답안을<br/>제출해주세요.')
         else:
             for temp in temporary:
                 # Create new ConfirmedAnswer instance and delete TemporaryAnswer instance
@@ -40,7 +40,7 @@ class ModalView(BaseMixin, TemplateView):
                 temp.delete()
             context = self.get_context_data(
                 all_confirmed=True, exam_id=self.exam_id,
-                message='정답이 정상적으로<br/>제출되었습니다.')
+                message='답안이 정상적으로<br/>제출되었습니다.')
         return self.render_to_response(context)
 
 

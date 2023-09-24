@@ -1,0 +1,180 @@
+{% extends 'list.html' %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% block head_title %}{{ info.title }}{% endblock head_title %}
+
+{% block main %}{% partial result_main %}{% endblock %}
+
+{% startpartial result_main %}
+    {{ info|json_script:'info' }}
+    <div class="pagetitle my-2">
+        <h1>{{ icon|safe }} {{ title }}</h1>
+    </div><!-- Page Title End -->
+    {% partial content %}
+{% endpartial %}
+
+
+{% startpartial content %}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    {% #content_row class3='p-4' %}
+        <div class="col-12 d-flex align-items-center justify-content-between pb-2">
+            <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
+               hx-post="{% url 'score:list' %}" hx-target="#main"
+               hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
+                {{ BOARD_ICON_SET.list|safe }}
+            </a>
+        </div>
+        <hr class="my-2">
+            <div class="small mb-3 text-secondary">
+                <div class="me-1">응시번호: {{ object.student_number }}</div>
+                <div class="me-1">이름: {{ object.student_name }}</div>
+                <div class="me-1">직렬: {{ object.department }}</div>
+            </div>
+        <div class="mb-4">
+            <div class="small mb-3 table-responsive">
+                {% with icon=PSAT_ICON_SET.eoneo subject='언어논리' results=eoneo answer_rates=total01_answer_list %}
+                    {% partial result_table %}
+                {% endwith %}
+                {% with icon=PSAT_ICON_SET.jaryo subject='자료해석' results=jaryo answer_rates=total01_answer_list %}
+                    {% partial result_table %}
+                {% endwith %}
+                {% with icon=PSAT_ICON_SET.sanghwang subject='상황판단' results=sanghwang answer_rates=total01_answer_list %}
+                    {% partial result_table %}
+                {% endwith %}
+            </div>
+        </div>
+    {% /content_row %}
+    </section>
+{% endpartial %}
+
+
+{% startpartial result_table %}
+    <table class="table align-middle">
+        <tbody>
+            {% with loop_counter=10 loop_min=0 loop_max=10 %}
+                {% partial result_table_tr %}
+            {% endwith %}
+            {% with loop_counter=10 loop_min=10 loop_max=20 %}
+                {% partial result_table_tr %}
+            {% endwith %}
+            {% with loop_counter=10 loop_min=20 loop_max=30 %}
+                {% partial result_table_tr %}
+            {% endwith %}
+            {% with loop_counter=10 loop_min=30 loop_max=40 %}
+                {% partial result_table_tr %}
+            {% endwith %}
+        </tbody>
+    </table>
+{% endpartial %}
+
+
+{% startpartial result_table_tr %}
+    <tr class="text-center table-warning">
+        <td>
+            <h2 class="fw-bold fs-6 text-primary m-0 p-0">{{ icon|safe }} {{ subject }}</h2>
+        </td>
+        {% for _ in 'x'|ljust:loop_counter %}
+            <td class="text-nowrap fw-bold text-secondary">
+                문 {{ forloop.counter|add:loop_min }}
+            </td>
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap">정답</td>
+        {% for result in results %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>
+                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                        {{ result.problem__answer }}</button>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap">제출 답안</td>
+        {% for result in results %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>
+                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                        btn-{% if result.correctness == 'O' %}success{% else %}danger{% endif %}">
+                        {{ result.answer }}</button>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{#    <tr class="text-center">#}
+{#        <td class="text-nowrap">정오</td>#}
+{#        {% for result in results %}#}
+{#            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}#}
+{#                <td>#}
+{#                    <span class="fw-bold fs-5 text-secondary">{{ result.correctness }}</span>#}
+{#                </td>#}
+{#            {% endif %}#}
+{#        {% endfor %}#}
+{#    </tr>#}
+    <tr class="text-center">
+        <td class="text-nowrap" >정답률(%)</td>
+        {% for answer_rate in answer_rates %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>{{ answer_rate|floatformat:0 }}</td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{% endpartial %}
+
+
+{% startpartial table_tr %}
+    <tr class="text-center table-warning">
+        <td class="text-nowrap fw-bold"></td>
+        {% for _ in 'x'|ljust:loop_counter %}
+            <td class="text-nowrap fw-bold text-secondary">{{ forloop.counter|add:loop_min }}</td>
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap">정답</td>
+        {% for result in results %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>
+                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                        {{ result.problem__answer }}</button>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap">제출 답안</td>
+        {% for result in results %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>
+                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                        btn-{% if result.correctness == 'O' %}success{% else %}danger{% endif %}">
+                        {{ result.answer }}</button>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap">정오</td>
+        {% for result in results %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>
+                    <span class="fw-bold fs-5 text-secondary">{{ result.correctness }}</span>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap" >정답률(%)</td>
+        {% for answer_rate in answer_rates %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>{{ answer_rate|floatformat:0 }}</td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{% endpartial %}

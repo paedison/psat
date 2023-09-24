@@ -34,6 +34,18 @@ def int2kor(value):  # Convert Integer to Korean Alphabet
     return result
 
 
+@register.filter()
+def round_number(content):
+    number_dict = {
+        '1': '①',
+        '2': '②',
+        '3': '③',
+        '4': '④',
+        '5': '⑤',
+    }
+    return number_dict[str(content)]
+
+
 @register.tag
 def lineless(parser, token):  # Delete Blank Lines
     nodelist = parser.parse(('endlineless',))

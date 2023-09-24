@@ -57,6 +57,22 @@
                                    hx-swap="innerHTML swap:0.25s">
                                     {{ obj.exam2 }}
                                 </a>
+                                {% if obj.completed %}
+                                    <a class="badge rounded-pill text-bg-warning" href=""
+                                       hx-push-url="true" hx-target="#main"
+                                       hx-get="{% url 'score:result' obj.year obj.ex %}"
+                                       hx-swap="innerHTML swap:0.25s">
+                                        성적 확인
+                                    </a>
+                                {% else %}
+                                    <a class="badge rounded-pill text-bg-warning" href=""
+                                            hx-target="#modalContainer" type="submit"
+                                            hx-get="{% url 'score:list_modal' %}"
+                                            hx-swap="innerHTML" hx-trigger="click"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        성적 확인
+                                    </a>
+                                {% endif %}
                             </td>
                             <td class="text-nowrap p-2 col-1">
                                 {% with target=obj.eoneo %}{% partial process_badge %}{% endwith %}

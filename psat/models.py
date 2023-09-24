@@ -254,6 +254,13 @@ class Exam(AddInfo, models.Model):
 
 
 class Problem(AddInfo, models.Model):
+    class Answers(models.IntegerChoices):
+        ANSWER1 = 1, '①'
+        ANSWER2 = 2, '②'
+        ANSWER3 = 3, '③'
+        ANSWER4 = 4, '④'
+        ANSWER5 = 5, '⑤'
+
     objects = models.Manager()
 
     id = models.AutoField(primary_key=True)
@@ -262,7 +269,7 @@ class Problem(AddInfo, models.Model):
         related_name='problems', db_column="exam_id")
     number = models.IntegerField()
     question = models.TextField()
-    answer = models.IntegerField()
+    answer = models.IntegerField(choices=Answers.choices)
 
     class Meta:
         ordering = ['-exam__year', 'id']

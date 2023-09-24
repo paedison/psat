@@ -1,6 +1,8 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
+from vanilla import TemplateView
 
+from common import constants
 from psat import models as psat_models
 from score import models as score_models
 
@@ -69,20 +71,32 @@ class ListView:
             exam_jaryo = self.exams.filter(year=obj['year'], ex=obj['ex'], sub='자료').first()
             exam_sanghwang = self.exams.filter(year=obj['year'], ex=obj['ex'], sub='상황').first()
             obj['eoneo'] = {
+                'icon': constants.icon.PSAT_ICON_SET.eoneo,
                 'sub': '언어',
                 'exam_id': exam_eoneo.id if exam_eoneo else None,
                 'status': self.get_status(exam_eoneo),
             }
             obj['jaryo'] = {
+                'icon': constants.icon.PSAT_ICON_SET.jaryo,
                 'sub': '자료',
                 'exam_id': exam_jaryo.id if exam_jaryo else None,
                 'status': self.get_status(exam_jaryo),
             }
             obj['sanghwang'] = {
+                'icon': constants.icon.PSAT_ICON_SET.sanghwang,
                 'sub': '상황',
                 'exam_id': exam_sanghwang.id if exam_sanghwang else None,
                 'status': self.get_status(exam_sanghwang),
             }
+
+            total_problems_count = psat_models.Problem.objects.filter(
+                exam__id__in=[exam_eoneo.id, exam_jaryo.id, exam_sanghwang.id]
+            ).count()
+            total_submitted_answers_count = score_models.ConfirmedAnswer.objects.filter(
+                problem__exam__id__in=[exam_eoneo.id, exam_jaryo.id, exam_sanghwang.id]
+            ).count()
+            if total_problems_count > 0:
+                obj['completed'] = total_problems_count == total_submitted_answers_count
 
         return page_obj, page_range
 
@@ -178,6 +192,19 @@ class ListView:
         ]
 
 
+class ModalView(TemplateView):
+    menu = 'score'
+    template_name = 'snippets/modal.html#score_confirmed'
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(
+            all_confirmed=False, message='모든 문제의 답안을<br/>제출해주세요.')
+        return self.render_to_response(context)
+
+
 def base(request, view_type='score'):
     list_view = ListView(request, view_type)
     return list_view.rendering()
+
+
+modal = ModalView.as_view()
