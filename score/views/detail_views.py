@@ -65,7 +65,7 @@ class DetailView:
             'info': self.info,
             'title': f'{self.exam.full_title} 답안 제출',
             'exam_id': self.exam_id,
-            'icon': '<i class="fa-solid fa-circle-check fa-fw"></i>',
+            'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
             'problems': self.problems,
         }
 

@@ -121,7 +121,7 @@ class ListView:
         return {
             'info': self.info,
             'title': 'Score',
-            'icon': '<i class="fa-solid fa-circle-check fa-fw"></i>',
+            'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
             'exams': self.exams,
             'page_obj': self.page_obj,
             'page_range': self.page_range,

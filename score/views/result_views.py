@@ -1,5 +1,4 @@
 from django.db.models import When, Value, CharField, F, Case, ExpressionWrapper, FloatField
-from django.shortcuts import render
 from vanilla import TemplateView
 
 from psat import models as psat_models
@@ -37,67 +36,49 @@ class ResultView(TemplateView):
         return psat_models.Exam.objects.filter(
             year=self.year, ex=self.ex).values_list('id', flat=True)
 
-    def get_result(self, sub: str) -> dict:
+    def get_reference(self, sub: str) -> dict:
         return score_models.ConfirmedAnswer.objects.filter(
             user=self.request.user,
             problem__exam__id__in=self.exam_ids,
             problem__exam__sub=sub
         ).annotate(
-            correctness=Case(
+            result=Case(
                 When(problem__answer=F('answer'), then=Value('O')),
                 default=Value('X'), output_field=CharField()
             )
-        ).values('problem__number', 'problem__answer', 'answer', 'correctness')
+        ).values('problem__number', 'problem__answer', 'answer', 'result')
 
     def get_answer_rates(self, sub: str) -> dict:
-        annotation_expressions = {
-            f'answer_{i}_rate': ExpressionWrapper(
-                F(f'count_{i}') / F('count_total'),
-                output_field=FloatField()
-            ) for i in range(1, 6)  # Generate expressions for answers 1 to 5
-        }
-        fields_to_select = ['problem_id', *annotation_expressions.keys()]
-
-        queryset = score_models.AnswerCount.objects.filter(
+        return score_models.AnswerCount.objects.filter(
             problem__exam__id__in=self.exam_ids,
             problem__exam__sub=sub
-        ).annotate(**annotation_expressions)
+        ).order_by('problem__id').annotate(
+            correct=Case(
+                When(problem__answer=Value(1), then=ExpressionWrapper(
+                    F(f'count_1') * 100 / F('count_total'), output_field=FloatField())),
+                When(problem__answer=Value(2), then=ExpressionWrapper(
+                    F(f'count_2') * 100 / F('count_total'), output_field=FloatField())),
+                When(problem__answer=Value(3), then=ExpressionWrapper(
+                    F(f'count_3') * 100 / F('count_total'), output_field=FloatField())),
+                When(problem__answer=Value(4), then=ExpressionWrapper(
+                    F(f'count_4') * 100 / F('count_total'), output_field=FloatField())),
+                When(problem__answer=Value(5), then=ExpressionWrapper(
+                    F(f'count_5') * 100 / F('count_total'), output_field=FloatField())),
+                default=0.0)
+        ).values('problem__number', 'correct')
 
-        result = queryset.values(*fields_to_select)
-        result_list = list(result)
-
-        return result_list
-
-    # def get_answer_rates(self, sub: str) -> dict:
-    #     return score_models.AnswerCount.objects.filter(
-    #         problem__exam__id__in=self.exam_ids,
-    #         problem__exam__sub=sub
-    #     ).annotate(
-    #         answer_1_rate=ExpressionWrapper(
-    #             F('count_1') / F('count_total'), output_field=FloatField()),
-    #         answer_2_rate=ExpressionWrapper(
-    #             F('count_2') / F('count_total'), output_field=FloatField()),
-    #         answer_3_rate=ExpressionWrapper(
-    #             F('count_3') / F('count_total'), output_field=FloatField()),
-    #         answer_4_rate=ExpressionWrapper(
-    #             F('count_4') / F('count_total'), output_field=FloatField()),
-    #         answer_5_rate=ExpressionWrapper(
-    #             F('count_5') / F('count_total'), output_field=FloatField()),
-    #     ).values(
-    #         'problem_id', 'answer_1_rate', 'answer_2_rate', 'answer_3_rate',
-    #         'answer_4_rate', 'answer_5_rate')
-    #
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         update_list = {
             'title': self.title,
             'year': self.year,
             'ex': self.ex,
-            'eoneo': self.get_result('언어'),
+            'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
+            'eoneo': self.get_reference('언어'),
             'eoneo_rates': self.get_answer_rates('언어'),
-            'jaryo': self.get_result('자료'),
+            'jaryo': self.get_reference('자료'),
             'jaryo_rates': self.get_answer_rates('자료'),
-            'sanghwang': self.get_result('상황'),
+            'sanghwang': self.get_reference('상황'),
             'sanghwang_rates': self.get_answer_rates('상황'),
         }
         print(update_list['eoneo_rates'])

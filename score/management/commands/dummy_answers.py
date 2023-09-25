@@ -19,8 +19,10 @@ class Command(BaseCommand):
         problem_ids = psat_models.Problem.objects.filter(
             exam__year=exam_year).order_by('id').values_list(
             'id', flat=True).distinct()
+        last = score_models.DummyAnswer.objects.last()
+        last_user = 0 if last is None else last.user
         user_answers = []
-        for user in range(1, num_users + 1):
+        for user in range(last_user+1, last_user+num_users+1):
             for problem_id in problem_ids:
                 answer = random.randint(1, 5)
                 user_answers.append(

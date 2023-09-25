@@ -6,7 +6,7 @@
 {% load partials %}
 {% load slippers %}
 
-{% block head_title %}{{ info.title }}{% endblock head_title %}
+{% block head_title %}{{ title }}{% endblock head_title %}
 
 {% block main %}{% partial result_main %}{% endblock %}
 
@@ -37,51 +37,79 @@
                 <div class="me-1">직렬: {{ object.department }}</div>
             </div>
         <div class="mb-4">
-            <div class="small mb-3 table-responsive">
-                {% with icon=PSAT_ICON_SET.eoneo subject='언어논리' results=eoneo answer_rates=eoneo_rates %}
-                    {% partial result_table %}
-                {% endwith %}
-                {% with icon=PSAT_ICON_SET.jaryo subject='자료해석' results=jaryo answer_rates=jaryo_rates %}
-                    {% partial result_table %}
-                {% endwith %}
-                {% with icon=PSAT_ICON_SET.sanghwang subject='상황판단' results=sanghwang answer_rates=sanghwang_rates %}
-                    {% partial result_table %}
-                {% endwith %}
-            </div>
+            {% partial reference %}
         </div>
     {% /content_row %}
     </section>
 {% endpartial %}
 
 
-{% startpartial result_table %}
-    <h4 class="fw-bold text-primary pt-3">{{ icon|safe }} {{ subject }}</h4>
-    <table class="table align-middle">
-        <tbody>
-            {% with loop_counter=10 loop_min=0 loop_max=10 %}
-                {% partial result_table_tr %}
+{% startpartial reference %}
+    <nav>
+        <div class="nav nav-tabs" id="navTab" role="tablist">
+            {% #nav_tab prefix='eoneo' id='0' %}
+                {{ PSAT_ICON_SET.eoneo|safe }} 언어
+            {% /nav_tab %}
+
+            {% #nav_tab prefix='jaryo' id='1' %}
+                {{ PSAT_ICON_SET.jaryo|safe }} 자료
+            {% /nav_tab %}
+
+            {% #nav_tab prefix='sanghwang' id='2' %}
+                {{ PSAT_ICON_SET.sanghwang|safe }} 상황
+            {% /nav_tab %}
+        </div>
+    </nav>
+    <div class="tab-content" id="navContent">
+        {% #nav_content prefix='eoneo' id='0' %}
+            {% with references=eoneo answer_rates=eoneo_rates %}
+                {% partial reference_table %}
             {% endwith %}
-            {% with loop_counter=10 loop_min=10 loop_max=20 %}
-                {% partial result_table_tr %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='jaryo' id='1' %}
+            {% with references=jaryo answer_rates=jaryo_rates %}
+                {% partial reference_table %}
             {% endwith %}
-            {% if ex == '칠급' %}
-                {% with loop_counter=5 loop_min=20 loop_max=25 %}
-                    {% partial result_table_tr %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='sanghwang' id='2' %}
+            {% with references=sanghwang answer_rates=sanghwang_rates %}
+                {% partial reference_table %}
+            {% endwith %}
+        {% /nav_content %}
+    </div>
+{% endpartial %}
+
+{% startpartial reference_table %}
+    <div class="small mb-3 table-responsive">
+        <table class="table align-middle">
+            <tbody>
+                {% with loop_counter=10 loop_min=0 loop_max=10 %}
+                    {% partial reference_table_tr %}
                 {% endwith %}
-            {% else %}
-                {% with loop_counter=10 loop_min=20 loop_max=30 %}
-                    {% partial result_table_tr %}
+                {% with loop_counter=10 loop_min=10 loop_max=20 %}
+                    {% partial reference_table_tr %}
                 {% endwith %}
-                {% with loop_counter=10 loop_min=30 loop_max=40 %}
-                    {% partial result_table_tr %}
-                {% endwith %}
-            {% endif %}
-        </tbody>
-    </table>
+                {% if ex == '칠급' %}
+                    {% with loop_counter=5 loop_min=20 loop_max=25 %}
+                        {% partial reference_table_tr %}
+                    {% endwith %}
+                {% else %}
+                    {% with loop_counter=10 loop_min=20 loop_max=30 %}
+                        {% partial reference_table_tr %}
+                    {% endwith %}
+                    {% with loop_counter=10 loop_min=30 loop_max=40 %}
+                        {% partial reference_table_tr %}
+                    {% endwith %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 {% endpartial %}
 
 
-{% startpartial result_table_tr %}
+{% startpartial reference_table_tr %}
     <tr class="text-center table-warning">
         <td></td>
         {% for _ in 'x'|ljust:loop_counter %}
@@ -92,84 +120,23 @@
     </tr>
     <tr class="text-center">
         <td class="text-nowrap">정답</td>
-        {% for result in results %}
+        {% for reference in references %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
                 <td>
                     <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                        {{ result.problem__answer }}</button>
+                        {{ reference.problem__answer }}</button>
                 </td>
             {% endif %}
         {% endfor %}
     </tr>
     <tr class="text-center">
         <td class="text-nowrap">제출 답안</td>
-        {% for result in results %}
+        {% for reference in references %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
                 <td>
                     <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
-                        btn-{% if result.correctness == 'O' %}success{% else %}danger{% endif %}">
-                        {{ result.answer }}</button>
-                </td>
-            {% endif %}
-        {% endfor %}
-    </tr>
-{#    <tr class="text-center">#}
-{#        <td class="text-nowrap">정오</td>#}
-{#        {% for result in results %}#}
-{#            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}#}
-{#                <td>#}
-{#                    <span class="fw-bold fs-5 text-secondary">{{ result.correctness }}</span>#}
-{#                </td>#}
-{#            {% endif %}#}
-{#        {% endfor %}#}
-{#    </tr>#}
-    <tr class="text-center">
-        <td class="text-nowrap" >정답률(%)</td>
-        {% for answer_rate in answer_rates %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
-                <td>{{ answer_rate|floatformat:0 }}</td>
-            {% endif %}
-        {% endfor %}
-    </tr>
-{% endpartial %}
-
-
-{% startpartial table_tr %}
-    <tr class="text-center table-warning">
-        <td class="text-nowrap fw-bold"></td>
-        {% for _ in 'x'|ljust:loop_counter %}
-            <td class="text-nowrap fw-bold text-secondary">{{ forloop.counter|add:loop_min }}</td>
-        {% endfor %}
-    </tr>
-    <tr class="text-center">
-        <td class="text-nowrap">정답</td>
-        {% for result in results %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
-                <td>
-                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                        {{ result.problem__answer }}</button>
-                </td>
-            {% endif %}
-        {% endfor %}
-    </tr>
-    <tr class="text-center">
-        <td class="text-nowrap">제출 답안</td>
-        {% for result in results %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
-                <td>
-                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
-                        btn-{% if result.correctness == 'O' %}success{% else %}danger{% endif %}">
-                        {{ result.answer }}</button>
-                </td>
-            {% endif %}
-        {% endfor %}
-    </tr>
-    <tr class="text-center">
-        <td class="text-nowrap">정오</td>
-        {% for result in results %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
-                <td>
-                    <span class="fw-bold fs-5 text-secondary">{{ result.correctness }}</span>
+                        btn-{% if reference.result == 'O' %}success{% else %}danger{% endif %}">
+                        {{ reference.answer }}</button>
                 </td>
             {% endif %}
         {% endfor %}
@@ -178,7 +145,11 @@
         <td class="text-nowrap" >정답률(%)</td>
         {% for answer_rate in answer_rates %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
-                <td>{{ answer_rate|floatformat:0 }}</td>
+                <td>
+                    <span data-number="{{ answer_rate.problem__number }}">
+                        {{ answer_rate.correct|floatformat:0 }}
+                    </span>
+                </td>
             {% endif %}
         {% endfor %}
     </tr>
