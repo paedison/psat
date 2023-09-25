@@ -38,13 +38,13 @@
             </div>
         <div class="mb-4">
             <div class="small mb-3 table-responsive">
-                {% with icon=PSAT_ICON_SET.eoneo subject='언어논리' results=eoneo answer_rates=total01_answer_list %}
+                {% with icon=PSAT_ICON_SET.eoneo subject='언어논리' results=eoneo answer_rates=eoneo_rates %}
                     {% partial result_table %}
                 {% endwith %}
-                {% with icon=PSAT_ICON_SET.jaryo subject='자료해석' results=jaryo answer_rates=total01_answer_list %}
+                {% with icon=PSAT_ICON_SET.jaryo subject='자료해석' results=jaryo answer_rates=jaryo_rates %}
                     {% partial result_table %}
                 {% endwith %}
-                {% with icon=PSAT_ICON_SET.sanghwang subject='상황판단' results=sanghwang answer_rates=total01_answer_list %}
+                {% with icon=PSAT_ICON_SET.sanghwang subject='상황판단' results=sanghwang answer_rates=sanghwang_rates %}
                     {% partial result_table %}
                 {% endwith %}
             </div>
@@ -55,6 +55,7 @@
 
 
 {% startpartial result_table %}
+    <h4 class="fw-bold text-primary pt-3">{{ icon|safe }} {{ subject }}</h4>
     <table class="table align-middle">
         <tbody>
             {% with loop_counter=10 loop_min=0 loop_max=10 %}
@@ -63,12 +64,18 @@
             {% with loop_counter=10 loop_min=10 loop_max=20 %}
                 {% partial result_table_tr %}
             {% endwith %}
-            {% with loop_counter=10 loop_min=20 loop_max=30 %}
-                {% partial result_table_tr %}
-            {% endwith %}
-            {% with loop_counter=10 loop_min=30 loop_max=40 %}
-                {% partial result_table_tr %}
-            {% endwith %}
+            {% if ex == '칠급' %}
+                {% with loop_counter=5 loop_min=20 loop_max=25 %}
+                    {% partial result_table_tr %}
+                {% endwith %}
+            {% else %}
+                {% with loop_counter=10 loop_min=20 loop_max=30 %}
+                    {% partial result_table_tr %}
+                {% endwith %}
+                {% with loop_counter=10 loop_min=30 loop_max=40 %}
+                    {% partial result_table_tr %}
+                {% endwith %}
+            {% endif %}
         </tbody>
     </table>
 {% endpartial %}
@@ -76,9 +83,7 @@
 
 {% startpartial result_table_tr %}
     <tr class="text-center table-warning">
-        <td>
-            <h2 class="fw-bold fs-6 text-primary m-0 p-0">{{ icon|safe }} {{ subject }}</h2>
-        </td>
+        <td></td>
         {% for _ in 'x'|ljust:loop_counter %}
             <td class="text-nowrap fw-bold text-secondary">
                 문 {{ forloop.counter|add:loop_min }}
