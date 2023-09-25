@@ -71,19 +71,19 @@ class ListView:
             exam_jaryo = self.exams.filter(year=obj['year'], ex=obj['ex'], sub='자료').first()
             exam_sanghwang = self.exams.filter(year=obj['year'], ex=obj['ex'], sub='상황').first()
             obj['eoneo'] = {
-                'icon': constants.icon.PSAT_ICON_SET.eoneo,
+                'icon': constants.icon.PSAT_ICON_SET['eoneo'],
                 'sub': '언어',
                 'exam_id': exam_eoneo.id if exam_eoneo else None,
                 'status': self.get_status(exam_eoneo),
             }
             obj['jaryo'] = {
-                'icon': constants.icon.PSAT_ICON_SET.jaryo,
+                'icon': constants.icon.PSAT_ICON_SET['jaryo'],
                 'sub': '자료',
                 'exam_id': exam_jaryo.id if exam_jaryo else None,
                 'status': self.get_status(exam_jaryo),
             }
             obj['sanghwang'] = {
-                'icon': constants.icon.PSAT_ICON_SET.sanghwang,
+                'icon': constants.icon.PSAT_ICON_SET['sanghwang'],
                 'sub': '상황',
                 'exam_id': exam_sanghwang.id if exam_sanghwang else None,
                 'status': self.get_status(exam_sanghwang),
