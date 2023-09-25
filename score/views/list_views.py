@@ -93,9 +93,9 @@ class ListView:
                 exam__id__in=[exam_eoneo.id, exam_jaryo.id, exam_sanghwang.id]
             ).count()
             total_submitted_answers_count = score_models.ConfirmedAnswer.objects.filter(
+                user=self.request.user,
                 problem__exam__id__in=[exam_eoneo.id, exam_jaryo.id, exam_sanghwang.id]
             ).count()
-            print(total_problems_count, total_submitted_answers_count)
             if total_problems_count > 0:
                 obj['completed'] = total_problems_count == total_submitted_answers_count
 
