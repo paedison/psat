@@ -1,29 +1,65 @@
 from django.db import models
 
 from common.models import User
-from psat.models import Problem
+from psat.models import Problem, Exam
+
+
+class Unit(models.Model):
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        ordering = ['id']
+        verbose_name = "모집단위"
+        verbose_name_plural = "모집단위"
+
+    def __str__(self):
+        return self.name
+
+
+class Department(models.Model):
+    name = models.CharField(max_length=128)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='departments')
+
+    class Meta:
+        ordering = ['id']
+        verbose_name = "직렬"
+        verbose_name_plural = "직렬"
+
+    def __str__(self):
+        return f'{self.unit}-{self.name}'
+
+
+class Student(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students')
+    year = models.IntegerField(choices=Exam.Years.choices)
+    ex = models.CharField(max_length=2, choices=Exam.Exams.choices)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='students')
+
+    class Meta:
+        ordering = ['id']
+        verbose_name = "수험 정보"
+        verbose_name_plural = "수험 정보"
+
+    def __str__(self):
+        return f'{self.year}{self.ex}-{self.department}-{self.user}'
 
 
 class TemporaryAnswer(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="사용자 ID")
-    problem = models.ForeignKey(
-        Problem, on_delete=models.CASCADE,
-        related_name='temporary_answers', verbose_name="문제 ID")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="temporary_answers")
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='temporary_answers')
     answer = models.IntegerField("제출 답안")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['id']
+        verbose_name = "답안(임시 저장용)"
+        verbose_name_plural = "답안(임시 저장용)"
 
 
 class ConfirmedAnswer(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="사용자 ID")
-    problem = models.ForeignKey(
-        Problem, on_delete=models.CASCADE,
-        related_name='confirmed_answers', verbose_name="문제 ID")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="confirmed_answers")
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='confirmed_answers')
     answer = models.IntegerField("제출 답안")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -31,13 +67,13 @@ class ConfirmedAnswer(models.Model):
 
     class Meta:
         ordering = ['id']
+        verbose_name = "답안(최종 제출용)"
+        verbose_name_plural = "답안(최종 제출용)"
 
 
 class DummyAnswer(models.Model):
     user = models.IntegerField()
-    problem = models.ForeignKey(
-        Problem, on_delete=models.CASCADE,
-        related_name='dummy_answers', verbose_name="문제 ID")
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='dummy_answers')
     answer = models.IntegerField("제출 답안")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -45,12 +81,12 @@ class DummyAnswer(models.Model):
 
     class Meta:
         ordering = ['id']
+        verbose_name = "답안(테스트용)"
+        verbose_name_plural = "답안(테스트용)"
 
 
 class AnswerCount(models.Model):
-    problem = models.ForeignKey(
-        Problem, on_delete=models.CASCADE,
-        related_name='answer_counts', verbose_name="문제 ID")
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='answer_counts')
     count_1 = models.IntegerField(default=0)
     count_2 = models.IntegerField(default=0)
     count_3 = models.IntegerField(default=0)
@@ -60,6 +96,8 @@ class AnswerCount(models.Model):
 
     class Meta:
         ordering = ['id']
+        verbose_name = "답안 개수(통계용)"
+        verbose_name_plural = "답안 개수(통계용)"
 
     @property
     def count_correct(self):
