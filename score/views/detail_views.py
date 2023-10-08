@@ -1,129 +1,143 @@
-from django.db.models import F, Case, When, Value, CharField
-from django.shortcuts import render, redirect
+from django.db.models import F, Case, When, Value, CharField, Max
+from vanilla import TemplateView
 
 from psat import models as psat_models
 from score import models as score_models
 
 
-class DetailView:
-    """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
+class DetailView(TemplateView):
     menu = 'score'
-    detail_base_template = 'score/score_detail.html'
+    template_name = 'score/score_detail.html'
 
-    def __init__(self, request, exam_id, view_type='detail'):
-        self.request: any = request
-        self.exam_id: int = exam_id
-        self.view_type: str = view_type
+    request: any
 
-    @property
-    def template_name(self) -> str:
+    def get_template_names(self) -> str:
         """
         Get the template name.
         base(GET): whole page > main(POST): main page > main(GET): main page
         :return: str
         """
-        base = self.detail_base_template
-        main = f'{base}#detail_main'
-        scored_form = f'{base}#scored_form'
-        if self.view_type == 'detail':
-            return main if self.request.htmx else base
-        elif self.view_type == 'submit':
-            return scored_form
+        base_template = self.template_name
+        main_template = f'{base_template}#detail_main'
+        return main_template if self.request.htmx else base_template
 
     @property
-    def user(self): return self.request.user
-    @property
-    def exam(self): return psat_models.Exam.objects.get(id=self.exam_id)
+    def exam(self):
+        exam_id = self.kwargs.get('exam_id')
+        return psat_models.Exam.objects.get(id=exam_id)
 
-    @property
-    def problems(self):
-        temporary_answers = score_models.TemporaryAnswer.objects.filter(
-            user=self.user, problem__exam=self.exam).order_by('problem__id').select_related('problem')
-
-        problems = self.exam.problems.all().annotate(
-            submitted_answer=Case(
-                When(temporary_answers__in=temporary_answers, then=F('temporary_answers__answer')),
-                default=Value(''),  # Set the default value to an empty string or None if needed
-                output_field=CharField()  # Define the output field type (CharField in this case)
+    def get_problems(self):
+        user = self.request.user
+        temporary_answers = (
+            score_models.TemporaryAnswer.objects
+            .filter(user=user, problem__exam=self.exam)
+            .order_by('problem__id').select_related('problem')
+        )
+        problems = (
+            self.exam.problems.all()
+            .annotate(submitted_answer=Case(
+                When(temporary_answers__in=temporary_answers,
+                     then=F('temporary_answers__answer')),
+                default=Value(''),
+                output_field=CharField())
             )
         )
         return problems
 
-    @property
-    def info(self) -> dict:
-        """ Get all the info for the current view. """
-        return {
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        info = {
             'menu': self.menu,
-            'view_type': self.view_type,
-            'type': f'{self.view_type}List',  # Different in dashboard views
+            'view_type': self.menu,
+            'type': f'{self.menu}List',
         }
-
-    @property
-    def context(self) -> dict:
-        """ Get the context data. """
-        return {
-            'info': self.info,
+        update_list = {
+            'info': info,
             'title': f'{self.exam.full_title} 답안 제출',
-            'exam_id': self.exam_id,
+            'exam': self.exam,
             'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
-            'problems': self.problems,
+            'problems': self.get_problems(),
         }
+        context.update(update_list)
+        return context
 
-    def rendering(self) -> render:
-        return render(self.request, self.template_name, self.context)
 
-
-class SubmitView:
-    """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
+class SubmitView(TemplateView):
     menu = 'score'
-    detail_base_template = 'score/score_detail.html'
+    template_name = 'score/score_detail.html#scored_form'
 
-    def __init__(self, request, problem_id, view_type='submit'):
-        self.request: any = request
-        self.problem_id: int = problem_id
-        self.view_type: str = view_type
+    def get_scored_problem(self):
+        user = self.request.user
+        problem_id = self.kwargs.get('problem_id')
+        problem = psat_models.Problem.objects.get(id=problem_id)
+        answer = int(self.request.POST.get('answer'))
 
-    @property
-    def template_name(self) -> str: return f'{self.detail_base_template}#scored_form'
-    @property
-    def user(self): return self.request.user
-    @property
-    def problem(self) -> psat_models.Problem: return psat_models.Problem.objects.get(id=self.problem_id)
-    @property
-    def submitted_answer(self) -> int: return int(self.request.POST.get('answer'))
-
-    @property
-    def temporary_ans(self) -> score_models.TemporaryAnswer:
-        """ Return the one TemporaryAnswer object. """
-        return score_models.TemporaryAnswer.objects.get(user=self.user, problem=self.problem)
-
-    @property
-    def scored_problem(self):
         try:
-            temporary = score_models.TemporaryAnswer.objects.get(user=self.user, problem=self.problem)
-            temporary.answer = self.submitted_answer
+            scored = score_models.TemporaryAnswer.objects.get(
+                user=user, problem=problem)
+            scored.answer = answer
         except score_models.TemporaryAnswer.DoesNotExist:
-            temporary = score_models.TemporaryAnswer.objects.create(
-                user=self.user, problem=self.problem, answer=self.submitted_answer)
-        temporary.save()
-        return temporary
+            scored = score_models.TemporaryAnswer.objects.create(
+                user=user, problem=problem, answer=answer)
+        scored.save()
+        return scored
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        context['scored'] = self.get_scored_problem()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class ConfirmedView(TemplateView):
+    menu = 'score'
+    template_name = 'score/score_confirmed.html'
+
+    request: any
 
     @property
-    def context(self) -> dict: return {'scored': self.scored_problem}
+    def exam(self):
+        exam_id = self.kwargs.get('exam_id')
+        return psat_models.Exam.objects.get(id=exam_id)
 
-    def rendering(self) -> render:
-        if self.request.method == 'GET':
-            return redirect('score:detail', exam_id=self.problem.exam_id)
-        else:
+    def get_confirmed_answers(self):
+        """ Return the ConfirmedAnswer objects. """
+        user = self.request.user
+        confirmed_times = (
+            score_models.ConfirmedAnswer.objects
+            .filter(user=user, problem__exam=self.exam)
+            .aggregate(Max('confirmed_times'))['confirmed_times__max']
+        )
+        confirmed = (
+            score_models.ConfirmedAnswer.objects
+            .filter(user=user, problem__exam=self.exam, confirmed_times=confirmed_times)
+            .order_by('problem__id')
+        )
+        return confirmed
 
-            return render(self.request, self.template_name, self.context)
+    def get_template_names(self):
+        return f'{self.template_name}#detail_main' if self.request.htmx else self.template_name
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        info = {
+            'menu': self.menu,
+            'view_type': self.menu,
+            'type': f'{self.menu}List',
+        }
+        update_list = {
+            'info': info,
+            'title': f'{self.exam.full_title} 성적 확인',
+            'exam': self.exam,
+            'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
+            'confirmed_answers': self.get_confirmed_answers(),
+        }
+        context.update(update_list)
+        return context
 
 
-def detail_view(request, exam_id):
-    view = DetailView(request, exam_id)
-    return view.rendering()
-
-
-def submit_view(request, problem_id):
-    view = SubmitView(request, view_type='submit', problem_id=problem_id)
-    return view.rendering()
+detail_view = DetailView.as_view()
+submit_view = SubmitView.as_view()
+confirmed_view = ConfirmedView.as_view()

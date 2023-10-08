@@ -1,7 +1,6 @@
 from django.core.paginator import Paginator
 from vanilla import TemplateView
 
-from common import constants
 from psat import models as psat_models
 from score import models as score_models
 
@@ -91,12 +90,15 @@ class ListView(TemplateView):
 
     def get_status(self, target_exam):
         """ Return the current status of the target exam """
-        temporary_exam_ids = score_models.TemporaryAnswer.objects.filter(
-            user=self.request.user).order_by('problem__id').values_list(
-            'problem__exam__id', flat=True)
-        confirmed_exam_ids = score_models.ConfirmedAnswer.objects.filter(
-            user=self.request.user).order_by('problem__id').values_list(
-            'problem__exam__id', flat=True)
+        user = self.request.user
+        temporary_exam_ids = (
+            score_models.TemporaryAnswer.objects.filter(user=user)
+            .order_by('problem__id').values_list('problem__exam__id', flat=True)
+        )
+        confirmed_exam_ids = (
+            score_models.ConfirmedAnswer.objects.filter(user=user)
+            .order_by('problem__id').values_list('problem__exam__id', flat=True)
+        )
         try:
             if target_exam.id in temporary_exam_ids:
                 return False  # 작성 중
@@ -107,50 +109,52 @@ class ListView(TemplateView):
         except AttributeError:
             return 'N/A'  # 해당 사항 없음(시험에서 제외된 과목)
 
+    def get_exam_data(self, obj, sub: str):
+        sub_dict = {
+            'eoneo': '언어',
+            'jaryo': '자료',
+            'sanghwang': '상황',
+        }
+        filter_dict = {
+            'year': obj['year'],
+            'ex': obj['ex'],
+            'sub': sub_dict[sub],
+        }
+        exam = psat_models.Exam.objects.filter(**filter_dict).first()
+        exam_data = {
+            'exam': exam,
+            'status': self.get_status(exam),
+        }
+        return exam_data
+
     def get_paginator_info(self) -> tuple[object, object]:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)
         paginator = Paginator(exam_list, 10)
         page_obj = paginator.get_page(page_number)
-        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+        page_range = paginator.get_elided_page_range(
+            number=page_number, on_each_side=3, on_ends=1)
 
-        exams = psat_models.Exam.objects.all()
+        user = self.request.user
         for obj in page_obj:
             student = score_models.Student.objects.filter(
-                user=self.request.user, year=obj['year'], department__unit__ex=obj['ex']).first()
-            obj['student'] = student if student else None
-            exam_eoneo = exams.filter(year=obj['year'], ex=obj['ex'], sub='언어').first()
-            exam_jaryo = exams.filter(year=obj['year'], ex=obj['ex'], sub='자료').first()
-            exam_sanghwang = exams.filter(year=obj['year'], ex=obj['ex'], sub='상황').first()
-            obj['eoneo'] = {
-                'icon': constants.icon.PSAT_ICON_SET['eoneo'],
-                'sub': '언어',
-                'exam_id': exam_eoneo.id if exam_eoneo else None,
-                'status': self.get_status(exam_eoneo),
-            }
-            obj['jaryo'] = {
-                'icon': constants.icon.PSAT_ICON_SET['jaryo'],
-                'sub': '자료',
-                'exam_id': exam_jaryo.id if exam_jaryo else None,
-                'status': self.get_status(exam_jaryo),
-            }
-            obj['sanghwang'] = {
-                'icon': constants.icon.PSAT_ICON_SET['sanghwang'],
-                'sub': '상황',
-                'exam_id': exam_sanghwang.id if exam_sanghwang else None,
-                'status': self.get_status(exam_sanghwang),
-            }
+                user=user, year=obj['year'], department__unit__ex=obj['ex']).first()
+            obj['student'] = student
+            obj['eoneo'] = self.get_exam_data(obj, 'eoneo')
+            obj['jaryo'] = self.get_exam_data(obj, 'jaryo')
+            obj['sanghwang'] = self.get_exam_data(obj, 'sanghwang')
 
-            total_problems_count = psat_models.Problem.objects.filter(
-                exam__id__in=[exam_eoneo.id, exam_jaryo.id, exam_sanghwang.id]
-            ).count()
-            total_submitted_answers_count = score_models.ConfirmedAnswer.objects.filter(
-                user=self.request.user,
-                problem__exam__id__in=[exam_eoneo.id, exam_jaryo.id, exam_sanghwang.id]
-            ).count()
-            if total_problems_count > 0:
-                obj['completed'] = total_problems_count == total_submitted_answers_count
-
+            exam_ids = [
+                obj['eoneo']['exam'].id,
+                obj['jaryo']['exam'].id,
+                obj['sanghwang']['exam'].id,
+            ]
+            problems_count = psat_models.Problem.objects.filter(
+                exam__id__in=exam_ids).count()
+            submitted_answers_count = score_models.ConfirmedAnswer.objects.filter(
+                user=user, problem__exam__id__in=exam_ids).count()
+            if problems_count > 0:
+                obj['completed'] = problems_count == submitted_answers_count
         return page_obj, page_range
 
     def get_context_data(self, **kwargs) -> dict:
@@ -171,4 +175,4 @@ class ListView(TemplateView):
         return context
 
 
-base_view = ListView.as_view()
+list_view = ListView.as_view()

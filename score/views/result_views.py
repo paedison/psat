@@ -2,7 +2,7 @@ from django.db.models import When, Value, CharField, F, Case, ExpressionWrapper,
 from vanilla import TemplateView
 
 from psat import models as psat_models
-from .. import models as score_models
+from score import models as score_models
 
 
 class ResultView(TemplateView):
@@ -37,35 +37,30 @@ class ResultView(TemplateView):
             year=self.year, ex=self.ex).values_list('id', flat=True)
 
     def get_reference(self, sub: str) -> dict:
-        return score_models.ConfirmedAnswer.objects.filter(
-            user=self.request.user,
-            problem__exam__id__in=self.exam_ids,
-            problem__exam__sub=sub
-        ).annotate(
-            result=Case(
+        user = self.request.user
+        reference = (
+            score_models.ConfirmedAnswer.objects
+            .filter(user=user, problem__exam__id__in=self.exam_ids, problem__exam__sub=sub)
+            .annotate(result=Case(
                 When(problem__answer=F('answer'), then=Value('O')),
-                default=Value('X'), output_field=CharField()
-            )
-        ).values('problem__number', 'problem__answer', 'answer', 'result')
+                default=Value('X'), output_field=CharField()))
+            .values('problem__number', 'problem__answer', 'answer', 'result'))
+        return reference
 
     def get_answer_rates(self, sub: str) -> dict:
-        return score_models.AnswerCount.objects.filter(
-            problem__exam__id__in=self.exam_ids,
-            problem__exam__sub=sub
-        ).order_by('problem__id').annotate(
-            correct=Case(
-                When(problem__answer=Value(1), then=ExpressionWrapper(
-                    F(f'count_1') * 100 / F('count_total'), output_field=FloatField())),
-                When(problem__answer=Value(2), then=ExpressionWrapper(
-                    F(f'count_2') * 100 / F('count_total'), output_field=FloatField())),
-                When(problem__answer=Value(3), then=ExpressionWrapper(
-                    F(f'count_3') * 100 / F('count_total'), output_field=FloatField())),
-                When(problem__answer=Value(4), then=ExpressionWrapper(
-                    F(f'count_4') * 100 / F('count_total'), output_field=FloatField())),
-                When(problem__answer=Value(5), then=ExpressionWrapper(
-                    F(f'count_5') * 100 / F('count_total'), output_field=FloatField())),
-                default=0.0)
-        ).values('problem__number', 'correct')
+        def case(num):
+            return When(problem__answer=Value(num), then=ExpressionWrapper(
+                F(f'count_{num}') * 100 / F('count_total'), output_field=FloatField()))
+
+        answer_rate = (
+            score_models.AnswerCount.objects
+            .filter(problem__exam__id__in=self.exam_ids, problem__exam__sub=sub)
+            .order_by('problem__id')
+            .annotate(correct=Case(
+                case(1), case(2), case(3), case(4), case(5), default=0.0))
+            .values('problem__number', 'correct')
+        )
+        return answer_rate
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)

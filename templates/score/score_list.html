@@ -106,23 +106,23 @@
 {% startpartial process_badge %}
     {% if target.status is None %}
         <a class="badge rounded-pill text-bg-primary" href="" hx-swap="innerHTML swap:0.25s"
-           hx-get="{% url 'score:detail' target.exam_id %}" hx-target="#main" hx-push-url="true">
+           hx-get="{% url 'score:detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
             작성 전
         </a>
     {% elif target.status is False %}
         <a class="badge rounded-pill text-bg-warning" href="" hx-swap="innerHTML swap:0.25s"
-           hx-get="{% url 'score:detail' target.exam_id %}" hx-target="#main" hx-push-url="true">
+           hx-get="{% url 'score:detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
             작성 중
         </a>
     {% elif target.status is True %}
         <a class="badge rounded-pill text-bg-success" href="" hx-swap="innerHTML swap:0.25s"
-           hx-get="{% url 'score:confirmed' target.exam_id %}" hx-target="#main" hx-push-url="true">
+           hx-get="{% url 'score:confirmed' target.exam.id %}" hx-target="#main" hx-push-url="true">
             제출 완료
         </a>
     {% elif target.status == 'N/A' %}
     {% endif %}
     <a class="badge rounded-pill text-bg-secondary" href="" hx-swap="innerHTML swap:0.25s"
-       hx-get="{% url 'psat:base' %}?year={{ obj.year }}&ex={{ obj.ex }}&sub={{ target.sub }}"
+       hx-get="{% url 'psat:base' %}?year={{ obj.year }}&ex={{ obj.ex }}&sub={{ target.exam.sub }}"
        hx-target="#main" hx-push-url="{% url 'psat:base' %}">
         문제 보기
     </a>

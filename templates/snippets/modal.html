@@ -159,7 +159,7 @@
         <h5 class="modal-title mx-auto fw-bold">
             {% if all_confirmed %}
                 <span class="text-success" hx-trigger="load delay:0.25s"
-                    hx-get="{% url 'score:confirmed' exam_id %}" hx-target="#main"
+                    hx-get="{% url 'score:confirmed' exam.id %}" hx-target="#main"
                     hx-swap="innerHTML" hx-push-url="true">{{ message|safe }}</span>
             {% else %}
                 <span class="text-danger">{{ message|safe }}</span>

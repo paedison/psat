@@ -1,4 +1,5 @@
 from django.shortcuts import redirect
+from django.urls import reverse_lazy
 from vanilla import TemplateView
 
 from psat import models as psat_models
@@ -62,7 +63,6 @@ class StudentUpdateModalView(TemplateView):
 
         student_id = self.kwargs['student_id']
         student = score_models.Student.objects.get(id=student_id)
-
         year, ex = student.year, student.department.unit.ex
         exam2 = get_exam2(year, ex)
         unit = student.department.unit
@@ -85,45 +85,43 @@ def student_update_view(request, student_id):
             student = form.save(commit=False)
             student.user = request.user
             student.save()
-    return redirect('/score/list/')
+    return redirect(reverse_lazy('score:list'))
 
 
 class ConfirmModalView(TemplateView):
     menu = 'score'
     template_name = 'snippets/modal.html#score_confirmed'
 
-    @property
-    def user(self): return self.request.user
-    @property
-    def exam_id(self): return self.kwargs.get('exam_id')
-    @property
-    def exam(self): return psat_models.Exam.objects.get(id=self.exam_id)
-
     def get(self, request, *args, **kwargs):
-        context = self.get_context_data(
-            all_confirmed=False, message='이미 제출한 답안은<br/>수정할 수 없습니다.')
+        impossible = '이미 제출한 답안은<br/>수정할 수 없습니다.'
+        context = self.get_context_data(message=impossible)
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        temporary = score_models.TemporaryAnswer.objects.filter(
-            user=self.user, problem__exam=self.exam).order_by('problem__id')
+        user = self.request.user
+        exam_id = self.kwargs.get('exam_id')
+        exam = psat_models.Exam.objects.get(id=exam_id)
+        temporary = (
+            score_models.TemporaryAnswer.objects
+            .filter(user=user, problem__exam=exam)
+            .order_by('problem__id')
+        )
 
-        if self.exam.problems.count() != temporary.count():
-            context = self.get_context_data(
-                all_confirmed=False, message='모든 문제의 답안을<br/>제출해주세요.')
+        if exam.problems.count() != temporary.count():
+            warning = '모든 문제의 답안을<br/>제출해주세요.'
+            context = self.get_context_data(message=warning)
         else:
             for temp in temporary:
                 # Create new ConfirmedAnswer instance and delete TemporaryAnswer instance
                 score_models.ConfirmedAnswer.objects.create(
-                    user=self.user, problem=temp.problem, answer=temp.answer)
+                    user=user, problem=temp.problem, answer=temp.answer)
                 temp.delete()
-            context = self.get_context_data(
-                all_confirmed=True, exam_id=self.exam_id,
-                message='답안이 정상적으로<br/>제출되었습니다.')
+            success = '답안이 정상적으로<br/>제출되었습니다.'
+            context = self.get_context_data(all_confirmed=True, exam=exam, message=success)
         return self.render_to_response(context)
 
 
 student_create_modal_view = StudentCreateModalView.as_view()
 student_update_modal_view = StudentUpdateModalView.as_view()
-confirm_modal_view = ConfirmModalView.as_view()
 student_department_view = StudentDepartmentView.as_view()
+confirm_modal_view = ConfirmModalView.as_view()
