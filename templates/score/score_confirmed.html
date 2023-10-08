@@ -59,7 +59,7 @@
                         {% else %}btn-danger{% endif %}">{{ i }}</div>
                 {% else %}
                     <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score:modal' exam_id %}" hx-swap="innerHTML"
+                         hx-get="{% url 'score:confirm_modal' exam_id %}" hx-swap="innerHTML"
                          hx-target="#modalContainer" data-bs-toggle="modal"
                          data-bs-target="#modalContainer">{{ i }}</div>
                 {% endif %}

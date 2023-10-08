@@ -69,7 +69,13 @@ class ResultView(TemplateView):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
+        info = {
+            'menu': self.menu,
+            'view_type': self.menu,
+            'type': f'{self.menu}List',
+        }
         update_list = {
+            'info': info,
             'title': self.title,
             'year': self.year,
             'ex': self.ex,
@@ -81,9 +87,8 @@ class ResultView(TemplateView):
             'sanghwang': self.get_reference('상황'),
             'sanghwang_rates': self.get_answer_rates('상황'),
         }
-        print(update_list['eoneo_rates'])
         context.update(update_list)
         return context
 
 
-result = ResultView.as_view()
+result_view = ResultView.as_view()

@@ -119,11 +119,11 @@ class SubmitView:
             return render(self.request, self.template_name, self.context)
 
 
-def detail(request, exam_id):
-    detail_view = DetailView(request, exam_id)
-    return detail_view.rendering()
+def detail_view(request, exam_id):
+    view = DetailView(request, exam_id)
+    return view.rendering()
 
 
-def submit(request, problem_id):
-    submit_view = SubmitView(request, view_type='submit', problem_id=problem_id)
-    return submit_view.rendering()
+def submit_view(request, problem_id):
+    view = SubmitView(request, view_type='submit', problem_id=problem_id)
+    return view.rendering()

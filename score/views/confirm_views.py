@@ -16,34 +16,6 @@ class BaseMixin:
     def exam(self): return psat_models.Exam.objects.get(id=self.exam_id)
 
 
-class ModalView(BaseMixin, TemplateView):
-    menu = 'score'
-    template_name = 'snippets/modal.html#score_confirmed'
-
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(
-            all_confirmed=False, message='이미 제출한 답안은<br/>수정할 수 없습니다.')
-        return self.render_to_response(context)
-
-    def post(self, request, *args, **kwargs):
-        temporary = score_models.TemporaryAnswer.objects.filter(
-            user=self.user, problem__exam=self.exam).order_by('problem__id')
-
-        if self.exam.problems.count() != temporary.count():
-            context = self.get_context_data(
-                all_confirmed=False, message='모든 문제의 답안을<br/>제출해주세요.')
-        else:
-            for temp in temporary:
-                # Create new ConfirmedAnswer instance and delete TemporaryAnswer instance
-                score_models.ConfirmedAnswer.objects.create(
-                    user=self.user, problem=temp.problem, answer=temp.answer)
-                temp.delete()
-            context = self.get_context_data(
-                all_confirmed=True, exam_id=self.exam_id,
-                message='답안이 정상적으로<br/>제출되었습니다.')
-        return self.render_to_response(context)
-
-
 class ConfirmedDetailView(BaseMixin, TemplateView):
     menu = 'score'
     view_type = 'confirmed'
@@ -82,5 +54,4 @@ class ConfirmedDetailView(BaseMixin, TemplateView):
         return context
 
 
-modal = ModalView.as_view()
-confirmed = ConfirmedDetailView.as_view()
+confirmed_view = ConfirmedDetailView.as_view()

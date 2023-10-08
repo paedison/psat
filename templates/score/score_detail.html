@@ -33,7 +33,7 @@
                 {% csrf_token %}
                 <input type="text" name="exam" value="{{ exam_id }}" aria-label="Exam ID" hidden/>
                 <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
-                        hx-post="{% url 'score:modal' exam_id %}" hx-swap="innerHTML" hx-trigger="click"
+                        hx-post="{% url 'score:confirm_modal' exam_id %}" hx-swap="innerHTML" hx-trigger="click"
                         data-bs-toggle="modal" data-bs-target="#modalContainer">
                     최종 답안 제출
                 </button>
@@ -62,7 +62,7 @@
                 {% csrf_token %}
                 <input type="text" name="exam" value="{{ exam_id }}" aria-label="Exam ID" hidden/>
                 <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
-                        hx-post="{% url 'score:modal' exam_id %}" hx-swap="innerHTML" hx-trigger="click"
+                        hx-post="{% url 'score:confirm_modal' exam_id %}" hx-swap="innerHTML" hx-trigger="click"
                         data-bs-toggle="modal" data-bs-target="#modalContainer">
                     최종 답안 제출
                 </button>

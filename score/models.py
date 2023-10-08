@@ -6,6 +6,7 @@ from psat.models import Problem, Exam
 
 class Unit(models.Model):
     name = models.CharField(max_length=128)
+    ex = models.CharField(max_length=2, choices=Exam.Exams.choices)
 
     class Meta:
         ordering = ['id']
@@ -32,8 +33,8 @@ class Department(models.Model):
 class Student(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students')
     year = models.IntegerField(choices=Exam.Years.choices)
-    ex = models.CharField(max_length=2, choices=Exam.Exams.choices)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='students')
+    serial = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         ordering = ['id']
@@ -41,7 +42,7 @@ class Student(models.Model):
         verbose_name_plural = "수험 정보"
 
     def __str__(self):
-        return f'{self.year}{self.ex}-{self.department}-{self.user}'
+        return f'{self.year}{self.department.unit.ex}-{self.department}-{self.user}'
 
 
 class TemporaryAnswer(models.Model):
