@@ -31,11 +31,22 @@
             </a>
         </div>
         <hr class="my-2">
-            <div class="small mb-3 text-secondary">
-                <div class="me-1">응시번호: {{ object.student_number }}</div>
-                <div class="me-1">이름: {{ object.student_name }}</div>
-                <div class="me-1">직렬: {{ object.department }}</div>
-            </div>
+        <table class="table mb-4">
+            <tbody>
+                <tr>
+                    <th scope="row">응시번호</th>
+                    <td>{{ student.serial }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">모집단위</th>
+                    <td>{{ student.department.unit.name }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">응시직렬</th>
+                    <td>{{ student.department.name }}</td>
+                </tr>
+            </tbody>
+        </table>
         <div class="mb-4">
             {% partial score_sheet %}
         </div>
@@ -80,8 +91,8 @@
 
 
 {% startpartial score_sheet_table %}
-    <div class="small mb-3 table-responsive">
-        <table class="table align-middle">
+    <div class="small table-responsive">
+        <table class="table mb-0 align-middle">
             <thead>
                 <tr class="text-center table-warning">
                    <th>과목</th>
@@ -177,8 +188,8 @@
 {% endpartial %}
 
 {% startpartial reference_table %}
-    <div class="small mb-3 table-responsive">
-        <table class="table align-middle">
+    <div class="small table-responsive">
+        <table class="table mb-0 align-middle">
             <tbody>
                 {% with loop_counter=10 loop_min=0 loop_max=10 %}
                     {% partial reference_table_tr %}

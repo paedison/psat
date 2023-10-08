@@ -69,6 +69,8 @@ class ResultView(TemplateView):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
+        student = score_models.Student.objects.filter(
+            user=self.request.user, year=self.year, department__unit__ex=self.ex).first()
         info = {
             'menu': self.menu,
             'view_type': self.menu,
@@ -76,6 +78,7 @@ class ResultView(TemplateView):
         }
         update_list = {
             'info': info,
+            'student': student,
             'title': self.title,
             'year': self.year,
             'ex': self.ex,
