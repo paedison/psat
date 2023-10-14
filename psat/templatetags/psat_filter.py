@@ -18,7 +18,7 @@ def abstract(content, base) -> int:  # Abstract content from base
 
 
 @register.filter
-def divide(content, base) -> float:  # Abstract content from base
+def divide(content, base) -> float:  # Divide content by base
     return content / base
 
 
