@@ -35,6 +35,31 @@ class Student(models.Model):
     year = models.IntegerField(choices=Exam.Years.choices)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='students')
     serial = models.CharField(max_length=20, null=True, blank=True)
+    eoneo_score = models.FloatField(blank=True, null=True)
+    jaryo_score = models.FloatField(blank=True, null=True)
+    sanghwang_score = models.FloatField(blank=True, null=True)
+    psat_score = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['id']
+        verbose_name = "수험 정보"
+        verbose_name_plural = "수험 정보"
+
+    def __str__(self):
+        return f'{self.year}{self.department.unit.ex}-{self.department}-{self.user}'
+
+    def average(self) -> float: return self.psat_score / 3
+
+
+class DummyStudent(models.Model):
+    user = models.IntegerField()
+    year = models.IntegerField(choices=Exam.Years.choices)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='dummy_students')
+    serial = models.CharField(max_length=20, null=True, blank=True)
+    eoneo_score = models.FloatField(blank=True, null=True)
+    jaryo_score = models.FloatField(blank=True, null=True)
+    sanghwang_score = models.FloatField(blank=True, null=True)
+    psat_score = models.FloatField(blank=True, null=True)
 
     class Meta:
         ordering = ['id']
@@ -73,7 +98,7 @@ class ConfirmedAnswer(models.Model):
 
 
 class DummyAnswer(models.Model):
-    user = models.IntegerField()
+    student = models.ForeignKey(DummyStudent, on_delete=models.CASCADE, related_name="dummy_answers")
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='dummy_answers')
     answer = models.IntegerField("제출 답안")
     created_at = models.DateTimeField(auto_now_add=True)

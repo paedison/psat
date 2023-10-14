@@ -1,4 +1,5 @@
-from django.db.models import When, Value, CharField, F, Case, ExpressionWrapper, FloatField
+from django.db.models import When, Value, CharField, F, Case, ExpressionWrapper, FloatField, Window, Count
+from django.db.models.functions import Rank, PercentRank
 from vanilla import TemplateView
 
 from psat import models as psat_models
@@ -36,7 +37,7 @@ class ResultView(TemplateView):
         return psat_models.Exam.objects.filter(
             year=self.year, ex=self.ex).values_list('id', flat=True)
 
-    def get_reference(self, sub: str) -> dict:
+    def get_reference(self, sub: str):
         user = self.request.user
         reference = (
             score_models.ConfirmedAnswer.objects
@@ -46,6 +47,58 @@ class ResultView(TemplateView):
                 default=Value('X'), output_field=CharField()))
             .values('problem__number', 'problem__answer', 'answer', 'result'))
         return reference
+
+    @property
+    def eoneo(self): return self.get_reference('언어')
+    @property
+    def jaryo(self): return self.get_reference('자료')
+    @property
+    def sanghwang(self): return self.get_reference('상황')
+
+    @property
+    def dummy_student(self):
+        return score_models.DummyStudent.objects.filter(
+            user=self.request.user.id, year=self.year, department__unit__ex=self.ex).first()
+
+    @property
+    def my_total_rank(self):
+        def get_rank(field_name): return Window(expression=Rank(), order_by=F(field_name).desc())
+        def get_rank_ratio(field_name): return Window(expression=PercentRank(), order_by=F(field_name).desc())
+
+        students_queryset = score_models.DummyStudent.objects.filter(
+            year=self.year, department__unit__ex=self.ex).annotate(
+            eoneo_rank=get_rank('eoneo_score'),
+            eoneo_rank_ratio=get_rank_ratio('eoneo_score'),
+            jaryo_rank=get_rank('jaryo_score'),
+            jaryo_rank_ratio=get_rank_ratio('jaryo_score'),
+            sanghwang_rank=get_rank('sanghwang_score'),
+            sanghwang_rank_ratio=get_rank_ratio('sanghwang_score'),
+            psat_rank=get_rank('psat_score'),
+            psat_rank_ratio=get_rank_ratio('psat_score')
+        )
+        for queryset in students_queryset:
+            if queryset.user == self.request.user.id:
+                return queryset
+
+    @property
+    def my_department_rank(self):
+        def get_rank(field_name): return Window(expression=Rank(), order_by=F(field_name).desc())
+        def get_rank_ratio(field_name): return Window(expression=PercentRank(), order_by=F(field_name).desc())
+
+        students_queryset = score_models.DummyStudent.objects.filter(
+            year=self.year, department=self.dummy_student.department).annotate(
+            eoneo_rank=get_rank('eoneo_score'),
+            eoneo_rank_ratio=get_rank_ratio('eoneo_score'),
+            jaryo_rank=get_rank('jaryo_score'),
+            jaryo_rank_ratio=get_rank_ratio('jaryo_score'),
+            sanghwang_rank=get_rank('sanghwang_score'),
+            sanghwang_rank_ratio=get_rank_ratio('sanghwang_score'),
+            psat_rank=get_rank('psat_score'),
+            psat_rank_ratio=get_rank_ratio('psat_score')
+        )
+        for queryset in students_queryset:
+            if queryset.user == self.request.user.id:
+                return queryset
 
     def get_answer_rates(self, sub: str) -> dict:
         def case(num):
@@ -62,6 +115,13 @@ class ResultView(TemplateView):
         )
         return answer_rate
 
+    @property
+    def eoneo_rates(self) -> list: return self.get_answer_rates('언어')
+    @property
+    def jaryo_rates(self) -> list: return self.get_answer_rates('자료')
+    @property
+    def sanghwang_rates(self) -> list: return self.get_answer_rates('상황')
+
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         student = score_models.Student.objects.filter(
@@ -73,17 +133,20 @@ class ResultView(TemplateView):
         }
         update_list = {
             'info': info,
-            'student': student,
+            'student': self.dummy_student,
+            # 'student': student,
+            'my_total_rank': self.my_total_rank,
+            'my_department_rank': self.my_department_rank,
             'title': self.title,
             'year': self.year,
             'ex': self.ex,
             'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
-            'eoneo': self.get_reference('언어'),
-            'eoneo_rates': self.get_answer_rates('언어'),
-            'jaryo': self.get_reference('자료'),
-            'jaryo_rates': self.get_answer_rates('자료'),
-            'sanghwang': self.get_reference('상황'),
-            'sanghwang_rates': self.get_answer_rates('상황'),
+            'eoneo': self.eoneo,
+            'eoneo_rates': self.eoneo_rates,
+            'jaryo': self.jaryo,
+            'jaryo_rates': self.jaryo_rates,
+            'sanghwang': self.sanghwang,
+            'sanghwang_rates': self.sanghwang_rates,
         }
         context.update(update_list)
         return context
