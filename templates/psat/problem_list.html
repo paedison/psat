@@ -71,9 +71,6 @@
 {% endpartial %}
 
 
-{% fragment as like_menu %}<i class="fa-solid fa-heart fa-fw"></i>즐겨찾기{% endfragment %}
-{% fragment as rate_menu %}<i class="fa-solid fa-star fa-fw"></i>난이도{% endfragment %}
-{% fragment as answer_menu %}<i class="fa-solid fa-circle-check fa-fw"></i>정답확인{% endfragment %}
 {% startpartial dashboard_filter %}
     <button id="dropdownDashboardLink" type="button"
             class="btn btn-sm btn-outline-primary dropdown-toggle"
@@ -82,17 +79,23 @@
         <li>
             <a class="dropdown-item text-start ps-4
                {% if info.view_type == 'like' %}active{% endif %}" href=""
-               hx-get="{% url 'dashboard:list' 'like' %}">{{ like_menu|safe }}</a>
+               hx-get="{% url 'dashboard:list' 'like' %}">
+                <i class="fa-solid fa-heart fa-fw"></i>즐겨찾기
+            </a>
         </li>
         <li>
             <a class="dropdown-item text-start ps-4
                {% if info.view_type == 'rate' %}active{% endif %}" href=""
-               hx-get="{% url 'dashboard:list' 'rate' %}">{{ rate_menu|safe }}</a>
+               hx-get="{% url 'dashboard:list' 'rate' %}">
+                <i class="fa-solid fa-star fa-fw"></i>난이도
+            </a>
         </li>
         <li>
             <a class="dropdown-item text-start ps-4
                {% if info.view_type == 'answer' %}active{% endif %}" href=""
-               hx-get="{% url 'dashboard:list' 'answer' %}">{{ answer_menu|safe }}</a>
+               hx-get="{% url 'dashboard:list' 'answer' %}">
+                <i class="fa-solid fa-circle-check fa-fw"></i>정답확인
+            </a>
         </li>
     </ul>
 {% endpartial %}
@@ -106,7 +109,7 @@
     </button>
     <ul class="dropdown-menu" aria-labelledby="dropdown{{ var|title }}Link">
         <li>
-            <a class="dropdown-item text-center p-1
+            <a class="dropdown-item text-center
                {% if current == '' %}active{% endif %}" href=""
                hx-get="{{ base_url }}
 ?year={% if var != 'year' %}{{ exam_year }}{% endif %}
@@ -121,7 +124,7 @@
         </li>
         {% for opt in option %}
             <li>
-                <a class="dropdown-item text-center p-1
+                <a class="dropdown-item text-center
                    {% if opt.0 == current %}active{% endif %}" href=""
                    hx-get="{{ base_url }}
 ?year={% if var == 'year' %}{{ opt.0 }}{% else %}{{ exam_year }}{% endif %}

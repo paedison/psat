@@ -32,21 +32,21 @@ PSAT_ICON_SET = {
     'starNone': f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
                 f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
                 f'<i class="fa-regular fa-star"></i>',
-    'star1': f'<i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>'
-             f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
-             f'<i class="fa-regular fa-star"></i>',
-    'star2': f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
-             f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
-             f'<i class="fa-regular fa-star"></i>',
-    'star3': f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
-             f'<i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>'
-             f'<i class="fa-regular fa-star"></i>',
-    'star4': f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
-             f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
-             f'<i class="fa-regular fa-star"></i>',
-    'star5': f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
-             f'<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>'
-             f'<i class="fa-solid fa-star"></i>',
+    'star1': f'<i class="fa-solid fa-star m-0"></i><i class="fa-regular fa-star m-0"></i>'
+             f'<i class="fa-regular fa-star m-0"></i><i class="fa-regular fa-star m-0"></i>'
+             f'<i class="fa-regular fa-star m-0"></i>',
+    'star2': f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
+             f'<i class="fa-regular fa-star m-0"></i><i class="fa-regular fa-star m-0"></i>'
+             f'<i class="fa-regular fa-star m-0"></i>',
+    'star3': f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
+             f'<i class="fa-solid fa-star m-0"></i><i class="fa-regular fa-star m-0"></i>'
+             f'<i class="fa-regular fa-star m-0"></i>',
+    'star4': f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
+             f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
+             f'<i class="fa-regular fa-star m-0"></i>',
+    'star5': f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
+             f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
+             f'<i class="fa-solid fa-star m-0"></i>',
     'answerNone': '',
     'answerFalse': '<i class="fa-solid fa-circle-xmark"></i>',
     'answerTrue': '<i class="fa-solid fa-circle-check"></i>',

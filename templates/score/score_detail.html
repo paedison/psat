@@ -62,7 +62,10 @@
         {% csrf_token %}
         <div class="d-flex justify-content-center align-content-center">
             <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-                문 {{ problem.number|add_0 }}.</p>
+                <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
+                    문 {{ problem.number|add_0 }}.
+                </a>
+            </p>
             <div id="p{{ problem.id }}_answer" class="d-flex justify-content-center align-content-center me-3"
                  hx-post="{% url 'score:submit' problem.id %}" hx-swap="innerHTML"
                  hx-include="#p{{ problem.id }}_answer>input[name='answer']:checked"

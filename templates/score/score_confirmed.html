@@ -50,7 +50,10 @@
 {% startpartial confirmed %}
     <div class="d-flex justify-content-center align-content-center">
         <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-            문 {{ confirmed.problem.number|add_0 }}.</p>
+            <a href="" hx-get="{% url 'psat:problem_detail' confirmed.problem.id %}" hx-push-url="true">
+                문 {{ confirmed.problem.number|add_0 }}.
+            </a>
+        </p>
         <div class="d-flex justify-content-center align-content-center me-3">
             {% for i in '12345' %}
                 {% if i|add:0 == confirmed.answer %}

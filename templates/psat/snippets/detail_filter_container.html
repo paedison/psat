@@ -30,34 +30,19 @@
         <div class="row justify-content-center p-2 text-primary fw-bold">
             {{ problem.year }}년 '{{ problem.exam2 }}' {{ problem.subject }}
         </div>
-        {% if problem.ex == '민경' or problem.ex == '칠급' %}
-            <div class="row justify-content-center">
-                {% for num in TOTAL.nums25 %}
-                    <div class="col-2 text-center small p-1">
-                        <a href="{% url 'psat:problem_detail' anchor_id|add:num %}">
-                            {{ num }}번
-                        </a>
-                    </div>
-                    {% if forloop.counter|divisibleby:5 %}
-            </div>
-            <div class="row justify-content-center">
-                    {% endif %}
-                {% endfor %}
-        {% else %}
-            <div class="row justify-content-center">
-                {% for num in TOTAL.nums40 %}
-                    <div class="col-2 text-center small p-1">
-                        <a href="{% url 'psat:problem_detail' anchor_id|add:num %}">
-                            {{ num }}번
-                        </a>
-                    </div>
-                    {% if forloop.counter|divisibleby:5 %}
-            </div>
-            <div class="row justify-content-center">
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div class="row justify-content-center">
+            {% for num in num_range %}
+                <div class="col-2 text-center small p-1">
+                    <a href="{% url 'psat:problem_detail' anchor_id|add:num %}">
+                        {{ num }}번
+                    </a>
+                </div>
+                {% if forloop.counter|divisibleby:5 %}
+        </div>
+        <div class="row justify-content-center">
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
 {% endpartial %}
 

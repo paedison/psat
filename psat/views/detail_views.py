@@ -42,6 +42,13 @@ class PSATDetailInfoMixIn:
     def next_prob(self) -> Problem: return self.get_probs(self.prob_data, self.prob_list)[1]
 
     @property
+    def num_range(self):
+        if self.problem.ex == '민경' or '칠급':
+            return range(1, 26)
+        else:
+            return range(1, 41)
+
+    @property
     def evaluation(self) -> Evaluation:
         return Evaluation.objects.get_or_create(
             user=self.request.user, problem=self.problem)[0]
@@ -132,8 +139,15 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
     def title(self) -> str: return self.object.full_title
     def get_object(self) -> Problem: return self.problem
 
-    def get_template_names(self):
-        return self.detail_template if self.request.method == 'GET' else self.icon_template
+    def get_template_names(self) -> str:
+        base_template = self.detail_template
+        main_template = f'{base_template}#detail_main'
+        if self.request.method == 'GET':
+            return main_template if self.request.htmx else base_template
+        else:
+            return main_template
+
+        # return self.detail_template if self.request.method == 'GET' else self.icon_template
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -144,6 +158,7 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         context['info'] = self.info
+        context['num_range'] = self.num_range
         context['problem_memo'] = self.problem_memo
         context['my_tag'] = self.my_tag
         context['anchor_id'] = self.problem_id - int(self.object.number)
