@@ -29,7 +29,7 @@ class Command(BaseCommand):
                 total_count = len(reference)
                 for ref in reference:
                     correct_count += 1 if ref['result'] == 'O' else 0
-                return correct_count / total_count * 100
+                return (100 / total_count) * correct_count
 
             eoneo_score = get_score('언어')
             jaryo_score = get_score('자료')

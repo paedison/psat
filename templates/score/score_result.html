@@ -180,25 +180,25 @@
                 <tr class="text-center">
                     <th>언어논리</th>
                     <td>{{ stat.num_students }}</td>
-                    <td>{{ stat.eoneo_score_max }}</td>
-                    <td>{{ stat.eoneo_score_10 }}</td>
-                    <td>{{ stat.eoneo_score_20 }}</td>
+                    <td>{{ stat.eoneo_score_max|floatformat:1 }}</td>
+                    <td>{{ stat.eoneo_score_10|floatformat:1 }}</td>
+                    <td>{{ stat.eoneo_score_20|floatformat:1 }}</td>
                     <td>{{ stat.eoneo_score_avg|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center">
                     <th>자료해석</th>
                     <td>{{ stat.num_students }}</td>
-                    <td>{{ stat.jaryo_score_max }}</td>
-                    <td>{{ stat.jaryo_score_10 }}</td>
-                    <td>{{ stat.jaryo_score_20 }}</td>
+                    <td>{{ stat.jaryo_score_max|floatformat:1 }}</td>
+                    <td>{{ stat.jaryo_score_10|floatformat:1 }}</td>
+                    <td>{{ stat.jaryo_score_20|floatformat:1 }}</td>
                     <td>{{ stat.jaryo_score_avg|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center">
                     <th>상황판단</th>
                     <td>{{ stat.num_students }}</td>
-                    <td>{{ stat.sanghwang_score_max }}</td>
-                    <td>{{ stat.sanghwang_score_10 }}</td>
-                    <td>{{ stat.sanghwang_score_20 }}</td>
+                    <td>{{ stat.sanghwang_score_max|floatformat:1 }}</td>
+                    <td>{{ stat.sanghwang_score_10|floatformat:1 }}</td>
+                    <td>{{ stat.sanghwang_score_20|floatformat:1 }}</td>
                     <td>{{ stat.sanghwang_score_avg|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center table-warning">

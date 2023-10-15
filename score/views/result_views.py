@@ -108,7 +108,7 @@ class ResultView(TemplateView):
 
         def top_score(sub_score: str):
             scores = students_queryset.values_list(sub_score, flat=True)
-            return np.percentile(scores, [10, 20], interpolation='nearest')
+            return np.percentile(scores, [90, 80], interpolation='nearest')
 
         top_eoneo_score = top_score('eoneo_score')
         top_jaryo_score = top_score('jaryo_score')
