@@ -85,7 +85,17 @@
                         borderWidth: 1,
                     },
                     {
-                        label: '평균 점수',
+                        label: '직렬 평균',
+                        data: [
+                            {{ department_stat.psat_average_avg|floatformat:1 }},
+                            {{ department_stat.eoneo_score_avg|floatformat:1 }},
+                            {{ department_stat.jaryo_score_avg|floatformat:1 }},
+                            {{ department_stat.sanghwang_score_avg|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: '전체 평균',
                         data: [
                             {{ total_stat.psat_average_avg|floatformat:1 }},
                             {{ total_stat.eoneo_score_avg|floatformat:1 }},
@@ -95,7 +105,18 @@
                         borderWidth: 1,
                     },
                     {
-                        label: '상위 20%',
+                        label: '직렬 상위 20%',
+                        data: [
+                            {{ department_stat.psat_average_20|floatformat:1 }},
+                            {{ department_stat.eoneo_score_20|floatformat:1 }},
+                            {{ department_stat.jaryo_score_20|floatformat:1 }},
+                            {{ department_stat.sanghwang_score_20|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                        hidden: true,
+                    },
+                    {
+                        label: '전체 상위 20%',
                         data: [
                             {{ total_stat.psat_average_20|floatformat:1 }},
                             {{ total_stat.eoneo_score_20|floatformat:1 }},
@@ -103,9 +124,20 @@
                             {{ total_stat.sanghwang_score_20|floatformat:1 }},
                         ],
                         borderWidth: 1,
+                        hidden: true,
                     },
                     {
-                        label: '상위 10%',
+                        label: '직렬 상위 10%',
+                        data: [
+                            {{ department_stat.psat_average_10|floatformat:1 }},
+                            {{ department_stat.eoneo_score_10|floatformat:1 }},
+                            {{ department_stat.jaryo_score_10|floatformat:1 }},
+                            {{ department_stat.sanghwang_score_10|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: '전체 상위 10%',
                         data: [
                             {{ total_stat.psat_average_10|floatformat:1 }},
                             {{ total_stat.eoneo_score_10|floatformat:1 }},
@@ -115,7 +147,18 @@
                         borderWidth: 1,
                     },
                     {
-                        label: '최고 점수',
+                        label: '직렬 최고',
+                        data: [
+                            {{ department_stat.psat_average_max|floatformat:1 }},
+                            {{ department_stat.eoneo_score_max|floatformat:1 }},
+                            {{ department_stat.jaryo_score_max|floatformat:1 }},
+                            {{ department_stat.sanghwang_score_max|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                        hidden: true,
+                    },
+                    {
+                        label: '전체 최고',
                         data: [
                             {{ total_stat.psat_average_max|floatformat:1 }},
                             {{ total_stat.eoneo_score_max|floatformat:1 }},
@@ -123,6 +166,7 @@
                             {{ total_stat.sanghwang_score_max|floatformat:1 }},
                         ],
                         borderWidth: 1,
+                        hidden: true,
                     },
                 ]
             },
