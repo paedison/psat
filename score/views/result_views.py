@@ -1,6 +1,8 @@
 import numpy as np
 
-from django.db.models import When, Value, CharField, F, Case, ExpressionWrapper, FloatField, Window, Count, Max, Avg
+from django.db.models import (
+    When, Value, CharField, F, Case, ExpressionWrapper, FloatField, Window, Count, Max, Avg
+)
 from django.db.models.functions import Rank, PercentRank
 from vanilla import TemplateView
 
@@ -41,14 +43,14 @@ class ResultView(TemplateView):
 
     def get_reference(self, sub: str):
         user = self.request.user
-        reference = (
+        return (
             score_models.ConfirmedAnswer.objects
             .filter(user=user, problem__exam__id__in=self.exam_ids, problem__exam__sub=sub)
             .annotate(result=Case(
                 When(problem__answer=F('answer'), then=Value('O')),
                 default=Value('X'), output_field=CharField()))
-            .values('problem__number', 'problem__answer', 'answer', 'result'))
-        return reference
+            .values('problem__number', 'problem__answer', 'answer', 'result')
+        )
 
     @property
     def eoneo(self): return self.get_reference('언어')
@@ -59,9 +61,8 @@ class ResultView(TemplateView):
 
     @property
     def dummy_student(self):
-        student = score_models.DummyStudent.objects.filter(
+        return score_models.DummyStudent.objects.filter(
             user=self.request.user.id, year=self.year, department__unit__ex=self.ex).first()
-        return student
 
     def get_rank(self, rank_type='total'):
         def rank_func(field_name): return Window(expression=Rank(), order_by=F(field_name).desc())
@@ -93,21 +94,20 @@ class ResultView(TemplateView):
     @property
     def my_total_rank(self):
         for queryset in self.total_rank:
-            return queryset if queryset.user == self.request.user.id else None
+            if queryset.user == self.request.user.id:
+                return queryset
 
     @property
     def my_department_rank(self):
         for queryset in self.department_rank:
-            return queryset if queryset.user == self.request.user.id else None
+            if queryset.user == self.request.user.id:
+                return queryset
 
     def get_stat(self, stat_type='total'):
-        if stat_type == 'total':
-            students_queryset = self.total_rank
-        else:
-            students_queryset = self.department_rank
+        stat_queryset = self.total_rank if stat_type == 'total' else self.department_rank
 
         def top_score(sub_score: str):
-            scores = students_queryset.values_list(sub_score, flat=True)
+            scores = stat_queryset.values_list(sub_score, flat=True)
             return np.percentile(scores, [90, 80], interpolation='nearest')
 
         top_eoneo_score = top_score('eoneo_score')
@@ -115,7 +115,7 @@ class ResultView(TemplateView):
         top_sanghwang_score = top_score('sanghwang_score')
         top_psat_score = top_score('psat_score')
 
-        students_queryset = students_queryset.aggregate(
+        stat_queryset = stat_queryset.aggregate(
             num_students=Count('id'),
 
             eoneo_score_max=Max('eoneo_score', default=0),
@@ -129,16 +129,16 @@ class ResultView(TemplateView):
             psat_average_avg=Avg('psat_score', default=0)/3,
         )
 
-        students_queryset['eoneo_score_10'] = top_eoneo_score[0]
-        students_queryset['eoneo_score_20'] = top_eoneo_score[1]
-        students_queryset['jaryo_score_10'] = top_jaryo_score[0]
-        students_queryset['jaryo_score_20'] = top_jaryo_score[1]
-        students_queryset['sanghwang_score_10'] = top_sanghwang_score[0]
-        students_queryset['sanghwang_score_20'] = top_sanghwang_score[1]
-        students_queryset['psat_average_10'] = top_psat_score[0] / 3
-        students_queryset['psat_average_20'] = top_psat_score[1] / 3
+        stat_queryset['eoneo_score_10'] = top_eoneo_score[0]
+        stat_queryset['eoneo_score_20'] = top_eoneo_score[1]
+        stat_queryset['jaryo_score_10'] = top_jaryo_score[0]
+        stat_queryset['jaryo_score_20'] = top_jaryo_score[1]
+        stat_queryset['sanghwang_score_10'] = top_sanghwang_score[0]
+        stat_queryset['sanghwang_score_20'] = top_sanghwang_score[1]
+        stat_queryset['psat_average_10'] = top_psat_score[0] / 3
+        stat_queryset['psat_average_20'] = top_psat_score[1] / 3
 
-        return students_queryset
+        return stat_queryset
 
     @property
     def total_stat(self): return self.get_stat()
@@ -146,27 +146,25 @@ class ResultView(TemplateView):
     @property
     def department_stat(self): return self.get_stat('department')
 
-    def get_answer_rates(self, sub: str) -> dict:
+    def get_answer_rates(self, sub: str):
         def case(num):
             return When(problem__answer=Value(num), then=ExpressionWrapper(
                 F(f'count_{num}') * 100 / F('count_total'), output_field=FloatField()))
 
-        answer_rate = (
+        return (
             score_models.AnswerCount.objects
             .filter(problem__exam__id__in=self.exam_ids, problem__exam__sub=sub)
             .order_by('problem__id')
-            .annotate(correct=Case(
-                case(1), case(2), case(3), case(4), case(5), default=0.0))
+            .annotate(correct=Case(case(1), case(2), case(3), case(4), case(5), default=0.0))
             .values('problem__number', 'correct')
         )
-        return answer_rate
 
     @property
-    def eoneo_rates(self) -> dict: return self.get_answer_rates('언어')
+    def eoneo_rates(self): return self.get_answer_rates('언어')
     @property
-    def jaryo_rates(self) -> dict: return self.get_answer_rates('자료')
+    def jaryo_rates(self): return self.get_answer_rates('자료')
     @property
-    def sanghwang_rates(self) -> dict: return self.get_answer_rates('상황')
+    def sanghwang_rates(self): return self.get_answer_rates('상황')
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)

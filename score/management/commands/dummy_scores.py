@@ -1,7 +1,5 @@
-import random
-
-from django.db.models import When, Value, CharField, F, Case, ExpressionWrapper, FloatField
 from django.core.management.base import BaseCommand
+from django.db.models import When, Value, CharField, F, Case
 
 from psat import models as psat_models
 from score import models as score_models
