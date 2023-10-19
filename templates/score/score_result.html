@@ -17,7 +17,7 @@
         <h1>{{ icon|safe }} {{ title }}</h1>
     </div><!-- Page Title End -->
     {% partial content %}
-{% endpartial %}
+{% endpartial result_main %}
 
 
 {% startpartial content %}
@@ -49,6 +49,9 @@
             </tbody>
         </table>
         <div class="mb-4">
+            {% partial chart %}
+        </div>
+        <div class="mb-4">
             {% partial score_sheet %}
         </div>
         <div class="mb-4">
@@ -56,7 +59,84 @@
         </div>
     {% /content_row %}
     </section>
-{% endpartial %}
+{% endpartial content %}
+
+
+{% startpartial chart %}
+    <div>
+        <canvas id="scoreChart"></canvas>
+    </div>
+
+    <script>
+        let ctx{{ year }}{{ ex }} = document.getElementById('scoreChart');
+        new Chart(ctx{{ year }}{{ ex }}, {
+            type: 'bar',
+            data: {
+                labels: ['PSAT 평균', '언어논리', '자료해석', '상황판단',],
+                datasets: [
+                    {
+                        label: '내 점수',
+                        data: [
+                            {{ student.psat_average|floatformat:1 }},
+                            {{ student.eoneo_score|floatformat:1 }},
+                            {{ student.jaryo_score|floatformat:1 }},
+                            {{ student.sanghwang_score|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: '평균 점수',
+                        data: [
+                            {{ total_stat.psat_average_avg|floatformat:1 }},
+                            {{ total_stat.eoneo_score_avg|floatformat:1 }},
+                            {{ total_stat.jaryo_score_avg|floatformat:1 }},
+                            {{ total_stat.sanghwang_score_avg|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: '상위 20%',
+                        data: [
+                            {{ total_stat.psat_average_20|floatformat:1 }},
+                            {{ total_stat.eoneo_score_20|floatformat:1 }},
+                            {{ total_stat.jaryo_score_20|floatformat:1 }},
+                            {{ total_stat.sanghwang_score_20|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: '상위 10%',
+                        data: [
+                            {{ total_stat.psat_average_10|floatformat:1 }},
+                            {{ total_stat.eoneo_score_10|floatformat:1 }},
+                            {{ total_stat.jaryo_score_10|floatformat:1 }},
+                            {{ total_stat.sanghwang_score_10|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                    },
+                    {
+                        label: '최고 점수',
+                        data: [
+                            {{ total_stat.psat_average_max|floatformat:1 }},
+                            {{ total_stat.eoneo_score_max|floatformat:1 }},
+                            {{ total_stat.jaryo_score_max|floatformat:1 }},
+                            {{ total_stat.sanghwang_score_max|floatformat:1 }},
+                        ],
+                        borderWidth: 1,
+                    },
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                grouped: true,
+            }
+        });
+    </script>
+{% endpartial chart %}
 
 
 {% startpartial score_sheet %}
@@ -92,7 +172,7 @@
             {% endwith %}
         {% /nav_content %}
     </div>
-{% endpartial %}
+{% endpartial score_sheet %}
 
 
 {% startpartial my_score %}
@@ -152,7 +232,7 @@
             </tbody>
         </table>
     </div>
-{% endpartial %}
+{% endpartial my_score %}
 
 
 {% startpartial score_statistics %}
@@ -212,7 +292,7 @@
             </tbody>
         </table>
     </div>
-{% endpartial %}
+{% endpartial score_statistics %}
 
 
 {% startpartial reference %}
@@ -250,7 +330,7 @@
             {% endwith %}
         {% /nav_content %}
     </div>
-{% endpartial %}
+{% endpartial reference %}
 
 {% startpartial reference_table %}
     <div class="small table-responsive">
@@ -277,7 +357,7 @@
             </tbody>
         </table>
     </div>
-{% endpartial %}
+{% endpartial reference_table %}
 
 
 {% startpartial reference_table_tr %}
@@ -324,4 +404,4 @@
             {% endif %}
         {% endfor %}
     </tr>
-{% endpartial %}
+{% endpartial reference_table_tr %}

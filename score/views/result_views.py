@@ -61,8 +61,10 @@ class ResultView(TemplateView):
 
     @property
     def dummy_student(self):
-        return score_models.DummyStudent.objects.filter(
+        student = score_models.DummyStudent.objects.filter(
             user=self.request.user.id, year=self.year, department__unit__ex=self.ex).first()
+        student.psat_average = student.psat_score / 3
+        return student
 
     def get_rank(self, rank_type='total'):
         def rank_func(field_name): return Window(expression=Rank(), order_by=F(field_name).desc())
