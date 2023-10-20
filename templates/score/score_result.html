@@ -68,49 +68,48 @@
     </div>
 
     <script>
-        let ctx{{ year }}{{ ex }} = document.getElementById('scoreChart');
-        new Chart(ctx{{ year }}{{ ex }}, {
+        chart_data = {
             type: 'bar',
             data: {
-                labels: ['PSAT 평균', '언어논리', '자료해석', '상황판단',],
+                labels: ['언어논리', '자료해석', '상황판단', 'PSAT 평균', ],
                 datasets: [
                     {
                         label: '내 점수',
                         data: [
-                            {{ student.psat_average|floatformat:1 }},
                             {{ student.eoneo_score|floatformat:1 }},
                             {{ student.jaryo_score|floatformat:1 }},
                             {{ student.sanghwang_score|floatformat:1 }},
+                            {{ student.psat_average|floatformat:1 }},
                         ],
                         borderWidth: 1,
                     },
                     {
                         label: '직렬 평균',
                         data: [
-                            {{ department_stat.psat_average_avg|floatformat:1 }},
                             {{ department_stat.eoneo_score_avg|floatformat:1 }},
                             {{ department_stat.jaryo_score_avg|floatformat:1 }},
                             {{ department_stat.sanghwang_score_avg|floatformat:1 }},
+                            {{ department_stat.psat_average_avg|floatformat:1 }},
                         ],
                         borderWidth: 1,
                     },
                     {
                         label: '전체 평균',
                         data: [
-                            {{ total_stat.psat_average_avg|floatformat:1 }},
                             {{ total_stat.eoneo_score_avg|floatformat:1 }},
                             {{ total_stat.jaryo_score_avg|floatformat:1 }},
                             {{ total_stat.sanghwang_score_avg|floatformat:1 }},
+                            {{ total_stat.psat_average_avg|floatformat:1 }},
                         ],
                         borderWidth: 1,
                     },
                     {
                         label: '직렬 상위 20%',
                         data: [
-                            {{ department_stat.psat_average_20|floatformat:1 }},
                             {{ department_stat.eoneo_score_20|floatformat:1 }},
                             {{ department_stat.jaryo_score_20|floatformat:1 }},
                             {{ department_stat.sanghwang_score_20|floatformat:1 }},
+                            {{ department_stat.psat_average_20|floatformat:1 }},
                         ],
                         borderWidth: 1,
                         hidden: true,
@@ -118,10 +117,10 @@
                     {
                         label: '전체 상위 20%',
                         data: [
-                            {{ total_stat.psat_average_20|floatformat:1 }},
                             {{ total_stat.eoneo_score_20|floatformat:1 }},
                             {{ total_stat.jaryo_score_20|floatformat:1 }},
                             {{ total_stat.sanghwang_score_20|floatformat:1 }},
+                            {{ total_stat.psat_average_20|floatformat:1 }},
                         ],
                         borderWidth: 1,
                         hidden: true,
@@ -129,30 +128,30 @@
                     {
                         label: '직렬 상위 10%',
                         data: [
-                            {{ department_stat.psat_average_10|floatformat:1 }},
                             {{ department_stat.eoneo_score_10|floatformat:1 }},
                             {{ department_stat.jaryo_score_10|floatformat:1 }},
                             {{ department_stat.sanghwang_score_10|floatformat:1 }},
+                            {{ department_stat.psat_average_10|floatformat:1 }},
                         ],
                         borderWidth: 1,
                     },
                     {
                         label: '전체 상위 10%',
                         data: [
-                            {{ total_stat.psat_average_10|floatformat:1 }},
                             {{ total_stat.eoneo_score_10|floatformat:1 }},
                             {{ total_stat.jaryo_score_10|floatformat:1 }},
                             {{ total_stat.sanghwang_score_10|floatformat:1 }},
+                            {{ total_stat.psat_average_10|floatformat:1 }},
                         ],
                         borderWidth: 1,
                     },
                     {
                         label: '직렬 최고',
                         data: [
-                            {{ department_stat.psat_average_max|floatformat:1 }},
                             {{ department_stat.eoneo_score_max|floatformat:1 }},
                             {{ department_stat.jaryo_score_max|floatformat:1 }},
                             {{ department_stat.sanghwang_score_max|floatformat:1 }},
+                            {{ department_stat.psat_average_max|floatformat:1 }},
                         ],
                         borderWidth: 1,
                         hidden: true,
@@ -160,10 +159,10 @@
                     {
                         label: '전체 최고',
                         data: [
-                            {{ total_stat.psat_average_max|floatformat:1 }},
                             {{ total_stat.eoneo_score_max|floatformat:1 }},
                             {{ total_stat.jaryo_score_max|floatformat:1 }},
                             {{ total_stat.sanghwang_score_max|floatformat:1 }},
+                            {{ total_stat.psat_average_max|floatformat:1 }},
                         ],
                         borderWidth: 1,
                         hidden: true,
@@ -171,14 +170,39 @@
                 ]
             },
             options: {
+                indexAxis: 'y',
+                elements: {
+
+                },
                 scales: {
                     y: {
-                        beginAtZero: true
-                    }
+                        beginAtZero: true,
+                        font: {
+                            weight: 'bold',
+                        },
+                    },
+                },
+                {#responsive: false,#}
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: {
+                            }
+                        }
+                    },
                 },
                 grouped: true,
             }
-        });
+        }
+
+        if (typeof chart_canvas === 'undefined') {
+            const chart_canvas = document.getElementById('scoreChart');
+            new Chart(chart_canvas, chart_data);
+        } else {
+            chart_canvas.chart.destroy();
+            new Chart(chart_canvas, chart_data);
+        }
     </script>
 {% endpartial chart %}
 
@@ -223,9 +247,9 @@
     <div class="small table-responsive">
         <table class="table mb-0 align-middle">
             <thead>
-                <tr class="text-center table-warning">
+                <tr class="text-center align-middle table-warning">
                    <th class="col-1">과목</th>
-                   <th class="col-1">점수(점)</th>
+                   <th class="col-1">내 점수(점)</th>
                    <th class="col-1">전체 석차(등)</th>
                    <th class="col-1">전체 석차(%)</th>
                    <th class="col-1">직렬 석차(등)</th>
@@ -234,7 +258,7 @@
             </thead>
             <tbody>
                 <tr class="text-center">
-                    <th>헌법</th>
+                    <th class="text-nowrap">헌법</th>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -242,7 +266,7 @@
                     <td></td>
                 </tr>
                 <tr class="text-center">
-                    <th>언어논리</th>
+                    <th class="text-nowrap">언어논리</th>
                     <td>{{ student.eoneo_score|floatformat:1 }}</td>
                     <td>{{ my_total_rank.eoneo_rank }}</td>
                     <td>{{ my_total_rank.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
@@ -250,7 +274,7 @@
                     <td>{{ my_department_rank.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center">
-                    <th>자료해석</th>
+                    <th class="text-nowrap">자료해석</th>
                     <td>{{ student.jaryo_score|floatformat:1 }}</td>
                     <td>{{ my_total_rank.jaryo_rank }}</td>
                     <td>{{ my_total_rank.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
@@ -258,7 +282,7 @@
                     <td>{{ my_department_rank.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center">
-                    <th>상황판단</th>
+                    <th class="text-nowrap">상황판단</th>
                     <td>{{ student.sanghwang_score|floatformat:1 }}</td>
                     <td>{{ my_total_rank.sanghwang_rank }}</td>
                     <td>{{ my_total_rank.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
@@ -266,7 +290,7 @@
                     <td>{{ my_department_rank.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center table-warning">
-                    <th>PSAT 평균</th>
+                    <th class="text-nowrap">PSAT 평균</th>
                     <td>{{ student.psat_score|divide:3|floatformat:1 }}</td>
                     <td>{{ my_total_rank.psat_rank }}</td>
                     <td>{{ my_total_rank.psat_rank_ratio|percentage|floatformat:1 }}</td>
@@ -283,9 +307,9 @@
     <div class="small table-responsive">
         <table class="table mb-0 align-middle">
             <thead>
-                <tr class="text-center table-warning">
+                <tr class="text-center align-middle table-warning">
                    <th class="col-1">과목</th>
-                   <th class="col-1">응시자 수(명)</th>
+                   <th class="col-1">내 점수(점)</th>
                    <th class="col-1">최고 점수(점)</th>
                    <th class="col-1">상위 10%(점)</th>
                    <th class="col-1">상위 20%(점)</th>
@@ -294,7 +318,7 @@
             </thead>
             <tbody>
                 <tr class="text-center">
-                    <th>헌법</th>
+                    <th class="text-nowrap">헌법</th>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -302,32 +326,32 @@
                     <td></td>
                 </tr>
                 <tr class="text-center">
-                    <th>언어논리</th>
-                    <td>{{ stat.num_students }}</td>
+                    <th class="text-nowrap">언어논리</th>
+                    <td>{{ student.eoneo_score|floatformat:1 }}</td>
                     <td>{{ stat.eoneo_score_max|floatformat:1 }}</td>
                     <td>{{ stat.eoneo_score_10|floatformat:1 }}</td>
                     <td>{{ stat.eoneo_score_20|floatformat:1 }}</td>
                     <td>{{ stat.eoneo_score_avg|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center">
-                    <th>자료해석</th>
-                    <td>{{ stat.num_students }}</td>
+                    <th class="text-nowrap">자료해석</th>
+                    <td>{{ student.jaryo_score|floatformat:1 }}</td>
                     <td>{{ stat.jaryo_score_max|floatformat:1 }}</td>
                     <td>{{ stat.jaryo_score_10|floatformat:1 }}</td>
                     <td>{{ stat.jaryo_score_20|floatformat:1 }}</td>
                     <td>{{ stat.jaryo_score_avg|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center">
-                    <th>상황판단</th>
-                    <td>{{ stat.num_students }}</td>
+                    <th class="text-nowrap">상황판단</th>
+                    <td>{{ student.sanghwang_score|floatformat:1 }}</td>
                     <td>{{ stat.sanghwang_score_max|floatformat:1 }}</td>
                     <td>{{ stat.sanghwang_score_10|floatformat:1 }}</td>
                     <td>{{ stat.sanghwang_score_20|floatformat:1 }}</td>
                     <td>{{ stat.sanghwang_score_avg|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center table-warning">
-                    <th>PSAT 평균</th>
-                    <td>{{ stat.num_students }}</td>
+                    <th class="text-nowrap">PSAT 평균</th>
+                    <td>{{ student.psat_score|divide:3|floatformat:1 }}</td>
                     <td>{{ stat.psat_average_max|floatformat:1 }}</td>
                     <td>{{ stat.psat_average_10|floatformat:1 }}</td>
                     <td>{{ stat.psat_average_20|floatformat:1 }}</td>
