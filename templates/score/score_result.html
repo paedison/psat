@@ -75,124 +75,107 @@
                 datasets: [
                     {
                         label: '내 점수',
+                        borderWidth: 1,
                         data: [
                             {{ student.eoneo_score|floatformat:1 }},
                             {{ student.jaryo_score|floatformat:1 }},
                             {{ student.sanghwang_score|floatformat:1 }},
                             {{ student.psat_average|floatformat:1 }},
                         ],
-                        borderWidth: 1,
                     },
                     {
                         label: '직렬 평균',
+                        borderWidth: 1,
                         data: [
                             {{ department_stat.eoneo_score_avg|floatformat:1 }},
                             {{ department_stat.jaryo_score_avg|floatformat:1 }},
                             {{ department_stat.sanghwang_score_avg|floatformat:1 }},
                             {{ department_stat.psat_average_avg|floatformat:1 }},
                         ],
-                        borderWidth: 1,
                     },
                     {
                         label: '전체 평균',
+                        borderWidth: 1,
                         data: [
                             {{ total_stat.eoneo_score_avg|floatformat:1 }},
                             {{ total_stat.jaryo_score_avg|floatformat:1 }},
                             {{ total_stat.sanghwang_score_avg|floatformat:1 }},
                             {{ total_stat.psat_average_avg|floatformat:1 }},
                         ],
-                        borderWidth: 1,
                     },
                     {
                         label: '직렬 상위 20%',
+                        borderWidth: 1,
+                        hidden: true,
                         data: [
                             {{ department_stat.eoneo_score_20|floatformat:1 }},
                             {{ department_stat.jaryo_score_20|floatformat:1 }},
                             {{ department_stat.sanghwang_score_20|floatformat:1 }},
                             {{ department_stat.psat_average_20|floatformat:1 }},
                         ],
-                        borderWidth: 1,
-                        hidden: true,
                     },
                     {
                         label: '전체 상위 20%',
+                        borderWidth: 1,
+                        hidden: true,
                         data: [
                             {{ total_stat.eoneo_score_20|floatformat:1 }},
                             {{ total_stat.jaryo_score_20|floatformat:1 }},
                             {{ total_stat.sanghwang_score_20|floatformat:1 }},
                             {{ total_stat.psat_average_20|floatformat:1 }},
                         ],
-                        borderWidth: 1,
-                        hidden: true,
                     },
                     {
                         label: '직렬 상위 10%',
+                        borderWidth: 1,
                         data: [
                             {{ department_stat.eoneo_score_10|floatformat:1 }},
                             {{ department_stat.jaryo_score_10|floatformat:1 }},
                             {{ department_stat.sanghwang_score_10|floatformat:1 }},
                             {{ department_stat.psat_average_10|floatformat:1 }},
                         ],
-                        borderWidth: 1,
                     },
                     {
                         label: '전체 상위 10%',
+                        borderWidth: 1,
                         data: [
                             {{ total_stat.eoneo_score_10|floatformat:1 }},
                             {{ total_stat.jaryo_score_10|floatformat:1 }},
                             {{ total_stat.sanghwang_score_10|floatformat:1 }},
                             {{ total_stat.psat_average_10|floatformat:1 }},
                         ],
-                        borderWidth: 1,
                     },
                     {
                         label: '직렬 최고',
+                        borderWidth: 1,
+                        hidden: true,
                         data: [
                             {{ department_stat.eoneo_score_max|floatformat:1 }},
                             {{ department_stat.jaryo_score_max|floatformat:1 }},
                             {{ department_stat.sanghwang_score_max|floatformat:1 }},
                             {{ department_stat.psat_average_max|floatformat:1 }},
                         ],
-                        borderWidth: 1,
-                        hidden: true,
                     },
                     {
                         label: '전체 최고',
+                        borderWidth: 1,
+                        hidden: true,
                         data: [
                             {{ total_stat.eoneo_score_max|floatformat:1 }},
                             {{ total_stat.jaryo_score_max|floatformat:1 }},
                             {{ total_stat.sanghwang_score_max|floatformat:1 }},
                             {{ total_stat.psat_average_max|floatformat:1 }},
                         ],
-                        borderWidth: 1,
-                        hidden: true,
                     },
                 ]
             },
             options: {
                 indexAxis: 'y',
-                elements: {
-
-                },
+                plugins: {legend: {position: 'right'}},
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        font: {
-                            weight: 'bold',
-                        },
-                    },
+                    y: {ticks: {font: {weight: 'bold'}}},
+                    x: {ticks: {font: {weight: 'bold'}}}
                 },
-                {#responsive: false,#}
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            font: {
-                            }
-                        }
-                    },
-                },
-                grouped: true,
             }
         }
 
@@ -267,7 +250,7 @@
                 </tr>
                 <tr class="text-center">
                     <th class="text-nowrap">언어논리</th>
-                    <td>{{ student.eoneo_score|floatformat:1 }}</td>
+                     <td>{{ student.eoneo_score|floatformat:1 }}</td>
                     <td>{{ my_total_rank.eoneo_rank }}</td>
                     <td>{{ my_total_rank.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
                     <td>{{ my_department_rank.eoneo_rank }}</td>
