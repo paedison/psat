@@ -145,9 +145,7 @@ class BaseDetailView(PSATDetailInfoMixIn, DetailView):
         if self.request.method == 'GET':
             return main_template if self.request.htmx else base_template
         else:
-            return main_template
-
-        # return self.detail_template if self.request.method == 'GET' else self.icon_template
+            return self.icon_template
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
