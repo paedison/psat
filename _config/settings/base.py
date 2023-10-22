@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     'analysis',
     'score',
     'study',
+    'reference',
 ]
 
 MIDDLEWARE = [
