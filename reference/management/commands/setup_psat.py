@@ -1,107 +1,58 @@
 import csv
 
 import django.db.utils
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
-from django.db.models import Count
+from django.db import transaction
 
-from reference import models as referece_models
+from reference.models import Category, Exam, Subject, Psat, PsatProblem
 
 
 class Command(BaseCommand):
     help = 'Setup PSAT exams & problems'
 
     def handle(self, *args, **kwargs):
-        category_psat, _ = referece_models.Category.objects.get_or_create(name='PSAT')
+        def create_instances(file_name: str, model: any):
+            update_list = create_list = []
+            update_count = create_count = 0
+            model_name = model._meta.model_name
 
-        exam = []
-        subject = []
-        psat_exam = []
-        psat_problem = []
+            with open(file_name, 'r', encoding='utf-8') as file:
+                csv_data = csv.reader(file)
+                key = next(csv_data)
+                for row in csv_data:
+                    try:
+                        instance = model.objects.get(id=row[0])
+                        data = dict(zip(key[1:], row[1:]))
+                        fields_match = all(getattr(instance, field) == data[field] for field in key[1:])
+                        if not fields_match:
+                            for field, value in data.items():
+                                setattr(instance, field, value)
+                            update_list.append(instance)
+                            update_count += 1
+                    except ObjectDoesNotExist:
+                        data = dict(zip(key, row))
+                        create_list.append(model(**data))
+                        create_count += 1
+                try:
+                    with transaction.atomic():
+                        if create_list:
+                            model.objects.bulk_create(create_list)
+                            self.stdout.write(self.style.SUCCESS(
+                                f'Successfully {create_count} {model_name} instances created.'))
+                        elif update_list:
+                            model.objects.bulk_update(update_list, list(data.keys())[1:])
+                            self.stdout.write(self.style.SUCCESS(
+                                f'Successfully {update_count} {model_name} instances updated.'))
+                        else:
+                            self.stdout.write(self.style.SUCCESS(
+                                f'{model_name.capitalize()} instances already exist.'))
+                except django.db.utils.IntegrityError:
+                    self.stdout.write(self.style.SUCCESS(
+                        f'{model_name.capitalize()} instances already exist.'))
 
-        with open('exam.csv', 'r', encoding='utf8') as file:
-            csv_data = csv.reader(file)
-            next(csv_data)
-            exam_count = 0
-            for row in csv_data:
-                exam.append(
-                    referece_models.Exam(
-                        id=row[0],
-                        category_id=row[1],
-                        abbr=row[2],
-                        label=row[3],
-                        name=row[4],
-                        remark=row[5],
-                    )
-                )
-                exam_count += 1
-            try:
-                referece_models.Exam.objects.bulk_create(exam)
-                self.stdout.write(self.style.SUCCESS(f'Successfully {exam_count} exam instances created.'))
-            except django.db.utils.IntegrityError:
-                self.stdout.write(self.style.SUCCESS(f'Exam instances already exist.'))
-
-
-        with open('subject.csv', 'r', encoding='utf8') as file:
-            csv_data = csv.reader(file)
-            next(csv_data)
-            subject_count = 0
-            for row in csv_data:
-                subject.append(
-                    referece_models.Subject(
-                        id=row[0],
-                        category_id=row[1],
-                        abbr=row[2],
-                        name=row[3],
-                    )
-                )
-                subject_count += 1
-            try:
-                referece_models.Subject.objects.bulk_create(subject)
-                self.stdout.write(self.style.SUCCESS(f'Successfully {subject_count} subject instances created.'))
-            except django.db.utils.IntegrityError:
-                self.stdout.write(self.style.SUCCESS(f'Subject instances already exist.'))
-
-
-        with open('psat_exam.csv', 'r', encoding='utf8') as file:
-            csv_data = csv.reader(file)
-            next(csv_data)
-            psat_exam_count = 0
-            for row in csv_data:
-                psat_exam.append(
-                    referece_models.PsatExam(
-                        id=row[0],
-                        year=row[1],
-                        exam_id=row[2],
-                        subject_id=row[3],
-                    )
-                )
-                psat_exam_count += 1
-            try:
-                referece_models.PsatExam.objects.bulk_create(psat_exam)
-                self.stdout.write(self.style.SUCCESS(f'Successfully {psat_exam_count} PSAT exam instances created.'))
-            except django.db.utils.IntegrityError:
-                self.stdout.write(self.style.SUCCESS(f'PSAT exam instances already exist.'))
-
-
-        with open('psat_problem.csv', 'r', encoding='utf8') as file:
-            csv_data = csv.reader(file)
-            next(csv_data)
-            psat_problem_count = 0
-            for row in csv_data:
-                psat_problem.append(
-                    referece_models.PsatProblem(
-                        id=row[0],
-                        exam_id=row[1],
-                        number=row[2],
-                        answer=row[3],
-                        question=row[4],
-                        data=row[5],
-                    )
-                )
-                psat_problem_count += 1
-            try:
-                referece_models.PsatProblem.objects.bulk_create(psat_problem)
-                self.stdout.write(self.style.SUCCESS(f'Successfully {psat_problem_count} PSAT problem instances created.'))
-            except django.db.utils.IntegrityError:
-                self.stdout.write(self.style.SUCCESS(f'PSAT problem instances already exist.'))
-
+        create_instances('category.csv', Category)
+        create_instances('exam.csv', Exam)
+        create_instances('subject.csv', Subject)
+        create_instances('psat.csv', Psat)
+        create_instances('psat_problem.csv', PsatProblem)

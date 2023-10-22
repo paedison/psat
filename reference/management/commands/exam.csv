@@ -1,4 +1,4 @@
-﻿id,category,abbr,label,name,remark
+id,category_id,abbr,label,name,remark
 1,1,행시,5급공채/행정고시,5급공채,
 2,1,입시,입법고시,입법고시,
 3,1,칠급,7급공채,7급공채,
