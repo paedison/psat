@@ -1,41 +1,26 @@
 from django.core.paginator import Paginator
 from vanilla import TemplateView
 
-from reference.models import PsatProblem
-from .viewmixins import PsatListViewMixIn, PsatCustomInfo
+from .viewmixins import (
+    PsatCustomInfo,
+    PsatListViewMixIn,
+)
 
 
-class BaseListView(
+class PsatListView(
     PsatCustomInfo,
     PsatListViewMixIn,
     TemplateView,
 ):
     """ Represent PSAT base list view. """
-    model = PsatProblem
-    context_object_name = 'problem'
-    paginate_by = 10
-    view_type: str  # One of [ problem, like, rate, solve ]
+    template_name = 'psat/v2/problem_list.html'
 
     def get_template_names(self):
-        """
-        Get the template name.
-        base(GET): whole page > main(POST): main page > content(GET): content page
-        If view_type == 'search', 'GET' for pagination, 'POST' for search in search bar
-        :return: str
-        """
-        base = 'psat/v2/problem_list.html'
-        main = f'{base}#list_main'
-
-        content = f'{base}#content'
-        method = self.request.method
-
-        if self.view_type == 'search':
-            return content if method == 'GET' else main
-        else:
-            if method == 'GET':
-                return main if self.request.htmx else base
-            else:
-                return main
+        template_names = {
+            'htmxFalse': self.template_name,
+            'htmxTrue': f'{self.template_name}#list_main',
+        }
+        return template_names[f'htmx{bool(self.request.htmx)}']
 
     def post(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -100,4 +85,4 @@ class BaseListView(
         }
 
 
-base_view = BaseListView.as_view()
+base_view = PsatListView.as_view()

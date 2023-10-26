@@ -98,6 +98,7 @@ class PsatListViewMixIn(PsatIconSet):
 
     @property
     def view_type(self) -> str:
+        """Get view type from [ problem, like, rate, solve ]. """
         return self.kwargs.get('view_type', 'problem')
 
     @property
@@ -261,7 +262,10 @@ class PsatListViewMixIn(PsatIconSet):
                     problem_filter &= Q(**{field + '__isnull': False})
                 else:
                     problem_filter &= Q(**{field: value})
-        return PsatProblem.objects.filter(problem_filter)
+        return PsatProblem.objects.filter(
+            problem_filter).prefetch_related(
+            'psat', 'psat__exam', 'psat__subject',
+        )
 
     @property
     def queryset(self):
@@ -291,6 +295,14 @@ class PsatListViewMixIn(PsatIconSet):
     def sub_option(self) -> list[tuple]:
         sub_list = self.queryset.values_list('psat__subject__abbr', 'psat__subject__name')
         return self.get_option(sub_list)
+
+    @property
+    def option(self):
+        year_list = self.queryset.annotate(
+            year_suffix=Cast(
+                Concat(F('psat__year'), Value('년')), CharField()
+            )).values_list('psat__year', 'year_suffix')
+        return self.get_option(year_list)
 
 
 class PsatDetailViewMixIn(PsatIconSet):
@@ -504,6 +516,24 @@ class PsatDetailViewMixIn(PsatIconSet):
             return instance
 
 
+class PsatSolveModalViewMixIn(PsatIconSet):
+    request: any
+
+    @property
+    def problem_id(self) -> int:
+        return int(self.request.POST.get('problem_id'))
+
+    @property
+    def answer(self) -> int | None:
+        answer = self.request.POST.get('answer')
+        return int(answer) if answer else None
+
+    @property
+    def is_correct(self) -> bool | None:
+        problem = PsatProblem.objects.get(id=self.problem_id)
+        return None if self.answer is None else (self.answer == problem.answer)
+
+
 def get_organized_list(target: dict) -> list:
     """ Return organized list divided by 5 items. """
     organized_list = []
@@ -518,7 +548,23 @@ def get_organized_list(target: dict) -> list:
 
 
 class PsatCustomInfo:
+    user_id: int
     request: any
+
+    @property
+    def like_list(self):
+        return Like.objects.filter(user_id=self.user_id).values_list(
+            'problem_id', flat=True
+        )
+
+    @property
+    def like_data(self):
+        data = Like.objects.filter(user_id=self.user_id).values(
+            'problem_id', 'is_liked'
+        )
+        return Like.objects.filter(user_id=self.user_id).values(
+            'problem_id', 'is_liked'
+        )
 
     def get_custom_info(self, obj):
         user = self.request.user
@@ -526,10 +572,14 @@ class PsatCustomInfo:
         problem_id = obj.id
 
         if user.is_authenticated:
-            like_instance = Like.objects.filter(
-                user_id=user_id, problem_id=problem_id).first()
-            obj.liked_at = like_instance.timestamp if like_instance else None
-            obj.is_liked = like_instance.is_liked if like_instance else None
+            try:
+                like_instance = Like.objects.get(
+                    user_id=user_id, problem_id=problem_id
+                )
+                obj.liked_at = like_instance.timestamp
+                obj.is_liked = like_instance.is_liked
+            except ObjectDoesNotExist:
+                pass
 
             rate_instance = Rate.objects.filter(
                 user_id=user_id, problem_id=problem_id).first()

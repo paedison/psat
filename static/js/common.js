@@ -1,6 +1,4 @@
 const info = JSON.parse($('#info').text());
-const psat_menu = ['problem', 'like', 'rate', 'answer', 'solve']
-const psat_type = ['problemList', 'likeList', 'rateList', 'answerList', 'solveList']
 const menu = info['menu'];
 const type = info['type'];
 
@@ -23,28 +21,17 @@ function expandMenu(target) {
     bulletPoint.removeClass('fa-regular').addClass('fa-solid');
 }
 
-// When clicked the main menu [Notice, Dashboard, PSAT, Schedule, Score]
-// menu = notice | dashboard | problem | schedule | score
+// When the main menu activated [Notice, Dashboard, PSAT, Schedule, Score]
+// menu = notice | dashboard | psat | schedule | score
 $(document).ready(function() {
-    const targetLink = `#${menu}List`;
-    if (psat_menu.includes(menu)) {
-        expandMenu(targetLink);
-    } else {
-        $(targetLink).removeClass('collapsed');
+    if (menu === 'psat') {
+        const view_type = info['view_type'];
+        expandMenu(`#${view_type}List`);
+    }
+    else {
+        $(`#${menu}List`).removeClass('collapsed');
     }
 });
-
-// When clicked the PSAT sub-menu [Problem, Like, Rate, Answer]
-// type = problem | like | rate | answer
-$(document).ready(function() {
-    const targetLink = `#${type}`;
-    if (psat_type.includes(type)) {
-        expandMenu(targetLink);
-    } else {
-        $(targetLink).removeClass('collapsed');
-    }
-});
-
 
 // Initialize the side menu bar
 function initialMenu(target) {
@@ -86,62 +73,3 @@ $(document).on('click', '.aside-nav-icon', function() {
         $('body').removeClass('toggle-sidebar');
     }
 });
-
-
-// $(document).ready(function() {
-//     const targetLink = `#${menu}List`;
-//     if (psat_menu.includes(menu)) {
-//         expandMenu(targetLink);
-//     } else {
-//         $(targetLink).removeClass('collapsed');
-//     }
-// });
-//
-//
-/* Hide header bar */
-// $(document).ready(function() {
-//     let prevScrollPos = $(window).scrollTop();
-//
-//     $(window).scroll(function() {
-//         const currentScrollPos = $(window).scrollTop();
-//         if (prevScrollPos < currentScrollPos) {
-//             $('.header').addClass('hide');
-//         } else {
-//             $('.header').removeClass('hide');
-//         }
-//         prevScrollPos = currentScrollPos;
-//     });
-// });
-// export const urls = {
-//     // Category or Menu
-//     'dashboard': '/dashboard/',
-//     'profile': '/account/profile/',
-//     'problem': '/psat/',
-//     'psat': '/psat/',
-//     'list': '/psat/',
-//     'detail': '/psat/detail/',
-//     'like': '/psat/like/',
-//     'rate': '/psat/rate/',
-//     'answer': '/psat/answer/',
-//     'schedule': '/schedule/',
-//
-//     // Type
-//     'dashboardList': '/dashboard/',
-//     'profileList': '/account/profile/',
-//     'problemList': '/psat/',
-//     'problemDetail': '/psat/detail/',
-//     'likeList': '/psat/like/',
-//     'likeDetail': '/psat/like/',
-//     'rateList': '/psat/rate/',
-//     'rateDetail': '/psat/rate/',
-//     'answerList': '/psat/answer/',
-//     'answerDetail': '/psat/answer/',
-//     'scheduleList': '/schedule/',
-// }
-// const psat_menu = ['problem', 'like', 'rate', 'answer']
-// const psat_type = ['problemList', 'likeList', 'rateList', 'answerList']
-//
-// export let info = JSON.parse($('#info').text());
-// let menu = info['menu'] || $('#info').text();
-// let type = info['type'] || $('#info').text();
-// export let csrf_token = $("input[name='csrfmiddlewaretoken']").val();

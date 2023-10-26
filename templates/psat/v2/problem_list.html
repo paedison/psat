@@ -17,14 +17,13 @@
             <span class="fs-6 text-bg-primary">{{ sub_title }}</span>
         </h1>
     </div><!-- Page Title End -->
-    {% partial content %}
+    {% partial list_content %}
 {% endpartial %}
 
 
-{% startpartial content %}
+{% startpartial list_content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
-{#             hx-target="this" hx-swap="outerHTML swap:0.25s">#}
     {% #content_row class3='p-4' %}
         <div class="d-flex flex-wrap">
             <div class="dropdown py-2 me-auto">
@@ -224,9 +223,13 @@
 
 
 {% startpartial reference %}
-    <a class="text-decoration-none fw-bold" href="{{ url }}">
+    <a class="text-decoration-none fw-bold" href="" hx-push-url="true"
+       hx-get="{{ url }}">
         {{ problem.psat.year }}-{{ problem.psat.exam.abbr }}-{{ problem.psat.subject.abbr }} {{ problem.number|add_0 }}
     </a>
+{#    <a class="text-decoration-none fw-bold" href="{{ url }}">#}
+{#        {{ problem.psat.year }}-{{ problem.psat.exam.abbr }}-{{ problem.psat.subject.abbr }} {{ problem.number|add_0 }}#}
+{#    </a>#}
 {% endpartial %}
 {% startpartial reference_content %}
     <div class="td-div-xl text-start" aria-label="Reference">
@@ -257,16 +260,20 @@
 {% endpartial %}
 
 {% startpartial question %}
-    <a class="text-decoration-none d-md-none" href="{{ url }}">
+    <a class="text-decoration-none d-md-none" href="" hx-push-url="true"
+       hx-get="{{ url }}">
         {% with chars=30 %}{% partial q %}{% endwith %}
     </a>
-    <a class="text-decoration-none d-none d-md-inline d-lg-none" href="{{ url }}">
+    <a class="text-decoration-none d-none d-md-inline d-lg-none" href="" hx-push-url="true"
+       hx-get="{{ url }}">
         {% with chars=40 %}{% partial q %}{% endwith %}
     </a>
-    <a class="text-decoration-none d-none d-lg-inline d-xl-none" href="{{ url }}">
+    <a class="text-decoration-none d-none d-lg-inline d-xl-none" href="" hx-push-url="true"
+       hx-get="{{ url }}">
         {% with chars=50 %}{% partial q %}{% endwith %}
     </a>
-    <a class="text-decoration-none d-none d-xl-inline" href="{{ url }}">
+    <a class="text-decoration-none d-none d-xl-inline" href="" hx-push-url="true"
+       hx-get="{{ url }}">
         {% with chars=60 %}{% partial q %}{% endwith %}
     </a>
 {% endpartial %}

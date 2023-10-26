@@ -1,27 +1,30 @@
 from vanilla import TemplateView
 
-from reference.models import PsatProblem
-from .viewmixins import PsatDetailViewMixIn, PsatCustomInfo, PsatIconSet
+from .viewmixins import (
+    PsatCustomInfo,
+    PsatDetailViewMixIn,
+    PsatSolveModalViewMixIn,
+)
 
 
-class BaseDetailView(
+class PsatDetailView(
     PsatCustomInfo,
     PsatDetailViewMixIn,
     TemplateView,
 ):
     """Represent PSAT base detail view."""
+    template_name = 'psat/v2/problem_detail.html'
 
-    def get_template_names(self) -> str:
-        base_template = 'psat/v2/problem_detail.html'
-        main_template = f'{base_template}#detail_main'
-
-        icon_container = 'psat/v2/snippets/icon_container.html'
-        icon_template = f'{icon_container}#{self.view_type}'
-
-        if self.request.method == 'GET':
-            return main_template if self.request.htmx else base_template
-        else:
+    def get_template_names(self):
+        icon_template = f'psat/v2/snippets/icon_container.html#{self.view_type}'
+        template_names = {
+            'htmxFalse': self.template_name,
+            'htmxTrue': f'{self.template_name}#detail_main',
+        }
+        if self.request.method == 'POST':
             return icon_template
+        else:
+            return template_names[f'htmx{bool(self.request.htmx)}']
 
     def post(self, request, *args, **kwargs):
         option_dict = {
@@ -39,7 +42,7 @@ class BaseDetailView(
         }
         return self.render_to_response(context)
 
-    def get_context_data(self, **kwargs) -> dict:
+    def get_context_data(self, **kwargs):
         return {
             # List view info & title
             'info': self.info,
@@ -65,7 +68,7 @@ class BaseDetailView(
         }
 
 
-class RateModalView(TemplateView):
+class PsatRateModalView(TemplateView):
     template_name = 'psat/v2/snippets/icon_container.html#rate_modal'
 
     def get_context_data(self, **kwargs):
@@ -75,22 +78,11 @@ class RateModalView(TemplateView):
         }
 
 
-class SolveModalView(PsatIconSet, TemplateView):
+class PsatSolveModalView(
+    PsatSolveModalViewMixIn,
+    TemplateView,
+):
     template_name = 'psat/v2/snippets/answer_container.html#answer_modal'
-
-    @property
-    def problem_id(self) -> int:
-        return int(self.request.POST.get('problem_id'))
-
-    @property
-    def answer(self) -> int | None:
-        answer = self.request.POST.get('answer')
-        return int(answer) if answer else None
-
-    @property
-    def is_correct(self) -> bool | None:
-        problem = PsatProblem.objects.get(id=self.problem_id)
-        return None if self.answer is None else (self.answer == problem.answer)
 
     def post(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -104,6 +96,6 @@ class SolveModalView(PsatIconSet, TemplateView):
         }
 
 
-base_view = BaseDetailView.as_view()
-rate_modal_view = RateModalView.as_view()
-solve_modal_view = SolveModalView.as_view()
+base_view = PsatDetailView.as_view()
+rate_modal_view = PsatRateModalView.as_view()
+solve_modal_view = PsatSolveModalView.as_view()
