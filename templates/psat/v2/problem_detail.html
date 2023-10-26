@@ -1,0 +1,106 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% block head_title %}{{ title }}{% endblock head_title %}
+
+{% block main %}{% partial detail_main %}{% endblock %}
+
+
+{% startpartial detail_main %}
+    <section>
+        {{ info|json_script:'info' }}
+        <div class="pagetitle my-2">
+            <div class="d-flex align-items-center pb-2 fs-6">
+                <div>
+                    <div class="input-group me-2">
+                        {% include 'psat/v2/snippets/nav_container.html' %}
+                    </div>
+                </div>
+                <div class="small">
+                    {% include 'psat/v2/snippets/icon_container.html' %}
+                </div>
+            </div>
+            <h1>
+                {{ title }}
+            </h1>
+        </div><!-- Page Title End -->
+        <section class="section">
+        {% #content_row %}
+            <table class="table my-4">
+                {% if problem %}
+                    <thead>{% partial thead %}</thead>
+                    <tbody>{% partial tbody %}</tbody>
+                {% endif %}
+            </table>
+        {% /content_row %}
+        </section>
+    </section><!-- Main Content End -->
+{% endpartial %}
+
+
+{% startpartial thead %}
+    <tr>
+        <th class="p-0">
+            {% if problem.image_file.tag1 == 'Preparing Image' %}
+                <div class="d-flex">
+                    <h6 class="lh-base text-nowrap me-2 fw-bold text-primary">
+                        문&nbsp;{{ problem.number|add_space }}.
+                    </h6>
+                    <h6 class="lh-base fw-bold text-secondary">
+                        {{ problem.question }}
+                    </h6>
+                </div>
+            {% endif %}
+        </th>
+    </tr>
+{% endpartial %}
+
+
+{% startpartial tbody %}
+    <tr>
+        <td class="px-0">
+            <div class="d-flex justify-content-end pb-2">
+                {% include 'psat/v2/snippets/answer_container.html' %}
+            </div>
+            <div class="d-flex flex-wrap align-items-start justify-content-start">
+                {% with image=problem.image_file %}
+                    {% if image.tag1 == 'Preparing Image' %}
+                        <img class="mw-100 mx-auto" alt="{{ image.tag1 }}"
+                             src="{{ image.name1 }}"/>
+                    {% else %}
+                        <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag1 }}"
+                             src="{{ image.name1 }}"/>
+                    {% endif %}
+                    {% if problem.image_file.name2 %}
+                        <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag2 }}"
+                             src="{{ image.name2 }}"/>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </td>
+    </tr>
+    {% if user.is_authenticated %}
+        <tr>
+            <td class="p-0">
+                <div id="detailMemo" hx-trigger="load delay:0s"
+                    {% if problem_memo is None %}
+                        hx-get="{% url 'psat_v2:memo_create' problem.id %}"
+                    {% else %} hx-get="{% url 'psat_v2:memo_detail' problem_memo.id %}"
+                    {% endif %} hx-swap="innerHTML"></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="p-0">
+                <div id="detailTags" hx-trigger="load delay:0s"
+                    {% if my_tag is None %}
+                        hx-get="{% url 'psat_v2:tag_create' problem.id %}"
+                    {% else %} hx-get="{% url 'psat_v2:tag_container' my_tag.id %}"
+                    {% endif %} hx-swap="innerHTML"></div>
+            </td>
+        </tr>
+    {% endif %}
+{% endpartial %}

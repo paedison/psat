@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['-year'],
             },
-            bases=(psat.models.AddInfo, models.Model),
+            bases=(psat.models.old_psat_models.AddInfo, models.Model),
         ),
         migrations.CreateModel(
             name='Problem',
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['-exam__year', 'id'],
             },
-            bases=(psat.models.AddInfo, models.Model),
+            bases=(psat.models.old_psat_models.AddInfo, models.Model),
         ),
         migrations.CreateModel(
             name='ProblemData',
@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
                 ('data', models.TextField()),
                 ('problem', models.OneToOneField(db_column='problem_id', on_delete=django.db.models.deletion.CASCADE, to='psat.problem', verbose_name='문제 ID')),
             ],
-            bases=(psat.models.AddInfo, models.Model),
+            bases=(psat.models.old_psat_models.AddInfo, models.Model),
         ),
         migrations.CreateModel(
             name='Evaluation',
@@ -80,6 +80,6 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['-problem__exam__year', 'problem__exam__id', 'problem__number'],
             },
-            bases=(psat.models.AddInfo, psat.models.UpdateInfo, models.Model),
+            bases=(psat.models.old_psat_models.AddInfo, psat.models.old_psat_models.UpdateInfo, models.Model),
         ),
     ]

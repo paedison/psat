@@ -1,0 +1,110 @@
+{% load static %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% fragment as prev_icon %}{{ icon_nav.prev_prob|safe }}{% endfragment %}
+{% fragment as next_icon %}{{ icon_nav.next_prob|safe }}{% endfragment %}
+
+{% fragment as button_color %}
+    {% if info.view_type == 'problem' %}btn-primary
+    {% elif info.view_type == 'like' %}btn-danger
+    {% elif info.view_type == 'rate' %}btn-warning
+    {% elif info.view_type == 'answer' %}btn-success{% endif %}
+{% endfragment %}
+
+
+<a id="problem_list" href="javascript:history.back()" class="btn {{ button_color }}">
+    {{ icon_nav.left_arrow|safe }}
+</a>
+{% with prob=prev_prob icon=prev_icon %}{% partial nav_prob %}{% endwith %}
+{% with prob=next_prob icon=next_icon %}{% partial nav_prob %}{% endwith %}
+
+<a id="problemChoiceLink" href="#" role="button"
+   class="btn btn-circle {{ button_color }} dropdown-toggle"
+   data-bs-toggle="dropdown" aria-expanded="false">
+    {{ icon_nav.list|safe }}
+</a>
+<div class="dropdown-menu" aria-labelledby="problemChoiceLink">
+    <div class="dropdown" role="option">
+        {% if info.type == 'problemDetail' %}
+            {% partial problem_filter %}
+        {% else %}
+            {% partial other_filter %}
+        {% endif %}
+    </div>
+</div>
+
+
+{% startpartial nav_prob %}
+    {% if prob %}
+        {% if info.view_type == 'problem' %}
+            <a class="btn {{ button_color }}"
+               href="{{ prob.problem_url }}">{{ icon }}</a>
+        {% elif info.view_type == 'like' %}
+            <a class="btn {{ button_color }}"
+               href="{{ prob.like_url }}">{{ icon }}</a>
+        {% elif info.view_type == 'rate' %}
+            <a class="btn {{ button_color }}"
+               href="{{ prob.rate_url }}">{{ icon }}</a>
+        {% elif info.view_type == 'solve' %}
+            <a class="btn {{ button_color }}"
+               href="{{ prob.solve_url }}">{{ icon }}</a>
+        {% endif %}
+    {% else %}
+        <a class="btn {{ button_color }}"></a>
+    {% endif %}
+{% endpartial %}
+
+
+{% startpartial problem_filter %}
+    <div class="container p-0" style="min-width: 300px;">
+        <div class="row justify-content-center p-2 text-primary fw-bold">
+            {{ problem.psat.year }}년 '{{ problem.psat.exam.name }}' {{ problem.psat.subject }}
+        </div>
+        <div class="row justify-content-center">
+            {% for num in num_range %}
+                <div class="col-2 text-center small p-1">
+                    <a href="{% url 'psat:problem_detail' anchor_id|add:num %}">
+                        {{ num }}번
+                    </a>
+                </div>
+                {% if forloop.counter|divisibleby:5 %}
+        </div>
+        <div class="row justify-content-center">
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endpartial %}
+
+
+{% startpartial other_filter %}
+    <div class="container no-gutters justify-content-center p-0" style="min-width: 300px;">
+        {% for data in list_data %}
+            {% if forloop.counter0|divisibleby:5 %}
+                </div>
+            {% ifchanged %}
+                {% if forloop.counter0 != 0 %}
+                <hr class="m-2">
+                {% endif %}
+                <div class="row justify-content-center p-2 text-primary fw-bold">
+                    {{ data.exam_name }}
+                </div>
+            {% endifchanged %}
+                <div class="row justify-content-center">
+            {% endif %}
+            {% if data %}
+                <div class="col-2 text-center p-0">
+                    <a href="{{ data.problem_url }}"
+                       class="p-1 dropdown-item text-nowrap text-center
+                       {% if num == data.problem_number %} active{% endif %}">
+                        {{ data.problem_number }}번
+                    </a>
+                </div>
+            {% else %}
+                <div class="col-2 text-center p-0"> </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endpartial %}

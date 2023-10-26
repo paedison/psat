@@ -1,0 +1,98 @@
+{% load partials %}
+{% load slippers %}
+{% load psat_filter %}
+
+<div class="td-div-xs" aria-label="Like">
+    {% if user.is_authenticated %}
+        <a hx-post="{% url 'psat_v2:detail' 'like' problem.id %}" href=""
+           class="htmx-fade-in htmx-fade-out" hx-target="this" hx-swap="innerHTML swap:0.25s">
+            {% partial like %}
+        </a>
+    {% else %}
+        <a hx-get="{% url 'account_login_modal' %}" href=""
+           hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
+            {{ PSAT_ICON_SET.likeNone|safe }}
+        </a>
+    {% endif %}
+</div>
+<div class="td-div-lg" aria-label="Rate">
+    {% if user.is_authenticated %}
+        <a id="psatRate{{ problem.id }}" href="" class="htmx-fade-in htmx-fade-out"
+           hx-get="{% url 'psat_v2:rate_modal' %}?problem_id={{ problem.id }}&icon_id=psatRate{{ problem.id }}"
+           hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
+            {% partial rate %}
+        </a>
+    {% else %}
+        <a hx-get="{% url 'account_login_modal' %}" href=""
+           hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
+            {{ PSAT_ICON_SET.starNone|safe }}
+        </a>
+    {% endif %}
+</div>
+<div class="td-div-xs" aria-label="Answer">
+    {% if user.is_authenticated %}
+        <span id="psatSolve{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+            {% partial solve %}</span>
+    {% endif %}
+</div>
+
+
+{% startpartial like %}
+    {% if problem.is_liked or is_liked %}
+        {{ icon_like.true|safe }}
+    {% else %}
+        {{ icon_like.false|safe }}
+    {% endif %}
+{% endpartial %}
+
+
+{% startpartial rate %}
+    {% if problem.rating == 1 or rating == 1 %}
+        {{ icon_rate.star1|safe }}
+    {% elif problem.rating == 2 or rating == 2 %}
+        {{ icon_rate.star2|safe }}
+    {% elif problem.rating == 3 or rating == 3 %}
+        {{ icon_rate.star3|safe }}
+    {% elif problem.rating == 4 or rating == 4 %}
+        {{ icon_rate.star4|safe }}
+    {% elif problem.rating == 5 or rating == 5 %}
+        {{ icon_rate.star5|safe }}
+    {% else %}
+        {{ icon_rate.star0|safe }}
+    {% endif %}
+{% endpartial %}
+
+
+{% startpartial rate_modal %}
+    {% #modal header='문제 난이도를 선택해주세요.' %}
+        <form id="rateButton">
+        {% csrf_token %}
+            <fieldset>
+                {% for i in '12345' %}
+                    <input type="radio" name="rating" id="rating{{ i }}"
+                           value="{{ i|abstract:6 }}">
+                    <label for="rating{{ i }}"><i class="fa fa-star"></i></label>
+                {% endfor %}
+            </fieldset>
+            <button class="btn btn-primary m-1" data-bs-dismiss="modal"
+                    hx-post="{% url 'psat_v2:detail' 'rate' problem_id %}"
+                    hx-trigger="click" hx-target="#{{ icon_id }}" type="button"
+                    hx-swap="innerHTML swap:0.25s">
+                입력
+            </button>
+        </form>
+    {% /modal %}
+{% endpartial %}
+
+
+{% startpartial solve %}
+    {% if problem.is_correct is True or is_correct is True %}
+        {{ icon_solve.correct|safe }}
+    {% elif problem.is_correct is False or is_correct is False %}
+        {{ icon_solve.wrong|safe }}
+    {% else %}
+    {% endif %}
+{% endpartial %}

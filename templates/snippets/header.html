@@ -28,7 +28,7 @@
                    placeholder="{% trans 'Enter search keyword' %}"
                    title="{% trans 'Enter search keyword' %}">
             <button type="submit" title="Search" hx-swap="innerHtml swap:0.5s"
-                    hx-post="{% url 'psat:list' 'search' %}" hx-target="#main">
+                    hx-post="{% url 'psat_v2:list' 'search' %}" hx-target="#main">
                 {{ search_icon|safe }}
             </button>
         </form>
@@ -46,10 +46,10 @@
                             {{ admin_icon|safe }}</a>
                     </li>
                 {% endif %}
-                {% header_icon_link url='/psat/' icon=problem_icon|safe %}
-                {% header_icon_link url='/psat/like/' icon=like_icon|safe %}
-                {% header_icon_link url='/psat/rate/' icon=rate_icon|safe %}
-                {% header_icon_link url='/psat/answer/' icon=answer_icon|safe %}
+                {% header_icon_link url='/psat/v2/problem/' icon=problem_icon|safe %}
+                {% header_icon_link url='/psat/v2/like/' icon=like_icon|safe %}
+                {% header_icon_link url='/psat/v2/rate/' icon=rate_icon|safe %}
+                {% header_icon_link url='/psat/v2/solve/' icon=answer_icon|safe %}
                 <div class="topbar-divider"></div>
             {% endif %}
 

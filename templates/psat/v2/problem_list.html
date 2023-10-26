@@ -1,0 +1,330 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+{% load widget_tweaks %}
+
+{% block head_title %}{{ title }}{% endblock head_title %}
+
+{% block main %}{% partial list_main %}{% endblock %}
+
+
+{% startpartial list_main %}
+    {{ info|json_script:'info' }}
+    <div class="pagetitle my-2">
+        <h1>{{ icon|safe }} {{ title }}
+            <span class="fs-6 text-bg-primary">{{ sub_title }}</span>
+        </h1>
+    </div><!-- Page Title End -->
+    {% partial content %}
+{% endpartial %}
+
+
+{% startpartial content %}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+{#             hx-target="this" hx-swap="outerHTML swap:0.25s">#}
+    {% #content_row class3='p-4' %}
+        <div class="d-flex flex-wrap">
+            <div class="dropdown py-2 me-auto">
+                {% if info.menu == 'dashboard' %}{% partial dashboard_filter %}{% endif %}
+                {% if like_list or like_dashboard %}{% partial like_filter %}{% endif %}
+                {% if rate_list or rate_dashboard %}{% partial rate_filter %}{% endif %}
+                {% if solve_list or answer_dashboard %}{% partial solve_filter %}{% endif %}
+            </div>
+            <div class="dropdown py-2 ms-auto">
+                {% partial problem_filter %}
+            </div>
+        </div>
+        {% #responsive_table %}
+            {% partial table_head %}
+            <tbody>
+                {% if page_obj %}
+                    {% for problem in page_obj %}
+                        {% partial list_divider %}
+                        <tr>
+                            <td class="text-nowrap p-2 col-1">
+                                {% partial reference_content %}
+                                {% include 'psat/v2/snippets/icon_container.html' %}
+                                <div class="d-sm-none pt-2">
+                                    {% partial question_content %}
+                                </div>
+                            </td>
+                            <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
+                                {% partial question_content %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td class="text-center text-nowrap px-2" colspan="5">
+                            자료가 없습니다.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        {% /responsive_table %}
+        {% partial pagination %}
+    {% /content_row %}
+    </section>
+{% endpartial %}
+
+
+{% startpartial dashboard_filter %}
+    <button id="dropdownDashboardLink" type="button"
+            class="btn btn-sm btn-outline-primary dropdown-toggle"
+            data-bs-toggle="dropdown" aria-expanded="false">메뉴</button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownDashboardLink">
+        <li>
+            <a class="dropdown-item text-start ps-4
+               {% if info.view_type == 'like' %}active{% endif %}" href=""
+               hx-get="{% url 'dashboard:list' 'like' %}">
+                <i class="fa-solid fa-heart fa-fw"></i>즐겨찾기
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item text-start ps-4
+               {% if info.view_type == 'rate' %}active{% endif %}" href=""
+               hx-get="{% url 'dashboard:list' 'rate' %}">
+                <i class="fa-solid fa-star fa-fw"></i>난이도
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item text-start ps-4
+               {% if info.view_type == 'answer' %}active{% endif %}" href=""
+               hx-get="{% url 'dashboard:list' 'answer' %}">
+                <i class="fa-solid fa-circle-check fa-fw"></i>정답확인
+            </a>
+        </li>
+    </ul>
+{% endpartial %}
+
+
+{% startpartial filter_snippet %}
+    <button id="dropdown{{ var|title }}Link" type="button"
+            class="btn btn-sm btn-outline-primary dropdown-toggle"
+            data-bs-toggle="dropdown" aria-expanded="false">
+        {{ text }}
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdown{{ var|title }}Link">
+        <li>
+            <a class="dropdown-item text-center
+               {% if current == '' %}active{% endif %}" href=""
+               hx-get="{{ base_url }}
+?year={% if var != 'year' %}{{ exam_year }}{% endif %}
+&ex={% if var != 'ex' %}{{ exam_ex }}{% endif %}
+&sub={% if var != 'sub' %}{{ exam_sub }}{% endif %}
+&is_liked={% if var != 'like' %}{{ is_liked }}{% endif %}
+&rating={% if var != 'rate' %}{{ rating }}{% endif %}
+&is_correct={% if var != 'solve' %}{{ is_correct }}{% endif %}
+&data={{ search_data }}&date={{ search_date }}">
+                <i class="fa-regular fa-file-lines"></i>{{ total }}
+            </a>
+        </li>
+        {% for opt in option %}
+            <li>
+                <a class="dropdown-item text-center
+                   {% if opt.0 == current %}active{% endif %}" href=""
+                   hx-get="{{ base_url }}
+?year={% if var == 'year' %}{{ opt.0 }}{% else %}{{ exam_year }}{% endif %}
+&ex={% if var == 'ex' %}{{ opt.0 }}{% else %}{{ exam_ex }}{% endif %}
+&sub={% if var == 'sub' %}{{ opt.0 }}{% else %}{{ exam_sub }}{% endif %}
+&is_liked={% if var == 'like' %}{{ opt.0 }}{% else %}{{ is_liked }}{% endif %}
+&rating={% if var == 'rate' %}{{ opt.0 }}{% else %}{{ rating }}{% endif %}
+&is_correct={% if var == 'solve' %}{{ opt.0 }}{% else %}{{ is_correct }}{% endif %}
+&data={{ search_data }}&date={{ search_date }}">
+                    {{ opt.1|safe }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endpartial %}
+
+{% startpartial problem_filter %}
+    <a type="button" class="btn btn-sm btn-primary" href=""
+       hx-get="{{ base_url }}">전체</a>
+    {% with var='year' text='연도' total='전체 연도' current=exam_year option=year_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
+
+    {% with var='ex' text='시험' total='전체 시험' current=exam_ex option=ex_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
+
+    {% with var='sub' text='과목' total='전체 과목' current=exam_sub option=sub_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
+{% endpartial %}
+
+{% startpartial like_filter %}
+    {% with var='like' text=PSAT_ICON_SET.filter|safe total='즐겨찾기 전체 문제' current=is_liked option=like_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
+{% endpartial %}
+
+{% startpartial rate_filter %}
+    {% with var='rate' text=PSAT_ICON_SET.filter|safe total='전체 문제' current=rating option=rate_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
+{% endpartial %}
+
+{% startpartial solve_filter %}
+    {% with var='solve' text=PSAT_ICON_SET.filter|safe total='전체 문제' current=is_correct option=solve_option %}
+        {% partial filter_snippet %}
+    {% endwith %}
+{% endpartial %}
+
+
+{% startpartial table_head %}
+<tr class="d-none d-sm-table-row">
+    <th class="text-nowrap p-2 col-1">
+        <div class="td-div-xl" aria-label="Reference">문제 출처</div>
+        <div class="td-div-xs" aria-label="Like">{{ PSAT_ICON_SET.likeTrue|safe }}</div>
+        <div class="td-div-lg" aria-label="Rate">난이도</div>
+        <div class="td-div-xs" aria-label="Answer">{{ PSAT_ICON_SET.answerTrue|safe }}</div>
+    </th>
+    <th class="text-start text-nowrap p-2">문제</th>
+</tr>
+{% endpartial %}
+
+
+{% startpartial datetime %}
+    {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+{% endpartial %}
+
+{% startpartial list_divider %}
+    {% if info.menu == 'psat' %}{% if not search_list %}{% ifchanged %}
+        {% #list_divider %}
+            <a hx-get="{{ base_url }}?exam__year={{ problem.year }}
+                &exam__ex={{ problem.ex }}&exam__sub={{ problem.sub }}" href="">
+                {{ problem.psat.year }}년 {{ problem.psat.exam.name }} {{ problem.psat.subject.name }}
+            </a>
+        {% /list_divider %}
+    {% endifchanged %}{% endif %}{% endif %}
+
+    {% if like_dashboard %}{% ifchanged %}
+        {% #list_divider %}
+            {% with timestamp=problem.liked_at %}{% partial datetime %}{% endwith %}
+        {% /list_divider %}
+    {% endifchanged %}{% endif %}
+
+    {% if rate_dashboard %}{% ifchanged %}
+        {% #list_divider %}
+            {% with timestamp=problem.rated_at %}{% partial datetime %}{% endwith %}
+        {% /list_divider %}
+    {% endifchanged %}{% endif %}
+
+    {% if answer_dashboard %}{% ifchanged %}
+        {% #list_divider %}
+            {% with timestamp=problem.answered_at %}{% partial datetime %}{% endwith %}
+        {% /list_divider %}
+    {% endifchanged %}{% endif %}
+{% endpartial %}
+
+
+{% startpartial reference %}
+    <a class="text-decoration-none fw-bold" href="{{ url }}">
+        {{ problem.psat.year }}-{{ problem.psat.exam.abbr }}-{{ problem.psat.subject.abbr }} {{ problem.number|add_0 }}
+    </a>
+{% endpartial %}
+{% startpartial reference_content %}
+    <div class="td-div-xl text-start" aria-label="Reference">
+        {% if problem_list or search_list %}
+            {% with url=problem.problem_url %}{% partial reference %}{% endwith %}
+        {% endif %}
+        {% if like_list or like_dashboard %}
+            {% if problem.is_liked %}
+                {% with url=problem.like_url %}{% partial reference %}{% endwith %}
+            {% else %}
+                {% with url=problem.problem_url %}{% partial reference %}{% endwith %}
+            {% endif %}
+        {% endif %}
+        {% if rate_list or rate_dashboard %}
+            {% with url=problem.rate_url %}{% partial reference %}{% endwith %}
+        {% endif %}
+        {% if solve_list or answer_dashboard %}
+            {% with url=problem.get_answer_url %}{% partial reference %}{% endwith %}
+        {% endif %}
+    </div>
+{% endpartial %}
+
+
+{% startpartial q %}
+    <h3 class="fs-6 small m-0">
+        {{ problem.question|truncatechars:chars }}
+    </h3>
+{% endpartial %}
+
+{% startpartial question %}
+    <a class="text-decoration-none d-md-none" href="{{ url }}">
+        {% with chars=30 %}{% partial q %}{% endwith %}
+    </a>
+    <a class="text-decoration-none d-none d-md-inline d-lg-none" href="{{ url }}">
+        {% with chars=40 %}{% partial q %}{% endwith %}
+    </a>
+    <a class="text-decoration-none d-none d-lg-inline d-xl-none" href="{{ url }}">
+        {% with chars=50 %}{% partial q %}{% endwith %}
+    </a>
+    <a class="text-decoration-none d-none d-xl-inline" href="{{ url }}">
+        {% with chars=60 %}{% partial q %}{% endwith %}
+    </a>
+{% endpartial %}
+
+{% startpartial question_content %}
+    {% if problem_list or search_list %}
+        {% with url=problem.problem_url %}{% partial question %}{% endwith %}
+    {% endif %}
+    {% if like_list or like_dashboard %}
+        {% if problem.is_liked %}
+            {% with url=problem.like_url %}{% partial question %}{% endwith %}
+        {% else %}
+            {% with url=problem.problem_url %}{% partial question %}{% endwith %}
+        {% endif %}
+    {% endif %}
+    {% if rate_list or rate_dashboard %}
+        {% with url=problem.rate_url %}{% partial question %}{% endwith %}
+    {% endif %}
+    {% if solve_list or answer_dashboard %}
+        {% with url=problem.get_answer_url %}{% partial question %}{% endwith %}
+    {% endif %}
+{% endpartial %}
+
+
+{% startpartial pagination_li %}
+    <li {% if status == 'active' %}aria-current="page"{% endif %}
+        class="page-item {{ status }}">
+        <a class="page-link" href=""
+           {% if status == 'disabled' %}tabindex="-1" aria-disabled="true"
+           {% else %}hx-get="{{ pagination_url }}&page={{ page_num }}"{% endif %}>
+            {% if chevron %}<i class="fa-solid fa-chevron-{{ chevron }}"></i>
+            {% else %}{{ anchor_text }}{% endif %}
+        </a>
+    </li>
+{% endpartial %}
+
+{% startpartial pagination %}
+    {% #pagination_nav %}
+        {% if page_obj.has_previous %}
+            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+                {% partial pagination_li %}
+            {% endwith %}
+        {% endif %}
+        {% for number in page_range %}
+            {% with page_num=number anchor_text=number %}
+                {% if number == page_obj.number %}
+                    {% with status='active' %}{% partial pagination_li %}{% endwith %}
+                {% elif number == page_obj.paginator.ELLIPSIS %}
+                    {% with status='disabled' %}{% partial pagination_li %}{% endwith %}
+                {% else %}
+                    {% partial pagination_li %}
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            {% with page_num=page_obj.number|add:1 chevron='right' %}
+                {% partial pagination_li %}
+            {% endwith %}
+        {% endif %}
+    {% /pagination_nav %}
+{% endpartial %}

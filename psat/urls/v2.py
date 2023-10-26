@@ -1,21 +1,19 @@
 from django.urls import path
 
-from .views import list_views, detail_views, memo_views, tag_views
+from psat.views.v2 import memo_views, tag_views
+from psat.views.v2 import list_views, detail_views
 
-app_name = 'psat'
+app_name = 'psat_v2'
 
 urlpatterns = [
-    # List Views [view_type: problem, like, rate, answer, search]
+    # List Views [view_type: problem, like, rate, solve, search]
     path('', list_views.base_view, name='base'),
     path('<str:view_type>/', list_views.base_view, name='list'),
 
-    # Detail Views
-    path('detail/<int:problem_id>/', detail_views.problem, name='problem_detail'),
-    path('like/detail/<int:problem_id>/', detail_views.like, name='like_detail'),
-    path('rate/detail/<int:problem_id>/', detail_views.rate, name='rate_detail'),
-    path('rate/detail/<int:problem_id>/modal/', detail_views.rate_modal, name='rate_detail_modal'),
-    path('answer/detail/<int:problem_id>/', detail_views.answer, name='answer_detail'),
-    path('answer/detail/<int:problem_id>/modal', detail_views.answer_modal, name='answer_detail_modal'),
+    # Detail Views [view_type: problem, like, rate, solve]
+    path('<str:view_type>/<int:problem_id>/', detail_views.base_view, name='detail'),
+    path('rate/modal/', detail_views.rate_modal_view, name='rate_modal'),
+    path('solve/modal/', detail_views.solve_modal_view, name='solve_modal'),
 
     # Memo Views
     path('memo/create/problem<int:problem_id>/', memo_views.create, name='memo_create'),

@@ -1,6 +1,6 @@
 const info = JSON.parse($('#info').text());
-const psat_menu = ['problem', 'like', 'rate', 'answer']
-const psat_type = ['problemList', 'likeList', 'rateList', 'answerList']
+const psat_menu = ['problem', 'like', 'rate', 'answer', 'solve']
+const psat_type = ['problemList', 'likeList', 'rateList', 'answerList', 'solveList']
 const menu = info['menu'];
 const type = info['type'];
 
