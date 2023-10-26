@@ -10,22 +10,18 @@ class BaseDetailView(
     TemplateView,
 ):
     """Represent PSAT base detail view."""
-    model = PsatProblem
-    context_object_name = 'problem'
-    lookup_field = 'id'
-    lookup_url_kwarg = 'problem_id'
 
     def get_template_names(self) -> str:
-        base = 'psat/v2/problem_detail.html'
-        main = f'{base}#detail_main'
+        base_template = 'psat/v2/problem_detail.html'
+        main_template = f'{base_template}#detail_main'
 
         icon_container = 'psat/v2/snippets/icon_container.html'
-        icon = f'{icon_container}#{self.view_type}'
+        icon_template = f'{icon_container}#{self.view_type}'
 
         if self.request.method == 'GET':
-            return main if self.request.htmx else base
+            return main_template if self.request.htmx else base_template
         else:
-            return icon
+            return icon_template
 
     def post(self, request, *args, **kwargs):
         option_dict = {
@@ -64,7 +60,7 @@ class BaseDetailView(
             'prev_prob': self.prev_prob,
             'next_prob': self.next_prob,
             'list_data': self.list_data,
-            'problem_memo': self.memo,
+            'memo': self.memo,
             'my_tag': self.my_tag,
         }
 

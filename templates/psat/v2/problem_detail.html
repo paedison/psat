@@ -87,10 +87,12 @@
         <tr>
             <td class="p-0">
                 <div id="detailMemo" hx-trigger="load delay:0s"
-                    {% if problem_memo is None %}
+                    {% if memo is None %}
                         hx-get="{% url 'psat_v2:memo_create' problem.id %}"
-                    {% else %} hx-get="{% url 'psat_v2:memo_detail' problem_memo.id %}"
-                    {% endif %} hx-swap="innerHTML"></div>
+                    {% else %}
+                        hx-get="{% url 'psat_v2:memo_detail' memo.id %}"
+                    {% endif %}
+                        hx-swap="innerHTML"></div>
             </td>
         </tr>
         <tr>

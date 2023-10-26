@@ -6,15 +6,17 @@ from psat.models import Memo
 from reference.models import PsatProblem
 
 
-class MemoSettingMixIn:
+class MemoViewMixIn:
     """Setting mixin for Memo views."""
     kwargs: dict
+    object: any
 
     model = Memo
     form_class = MemoForm
-    context_object_name = 'problem_memo'
+    context_object_name = 'memo'
     lookup_field = 'id'
     lookup_url_kwarg = 'memo_id'
+    template_name = 'psat/v2/snippets/memo_container.html'
 
     @property
     def problem_id(self) -> int | None:
@@ -29,13 +31,14 @@ class MemoSettingMixIn:
             return PsatProblem.objects.get(id=self.problem_id)
 
 
-class ProblemMemoDetailView(MemoSettingMixIn, DetailView):
-    template_name = 'psat/snippets/memo_container.html'
+class MemoDetailView(MemoViewMixIn, DetailView):
+    pass
 
 
-class ProblemMemoCreateView(MemoSettingMixIn, CreateView):
-    template_name = 'psat/snippets/memo_container.html'
-    def get_success_url(self) -> reverse_lazy: return reverse_lazy(f'psat:memo_detail', args=[self.object.id])
+class MemoCreateView(MemoViewMixIn, CreateView):
+
+    def get_success_url(self):
+        return reverse_lazy('psat_v2:memo_detail', args=[self.object.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -43,16 +46,19 @@ class ProblemMemoCreateView(MemoSettingMixIn, CreateView):
         return context
 
 
-class ProblemMemoUpdateView(MemoSettingMixIn, UpdateView):
-    template_name = 'psat/snippets/memo_container.html#update'
-    def get_success_url(self) -> reverse_lazy: return reverse_lazy(f'psat:memo_detail', args=[self.object.id])
+class MemoUpdateView(MemoViewMixIn, UpdateView):
+    template_name = 'psat/v2/snippets/memo_container.html#update'
+
+    def get_success_url(self):
+        return reverse_lazy('psat_v2:memo_detail', args=[self.object.id])
 
 
-class ProblemMemoDeleteView(MemoSettingMixIn, DeleteView):
-    def get_success_url(self) -> reverse_lazy: return reverse_lazy(f'psat:memo_create')
+class MemoDeleteView(MemoViewMixIn, DeleteView):
+    def get_success_url(self):
+        return reverse_lazy('psat_v2:memo_create')
 
 
-create = ProblemMemoCreateView.as_view()
-detail = ProblemMemoDetailView.as_view()
-update = ProblemMemoUpdateView.as_view()
-delete = ProblemMemoDeleteView.as_view()
+create_view = MemoCreateView.as_view()
+detail_view = MemoDetailView.as_view()
+update_view = MemoUpdateView.as_view()
+delete_view = MemoDeleteView.as_view()

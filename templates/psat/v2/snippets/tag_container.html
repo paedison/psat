@@ -3,9 +3,9 @@
 {% load taggit_templatetags2_tags %}
 {% load partials %}
 
-{# ProblemTagContainerView -> context: my_tag, my_tag_list, all_tags, problem #}
-{# ProblemTagCreateView -> context: all_tags, problem #}
-{# ProblemTagAddView -> context: all_tags, problem #}
+{# TagContainerView -> context: my_tag, my_tag_list, all_tags, problem #}
+{# TagCreateView -> context: all_tags, problem #}
+{# TagAddView -> context: all_tags, problem #}
 
 <div id="myTags" class="htmx-fade-in htmx-fade-out">
     <div class="badge bg-success m-2">MY TAGS</div>
@@ -19,7 +19,7 @@
                 <input name="tags" type="text" aria-label="Tag input" required
                        class="form-control form-control-sm" placeholder="{% trans 'Leave tags' %}"/>
                 <button class="btn btn-sm btn-outline-primary"
-                        hx-post="{% url 'psat:tag_add' my_tag.id %}"
+                        hx-post="{% url 'psat_v2:tag_add' my_tag.id %}"
                         hx-include=".tag-info" hx-target="#detailTags" hx-swap="innerHTML">
                     {% trans 'Add' %}
                 </button>
@@ -42,7 +42,7 @@
                         </li>
                         <li>
                             <button class="dropdown-item" title="{% trans 'Delete Tag' %}" href=""
-                                    hx-post="{% url 'psat:tag_delete' my_tag.id tag %}"
+                                    hx-post="{% url 'psat_v2:tag_delete' my_tag.id tag %}"
                                     hx-confirm="{% trans 'Are you sure you wish to delete your tag?' %}"
                                     hx-target="#detailTags" hx-swap="innerHTML">
                                 <i class="fa-solid fa-xmark"></i>
@@ -77,7 +77,7 @@
                                 <input name="tags" type="text" value="{{ tag }}" aria-label="Tag input"
                                        class="form-control form-control-sm" hidden/>
                                 <button class="dropdown-item" href="" hx-include=".tag-info"
-                                        hx-post="{% url 'psat:tag_add' my_tag.id %}"
+                                        hx-post="{% url 'psat_v2:tag_add' my_tag.id %}"
                                         hx-target="#detailTags" hx-swap="innerHTML">
                                     <i class="fa-solid fa-plus"></i>
                                     {% trans 'Add to my tags' %}

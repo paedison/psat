@@ -29,10 +29,10 @@ class MemoForm(forms.ModelForm):
 
     class Meta:
         model = Memo
-        fields = ['user', 'problem', 'content']
+        fields = ['user_id', 'problem', 'content']
 
 
 class TagForm(forms.ModelForm):
     class Meta:
         model = Tag
-        fields = ['user', 'problem']
+        fields = ['user_id', 'problem']

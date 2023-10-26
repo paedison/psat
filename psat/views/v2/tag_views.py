@@ -12,7 +12,7 @@ from psat.models import Tag
 from reference.models import PsatProblem, Psat
 
 
-class TagSettingMixIn:
+class TagViewMixIn:
     """Setting mixin for Tag views."""
     kwargs: dict
     request: any
@@ -78,7 +78,7 @@ class TagSettingMixIn:
         return all_tags_list
 
 
-class ProblemTagContainerView(TagSettingMixIn, DetailView):
+class TagContainerView(TagViewMixIn, DetailView):
     """View for loading problem tag container."""
     template_name = 'psat/v2/snippets/tag_container.html'
 
@@ -91,7 +91,7 @@ class ProblemTagContainerView(TagSettingMixIn, DetailView):
         return context
 
 
-class ProblemTagCreateView(TagSettingMixIn, CreateView):
+class TagCreateView(TagViewMixIn, CreateView):
     """View for creating problem tag."""
     template_name = 'psat/v2/snippets/tag_create.html'
 
@@ -114,7 +114,7 @@ class ProblemTagCreateView(TagSettingMixIn, CreateView):
         return context
 
 
-class ProblemTagAddView(TagSettingMixIn, UpdateView):
+class TagAddView(TagViewMixIn, UpdateView):
     """View for adding problem tag."""
     template_name = 'psat/v2/snippets/tag_container.html'
 
@@ -135,7 +135,7 @@ class ProblemTagAddView(TagSettingMixIn, UpdateView):
         return context
 
 
-class ProblemTagDeleteView(TagSettingMixIn, DeleteView):
+class TagDeleteView(TagViewMixIn, DeleteView):
     """View for deleting problem tag."""
 
     @property
@@ -144,7 +144,7 @@ class ProblemTagDeleteView(TagSettingMixIn, DeleteView):
         return self.kwargs.get('tag_name')
 
     @property
-    def success_url(self) -> reverse_lazy:
+    def success_url(self):
         """Return success_url 'before' deleting the tag."""
         return reverse_lazy(f'psat_v2:tag_container', args=[self.object.id])
 
@@ -154,7 +154,7 @@ class ProblemTagDeleteView(TagSettingMixIn, DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
-class ProblemTagCloudView(TagSettingMixIn, TemplateView):
+class TagCloudView(TagViewMixIn, TemplateView):
     """View for loading problem tag cloud."""
     template_name = 'psat/v2/problem_tag_cloud.html'
 
@@ -229,8 +229,8 @@ class ProblemTagCloudView(TagSettingMixIn, TemplateView):
         return context
 
 
-container = ProblemTagContainerView.as_view()
-create = ProblemTagCreateView.as_view()
-add = ProblemTagAddView.as_view()
-delete = ProblemTagDeleteView.as_view()
-cloud = ProblemTagCloudView.as_view()
+container_view = TagContainerView.as_view()
+create_view = TagCreateView.as_view()
+add_view = TagAddView.as_view()
+delete_view = TagDeleteView.as_view()
+cloud_view = TagCloudView.as_view()

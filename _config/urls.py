@@ -18,10 +18,7 @@ urlpatterns = [
     path('dashboard/', include('common.urls.dashboard')),  # Dashboard
     path('account/', include('common.urls.account')),  # Login, Logout
     path('account/', include('allauth.urls')),  # Django All-auth
-
-    path('psat/v1/', include('psat.urls.v1')),  # PSAT
-    path('psat/v2/', include('psat.urls.v2')),  # PSAT Version 2.0
-
+    path('psat/', include('psat.urls')),  # PSAT
     path('schedule/', include('schedule.urls')),  # Schedule
     # path('quiz/', include('quiz.urls')),  # Quiz
     path('log/', include('log.urls')),  # Log
