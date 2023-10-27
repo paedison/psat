@@ -63,17 +63,42 @@
             {{ problem.psat.year }}년 '{{ problem.psat.exam.name }}' {{ problem.psat.subject }}
         </div>
         <div class="row justify-content-center">
-            {% for num in num_range %}
-                <div class="col-2 text-center small p-1">
-                    <a href="{% url 'psat:problem_detail' anchor_id|add:num %}">
-                        {{ num }}번
-                    </a>
-                </div>
-                {% if forloop.counter|divisibleby:5 %}
-        </div>
-        <div class="row justify-content-center">
-                {% endif %}
-            {% endfor %}
+            {% if problem.psat.exam.abbr == '칠급' or problem.psat.exam.abbr == '민경' %}
+                {% for num in '_'|ljust:25 %}
+                    <div class="col-2 text-center small p-1">
+                        <a href="{% url 'psat:problem_detail' anchor_id|add:forloop.counter %}">
+                            {{ forloop.counter }}번
+                        </a>
+                    </div>
+                    {% if forloop.counter|divisibleby:5 %}
+            </div>
+            <div class="row justify-content-center">
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {% for num in '_'|ljust:40 %}
+                    <div class="col-2 text-center small p-1">
+                        <a href="{% url 'psat:problem_detail' anchor_id|add:forloop.counter %}">
+                            {{ forloop.counter }}번
+                        </a>
+                    </div>
+                    {% if forloop.counter|divisibleby:5 %}
+            </div>
+            <div class="row justify-content-center">
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+{#            {% for num in num_range %}#}
+{#                <div class="col-2 text-center small p-1">#}
+{#                    <a href="{% url 'psat:problem_detail' anchor_id|add:num %}">#}
+{#                        {{ num }}번#}
+{#                    </a>#}
+{#                </div>#}
+{#                {% if forloop.counter|divisibleby:5 %}#}
+{#        </div>#}
+{#        <div class="row justify-content-center">#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
         </div>
     </div>
 {% endpartial %}

@@ -35,10 +35,9 @@ class PsatDetailView(
         option_name = option_dict[self.view_type]
         context = {
             option_name: getattr(self.data_instance, option_name),
-            # Icons
-            'icon_like': self.icon_like,
-            'icon_rate': self.icon_rate,
-            'icon_solve': self.icon_solve,
+            'icon_like': self.icon_like if self.view_type == 'like' else '',
+            'icon_rate': self.icon_rate if self.view_type == 'rate' else '',
+            'icon_solve': self.icon_solve if self.view_type == 'solve' else '',
         }
         return self.render_to_response(context)
 
@@ -46,10 +45,10 @@ class PsatDetailView(
         return {
             # List view info & title
             'info': self.info,
-            'title': self.title,
+            # 'title': self.title,
 
             # Detail view template variables
-            'num_range': self.num_range,
+            # 'num_range': self.num_range,
             'anchor_id': self.problem_id - int(self.object.number),
 
             # Icons
@@ -59,10 +58,15 @@ class PsatDetailView(
             'icon_nav': self.icon_nav,
 
             # Page objectives & range
-            'problem': self.get_custom_info(self.object),
+            'problem': self.object,
             'prev_prob': self.prev_prob,
             'next_prob': self.next_prob,
             'list_data': self.list_data,
+
+            'like_data': self.like_data,
+            'rate_data': self.rate_data,
+            'solve_data': self.solve_data,
+
             'memo': self.memo,
             'my_tag': self.my_tag,
         }

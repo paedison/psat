@@ -100,3 +100,11 @@ class PsatProblem(models.Model):
             'tag2': 'Problem Image 2' if image2_exists else '',
         }
         return image_file
+
+    @property
+    def full_title(self) -> str:
+        year = self.psat.year
+        exam = self.psat.exam.name
+        subject = self.psat.subject.name
+        number = self.number
+        return f"{year}년 '{exam}' {subject} {number}번"

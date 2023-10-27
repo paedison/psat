@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import F, Value, CharField, Q
+from django.db.models import F, Value, CharField, Q, Case, When, BooleanField, Prefetch
 from django.db.models.functions import Concat, Cast
 from django.urls import reverse_lazy
 
@@ -262,9 +262,11 @@ class PsatListViewMixIn(PsatIconSet):
                     problem_filter &= Q(**{field + '__isnull': False})
                 else:
                     problem_filter &= Q(**{field: value})
-        return PsatProblem.objects.filter(
-            problem_filter).prefetch_related(
-            'psat', 'psat__exam', 'psat__subject',
+        return (
+            PsatProblem.objects.filter(problem_filter)
+            .only('id', 'psat_id', 'number', 'answer', 'question')
+            .select_related('psat', 'psat__exam', 'psat__subject')
+            .prefetch_related('likes', 'rates', 'solves')
         )
 
     @property
@@ -337,10 +339,16 @@ class PsatDetailViewMixIn(PsatIconSet):
 
     @property
     def problem(self):
-        return PsatProblem.objects.get(id=self.problem_id)
+        return (
+            PsatProblem.objects.only('id', 'psat_id', 'number', 'answer', 'question')
+            .select_related('psat', 'psat__exam', 'psat__subject')
+            .prefetch_related('likes', 'rates', 'solves')
+            .get(id=self.problem_id)
+        )
 
     @property
-    def object(self): return self.problem
+    def object(self):
+        return self.problem
 
     @property
     def prob_list(self) -> list:
@@ -370,11 +378,12 @@ class PsatDetailViewMixIn(PsatIconSet):
 
     @property
     def title(self) -> str:
-        year = self.problem.psat.year
-        exam2 = self.problem.psat.exam.name
-        subject = self.problem.psat.subject.name
-        number = self.problem.number
-        return f"{year}년 '{exam2}' {subject} {number}번"
+        return self.problem.full_title
+        # year = self.problem_info['psat__year']
+        # exam = self.problem_info['psat__exam__name']
+        # subject = self.problem_info['psat__subject__name']
+        # number = self.problem_info['number']
+        # return f"{year}년 '{exam}' {subject} {number}번"
 
     ##################################
     # Detail view template variables #
@@ -444,7 +453,11 @@ class PsatDetailViewMixIn(PsatIconSet):
                 'solves__is_correct__gte': 0,
             },
         }
-        return PsatProblem.objects.filter(**filter_dict[self.view_type])
+        return (
+            PsatProblem.objects.filter(**filter_dict[self.view_type])
+            .only('id', 'psat_id', 'number', 'answer', 'question')
+            .prefetch_related('psat', 'psat__exam', 'psat__subject')
+        )
 
     @property
     def prev_prob(self):
@@ -552,45 +565,74 @@ class PsatCustomInfo:
     request: any
 
     @property
-    def like_list(self):
-        return Like.objects.filter(user_id=self.user_id).values_list(
-            'problem_id', flat=True
-        )
+    def like_data(self):
+        return Like.objects.filter(user_id=self.user_id).values(
+            'timestamp', 'problem_id', 'is_liked')
 
     @property
-    def like_data(self):
-        data = Like.objects.filter(user_id=self.user_id).values(
-            'problem_id', 'is_liked'
-        )
-        return Like.objects.filter(user_id=self.user_id).values(
-            'problem_id', 'is_liked'
-        )
+    def rate_data(self):
+        return Rate.objects.filter(user_id=self.user_id).values(
+            'timestamp', 'problem_id', 'rating')
+
+    @property
+    def solve_data(self):
+        return Solve.objects.filter(user_id=self.user_id).values(
+            'timestamp', 'problem_id', 'answer', 'is_correct')
 
     def get_custom_info(self, obj):
         user = self.request.user
         user_id = user.id
         problem_id = obj.id
+        # problem_id = obj['id']
+        # print(obj)
 
         if user.is_authenticated:
-            try:
-                like_instance = Like.objects.get(
-                    user_id=user_id, problem_id=problem_id
-                )
-                obj.liked_at = like_instance.timestamp
-                obj.is_liked = like_instance.is_liked
-            except ObjectDoesNotExist:
-                pass
+            print(obj)
+            for instance in self.like_data:
+                if instance['problem_id'] == problem_id:
+                    obj.liked_at = instance['timestamp']
+                    obj.is_liked = instance['is_liked']
+            for instance in self.rate_data:
+                if instance['problem_id'] == problem_id:
+                    obj.rated_at = instance['timestamp']
+                    obj.rating = instance['rating']
+            for instance in self.solve_data:
+                if instance['problem_id'] == problem_id:
+                    obj.solved_at = instance['timestamp']
+                    obj.answer = instance['answer']
+                    obj.is_correct = instance['is_correct']
+            # for instance in self.like_data:
+            #     if instance['problem_id'] == problem_id:
+            #         obj['liked_at'] = instance['timestamp']
+            #         obj['is_liked'] = instance['is_liked']
+            # for instance in self.rate_data:
+            #     if instance['problem_id'] == problem_id:
+            #         obj['rated_at'] = instance['timestamp']
+            #         obj['rating'] = instance['rating']
+            # for instance in self.solve_data:
+            #     if instance['problem_id'] == problem_id:
+            #         obj['solved_at'] = instance['timestamp']
+            #         obj['answer'] = instance['answer']
+            #         obj['is_correct'] = instance['is_correct']
+            # try:
+            #     like_instance = Like.objects.get(
+            #         user_id=user_id, problem_id=problem_id
+            #     )
+            #     obj.liked_at = like_instance.timestamp
+            #     obj.is_liked = like_instance.is_liked
+            # except ObjectDoesNotExist:
+            #     pass
 
-            rate_instance = Rate.objects.filter(
-                user_id=user_id, problem_id=problem_id).first()
-            obj.rated_at = rate_instance.timestamp if rate_instance else None
-            obj.rating = rate_instance.rating if rate_instance else None
-
-            solve_instance = Solve.objects.filter(
-                user_id=user_id, problem_id=problem_id).first()
-            obj.solved_at = solve_instance.timestamp if solve_instance else None
-            obj.answer = solve_instance.answer if solve_instance else None
-            obj.is_correct = solve_instance.is_correct if solve_instance else None
+            # rate_instance = Rate.objects.filter(
+            #     user_id=user_id, problem_id=problem_id).first()
+            # obj.rated_at = rate_instance.timestamp if rate_instance else None
+            # obj.rating = rate_instance.rating if rate_instance else None
+            #
+            # solve_instance = Solve.objects.filter(
+            #     user_id=user_id, problem_id=problem_id).first()
+            # obj.solved_at = solve_instance.timestamp if solve_instance else None
+            # obj.answer = solve_instance.answer if solve_instance else None
+            # obj.is_correct = solve_instance.is_correct if solve_instance else None
 
             # obj.opened_at = source.opened_at if source else None
             # obj.opened_times = source.opened_times if source else 0

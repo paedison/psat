@@ -255,7 +255,7 @@
 
 {% startpartial q %}
     <h3 class="fs-6 small m-0">
-        {{ problem.question|truncatechars:chars }}
+        {{ problem.id }}_{{ problem.question|truncatechars:chars }}
     </h3>
 {% endpartial %}
 
@@ -283,7 +283,7 @@
         {% with url=problem.problem_url %}{% partial question %}{% endwith %}
     {% endif %}
     {% if like_list or like_dashboard %}
-        {% if problem.is_liked %}
+        {% if problem|get_like_status:like_data %}
             {% with url=problem.like_url %}{% partial question %}{% endwith %}
         {% else %}
             {% with url=problem.problem_url %}{% partial question %}{% endwith %}

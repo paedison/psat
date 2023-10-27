@@ -39,9 +39,8 @@
     {% endif %}
 </div>
 
-
 {% startpartial like %}
-    {% if problem.is_liked or is_liked %}
+    {% if is_liked or problem|get_like_status:like_data %}
         {{ icon_like.true|safe }}
     {% else %}
         {{ icon_like.false|safe }}
@@ -49,16 +48,26 @@
 {% endpartial %}
 
 
+{#{% startpartial like %}#}
+{#    {% if problem.is_liked or is_liked %}#}
+{#        {{ icon_like.true|safe }}#}
+{#    {% else %}#}
+{#        {{ icon_like.false|safe }}#}
+{#    {% endif %}#}
+{#{% endpartial %}#}
+{##}
+{##}
+
 {% startpartial rate %}
-    {% if problem.rating == 1 or rating == 1 %}
+    {% if rating == 1 or problem|get_rate_status:rate_data == 1 %}
         {{ icon_rate.star1|safe }}
-    {% elif problem.rating == 2 or rating == 2 %}
+    {% elif rating == 2 or problem|get_rate_status:rate_data == 2 %}
         {{ icon_rate.star2|safe }}
-    {% elif problem.rating == 3 or rating == 3 %}
+    {% elif rating == 3 or problem|get_rate_status:rate_data == 3 %}
         {{ icon_rate.star3|safe }}
-    {% elif problem.rating == 4 or rating == 4 %}
+    {% elif rating == 4 or problem|get_rate_status:rate_data == 4 %}
         {{ icon_rate.star4|safe }}
-    {% elif problem.rating == 5 or rating == 5 %}
+    {% elif rating == 5 or problem|get_rate_status:rate_data == 5 %}
         {{ icon_rate.star5|safe }}
     {% else %}
         {{ icon_rate.star0|safe }}
@@ -89,9 +98,9 @@
 
 
 {% startpartial solve %}
-    {% if problem.is_correct is True or is_correct is True %}
+    {% if is_correct is True or problem|get_solve_status:solve_data is True %}
         {{ icon_solve.correct|safe }}
-    {% elif problem.is_correct is False or is_correct is False %}
+    {% elif is_correct is False or problem|get_solve_status:solve_data is False %}
         {{ icon_solve.wrong|safe }}
     {% else %}
     {% endif %}

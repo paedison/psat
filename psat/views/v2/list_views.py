@@ -31,12 +31,11 @@ class PsatListView(
         page_obj = paginator.get_page(self.page_number)
         page_range = paginator.get_elided_page_range(
             number=self.page_number, on_each_side=3, on_ends=1)
-        for obj in page_obj:
-            self.get_custom_info(obj)
         return page_obj, page_range
 
     def get_context_data(self, **kwargs):
-        return {
+        page_obj, page_range = self.get_paginator_info()
+        context = {
             # List view variables
             'exam_year': self.year,
             'exam_ex': self.ex,
@@ -73,8 +72,11 @@ class PsatListView(
             'icon_solve': self.icon_solve,
 
             # Page objectives & range
-            'page_obj': self.get_paginator_info()[0],
-            'page_range': self.get_paginator_info()[1],
+            'page_obj': page_obj,
+            'page_range': page_range,
+            'like_data': self.like_data,
+            'rate_data': self.rate_data,
+            'solve_data': self.solve_data,
 
             # Boolean for view type
             'problem_list': self.view_type == 'problem',
@@ -83,6 +85,7 @@ class PsatListView(
             'solve_list': self.view_type == 'solve',
             'search_list': self.view_type == 'search',
         }
+        return context
 
 
 base_view = PsatListView.as_view()

@@ -56,6 +56,27 @@ def round_number(content):
     return number_dict[str(content)]
 
 
+@register.filter()
+def get_like_status(problem, data):
+    for instance in data:
+        if instance['problem_id'] == problem.id:
+            return instance['is_liked']
+
+
+@register.filter()
+def get_rate_status(problem, data):
+    for instance in data:
+        if instance['problem_id'] == problem.id:
+            return instance['rating']
+
+
+@register.filter()
+def get_solve_status(problem, data):
+    for instance in data:
+        if instance['problem_id'] == problem.id:
+            return instance['is_correct']
+
+
 @register.tag
 def lineless(parser, token):  # Delete Blank Lines
     nodelist = parser.parse(('endlineless',))
