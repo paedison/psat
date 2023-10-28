@@ -11,6 +11,9 @@ urlpatterns = [
 
     # Detail Views [view_type: problem, like, rate, solve]
     path('<str:view_type>/<int:problem_id>/', detail_views.base_view, name='detail'),
+
+    # Custom Update [view_type: like, rate, solve]
+    path('<str:view_type>/<int:problem_id>/custom', detail_views.custom_update_view, name='custom'),
     path('rate/modal/', detail_views.rate_modal_view, name='rate_modal'),
     path('solve/modal/', detail_views.solve_modal_view, name='solve_modal'),
 

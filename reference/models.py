@@ -54,10 +54,14 @@ class PsatProblem(models.Model):
     class Meta:
         ordering = ['-psat__year', 'id']
 
-    def __str__(self): return f'{self.psat.year}{self.psat.exam.abbr}{self.psat.subject.abbr}-{self.number:02}'
+    def __str__(self):
+        return f'{self.psat.year}{self.psat.exam.abbr}{self.psat.subject.abbr}-{self.number:02}'
 
     def get_url(self, view_type):
-        return reverse_lazy(self.url_name, kwargs={'view_type': view_type, 'problem_id': self.id})
+        return reverse_lazy(
+            self.url_name,
+            kwargs={'view_type': view_type, 'problem_id': self.id}
+        )
 
     @property
     def problem_url(self):

@@ -1,48 +1,166 @@
 {% extends 'list.html' %}
 {% load static %}
 {% load i18n %}
-{% load psat_filter %}
-{% load partials %}
 {% load slippers %}
+{% load partials %}
+{% load psat_filter %}
 
 {% block head_title %}{{ title }}{% endblock head_title %}
 
 {% block main %}{% partial detail_main %}{% endblock %}
 
-
+{# Detail main partial #}
 {% startpartial detail_main %}
-    <section>
-        {{ info|json_script:'info' }}
-        <div class="pagetitle my-2">
-            <div class="d-flex align-items-center pb-2 fs-6">
-                <div>
-                    <div class="input-group me-2">
-                        {% include 'psat/v2/snippets/nav_container.html' %}
-                    </div>
-                </div>
-                <div class="small">
-                    {% include 'psat/v2/snippets/icon_container.html' %}
-                </div>
+    {{ info|json_script:'info' }}
+    <div class="pagetitle my-2">
+        <div class="d-flex align-items-center pb-2 fs-6">
+            {% partial nav_container %}
+            <div class="small">
+                {% include 'psat/v2/snippets/icon_container.html' %}
             </div>
-            <h1>
-{#                {{ title }}#}
-                {{ problem.psat.year }}년 '{{ problem.psat.exam.name }}' {{ problem.psat.subject.name }} {{ problem.number }}번
-            </h1>
-        </div><!-- Page Title End -->
-        <section class="section">
-        {% #content_row %}
-            <table class="table my-4">
-                {% if problem %}
-                    <thead>{% partial thead %}</thead>
-                    <tbody>{% partial tbody %}</tbody>
+        </div>
+        <h1>
+            {{ problem.psat.year }}년 '{{ problem.psat.exam.name }}' {{ problem.psat.subject.name }} {{ problem.number }}번
+        </h1>
+    </div><!-- Page Title End -->
+    {% partial detail_content %}
+{% endpartial detail_main %}
+
+
+{# ########################## #}
+{# Navigation container start #}
+{# ########################## #}
+
+{# Navigation container partial #}
+{% startpartial nav_container %}
+    <article id="detail_nav_container" class="input-group me-2">
+        <a id="problem_list" href="javascript:history.back()" class="btn btn-{{ info.color }}">
+            {{ icon_nav.left_arrow|safe }}
+        </a>
+
+        {# Previous & next problem #}
+        {% with prob=prev_prob icon=icon_nav.prev_prob|safe %}{% partial nav_prob %}{% endwith %}
+        {% with prob=next_prob icon=icon_nav.next_prob|safe %}{% partial nav_prob %}{% endwith %}
+
+        {# Filtered list #}
+        <a id="problemChoiceLink" href="#" role="button"
+           class="btn btn-circle btn-{{ info.color }} dropdown-toggle"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            {{ icon_nav.list|safe }}
+        </a>
+        <div class="dropdown-menu" aria-labelledby="problemChoiceLink">
+            <div class="dropdown" role="option">
+                {% if info.view_type == 'problem' %}
+                    {% partial filtered_problem_list %}
+                {% else %}
+                    {% partial filtered_other_list %}
                 {% endif %}
-            </table>
-        {% /content_row %}
-        </section>
-    </section><!-- Main Content End -->
-{% endpartial %}
+            </div>
+        </div>
+    </article>
+{% endpartial nav_container %}
+
+{# Previous & next problem partial #}
+{% startpartial nav_prob %}
+    {% if prob %}
+        {% if info.view_type == 'problem' %}
+            <a class="btn btn-{{ info.color }}"
+               href="{{ prob.problem_url }}">{{ icon }}</a>
+        {% elif info.view_type == 'like' %}
+            <a class="btn btn-{{ info.color }}"
+               href="{{ prob.like_url }}">{{ icon }}</a>
+        {% elif info.view_type == 'rate' %}
+            <a class="btn btn-{{ info.color }}"
+               href="{{ prob.rate_url }}">{{ icon }}</a>
+        {% elif info.view_type == 'solve' %}
+            <a class="btn btn-{{ info.color }}"
+               href="{{ prob.solve_url }}">{{ icon }}</a>
+        {% endif %}
+    {% else %}
+        <a class="btn btn-{{ info.color }}"> </a>
+    {% endif %}
+{% endpartial nav_prob %}
+
+{# Filtered problem list partial #}
+{% startpartial filtered_problem_list %}
+    <div class="container p-0" style="min-width: 300px;">
+        <div class="row justify-content-center p-2 text-primary fw-bold">
+            {{ problem.psat.year }}년 '{{ problem.psat.exam.name }}' {{ problem.psat.subject }}
+        </div>
+        <div class="row justify-content-center">
+            {% if problem.psat.exam.abbr == '칠급' or problem.psat.exam.abbr == '민경' %}
+                {% with problem_count=25 %}{% partial filtered_content %}{% endwith %}
+            {% else %}
+                {% with problem_count=40 %}{% partial filtered_content %}{% endwith %}
+            {% endif %}
+        </div>
+    </div>
+{% endpartial filtered_problem_list %}
+
+{# Filtered problem list content partial #}
+{% startpartial filtered_content %}
+    {% for _ in '_'|ljust:problem_count %}
+            <div class="col-2 text-center small p-1">
+                <a href="{% url 'psat_v2:detail' 'problem' problem.number|subtract:problem.id|add:forloop.counter %}">
+                    {{ forloop.counter }}번
+                </a>
+            </div>
+            {% if forloop.counter|divisibleby:5 %}
+        </div>
+        <div class="row justify-content-center">
+            {% endif %}
+    {% endfor %}
+{% endpartial filtered_content %}
+
+{# Filtered other list partial [like, rate, solve] #}
+{% startpartial filtered_other_list %}
+    <div class="container no-gutters justify-content-center p-0" style="min-width: 300px;">
+        {% for data in list_data %}
+            {% if forloop.counter0|divisibleby:5 %}
+                </div>
+            {% ifchanged %}
+                {% if forloop.counter0 != 0 %}
+                <hr class="m-2">
+                {% endif %}
+                <div class="row justify-content-center p-2 text-primary fw-bold">
+                    {{ data.exam_name }}
+                </div>
+            {% endifchanged %}
+                <div class="row justify-content-center">
+            {% endif %}
+            {% if data %}
+                <div class="col-2 text-center p-0">
+                    <a href="{{ data.problem_url }}"
+                       class="p-1 dropdown-item text-nowrap text-center
+                       {% if num == data.problem_number %} active{% endif %}">
+                        {{ data.problem_number }}번
+                    </a>
+                </div>
+            {% else %}
+                <div class="col-2 text-center p-0"> </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endpartial filtered_other_list %}
 
 
+{# #################### #}
+{# Detail content start #}
+{# #################### #}
+
+{# Detail content partial #}
+{% startpartial detail_content %}
+    <section class="section">
+    {% #content_row %}
+        <table class="table my-4">
+            <thead>{% partial thead %}</thead>
+            <tbody>{% partial tbody %}</tbody>
+        </table>
+    {% /content_row %}
+    </section>
+{% endpartial detail_content %}
+
+{# Table head partial #}
 {% startpartial thead %}
     <tr>
         <th class="p-0">
@@ -58,14 +176,14 @@
             {% endif %}
         </th>
     </tr>
-{% endpartial %}
+{% endpartial thead %}
 
-
+{# Table body partial #}
 {% startpartial tbody %}
     <tr>
         <td class="px-0">
             <div class="d-flex justify-content-end pb-2">
-                {% include 'psat/v2/snippets/answer_container.html' %}
+                {% include 'psat/v2/snippets/solve_container.html' %}
             </div>
             <div class="d-flex flex-wrap align-items-start justify-content-start">
                 {% with image=problem.image_file %}
@@ -87,7 +205,7 @@
     {% if user.is_authenticated %}
         <tr>
             <td class="p-0">
-                <div id="detailMemo" hx-trigger="load delay:0s"
+                <div id="detailMemo" hx-trigger="load"
                     {% if memo is None %}
                         hx-get="{% url 'psat_v2:memo_create' problem.id %}"
                     {% else %}
@@ -98,12 +216,14 @@
         </tr>
         <tr>
             <td class="p-0">
-                <div id="detailTags" hx-trigger="load delay:0s"
+                <div id="detailTags" hx-trigger="load"
                     {% if my_tag is None %}
                         hx-get="{% url 'psat_v2:tag_create' problem.id %}"
-                    {% else %} hx-get="{% url 'psat_v2:tag_container' my_tag.id %}"
-                    {% endif %} hx-swap="innerHTML"></div>
+                    {% else %}
+                        hx-get="{% url 'psat_v2:tag_container' my_tag.id %}"
+                    {% endif %}
+                        hx-swap="innerHTML"></div>
             </td>
         </tr>
     {% endif %}
-{% endpartial %}
+{% endpartial tbody %}

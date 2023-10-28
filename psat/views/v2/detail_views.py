@@ -1,14 +1,14 @@
 from vanilla import TemplateView
 
 from .viewmixins import (
-    PsatCustomInfo,
+    PsatCustomVariableSet,
     PsatDetailViewMixIn,
-    PsatSolveModalViewMixIn,
+    PsatSolveModalViewMixIn, PsatCustomUpdateViewMixIn,
 )
 
 
 class PsatDetailView(
-    PsatCustomInfo,
+    PsatCustomVariableSet,
     PsatDetailViewMixIn,
     TemplateView,
 ):
@@ -16,59 +16,59 @@ class PsatDetailView(
     template_name = 'psat/v2/problem_detail.html'
 
     def get_template_names(self):
-        icon_template = f'psat/v2/snippets/icon_container.html#{self.view_type}'
-        template_names = {
-            'htmxFalse': self.template_name,
-            'htmxTrue': f'{self.template_name}#detail_main',
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#detail_main',
         }
-        if self.request.method == 'POST':
-            return icon_template
-        else:
-            return template_names[f'htmx{bool(self.request.htmx)}']
-
-    def post(self, request, *args, **kwargs):
-        option_dict = {
-            'like': 'is_liked',
-            'rate': 'rating',
-            'solve': 'is_correct'
-        }
-        option_name = option_dict[self.view_type]
-        context = {
-            option_name: getattr(self.data_instance, option_name),
-            'icon_like': self.icon_like if self.view_type == 'like' else '',
-            'icon_rate': self.icon_rate if self.view_type == 'rate' else '',
-            'icon_solve': self.icon_solve if self.view_type == 'solve' else '',
-        }
-        return self.render_to_response(context)
+        return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
+        prev_prob, next_prob = self.prev_next_prob
         return {
-            # List view info & title
+            # Target problem & info
+            'problem': self.problem,
             'info': self.info,
-            # 'title': self.title,
 
-            # Detail view template variables
-            # 'num_range': self.num_range,
-            'anchor_id': self.problem_id - int(self.object.number),
-
-            # Icons
-            'icon_like': self.icon_like,
-            'icon_rate': self.icon_rate,
-            'icon_solve': self.icon_solve,
-            'icon_nav': self.icon_nav,
-
-            # Page objectives & range
-            'problem': self.object,
-            'prev_prob': self.prev_prob,
-            'next_prob': self.next_prob,
+            # Navigation data
+            'prev_prob': prev_prob,
+            'next_prob': next_prob,
             'list_data': self.list_data,
 
+            # Custom data
             'like_data': self.like_data,
             'rate_data': self.rate_data,
             'solve_data': self.solve_data,
 
+            # Memo & tag
             'memo': self.memo,
             'my_tag': self.my_tag,
+
+            # Icons
+            'icon_like': self.ICON_LIKE,
+            'icon_rate': self.ICON_RATE,
+            'icon_solve': self.ICON_SOLVE,
+            'icon_nav': self.ICON_NAV,
+        }
+
+
+class PsatCustomUpdateView(
+    PsatCustomUpdateViewMixIn,
+    TemplateView,
+):
+    template_name = 'psat/v2/snippets/icon_container.html'
+
+    def get_template_names(self):
+        return f'{self.template_name}#{self.view_type}'
+
+    def post(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {
+            self.option_name: getattr(self.data_instance, self.option_name),
+            'icon_like': self.ICON_LIKE if self.view_type == 'like' else '',
+            'icon_rate': self.ICON_RATE if self.view_type == 'rate' else '',
+            'icon_solve': self.ICON_SOLVE if self.view_type == 'solve' else '',
         }
 
 
@@ -86,7 +86,7 @@ class PsatSolveModalView(
     PsatSolveModalViewMixIn,
     TemplateView,
 ):
-    template_name = 'psat/v2/snippets/answer_container.html#answer_modal'
+    template_name = 'psat/v2/snippets/solve_container.html#answer_modal'
 
     def post(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -96,10 +96,11 @@ class PsatSolveModalView(
             'problem_id': self.problem_id,
             'answer': self.answer,
             'is_correct': self.is_correct,
-            'icon_solve': self.icon_solve,
+            'icon_solve': self.ICON_SOLVE,
         }
 
 
 base_view = PsatDetailView.as_view()
+custom_update_view = PsatCustomUpdateView.as_view()
 rate_modal_view = PsatRateModalView.as_view()
 solve_modal_view = PsatSolveModalView.as_view()

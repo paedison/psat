@@ -13,7 +13,7 @@ def add_0(content) -> str:  # Convert to 2-Digit Number
 
 
 @register.filter
-def abstract(content, base) -> int:  # Abstract content from base
+def subtract(content, base) -> int:  # Subtract content from base
     return base - int(content)
 
 
@@ -59,22 +59,22 @@ def round_number(content):
 @register.filter()
 def get_like_status(problem, data):
     for instance in data:
-        if instance['problem_id'] == problem.id:
-            return instance['is_liked']
+        if instance.problem_id == problem.id:
+            return instance.is_liked
 
 
 @register.filter()
 def get_rate_status(problem, data):
     for instance in data:
-        if instance['problem_id'] == problem.id:
-            return instance['rating']
+        if instance.problem_id == problem.id:
+            return instance.rating
 
 
 @register.filter()
 def get_solve_status(problem, data):
     for instance in data:
-        if instance['problem_id'] == problem.id:
-            return instance['is_correct']
+        if instance.problem_id == problem.id:
+            return instance.is_correct
 
 
 @register.tag
