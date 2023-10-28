@@ -59,22 +59,22 @@ def round_number(content):
 @register.filter()
 def get_like_status(problem, data):
     for instance in data:
-        if instance.problem_id == problem.id:
-            return instance.is_liked
+        if instance['id'] == problem.id:
+            return instance['likes__is_liked']
 
 
 @register.filter()
 def get_rate_status(problem, data):
     for instance in data:
-        if instance.problem_id == problem.id:
-            return instance.rating
+        if instance['id'] == problem.id:
+            return instance['rates__rating']
 
 
 @register.filter()
 def get_solve_status(problem, data):
     for instance in data:
-        if instance.problem_id == problem.id:
-            return instance.is_correct
+        if instance['id'] == problem.id:
+            return instance['solves__is_correct']
 
 
 @register.tag

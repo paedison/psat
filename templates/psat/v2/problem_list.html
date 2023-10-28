@@ -230,8 +230,8 @@
         {% if not search_list %}
             {% ifchanged %}
                 {% #list_divider %}
-                    <a hx-get="{{ base_url }}?exam__year={{ problem.year }}
-                        &exam__ex={{ problem.ex }}&exam__sub={{ problem.sub }}" href="">
+                    <a hx-get="{% url 'psat_v2:list' 'problem' %}?year={{ problem.psat.year }}&ex={{ problem.psat.exam.abbr }}&sub={{ problem.psat.subject.abbr }}"
+                       href="" hx-push-url="{% url 'psat_v2:list' 'problem' %}">
                         {{ problem.psat.year }}년 {{ problem.psat.exam.name }} {{ problem.psat.subject.name }}
                     </a>
                 {% /list_divider %}

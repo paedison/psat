@@ -12,6 +12,9 @@ class Base(models.Model):
         abstract = True
         ordering = ['-id']
 
+    def __str__(self):
+        return f'{self.problem.psat.year}{self.problem.psat.exam.abbr}{self.problem.psat.subject.abbr}-{self.problem.number:02}({self.user_id})'
+
 
 class LogBase(Base):
     session_key = models.TextField(blank=True, null=True)

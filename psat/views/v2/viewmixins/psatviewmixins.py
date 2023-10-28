@@ -26,14 +26,14 @@ class PsatCommonVariableSet:
 
     @property
     def color(self) -> str:
-        color_dict = {
+        ret = {
             'problem': 'primary',
             'like': 'danger',
             'rate': 'warning',
             'solve': 'success',
             'search': 'primary',
         }
-        return color_dict[self.view_type]
+        return ret[self.view_type]
 
     @property
     def info(self) -> dict:
@@ -69,22 +69,57 @@ class PsatProblemVariableSet:
 
 class PsatCustomVariableSet:
     """Represent PSAT custom data variable."""
+    psat_id: int
     user_id: int
+    view_type: str
+
+    @property
+    def problem_data(self):
+        return PsatProblem.objects.filter(psat_id=self.psat_id).values(
+            'id', 'psat_id', 'psat__year', 'psat__exam__name',
+            'psat__subject__name', 'number',
+        )
 
     @property
     def like_data(self):
-        return Like.objects.filter(user_id=self.user_id).only(
-            'timestamp', 'problem_id', 'is_liked')
+        return (
+            PsatProblem.objects.filter(likes__user_id=self.user_id, likes__is_liked=True)
+            .prefetch_related('likes').order_by('-psat__year', 'id')
+            .values(
+                'id', 'psat_id', 'psat__year', 'psat__exam__name',
+                'psat__subject__name', 'number', 'likes__is_liked',
+            )
+        )
 
     @property
     def rate_data(self):
-        return Rate.objects.filter(user_id=self.user_id).only(
-            'timestamp', 'problem_id', 'rating')
+        return (
+            PsatProblem.objects.filter(rates__user_id=self.user_id)
+            .prefetch_related('rates').order_by('-psat__year', 'id')
+        ).values(
+            'id', 'psat_id', 'psat__year', 'psat__exam__name',
+            'psat__subject__name', 'number', 'rates__rating',
+        )
 
     @property
     def solve_data(self):
-        return Solve.objects.filter(user_id=self.user_id).only(
-            'timestamp', 'problem_id', 'answer', 'is_correct')
+        return (
+            PsatProblem.objects.filter(solves__user_id=self.user_id)
+            .prefetch_related('solves').order_by('-psat__year', 'id')
+        ).values(
+            'id', 'psat_id', 'psat__year', 'psat__exam__name',
+            'psat__subject__name', 'number', 'solves__is_correct',
+        )
+
+    @property
+    def custom_data(self):
+        custom_data_dict = {
+            'problem': self.problem_data,
+            'like': self.like_data,
+            'rate': self.rate_data,
+            'solve': self.solve_data,
+        }
+        return custom_data_dict[self.view_type]
 
 
 class PsatIconConstantSet:
@@ -158,6 +193,7 @@ class PsatIconConstantSet:
 
 class PsatListViewMixIn(
     PsatCommonVariableSet,
+    PsatCustomVariableSet,
     PsatIconConstantSet,
 ):
     """Represent PSAT list view mixin."""
@@ -363,6 +399,7 @@ class PsatListViewMixIn(
 class PsatDetailViewMixIn(
     PsatCommonVariableSet,
     PsatProblemVariableSet,
+    PsatCustomVariableSet,
     PsatIconConstantSet,
 ):
     """Represent PSAT detail view mixin."""
@@ -374,30 +411,16 @@ class PsatDetailViewMixIn(
 
     @property
     def prev_next_prob(self):
-        custom_list = list(self.custom_data.values_list('id', flat=True))
         if self.request.method == 'GET':
+            custom_list = list(self.custom_data.values_list('id', flat=True))
+            prev_prob = next_prob = None
             last_id = len(custom_list) - 1
             q = custom_list.index(self.problem_id)
-            prev_prob = self.custom_data.get(id=custom_list[q - 1]) if q != 0 else None
-            next_prob = self.custom_data.get(id=custom_list[q + 1]) if q != last_id else None
+            if q != 0:
+                prev_prob = self.custom_data[q-1]
+            if q != last_id:
+                next_prob = self.custom_data[q+1]
             return prev_prob, next_prob
-
-    @property
-    def custom_data(self):
-        filter_dict = {
-            'problem': {'psat': self.psat_id},
-            'like': {
-                'likes__user_id': self.user_id,
-                'likes__is_liked': True,
-            },
-            'rate': {'rates__user_id': self.user_id},
-            'solve': {'solves__user_id': self.user_id},
-        }
-        return (
-            PsatProblem.objects.filter(**filter_dict[self.view_type])
-            .only('id', 'psat_id', 'number', 'answer', 'question')
-            .prefetch_related('psat', 'psat__exam', 'psat__subject')
-        )
 
     @property
     def list_data(self) -> list:
@@ -441,14 +464,12 @@ class PsatDetailViewMixIn(
     @property
     def memo(self):
         if self.request.user.is_authenticated:
-            return Memo.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
-        return None
+            return Memo.objects.get(user_id=self.user_id, problem_id=self.problem_id)
 
     @property
     def my_tag(self):
         if self.request.user.is_authenticated:
-            return Tag.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
-        return None
+            return Tag.objects.get(user_id=self.user_id, problem_id=self.problem_id)
 
 
 class PsatCustomUpdateViewMixIn(
@@ -486,8 +507,7 @@ class PsatCustomUpdateViewMixIn(
         }
         return option_dict[self.view_type]
 
-    @property
-    def data_instance(self):
+    def get_data_instance(self):
         filter_expr = {
             'user_id': self.user_id,
             'problem': self.problem,

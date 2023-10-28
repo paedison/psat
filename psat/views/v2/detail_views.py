@@ -1,14 +1,13 @@
 from vanilla import TemplateView
 
 from .viewmixins import (
-    PsatCustomVariableSet,
     PsatDetailViewMixIn,
-    PsatSolveModalViewMixIn, PsatCustomUpdateViewMixIn,
+    PsatSolveModalViewMixIn,
+    PsatCustomUpdateViewMixIn,
 )
 
 
 class PsatDetailView(
-    PsatCustomVariableSet,
     PsatDetailViewMixIn,
     TemplateView,
 ):
@@ -64,8 +63,10 @@ class PsatCustomUpdateView(
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        data_instance = self.get_data_instance()
         return {
-            self.option_name: getattr(self.data_instance, self.option_name),
+            self.option_name: getattr(data_instance, self.option_name),
+            'problem': data_instance,
             'icon_like': self.ICON_LIKE if self.view_type == 'like' else '',
             'icon_rate': self.ICON_RATE if self.view_type == 'rate' else '',
             'icon_solve': self.ICON_SOLVE if self.view_type == 'solve' else '',

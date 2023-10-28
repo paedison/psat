@@ -14,7 +14,9 @@
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <div class="d-flex align-items-center pb-2 fs-6">
-            {% partial nav_container %}
+            <div>
+                {% partial nav_container %}
+            </div>
             <div class="small">
                 {% include 'psat/v2/snippets/icon_container.html' %}
             </div>
@@ -33,8 +35,10 @@
 
 {# Navigation container partial #}
 {% startpartial nav_container %}
-    <article id="detail_nav_container" class="input-group me-2">
-        <a id="problem_list" href="javascript:history.back()" class="btn btn-{{ info.color }}">
+    <article id="detail_nav_container" class="input-group me-2"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        <a id="problem_list" class="btn btn-{{ info.color }}" href=""
+           hx-get="{% url 'psat_v2:list' info.view_type %}" hx-push-url="true">
             {{ icon_nav.left_arrow|safe }}
         </a>
 
@@ -64,20 +68,20 @@
 {% startpartial nav_prob %}
     {% if prob %}
         {% if info.view_type == 'problem' %}
-            <a class="btn btn-{{ info.color }}"
-               href="{{ prob.problem_url }}">{{ icon }}</a>
+            <a class="btn btn-{{ info.color }}" href="" hx-push-url="true"
+               hx-get="{% url 'psat_v2:detail' 'problem' prob.id %}">{{ icon }}</a>
         {% elif info.view_type == 'like' %}
-            <a class="btn btn-{{ info.color }}"
-               href="{{ prob.like_url }}">{{ icon }}</a>
+            <a class="btn btn-{{ info.color }}" href="" hx-push-url="true"
+               hx-get="{% url 'psat_v2:detail' 'like' prob.id %}">{{ icon }}</a>
         {% elif info.view_type == 'rate' %}
-            <a class="btn btn-{{ info.color }}"
-               href="{{ prob.rate_url }}">{{ icon }}</a>
+            <a class="btn btn-{{ info.color }}" href="" hx-push-url="true"
+               hx-get="{% url 'psat_v2:detail' 'rate' prob.id %}">{{ icon }}</a>
         {% elif info.view_type == 'solve' %}
-            <a class="btn btn-{{ info.color }}"
-               href="{{ prob.solve_url }}">{{ icon }}</a>
+            <a class="btn btn-{{ info.color }}" href="" hx-push-url="true"
+               hx-get="{% url 'psat_v2:detail' 'solve' prob.id %}">{{ icon }}</a>
         {% endif %}
     {% else %}
-        <a class="btn btn-{{ info.color }}"> </a>
+        <a class="btn btn-{{ info.color }} text-{{ info.color }}">{{ icon }}</a>
     {% endif %}
 {% endpartial nav_prob %}
 
@@ -101,7 +105,10 @@
 {% startpartial filtered_content %}
     {% for _ in '_'|ljust:problem_count %}
             <div class="col-2 text-center small p-1">
-                <a href="{% url 'psat_v2:detail' 'problem' problem.number|subtract:problem.id|add:forloop.counter %}">
+                <a href="" hx-push-url="true"
+                   hx-get="{% url 'psat_v2:detail' 'problem' problem.number|subtract:problem.id|add:forloop.counter %}"
+                   class="p-1 dropdown-item text-nowrap text-center
+                   {% if forloop.counter == problem.number %} active{% endif %}">
                     {{ forloop.counter }}번
                 </a>
             </div>
@@ -130,9 +137,9 @@
             {% endif %}
             {% if data %}
                 <div class="col-2 text-center p-0">
-                    <a href="{{ data.problem_url }}"
+                    <a href="" hx-push-url="true" hx-get="{{ data.problem_url }}"
                        class="p-1 dropdown-item text-nowrap text-center
-                       {% if num == data.problem_number %} active{% endif %}">
+                       {% if data.problem_id == problem.id %} active{% endif %}">
                         {{ data.problem_number }}번
                     </a>
                 </div>

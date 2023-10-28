@@ -42,7 +42,7 @@
 </article>
 
 {% startpartial like %}
-    {% if is_liked or problem|get_like_status:like_data %}
+    {% if problem.is_liked or problem|get_like_status:like_data %}
         {{ icon_like.true|safe }}
     {% else %}
         {{ icon_like.false|safe }}
@@ -51,15 +51,15 @@
 
 
 {% startpartial rate %}
-    {% if rating == 1 or problem|get_rate_status:rate_data == 1 %}
+    {% if problem.rating == 1 or problem|get_rate_status:rate_data == 1 %}
         {{ icon_rate.star1|safe }}
-    {% elif rating == 2 or problem|get_rate_status:rate_data == 2 %}
+    {% elif problem.rating == 2 or problem|get_rate_status:rate_data == 2 %}
         {{ icon_rate.star2|safe }}
-    {% elif rating == 3 or problem|get_rate_status:rate_data == 3 %}
+    {% elif problem.rating == 3 or problem|get_rate_status:rate_data == 3 %}
         {{ icon_rate.star3|safe }}
-    {% elif rating == 4 or problem|get_rate_status:rate_data == 4 %}
+    {% elif problem.rating == 4 or problem|get_rate_status:rate_data == 4 %}
         {{ icon_rate.star4|safe }}
-    {% elif rating == 5 or problem|get_rate_status:rate_data == 5 %}
+    {% elif problem.rating == 5 or problem|get_rate_status:rate_data == 5 %}
         {{ icon_rate.star5|safe }}
     {% else %}
         {{ icon_rate.star0|safe }}

@@ -29,7 +29,7 @@
             <form>
                 <div class="input-group">
                     {% csrf_token %}
-                    <input name="user" type="text" value="{{ user.id }}"
+                    <input name="user_id" type="text" value="{{ user.id }}"
                            aria-label="User" hidden/>
                     <input name="problem" type="text" value="{{ problem.id }}"
                            aria-label="Problem" hidden/>
@@ -51,7 +51,7 @@
     <form>
         <div class="input-group">
             {% csrf_token %}
-            <input name="user" type="text" value="{{ memo.user.id }}"
+            <input name="user_id" type="text" value="{{ memo.user_id }}"
                    aria-label="User" hidden/>
             <input name="problem" type="text" value="{{ memo.problem.id }}"
                    aria-label="Problem" hidden/>

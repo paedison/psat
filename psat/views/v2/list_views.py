@@ -1,13 +1,9 @@
 from vanilla import TemplateView
 
-from .viewmixins import (
-    PsatCustomVariableSet,
-    PsatListViewMixIn,
-)
+from .viewmixins import PsatListViewMixIn
 
 
 class PsatListView(
-    PsatCustomVariableSet,
     PsatListViewMixIn,
     TemplateView,
 ):
