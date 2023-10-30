@@ -1,0 +1,149 @@
+{% load static %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+
+<div class="htmx-fade-in htmx-fade-out"
+     hx-swap="innerHTML swap:0.25s">
+    {% #responsive_table %}
+        <thead>
+            <tr class="text-center">
+                <th class="text-nowrap p-2 col-1">추가 날짜</th>
+                <th class="text-nowrap p-2 col-1">문제 출처</th>
+                {% if view_type == 'like' %}
+                    <th class="text-nowrap p-2 col-1">{{ icon_like.true|safe }}</th>
+                {% elif view_type == 'rate' %}
+                    <th class="text-nowrap p-2 col-1">난이도</th>
+                {% elif view_type == 'solve' %}
+                    <th class="text-nowrap p-2 col-1">{{ icon_solve.correct|safe }}</th>
+                {% endif %}
+                <th class="d-none d-sm-table-cell text-start text-nowrap p-2">문제</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if page_obj %}
+                {% for log in page_obj %}
+                    <tr class="text-center">
+                        <td class="text-nowrap">{{ log.timestamp|date:'Y.m.d' }}({{ log.timestamp|date:'w'|int2kor }})</td>
+                        <td class="text-nowrap">
+                            <div class="td-div-xl text-start" aria-label="Reference">
+                                <a class="text-decoration-none fw-bold" href="" hx-push-url="true"
+                                   hx-get="{% url 'psat_v2:detail' 'problem' log.problem.id %}">
+                                    {{ log.problem.psat.year }}-{{ log.problem.psat.exam.abbr }}-{{ log.problem.psat.subject.abbr }} {{ log.problem.number|add_0 }}
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            {% if view_type == 'like' %}{% partial like %}{% endif %}
+                            {% if view_type == 'rate' %}{% partial rate %}{% endif %}
+                            {% if view_type == 'solve' %}{% partial solve %}{% endif %}
+                        </td>
+                        <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
+                            <h3 class="fs-6 small m-0">{{ log.problem.question|truncatechars:30 }}</h3>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td class="text-center text-nowrap px-2" colspan="5">
+                        자료가 없습니다.
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    {% /responsive_table %}
+
+    {% #pagination_nav %}
+        {% if page_obj.has_previous %}
+            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+                {% partial pagination_link %}
+            {% endwith %}
+        {% endif %}
+        {% for number in page_range %}
+            {% with page_num=number anchor_text=number %}
+                {% if number == page_obj.number %}
+                    {% with status='active' %}{% partial pagination_link %}{% endwith %}
+                {% elif number == page_obj.paginator.ELLIPSIS %}
+                    {% with status='disabled' %}{% partial pagination_link %}{% endwith %}
+                {% else %}
+                    {% partial pagination_link %}
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            {% with page_num=page_obj.number|add:1 chevron='right' %}
+                {% partial pagination_link %}
+            {% endwith %}
+        {% endif %}
+    {% /pagination_nav %}
+</div>
+
+{# ########## #}
+{# Icon start #}
+{# ########## #}
+
+{% startpartial like %}
+    <div class="td-div-xs" aria-label="Like">
+        {% if log.is_liked %}
+            {{ icon_like.true|safe }}
+        {% else %}
+            {{ icon_like.false|safe }}
+        {% endif %}
+    </div>
+{% endpartial %}
+
+
+{% startpartial rate %}
+    <div class="td-div-lg" aria-label="Rate">
+        {% if log.rating == 1 %}
+            {{ icon_rate.star1|safe }}
+        {% elif log.rating == 2 %}
+            {{ icon_rate.star2|safe }}
+        {% elif log.rating == 3 %}
+            {{ icon_rate.star3|safe }}
+        {% elif log.rating == 4 %}
+            {{ icon_rate.star4|safe }}
+        {% elif log.rating == 5 %}
+            {{ icon_rate.star5|safe }}
+        {% else %}
+            {{ icon_rate.star0|safe }}
+        {% endif %}
+    </div>
+{% endpartial %}
+
+
+{% startpartial solve %}
+    <div class="td-div-xs" aria-label="Solve">
+        {% if log.is_correct is True %}
+            {{ icon_solve.correct|safe }}
+        {% elif log.is_correct is False %}
+            {{ icon_solve.wrong|safe }}
+        {% else %}
+        {% endif %}
+    </div>
+{% endpartial %}
+
+
+{# ################ #}
+{# Pagination start #}
+{# ################ #}
+
+{# Pagination link partial #}
+{% startpartial pagination_link %}
+    <li class="page-item {{ status }}"
+        {% if status == 'active' %}aria-current="page"{% endif %}>
+        <a class="page-link" href="" hx-target="#dashboard-{{ view_type }}"
+            hx-swap="innerHTML swap:0.25s"
+            {% if status == 'disabled' %}
+                tabindex="-1" aria-disabled="true"
+            {% else %}
+                hx-get="{{ pagination_url }}?page={{ page_num }}"
+            {% endif %}>
+            {% if chevron %}
+                <i class="fa-solid fa-chevron-{{ chevron }}"></i>
+            {% else %}
+                {{ anchor_text }}
+            {% endif %}
+        </a>
+    </li>
+{% endpartial pagination_link %}

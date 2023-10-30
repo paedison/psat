@@ -1,11 +1,10 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import F, Value, CharField, Q
 from django.db.models.functions import Concat, Cast
-from django.urls import reverse_lazy
+from vanilla import TemplateView
 
-from psat.models import Like, Rate, Solve, Memo, Tag
-from reference.models import PsatProblem, Exam, Subject
+from dashboard.models import PsatLikeLog, PsatRateLog, PsatSolveLog
+from reference.models import PsatProblem
 
 
 class PsatCommonVariableSet:
@@ -19,28 +18,26 @@ class PsatCommonVariableSet:
         user_id = self.request.user.id if self.request.user.is_authenticated else None
         return user_id
 
-    @property
-    def view_type(self) -> str:
-        """Get view type from [ problem, like, rate, solve ]. """
-        return self.kwargs.get('view_type', 'problem')
+    # @property
+    # def view_type(self) -> str:
+    #     """Get view type from [ problem, like, rate, solve ]. """
+    #     return self.kwargs.get('view_type', 'problem')
 
     @property
     def color(self) -> str:
-        ret = {
+        return {
             'problem': 'primary',
             'like': 'danger',
             'rate': 'warning',
             'solve': 'success',
             'search': 'primary',
         }
-        return ret[self.view_type]
 
     @property
     def info(self) -> dict:
         """ Get the meta-info for the current view. """
         return {
             'menu': self.menu,
-            'view_type': self.view_type,
             'color': self.color,
         }
 
@@ -71,7 +68,6 @@ class PsatCustomVariableSet:
     """Represent PSAT custom data variable."""
     psat_id: int
     user_id: int
-    view_type: str
 
     @property
     def problem_data(self):
@@ -113,13 +109,12 @@ class PsatCustomVariableSet:
 
     @property
     def custom_data(self):
-        custom_data_dict = {
+        return {
             'problem': self.problem_data,
             'like': self.like_data,
             'rate': self.rate_data,
             'solve': self.solve_data,
         }
-        return custom_data_dict[self.view_type]
 
 
 class PsatIconConstantSet:
@@ -243,52 +238,19 @@ class PsatListViewMixIn(
             return self.request.GET.get('data', '')
         return self.request.POST.get('data', '')
 
-    ########
-    # Urls #
-    ########
-
-    @property
-    def base_url(self) -> str:
-        return reverse_lazy(self.url_name, args=[self.view_type])
-
-    @property
-    def pagination_url(self) -> str:
-        return (f'{self.base_url}?year={self.year}&ex={self.ex}&sub={self.sub}'
-                f'&user_id={self.request.user.id}&is_liked={self.is_liked}'
-                f'&rating={self.rating}&is_correct={self.is_correct}'
-                f'&data={self.search_data}')
-
     #########
     # Title #
     #########
 
     @property
     def title(self) -> str:
-        title_dict = {
+        return {
             'problem': 'PSAT 기출문제',
             'like': 'PSAT 즐겨찾기',
             'rate': 'PSAT 난이도',
             'solve': 'PSAT 정답확인',
             'search': 'PSAT 검색 결과',
         }
-        return title_dict[self.view_type]
-
-    @property
-    def sub_title(self):
-        exam_list = dict(Exam.objects.filter(category__name='PSAT').values_list('abbr', 'label'))
-        subject_list = dict(Subject.objects.filter(category__name='PSAT').values_list('abbr', 'name'))
-        title_parts = []
-        sub_title = ''
-        if self.view_type == 'problem':
-            if self.year or self.ex or self.sub:
-                if self.year != '':
-                    title_parts.append(f'{self.year}년')
-                if self.ex != '':
-                    title_parts.append(f'"{exam_list[self.ex]}"')
-                if self.sub != '':
-                    title_parts.append(subject_list[self.sub])
-                sub_title = f'[{" ".join(title_parts)}]'
-        return sub_title
 
     ##################
     # Filter options #
@@ -396,163 +358,63 @@ class PsatListViewMixIn(
         )
 
 
-class PsatDetailViewMixIn(
-    PsatCommonVariableSet,
-    PsatProblemVariableSet,
-    PsatCustomVariableSet,
-    PsatIconConstantSet,
+class PsatListView(
+    PsatListViewMixIn,
+    TemplateView,
 ):
-    """Represent PSAT detail view mixin."""
-    url_name = 'psat_v2:detail'
+    """ Represent PSAT base list view. """
+    template_name = 'psat/v2/problem_list.html'
 
-    ##########################
-    # Navigation & list data #
-    ##########################
-
-    @property
-    def prev_next_prob(self):
-        if self.request.method == 'GET':
-            custom_list = list(self.custom_data.values_list('id', flat=True))
-            prev_prob = next_prob = None
-            last_id = len(custom_list) - 1
-            q = custom_list.index(self.problem_id)
-            if q != 0:
-                prev_prob = self.custom_data[q-1]
-            if q != last_id:
-                next_prob = self.custom_data[q+1]
-            return prev_prob, next_prob
-
-    @property
-    def list_data(self) -> list:
-        organized_dict = {}
-        organized_list = []
-        target_data = self.custom_data.values(
-            'id', 'psat_id', 'psat__year', 'psat__exam__name',
-            'psat__subject__name', 'number'
-        )
-
-        for prob in target_data:
-            key = prob['psat_id']
-            if key not in organized_dict:
-                organized_dict[key] = []
-            year, exam2, subject = prob['psat__year'], prob['psat__exam__name'], prob['psat__subject__name']
-            problem_url = reverse_lazy(
-                self.url_name,
-                kwargs={'view_type': self.view_type, 'problem_id': prob['id']}
-            )
-            list_item = {
-                'exam_name': f"{year}년 '{exam2}' {subject}",
-                'problem_number': prob['number'],
-                'problem_id': prob['id'],
-                'problem_url': problem_url
-            }
-            organized_dict[key].append(list_item)
-
-        for key, items in organized_dict.items():
-            num_empty_instances = 5 - (len(items) % 5)
-            if num_empty_instances < 5:
-                items.extend([None] * num_empty_instances)
-            for i in range(0, len(items), 5):
-                row = items[i:i + 5]
-                organized_list.extend(row)
-        return organized_list
-
-    ##############
-    # Memo & tag #
-    ##############
-
-    @property
-    def memo(self):
-        if self.request.user.is_authenticated:
-            return Memo.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
-
-    @property
-    def my_tag(self):
-        if self.request.user.is_authenticated:
-            return Tag.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
-
-
-class PsatCustomUpdateViewMixIn(
-    PsatCommonVariableSet,
-    PsatProblemVariableSet,
-    PsatIconConstantSet,
-):
-    """Represent PSAT custom data update view mixin."""
-    @property
-    def rating(self) -> int:
-        rating = self.request.POST.get('rating', '')
-        return '' if rating == '' else int(rating)
-
-    @property
-    def answer(self) -> int:
-        answer = self.request.POST.get('answer', '')
-        return '' if answer == '' else int(answer)
-
-    @property
-    def data_model(self):
-        model_dict = {
-            'problem': None,
-            'like': Like,
-            'rate': Rate,
-            'solve': Solve,
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#list_main',
         }
-        return model_dict[self.view_type]
+        return htmx_template[f'{bool(self.request.htmx)}']
 
-    @property
-    def option_name(self) -> str:
-        option_dict = {
-            'like': 'is_liked',
-            'rate': 'rating',
-            'solve': 'is_correct'
+    def post(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        page_obj, page_range = self.get_paginator_info()
+        return {
+            # Variables
+            'year': self.year,
+            'ex': self.ex,
+            'sub': self.sub,
+            'page_number': self.page_number,
+            'is_liked': self.is_liked,
+            'rating': self.rating,
+            'is_correct': self.is_correct,
+            'search_data': self.search_data,
+
+            # Info & title
+            'info': self.info,
+            'title': self.title,
+
+            # Filter options
+            'year_option': self.year_option,
+            'ex_option': self.ex_option,
+            'sub_option': self.sub_option,
+            'like_option': self.like_option,
+            'rate_option': self.rate_option,
+            'solve_option': self.solve_option,
+
+            # Paginator
+            'page_obj': page_obj,
+            'page_range': page_range,
+
+            # Custom data
+            'like_logs': self.like_data,
+            'rate_logs': self.rate_data,
+            'solve_logs': self.solve_data,
+
+            # Icons
+            'icon_like': self.ICON_LIKE,
+            'icon_rate': self.ICON_RATE,
+            'icon_solve': self.ICON_SOLVE,
+            'icon_filter': self.ICON_FILTER,
         }
-        return option_dict[self.view_type]
-
-    def get_data_instance(self):
-        filter_expr = {
-            'user_id': self.user_id,
-            'problem': self.problem,
-        }
-        if self.data_model:
-            try:
-                instance = self.data_model.objects.get(**filter_expr)
-                if self.view_type == 'like':
-                    instance.is_liked = not instance.is_liked
-                elif self.view_type == 'rate':
-                    instance.rating = self.rating
-                elif self.view_type == 'solve':
-                    instance.answer = self.answer
-                    instance.is_correct = self.answer == self.problem.answer
-                instance.save()
-            except ObjectDoesNotExist:
-                additional_expr = {
-                    'like': {'is_liked': True},
-                    'rate': {'rating': self.rating},
-                    'solve': {
-                        'answer': self.answer,
-                        'is_correct': self.answer == self.problem.answer,
-                    },
-                }
-                filter_expr.update(additional_expr[self.view_type])
-                instance = self.data_model.objects.create(**filter_expr)
-            return instance
 
 
-class PsatSolveModalViewMixIn(
-    PsatIconConstantSet,
-):
-    """Represent PSAT Solve data update modal view mixin."""
-    request: any
-
-    @property
-    def problem_id(self) -> int:
-        return int(self.request.POST.get('problem_id'))
-
-    @property
-    def answer(self) -> int | None:
-        answer = self.request.POST.get('answer')
-        return int(answer) if answer else None
-
-    @property
-    def is_correct(self) -> bool | None:
-        problem = PsatProblem.objects.get(id=self.problem_id)
-        return None if self.answer is None else (self.answer == problem.answer)
+base_view = PsatListView.as_view()

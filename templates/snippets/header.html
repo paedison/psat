@@ -67,24 +67,24 @@
 </header><!-- Main Header End -->
 
 
-{% startpartial logo_image %}
+{% startpartial logo %}
     <div class="d-flex align-items-center justify-content-between"
          hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        {% if user.is_authenticated %}
             <a class="logo d-flex align-items-center" role="banner"
-               hx-post="{{ url }}" href="" data-target="{{ target }}">
+               hx-post="{% url 'dashboard:base' %}" href="" data-target="'#dashboardList'">
                 <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
                 <span class="d-none d-sm-block">Paedison</span>
             </a>
+        {% else %}
+            <a class="logo d-flex align-items-center" role="banner"
+               hx-post="{% url 'psat_v2:base' %}" href="" data-target="#problemList">
+                <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
+                <span class="d-none d-sm-block">Paedison</span>
+            </a>
+        {% endif %}
         <i class="fa fa-bars toggle-sidebar-btn"></i>
     </div><!-- Logo End -->
-{% endpartial %}
-
-{% startpartial logo %}
-    {% if user.is_authenticated %}
-        {% with url='/dashboard/' target='#dashboardList' %}{% partial logo_image %}{% endwith %}
-    {% else %}
-        {% with url='/psat/' target='#problemList' %}{% partial logo_image %}{% endwith %}
-    {% endif %}
 {% endpartial %}
 
 

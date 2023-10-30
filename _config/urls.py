@@ -15,7 +15,10 @@ urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),  # Admin
     path('notice/', include('notice.urls')),  # Notice
     path('common/', include('common.urls.base')),  # Common
-    path('dashboard/', include('common.urls.dashboard')),  # Dashboard
+
+    path('dashboard/', include('dashboard.urls')),  # Dashboard
+    # path('dashboard/', include('common.urls.dashboard')),  # Dashboard
+
     path('account/', include('common.urls.account')),  # Login, Logout
     path('account/', include('allauth.urls')),  # Django All-auth
     path('psat/', include('psat.urls')),  # PSAT

@@ -29,7 +29,7 @@
             <fieldset>
                 {% for i in '12345' %}
                     <input type="radio" name="difficulty" id="star{{ i }}"
-                           value="{{ i|abstract:6 }}">
+                           value="{{ i|subtract:6 }}">
                     <label for="star{{ i }}"><i class="fa fa-star"></i></label>
                 {% endfor %}
             </fieldset>

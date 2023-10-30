@@ -19,32 +19,16 @@ class Migration(migrations.Migration):
             options={'ordering': ['-id']},
         ),
         migrations.AlterModelOptions(
-            name='likelog',
-            options={},
-        ),
-        migrations.AlterModelOptions(
             name='open',
             options={'ordering': ['-id']},
-        ),
-        migrations.AlterModelOptions(
-            name='openlog',
-            options={},
         ),
         migrations.AlterModelOptions(
             name='rate',
             options={'ordering': ['-id']},
         ),
         migrations.AlterModelOptions(
-            name='ratelog',
-            options={},
-        ),
-        migrations.AlterModelOptions(
             name='solve',
             options={'ordering': ['-id']},
-        ),
-        migrations.AlterModelOptions(
-            name='solvelog',
-            options={},
         ),
         migrations.CreateModel(
             name='Tag',
