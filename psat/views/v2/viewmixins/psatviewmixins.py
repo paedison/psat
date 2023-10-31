@@ -81,7 +81,7 @@ class PsatProblemVariableSet(PsatCommonVariableSet):
         filter_dict = {'problem_id': self.problem_id}
         if self.user_id:
             filter_dict.update({'user_id': self.user_id})
-        if self.ip_address:
+        else:
             filter_dict.update({'ip_address': self.ip_address})
         return filter_dict
 

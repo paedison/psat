@@ -1,7 +1,25 @@
+{% load slippers %}
+
+{% fragment as admin_icon %}<i class="fa-solid fa-crown fa-fw"></i>{% endfragment %}
+{% fragment as problem_icon %}<i class="fa-solid fa-file-lines fa-fw"></i>{% endfragment %}
+{% fragment as like_icon %}<i class="fa-solid fa-heart fa-fw"></i>{% endfragment %}
+{% fragment as rate_icon %}<i class="fa-solid fa-star fa-fw"></i>{% endfragment %}
+{% fragment as solve_icon %}<i class="fa-solid fa-circle-check fa-fw"></i>{% endfragment %}
 
 <li class="nav-item dropdown no-arrow">
-    <a class="nav-link px-1" hx-post="{{ url }}" href="" hx-push-url="true"
-       hx-target="#main" hx-swap="innerHTML swap:0.25s">
-        {{ icon }}
-    </a>
+    {% if type == 'admin' %}
+        <a class="nav-link px-1" href="{% url 'admin:index' %}" target="#admin">
+            {{ admin_icon }}
+        </a>
+    {% else %}
+        <a class="nav-link px-1" hx-post="{% url 'psat_v2:list' type %}"
+           href="{% url 'psat_v2:list' type %}" hx-push-url="true"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            {% if type == 'problem' %}{{ problem_icon }}
+            {% elif type == 'like' %}{{ like_icon }}
+            {% elif type == 'rate' %}{{ rate_icon }}
+            {% elif type == 'solve' %}{{ solve_icon }}
+            {% endif %}
+        </a>
+    {% endif %}
 </li>

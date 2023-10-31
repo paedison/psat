@@ -6,40 +6,34 @@
 <div class="htmx-fade-in htmx-fade-out"
      hx-swap="innerHTML swap:0.25s">
     {% #responsive_table %}
-        <thead>
-            <tr class="text-center">
-                <th class="text-nowrap p-2 col-1">추가 날짜</th>
-                <th class="text-nowrap p-2 col-1">문제 출처</th>
-                {% if view_type == 'like' %}
-                    <th class="text-nowrap p-2 col-1">{{ icon_like.true|safe }}</th>
-                {% elif view_type == 'rate' %}
-                    <th class="text-nowrap p-2 col-1">난이도</th>
-                {% elif view_type == 'solve' %}
-                    <th class="text-nowrap p-2 col-1">{{ icon_solve.correct|safe }}</th>
-                {% endif %}
-                <th class="d-none d-sm-table-cell text-start text-nowrap p-2">문제</th>
-            </tr>
-        </thead>
         <tbody>
             {% if page_obj %}
                 {% for log in page_obj %}
-                    <tr class="text-center">
-                        <td class="text-nowrap">{{ log.timestamp|date:'Y.m.d' }}({{ log.timestamp|date:'w'|int2kor }})</td>
+                    <tr class="text-start">
                         <td class="text-nowrap">
                             <div class="td-div-xl text-start" aria-label="Reference">
-                                <a class="text-decoration-none fw-bold" href="" hx-push-url="true"
+                                <a class="text-decoration-none fw-bold" hx-push-url="true"
+                                   href="{% url 'psat_v2:detail' 'problem' log.problem.id %}"
                                    hx-get="{% url 'psat_v2:detail' 'problem' log.problem.id %}">
-                                    {{ log.problem.psat.year }}-{{ log.problem.psat.exam.abbr }}-{{ log.problem.psat.subject.abbr }} {{ log.problem.number|add_0 }}
+                                    {% with psat=log.problem.psat %}
+                                        {{ psat.year }}-{{ psat.exam.abbr }}-{{ psat.subject.abbr }}
+                                        {{ log.problem.number|add_0 }}
+                                    {% endwith %}
                                 </a>
                             </div>
-                        </td>
-                        <td>
                             {% if view_type == 'like' %}{% partial like %}{% endif %}
                             {% if view_type == 'rate' %}{% partial rate %}{% endif %}
                             {% if view_type == 'solve' %}{% partial solve %}{% endif %}
-                        </td>
-                        <td class="d-none d-sm-table-cell text-start text-nowrap p-2">
-                            <h3 class="fs-6 small m-0">{{ log.problem.question|truncatechars:30 }}</h3>
+                            <div class="ms-5 d-inline-block text-secondary small">
+                                {{ log.timestamp|date:'y/m/d' }}({{ log.timestamp|date:'w'|int2kor }})
+                            </div>
+                            <h3 class="fs-6 small m-0 py-2 d-block text-nowrap">
+                                <a class="text-decoration-none text-black" hx-push-url="true"
+                                   href="{% url 'psat_v2:detail' 'problem' log.problem.id %}"
+                                   hx-get="{% url 'psat_v2:detail' 'problem' log.problem.id %}">
+                                    {{ log.problem.question|truncatechars:30 }}
+                                </a>
+                            </h3>
                         </td>
                     </tr>
                 {% endfor %}

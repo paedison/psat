@@ -5,11 +5,6 @@
 {% load slippers %}
 
 {% fragment as search_icon %}<i class="fa-solid fa-magnifying-glass fa-fw"></i>{% endfragment %}
-{% fragment as admin_icon %}<i class="fa-solid fa-crown fa-fw"></i>{% endfragment %}
-{% fragment as problem_icon %}<i class="fa-solid fa-file-lines fa-fw"></i>{% endfragment %}
-{% fragment as like_icon %}<i class="fa-solid fa-heart fa-fw"></i>{% endfragment %}
-{% fragment as rate_icon %}<i class="fa-solid fa-star fa-fw"></i>{% endfragment %}
-{% fragment as answer_icon %}<i class="fa-solid fa-circle-check fa-fw"></i>{% endfragment %}
 {% fragment as divider %}<li><hr class="dropdown-divider"></li>{% endfragment %}
 
 {% fragment as dashboard_icon %}<i class="fa-solid fa-list fa-fw"></i>{% endfragment %}
@@ -41,15 +36,12 @@
             </li>
             {% if user.is_authenticated %}
                 {% if user.is_admin %}
-                    <li class="nav-item dropdown no-arrow">
-                        <a class="nav-link px-1" href="/admin/" target="#admin">
-                            {{ admin_icon|safe }}</a>
-                    </li>
+                    {% header_icon_link type='admin' %}
                 {% endif %}
-                {% header_icon_link url='/psat/v2/problem/' icon=problem_icon|safe %}
-                {% header_icon_link url='/psat/v2/like/' icon=like_icon|safe %}
-                {% header_icon_link url='/psat/v2/rate/' icon=rate_icon|safe %}
-                {% header_icon_link url='/psat/v2/solve/' icon=answer_icon|safe %}
+                {% header_icon_link type='problem' %}
+                {% header_icon_link type='like' %}
+                {% header_icon_link type='rate' %}
+                {% header_icon_link type='solve' %}
                 <div class="topbar-divider"></div>
             {% endif %}
 
@@ -66,7 +58,7 @@
     </nav><!-- Icons Navigation End -->
 </header><!-- Main Header End -->
 
-
+{# Logo partial #}
 {% startpartial logo %}
     <div class="d-flex align-items-center justify-content-between"
          hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
@@ -87,21 +79,13 @@
     </div><!-- Logo End -->
 {% endpartial %}
 
-
-{% startpartial icon_link %}
-    <li class="nav-item dropdown no-arrow">
-        <a class="nav-link px-1" hx-post="{{ url }}" href="" hx-push-url="true"
-           hx-target="#main" hx-swap="innerHTML swap:0.25s">{{ icon }}</a>
-    </li>
-{% endpartial %}
-
-
+{# Profile partial #}
 {% startpartial profile %}
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
         {% if user.is_authenticated %}
             <li>
                 <a class="dropdown-item d-flex align-items-center"
-                   hx-post="/dashboard/" href=""
+                   hx-post="{% url 'dashboard:base' %}" href="{% url 'dashboard:base' %}"
                    hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     {{ dashboard_icon|safe }} <span>Dashboard</span>
                 </a>
@@ -130,3 +114,4 @@
         {% endif %}
     </ul><!-- Profile Dropdown Items End -->
 {% endpartial %}
+
