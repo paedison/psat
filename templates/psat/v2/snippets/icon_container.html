@@ -5,15 +5,26 @@
 <article id="icon_container" class="d-inline-block">
     <div class="td-div-xs" aria-label="Like">
         {% if user.is_authenticated %}
-            <a hx-post="{% url 'psat_v2:custom' 'like' problem.id %}" href=""
-               class="htmx-fade-in htmx-fade-out" hx-target="this" hx-swap="innerHTML swap:0.25s">
-                {% partial like %}
-            </a>
+            <form id="likeButton{{ problem.id }}">
+                <a hx-post="{% url 'psat_v2:custom' 'like' problem.id %}" href=""
+                   class="htmx-fade-in htmx-fade-out" hx-target="this"
+                   hx-swap="innerHTML swap:0.25s">
+                    {% if like_data %}
+                        {% with is_liked=problem|get_like_status:like_data %}
+                            {% partial like %}
+                        {% endwith %}
+                    {% else %}
+                        {% with is_liked=problem.is_liked %}
+                            {% partial like %}
+                        {% endwith %}
+                    {% endif %}
+                </a>
+            </form>
         {% else %}
             <a hx-get="{% url 'account_login_modal' %}" href=""
                hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
                data-bs-toggle="modal" data-bs-target="#modalContainer">
-                {{ PSAT_ICON_SET.likeNone|safe }}
+                {{ icon_like.false|safe }}
             </a>
         {% endif %}
     </div>
@@ -29,48 +40,23 @@
             <a hx-get="{% url 'account_login_modal' %}" href=""
                hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
                data-bs-toggle="modal" data-bs-target="#modalContainer">
-                {{ PSAT_ICON_SET.starNone|safe }}
+                {{ icon_rate.star0|safe }}
             </a>
         {% endif %}
     </div>
     <div class="td-div-xs" aria-label="Answer">
         {% if user.is_authenticated %}
             <span id="psatSolve{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
-                {% partial solve %}</span>
+                {% partial solve %}
+            </span>
         {% endif %}
     </div>
 </article>
 
-{% startpartial like %}
-    {% if problem.is_liked or problem|get_like_status:like_data %}
-        {{ icon_like.true|safe }}
-    {% else %}
-        {{ icon_like.false|safe }}
-    {% endif %}
-{% endpartial %}
-
-
-{% startpartial rate %}
-    {% if problem.rating == 1 or problem|get_rate_status:rate_data == 1 %}
-        {{ icon_rate.star1|safe }}
-    {% elif problem.rating == 2 or problem|get_rate_status:rate_data == 2 %}
-        {{ icon_rate.star2|safe }}
-    {% elif problem.rating == 3 or problem|get_rate_status:rate_data == 3 %}
-        {{ icon_rate.star3|safe }}
-    {% elif problem.rating == 4 or problem|get_rate_status:rate_data == 4 %}
-        {{ icon_rate.star4|safe }}
-    {% elif problem.rating == 5 or problem|get_rate_status:rate_data == 5 %}
-        {{ icon_rate.star5|safe }}
-    {% else %}
-        {{ icon_rate.star0|safe }}
-    {% endif %}
-{% endpartial %}
-
-
+{# Rate modal partial #}
 {% startpartial rate_modal %}
     {% #modal header='문제 난이도를 선택해주세요.' %}
         <form id="rateButton">
-        {% csrf_token %}
             <fieldset>
                 {% for i in '12345' %}
                     <input type="radio" name="rating" id="rating{{ i }}"
@@ -88,7 +74,35 @@
     {% /modal %}
 {% endpartial %}
 
+{# Like button partial #}
+{% startpartial like %}
+    <input type="text" name="is_liked" value="{{ is_liked }}" hidden
+           aria-label="Like Icon">
+    {% if is_liked %}
+        {{ icon_like.true|safe }}
+    {% else %}
+        {{ icon_like.false|safe }}
+    {% endif %}
+{% endpartial %}
 
+{# Rate button partial #}
+{% startpartial rate %}
+    {% if problem.rating == 1 or problem|get_rate_status:rate_data == 1 %}
+        {{ icon_rate.star1|safe }}
+    {% elif problem.rating == 2 or problem|get_rate_status:rate_data == 2 %}
+        {{ icon_rate.star2|safe }}
+    {% elif problem.rating == 3 or problem|get_rate_status:rate_data == 3 %}
+        {{ icon_rate.star3|safe }}
+    {% elif problem.rating == 4 or problem|get_rate_status:rate_data == 4 %}
+        {{ icon_rate.star4|safe }}
+    {% elif problem.rating == 5 or problem|get_rate_status:rate_data == 5 %}
+        {{ icon_rate.star5|safe }}
+    {% else %}
+        {{ icon_rate.star0|safe }}
+    {% endif %}
+{% endpartial %}
+
+{# Solve button partial #}
 {% startpartial solve %}
     {% if is_correct is True or problem|get_solve_status:solve_data is True %}
         {{ icon_solve.correct|safe }}

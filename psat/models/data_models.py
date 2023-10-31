@@ -22,7 +22,7 @@ class Answers(models.IntegerChoices):
 
 
 class Open(Base):
-    pass
+    session_key = models.TextField(blank=True, null=True)
 
 
 class Like(Base):

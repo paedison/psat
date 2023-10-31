@@ -8,7 +8,7 @@ now = make_aware(datetime.now())
 
 def index(request):
     if request:
-        return redirect('psat:base')
+        return redirect('psat_v2:base')
 
 
 def page_not_found(request, exception):

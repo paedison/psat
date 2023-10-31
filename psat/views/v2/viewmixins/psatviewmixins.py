@@ -1,11 +1,18 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import F, Value, CharField, Q
 from django.db.models.functions import Concat, Cast
 from django.urls import reverse_lazy
 
-from psat.models import Like, Rate, Solve, Memo, Tag
+from psat.models import Open, Like, Rate, Solve, Memo, Tag
 from reference.models import PsatProblem, Exam, Subject
+from dashboard.models.psat_data_models import (
+    PsatOpenLog,
+    PsatLikeLog,
+    PsatRateLog,
+    PsatSolveLog,
+)
 
 
 class PsatCommonVariableSet:
@@ -18,6 +25,12 @@ class PsatCommonVariableSet:
     def user_id(self) -> int:
         user_id = self.request.user.id if self.request.user.is_authenticated else None
         return user_id
+
+    @property
+    def session_key(self) -> str:
+        if not self.request.session.session_key:
+            self.request.session.create()
+        return self.request.session.session_key
 
     @property
     def view_type(self) -> str:
@@ -45,9 +58,8 @@ class PsatCommonVariableSet:
         }
 
 
-class PsatProblemVariableSet:
+class PsatProblemVariableSet(PsatCommonVariableSet):
     """Represent PSAT single problem variable."""
-    kwargs: dict
 
     @property
     def problem_id(self) -> int:
@@ -66,12 +78,27 @@ class PsatProblemVariableSet:
     def psat_id(self) -> int:
         return self.problem.psat_id
 
+    @property
+    def find_filter(self) -> dict:
+        if self.user_id:
+            return {
+                'user_id': self.user_id,
+                'problem_id': self.problem_id,
+            }
+        else:
+            return {
+                'session_key': self.session_key,
+                'problem_id': self.problem_id,
+            }
+
 
 class PsatCustomVariableSet:
     """Represent PSAT custom data variable."""
+    request: any
     psat_id: int
     user_id: int
     view_type: str
+    problem_id: int
 
     @property
     def problem_data(self):
@@ -397,13 +424,30 @@ class PsatListViewMixIn(
 
 
 class PsatDetailViewMixIn(
-    PsatCommonVariableSet,
     PsatProblemVariableSet,
     PsatCustomVariableSet,
     PsatIconConstantSet,
 ):
     """Represent PSAT detail view mixin."""
     url_name = 'psat_v2:detail'
+
+    def get_open_instance(self):
+        with transaction.atomic():
+            print(self.find_filter)
+            instance, is_created = Open.objects.get_or_create(**self.find_filter)
+            instance.save()
+            try:
+                recent_log = PsatOpenLog.objects.get(**self.find_filter)
+                repetition = recent_log.repetition
+            except ObjectDoesNotExist:
+                repetition = 1
+            create_filter = self.find_filter.copy()
+            extra_filter = {
+                'data_id': instance.id,
+                'repetition': repetition,
+            }
+            create_filter.update(extra_filter)
+            PsatOpenLog.objects.create(**create_filter)
 
     ##########################
     # Navigation & list data #
@@ -473,11 +517,20 @@ class PsatDetailViewMixIn(
 
 
 class PsatCustomUpdateViewMixIn(
-    PsatCommonVariableSet,
     PsatProblemVariableSet,
     PsatIconConstantSet,
 ):
     """Represent PSAT custom data update view mixin."""
+    @property
+    def is_liked(self) -> bool:
+        is_liked = self.request.POST.get('is_liked', '')
+        bool_dict = {
+            'True': True,
+            'False': False,
+            'None': False,
+        }
+        return '' if is_liked == '' else not bool_dict[is_liked]
+
     @property
     def rating(self) -> int:
         rating = self.request.POST.get('rating', '')
@@ -507,34 +560,57 @@ class PsatCustomUpdateViewMixIn(
         }
         return option_dict[self.view_type]
 
-    def get_data_instance(self):
+    @property
+    def update_filter(self) -> dict:
         filter_expr = {
-            'user_id': self.user_id,
-            'problem': self.problem,
+            'problem': {},
+            'like': {'is_liked': self.is_liked},
+            'rate': {'rating': self.rating},
+            'solve': {
+                'answer': self.answer,
+                'is_correct': self.answer == self.problem.answer,
+            },
         }
+        return filter_expr[self.view_type]
+
+    @property
+    def create_filter(self) -> dict:
+        create_filter = self.find_filter.copy()
+        create_filter.update(self.update_filter)
+        return create_filter
+
+    @property
+    def data_instance(self):
+        return self.get_data_instance()
+
+    def get_data_instance(self):
         if self.data_model:
             try:
-                instance = self.data_model.objects.get(**filter_expr)
-                if self.view_type == 'like':
-                    instance.is_liked = not instance.is_liked
-                elif self.view_type == 'rate':
-                    instance.rating = self.rating
-                elif self.view_type == 'solve':
-                    instance.answer = self.answer
-                    instance.is_correct = self.answer == self.problem.answer
+                instance = self.data_model.objects.get(**self.find_filter)
+                update_filter = self.update_filter.copy()
+                for key, item in update_filter.items():
+                    setattr(instance, key, item)
                 instance.save()
             except ObjectDoesNotExist:
-                additional_expr = {
-                    'like': {'is_liked': True},
-                    'rate': {'rating': self.rating},
-                    'solve': {
-                        'answer': self.answer,
-                        'is_correct': self.answer == self.problem.answer,
-                    },
-                }
-                filter_expr.update(additional_expr[self.view_type])
-                instance = self.data_model.objects.create(**filter_expr)
+                instance = self.data_model.objects.create(**self.create_filter)
             return instance
+
+    def make_log_instance(self):
+        if self.data_instance:
+            filter_expr = self.create_filter.copy()
+            model_dict = {
+                'like': PsatLikeLog,
+                'rate': PsatRateLog,
+                'solve': PsatSolveLog,
+            }
+            model = model_dict[self.view_type]
+            data_id = self.data_instance.id
+            recent_log = model.objects.filter(**self.find_filter).order_by('-id').first()
+            repetition = recent_log.repetition + 1 if recent_log else 1
+            filter_expr.update(
+                {'repetition': repetition, 'data_id': data_id}
+            )
+            model.objects.create(**filter_expr)
 
 
 class PsatSolveModalViewMixIn(

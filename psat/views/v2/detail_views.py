@@ -22,6 +22,7 @@ class PsatDetailView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
+        # self.get_open_instance()
         prev_prob, next_prob = self.prev_next_prob
         return {
             # Target problem & info
@@ -63,10 +64,10 @@ class PsatCustomUpdateView(
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        data_instance = self.get_data_instance()
+        self.make_log_instance()
         return {
-            self.option_name: getattr(data_instance, self.option_name),
-            'problem': data_instance,
+            self.option_name: getattr(self.data_instance, self.option_name),
+            'problem': self.data_instance,
             'icon_like': self.ICON_LIKE if self.view_type == 'like' else '',
             'icon_rate': self.ICON_RATE if self.view_type == 'rate' else '',
             'icon_solve': self.ICON_SOLVE if self.view_type == 'solve' else '',
