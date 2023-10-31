@@ -6,7 +6,6 @@ from reference.models import PsatProblem
 class Base(models.Model):
     timestamp = models.DateTimeField(auto_now=True)
     user_id = models.IntegerField(blank=True, null=True)
-    session_key = models.TextField(blank=True, null=True)
     data_id = models.IntegerField()
     repetition = models.IntegerField()
 

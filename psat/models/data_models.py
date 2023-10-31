@@ -22,7 +22,8 @@ class Answers(models.IntegerChoices):
 
 
 class Open(Base):
-    session_key = models.TextField(blank=True, null=True)
+    user_id = models.IntegerField(blank=True, null=True)
+    ip_address = models.TextField(blank=True, null=True)
 
 
 class Like(Base):

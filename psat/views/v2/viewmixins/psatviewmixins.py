@@ -27,10 +27,8 @@ class PsatCommonVariableSet:
         return user_id
 
     @property
-    def session_key(self) -> str:
-        if not self.request.session.session_key:
-            self.request.session.create()
-        return self.request.session.session_key
+    def ip_address(self) -> str:
+        return self.request.META.get('REMOTE_ADDR')
 
     @property
     def view_type(self) -> str:
@@ -80,16 +78,12 @@ class PsatProblemVariableSet(PsatCommonVariableSet):
 
     @property
     def find_filter(self) -> dict:
+        filter_dict = {'problem_id': self.problem_id}
         if self.user_id:
-            return {
-                'user_id': self.user_id,
-                'problem_id': self.problem_id,
-            }
-        else:
-            return {
-                'session_key': self.session_key,
-                'problem_id': self.problem_id,
-            }
+            filter_dict.update({'user_id': self.user_id})
+        if self.ip_address:
+            filter_dict.update({'ip_address': self.ip_address})
+        return filter_dict
 
 
 class PsatCustomVariableSet:
@@ -433,13 +427,11 @@ class PsatDetailViewMixIn(
 
     def get_open_instance(self):
         with transaction.atomic():
-            print(self.find_filter)
             instance, is_created = Open.objects.get_or_create(**self.find_filter)
-            instance.save()
-            try:
-                recent_log = PsatOpenLog.objects.get(**self.find_filter)
-                repetition = recent_log.repetition
-            except ObjectDoesNotExist:
+            recent_log = PsatOpenLog.objects.filter(**self.find_filter).last()
+            if recent_log:
+                repetition = recent_log.repetition + 1
+            else:
                 repetition = 1
             create_filter = self.find_filter.copy()
             extra_filter = {

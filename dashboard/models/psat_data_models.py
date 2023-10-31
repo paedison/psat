@@ -4,7 +4,7 @@ from .base_models import PsatBase
 
 
 class PsatOpenLog(PsatBase):
-    pass
+    ip_address = models.TextField(blank=True, null=True)
 
 
 class PsatLikeLog(PsatBase):

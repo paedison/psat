@@ -95,6 +95,7 @@ class Command(BaseCommand):
 
         def create_update_bulk(data_type: str):
             model = model_dict[data_type]
+            model_name = model._meta.model_name
 
             create_list_log = create_list[data_type]
             update_list_log = update_list[data_type]
@@ -112,12 +113,12 @@ class Command(BaseCommand):
                         model.objects.bulk_update(update_list_log, list(instance_data.keys()))
                     else:
                         self.stdout.write(self.style.SUCCESS(
-                            f'{model.capitalize()} instances already exist.'))
+                            f'{model_name.capitalize()} instances already exist.'))
             except django.db.utils.IntegrityError:
                 self.stdout.write(self.style.SUCCESS(
-                    f'{model.capitalize()} instances already exist.'))
+                    f'{model_name.capitalize()} instances already exist.'))
             self.stdout.write(self.style.SUCCESS(
-                f'Psat{data_type.capitalize()}Log: {create_count_log} instances created, {update_count_log} instances updated'))
+                f'Psat{model_name.capitalize()}: {create_count_log} instances created, {update_count_log} instances updated'))
 
         create_update_bulk('like')
         create_update_bulk('rate')

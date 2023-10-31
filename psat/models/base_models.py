@@ -17,7 +17,7 @@ class Base(models.Model):
 
 
 class LogBase(Base):
-    session_key = models.TextField(blank=True, null=True)
+    ip_address = models.TextField(blank=True, null=True)
     repetition = models.IntegerField()
 
     class Meta:
