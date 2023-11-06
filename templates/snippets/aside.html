@@ -11,19 +11,20 @@
 {% fragment as score_icon %}<i class="fa-solid fa-chart-simple fa-fw"></i>{% endfragment %}
 
 <!-- ======= Sidebar ======= -->
-<aside id="sidebar" class="sidebar">
+<aside id="sidebar" class="sidebar"
+       hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <ul id="sidebar-nav" class="sidebar-nav">
         {% if user.is_authenticated %}
             <li class="nav-item">
-                <a id="noticeList" hx-post="{% url 'notice:base' %}" class="nav-link collapsed"
-                   href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <a id="noticeList" class="nav-link collapsed"
+                   href="{% url 'notice:base' %}" hx-post="{% url 'notice:base' %}">
                     {{ notice_icon|safe }}<span>Notice</span>
                 </a>
             </li><!-- Notice Nav End -->
 
             <li class="nav-item">
-                <a id="dashboardList" hx-post="{% url 'dashboard:base' %}" class="nav-link collapsed"
-                   href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <a id="dashboardList" class="nav-link collapsed"
+                   href="{% url 'dashboard:base' %}" hx-post="{% url 'dashboard:base' %}">
                     {{ dashboard_icon|safe }}<span>Dashboard</span>
                 </a>
             </li><!-- Dashboard Nav End -->
@@ -36,20 +37,24 @@
                 </a>
                 <ul id="psat-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
                     <li>
-                        <a id="problemList" hx-post="{% url 'psat_v2:list' 'problem' %}" class="aside-nav-icon"
-                           href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        <a id="problemList" class="aside-nav-icon"
+                           href="{% url 'psat_v2:list' 'problem' %}"
+                           hx-post="{% url 'psat_v2:list' 'problem' %}">
                             {{ problem_icon|safe }}<span>기출문제</span>
                         </a>
-                        <a id="likeList" hx-post="{% url 'psat_v2:list' 'like' %}" class="aside-nav-icon"
-                           href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        <a id="likeList" class="aside-nav-icon"
+                           href="{% url 'psat_v2:list' 'like' %}"
+                           hx-post="{% url 'psat_v2:list' 'like' %}">
                             {{ like_icon|safe }}<span>즐겨찾기</span>
                         </a>
-                        <a id="rateList" hx-post="{% url 'psat_v2:list' 'rate' %}" class="aside-nav-icon"
-                           href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        <a id="rateList" class="aside-nav-icon"
+                           href="{% url 'psat_v2:list' 'rate' %}"
+                           hx-post="{% url 'psat_v2:list' 'rate' %}">
                             {{ rate_icon|safe }}<span>난이도</span>
                         </a>
-                        <a id="answerList" hx-post="{% url 'psat_v2:list' 'solve' %}" class="aside-nav-icon"
-                           href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        <a id="answerList" class="aside-nav-icon"
+                           href="{% url 'psat_v2:list' 'solve' %}"
+                           hx-post="{% url 'psat_v2:list' 'solve' %}">
                             {{ answer_icon|safe }}<span>정답확인</span>
                         </a>
                     </li>
@@ -57,16 +62,16 @@
             </li><!-- PSAT Nav End -->
 
             <li class="nav-item">
-                <a id="scheduleList" hx-post="{% url 'schedule:base' %}" class="nav-link collapsed"
-                   href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <a id="scheduleList" class="nav-link collapsed"
+                   href="{% url 'schedule:base' %}" hx-post="{% url 'schedule:base' %}">
                     {{ schedule_icon|safe }}<span>Schedule</span>
                 </a>
             </li><!-- Schedule Nav End -->
 
             {% if user.is_admin or user.is_staff %}
                 <li class="nav-item">
-                    <a id="scoreList" hx-post="{% url 'score:list' %}" class="nav-link collapsed"
-                       href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <a id="scoreList" class="nav-link collapsed"
+                       href="{% url 'score_v2:list' %}" hx-post="{% url 'score_v2:list' %}">
                         {{ score_icon|safe }}<span>Score</span>
                     </a>
                 </li><!-- Score Nav End -->
@@ -74,20 +79,20 @@
 
         {% else %}
             <li class="nav-item">
-                <a id="noticeList" hx-post="{% url 'notice:base' %}" class="nav-link collapsed"
-                   href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <a id="noticeList" class="nav-link collapsed"
+                   href="{% url 'notice:base' %}" hx-post="{% url 'notice:base' %}">
                     {{ notice_icon|safe }}<span>Notice</span>
                 </a>
             </li><!-- Notice Nav End -->
             <li class="nav-item">
-                <a id="problemList" hx-post="{% url 'psat_v2:base' %}" class="nav-link collapsed"
-                   href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <a id="problemList" class="nav-link collapsed"
+                   href="{% url 'psat_v2:base' %}" hx-post="{% url 'psat_v2:base' %}">
                     {{ psat_icon|safe }}<span>PSAT</span>
                 </a>
             </li><!-- PSAT Nav End -->
             <li class="nav-item">
-                <a id="scheduleList" hx-post="{% url 'schedule:base' %}" class="nav-link collapsed"
-                   href="" hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <a id="scheduleList" class="nav-link collapsed"
+                   href="{% url 'schedule:base' %}" hx-post="{% url 'schedule:base' %}">
                     {{ schedule_icon|safe }}<span>Schedule</span>
                 </a>
             </li><!-- Schedule Nav End -->

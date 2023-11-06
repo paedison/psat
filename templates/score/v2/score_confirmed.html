@@ -1,0 +1,72 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% block head_title %}{{ title }}{% endblock head_title %}
+
+{% block main %}{% partial detail_main %}{% endblock %}
+
+
+{% startpartial detail_main %}
+    {{ info|json_script:'info' }}
+    <div class="pagetitle my-2">
+        <h1>{{ icon|safe }} {{ title }}</h1>
+    </div><!-- Page Title End -->
+    {% partial content %}
+{% endpartial %}
+
+
+{% startpartial content %}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    {% #content_row class3='p-4' %}
+        <div class="col-12 d-flex justify-content-between pb-2">
+            <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
+               hx-post="{% url 'score:list' %}" hx-target="#main"
+               hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
+                {{ BOARD_ICON_SET.list|safe }}
+            </a>
+        </div>
+        <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
+            <div class="col-md-6 col-lg-4 justify-content-center pb-2">
+            {% for confirmed in confirmed_answers %}
+                <div class="col-12 justify-content-center">{% partial confirmed %}</div>
+                {% if forloop.counter|divisibleby:5 %}
+            <hr/>
+            </div>
+                    {% if not forloop.last %}
+            <div class="col-md-6 col-lg-4 justify-content-center pb-2">
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <div id="result"></div>
+    {% /content_row %}
+{% endpartial %}
+
+
+{% startpartial confirmed %}
+    <div class="d-flex justify-content-center align-content-center">
+        <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
+            <a href="" hx-get="{% url 'psat:problem_detail' confirmed.problem.id %}" hx-push-url="true">
+                문 {{ confirmed.problem.number|add_0 }}.
+            </a>
+        </p>
+        <div class="d-flex justify-content-center align-content-center me-3">
+            {% for i in '12345' %}
+                {% if i|add:0 == confirmed.answer %}
+                    <div class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                        {% if confirmed.answer == confirmed.problem.answer %}btn-success
+                        {% else %}btn-danger{% endif %}">{{ i }}</div>
+                {% else %}
+                    <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
+                         hx-get="{% url 'score:confirm_modal' exam.id %}" hx-swap="innerHTML"
+                         hx-target="#modalContainer" data-bs-toggle="modal"
+                         data-bs-target="#modalContainer">{{ i }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endpartial %}
