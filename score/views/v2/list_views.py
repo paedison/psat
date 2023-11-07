@@ -2,7 +2,7 @@ from vanilla import TemplateView
 
 from reference import models as reference_models
 from score import models as score_models
-from .viewmixins import ScoreCommonVariableSet, ScoreResultVariableSet, ScoreFilterVariableSet
+from .viewmixins.list_viewmixins import ScoreCommonVariableSet, ScoreResultVariableSet, ScoreFilterVariableSet
 
 
 class BaseView(

@@ -76,7 +76,7 @@
                     {% endwith %}
                 {% /responsive_table %}
             {% elif heonbeob_temporary %}
-                {% with problems=heonbeob_temporary %}
+                {% with problems=heonbeob_temporary subject='heonbeob' %}
                     {% partial temporary_answer_table %}
                 {% endwith %}
             {% endif %}
@@ -206,18 +206,30 @@
 
 {% startpartial initial_form %}
     {% with target_answer=problem.submitted_answer target_problem=problem %}
-        {% for i in '12345' %}
-            {% partial answer_buttons %}
-        {% endfor %}
+        {% if subject == 'heonbeob' %}
+            {% for i in '1234' %}
+                {% partial answer_buttons %}
+            {% endfor %}
+        {% else %}
+            {% for i in '12345' %}
+                {% partial answer_buttons %}
+            {% endfor %}
+        {% endif %}
     {% endwith %}
 {% endpartial initial_form %}
 
 
 {% startpartial scored_form %}
     {% with target_answer=scored.answer target_problem=scored.problem %}
-        {% for i in '12345' %}
-            {% partial answer_buttons %}
-        {% endfor %}
+        {% if subject == 'heonbeob' %}
+            {% for i in '1234' %}
+                {% partial answer_buttons %}
+            {% endfor %}
+        {% else %}
+            {% for i in '12345' %}
+                {% partial answer_buttons %}
+            {% endfor %}
+        {% endif %}
     {% endwith %}
 {% endpartial scored_form %}
 
@@ -254,12 +266,21 @@
             </a>
         </p>
         <div class="d-flex justify-content-center align-content-center me-3">
-            {% for i in '12345' %}
-                <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                     hx-get="{% url 'score_v2:no_student_modal' %}" hx-swap="innerHTML"
-                     hx-target="#modalContainer" data-bs-toggle="modal"
-                     data-bs-target="#modalContainer">{{ i }}</div>
-            {% endfor %}
+            {% if subject == 'heonbeob' %}
+                {% for i in '1234' %}
+                    <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
+                         hx-get="{% url 'score_v2:no_student_modal' %}" hx-swap="innerHTML"
+                         hx-target="#modalContainer" data-bs-toggle="modal"
+                         data-bs-target="#modalContainer">{{ i }}</div>
+                {% endfor %}
+            {% else %}
+                {% for i in '12345' %}
+                    <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
+                         hx-get="{% url 'score_v2:no_student_modal' %}" hx-swap="innerHTML"
+                         hx-target="#modalContainer" data-bs-toggle="modal"
+                         data-bs-target="#modalContainer">{{ i }}</div>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 {% endpartial no_student %}

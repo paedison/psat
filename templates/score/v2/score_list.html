@@ -70,39 +70,67 @@
             {% #responsive_table %}
                 <tbody>
                     <tr>
-                        <th scope="row">
+                        <td>
                             응시번호
                             {% if student.serial %}
-                                {% partial update_student %}
+                                : {{ student.serial }} {% partial update_student %}
                             {% else %}
                                 {% partial create_student %}
                             {% endif %}
-                        </th>
-                        <td>{{ student.serial }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
+                        </td>
+                        <td>
                             모집단위
                             {% if student.department %}
-                                {% partial update_student %}
+                                : {{ student.department.unit.name }} {% partial update_student %}
                             {% else %}
                                 {% partial create_student %}
                             {% endif %}
-                        </th>
-                        <td>{{ student.department.unit.name }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
+                        </td>
+                        <td>
                             응시직렬
                             {% if student.department %}
-                                {% partial update_student %}
+                                : {{ student.department.name }} {% partial update_student %}
                             {% else %}
                                 {% partial create_student %}
                             {% endif %}
-                        </th>
-                        <td>{{ student.department.name }}</td>
+                        </td>
                     </tr>
                 </tbody>
+{#                <tbody>#}
+{#                    <tr>#}
+{#                        <th scope="row">#}
+{#                            응시번호#}
+{#                            {% if student.serial %}#}
+{#                                {% partial update_student %}#}
+{#                            {% else %}#}
+{#                                {% partial create_student %}#}
+{#                            {% endif %}#}
+{#                        </th>#}
+{#                        <td>{{ student.serial }}</td>#}
+{#                    </tr>#}
+{#                    <tr>#}
+{#                        <th scope="row">#}
+{#                            모집단위#}
+{#                            {% if student.department %}#}
+{#                                {% partial update_student %}#}
+{#                            {% else %}#}
+{#                                {% partial create_student %}#}
+{#                            {% endif %}#}
+{#                        </th>#}
+{#                        <td>{{ student.department.unit.name }}</td>#}
+{#                    </tr>#}
+{#                    <tr>#}
+{#                        <th scope="row">#}
+{#                            응시직렬#}
+{#                            {% if student.department %}#}
+{#                                {% partial update_student %}#}
+{#                            {% else %}#}
+{#                                {% partial create_student %}#}
+{#                            {% endif %}#}
+{#                        </th>#}
+{#                        <td>{{ student.department.name }}</td>#}
+{#                    </tr>#}
+{#                </tbody>#}
             {% /responsive_table %}
         {% /nav_content %}
     </div>
