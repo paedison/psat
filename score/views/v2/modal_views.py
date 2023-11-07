@@ -7,15 +7,10 @@ from vanilla import TemplateView
 from reference import models as reference_models
 from score import models as score_models
 from score.forms import PsatStudentForm
-from .list_views import exam_list
 
 
-def get_exam2(year, ex) -> str:
-    exam2 = ''
-    for exam in exam_list:
-        if exam['year'] == year and exam['ex'] == ex:
-            exam2 = exam['exam2']
-    return exam2
+class NoStudentModalView(TemplateView):
+    template_name = 'score/v2/snippets/score_modal.html#no_student_modal'
 
 
 class StudentCreateModalView(TemplateView):
@@ -23,9 +18,11 @@ class StudentCreateModalView(TemplateView):
 
     def get_context_data(self, **kwargs) -> dict:
         year, ex = self.kwargs['year'], self.kwargs['ex']
-        exam2 = get_exam2(year, ex)
+        psat = reference_models.Psat.objects.filter(
+            year=year, exam__abbr=ex).first()
+        exam = psat.exam.name
         context = {
-            'header': f'{year}년 {exam2} 수험 정보 입력',
+            'header': f'{year}년 {exam} 수험 정보 입력',
             'year': year,
             'units': score_models.PsatUnit.objects.filter(exam__abbr=ex),
         }
@@ -40,7 +37,7 @@ class StudentDepartmentView(TemplateView):
         departments = score_models.PsatUnitDepartment.objects.filter(unit_id=unit_id)
         return {'departments': departments}
 
-    def post(self,request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
 
 
@@ -185,3 +182,4 @@ student_create_modal_view = StudentCreateModalView.as_view()
 student_update_modal_view = StudentUpdateModalView.as_view()
 student_department_view = StudentDepartmentView.as_view()
 confirm_modal_view = ConfirmModalView.as_view()
+no_student_modal_view = NoStudentModalView.as_view()

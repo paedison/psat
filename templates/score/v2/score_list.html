@@ -30,48 +30,14 @@
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
     {% #content_row class3='p-4' %}
-{#        <div class="d-flex flex-wrap">#}
-{#            <div class="dropdown py-2 ms-auto">#}
-{#                {% partial problem_filter %}#}
-{#            </div>#}
-{#        </div>#}
-        <table class="table mb-4">
-            <tbody>
-                <tr>
-                    <th scope="row">
-                        응시번호
-                        {% if student.serial %}
-                            {% partial update_student %}
-                        {% else %}
-                            {% partial create_student %}
-                        {% endif %}
-                    </th>
-                    <td>{{ student.serial }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">
-                        모집단위
-                        {% if student.department %}
-                            {% partial update_student %}
-                        {% else %}
-                            {% partial create_student %}
-                        {% endif %}
-                    </th>
-                    <td>{{ student.department.unit.name }}</td>
-                </tr>
-                <tr>
-                    <th scope="row">
-                        응시직렬
-                        {% if student.department %}
-                            {% partial update_student %}
-                        {% else %}
-                            {% partial create_student %}
-                        {% endif %}
-                    </th>
-                    <td>{{ student.department.name }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="d-flex flex-wrap">
+            <div class="dropdown py-2 ms-auto">
+                {% partial problem_filter %}
+            </div>
+        </div>
+        <div class="mb-4">
+            {% partial student_info %}
+        </div>
         <div class="mb-4">
             {% include 'score/v2/snippets/score_chart.html' %}
         </div>
@@ -85,6 +51,63 @@
     </section>
 {% endpartial %}
 
+
+{# ################## #}
+{# Student info start #}
+{# ################## #}
+
+{# Student info partial #}
+{% startpartial student_info %}
+    <nav>
+        <div class="nav nav-tabs" id="studentInfoTab" role="tablist">
+            {% #nav_tab prefix='my' id='0' %}
+                수험정보
+            {% /nav_tab %}
+        </div>
+    </nav>
+    <div class="tab-content" id="studentInfoContent">
+        {% #nav_content prefix='info' id='0' %}
+            {% #responsive_table %}
+                <tbody>
+                    <tr>
+                        <th scope="row">
+                            응시번호
+                            {% if student.serial %}
+                                {% partial update_student %}
+                            {% else %}
+                                {% partial create_student %}
+                            {% endif %}
+                        </th>
+                        <td>{{ student.serial }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            모집단위
+                            {% if student.department %}
+                                {% partial update_student %}
+                            {% else %}
+                                {% partial create_student %}
+                            {% endif %}
+                        </th>
+                        <td>{{ student.department.unit.name }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            응시직렬
+                            {% if student.department %}
+                                {% partial update_student %}
+                            {% else %}
+                                {% partial create_student %}
+                            {% endif %}
+                        </th>
+                        <td>{{ student.department.name }}</td>
+                    </tr>
+                </tbody>
+            {% /responsive_table %}
+        {% /nav_content %}
+    </div>
+{% endpartial student_info %}
+
 {# Update student partial #}
 {% startpartial update_student %}
     <a class="badge rounded-pill text-bg-warning"
@@ -97,7 +120,7 @@
 
 {# Create student partial #}
 {% startpartial create_student %}
-    <a class="badge rounded-pill text-bg-warning"
+    <a class="badge rounded-pill text-bg-warning mx-2"
        hx-get="{% url 'score_v2:student_create_modal' year ex %}" href=""
        hx-target="#modalContainer" hx-swap="innerHTML"
        data-bs-toggle="modal" data-bs-target="#modalContainer">
@@ -112,19 +135,17 @@
 
 {# Problem filter partial #}
 {% startpartial problem_filter %}
-{#    <form>#}
-{#        <input id="id_year" type="text" name="year" value="{{ year }}" aria-label="Year" hidden>#}
-{#        <select id="id_year" class="form-select mt-3" name="year" aria-label="Select Year"#}
-{#                hx-post="{% url 'score_v2:student_department' %}"#}
-{#                hx-trigger="change" hx-target="#student_department">#}
-{#            <option selected>모집 단위를 선택해주세요.</option>#}
-{#            {% for unit in units %}#}
-{#                <option value="{{ unit.id }}">{{ unit.name }}</option>#}
-{#            {% endfor %}#}
-{#        </select>#}
-{#        <div id="student_department" class="input-group mt-3">#}
-{#        </div>#}
-{#    </form>#}
+    <form>
+        <select id="id_exam_year" class="form-select mt-3" name="year" aria-label="Select Year"
+                hx-post="{% url 'score_v2:student_department' %}"
+                hx-trigger="change" hx-target="#student_department">
+            {% for y in year_option %}
+                <option value="{{ y }}" class="{% if y == year %}active{% endif %}">
+                    {{ y }}년
+                </option>
+            {% endfor %}
+        </select>
+    </form>
 
     {% with var='year' text='연도' current=year option=year_option %}
         {% partial filter_snippet %}

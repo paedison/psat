@@ -37,7 +37,7 @@
                    title="{% trans 'Update' %}"
                    hx-target="#commentUpdate{{ comment.id }}"
                    hx-swap="innerHTML swap:0.25s">
-                    {{ BOARD_ICON_SET.update|safe }}
+                    {{ info.board_icon.update|safe }}
                 </a>
                 <a class="btn btn-circle btn-sm btn-outline-danger" href=""
                    hx-post="{{ comment.comment_delete_url }}"
@@ -45,7 +45,7 @@
                    hx-target="#commentContainer"
                    hx-swap="outerHTML swap:0.25s"
                    hx-confirm="{% trans 'Are you sure you wish to delete your comment?' %}">
-                    {{ BOARD_ICON_SET.delete|safe }}
+                    {{ info.board_icon.delete|safe }}
                 </a>
             </div>
         {% endif %}

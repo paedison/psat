@@ -54,10 +54,10 @@
         <td class="text-start text-nowrap fw-bold px-2">
             <span class="badge rounded-pill bg-secondary">{{ post.get_category_display }}</span>
             {% if post.top_fixed %}
-                <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
+                <span class="text-danger">{{ info.board_icon.top_fixed|safe }}</span>
             {% endif %}
             {% if post.is_hidden %}
-                <span class="text-danger">{{ BOARD_ICON_SET.is_hidden|safe }}</span>
+                <span class="text-danger">{{ info.board_icon.is_hidden|safe }}</span>
             {% endif %}
             <a class="text-decoration-none d-md-none"
                hx-get="{{ post.post_detail_content_url }}" href=""

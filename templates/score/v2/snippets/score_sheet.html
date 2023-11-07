@@ -4,7 +4,7 @@
 
 
 <nav>
-    <div class="nav nav-tabs" id="navTab" role="tablist">
+    <div class="nav nav-tabs" id="scoreSheetTab" role="tablist">
         {% #nav_tab prefix='my' id='0' %}
             내 성적
         {% /nav_tab %}
@@ -18,7 +18,7 @@
         {% /nav_tab %}
     </div>
 </nav>
-<div class="tab-content" id="navContent">
+<div class="tab-content" id="scoreSheetContent">
     {% #nav_content prefix='my' id='0' %}
         {% #responsive_table %}
             {% partial score_thead1 %}
@@ -190,9 +190,9 @@
 {# Error message tbody partial #}
 {% startpartial error_message %}
     <tbody>
-        <tr class="text-center align-middle table-danger">
+        <tr class="text-center align-middle">
            <th colspan="6" class="text-danger fs-6 py-4">
-               성적 확인을 위해 답안을 제출해주세요.
+               성적 확인을 위해 수험정보 및 답안을 입력해주세요.
            </th>
         </tr>
     </tbody>

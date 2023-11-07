@@ -2,16 +2,16 @@ from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 from vanilla import TemplateView
 
+from common.constants.icon_set import ConstantIconSet
 from dashboard.models import (
     PsatOpenLog,
     PsatLikeLog,
     PsatRateLog,
     PsatSolveLog,
 )
-from psat.views.v2.viewmixins.psatviewmixins import PsatIconConstantSet
 
 
-class DashboardCommonVariableSet:
+class DashboardCommonVariableSet(ConstantIconSet):
     """Represent Dashboard common variable."""
     menu = 'dashboard'
     request: any
@@ -56,14 +56,8 @@ class DashboardLogVariableSet(DashboardCommonVariableSet):
         )
 
 
-class DashboardIconConstantSet(PsatIconConstantSet):
-    """Represent Dashboard icon constant."""
-    pass
-
-
 class DashboardMainView(
     DashboardLogVariableSet,
-    DashboardIconConstantSet,
     TemplateView,
 ):
     """ Represent Dashboard main view. """
@@ -141,7 +135,6 @@ class DashboardMainView(
 
 class DashboardListView(
     DashboardLogVariableSet,
-    DashboardIconConstantSet,
     TemplateView,
 ):
     """ Represent Dashboard like view. """

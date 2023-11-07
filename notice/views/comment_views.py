@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from vanilla import model_views, views
 
 from common import constants
+from common.constants.icon_set import ConstantIconSet
 from ..forms import CommentForm, PostForm  # Should Change App Name
 from ..models import Comment, Post  # Should Change App Name
 
@@ -40,7 +41,8 @@ class CommentViewMixIn:
     create_template = f'{folder}/comment_create.html'  # CommentCreateView
 
     # Icon and color
-    base_icon = constants.icon.MENU_ICON_SET[app_name]
+    icon = ConstantIconSet()
+    base_icon = icon.MENU_ICON_SET[app_name]
 
     @property
     def post_id(self) -> int: return self.kwargs.get('post_id')
@@ -75,6 +77,7 @@ class CommentViewMixIn:
             'type': self.view_type,
             'title': self.title,
             'icon': self.base_icon,
+            'board_icon': self.icon.BOARD_ICON_SET,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
             'comment_create_url': self.comment_create_url,

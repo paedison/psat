@@ -5,11 +5,12 @@ from django.db.models import (
 )
 from django.db.models.functions import Concat, Cast, Rank, PercentRank
 
+from common.constants.icon_set import ConstantIconSet
 from reference import models as reference_models
 from score import models as score_models
 
 
-class ScoreCommonVariableSet:
+class ScoreCommonVariableSet(ConstantIconSet):
     request: any
 
     @property
@@ -60,12 +61,17 @@ class ScoreFilterVariableSet:
 
     @property
     def year_option(self) -> list[tuple]:
-        year_list = reference_models.Psat.objects.annotate(
-            year_suffix=Cast(
-                Concat(F('year'), Value('년')), CharField()
-            )).distinct().values_list('year', 'year_suffix').order_by('-year')
-        return self.get_option(year_list)
+        return reference_models.Psat.objects.distinct().values_list(
+            'year', flat=True).order_by('-year')
 
+    # @property
+    # def year_option(self) -> list[tuple]:
+    #     year_list = reference_models.Psat.objects.annotate(
+    #         year_suffix=Cast(
+    #             Concat(F('year'), Value('년')), CharField()
+    #         )).distinct().values_list('year', 'year_suffix').order_by('-year')
+    #     return self.get_option(year_list)
+    #
     @property
     def ex_option(self) -> list[tuple]:
         ex_list = reference_models.Psat.objects.filter(
@@ -268,16 +274,19 @@ class ScoreResultVariableSet:
             heonbeob_score_avg=Avg('heonbeob_score', default=0),
         )
 
-        stat_queryset['eoneo_score_10'] = top_score_eoneo[0]
-        stat_queryset['eoneo_score_20'] = top_score_eoneo[1]
-        stat_queryset['jaryo_score_10'] = top_score_jaryo[0]
-        stat_queryset['jaryo_score_20'] = top_score_jaryo[1]
-        stat_queryset['sanghwang_score_10'] = top_score_sanghwang[0]
-        stat_queryset['sanghwang_score_20'] = top_score_sanghwang[1]
-        stat_queryset['psat_average_10'] = top_score_psat[0] / 3
-        stat_queryset['psat_average_20'] = top_score_psat[1] / 3
-        stat_queryset['heonbeob_score_10'] = top_score_heonbeob[0]
-        stat_queryset['heonbeob_score_20'] = top_score_heonbeob[1]
+        try:
+            stat_queryset['eoneo_score_10'] = top_score_eoneo[0]
+            stat_queryset['eoneo_score_20'] = top_score_eoneo[1]
+            stat_queryset['jaryo_score_10'] = top_score_jaryo[0]
+            stat_queryset['jaryo_score_20'] = top_score_jaryo[1]
+            stat_queryset['sanghwang_score_10'] = top_score_sanghwang[0]
+            stat_queryset['sanghwang_score_20'] = top_score_sanghwang[1]
+            stat_queryset['psat_average_10'] = top_score_psat[0] / 3
+            stat_queryset['psat_average_20'] = top_score_psat[1] / 3
+            stat_queryset['heonbeob_score_10'] = top_score_heonbeob[0]
+            stat_queryset['heonbeob_score_20'] = top_score_heonbeob[1]
+        except TypeError:
+            pass
 
         return stat_queryset
 
@@ -319,4 +328,3 @@ class ScoreConfirmedAnswerSet:
             .order_by('problem__id')
         )
         return confirmed
-

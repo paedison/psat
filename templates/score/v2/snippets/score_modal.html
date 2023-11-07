@@ -2,6 +2,15 @@
 {% load partials %}
 
 
+{% startpartial no_student_modal %}
+    {% #modal header='수험 정보 오류' %}
+        <h5 class="modal-title mx-auto fw-bold">
+            <span class="text-danger">답안을 입력하기 전에<br/>수험정보를 입력해주세요.</span>
+        </h5>
+    {% /modal %}
+{% endpartial no_student_modal %}
+
+
 {% startpartial score_confirmed %}
     {% #modal header='최종 답안 제출' %}
         <h5 class="modal-title mx-auto fw-bold">

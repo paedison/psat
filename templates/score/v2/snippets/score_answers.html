@@ -4,7 +4,7 @@
 {% load slippers %}
 
 <nav>
-    <div class="nav nav-tabs" id="navTab" role="tablist">
+    <div class="nav nav-tabs" id="scoreAnswersTab" role="tablist">
         {% #nav_tab prefix='eoneo_answers' id='0' %}
             {{ icon_subject.언어|safe }} 언어
         {% /nav_tab %}
@@ -22,7 +22,7 @@
         {% /nav_tab %}
     </div>
 </nav>
-<div class="tab-content" id="navContent">
+<div class="tab-content" id="scoreAnswersContent">
     {% #nav_content prefix='eoneo_answers' id='0' %}
         {% if eoneo_answer %}
             {% #responsive_table %}
@@ -102,7 +102,7 @@
             {% endwith %}
         {% endif %}
     </tbody>
-{% endpartial %}
+{% endpartial confirmed_answer_table %}
 
 
 {% startpartial answer_table_tr %}
@@ -159,7 +159,13 @@
     <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
         <div class="col-md-6 col-lg-4 justify-content-center pb-2">
         {% for problem in problems %}
-            <div class="col-12 justify-content-center">{% partial form %}</div>
+            <div class="col-12 justify-content-center">
+                {% if student %}
+                    {% partial form %}
+                {% else %}
+                    {% partial no_student %}
+                {% endif %}
+            </div>
             {% if forloop.counter|divisibleby:5 %}
         <hr/>
         </div>
@@ -177,7 +183,6 @@
 
 {% startpartial form %}
     <form>
-        {% csrf_token %}
         <div class="d-flex justify-content-center align-content-center">
             <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
                 <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
@@ -192,7 +197,7 @@
             </div>
         </div>
     </form>
-{% endpartial %}
+{% endpartial form %}
 
 
 {% startpartial initial_form %}
@@ -201,7 +206,7 @@
             {% partial answer_buttons %}
         {% endfor %}
     {% endwith %}
-{% endpartial %}
+{% endpartial initial_form %}
 
 
 {% startpartial scored_form %}
@@ -210,7 +215,7 @@
             {% partial answer_buttons %}
         {% endfor %}
     {% endwith %}
-{% endpartial %}
+{% endpartial scored_form %}
 
 
 {% startpartial answer_buttons %}
@@ -220,7 +225,7 @@
            {% if i|add:0 == target_answer %}btn-secondary
            {% else %} btn-outline-secondary{% endif %}"
            for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
-{% endpartial %}
+{% endpartial answer_buttons %}
 
 
 {% startpartial submit_button %}
@@ -233,4 +238,23 @@
             최종 답안 제출
         </button>
     </form>
-{% endpartial %}
+{% endpartial submit_button %}
+
+
+{% startpartial no_student %}
+    <div class="d-flex justify-content-center align-content-center">
+        <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
+            <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
+                문 {{ problem.number|add_0 }}.
+            </a>
+        </p>
+        <div class="d-flex justify-content-center align-content-center me-3">
+            {% for i in '12345' %}
+                <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
+                     hx-get="{% url 'score_v2:no_student_modal' %}" hx-swap="innerHTML"
+                     hx-target="#modalContainer" data-bs-toggle="modal"
+                     data-bs-target="#modalContainer">{{ i }}</div>
+            {% endfor %}
+        </div>
+    </div>
+{% endpartial no_student %}

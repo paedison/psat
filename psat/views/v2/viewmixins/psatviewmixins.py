@@ -5,6 +5,7 @@ from django.db.models import F, Value, CharField, Q
 from django.db.models.functions import Concat, Cast
 from django.urls import reverse_lazy
 
+from common.constants.icon_set import ConstantIconSet
 from psat.models import Open, Like, Rate, Solve, Memo, Tag
 from reference.models import PsatProblem, Exam, Subject
 from dashboard.models.psat_data_models import (
@@ -15,7 +16,7 @@ from dashboard.models.psat_data_models import (
 )
 
 
-class PsatCommonVariableSet:
+class PsatCommonVariableSet(ConstantIconSet):
     """Represent PSAT common variable."""
     menu = 'psat'
     request: any
@@ -143,79 +144,9 @@ class PsatCustomVariableSet:
         return custom_data_dict[self.view_type]
 
 
-class PsatIconConstantSet:
-    """Represent PSAT icon constant."""
-    ICON_LIKE = {
-        'true': '<i class="fa-solid fa-heart"></i>',
-        'false': '<i class="fa-regular fa-heart"></i>',
-    }
-    ICON_RATE = {
-        'star0': (
-            f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
-            f'<i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i>'
-            f'<i class="fa-regular fa-star"></i>'
-        ),
-        'star1': (
-            f'<i class="fa-solid fa-star m-0"></i><i class="fa-regular fa-star m-0"></i>'
-            f'<i class="fa-regular fa-star m-0"></i><i class="fa-regular fa-star m-0"></i>'
-            f'<i class="fa-regular fa-star m-0"></i>'
-        ),
-        'star2': (
-            f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
-            f'<i class="fa-regular fa-star m-0"></i><i class="fa-regular fa-star m-0"></i>'
-            f'<i class="fa-regular fa-star m-0"></i>'
-        ),
-        'star3': (
-            f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
-            f'<i class="fa-solid fa-star m-0"></i><i class="fa-regular fa-star m-0"></i>'
-            f'<i class="fa-regular fa-star m-0"></i>'
-        ),
-        'star4': (
-            f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
-            f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
-            f'<i class="fa-regular fa-star m-0"></i>'
-        ),
-        'star5': (
-            f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
-            f'<i class="fa-solid fa-star m-0"></i><i class="fa-solid fa-star m-0"></i>'
-            f'<i class="fa-solid fa-star m-0"></i>'
-        ),
-    }
-    ICON_SOLVE = {
-        'none': '',
-        'wrong': '<i class="fa-solid fa-circle-xmark"></i>',
-        'correct': '<i class="fa-solid fa-circle-check"></i>',
-    }
-    ICON_NAV = {
-        'left_arrow': '<i class="fa-solid fa-arrow-left"></i>',
-        'prev_prob': '<i class="fa-solid fa-arrow-up"></i>',
-        'next_prob': '<i class="fa-solid fa-arrow-down"></i>',
-        'list': '<i class="fa-solid fa-list"></i>',
-    }
-    ICON_MENU = {
-        'psat': '<i class="fa-solid fa-layer-group fa-fw"></i>',
-        'problem': '<i class="fa-solid fa-file-lines fa-fw"></i>',
-        'like': '<i class="fa-solid fa-heart fa-fw"></i>',
-        'rate': '<i class="fa-solid fa-star fa-fw"></i>',
-        'solve': '<i class="fa-solid fa-circle-check fa-fw"></i>',
-        'search': '<i class="fa-solid fa-magnifying-glass fa-fw"></i>',
-    }
-    ICON_FILTER = '<i class="fa-solid fa-filter"></i>'
-    ICON_SUBJECT = {
-        '전체': '<i class="fa-solid fa-bars fa-fw"></i>',
-        '언어': '<i class="fa-solid fa-language fa-fw"></i>',
-        '자료': '<i class="fa-solid fa-table-cells-large fa-fw"></i>',
-        '상황': '<i class="fa-solid fa-scale-balanced fa-fw"></i>',
-        '헌법': '<i class="fa-solid fa-gavel"></i>',
-    }
-    icon_search = '<i class="fa-solid fa-magnifying-glass fa-fw"></i>'
-    icon_tag = '<i class="fa-solid fa-tag fa-fw"></i>'
-
-
 class PsatListViewMixIn(
     PsatCommonVariableSet,
     PsatCustomVariableSet,
-    PsatIconConstantSet,
 ):
     """Represent PSAT list view mixin."""
     url_name = 'psat_v2:list'
@@ -420,7 +351,6 @@ class PsatListViewMixIn(
 class PsatDetailViewMixIn(
     PsatProblemVariableSet,
     PsatCustomVariableSet,
-    PsatIconConstantSet,
 ):
     """Represent PSAT detail view mixin."""
     url_name = 'psat_v2:detail'
@@ -510,7 +440,6 @@ class PsatDetailViewMixIn(
 
 class PsatCustomUpdateViewMixIn(
     PsatProblemVariableSet,
-    PsatIconConstantSet,
 ):
     """Represent PSAT custom data update view mixin."""
     @property
@@ -605,9 +534,7 @@ class PsatCustomUpdateViewMixIn(
             model.objects.create(**filter_expr)
 
 
-class PsatSolveModalViewMixIn(
-    PsatIconConstantSet,
-):
+class PsatSolveModalViewMixIn:
     """Represent PSAT Solve data update modal view mixin."""
     request: any
 

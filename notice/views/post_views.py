@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from vanilla import model_views
 
-from common import constants
+from common.constants.icon_set import ConstantIconSet
 from ..forms import PostForm  # Should Change Module
 from ..models import Post  # Should Change Module
 
@@ -50,7 +50,8 @@ class PostViewMixIn:
     post_create_content_url = reverse_lazy(f'{app_name}:create_content')
 
     # Icon and color
-    base_icon = constants.icon.MENU_ICON_SET[app_name]
+    icon = ConstantIconSet()
+    base_icon = icon.MENU_ICON_SET[app_name]
 
     # Category list
     category_choices = model.CATEGORY_CHOICES.copy()
@@ -108,6 +109,7 @@ class PostViewMixIn:
             'title': self.title,
             'pagination_url': self.post_list_content_url,
             'icon': self.base_icon,
+            'board_icon': self.icon.BOARD_ICON_SET,
             'post_id': self.post_id,
             'comment_id': self.comment_id,
             'post_list_url': self.post_list_url,

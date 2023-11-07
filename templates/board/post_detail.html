@@ -55,13 +55,13 @@
         <a class="btn btn-circle btn-sm btn-outline-secondary"
            hx-get="{{ post.post_list_navigation_url }}" href=""
            hx-push-url="{{ post.post_list_url }}" title="List">
-            {{ BOARD_ICON_SET.list|safe }}
+            {{ info.board_icon.list|safe }}
         </a>
         {% if next_post %}
             <a id="next_post" class="btn btn-circle btn-sm btn-outline-secondary"
                hx-get="{{ next_post.post_detail_content_url }}" href=""
                hx-push-url="{{ next_post.post_detail_url }}" title="Next">
-                {{ BOARD_ICON_SET.next|safe }}
+                {{ info.board_icon.next|safe }}
             </a>
         {% else %}
             <a id="next_post" class="btn btn-circle btn-sm btn-outline-secondary"></a>
@@ -70,7 +70,7 @@
             <a id="prev_post" class="btn btn-circle btn-sm btn-outline-secondary"
                hx-get="{{ prev_post.post_detail_content_url }}" href=""
                hx-push-url="{{ prev_post.post_detail_url }}" title="Previous">
-                {{ BOARD_ICON_SET.previous|safe }}
+                {{ info.board_icon.previous|safe }}
             </a>
         {% else %}
             <a id="prev_post" class="btn btn-circle btn-sm btn-outline-secondary"></a>
@@ -81,19 +81,19 @@
         <a class="btn btn-circle btn-sm btn-outline-warning"
            hx-get="{{ post.post_list_navigation_url }}" href=""
            hx-push-url="{{ post.post_list_url }}" title="Reply">
-            {{ BOARD_ICON_SET.reply|safe }}
+            {{ info.board_icon.reply|safe }}
         </a>
         {% if post.user == user %}
             <a class="btn btn-circle btn-sm btn-outline-success"
                hx-get="{{ post.post_update_content_url }}" href=""
                hx-push-url="{{ post.post_update_url }}" title="Update">
-                {{ BOARD_ICON_SET.update|safe }}
+                {{ info.board_icon.update|safe }}
             </a>
             <a class="btn btn-circle btn-sm btn-outline-danger"
                hx-post="{{ post.post_delete_url }}" hx-boost="false"
                hx-push-url="{{ post.post_list_url }}" title="Delete"
                hx-confirm="{% trans 'Are you sure you wish to delete your post?' %}">
-                {{ BOARD_ICON_SET.delete|safe }}
+                {{ info.board_icon.delete|safe }}
             </a>
         {% endif %}
     </div>
@@ -103,10 +103,10 @@
 {% startpartial post_header %}
     <h6 class="text-primary fw-bold">
         {% if post.top_fixed %}
-            <span class="text-danger">{{ BOARD_ICON_SET.top_fixed|safe }}</span>
+            <span class="text-danger">{{ info.board_icon.top_fixed|safe }}</span>
         {% endif %}
         {% if post.is_hidden %}
-            <span class="text-danger">{{ BOARD_ICON_SET.is_hidden|safe }}</span>
+            <span class="text-danger">{{ info.board_icon.is_hidden|safe }}</span>
         {% endif %}
         {{ post.title }}
     </h6>

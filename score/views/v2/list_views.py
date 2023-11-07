@@ -1,69 +1,8 @@
 from vanilla import TemplateView
 
-from psat.views.v2.viewmixins.psatviewmixins import PsatIconConstantSet
 from reference import models as reference_models
 from score import models as score_models
 from .viewmixins import ScoreCommonVariableSet, ScoreResultVariableSet, ScoreFilterVariableSet
-
-exam_list = [
-    {'year': 2023, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2023, 'ex': '칠급', 'exam2': '7급공채'},
-    {'year': 2023, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2022, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2022, 'ex': '칠급', 'exam2': '7급공채'},
-    {'year': 2022, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2021, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2021, 'ex': '칠급', 'exam2': '7급공채'},
-    {'year': 2021, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2021, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2020, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2020, 'ex': '칠급', 'exam2': '7급공채'},
-    {'year': 2020, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2020, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2019, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2019, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2019, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2018, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2018, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2018, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2017, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2017, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2017, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2016, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2016, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2016, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2015, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2015, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2015, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2014, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2014, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2014, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2013, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2013, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2013, 'ex': '외시', 'exam2': '외교원/외무고시'},
-    {'year': 2013, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2012, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2012, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2012, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2011, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2011, 'ex': '민경', 'exam2': '민간경력'},
-    {'year': 2011, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2010, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2010, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2009, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2009, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2008, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2008, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2007, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2007, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2006, 'ex': '행시', 'exam2': '5급공채/행정고시'},
-    {'year': 2006, 'ex': '견습', 'exam2': '견습'},
-    {'year': 2006, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2005, 'ex': '견습', 'exam2': '견습'},
-    {'year': 2005, 'ex': '외시', 'exam2': '외교원/외무고시'},
-    {'year': 2005, 'ex': '입시', 'exam2': '입법고시'},
-    {'year': 2004, 'ex': '외시', 'exam2': '외교원/외무고시'},
-]
 
 
 class BaseView(
@@ -124,7 +63,6 @@ class BaseView(
         return super().get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        icon = PsatIconConstantSet
         info = {
             'menu': self.menu,
             'view_type': self.menu,
@@ -171,8 +109,8 @@ class BaseView(
             'ex_option': self.ex_option,
 
             # Icons
-            'icon_menu': icon.ICON_MENU,
-            'icon_subject': icon.ICON_SUBJECT,
+            'icon_menu': self.ICON_MENU,
+            'icon_subject': self.ICON_SUBJECT,
 
         }
         return context
