@@ -30,9 +30,9 @@
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
     {% #content_row class3='p-4' %}
-        <div class="d-flex flex-wrap">
-            <div class="dropdown py-2 ms-auto">
-                {% partial problem_filter %}
+        <div class="mb-4">
+            <div class="ms-auto col-sm-6 col-md-5 col-lg-4">
+                {% partial exam_filter %}
             </div>
         </div>
         <div class="mb-4">
@@ -133,76 +133,34 @@
 {# Filter start #}
 {# ############ #}
 
-{# Problem filter partial #}
-{% startpartial problem_filter %}
+{# Exam filter partial #}
+{% startpartial exam_filter %}
     <form>
-        <select id="id_exam_year" class="form-select mt-3" name="year" aria-label="Select Year"
-                hx-post="{% url 'score_v2:student_department' %}"
-                hx-trigger="change" hx-target="#student_department">
-            {% for y in year_option %}
-                <option value="{{ y }}" class="{% if y == year %}active{% endif %}">
-                    {{ y }}년
-                </option>
-            {% endfor %}
-        </select>
+        <div class="input-group">
+            <select id="id_exam_year" class="form-select" name="year" aria-label="Select Year"
+                    hx-post="{% url 'score_v2:filter' %}"
+                    hx-trigger="change" hx-target="#id_exam_name" hx-swap="outerHTML">
+                <option>연도</option>
+                {% for y in year_option %}
+                    <option value="{{ y.0 }}"{% if y.0 == year %} selected{% endif %}>
+                        {{ y.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% partial exam_select %}
+        </div>
     </form>
+{% endpartial exam_filter %}
 
-    {% with var='year' text='연도' current=year option=year_option %}
-        {% partial filter_snippet %}
-    {% endwith %}
-
-    {% with var='ex' text='시험' current=ex option=ex_option %}
-        {% partial filter_snippet %}
-    {% endwith %}
-{% endpartial problem_filter %}
-
-{# Filter snippet partial #}
-{% startpartial filter_snippet %}
-    <button id="dropdown{{ var|title }}Link" type="button"
-            class="btn btn-sm btn-outline-primary dropdown-toggle"
-            data-bs-toggle="dropdown" aria-expanded="false">
-        {{ text }}
-    </button>
-    <ul class="dropdown-menu" aria-labelledby="dropdown{{ var|title }}Link">
-        <li>
-            <a class="dropdown-item text-center
-               {% if current == '' %}active{% endif %}" href=""
-               hx-get="{% partial total_url %}">
-                <i class="fa-regular fa-file-lines"></i>{{ total }}
-            </a>
-        </li>
-        {% for opt in option %}
-            <li>
-                <a class="dropdown-item text-center
-                   {% if opt.0 == current %}active{% endif %}" href=""
-                   hx-get="{% partial filter_url %}">
-                    {{ opt.1|safe }}
-                </a>
-            </li>
+{# Exam select partial #}
+{% startpartial exam_select %}
+    <select id="id_exam_name" class="form-select" name="ex" aria-label="Select Year"
+            hx-post="{% url 'score_v2:list' %}"
+            hx-trigger="change" hx-target="#main">
+        {% for e in ex_option %}
+            <option value="{{ e.0 }}"{% if e.0 == ex %} selected{% endif %}>
+                {{ e.1 }}
+            </option>
         {% endfor %}
-    </ul>
-{% endpartial filter_snippet %}
-
-{# Filter snippet total url partial #}
-{% startpartial total_url %}
-{{ base_url }}?year={% if var != 'year' %}{{ year }}{% endif %}
-&ex={% if var != 'ex' %}{{ ex }}{% endif %}
-&sub={% if var != 'sub' %}{{ sub }}{% endif %}
-&is_liked={% if var != 'like' %}{{ is_liked }}{% endif %}
-&rating={% if var != 'rate' %}{{ rating }}{% endif %}
-&is_correct={% if var != 'solve' %}{{ is_correct }}{% endif %}
-&data={{ search_data }}&date={{ search_date }}
-{% endpartial search_url %}
-
-{# Filter snippet filter url partial #}
-{% startpartial filter_url %}
-{{ base_url }}?year={% if var == 'year' %}{{ opt.0 }}{% else %}{{ year }}{% endif %}
-&ex={% if var == 'ex' %}{{ opt.0 }}{% else %}{{ ex }}{% endif %}
-&sub={% if var == 'sub' %}{{ opt.0 }}{% else %}{{ sub }}{% endif %}
-&is_liked={% if var == 'like' %}{{ opt.0 }}{% else %}{{ is_liked }}{% endif %}
-&rating={% if var == 'rate' %}{{ opt.0 }}{% else %}{{ rating }}{% endif %}
-&is_correct={% if var == 'solve' %}{{ opt.0 }}{% else %}{{ is_correct }}{% endif %}
-&data={{ search_data }}&date={{ search_date }}
-{% endpartial filter_url %}
-
-
+    </select>
+{% endpartial exam_select %}

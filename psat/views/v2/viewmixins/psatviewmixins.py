@@ -259,7 +259,7 @@ class PsatListViewMixIn(
         year_list = self.queryset.annotate(
             year_suffix=Cast(
                 Concat(F('psat__year'), Value('년')), CharField()
-            )).distinct().values_list('psat__year', 'year_suffix').order_by('psat__year')
+            )).distinct().values_list('psat__year', 'year_suffix').order_by('-psat__year')
         return self.get_option(year_list)
 
     @property

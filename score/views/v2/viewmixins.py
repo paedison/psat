@@ -12,6 +12,7 @@ from score import models as score_models
 
 class ScoreCommonVariableSet(ConstantIconSet):
     request: any
+    kwargs: dict
 
     @property
     def user_id(self) -> int:
@@ -19,11 +20,25 @@ class ScoreCommonVariableSet(ConstantIconSet):
 
     @property
     def year(self) -> int:
-        return int(self.request.GET.get('year', 2023))
+        year_post = self.request.POST.get('year')
+        year_request = self.kwargs.get('year')
+        if year_post:
+            return int(year_post)
+        elif year_request:
+            return int(year_request)
+        else:
+            return 2023
 
     @property
     def ex(self) -> str:
-        return self.request.GET.get('ex', '행시')
+        ex_post = self.request.POST.get('ex')
+        ex_request = self.kwargs.get('ex')
+        if ex_post:
+            return ex_post
+        elif ex_request:
+            return ex_request
+        else:
+            return '행시'
 
     def get_exam_name(self):
         exam = reference_models.Psat.objects.filter(
@@ -59,19 +74,19 @@ class ScoreFilterVariableSet:
                 target_option.append(t)
         return target_option
 
-    @property
-    def year_option(self) -> list[tuple]:
-        return reference_models.Psat.objects.distinct().values_list(
-            'year', flat=True).order_by('-year')
-
     # @property
     # def year_option(self) -> list[tuple]:
-    #     year_list = reference_models.Psat.objects.annotate(
-    #         year_suffix=Cast(
-    #             Concat(F('year'), Value('년')), CharField()
-    #         )).distinct().values_list('year', 'year_suffix').order_by('-year')
-    #     return self.get_option(year_list)
-    #
+    #     return reference_models.Psat.objects.distinct().values_list(
+    #         'year', flat=True).order_by('-year')
+
+    @property
+    def year_option(self) -> list[tuple]:
+        year_list = reference_models.Psat.objects.annotate(
+            year_suffix=Cast(
+                Concat(F('year'), Value('년')), CharField()
+            )).distinct().values_list('year', 'year_suffix').order_by('-year')
+        return self.get_option(year_list)
+
     @property
     def ex_option(self) -> list[tuple]:
         ex_list = reference_models.Psat.objects.filter(
@@ -108,22 +123,25 @@ class ScoreResultVariableSet:
             )
 
         def get_problems(sub: str):
-            psat = reference_models.Psat.objects.get(year=self.year, exam__abbr=self.ex, subject__abbr=sub)
-            temporary_answers = (
-                score_models.PsatTemporaryAnswer.objects
-                .filter(user_id=self.user_id, problem__psat=psat)
-                .order_by('problem__id').select_related('problem')
-            )
-            problems = (
-                psat.psat_problems.all()
-                .annotate(submitted_answer=Case(
-                    When(temporary_answers__in=temporary_answers,
-                         then=F('temporary_answers__answer')),
-                    default=Value(''),
-                    output_field=CharField())
+            try:
+                psat = reference_models.Psat.objects.get(year=self.year, exam__abbr=self.ex, subject__abbr=sub)
+                temporary_answers = (
+                    score_models.PsatTemporaryAnswer.objects
+                    .filter(user_id=self.user_id, problem__psat=psat)
+                    .order_by('problem__id').select_related('problem')
                 )
-            )
-            return problems
+                problems = (
+                    psat.psat_problems.all()
+                    .annotate(submitted_answer=Case(
+                        When(temporary_answers__in=temporary_answers,
+                             then=F('temporary_answers__answer')),
+                        default=Value(''),
+                        output_field=CharField())
+                    )
+                )
+                return problems
+            except reference_models.Psat.DoesNotExist:
+                pass
 
         eoneo_answer = get_answers('언어')
         jaryo_answer = get_answers('자료')

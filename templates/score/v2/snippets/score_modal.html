@@ -11,29 +11,11 @@
 {% endpartial no_student_modal %}
 
 
-{% startpartial score_confirmed %}
-    {% #modal header='최종 답안 제출' %}
-        <h5 class="modal-title mx-auto fw-bold">
-            {% if is_confirmed == True %}
-                <span class="text-success" hx-trigger="load delay:0.25s"
-                    hx-get="{% url 'score_v2:list' %}?year={{ psat.year }}&ex={{ psat.exam.abbr }}" hx-target="#main"
-                    hx-swap="innerHTML" hx-push-url="true">
-                    답안이 정상적으로<br/>제출되었습니다.
-                </span>
-            {% elif is_confirmed == False %}
-                <span class="text-danger">모든 문제의 답안을<br/>제출해주세요.</span>
-            {% else %}
-                <span class="text-danger">이미 제출한 답안은<br/>수정할 수 없습니다.</span>
-            {% endif %}
-        </h5>
-    {% /modal %}
-{% endpartial %}
-
-
 {% startpartial student_create %}
     {% #modal header=header size=" " %}
         <form>
             <input id="id_year" type="text" name="year" value="{{ year }}" aria-label="Year" hidden>
+            <input name="ex" value="{{ ex }}" aria-label="Exam" hidden>
             <div class="form-floating">
                 <input id="id_serial" class="form-control form-control-sm"
                        type="text" placeholder="수험번호(선택사항)" name="serial"/>
@@ -51,7 +33,7 @@
             </div>
         </form>
     {% /modal %}
-{% endpartial %}
+{% endpartial student_create %}
 
 
 {% startpartial student_department %}
@@ -67,7 +49,7 @@
             hx-post="{% url 'score_v2:student_create' %}" hx-target="#main">
         입력
     </button>
-{% endpartial %}
+{% endpartial student_department %}
 
 
 {% startpartial student_update %}
@@ -109,4 +91,27 @@
             </div>
         </form>
     {% /modal %}
-{% endpartial %}
+{% endpartial student_update %}
+
+
+{% startpartial score_confirmed %}
+    {% #modal header='최종 답안 제출' %}
+        <h5 class="modal-title mx-auto fw-bold">
+            {% if is_confirmed == True %}
+{#                <form hx-trigger="load delay:0.25s" hx-post="{% url 'score_v2:list' %}" hx-target="#main">#}
+{#                    <input name="year" value="{{ psat.year }}" aria-label="Year" hidden>#}
+{#                    <input name="ex" value="{{ psat.exam.abbr }}" aria-label="Exam" hidden>#}
+{#                </form>#}
+                <span class="text-success" hx-trigger="load delay:0.25s"
+                    hx-get="{% url 'score_v2:list_year_ex' psat.year psat.exam.abbr %}" hx-target="#main"
+                    hx-push-url="true">
+                    답안이 정상적으로<br/>제출되었습니다.
+                </span>
+            {% elif is_confirmed == False %}
+                <span class="text-danger">모든 문제의 답안을<br/>제출해주세요.</span>
+            {% else %}
+                <span class="text-danger">이미 제출한 답안은<br/>수정할 수 없습니다.</span>
+            {% endif %}
+        </h5>
+    {% /modal %}
+{% endpartial score_confirmed %}

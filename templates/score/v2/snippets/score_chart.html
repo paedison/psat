@@ -17,7 +17,7 @@
                 <tbody>
                     <tr class="text-center align-middle">
                        <th colspan="6" class="text-danger fs-6 py-4">
-                           성적 확인을 위해 수험정보 및 답안을 입력해주세요.
+                           수험정보 및 모든 과목의 답안을 입력해주세요.
                        </th>
                     </tr>
                 </tbody>
@@ -30,7 +30,9 @@
     chart_data = {
         type: 'bar',
         data: {
-            labels: ['언어논리', '자료해석', '상황판단', 'PSAT 평균', '헌법'],
+            labels: ['언어논리', '자료해석', '상황판단', 'PSAT 평균',
+                {% if heonbeob_answer or heonbeob_temporary %}'헌법'{% endif %}
+            ],
             datasets: [
                 {
                     label: '내 점수',
@@ -40,7 +42,9 @@
                         {{ student.jaryo_score|floatformat:1 }},
                         {{ student.sanghwang_score|floatformat:1 }},
                         {{ student.psat_average|floatformat:1 }},
-                        {{ student.heonbeob_score|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ student.heonbeob_score|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
                 {
@@ -51,7 +55,9 @@
                         {{ department_stat.jaryo_score_avg|floatformat:1 }},
                         {{ department_stat.sanghwang_score_avg|floatformat:1 }},
                         {{ department_stat.psat_average_avg|floatformat:1 }},
-                        {{ department_stat.heonbeob_score_avg|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ department_stat.heonbeob_score_avg|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
                 {
@@ -62,7 +68,9 @@
                         {{ total_stat.jaryo_score_avg|floatformat:1 }},
                         {{ total_stat.sanghwang_score_avg|floatformat:1 }},
                         {{ total_stat.psat_average_avg|floatformat:1 }},
-                        {{ total_stat.heonbeob_score_avg|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ total_stat.heonbeob_score_avg|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
                 {
@@ -74,7 +82,9 @@
                         {{ department_stat.jaryo_score_20|floatformat:1 }},
                         {{ department_stat.sanghwang_score_20|floatformat:1 }},
                         {{ department_stat.psat_average_20|floatformat:1 }},
-                        {{ department_stat.heonbeob_score_20|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ department_stat.heonbeob_score_20|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
                 {
@@ -86,7 +96,9 @@
                         {{ total_stat.jaryo_score_20|floatformat:1 }},
                         {{ total_stat.sanghwang_score_20|floatformat:1 }},
                         {{ total_stat.psat_average_20|floatformat:1 }},
-                        {{ total_stat.heonbeob_score_20|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ total_stat.heonbeob_score_20|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
                 {
@@ -97,7 +109,9 @@
                         {{ department_stat.jaryo_score_10|floatformat:1 }},
                         {{ department_stat.sanghwang_score_10|floatformat:1 }},
                         {{ department_stat.psat_average_10|floatformat:1 }},
-                        {{ department_stat.heonbeob_score_10|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ department_stat.heonbeob_score_10|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
                 {
@@ -108,7 +122,9 @@
                         {{ total_stat.jaryo_score_10|floatformat:1 }},
                         {{ total_stat.sanghwang_score_10|floatformat:1 }},
                         {{ total_stat.psat_average_10|floatformat:1 }},
-                        {{ total_stat.heonbeob_score_10|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ total_stat.heonbeob_score_10|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
                 {
@@ -120,7 +136,9 @@
                         {{ department_stat.jaryo_score_max|floatformat:1 }},
                         {{ department_stat.sanghwang_score_max|floatformat:1 }},
                         {{ department_stat.psat_average_max|floatformat:1 }},
-                        {{ department_stat.heonbeob_score_max|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ department_stat.heonbeob_score_max|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
                 {
@@ -132,7 +150,9 @@
                         {{ total_stat.jaryo_score_max|floatformat:1 }},
                         {{ total_stat.sanghwang_score_max|floatformat:1 }},
                         {{ total_stat.psat_average_max|floatformat:1 }},
-                        {{ total_stat.heonbeob_score_max|floatformat:1 }},
+                        {% if heonbeob_answer or heonbeob_temporary %}
+                            {{ total_stat.heonbeob_score_max|floatformat:1 }},
+                        {% endif %}
                     ],
                 },
             ]

@@ -17,9 +17,11 @@
             {{ icon_subject.상황|safe }} 상황
         {% /nav_tab %}
 
-        {% #nav_tab prefix='heonbeob_answers' id='3' %}
-            {{ icon_subject.헌법|safe }} 헌법
-        {% /nav_tab %}
+        {% if heonbeob_answer or heonbeob_temporary %}
+            {% #nav_tab prefix='heonbeob_answers' id='3' %}
+                {{ icon_subject.헌법|safe }} 헌법
+            {% /nav_tab %}
+        {% endif %}
     </div>
 </nav>
 <div class="tab-content" id="scoreAnswersContent">
@@ -65,19 +67,21 @@
         {% endif %}
     {% /nav_content %}
 
-    {% #nav_content prefix='heonbeob_answers' id='3' %}
-        {% if heonbeob_answer %}
-            {% #responsive_table %}
-                {% with answers=heonbeob_answer answer_rates=heonbeob_rates %}
-                    {% partial confirmed_answer_table %}
+    {% if heonbeob_answer or heonbeob_temporary %}
+        {% #nav_content prefix='heonbeob_answers' id='3' %}
+            {% if heonbeob_answer %}
+                {% #responsive_table %}
+                    {% with answers=heonbeob_answer answer_rates=heonbeob_rates %}
+                        {% partial confirmed_answer_table %}
+                    {% endwith %}
+                {% /responsive_table %}
+            {% elif heonbeob_temporary %}
+                {% with problems=heonbeob_temporary %}
+                    {% partial temporary_answer_table %}
                 {% endwith %}
-            {% /responsive_table %}
-        {% elif heonbeob_temporary %}
-            {% with problems=heonbeob_temporary %}
-                {% partial temporary_answer_table %}
-            {% endwith %}
-        {% endif %}
-    {% /nav_content %}
+            {% endif %}
+        {% /nav_content %}
+    {% endif %}
 </div>
 
 
@@ -230,10 +234,11 @@
 
 {% startpartial submit_button %}
     <form class="ms-auto me-auto">
-        {% csrf_token %}
-        <input type="text" name="exam" value="{{ problems.0.psat.id }}" aria-label="PSAT ID" hidden/>
+        <input type="text" name="year" value="{{ year }}" aria-label="Year" hidden/>
+        <input type="text" name="ex" value="{{ ex }}" aria-label="Exam" hidden/>
+        <input type="text" name="psat_id" value="{{ problems.0.psat.id }}" aria-label="PSAT ID" hidden/>
         <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
-                hx-post="{% url 'score_v2:confirm_modal' problems.0.psat.id %}" hx-swap="innerHTML" hx-trigger="click"
+                hx-post="{% url 'score_v2:confirm_modal' %}" hx-swap="innerHTML" hx-trigger="click"
                 data-bs-toggle="modal" data-bs-target="#modalContainer">
             최종 답안 제출
         </button>

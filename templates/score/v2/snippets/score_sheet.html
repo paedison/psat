@@ -130,14 +130,16 @@
             <td>{{ my_department_rank.psat_rank }}</td>
             <td>{{ my_department_rank.psat_rank_ratio|percentage|floatformat:1 }}</td>
         </tr>
-        <tr class="text-center">
-            <th class="text-nowrap">헌법</th>
-            <td>{{ student.heonbeob_score|floatformat:1 }}</td>
-            <td>{{ my_total_rank.heonbeob_rank }}</td>
-            <td>{{ my_total_rank.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
-            <td>{{ my_department_rank.heonbeob_rank }}</td>
-            <td>{{ my_department_rank.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
-        </tr>
+        {% if heonbeob_answer or heonbeob_temporary %}
+            <tr class="text-center">
+                <th class="text-nowrap">헌법</th>
+                <td>{{ student.heonbeob_score|floatformat:1 }}</td>
+                <td>{{ my_total_rank.heonbeob_rank }}</td>
+                <td>{{ my_total_rank.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
+                <td>{{ my_department_rank.heonbeob_rank }}</td>
+                <td>{{ my_department_rank.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
+            </tr>
+        {% endif %}
     </tbody>
 {% endpartial my_score %}
 
@@ -176,14 +178,16 @@
             <td>{{ stat.psat_average_20|floatformat:1 }}</td>
             <td>{{ stat.psat_average_avg|floatformat:1 }}</td>
         </tr>
-        <tr class="text-center">
-            <th class="text-nowrap">헌법</th>
-            <td>{{ student.heonbeob_score|floatformat:1 }}</td>
-            <td>{{ stat.heonbeob_score_max|floatformat:1 }}</td>
-            <td>{{ stat.heonbeob_score_10|floatformat:1 }}</td>
-            <td>{{ stat.heonbeob_score_20|floatformat:1 }}</td>
-            <td>{{ stat.heonbeob_score_avg|floatformat:1 }}</td>
-        </tr>
+        {% if heonbeob_answer or heonbeob_temporary %}
+            <tr class="text-center">
+                <th class="text-nowrap">헌법</th>
+                <td>{{ student.heonbeob_score|floatformat:1 }}</td>
+                <td>{{ stat.heonbeob_score_max|floatformat:1 }}</td>
+                <td>{{ stat.heonbeob_score_10|floatformat:1 }}</td>
+                <td>{{ stat.heonbeob_score_20|floatformat:1 }}</td>
+                <td>{{ stat.heonbeob_score_avg|floatformat:1 }}</td>
+            </tr>
+        {% endif %}
     </tbody>
 {% endpartial score_statistics %}
 
@@ -192,7 +196,7 @@
     <tbody>
         <tr class="text-center align-middle">
            <th colspan="6" class="text-danger fs-6 py-4">
-               성적 확인을 위해 수험정보 및 답안을 입력해주세요.
+               수험정보 및 모든 과목의 답안을 입력해주세요.
            </th>
         </tr>
     </tbody>

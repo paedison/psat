@@ -116,4 +116,21 @@ class BaseView(
         return context
 
 
+class ListFilterExamView(ScoreFilterVariableSet, TemplateView):
+    template_name = 'score/v2/score_list.html#exam_select'
+
+    def get_context_data(self, **kwargs) -> dict:
+        year = self.request.POST.get('year')
+        ex_list = (
+            reference_models.Psat.objects.filter(year=year).distinct()
+            .values_list('exam__abbr', 'exam__name').order_by('exam_id')
+        )
+        ex_option = self.get_option(ex_list)
+        return {'ex_option': ex_option}
+
+    def post(self, request, *args, **kwargs):
+        return self.get(request, *args, **kwargs)
+
+
 list_view = BaseView.as_view()
+list_filter_exam_view = ListFilterExamView.as_view()
