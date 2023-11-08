@@ -187,6 +187,7 @@
 
 {% startpartial form %}
     <form>
+        <input type="text" name="sub" value="{{ problem.psat.subject.abbr }}" aria-label="Subject" hidden/>
         <div class="d-flex justify-content-center align-content-center">
             <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
                 <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
@@ -206,7 +207,7 @@
 
 {% startpartial initial_form %}
     {% with target_answer=problem.submitted_answer target_problem=problem %}
-        {% if subject == 'heonbeob' %}
+        {% if subject == 'heonbeob' or sub == '헌법' %}
             {% for i in '1234' %}
                 {% partial answer_buttons %}
             {% endfor %}
@@ -221,7 +222,7 @@
 
 {% startpartial scored_form %}
     {% with target_answer=scored.answer target_problem=scored.problem %}
-        {% if subject == 'heonbeob' %}
+        {% if subject == 'heonbeob' or sub == '헌법' %}
             {% for i in '1234' %}
                 {% partial answer_buttons %}
             {% endfor %}

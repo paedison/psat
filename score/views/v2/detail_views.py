@@ -116,9 +116,12 @@ class SubmitView(
     template_name = 'score/v2/snippets/score_answers.html#scored_form'
 
     def get_context_data(self, **kwargs) -> dict:
-        context = super().get_context_data(**kwargs)
-        context['scored'] = self.get_scored_problem()
-        return context
+        sub = self.request.POST.get('sub')
+        scored = self.get_scored_problem()
+        return {
+            'sub': sub,
+            'scored': scored,
+        }
 
     def post(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
