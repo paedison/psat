@@ -5,9 +5,11 @@ from score.views.v2 import list_views, detail_views, modal_views
 app_name = 'score_v2'
 
 urlpatterns = [
-    path('list/', list_views.list_view, name='list'),
-    path('list/<int:year>/<str:ex>/', list_views.list_view, name='list_year_ex'),
-    path('list/filter/exam/', list_views.list_filter_exam_view, name='filter'),
+    path('list/', list_views.base_view, name='list'),
+
+    path('detail/', detail_views.base_view, name='detail'),
+    path('detail/<int:year>/<str:ex>/', detail_views.base_view, name='detail_year_ex'),
+    path('detail/filter/exam/', detail_views.exam_filter, name='filter'),
     path('submit/<int:problem_id>/', detail_views.submit_view, name='submit'),
 
     path('student/modal/no_data/', modal_views.no_student_modal_view, name='no_student_modal'),

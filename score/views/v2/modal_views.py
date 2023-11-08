@@ -259,7 +259,7 @@ def student_create_view(request):
                 year = new_student.year
                 ex = new_student.department.unit.exam.abbr
                 update_score(new_student)
-    return redirect(reverse_lazy('score_v2:list_year_ex', args=[year, ex]))
+    return redirect(reverse_lazy('score_v2:detail_year_ex', args=[year, ex]))
 
 
 def student_update_view(request, student_id):
@@ -272,7 +272,7 @@ def student_update_view(request, student_id):
         form = models.student_form(request.POST, instance=old_student)
         if form.is_valid():
             form.save()
-    return redirect(reverse_lazy('score_v2:list_year_ex', args=[year, ex]))
+    return redirect(reverse_lazy('score_v2:detail_year_ex', args=[year, ex]))
 
 
 no_student_modal_view = NoStudentModalView.as_view()

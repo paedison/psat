@@ -9,186 +9,173 @@
 
 {% block main %}{% partial list_main %}{% endblock %}
 
-{# List main partial #}
+
 {% startpartial list_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
-        <h1>{{ icon|safe }} {{ title }}
-            <span class="fs-6 text-bg-primary">{{ sub_title }}</span>
-        </h1>
+        <h1>{{ icon|safe }} {{ title }}</h1>
     </div><!-- Page Title End -->
-    {% partial list_content %}
-{% endpartial list_main %}
+    {% partial content %}
+{% endpartial %}
 
 
-{# ################## #}
-{# List content start #}
-{# ################## #}
-
-{# List content partial #}
-{% startpartial list_content %}
+{% startpartial content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
     {% #content_row class3='p-4' %}
-        <div class="mb-4">
-            <div class="ms-auto col-sm-6 col-md-5 col-lg-4">
-                {% partial exam_filter %}
-            </div>
+        <div class="table-responsive">
+            <table class="table small">
+                <thead>
+                    <tr class="text-center table-warning">
+                        <th class="text-primary text-nowrap p-2 col-1">연도 / 시험</th>
+                        <th class="text-primary text-nowrap p-2 col-1">수험번호 / 직렬</th>
+                        <th class="text-primary text-nowrap p-2 col-1">성적표</th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ icon_subject.언어|safe }} 언어논리
+                        </th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ icon_subject.자료|safe }} 자료해석
+                        </th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ icon_subject.상황|safe }} 상황판단
+                        </th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ icon_subject.헌법|safe }} 헌법
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">
+                                <a href="" hx-swap="innerHTML swap:0.25s"
+                                   hx-get="{% url 'psat:base' %}?year={{ obj.year }}&ex={{ obj.ex }}"
+                                   hx-target="#main" hx-push-url="{% url 'psat:base' %}">
+                                    {{ obj.year }}년 {{ obj.exam }}
+                                </a>
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    <div class="text-start">
+                                        {{ obj.student.serial }} / {{ obj.student.department.name }}
+                                        <a class="badge rounded-pill text-bg-warning"
+                                           hx-get="{% url 'score_v2:student_update_modal' obj.student.id %}" href=""
+                                           hx-target="#modalContainer" hx-swap="innerHTML"
+                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            수정
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <a class="badge rounded-pill text-bg-warning"
+                                       hx-get="{% url 'score_v2:student_create_modal' obj.year obj.ex %}" href=""
+                                       hx-target="#modalContainer" hx-swap="innerHTML"
+                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        입력
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.is_completed %}
+                                    <a class="badge rounded-pill text-bg-success"
+                                       href="{% url 'score_v2:detail_year_ex' obj.year obj.ex %}"
+                                       hx-get="{% url 'score_v2:detail_year_ex' obj.year obj.ex %}"
+                                       hx-push-url="true" hx-target="#main"
+                                       hx-swap="innerHTML swap:0.25s">
+                                        확인
+                                    </a>
+                                {% else %}
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% with target=obj.eoneo %}{% partial process_badge %}{% endwith %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% with target=obj.jaryo %}{% partial process_badge %}{% endwith %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% with target=obj.sanghwang %}{% partial process_badge %}{% endwith %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% with target=obj.heonbeob %}{% partial process_badge %}{% endwith %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
         </div>
-        <div class="mb-4">
-            {% partial student_info %}
-        </div>
-        <div class="mb-4">
-            {% include 'score/v2/snippets/score_chart.html' %}
-        </div>
-        <div class="mb-4">
-            {% include 'score/v2/snippets/score_sheet.html' %}
-        </div>
-        <div class="mb-4">
-            {% include 'score/v2/snippets/score_answers.html' %}
-        </div>
+        {% partial pagination %}
     {% /content_row %}
     </section>
 {% endpartial %}
 
 
-{# ################## #}
-{# Student info start #}
-{# ################## #}
-
-{# Student info partial #}
-{% startpartial student_info %}
-    <nav>
-        <div class="nav nav-tabs" id="studentInfoTab" role="tablist">
-            {% #nav_tab prefix='my' id='0' %}
-                수험정보
-            {% /nav_tab %}
-        </div>
-    </nav>
-    <div class="tab-content" id="studentInfoContent">
-        {% #nav_content prefix='info' id='0' %}
-            {% #responsive_table %}
-                <tbody>
-                    <tr>
-                        <td>
-                            응시번호
-                            {% if student.serial %}
-                                : {{ student.serial }} {% partial update_student %}
-                            {% else %}
-                                {% partial create_student %}
-                            {% endif %}
-                        </td>
-                        <td>
-                            모집단위
-                            {% if student.department %}
-                                : {{ student.department.unit.name }} {% partial update_student %}
-                            {% else %}
-                                {% partial create_student %}
-                            {% endif %}
-                        </td>
-                        <td>
-                            응시직렬
-                            {% if student.department %}
-                                : {{ student.department.name }} {% partial update_student %}
-                            {% else %}
-                                {% partial create_student %}
-                            {% endif %}
-                        </td>
-                    </tr>
-                </tbody>
-{#                <tbody>#}
-{#                    <tr>#}
-{#                        <th scope="row">#}
-{#                            응시번호#}
-{#                            {% if student.serial %}#}
-{#                                {% partial update_student %}#}
-{#                            {% else %}#}
-{#                                {% partial create_student %}#}
-{#                            {% endif %}#}
-{#                        </th>#}
-{#                        <td>{{ student.serial }}</td>#}
-{#                    </tr>#}
-{#                    <tr>#}
-{#                        <th scope="row">#}
-{#                            모집단위#}
-{#                            {% if student.department %}#}
-{#                                {% partial update_student %}#}
-{#                            {% else %}#}
-{#                                {% partial create_student %}#}
-{#                            {% endif %}#}
-{#                        </th>#}
-{#                        <td>{{ student.department.unit.name }}</td>#}
-{#                    </tr>#}
-{#                    <tr>#}
-{#                        <th scope="row">#}
-{#                            응시직렬#}
-{#                            {% if student.department %}#}
-{#                                {% partial update_student %}#}
-{#                            {% else %}#}
-{#                                {% partial create_student %}#}
-{#                            {% endif %}#}
-{#                        </th>#}
-{#                        <td>{{ student.department.name }}</td>#}
-{#                    </tr>#}
-{#                </tbody>#}
-            {% /responsive_table %}
-        {% /nav_content %}
-    </div>
-{% endpartial student_info %}
-
-{# Update student partial #}
-{% startpartial update_student %}
-    <a class="badge rounded-pill text-bg-warning"
-       hx-get="{% url 'score_v2:student_update_modal' student.id %}" href=""
-       hx-target="#modalContainer" hx-swap="innerHTML"
-       data-bs-toggle="modal" data-bs-target="#modalContainer">
-        수정
-    </a>
-{% endpartial %}
-
-{# Create student partial #}
-{% startpartial create_student %}
-    <a class="badge rounded-pill text-bg-warning mx-2"
-       hx-get="{% url 'score_v2:student_create_modal' year ex %}" href=""
-       hx-target="#modalContainer" hx-swap="innerHTML"
-       data-bs-toggle="modal" data-bs-target="#modalContainer">
-        입력
-    </a>
+{% startpartial process_badge %}
+    {% if target %}
+        {% if target.status is None %}
+            {% if obj.student %}
+                <a class="badge rounded-pill text-bg-primary" href="" hx-push-url="true"
+                   hx-get="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}">
+                    작성 전
+                </a>
+            {% else %}
+                <a class="badge rounded-pill text-bg-primary" href=""
+                   hx-get="{% url 'score_v2:no_student_modal' %}" hx-target="#modalContainer"
+                   data-bs-toggle="modal" data-bs-target="#modalContainer">
+                    작성 전
+                </a>
+            {% endif %}
+        {% elif target.status is False %}
+            <a class="badge rounded-pill text-bg-warning" href="" hx-push-url="true"
+               hx-get="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}">
+                작성 중
+            </a>
+        {% elif target.status is True %}
+            <a class="badge rounded-pill text-bg-success" href="" hx-push-url="true"
+               hx-get="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}">
+                제출 완료
+            </a>
+        {% elif target.status == 'N/A' %}
+        {% endif %}
+    {% endif %}
 {% endpartial %}
 
 
-{# ############ #}
-{# Filter start #}
-{# ############ #}
+{% startpartial pagination_li %}
+    <li {% if status == 'active' %}aria-current="page"{% endif %}
+        class="page-item {{ status }}">
+        <a class="page-link" href=""
+           {% if status == 'disabled' %}tabindex="-1" aria-disabled="true"
+           {% else %}hx-get="{{ pagination_url }}?page={{ page_num }}"{% endif %}>
+            {% if chevron %}<i class="fa-solid fa-chevron-{{ chevron }}"></i>
+            {% else %}{{ anchor_text }}{% endif %}
+        </a>
+    </li>
+{% endpartial %}
 
-{# Exam filter partial #}
-{% startpartial exam_filter %}
-    <form>
-        <div class="input-group">
-            <select id="id_exam_year" class="form-select" name="year" aria-label="Select Year"
-                    hx-post="{% url 'score_v2:filter' %}"
-                    hx-trigger="change" hx-target="#id_exam_name" hx-swap="outerHTML">
-                <option>연도</option>
-                {% for y in year_option %}
-                    <option value="{{ y.0 }}"{% if y.0 == year %} selected{% endif %}>
-                        {{ y.1 }}
-                    </option>
-                {% endfor %}
-            </select>
-            {% partial exam_select %}
-        </div>
-    </form>
-{% endpartial exam_filter %}
-
-{# Exam select partial #}
-{% startpartial exam_select %}
-    <select id="id_exam_name" class="form-select" name="ex" aria-label="Select Year"
-            hx-post="{% url 'score_v2:list' %}"
-            hx-trigger="change" hx-target="#main">
-        {% for e in ex_option %}
-            <option value="{{ e.0 }}"{% if e.0 == ex %} selected{% endif %}>
-                {{ e.1 }}
-            </option>
+{% startpartial pagination %}
+    {% #pagination_nav %}
+        {% if page_obj.has_previous %}
+            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+                {% partial pagination_li %}
+            {% endwith %}
+        {% endif %}
+        {% for number in page_range %}
+            {% with page_num=number anchor_text=number %}
+                {% if number == page_obj.number %}
+                    {% with status='active' %}{% partial pagination_li %}{% endwith %}
+                {% elif number == page_obj.paginator.ELLIPSIS %}
+                    {% with status='disabled' %}{% partial pagination_li %}{% endwith %}
+                {% else %}
+                    {% partial pagination_li %}
+                {% endif %}
+            {% endwith %}
         {% endfor %}
-    </select>
-{% endpartial exam_select %}
+        {% if page_obj.has_next %}
+            {% with page_num=page_obj.number|add:1 chevron='right' %}
+                {% partial pagination_li %}
+            {% endwith %}
+        {% endif %}
+    {% /pagination_nav %}
+{% endpartial %}
