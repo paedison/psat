@@ -7,7 +7,8 @@ from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
 from psat.models import Open, Like, Rate, Solve, Memo, Tag
-from reference.models import PsatProblem, Exam, Subject
+from reference.models.base_models import Exam, Subject
+from reference.models.psat_models import PsatProblem
 from dashboard.models.psat_data_models import (
     PsatOpenLog,
     PsatLikeLog,

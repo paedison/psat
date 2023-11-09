@@ -49,7 +49,7 @@
                     {% for obj in page_obj %}
                         <tr class="text-center">
                             <td class="text-nowrap p-2">
-                                <a href="" hx-swap="innerHTML swap:0.25s"
+                                <a href="" hx-swap="innerHTML swap:0.25s" class="fw-bold"
                                    hx-get="{% url 'psat:base' %}?year={{ obj.year }}&ex={{ obj.ex }}"
                                    hx-target="#main" hx-push-url="{% url 'psat:base' %}">
                                     {{ obj.year }}년 {{ obj.exam }}

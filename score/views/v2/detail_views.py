@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
 from .viewmixins.detail_viewmixins import (
@@ -9,6 +11,7 @@ from .viewmixins.detail_viewmixins import (
 
 
 class BaseView(
+    LoginRequiredMixin,
     ScoreCommonVariableMixin,
     ScoreFilterVariableMixin,
     ScoreResultVariableMixin,
@@ -17,6 +20,7 @@ class BaseView(
     """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
     menu = 'score'
     template_name = 'score/v2/score_detail.html'
+    login_url = settings.LOGIN_URL
 
     request: any
 
@@ -90,10 +94,12 @@ class BaseView(
 
 
 class ExamFilter(
+    LoginRequiredMixin,
     ScoreFilterVariableMixin,
     TemplateView,
 ):
     template_name = 'score/v2/score_detail.html#exam_select'
+    login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
         year = self.request.POST.get('year')
@@ -109,11 +115,13 @@ class ExamFilter(
 
 
 class SubmitView(
+    LoginRequiredMixin,
     ScoreSubmitMixin,
     TemplateView,
 ):
     menu = 'score'
     template_name = 'score/v2/snippets/score_answers.html#scored_form'
+    login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
         sub = self.request.POST.get('sub')

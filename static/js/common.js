@@ -52,8 +52,11 @@ $(document).on('click', '.logo', function() {
 
 // When clicked the main menu [Notice, Dashboard, PSAT, Schedule, Score]
 $(document).on('click', '#sidebar-nav .nav-link', function() {
+    const menu_id = ['#psat-nav', '#score-nav']
+    let bsTarget = $(this).data('bsTarget')
     initialMenu(this);
-    if ($(this).data('bsTarget') !== '#psat-nav') {
+    if (!menu_id.includes(bsTarget)) {
+    // if ($(this).data('bsTarget') !== '#psat-nav') {
         if ($(window).width() < 1200) {
             $('body').removeClass('toggle-sidebar');
         }

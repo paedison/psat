@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import When, F, Case, IntegerField
 from django.shortcuts import redirect
@@ -7,17 +10,23 @@ from vanilla import TemplateView
 from .viewmixins.base_viewmixins import ScoreModelVariableSet
 
 
-class NoStudentModalView(TemplateView):
+class NoStudentModalView(
+    LoginRequiredMixin,
+    TemplateView
+):
     """ Represent modal view when there is no PSAT student data. """
     template_name = 'score/v2/snippets/score_modal.html#no_student_modal'
+    login_url = settings.LOGIN_URL
 
 
 class StudentCreateModalView(
+    LoginRequiredMixin,
     ScoreModelVariableSet,
     TemplateView
 ):
     """ Represent modal view for creating PSAT student data. """
     template_name = 'score/v2/snippets/score_modal.html#student_create'
+    login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
         year, ex = self.kwargs['year'], self.kwargs['ex']
@@ -34,11 +43,13 @@ class StudentCreateModalView(
 
 
 class StudentCreateDepartment(
+    LoginRequiredMixin,
     ScoreModelVariableSet,
     TemplateView
 ):
     """ Return department list for PSAT student create modal. """
     template_name = 'score/v2/snippets/score_modal.html#student_create_department'
+    login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
         unit_id = self.request.POST.get('unit_id')
@@ -50,11 +61,13 @@ class StudentCreateDepartment(
 
 
 class StudentUpdateModalView(
+    LoginRequiredMixin,
     ScoreModelVariableSet,
     TemplateView
 ):
     """ Represent modal view for updating PSAT student data. """
     template_name = 'score/v2/snippets/score_modal.html#student_update'
+    login_url = settings.LOGIN_URL
 
     def get_student(self):
         """ Return student instance for requested student ID. """
@@ -89,11 +102,13 @@ class StudentUpdateModalView(
 
 
 class StudentUpdateDepartment(
+    LoginRequiredMixin,
     ScoreModelVariableSet,
     TemplateView
 ):
     """ Return department list for PSAT student create modal. """
     template_name = 'score/v2/snippets/score_modal.html#student_update_department'
+    login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
         unit_id = self.request.POST.get('unit_id')
@@ -110,12 +125,14 @@ class StudentUpdateDepartment(
 
 
 class ConfirmModalView(
+    LoginRequiredMixin,
     ScoreModelVariableSet,
     TemplateView
 ):
     """ Represent modal view for confirming answers. """
     menu = 'score'
     template_name = 'score/v2/snippets/score_modal.html#score_confirmed'
+    login_url = settings.LOGIN_URL
 
     @property
     def user_id(self) -> int:
@@ -203,6 +220,7 @@ class ConfirmModalView(
             }
 
 
+@login_required
 def update_score(student):
     """ Update scores in PSAT student instances. """
     score = {}
@@ -241,6 +259,7 @@ def update_score(student):
             student.save()
 
 
+@login_required
 def student_create_view(request):
     """ Create new PSAT student instance. """
     year = ex = None
@@ -262,6 +281,7 @@ def student_create_view(request):
     return redirect(reverse_lazy('score_v2:detail_year_ex', args=[year, ex]))
 
 
+@login_required
 def student_update_view(request, student_id):
     """ Update old PSAT student instance. """
     models = ScoreModelVariableSet()

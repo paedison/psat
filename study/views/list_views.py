@@ -1,10 +1,9 @@
-from django.db.models import F, Value, CharField, Q
-from django.db.models.functions import Concat, Cast
+from django.db.models import Q
 from django.shortcuts import render
 from django.urls import reverse_lazy
 
 from common import constants
-from psat.views.list_views import ListViewSetting
+from psat.views.v1.list_views import ListViewSetting
 from study import models
 
 psat_icon_set = constants.icon.PSAT_ICON_SET

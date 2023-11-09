@@ -1,15 +1,19 @@
+from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
 from .viewmixins.list_viewmixins import ScoreListViewMixin
 
 
 class BaseView(
+    LoginRequiredMixin,
     ScoreListViewMixin,
     TemplateView
 ):
     """ Represent information related PsatTemporaryAnswer and PsatConfirmedAnswer models. """
     menu = 'score'
     template_name = 'score/v2/score_list.html'
+    login_url = settings.LOGIN_URL
 
     request: any
 

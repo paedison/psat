@@ -1,0 +1,168 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% block head_title %}{{ title }}{% endblock head_title %}
+
+{% block main %}{% partial list_main %}{% endblock %}
+
+
+{% startpartial list_main %}
+    {{ info|json_script:'info' }}
+    <div class="pagetitle my-2">
+        <h1>{{ icon|safe }} {{ title }}</h1>
+    </div><!-- Page Title End -->
+    {% partial content %}
+{% endpartial %}
+
+
+{% startpartial content %}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    {% #content_row class3='p-4' %}
+        <div class="table-responsive">
+            <table class="table small">
+                <thead>
+                    <tr class="text-center table-warning">
+                        <th class="text-primary text-nowrap p-2 col-1">연도</th>
+                        <th class="text-primary text-nowrap p-2 col-1">시험</th>
+                        <th class="text-primary text-nowrap p-2 col-1">직렬</th>
+                        <th class="text-primary text-nowrap p-2 col-1">성적표</th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ PSAT_ICON_SET.eoneo|safe }} 언어논리
+                        </th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ PSAT_ICON_SET.jaryo|safe }} 자료해석
+                        </th>
+                        <th class="text-primary text-nowrap p-2 col-1">
+                            {{ PSAT_ICON_SET.sanghwang|safe }} 상황판단
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">
+                                {{ obj.year }}년
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {{ obj.exam2 }}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    {{ obj.student.department.name }}
+                                    <a class="badge rounded-pill text-bg-warning"
+                                       hx-get="{% url 'score:student_update_modal' obj.student.id %}" href=""
+                                       hx-target="#modalContainer" hx-swap="innerHTML"
+                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        수정
+                                    </a>
+                                {% else %}
+                                    <a class="badge rounded-pill text-bg-warning"
+                                       hx-get="{% url 'score:student_create_modal' obj.year obj.ex %}" href=""
+                                       hx-target="#modalContainer" hx-swap="innerHTML"
+                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        입력
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.completed %}
+                                    <a class="badge rounded-pill text-bg-success"
+                                       href="{% url 'score:result' obj.year obj.ex %}"
+                                       hx-get="{% url 'score:result' obj.year obj.ex %}"
+                                       hx-push-url="true" hx-target="#main"
+                                       hx-swap="innerHTML swap:0.25s">
+                                        확인
+                                    </a>
+                                {% else %}
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% with target=obj.eoneo %}{% partial process_badge %}{% endwith %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% with target=obj.jaryo %}{% partial process_badge %}{% endwith %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% with target=obj.sanghwang %}{% partial process_badge %}{% endwith %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+        {% partial pagination %}
+    {% /content_row %}
+    </section>
+{% endpartial %}
+
+
+{% startpartial process_badge %}
+    {% if target.status is None %}
+        <a class="badge rounded-pill text-bg-primary" href="" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'score:detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
+            작성 전
+        </a>
+    {% elif target.status is False %}
+        <a class="badge rounded-pill text-bg-warning" href="" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'score:detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
+            작성 중
+        </a>
+    {% elif target.status is True %}
+        <a class="badge rounded-pill text-bg-success" href="" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'score:confirmed' target.exam.id %}" hx-target="#main" hx-push-url="true">
+            제출 완료
+        </a>
+    {% elif target.status == 'N/A' %}
+    {% endif %}
+    <a class="badge rounded-pill text-bg-secondary" href="" hx-swap="innerHTML swap:0.25s"
+       hx-get="{% url 'psat:base' %}?year={{ obj.year }}&ex={{ obj.ex }}&sub={{ target.exam.sub }}"
+       hx-target="#main" hx-push-url="{% url 'psat:base' %}">
+        문제 보기
+    </a>
+{% endpartial %}
+
+
+{% startpartial pagination_li %}
+    <li {% if status == 'active' %}aria-current="page"{% endif %}
+        class="page-item {{ status }}">
+        <a class="page-link" href=""
+           {% if status == 'disabled' %}tabindex="-1" aria-disabled="true"
+           {% else %}hx-get="{{ pagination_url }}?page={{ page_num }}"{% endif %}>
+            {% if chevron %}<i class="fa-solid fa-chevron-{{ chevron }}"></i>
+            {% else %}{{ anchor_text }}{% endif %}
+        </a>
+    </li>
+{% endpartial %}
+
+{% startpartial pagination %}
+    {% #pagination_nav %}
+        {% if page_obj.has_previous %}
+            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+                {% partial pagination_li %}
+            {% endwith %}
+        {% endif %}
+        {% for number in page_range %}
+            {% with page_num=number anchor_text=number %}
+                {% if number == page_obj.number %}
+                    {% with status='active' %}{% partial pagination_li %}{% endwith %}
+                {% elif number == page_obj.paginator.ELLIPSIS %}
+                    {% with status='disabled' %}{% partial pagination_li %}{% endwith %}
+                {% else %}
+                    {% partial pagination_li %}
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            {% with page_num=page_obj.number|add:1 chevron='right' %}
+                {% partial pagination_li %}
+            {% endwith %}
+        {% endif %}
+    {% /pagination_nav %}
+{% endpartial %}

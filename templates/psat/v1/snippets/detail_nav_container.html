@@ -1,0 +1,52 @@
+{% load static %}
+{% load psat_filter %}
+{% load slippers %}
+
+{% fragment as prev_icon %}{{ PSAT_ICON_SET.prev_prob|safe }}{% endfragment %}
+{% fragment as next_icon %}{{ PSAT_ICON_SET.next_prob|safe }}{% endfragment %}
+{% fragment as button_color %}
+    {% if info.view_type == 'problem' %}btn-primary
+    {% elif info.view_type == 'like' %}btn-danger
+    {% elif info.view_type == 'rate' %}btn-warning
+    {% elif info.view_type == 'answer' %}btn-success{% endif %}
+{% endfragment %}
+
+<a id="problem_list" href="javascript:history.back()"
+   class="btn btn-circle {{ button_color }}">
+    {{ PSAT_ICON_SET.left_arrow|safe }}
+</a>
+{% if prev_prob %}
+    {% if info.view_type == 'problem' %}
+        <a class="btn btn-circle {{ button_color }}"
+           href="{{ prev_prob.get_problem_url }}">{{ prev_icon }}</a>
+    {% elif info.view_type == 'like' %}
+        <a class="btn btn-circle {{ button_color }}"
+           href="{{ prev_prob.get_like_url }}">{{ prev_icon }}</a>
+    {% elif info.view_type == 'rate' %}
+        <a class="btn btn-circle {{ button_color }}"
+           href="{{ prev_prob.get_rate_url }}">{{ prev_icon }}</a>
+    {% elif info.view_type == 'answer' %}
+        <a class="btn btn-circle {{ button_color }}"
+           href="{{ prev_prob.get_answer_url }}">{{ prev_icon }}</a>
+    {% endif %}
+{% else %}
+    <a class="btn btn-circle {{ button_color }}"></a>
+{% endif %}
+
+{% if next_prob %}
+    {% if info.type == 'problemDetail' %}
+        <a class="btn btn-circle {{ button_color }}"
+           href="{{ next_prob.get_problem_url }}">{{ next_icon }}</a>
+    {% elif info.type == 'likeDetail' %}
+        <a class="btn btn-circle {{ button_color }}"
+           href="{{ next_prob.get_like_url }}">{{ next_icon }}</a>
+    {% elif info.type == 'rateDetail' %}
+        <a class="btn btn-circle {{ button_color }}"
+           href="{{ next_prob.get_rate_url }}">{{ next_icon }}</a>
+    {% elif info.type == 'answerDetail' %}
+        <a class="btn btn-circle {{ button_color }}"
+           href="{{ next_prob.get_answer_url }}">{{ next_icon }}</a>
+    {% endif %}
+{% else %}
+    <a class="btn btn-circle {{ info.color }}"></a>
+{% endif %}

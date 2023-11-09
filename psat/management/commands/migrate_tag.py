@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from psat.models import ProblemTag, Tag
-from reference.models import PsatProblem
+from reference.models.base_models import PsatProblem
 from taggit.models import TaggedItem
 
 

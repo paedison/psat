@@ -1,6 +1,7 @@
 from django.db import models
 
-from reference.models import Exam, PsatProblem
+from reference.models.base_models import Exam
+from reference.models.psat_models import PsatProblem
 from score.models.base_models import UnitBase, StudentBase, AnswerBase
 
 

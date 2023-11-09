@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from common import constants
-from psat.views import list_views
+from psat.views.v1 import list_views
 
 menu_icon_set = constants.icon.MENU_ICON_SET
 

@@ -1,6 +1,6 @@
 from django.db import models
 
-from reference.models import PsatProblem
+from reference.models.psat_models import PsatProblem
 
 
 class Base(models.Model):

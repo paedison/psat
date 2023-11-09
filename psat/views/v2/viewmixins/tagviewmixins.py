@@ -1,6 +1,6 @@
 from psat.forms import TagForm
 from psat.models import Tag
-from reference.models import PsatProblem
+from reference.models.psat_models import PsatProblem
 
 
 class TagViewMixIn:

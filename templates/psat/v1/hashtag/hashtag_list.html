@@ -1,0 +1,6 @@
+<h1>Hashtag List</h1>
+{% for hashtag in hashtags %}
+  <a href="{% url 'psat:hashtag_detail' pk=hashtag.pk %}">#{{ hashtag.tag }}</a>
+{% endfor %}
+
+{% include 'psat/hashtag/create_hashtag.html' %}

@@ -1,0 +1,21 @@
+{% extends 'psat/v1/problem_detail.html' %}
+
+{% block hashtag %}
+<h2>Hashtags</h2>
+<ul>
+  {% for hashtag in problem.hashtags.all %}
+    <li>{{ hashtag.tag }}</li>
+  {% empty %}
+    <li>No hashtags added for this problem.</li>
+  {% endfor %}
+</ul>
+
+<h1>Create Hashtag</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Save</button>
+</form>
+
+{% endblock hashtag %}

@@ -9,7 +9,7 @@ from vanilla import DetailView, TemplateView, CreateView, DeleteView, UpdateView
 from common import constants
 from psat.models import Tag
 from .viewmixins import TagViewMixIn
-from reference.models import Psat
+from reference.models.psat_models import Psat
 
 
 class TagContainerView(TagViewMixIn, DetailView):

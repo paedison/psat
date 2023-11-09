@@ -3,7 +3,7 @@ from vanilla import DetailView, CreateView, UpdateView, DeleteView
 
 from psat.forms import MemoForm
 from psat.models import Memo
-from reference.models import PsatProblem
+from reference.models.psat_models import PsatProblem
 
 
 class MemoViewMixIn:

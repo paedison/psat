@@ -69,11 +69,26 @@
             </li><!-- Schedule Nav End -->
 
             {% if user.is_admin or user.is_staff %}
-                <li class="nav-item">
-                    <a id="scoreList" class="nav-link collapsed"
-                       href="{% url 'score_v2:list' %}" hx-post="{% url 'score_v2:list' %}">
+                <li class="nav-item" role="menuitem" aria-label="Score Menu">
+                    <a class="nav-link collapsed" href="" aria-expanded="false"
+                       data-bs-target="#score-nav" data-bs-toggle="collapse">
                         {{ score_icon|safe }}<span>Score</span>
+                        <i class="fa-solid fa-chevron-down ms-auto"></i>
                     </a>
+                    <ul id="score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                        <li>
+                            <a id="psatScore" class="aside-nav-icon"
+                               href="{% url 'score_v2:list' %}"
+                               hx-post="{% url 'score_v2:list' %}">
+                                {{ problem_icon|safe }}<span>PSAT 기출문제</span>
+                            </a>
+                            <a id="primeScore" class="aside-nav-icon"
+                               href="{% url 'score_v2:list' %}"
+                               hx-post="{% url 'score_v2:list' %}">
+                                {{ like_icon|safe }}<span>프라임 모의고사</span>
+                            </a>
+                        </li>
+                    </ul>
                 </li><!-- Score Nav End -->
             {% endif %}
 

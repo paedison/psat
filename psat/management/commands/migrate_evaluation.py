@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from psat.models import Evaluation, Like, Rate, Solve
-from reference.models import PsatProblem
+from reference.models.base_models import PsatProblem
 
 
 class Command(BaseCommand):

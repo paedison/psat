@@ -1,6 +1,6 @@
 from django.urls import path
 
-from psat.views import list_views, detail_views, memo_views, tag_views
+from psat.views.v1 import list_views, memo_views, tag_views, detail_views
 
 app_name = 'psat'
 

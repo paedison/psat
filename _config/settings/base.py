@@ -263,6 +263,7 @@ ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300
 
 SITE_ID = 1  # 사이트 아이디 기본값
 
+LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
