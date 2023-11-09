@@ -535,7 +535,7 @@ class PsatCustomUpdateViewMixIn(
             model.objects.create(**filter_expr)
 
 
-class PsatSolveModalViewMixIn:
+class PsatSolveModalViewMixIn(ConstantIconSet):
     """Represent PSAT Solve data update modal view mixin."""
     request: any
 

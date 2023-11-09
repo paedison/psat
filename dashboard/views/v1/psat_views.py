@@ -1,68 +1,20 @@
-from django.core.paginator import Paginator
-from django.urls import reverse_lazy
+from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
 from common.constants.icon_set import ConstantIconSet
-from dashboard.models import (
-    PsatOpenLog,
-    PsatLikeLog,
-    PsatRateLog,
-    PsatSolveLog,
-)
-
-
-class DashboardCommonVariableSet(ConstantIconSet):
-    """Represent Dashboard common variable."""
-    menu = 'dashboard'
-    request: any
-    kwargs: dict
-
-    @property
-    def user_id(self) -> int:
-        user_id = self.request.user.id if self.request.user.is_authenticated else None
-        return user_id
-
-    @property
-    def view_type(self) -> str:
-        """Get view type from [ problem, like, rate, solve ]. """
-        return self.kwargs.get('view_type', 'open')
-
-    @property
-    def info(self) -> dict:
-        """ Get the meta-info for the current view. """
-        return {
-            'menu': self.menu,
-            'view_type': self.view_type,
-        }
-
-
-class DashboardLogVariableSet(DashboardCommonVariableSet):
-    """Represent Dashboard log data variable."""
-
-    @property
-    def model_dict(self):
-        return {
-            'open': PsatOpenLog,
-            'like': PsatLikeLog,
-            'rate': PsatRateLog,
-            'solve': PsatSolveLog,
-        }
-
-    def get_logs(self, view_type: str):
-        model = self.model_dict[view_type]
-        return (
-            model.objects.filter(user_id=self.user_id).order_by('-timestamp')
-            .select_related('problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
-        )
+from .viewsmixin import DashboardViewMixin
 
 
 class DashboardMainView(
-    DashboardLogVariableSet,
+    LoginRequiredMixin,
+    DashboardViewMixin,
+    ConstantIconSet,
     TemplateView,
 ):
     """ Represent Dashboard main view. """
     template_name = 'dashboard/v1/main_list.html'
-    url_name = 'dashboard:list'
+    login_url = settings.LOGIN_URL
 
     def get_template_names(self):
         htmx_template = {
@@ -74,17 +26,6 @@ class DashboardMainView(
     def post(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
-    def get_paginator_info(self, view_type: str) -> tuple[object, object]:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        logs = self.get_logs(view_type)
-        paginator = Paginator(logs, 5)
-        page_obj = paginator.get_page(1)
-        page_range = paginator.get_elided_page_range(number=1, on_each_side=3, on_ends=1)
-        return page_obj, page_range
-
-    def get_pagination_url(self, view_type: str) -> str:
-        return reverse_lazy(self.url_name, args=[view_type])
-
     def get_context_data(self, **kwargs):
         open_page_obj, open_page_range = self.get_paginator_info('open')
         like_page_obj, like_page_range = self.get_paginator_info('like')
@@ -95,9 +36,14 @@ class DashboardMainView(
         like_pagination_url = self.get_pagination_url('like')
         rate_pagination_url = self.get_pagination_url('rate')
         solve_pagination_url = self.get_pagination_url('solve')
+
+        info = {
+            'menu': self.menu,
+            'view_type': self.view_type,
+        }
         return {
             # Info & title
-            'info': self.info,
+            'info': info,
             'icon': '<i class="fa-solid fa-list fa-fw"></i>',
             'title': 'Dashboard',
 
@@ -134,62 +80,31 @@ class DashboardMainView(
 
 
 class DashboardListView(
-    DashboardLogVariableSet,
+    LoginRequiredMixin,
+    DashboardViewMixin,
+    ConstantIconSet,
     TemplateView,
 ):
     """ Represent Dashboard like view. """
     template_name = 'dashboard/v1/main_content.html'
-    url_name = 'dashboard:list'
-
-    ########
-    # Urls #
-    ########
-
-    @property
-    def pagination_url(self) -> str:
-        return reverse_lazy(self.url_name, args=[self.view_type])
-
-    @property
-    def page_number(self):
-        return self.request.GET.get('page', 1)
-
-    @property
-    def logs(self):
-        logs_dict = {
-            'open': self.get_logs('open'),
-            'like': self.get_logs('like'),
-            'rate': self.get_logs('rate'),
-            'solve': self.get_logs('solve'),
-        }
-        return logs_dict[self.view_type]
-
-    @property
-    def info(self) -> dict:
-        """ Get the meta-info for the current view. """
-        return {
-            'menu': self.menu,
-            'view_type': 'like',
-        }
-
-    def get_paginator_info(self) -> tuple[object, object]:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        paginator = Paginator(self.logs, 5)
-        page_obj = paginator.get_page(self.page_number)
-        page_range = paginator.get_elided_page_range(
-            number=self.page_number, on_each_side=3, on_ends=1)
-        return page_obj, page_range
+    login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs):
-        page_obj, page_range = self.get_paginator_info()
+        page_obj, page_range = self.get_list_paginator_info()
+        pagination_url = self.get_list_pagination_url()
+        info = {
+            'menu': self.menu,
+            'view_type': self.view_type,
+        }
         return {
             # Info & title
-            'info': self.info,
+            'info': info,
             'view_type': self.view_type,
 
             # Paginator
             'page_obj': page_obj,
             'page_range': page_range,
-            'pagination_url': self.pagination_url,
+            'pagination_url': pagination_url,
 
             # Icons
             'icon_menu': self.ICON_MENU,
@@ -200,4 +115,4 @@ class DashboardListView(
 
 
 main_view = DashboardMainView.as_view()
-like_view = DashboardListView.as_view()
+list_view = DashboardListView.as_view()
