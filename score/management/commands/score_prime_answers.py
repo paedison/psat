@@ -43,7 +43,7 @@ class Command(BaseCommand):
             for i in range(0, problem_number):
                 if answers[i] == getattr(student_answer, f'prob{i + 1}'):
                     correct_count += 1
-            subject_score = correct_count / problem_number * 100
+            subject_score = correct_count * 100 / problem_number
             return subject_score
 
         def get_score(student):
