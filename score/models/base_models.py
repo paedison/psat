@@ -10,7 +10,7 @@ class UnitBase(models.Model):
 
 
 class InfoBase(models.Model):
-    timestamp = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user_id = models.IntegerField()
 

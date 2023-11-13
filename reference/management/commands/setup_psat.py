@@ -8,11 +8,11 @@ class Command(BaseCommand):
     help = 'Setup PSAT exams & problems'
 
     def handle(self, *args, **kwargs):
-        category_messages = create_instance_get_messages('category.csv', Category)
-        exam_messages = create_instance_get_messages('exam.csv', Exam)
-        subject_messages = create_instance_get_messages('subject.csv', Subject)
-        prime_messages = create_instance_get_messages('psat.csv', Psat)
-        prime_problem_messages = create_instance_get_messages('psat_problem.csv', PsatProblem)
+        category_messages = create_instance_get_messages('./data/category.csv', Category)
+        exam_messages = create_instance_get_messages('./data/exam.csv', Exam)
+        subject_messages = create_instance_get_messages('./data/subject.csv', Subject)
+        prime_messages = create_instance_get_messages('./data/psat.csv', Psat)
+        prime_problem_messages = create_instance_get_messages('./data/psat_problem.csv', PsatProblem)
 
         total_messages = [
             category_messages,

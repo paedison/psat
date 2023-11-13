@@ -1,0 +1,83 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% block head_title %}{{ title }}{% endblock head_title %}
+
+{% block main %}{% partial list_main %}{% endblock %}
+
+{# List main partial #}
+{% startpartial list_main %}
+    {{ info|json_script:'info' }}
+    <div class="pagetitle my-2">
+        <h1>{{ icon|safe }} {{ title }}
+            <span class="fs-6 text-bg-primary">{{ sub_title }}</span>
+        </h1>
+    </div><!-- Page Title End -->
+    {% partial list_content %}
+{% endpartial list_main %}
+
+
+{# ################## #}
+{# List content start #}
+{# ################## #}
+
+{# List content partial #}
+{% startpartial list_content %}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    {% #content_row class3='p-4' %}
+        <div class="row mx-0 mb-4">
+            <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
+               hx-post="{% url 'score_prime:list' %}" hx-target="#main"
+               hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
+                {{ icon_nav.list|safe }}
+            </a>
+        </div>
+        <div class="mb-4">
+            {% partial student_info %}
+        </div>
+        <div class="mb-4">
+            {% include 'score/prime/snippets/score_chart.html' %}
+        </div>
+        <div class="mb-4">
+            {% include 'score/prime/snippets/score_sheet.html' %}
+        </div>
+        <div class="mb-4">
+            {% include 'score/prime/snippets/score_answers.html' %}
+        </div>
+    {% /content_row %}
+    </section>
+{% endpartial %}
+
+
+{# ################## #}
+{# Student info start #}
+{# ################## #}
+
+{# Student info partial #}
+{% startpartial student_info %}
+    <nav>
+        <div class="nav nav-tabs" id="studentInfoTab" role="tablist">
+            {% #nav_tab prefix='my' id='0' %}
+                수험정보
+            {% /nav_tab %}
+        </div>
+    </nav>
+    <div class="tab-content" id="studentInfoContent">
+        {% #nav_content prefix='info' id='0' %}
+            {% #responsive_table %}
+                <tbody>
+                    <tr>
+                        <td class="col-1">응시번호 : {{ student.serial }}</td>
+                        <td class="col-1">이름 : {{ student.name }}</td>
+                        <td class="col-1">응시직렬 : {{ student.department.name }}</td>
+                    </tr>
+                </tbody>
+            {% /responsive_table %}
+        {% /nav_content %}
+    </div>
+{% endpartial student_info %}

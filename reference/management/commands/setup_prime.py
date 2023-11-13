@@ -8,11 +8,11 @@ class Command(BaseCommand):
     help = 'Setup Prime exams & problems'
 
     def handle(self, *args, **kwargs):
-        category_messages = create_instance_get_messages('category.csv', Category)
-        exam_messages = create_instance_get_messages('exam.csv', Exam)
-        subject_messages = create_instance_get_messages('subject.csv', Subject)
-        prime_messages = create_instance_get_messages('prime.csv', Prime)
-        prime_problem_messages = create_instance_get_messages('prime_problem.csv', PrimeProblem)
+        category_messages = create_instance_get_messages('./data/category.csv', Category)
+        exam_messages = create_instance_get_messages('./data/exam.csv', Exam)
+        subject_messages = create_instance_get_messages('./data/subject.csv', Subject)
+        prime_messages = create_instance_get_messages('./data/prime.csv', Prime)
+        prime_problem_messages = create_instance_get_messages('./data/prime_problem.csv', PrimeProblem)
 
         total_messages = [
             category_messages,

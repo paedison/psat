@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import When, Value, CharField, F, Case
 
-from reference import models as reference_models
 from score import models as score_models
 
 

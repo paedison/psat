@@ -1,0 +1,127 @@
+{% load partials %}
+{% load slippers %}
+
+
+<nav>
+    <div class="nav nav-tabs" id="navTab" role="tablist">
+        {% #nav_tab prefix='eoneo' id='0' %}
+            {{ icon_subject.언어|safe }} 언어
+        {% /nav_tab %}
+
+        {% #nav_tab prefix='jaryo' id='1' %}
+            {{ icon_subject.자료|safe }} 자료
+        {% /nav_tab %}
+
+        {% #nav_tab prefix='sanghwang' id='2' %}
+            {{ icon_subject.상황|safe }} 상황
+        {% /nav_tab %}
+
+        {% #nav_tab prefix='heonbeob' id='3' %}
+            {{ icon_subject.헌법|safe }} 헌법
+        {% /nav_tab %}
+    </div>
+</nav>
+<div class="tab-content" id="navContent">
+    {% #nav_content prefix='eoneo' id='0' %}
+        {% with answers=eoneo_answer answer_rates=eoneo_rates %}
+            {% #responsive_table %}
+                {% partial answer_table %}
+            {% /responsive_table %}
+        {% endwith %}
+    {% /nav_content %}
+
+    {% #nav_content prefix='jaryo' id='1' %}
+        {% with answers=jaryo_answer answer_rates=jaryo_rates %}
+            {% #responsive_table %}
+                {% partial answer_table %}
+            {% /responsive_table %}
+        {% endwith %}
+    {% /nav_content %}
+
+    {% #nav_content prefix='sanghwang' id='2' %}
+        {% with answers=sanghwang_answer answer_rates=sanghwang_rates %}
+            {% #responsive_table %}
+                {% partial answer_table %}
+            {% /responsive_table %}
+        {% endwith %}
+    {% /nav_content %}
+
+    {% #nav_content prefix='heonbeob' id='3' %}
+        {% with answers=heonbeob_answer answer_rates=heonbeob_rates %}
+            {% #responsive_table %}
+                {% partial answer_table %}
+            {% /responsive_table %}
+        {% endwith %}
+    {% /nav_content %}
+</div>
+
+
+{% startpartial answer_table %}
+    <tbody>
+        {% with loop_counter=10 loop_min=0 loop_max=10 %}
+            {% partial answer_table_tr %}
+        {% endwith %}
+        {% with loop_counter=10 loop_min=10 loop_max=20 %}
+            {% partial answer_table_tr %}
+        {% endwith %}
+        {% if ex == '칠급' %}
+            {% with loop_counter=5 loop_min=20 loop_max=25 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+        {% else %}
+            {% with loop_counter=10 loop_min=20 loop_max=30 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+            {% with loop_counter=10 loop_min=30 loop_max=40 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+        {% endif %}
+    </tbody>
+{% endpartial answer_table %}
+
+
+{% startpartial answer_table_tr %}
+    <tr class="text-center table-warning">
+        <td></td>
+        {% for _ in 'x'|ljust:loop_counter %}
+            <td class="text-nowrap fw-bold text-secondary">
+                문 {{ forloop.counter|add:loop_min }}
+            </td>
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap">정답</td>
+        {% for answer in answers %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>
+                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                        {{ answer.problem__answer }}</button>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap">제출 답안</td>
+        {% for answer in answers %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>
+                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                        btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
+                        {{ answer.answer }}</button>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <td class="text-nowrap" >정답률(%)</td>
+        {% for answer_rate in answer_rates %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
+                <td>
+                    <span data-number="{{ answer_rate.problem__number }}">
+                        {{ answer_rate.correct|floatformat:0 }}
+                    </span>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{% endpartial answer_table_tr %}

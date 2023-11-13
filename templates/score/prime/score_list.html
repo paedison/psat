@@ -1,0 +1,81 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% block head_title %}{{ title }}{% endblock head_title %}
+
+{% block main %}{% partial list_main %}{% endblock %}
+
+
+{% startpartial list_main %}
+    {{ info|json_script:'info' }}
+    <div class="pagetitle my-2">
+        <h1>{{ icon|safe }} {{ title }}
+            <span class="fs-6 text-bg-primary">{{ sub_title }}</span>
+        </h1>
+    </div><!-- Page Title End -->
+    {% partial content %}
+{% endpartial %}
+
+
+{% startpartial content %}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    {% #content_row class3='p-4' %}
+        <div class="table-responsive">
+            <table class="table small">
+                <thead>
+                    <tr class="text-center table-warning">
+                        <th class="text-primary text-nowrap p-2 col-1">회차 / 시험일</th>
+                        <th class="text-primary text-nowrap p-2 col-1">수험정보</th>
+                        <th class="text-primary text-nowrap p-2 col-1">성적표</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">제{{ obj.round }}회 / {{ obj.date }}</td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    {{ obj.student.serial }} / {{ obj.student.department.name }}
+                                {% else %}
+                                    수험정보를 입력해주세요.
+                                    <a class="badge rounded-pill text-bg-warning"
+                                       hx-get="{% url 'score_prime:student_connect_modal' obj.year obj.round %}" href=""
+                                       hx-target="#modalContainer" hx-swap="innerHTML"
+                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        입력
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    <a class="badge rounded-pill text-bg-success"
+                                       href="{% url 'score_prime:detail_year_round' obj.year obj.round %}"
+                                       hx-get="{% url 'score_prime:detail_year_round' obj.year obj.round %}"
+                                       hx-push-url="true" hx-target="#main"
+                                       hx-swap="innerHTML swap:0.25s">
+                                        확인
+                                    </a>
+                                {% else %}
+                                    <a class="badge rounded-pill text-bg-danger"
+                                       hx-get="{% url 'score_prime:no_student_modal' %}" href=""
+                                       hx-target="#modalContainer" hx-swap="innerHTML"
+                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        미제공
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    {% /content_row %}
+    </section>
+{% endpartial %}

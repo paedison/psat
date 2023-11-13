@@ -9,3 +9,6 @@ from .psat_score_models import (
     PsatStudent, PsatTemporaryAnswer,
     PsatConfirmedAnswer, PsatAnswerCount,
 )
+from .prime_score_models import (
+    PrimeDepartment, PrimeStudent, PrimeAnswer, PrimeAnswerCount,
+)
