@@ -59,7 +59,7 @@
 </header><!-- Main Header End -->
 
 {# Logo partial #}
-{% startpartial logo %}
+{% partialdef logo %}
     <div class="d-flex align-items-center justify-content-between"
          hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
         {% if user.is_authenticated %}
@@ -77,10 +77,10 @@
         {% endif %}
         <i class="fa fa-bars toggle-sidebar-btn"></i>
     </div><!-- Logo End -->
-{% endpartial %}
+{% endpartialdef logo %}
 
 {# Profile partial #}
-{% startpartial profile %}
+{% partialdef profile %}
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
         {% if user.is_authenticated %}
             <li>
@@ -113,5 +113,5 @@
             </li>
         {% endif %}
     </ul><!-- Profile Dropdown Items End -->
-{% endpartial %}
+{% endpartialdef profile %}
 

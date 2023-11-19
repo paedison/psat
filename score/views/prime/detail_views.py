@@ -83,4 +83,10 @@ class BaseView(
         return context
 
 
+class PrintView(BaseView):
+    template_name = 'score/prime/score_print.html'
+    view_type = 'print'
+
+
 base_view = BaseView.as_view()
+print_view = PrintView.as_view()

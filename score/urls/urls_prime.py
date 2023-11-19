@@ -9,6 +9,7 @@ urlpatterns = [
 
     path('detail/', detail_views.base_view, name='detail'),
     path('detail/<int:year>/<int:round>/', detail_views.base_view, name='detail_year_round'),
+    path('print/<int:year>/<int:round>/', detail_views.print_view, name='print'),
 
     path('student/modal/no_data/', modal_views.no_student_modal_view, name='no_student_modal'),
 

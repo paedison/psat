@@ -10,16 +10,16 @@
 {% block main %}{% partial detail_main %}{% endblock %}
 
 
-{% startpartial detail_main %}
+{% partialdef detail_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>{{ icon|safe }} {{ title }}</h1>
     </div><!-- Page Title End -->
     {% partial content %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial content %}
+{% partialdef content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
     {% #content_row class3='p-4' %}
@@ -44,10 +44,10 @@
             {% endfor %}
             <div id="result"></div>
     {% /content_row %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial confirmed %}
+{% partialdef confirmed %}
     <div class="d-flex justify-content-center align-content-center">
         <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
             <a href="" hx-get="{% url 'psat:problem_detail' confirmed.problem.id %}" hx-push-url="true">
@@ -69,4 +69,4 @@
             {% endfor %}
         </div>
     </div>
-{% endpartial %}
+{% endpartialdef %}

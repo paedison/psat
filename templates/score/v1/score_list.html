@@ -10,16 +10,16 @@
 {% block main %}{% partial list_main %}{% endblock %}
 
 
-{% startpartial list_main %}
+{% partialdef list_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>{{ icon|safe }} {{ title }}</h1>
     </div><!-- Page Title End -->
     {% partial content %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial content %}
+{% partialdef content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
     {% #content_row class3='p-4' %}
@@ -100,10 +100,10 @@
         {% partial pagination %}
     {% /content_row %}
     </section>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial process_badge %}
+{% partialdef process_badge %}
     {% if target.status is None %}
         <a class="badge rounded-pill text-bg-primary" href="" hx-swap="innerHTML swap:0.25s"
            hx-get="{% url 'score:detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
@@ -126,10 +126,10 @@
        hx-target="#main" hx-push-url="{% url 'psat:base' %}">
         문제 보기
     </a>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial pagination_li %}
+{% partialdef pagination_li %}
     <li {% if status == 'active' %}aria-current="page"{% endif %}
         class="page-item {{ status }}">
         <a class="page-link" href=""
@@ -139,9 +139,9 @@
             {% else %}{{ anchor_text }}{% endif %}
         </a>
     </li>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial pagination %}
+{% partialdef pagination %}
     {% #pagination_nav %}
         {% if page_obj.has_previous %}
             {% with page_num=page_obj.number|add:-1 chevron='left' %}
@@ -165,4 +165,4 @@
             {% endwith %}
         {% endif %}
     {% /pagination_nav %}
-{% endpartial %}
+{% endpartialdef %}

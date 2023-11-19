@@ -16,7 +16,7 @@
 </section>
 
 
-{% startpartial contents %}
+{% partialdef contents %}
     <div id="comment{{ comment.id }}" class="htmx-fade-out htmx-fade-in p-2">
         <div class="d-flex justify-content-between">
             <div>
@@ -57,4 +57,4 @@
     <div id="commentUpdate{{ comment.id }}">
 
     </div>
-{% endpartial %}
+{% endpartialdef %}

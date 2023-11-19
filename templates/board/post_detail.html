@@ -22,7 +22,7 @@
 {% endblock %}
 
 
-{% startpartial container %}
+{% partialdef container %}
     <section class="section htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="row">
@@ -46,10 +46,10 @@
             </div>
         </div><!-- Content Row End -->
     </section>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial buttons %}
+{% partialdef buttons %}
     <div class="left-button col-auto px-0" hx-target="section .section"
          hx-boost="true" hx-swap="outerHTML swap:0.25s">
         <a class="btn btn-circle btn-sm btn-outline-secondary"
@@ -97,10 +97,10 @@
             </a>
         {% endif %}
     </div>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial post_header %}
+{% partialdef post_header %}
     <h6 class="text-primary fw-bold">
         {% if post.top_fixed %}
             <span class="text-danger">{{ info.board_icon.top_fixed|safe }}</span>
@@ -125,4 +125,4 @@
             <span class="text-danger fw-bold">{{ post.comment_count }}</span>
         </span>
     </div>
-{% endpartial %}
+{% endpartialdef %}

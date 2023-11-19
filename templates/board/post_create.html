@@ -21,7 +21,7 @@
 {% endblock %}
 
 
-{% startpartial container %}
+{% partialdef container %}
     <section class="section htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="row">
@@ -42,10 +42,10 @@
             </div>
         </div><!-- Content Row End -->
     </section>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial form %}
+{% partialdef form %}
     <form method="post" class="user">
         {% csrf_token %}
         {% if form.errors.content %}
@@ -79,4 +79,4 @@
                     title="{% trans message %}">{% trans message %}</button>
         </div>
     </form>
-{% endpartial %}
+{% endpartialdef %}

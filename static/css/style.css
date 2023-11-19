@@ -241,9 +241,6 @@ div.td-div-xl {
     margin: 0 1.5rem;
     font-size: 0.9rem;
 }
-/*.detail-filter > .filter-title {*/
-    /*grid-template-areas: ;*/
-/*}*/
 
 
 .htmx-fade-in.htmx-added {
@@ -256,4 +253,35 @@ div.td-div-xl {
 .htmx-fade-out.htmx-swapping {
   opacity: 0;
   transition: opacity 0.25s ease-out;
+}
+
+/* Chart container */
+@media screen {
+    .chart-container {
+        position: relative;
+        margin: auto;
+        width: 80vw;
+        max-width: 800px;
+        height: 50vh;
+        max-height: 400px;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .chart-container {
+        position: relative;
+        margin: auto;
+        width: 80vw;
+        height: 30vh;
+        min-height: 400px;
+    }
+}
+
+@media print {
+    .chart-container {
+        display: flex;
+        justify-content: center;
+        width: 1000px;
+        height: 500px;
+    }
 }

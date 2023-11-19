@@ -126,19 +126,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = '_config.urls'
 
-# Install app and configure loader. - Set up for template partials
-default_loaders = [
-    "django.template.loaders.filesystem.Loader",
-    "django.template.loaders.app_directories.Loader",
-]
-cached_loaders = [("django.template.loaders.cached.Loader", default_loaders)]
-partial_loaders = [("template_partials.loader.Loader", cached_loaders)]
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [BASE_DIR / 'templates'],
-        # 'APP_DIRS': True,
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -149,7 +141,6 @@ TEMPLATES = [
             ],
             'debug': True,
             # TODO: Add wrap_loaded function to the called from an AppConfig.ready().
-            'loaders': partial_loaders,
         },
     },
 ]

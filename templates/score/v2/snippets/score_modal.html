@@ -2,16 +2,16 @@
 {% load partials %}
 
 
-{% startpartial no_student_modal %}
+{% partialdef no_student_modal %}
     {% #modal header='수험 정보 오류' %}
         <h5 class="modal-title mx-auto fw-bold">
             <span class="text-danger">수험번호 및 직렬을<br/>입력해주세요.</span>
         </h5>
     {% /modal %}
-{% endpartial no_student_modal %}
+{% endpartialdef no_student_modal %}
 
 
-{% startpartial student_create %}
+{% partialdef student_create %}
     {% #modal header=header size=" " %}
         <form>
             <input id="id_year" type="text" name="year" value="{{ year }}" aria-label="Year" hidden>
@@ -33,10 +33,10 @@
             </div>
         </form>
     {% /modal %}
-{% endpartial student_create %}
+{% endpartialdef student_create %}
 
 
-{% startpartial student_create_department %}
+{% partialdef student_create_department %}
     <select id="id_department" class="form-select" name="department" aria-label="Select department">
         <option selected>직렬을 선택해주세요.</option>
         {% for department in departments %}
@@ -49,10 +49,10 @@
             hx-post="{% url 'score_v2:student_create' %}" hx-target="#main">
         입력
     </button>
-{% endpartial student_create_department %}
+{% endpartialdef student_create_department %}
 
 
-{% startpartial student_update %}
+{% partialdef student_update %}
     {% #modal header=header size=" " %}
         <form>
             <input id="id_year" type="text" name="year" value="{{ student.year }}" aria-label="Year" hidden>
@@ -78,10 +78,10 @@
             </div>
         </form>
     {% /modal %}
-{% endpartial student_update %}
+{% endpartialdef student_update %}
 
 
-{% startpartial student_update_department %}
+{% partialdef student_update_department %}
     <select id="id_department" class="form-select" name="department" aria-label="Select department">
         <option selected>직렬을 선택해주세요.</option>
         {% for department in departments %}
@@ -95,10 +95,10 @@
             hx-post="{% url 'score_v2:student_update' student.id %}" hx-target="#main">
         수정
     </button>
-{% endpartial student_update_department %}
+{% endpartialdef student_update_department %}
 
 
-{% startpartial score_confirmed %}
+{% partialdef score_confirmed %}
     {% #modal header='최종 답안 제출' %}
         <h5 class="modal-title mx-auto fw-bold">
             {% if is_confirmed == True %}
@@ -113,4 +113,4 @@
             {% endif %}
         </h5>
     {% /modal %}
-{% endpartial score_confirmed %}
+{% endpartialdef score_confirmed %}

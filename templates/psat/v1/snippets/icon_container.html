@@ -1,16 +1,16 @@
 {% load partials %}
 
-{% startpartial like %}
+{% partialdef like %}
     {{ problem.like_icon|safe }}
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial rate %}
+{% partialdef rate %}
     {{ problem.rate_icon|safe }}
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial answer %}
+{% partialdef answer %}
     {{ problem.answer_icon|safe }}
-{% endpartial %}
+{% endpartialdef %}
 
 <div class="td-div-xs" aria-label="Like">
     {% if user.is_authenticated %}

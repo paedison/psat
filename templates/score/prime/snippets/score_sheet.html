@@ -2,19 +2,18 @@
 {% load partials %}
 {% load slippers %}
 
-
 <nav>
-    <div class="nav nav-tabs" id="scoreSheetTab" role="tablist">
+    <div class="nav nav-tabs nav-tabs-bordered" id="scoreSheetTab" role="tablist">
         {% #nav_tab prefix='my' id='0' %}
-            내 성적
+            <div class="px-2">내 성적</div>
         {% /nav_tab %}
 
         {% #nav_tab prefix='all' id='1' %}
-            전체 기준
+            <div class="px-2">전체 기준</div>
         {% /nav_tab %}
 
         {% #nav_tab prefix='department' id='2' %}
-            직렬 기준
+            <div class="px-2">직렬 기준</div>
         {% /nav_tab %}
     </div>
 </nav>
@@ -51,7 +50,7 @@
 {# ################# #}
 
 {# Score thead1 partial #}
-{% startpartial score_thead1 %}
+{% partialdef score_thead1 %}
     <thead>
         <tr class="text-center align-middle table-warning">
            <th class="col-1">과목</th>
@@ -62,10 +61,10 @@
            <th class="col-1">직렬 석차(%)</th>
         </tr>
     </thead>
-{% endpartial score_thead1 %}
+{% endpartialdef score_thead1 %}
 
 {# Score thead2 partial #}
-{% startpartial score_thead2 %}
+{% partialdef score_thead2 %}
     <thead>
         <tr class="text-center align-middle table-warning">
            <th class="col-1">과목</th>
@@ -76,7 +75,7 @@
            <th class="col-1">평균 점수(점)</th>
         </tr>
     </thead>
-{% endpartial score_thead2 %}
+{% endpartialdef score_thead2 %}
 
 
 {# ################# #}
@@ -84,7 +83,7 @@
 {# ################# #}
 
 {# My score tbody partial #}
-{% startpartial my_score %}
+{% partialdef my_score %}
     <tbody>
         <tr class="text-center">
             <th class="text-nowrap">언어논리</th>
@@ -129,10 +128,10 @@
             </tr>
         {% endif %}
     </tbody>
-{% endpartial my_score %}
+{% endpartialdef my_score %}
 
 {# Score statistics tbody partial #}
-{% startpartial score_statistics %}
+{% partialdef score_statistics %}
     <tbody>
         <tr class="text-center">
             <th class="text-nowrap">언어논리</th>
@@ -177,4 +176,4 @@
             </tr>
         {% endif %}
     </tbody>
-{% endpartial score_statistics %}
+{% endpartialdef score_statistics %}

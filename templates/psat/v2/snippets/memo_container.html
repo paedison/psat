@@ -47,7 +47,7 @@
 </div><!-- Problem Memo End -->
 
 
-{% startpartial update %}
+{% partialdef update %}
     <form>
         <div class="input-group">
             {% csrf_token %}
@@ -64,5 +64,5 @@
             </button>
         </div>
     </form>
-{% endpartial %}
+{% endpartialdef %}
 

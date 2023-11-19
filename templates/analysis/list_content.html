@@ -1,7 +1,7 @@
 {% load static %}
 {% load partials %}
 
-{% startpartial thead %}
+{% partialdef thead %}
     <tr>
         <th class="text-center text-nowrap px-2">ID</th>
         <th class="text-center text-nowrap px-2">응시번호</th>
@@ -9,9 +9,9 @@
         <th class="text-center text-nowrap px-0">직렬</th>
         <th class="text-center text-nowrap px-0">Copy ID</th>
     </tr>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial tbody %}
+{% partialdef tbody %}
     <tr onclick="window.location.href='{% url 'analysis:detail' post.id %}'"
         style="cursor: pointer"
     >
@@ -31,7 +31,7 @@
             {{ post.copy_id }}
         </td>
     </tr>
-{% endpartial %}
+{% endpartialdef %}
 
 <section class="htmx-fade-in">
     {{ info|json_script:'info' }}

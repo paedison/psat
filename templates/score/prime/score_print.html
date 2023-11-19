@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+{% block head_title %}{{ title }}{% endblock head_title %}
+
+{% block html_body %}
+<body class="bg-white">
+    {{ info|json_script:'info' }}
+    <h2 class="fw-bold text-center mb-4">{{ icon|safe }} {{ sub_title }} {{ title }} 성적표</h2>
+        <div class="mb-2">
+            {% partial student_info %}
+        </div>
+        <div class="mb-2">
+            {% partial score_sheet %}
+        </div>
+        <div class="mb-2">
+            {% partial score_answers %}
+        </div>
+        {% include 'score/prime/snippets/score_chart.html#chart_canvas' %}
+
+    {# Student info partial #}
+    {% partialdef student_info %}
+        <table class="table table-sm table-bordered small align-middle">
+            <tbody>
+                <tr class="text-center">
+                    <td>응시번호 : {{ student.serial }}</td>
+                    <td>직렬 : {{ student.department.name }}</td>
+                    <td>이름 : {{ student.name }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% endpartialdef student_info %}
+
+    {% partialdef score_sheet %}
+        <table class="table table-sm table-bordered small align-middle">
+            <thead>
+                <tr class="text-center small align-middle">
+                    <th rowspan="3">과목</th>
+                    <th colspan="5">내 성적</th>
+                    <th colspan="4">전체 기준</th>
+                    <th colspan="4">직렬 기준</th>
+                </tr>
+                <tr class="text-center small align-middle">
+                    <th rowspan="2">점수(점)</th>
+                    <th colspan="2">전체 석차</th>
+                    <th colspan="2">직렬 석차</th>
+                    <th rowspan="2">최고<br/>점수(점)</th>
+                    <th rowspan="2">상위<br/>10%(점)</th>
+                    <th rowspan="2">상위<br/>20%(점)</th>
+                    <th rowspan="2">평균<br/>점수(점)</th>
+
+                    <th rowspan="2">최고<br/>점수(점)</th>
+                    <th rowspan="2">상위<br/>10%(점)</th>
+                    <th rowspan="2">상위<br/>20%(점)</th>
+                    <th rowspan="2">평균<br/>점수(점)</th>
+                </tr>
+                <tr class="text-center small align-middle">
+                    <th>(등)</th>
+                    <th>(%)</th>
+                    <th>(등)</th>
+                    <th>(%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center small">
+                    <th>언어논리</th>
+                    <td>{{ student.eoneo_score|floatformat:1 }}</td>
+                    <td>{{ my_total_rank.eoneo_rank }}</td>
+                    <td>{{ my_total_rank.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ my_department_rank.eoneo_rank }}</td>
+                    <td>{{ my_department_rank.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ total_stat.eoneo_score_max|floatformat:1 }}</td>
+                    <td>{{ total_stat.eoneo_score_10|floatformat:1 }}</td>
+                    <td>{{ total_stat.eoneo_score_20|floatformat:1 }}</td>
+                    <td>{{ total_stat.eoneo_score_avg|floatformat:1 }}</td>
+                    <td>{{ department_stat.eoneo_score_max|floatformat:1 }}</td>
+                    <td>{{ department_stat.eoneo_score_10|floatformat:1 }}</td>
+                    <td>{{ department_stat.eoneo_score_20|floatformat:1 }}</td>
+                    <td>{{ department_stat.eoneo_score_avg|floatformat:1 }}</td>
+                </tr>
+                <tr class="text-center small">
+                    <th>자료해석</th>
+                    <td>{{ student.jaryo_score|floatformat:1 }}</td>
+                    <td>{{ my_total_rank.jaryo_rank }}</td>
+                    <td>{{ my_total_rank.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ my_department_rank.jaryo_rank }}</td>
+                    <td>{{ my_department_rank.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ total_stat.jaryo_score_max|floatformat:1 }}</td>
+                    <td>{{ total_stat.jaryo_score_10|floatformat:1 }}</td>
+                    <td>{{ total_stat.jaryo_score_20|floatformat:1 }}</td>
+                    <td>{{ total_stat.jaryo_score_avg|floatformat:1 }}</td>
+                    <td>{{ department_stat.jaryo_score_max|floatformat:1 }}</td>
+                    <td>{{ department_stat.jaryo_score_10|floatformat:1 }}</td>
+                    <td>{{ department_stat.jaryo_score_20|floatformat:1 }}</td>
+                    <td>{{ department_stat.jaryo_score_avg|floatformat:1 }}</td>
+                </tr>
+                <tr class="text-center small">
+                    <th>상황판단</th>
+                    <td>{{ student.sanghwang_score|floatformat:1 }}</td>
+                    <td>{{ my_total_rank.sanghwang_rank }}</td>
+                    <td>{{ my_total_rank.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ my_department_rank.sanghwang_rank }}</td>
+                    <td>{{ my_department_rank.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ total_stat.sanghwang_score_max|floatformat:1 }}</td>
+                    <td>{{ total_stat.sanghwang_score_10|floatformat:1 }}</td>
+                    <td>{{ total_stat.sanghwang_score_20|floatformat:1 }}</td>
+                    <td>{{ total_stat.sanghwang_score_avg|floatformat:1 }}</td>
+                    <td>{{ department_stat.sanghwang_score_max|floatformat:1 }}</td>
+                    <td>{{ department_stat.sanghwang_score_10|floatformat:1 }}</td>
+                    <td>{{ department_stat.sanghwang_score_20|floatformat:1 }}</td>
+                    <td>{{ department_stat.sanghwang_score_avg|floatformat:1 }}</td>
+                </tr>
+                <tr class="text-center small">
+                    <th>PSAT 평균</th>
+                    <td>{{ student.psat_average|floatformat:1 }}</td>
+                    <td>{{ my_total_rank.psat_rank }}</td>
+                    <td>{{ my_total_rank.psat_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ my_department_rank.psat_rank }}</td>
+                    <td>{{ my_department_rank.psat_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ total_stat.psat_average_max|floatformat:1 }}</td>
+                    <td>{{ total_stat.psat_average_10|floatformat:1 }}</td>
+                    <td>{{ total_stat.psat_average_20|floatformat:1 }}</td>
+                    <td>{{ total_stat.psat_average_avg|floatformat:1 }}</td>
+                    <td>{{ department_stat.psat_average_max|floatformat:1 }}</td>
+                    <td>{{ department_stat.psat_average_10|floatformat:1 }}</td>
+                    <td>{{ department_stat.psat_average_20|floatformat:1 }}</td>
+                    <td>{{ department_stat.psat_average_avg|floatformat:1 }}</td>
+                </tr>
+                <tr class="text-center small">
+                    <th>헌법</th>
+                    <td>{{ student.heonbeob_score|floatformat:1 }}</td>
+                    <td>{{ my_total_rank.heonbeob_rank }}</td>
+                    <td>{{ my_total_rank.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ my_department_rank.heonbeob_rank }}</td>
+                    <td>{{ my_department_rank.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ total_stat.heonbeob_score_max|floatformat:1 }}</td>
+                    <td>{{ total_stat.heonbeob_score_10|floatformat:1 }}</td>
+                    <td>{{ total_stat.heonbeob_score_20|floatformat:1 }}</td>
+                    <td>{{ total_stat.heonbeob_score_avg|floatformat:1 }}</td>
+                    <td>{{ department_stat.heonbeob_score_max|floatformat:1 }}</td>
+                    <td>{{ department_stat.heonbeob_score_10|floatformat:1 }}</td>
+                    <td>{{ department_stat.heonbeob_score_20|floatformat:1 }}</td>
+                    <td>{{ department_stat.heonbeob_score_avg|floatformat:1 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% endpartialdef score_sheet %}
+
+    {% partialdef score_answers %}
+        <table class="table table-sm table-bordered small align-middle">
+            <thead>
+                <tr class="text-center small align-middle">
+                    <th colspan="2">과목</th>
+                    {% for _ in 'x'|ljust:40 %}
+                        <th class="text-nowrap fw-bold text-secondary">{{ forloop.counter|add:0 }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center small">
+                    <th class="text-nowrap align-center" rowspan="3">언어<br/>논리</th>
+                    <th class="text-nowrap">답안</th>
+                    {% for answer in eoneo_answer %}
+                        <td>{{ answer.student_answer }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center small">
+                    <th class="text-nowrap">정오</th>
+                    {% for answer in eoneo_answer %}
+                        <td>{% if answer.student_answer == answer.answer %}O{% else %}X{% endif %}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center small">
+                    <th class="text-nowrap small">정답률(%)</th>
+                    {% for answer_rate in eoneo_rates %}
+                        <td>
+                            <span data-number="{{ answer_rate.problem__number }}">
+                                {{ answer_rate.correct|floatformat:0 }}
+                            </span>
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <tr class="text-center small">
+                    <th class="text-nowrap align-center" rowspan="3">자료<br/>해석</th>
+                    <th class="text-nowrap">답안</th>
+                    {% for answer in jaryo_answer %}
+                        <td>{{ answer.student_answer }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center small">
+                    <th class="text-nowrap">정오</th>
+                    {% for answer in jaryo_answer %}
+                        <td>{% if answer.student_answer == answer.answer %}O{% else %}X{% endif %}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center small">
+                    <th class="text-nowrap small">정답률(%)</th>
+                    {% for answer_rate in jaryo_rates %}
+                        <td>
+                            <span data-number="{{ answer_rate.problem__number }}">
+                                {{ answer_rate.correct|floatformat:0 }}
+                            </span>
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <tr class="text-center small">
+                    <th class="text-nowrap align-center" rowspan="3">상황<br/>판단</th>
+                    <th class="text-nowrap">답안</th>
+                    {% for answer in sanghwang_answer %}
+                        <td>{{ answer.student_answer }}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center small">
+                    <th class="text-nowrap">정오</th>
+                    {% for answer in sanghwang_answer %}
+                        <td>{% if answer.student_answer == answer.answer %}O{% else %}X{% endif %}</td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center small">
+                    <th class="text-nowrap small">정답률(%)</th>
+                    {% for answer_rate in sanghwang_rates %}
+                        <td>
+                            <span data-number="{{ answer_rate.problem__number }}">
+                                {{ answer_rate.correct|floatformat:0 }}
+                            </span>
+                        </td>
+                    {% endfor %}
+                </tr>
+
+                <tr class="text-center small">
+                    <th class="text-nowrap align-center" rowspan="3">헌법</th>
+                    <th class="text-nowrap">답안</th>
+                    {% for answer in heonbeob_answer %}
+                        <td>{{ answer.student_answer }}</td>
+                    {% endfor %}
+                    {% for _ in 'x'|ljust:15 %}
+                        <td></td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center small">
+                    <th class="text-nowrap">정오</th>
+                    {% for answer in heonbeob_answer %}
+                        <td>{% if answer.student_answer == answer.answer %}O{% else %}X{% endif %}</td>
+                    {% endfor %}
+                    {% for _ in 'x'|ljust:15 %}
+                        <td></td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center small">
+                    <th class="text-nowrap small">정답률(%)</th>
+                    {% for answer_rate in heonbeob_rates %}
+                        <td>
+                            <span data-number="{{ answer_rate.problem__number }}">
+                                {{ answer_rate.correct|floatformat:0 }}
+                            </span>
+                        </td>
+                    {% endfor %}
+                    {% for _ in 'x'|ljust:15 %}
+                        <td></td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    {% endpartialdef score_answers %}
+    <script>
+        window.onload = function () {
+            setTimeout(function () {
+                window.print();
+            }, 1000);
+        };
+    </script>
+</body>
+{% endblock html_body %}

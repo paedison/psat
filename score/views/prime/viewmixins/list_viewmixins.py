@@ -6,7 +6,8 @@ from .base_viewmixins import ScoreModelVariableSet
 
 class ScoreExamListSet:
     exam_list = [
-        {'year': 2023, 'round': 1, 'date': '2023.01.07(토)'},
+        {'year': 2023, 'round': 1, 'date': '1/7'},
+        # {'year': 2023, 'round': 1, 'date': '2023.01.07(토)'},
         # {'year': 2023, 'round': 2, 'date': '2023.01.28(토)'},
         # {'year': 2023, 'round': 3, 'date': '2023.02.04(토)'},
         # {'year': 2023, 'round': 4, 'date': '2023.02.11(토)'},
@@ -38,6 +39,7 @@ class ScoreListViewMixin(
 
         for obj in page_obj:
             student = self.get_student(obj)
+            student.psat_average = student.psat_score / 3
             obj['student'] = student
         return page_obj, page_range
 

@@ -5,7 +5,7 @@
 {# ProblemMemoUpdateView -> context: problem_memo #}
 {# ProblemMemoCreateView -> context: problem #}
 
-{% startpartial update %}
+{% partialdef update %}
     <form>
         <div class="input-group">
             {% csrf_token %}
@@ -22,7 +22,7 @@
             </button>
         </div>
     </form>
-{% endpartial %}
+{% endpartialdef %}
 
 <div id="myMemo" class="htmx-fade-in htmx-fade-out">
     <div class="badge bg-success m-2">MEMO</div>

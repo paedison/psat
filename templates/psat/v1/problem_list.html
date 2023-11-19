@@ -10,7 +10,7 @@
 {% block main %}{% partial list_main %}{% endblock %}
 
 
-{% startpartial list_main %}
+{% partialdef list_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>{{ icon|safe }} {{ title }}
@@ -18,10 +18,10 @@
         </h1>
     </div><!-- Page Title End -->
     {% partial content %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial content %}
+{% partialdef content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
 {#             hx-target="this" hx-swap="outerHTML swap:0.25s">#}
@@ -68,10 +68,10 @@
         {% partial pagination %}
     {% /content_row %}
     </section>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial dashboard_filter %}
+{% partialdef dashboard_filter %}
     <button id="dropdownDashboardLink" type="button"
             class="btn btn-sm btn-outline-primary dropdown-toggle"
             data-bs-toggle="dropdown" aria-expanded="false">메뉴</button>
@@ -98,10 +98,10 @@
             </a>
         </li>
     </ul>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial filter_snippet %}
+{% partialdef filter_snippet %}
     <button id="dropdown{{ var|title }}Link" type="button"
             class="btn btn-sm btn-outline-primary dropdown-toggle"
             data-bs-toggle="dropdown" aria-expanded="false">
@@ -139,9 +139,9 @@
             </li>
         {% endfor %}
     </ul>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial problem_filter %}
+{% partialdef problem_filter %}
     <a type="button" class="btn btn-sm btn-primary" href=""
        hx-get="{{ base_url }}">전체</a>
     {% with var='year' text='연도' total='전체 연도' current=exam_year option=year_option %}
@@ -155,28 +155,28 @@
     {% with var='sub' text='과목' total='전체 과목' current=exam_sub option=sub_option %}
         {% partial filter_snippet %}
     {% endwith %}
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial like_filter %}
+{% partialdef like_filter %}
     {% with var='like' text=PSAT_ICON_SET.filter|safe total='즐겨찾기 전체 문제' current=is_liked option=like_option %}
         {% partial filter_snippet %}
     {% endwith %}
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial rate_filter %}
+{% partialdef rate_filter %}
     {% with var='rate' text=PSAT_ICON_SET.filter|safe total='전체 문제' current=star_count option=rate_option %}
         {% partial filter_snippet %}
     {% endwith %}
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial answer_filter %}
+{% partialdef answer_filter %}
     {% with var='answer' text=PSAT_ICON_SET.filter|safe total='전체 문제' current=is_correct option=answer_option %}
         {% partial filter_snippet %}
     {% endwith %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial table_head %}
+{% partialdef table_head %}
 <tr class="d-none d-sm-table-row">
     <th class="text-nowrap p-2 col-1">
         <div class="td-div-xl" aria-label="Reference">문제 출처</div>
@@ -186,14 +186,14 @@
     </th>
     <th class="text-start text-nowrap p-2">문제</th>
 </tr>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial datetime %}
+{% partialdef datetime %}
     {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial list_divider %}
+{% partialdef list_divider %}
     {% if info.menu == 'psat' %}{% if not search_list %}{% ifchanged %}
         {% #list_divider %}
             <a hx-get="{{ base_url }}?exam__year={{ problem.year }}
@@ -220,15 +220,15 @@
             {% with timestamp=problem.answered_at %}{% partial datetime %}{% endwith %}
         {% /list_divider %}
     {% endifchanged %}{% endif %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial reference %}
+{% partialdef reference %}
     <a class="text-decoration-none fw-bold" href="{{ url }}">
         {{ problem.year_ex_sub_hyphen }} {{ problem.problem_number|add_0 }}
     </a>
-{% endpartial %}
-{% startpartial reference_content %}
+{% endpartialdef %}
+{% partialdef reference_content %}
     <div class="td-div-xl text-start" aria-label="Reference">
         {% if problem_list or search_list %}
             {% with url=problem.get_problem_url %}{% partial reference %}{% endwith %}
@@ -247,16 +247,16 @@
             {% with url=problem.get_answer_url %}{% partial reference %}{% endwith %}
         {% endif %}
     </div>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial q %}
+{% partialdef q %}
     <h3 class="fs-6 small m-0">
         {{ problem.problem_question|truncatechars:chars }}
     </h3>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial question %}
+{% partialdef question %}
     <a class="text-decoration-none d-md-none" href="{{ url }}">
         {% with chars=30 %}{% partial q %}{% endwith %}
     </a>
@@ -269,9 +269,9 @@
     <a class="text-decoration-none d-none d-xl-inline" href="{{ url }}">
         {% with chars=60 %}{% partial q %}{% endwith %}
     </a>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial question_content %}
+{% partialdef question_content %}
     {% if problem_list or search_list %}
         {% with url=problem.get_problem_url %}{% partial question %}{% endwith %}
     {% endif %}
@@ -288,10 +288,10 @@
     {% if answer_list or answer_dashboard %}
         {% with url=problem.get_answer_url %}{% partial question %}{% endwith %}
     {% endif %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial pagination_li %}
+{% partialdef pagination_li %}
     <li {% if status == 'active' %}aria-current="page"{% endif %}
         class="page-item {{ status }}">
         <a class="page-link" href=""
@@ -301,9 +301,9 @@
             {% else %}{{ anchor_text }}{% endif %}
         </a>
     </li>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial pagination %}
+{% partialdef pagination %}
     {% #pagination_nav %}
         {% if page_obj.has_previous %}
             {% with page_num=page_obj.number|add:-1 chevron='left' %}
@@ -327,4 +327,4 @@
             {% endwith %}
         {% endif %}
     {% /pagination_nav %}
-{% endpartial %}
+{% endpartialdef %}

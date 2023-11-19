@@ -9,7 +9,7 @@
 {% block main %}{% partial list_main %}{% endblock %}
 
 {# List main partial #}
-{% startpartial list_main %}
+{% partialdef list_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>{{ icon|safe }} {{ title }}
@@ -17,10 +17,10 @@
         </h1>
     </div><!-- Page Title End -->
             {% partial list_content %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial list_content %}
+{% partialdef list_content %}
     <section class="section dashboard htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
 {#        <div class="row">#}
@@ -125,4 +125,4 @@
             </div><!-- End Rate Card -->
         </div>
     </section>
-{% endpartial content %}
+{% endpartialdef content %}

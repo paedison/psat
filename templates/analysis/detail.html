@@ -7,24 +7,24 @@
 
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
-{% startpartial buttons %}
+{% partialdef buttons %}
     <div class="left-button col-auto px-0">
         <a class="btn btn-circle btn-sm btn-outline-secondary"
            href="{% url 'analysis:list' %}" title="List">
             {{ BOARD_ICON_SET.list|safe }}
         </a>
     </div>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial post_header %}
+{% partialdef post_header %}
     <div class="small mb-3 text-secondary">
         <div class="me-1">응시번호: {{ object.student_number }}</div>
         <div class="me-1">이름: {{ object.student_name }}</div>
         <div class="me-1">직렬: {{ object.department }}</div>
     </div>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial table_tr %}
+{% partialdef table_tr %}
     <tr class="text-center table-warning">
         <td class="text-nowrap fw-bold"></td>
         {% for _ in 'x'|ljust:loop_counter %}
@@ -47,10 +47,10 @@
             {% endif %}
         {% endfor %}
     </tr>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial post_content %}
+{% partialdef post_content %}
     <div class="small mb-3 table-responsive">
         <h3 class="fw-bold text-primary pt-3">헌법</h3>
         <table class="table">
@@ -118,9 +118,9 @@
             </tbody>
         </table>
     </div>
-{% endpartial %}
+{% endpartialdef %}
 
-{% startpartial container %}
+{% partialdef container %}
     <section class="section htmx-fade-in htmx-fade-out">
         {{ info|json_script:'info' }}
         <div class="row">
@@ -140,7 +140,7 @@
             </div>
         </div><!-- Content Row End -->
     </section>
-{% endpartial %}
+{% endpartialdef %}
 
 
 {% block main %}

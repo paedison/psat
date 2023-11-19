@@ -54,7 +54,7 @@
 </article>
 
 {# Rate modal partial #}
-{% startpartial rate_modal %}
+{% partialdef rate_modal %}
     {% #modal header='문제 난이도를 선택해주세요.' %}
         <form id="rateButton">
             <fieldset>
@@ -72,10 +72,10 @@
             </button>
         </form>
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}
 
 {# Like button partial #}
-{% startpartial like %}
+{% partialdef like %}
     <input type="text" name="is_liked" value="{{ is_liked }}" hidden
            aria-label="Like Icon">
     {% if is_liked %}
@@ -83,10 +83,10 @@
     {% else %}
         {{ icon_like.false|safe }}
     {% endif %}
-{% endpartial %}
+{% endpartialdef %}
 
 {# Rate button partial #}
-{% startpartial rate %}
+{% partialdef rate %}
     {% if problem.rating == 1 or problem|get_rate_status:rate_data == 1 %}
         {{ icon_rate.star1|safe }}
     {% elif problem.rating == 2 or problem|get_rate_status:rate_data == 2 %}
@@ -100,14 +100,14 @@
     {% else %}
         {{ icon_rate.star0|safe }}
     {% endif %}
-{% endpartial %}
+{% endpartialdef %}
 
 {# Solve button partial #}
-{% startpartial solve %}
+{% partialdef solve %}
     {% if is_correct is True or problem|get_solve_status:solve_data is True %}
         {{ icon_solve.correct|safe }}
     {% elif is_correct is False or problem|get_solve_status:solve_data is False %}
         {{ icon_solve.wrong|safe }}
     {% else %}
     {% endif %}
-{% endpartial %}
+{% endpartialdef %}

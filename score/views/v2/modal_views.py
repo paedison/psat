@@ -277,7 +277,6 @@ def student_create_view(request):
                 )
                 year = new_student.year
                 ex = new_student.department.unit.exam.abbr
-                update_score(new_student)
     return redirect(reverse_lazy('score_v2:detail_year_ex', args=[year, ex]))
 
 

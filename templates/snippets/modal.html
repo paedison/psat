@@ -3,15 +3,15 @@
 {% load partials %}
 
 
-{% startpartial login %}
+{% partialdef login %}
     {% #modal header='로그인이 필요합니다.' %}
         {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
         <a class="btn btn-primary" href="{% url 'account_login' %}">로그인</a>
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial logout %}
+{% partialdef logout %}
     {% #modal header='로그아웃 하시겠습니까?' %}
         <form action="{% url 'account_logout' %}" method="POST">
             {% csrf_token %}
@@ -19,10 +19,10 @@
             <button class="btn btn-primary" type="submit">로그아웃</button>
         </form>
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial rate %}
+{% partialdef rate %}
     {% #modal header='문제 난이도를 선택해주세요.' %}
         <form id="rateButton">
         {% csrf_token %}
@@ -41,10 +41,10 @@
             </button>
         </form>
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial answer %}
+{% partialdef answer %}
     {% #modal header='정답 확인' %}
         <input id="answer" type="text" name="answer" value="{{ answer }}"
                hidden aria-label="Answer"/>
@@ -69,10 +69,10 @@
             {% endif %}
         {% endif %}
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial student_create %}
+{% partialdef student_create %}
     {% #modal header=header size=" " %}
         <form>
             <input id="id_year" type="text" name="year" value="{{ year }}" aria-label="Year" hidden>
@@ -93,10 +93,10 @@
             </div>
         </form>
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial student_department %}
+{% partialdef student_department %}
     <select id="id_department" class="form-select" name="department" aria-label="Select department">
         <option selected>직렬을 선택해주세요.</option>
         {% for department in departments %}
@@ -109,10 +109,10 @@
             hx-post="{% url 'score:student_create' %}" hx-target="#main">
         입력
     </button>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial student_update %}
+{% partialdef student_update %}
     {% #modal header=header size=" " %}
         <form>
             <input id="id_year" type="text" name="year" value="{{ student.year }}"
@@ -151,10 +151,10 @@
             </div>
         </form>
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial score_confirmed %}
+{% partialdef score_confirmed %}
     {% #modal header='최종 답안 제출' %}
         <h5 class="modal-title mx-auto fw-bold">
             {% if all_confirmed %}
@@ -166,4 +166,4 @@
             {% endif %}
         </h5>
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}

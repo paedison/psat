@@ -4,7 +4,7 @@
 {% load slippers %}
 
 <nav>
-    <div class="nav nav-tabs" id="scoreAnswersTab" role="tablist">
+    <div class="nav nav-tabs nav-tabs-bordered" id="scoreAnswersTab" role="tablist">
         {% #nav_tab prefix='eoneo_answers' id='0' %}
             {{ icon_subject.언어|safe }} 언어
         {% /nav_tab %}
@@ -85,7 +85,7 @@
 </div>
 
 
-{% startpartial confirmed_answer_table %}
+{% partialdef confirmed_answer_table %}
     <tbody>
         {% with loop_counter=10 loop_min=0 loop_max=10 %}
             {% partial answer_table_tr %}
@@ -106,10 +106,10 @@
             {% endwith %}
         {% endif %}
     </tbody>
-{% endpartial confirmed_answer_table %}
+{% endpartialdef confirmed_answer_table %}
 
 
-{% startpartial answer_table_tr %}
+{% partialdef answer_table_tr %}
     <tr class="text-center table-warning">
         <td></td>
         {% for _ in 'x'|ljust:loop_counter %}
@@ -153,10 +153,10 @@
             {% endif %}
         {% endfor %}
     </tr>
-{% endpartial answer_table_tr %}
+{% endpartialdef answer_table_tr %}
 
 
-{% startpartial temporary_answer_table %}
+{% partialdef temporary_answer_table %}
     <div class="col-12 d-flex align-items-center justify-content-between pt-3 pb-2">
         {% partial submit_button %}
     </div>
@@ -182,30 +182,31 @@
     <div class="col-12 d-flex align-items-center justify-content-between">
         {% partial submit_button %}
     </div>
-{% endpartial temporary_answer_table %}
+{% endpartialdef temporary_answer_table %}
 
 
-{% startpartial form %}
+{% partialdef form %}
     <form>
         <input type="text" name="sub" value="{{ problem.psat.subject.abbr }}" aria-label="Subject" hidden/>
         <div class="d-flex justify-content-center align-content-center">
             <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-                <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
+                <a href="{% url 'psat_v2:detail' 'problem' problem.id %}"
+                   hx-get="{% url 'psat_v2:detail' 'problem' problem.id %}">
                     문 {{ problem.number|add_0 }}.
                 </a>
             </p>
             <div id="p{{ problem.id }}_answer" class="d-flex justify-content-center align-content-center me-3"
-                 hx-post="{% url 'score_v2:submit' problem.id %}" hx-swap="innerHTML"
+                 hx-post="{% url 'score_v2:submit' problem.id %}" hx-swap="innerHTML" hx-push-url="false"
                  hx-include="#p{{ problem.id }}_answer>input[name='answer']:checked"
                  hx-include="#p{{ problem.id }}" hx-target="this" hx-trigger="change">
                 {% partial initial_form %}
             </div>
         </div>
     </form>
-{% endpartial form %}
+{% endpartialdef form %}
 
 
-{% startpartial initial_form %}
+{% partialdef initial_form %}
     {% with target_answer=problem.submitted_answer target_problem=problem %}
         {% if subject == 'heonbeob' or sub == '헌법' %}
             {% for i in '1234' %}
@@ -217,10 +218,10 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-{% endpartial initial_form %}
+{% endpartialdef initial_form %}
 
 
-{% startpartial scored_form %}
+{% partialdef scored_form %}
     {% with target_answer=scored.answer target_problem=scored.problem %}
         {% if subject == 'heonbeob' or sub == '헌법' %}
             {% for i in '1234' %}
@@ -232,20 +233,20 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-{% endpartial scored_form %}
+{% endpartialdef scored_form %}
 
 
-{% startpartial answer_buttons %}
+{% partialdef answer_buttons %}
     <input id="p{{ target_problem.id }}_answer{{ i }}" type="radio"
            class="btn-check" name="answer" value="{{ i }}"/>
     <label class="btn btn-circle btn-sm fs-6 mx-1 my-2
            {% if i|add:0 == target_answer %}btn-secondary
            {% else %} btn-outline-secondary{% endif %}"
            for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
-{% endpartial answer_buttons %}
+{% endpartialdef answer_buttons %}
 
 
-{% startpartial submit_button %}
+{% partialdef submit_button %}
     <form class="ms-auto me-auto">
         <input type="text" name="year" value="{{ year }}" aria-label="Year" hidden/>
         <input type="text" name="ex" value="{{ ex }}" aria-label="Exam" hidden/>
@@ -256,10 +257,10 @@
             최종 답안 제출
         </button>
     </form>
-{% endpartial submit_button %}
+{% endpartialdef submit_button %}
 
 
-{% startpartial no_student %}
+{% partialdef no_student %}
     <div class="d-flex justify-content-center align-content-center">
         <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
             <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
@@ -284,4 +285,4 @@
             {% endif %}
         </div>
     </div>
-{% endpartial no_student %}
+{% endpartialdef no_student %}

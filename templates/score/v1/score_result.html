@@ -11,16 +11,16 @@
 
 {% block main %}{% partial result_main %}{% endblock %}
 
-{% startpartial result_main %}
+{% partialdef result_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>{{ icon|safe }} {{ title }}</h1>
     </div><!-- Page Title End -->
     {% partial content %}
-{% endpartial result_main %}
+{% endpartialdef result_main %}
 
 
-{% startpartial content %}
+{% partialdef content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
     {% #content_row class3='p-4' %}
@@ -59,10 +59,10 @@
         </div>
     {% /content_row %}
     </section>
-{% endpartial content %}
+{% endpartialdef content %}
 
 
-{% startpartial chart %}
+{% partialdef chart %}
     <div>
         <canvas id="scoreChart"></canvas>
     </div>
@@ -187,10 +187,10 @@
             new Chart(chart_canvas, chart_data);
         }
     </script>
-{% endpartial chart %}
+{% endpartialdef chart %}
 
 
-{% startpartial score_sheet %}
+{% partialdef score_sheet %}
     <nav>
         <div class="nav nav-tabs" id="navTab" role="tablist">
             {% #nav_tab prefix='my' id='0' %}
@@ -223,10 +223,10 @@
             {% endwith %}
         {% /nav_content %}
     </div>
-{% endpartial score_sheet %}
+{% endpartialdef score_sheet %}
 
 
-{% startpartial my_score %}
+{% partialdef my_score %}
     <div class="small table-responsive">
         <table class="table mb-0 align-middle">
             <thead>
@@ -283,10 +283,10 @@
             </tbody>
         </table>
     </div>
-{% endpartial my_score %}
+{% endpartialdef my_score %}
 
 
-{% startpartial score_statistics %}
+{% partialdef score_statistics %}
     <div class="small table-responsive">
         <table class="table mb-0 align-middle">
             <thead>
@@ -343,10 +343,10 @@
             </tbody>
         </table>
     </div>
-{% endpartial score_statistics %}
+{% endpartialdef score_statistics %}
 
 
-{% startpartial reference %}
+{% partialdef reference %}
     <nav>
         <div class="nav nav-tabs" id="navTab" role="tablist">
             {% #nav_tab prefix='eoneo' id='0' %}
@@ -381,9 +381,9 @@
             {% endwith %}
         {% /nav_content %}
     </div>
-{% endpartial reference %}
+{% endpartialdef reference %}
 
-{% startpartial reference_table %}
+{% partialdef reference_table %}
     <div class="small table-responsive">
         <table class="table mb-0 align-middle">
             <tbody>
@@ -408,10 +408,10 @@
             </tbody>
         </table>
     </div>
-{% endpartial reference_table %}
+{% endpartialdef reference_table %}
 
 
-{% startpartial reference_table_tr %}
+{% partialdef reference_table_tr %}
     <tr class="text-center table-warning">
         <td></td>
         {% for _ in 'x'|ljust:loop_counter %}
@@ -455,4 +455,4 @@
             {% endif %}
         {% endfor %}
     </tr>
-{% endpartial reference_table_tr %}
+{% endpartialdef reference_table_tr %}

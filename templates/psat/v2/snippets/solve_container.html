@@ -41,7 +41,7 @@
 </div>
 
 
-{% startpartial answer_modal %}
+{% partialdef answer_modal %}
     {% #modal header='정답 확인' %}
         <input id="solve_answer" type="text" name="answer" value="{{ answer }}"
                hidden aria-label="Answer"/>
@@ -65,4 +65,4 @@
             {% endif %}
         {% endif %}
     {% /modal %}
-{% endpartial %}
+{% endpartialdef %}

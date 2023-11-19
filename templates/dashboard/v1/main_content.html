@@ -76,7 +76,7 @@
 {# Icon start #}
 {# ########## #}
 
-{% startpartial like %}
+{% partialdef like %}
     <div class="td-div-xs" aria-label="Like">
         {% if log.is_liked %}
             {{ icon_like.true|safe }}
@@ -84,10 +84,10 @@
             {{ icon_like.false|safe }}
         {% endif %}
     </div>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial rate %}
+{% partialdef rate %}
     <div class="td-div-lg" aria-label="Rate">
         {% if log.rating == 1 %}
             {{ icon_rate.star1|safe }}
@@ -103,10 +103,10 @@
             {{ icon_rate.star0|safe }}
         {% endif %}
     </div>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial solve %}
+{% partialdef solve %}
     <div class="td-div-xs" aria-label="Solve">
         {% if log.is_correct is True %}
             {{ icon_solve.correct|safe }}
@@ -115,7 +115,7 @@
         {% else %}
         {% endif %}
     </div>
-{% endpartial %}
+{% endpartialdef %}
 
 
 {# ################ #}
@@ -123,7 +123,7 @@
 {# ################ #}
 
 {# Pagination link partial #}
-{% startpartial pagination_link %}
+{% partialdef pagination_link %}
     <li class="page-item {{ status }}"
         {% if status == 'active' %}aria-current="page"{% endif %}>
         <a class="page-link" href="" hx-target="#dashboard-{{ view_type }}"
@@ -140,4 +140,4 @@
             {% endif %}
         </a>
     </li>
-{% endpartial pagination_link %}
+{% endpartialdef pagination_link %}

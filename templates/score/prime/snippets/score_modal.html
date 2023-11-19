@@ -2,16 +2,16 @@
 {% load partials %}
 
 
-{% startpartial no_student_modal %}
+{% partialdef no_student_modal %}
     {% #modal header='수험 정보 오류' %}
         <h5 class="modal-title mx-auto fw-bold">
             <span class="text-danger">수험정보를 입력해주세요.</span>
         </h5>
     {% /modal %}
-{% endpartial no_student_modal %}
+{% endpartialdef no_student_modal %}
 
 
-{% startpartial student_connect %}
+{% partialdef student_connect %}
     {% #modal header=header size=" " %}
         <form>
             <input id="id_year" type="text" name="year" value="{{ year }}" aria-label="Year" hidden>
@@ -39,4 +39,4 @@
             </div>
         </form>
     {% /modal %}
-{% endpartial student_connect %}
+{% endpartialdef student_connect %}

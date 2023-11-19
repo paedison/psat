@@ -95,10 +95,10 @@
 {% endblock %}
 
 
-{% startpartial tag_cloud %}
+{% partialdef tag_cloud %}
     {% for tag in tags %}
         <span class="tag-{{ tag.weight|floatformat:0 }}">
             <a href="">{{ tag.name }}({{ tag.num_times }})</a>
         </span>
     {% endfor %}
-{% endpartial %}
+{% endpartialdef %}

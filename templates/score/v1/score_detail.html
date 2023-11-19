@@ -10,16 +10,16 @@
 {% block main %}{% partial detail_main %}{% endblock %}
 
 
-{% startpartial detail_main %}
+{% partialdef detail_main %}
     {{ info|json_script:'info' }}
     <div class="pagetitle my-2">
         <h1>{{ icon|safe }} {{ title }}</h1>
     </div><!-- Page Title End -->
     {% partial content %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial content %}
+{% partialdef content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s">
     {% #content_row class3='p-4' %}
@@ -54,10 +54,10 @@
         </div>
     {% /content_row %}
     </section>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial form %}
+{% partialdef form %}
     <form>
         {% csrf_token %}
         <div class="d-flex justify-content-center align-content-center">
@@ -74,38 +74,38 @@
             </div>
         </div>
     </form>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial initial_form %}
+{% partialdef initial_form %}
     {% with target_answer=problem.submitted_answer target_problem=problem %}
         {% for i in '12345' %}
             {% partial answer_buttons %}
         {% endfor %}
     {% endwith %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial scored_form %}
+{% partialdef scored_form %}
     {% with target_answer=scored.answer target_problem=scored.problem %}
         {% for i in '12345' %}
             {% partial answer_buttons %}
         {% endfor %}
     {% endwith %}
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial answer_buttons %}
+{% partialdef answer_buttons %}
     <input id="p{{ target_problem.id }}_answer{{ i }}" type="radio"
            class="btn-check" name="answer" value="{{ i }}"/>
     <label class="btn btn-circle btn-sm fs-6 mx-1 my-2
            {% if i|add:0 == target_answer %}btn-secondary
            {% else %} btn-outline-secondary{% endif %}"
            for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial submit_button %}
+{% partialdef submit_button %}
     <form class="ms-auto me-auto">
         {% csrf_token %}
         <input type="text" name="exam" value="{{ exam.id }}" aria-label="Exam ID" hidden/>
@@ -115,4 +115,4 @@
             최종 답안 제출
         </button>
     </form>
-{% endpartial %}
+{% endpartialdef %}

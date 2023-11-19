@@ -4,7 +4,7 @@
 
 
 <nav>
-    <div class="nav nav-tabs" id="scoreSheetTab" role="tablist">
+    <div class="nav nav-tabs nav-tabs-bordered" id="scoreSheetTab" role="tablist">
         {% #nav_tab prefix='my' id='0' %}
             내 성적
         {% /nav_tab %}
@@ -63,7 +63,7 @@
 {# ################# #}
 
 {# Score thead1 partial #}
-{% startpartial score_thead1 %}
+{% partialdef score_thead1 %}
     <thead>
         <tr class="text-center align-middle table-warning">
            <th class="col-1">과목</th>
@@ -74,10 +74,10 @@
            <th class="col-1">직렬 석차(%)</th>
         </tr>
     </thead>
-{% endpartial score_thead1 %}
+{% endpartialdef score_thead1 %}
 
 {# Score thead2 partial #}
-{% startpartial score_thead2 %}
+{% partialdef score_thead2 %}
     <thead>
         <tr class="text-center align-middle table-warning">
            <th class="col-1">과목</th>
@@ -88,7 +88,7 @@
            <th class="col-1">평균 점수(점)</th>
         </tr>
     </thead>
-{% endpartial score_thead2 %}
+{% endpartialdef score_thead2 %}
 
 
 {# ################# #}
@@ -96,7 +96,7 @@
 {# ################# #}
 
 {# My score tbody partial #}
-{% startpartial my_score %}
+{% partialdef my_score %}
     <tbody>
         <tr class="text-center">
             <th class="text-nowrap">언어논리</th>
@@ -141,10 +141,10 @@
             </tr>
         {% endif %}
     </tbody>
-{% endpartial my_score %}
+{% endpartialdef my_score %}
 
 {# Score statistics tbody partial #}
-{% startpartial score_statistics %}
+{% partialdef score_statistics %}
     <tbody>
         <tr class="text-center">
             <th class="text-nowrap">언어논리</th>
@@ -189,10 +189,10 @@
             </tr>
         {% endif %}
     </tbody>
-{% endpartial score_statistics %}
+{% endpartialdef score_statistics %}
 
 {# Error message tbody partial #}
-{% startpartial error_message %}
+{% partialdef error_message %}
     <tbody>
         <tr class="text-center align-middle">
            <th colspan="6" class="text-danger fs-6 py-4">
@@ -200,4 +200,4 @@
            </th>
         </tr>
     </tbody>
-{% endpartial %}
+{% endpartialdef %}

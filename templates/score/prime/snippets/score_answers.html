@@ -4,24 +4,22 @@
 {% load slippers %}
 
 <nav>
-    <div class="nav nav-tabs" id="scoreAnswersTab" role="tablist">
+    <div class="nav nav-tabs nav-tabs-bordered" id="scoreAnswersTab" role="tablist">
         {% #nav_tab prefix='eoneo_answers' id='0' %}
-            {{ icon_subject.언어|safe }} 언어
+            <div class="px-2">{{ icon_subject.언어|safe }} 언어</div>
         {% /nav_tab %}
 
         {% #nav_tab prefix='jaryo_answers' id='1' %}
-            {{ icon_subject.자료|safe }} 자료
+            <div class="px-2">{{ icon_subject.자료|safe }} 자료</div>
         {% /nav_tab %}
 
         {% #nav_tab prefix='sanghwang_answers' id='2' %}
-            {{ icon_subject.상황|safe }} 상황
+            <div class="px-2">{{ icon_subject.상황|safe }} 상황</div>
         {% /nav_tab %}
 
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {% #nav_tab prefix='heonbeob_answers' id='3' %}
-                {{ icon_subject.헌법|safe }} 헌법
-            {% /nav_tab %}
-        {% endif %}
+        {% #nav_tab prefix='heonbeob_answers' id='3' %}
+            <div class="px-2">{{ icon_subject.헌법|safe }} 헌법</div>
+        {% /nav_tab %}
     </div>
 </nav>
 <div class="tab-content" id="scoreAnswersContent">
@@ -55,21 +53,19 @@
         {% endif %}
     {% /nav_content %}
 
-    {% if heonbeob_answer %}
-        {% #nav_content prefix='heonbeob_answers' id='3' %}
-            {% if heonbeob_answer %}
-                {% #responsive_table %}
-                    {% with answers=heonbeob_answer answer_rates=heonbeob_rates %}
-                        {% partial confirmed_answer_table %}
-                    {% endwith %}
-                {% /responsive_table %}
-            {% endif %}
-        {% /nav_content %}
-    {% endif %}
+    {% #nav_content prefix='heonbeob_answers' id='3' %}
+        {% if heonbeob_answer %}
+            {% #responsive_table %}
+                {% with answers=heonbeob_answer answer_rates=heonbeob_rates sub='헌법' %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% endif %}
+    {% /nav_content %}
 </div>
 
 
-{% startpartial confirmed_answer_table %}
+{% partialdef confirmed_answer_table %}
     <tbody>
         {% with loop_counter=10 loop_min=0 loop_max=10 %}
             {% partial answer_table_tr %}
@@ -77,7 +73,7 @@
         {% with loop_counter=10 loop_min=10 loop_max=20 %}
             {% partial answer_table_tr %}
         {% endwith %}
-        {% if ex == '칠급' %}
+        {% if ex == '칠급' or sub == '헌법' %}
             {% with loop_counter=5 loop_min=20 loop_max=25 %}
                 {% partial answer_table_tr %}
             {% endwith %}
@@ -90,10 +86,10 @@
             {% endwith %}
         {% endif %}
     </tbody>
-{% endpartial confirmed_answer_table %}
+{% endpartialdef confirmed_answer_table %}
 
 
-{% startpartial answer_table_tr %}
+{% partialdef answer_table_tr %}
     <tr class="text-center table-warning">
         <td></td>
         {% for _ in 'x'|ljust:loop_counter %}
@@ -137,135 +133,4 @@
             {% endif %}
         {% endfor %}
     </tr>
-{% endpartial answer_table_tr %}
-
-
-{% startpartial temporary_answer_table %}
-    <div class="col-12 d-flex align-items-center justify-content-between pt-3 pb-2">
-        {% partial submit_button %}
-    </div>
-    <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
-        <div class="col-md-6 col-lg-4 justify-content-center pb-2">
-        {% for problem in problems %}
-            <div class="col-12 justify-content-center">
-                {% if student %}
-                    {% partial form %}
-                {% else %}
-                    {% partial no_student %}
-                {% endif %}
-            </div>
-            {% if forloop.counter|divisibleby:5 %}
-        <hr/>
-        </div>
-                {% if not forloop.last %}
-        <div class="col-md-6 col-lg-4 justify-content-center pb-2">
-                {% endif %}
-            {% endif %}
-        {% endfor %}
-    </div>
-    <div class="col-12 d-flex align-items-center justify-content-between">
-        {% partial submit_button %}
-    </div>
-{% endpartial temporary_answer_table %}
-
-
-{% startpartial form %}
-    <form>
-        <input type="text" name="sub" value="{{ problem.psat.subject.abbr }}" aria-label="Subject" hidden/>
-        <div class="d-flex justify-content-center align-content-center">
-            <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-                <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
-                    문 {{ problem.number|add_0 }}.
-                </a>
-            </p>
-            <div id="p{{ problem.id }}_answer" class="d-flex justify-content-center align-content-center me-3"
-                 hx-post="{% url 'score_v2:submit' problem.id %}" hx-swap="innerHTML"
-                 hx-include="#p{{ problem.id }}_answer>input[name='answer']:checked"
-                 hx-include="#p{{ problem.id }}" hx-target="this" hx-trigger="change">
-                {% partial initial_form %}
-            </div>
-        </div>
-    </form>
-{% endpartial form %}
-
-
-{% startpartial initial_form %}
-    {% with target_answer=problem.submitted_answer target_problem=problem %}
-        {% if subject == 'heonbeob' or sub == '헌법' %}
-            {% for i in '1234' %}
-                {% partial answer_buttons %}
-            {% endfor %}
-        {% else %}
-            {% for i in '12345' %}
-                {% partial answer_buttons %}
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-{% endpartial initial_form %}
-
-
-{% startpartial scored_form %}
-    {% with target_answer=scored.answer target_problem=scored.problem %}
-        {% if subject == 'heonbeob' or sub == '헌법' %}
-            {% for i in '1234' %}
-                {% partial answer_buttons %}
-            {% endfor %}
-        {% else %}
-            {% for i in '12345' %}
-                {% partial answer_buttons %}
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-{% endpartial scored_form %}
-
-
-{% startpartial answer_buttons %}
-    <input id="p{{ target_problem.id }}_answer{{ i }}" type="radio"
-           class="btn-check" name="answer" value="{{ i }}"/>
-    <label class="btn btn-circle btn-sm fs-6 mx-1 my-2
-           {% if i|add:0 == target_answer %}btn-secondary
-           {% else %} btn-outline-secondary{% endif %}"
-           for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
-{% endpartial answer_buttons %}
-
-
-{% startpartial submit_button %}
-    <form class="ms-auto me-auto">
-        <input type="text" name="year" value="{{ year }}" aria-label="Year" hidden/>
-        <input type="text" name="ex" value="{{ ex }}" aria-label="Exam" hidden/>
-        <input type="text" name="psat_id" value="{{ problems.0.psat.id }}" aria-label="PSAT ID" hidden/>
-        <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
-                hx-post="{% url 'score_v2:confirm_modal' %}" hx-swap="innerHTML" hx-trigger="click"
-                data-bs-toggle="modal" data-bs-target="#modalContainer">
-            최종 답안 제출
-        </button>
-    </form>
-{% endpartial submit_button %}
-
-
-{% startpartial no_student %}
-    <div class="d-flex justify-content-center align-content-center">
-        <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-            <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
-                문 {{ problem.number|add_0 }}.
-            </a>
-        </p>
-        <div class="d-flex justify-content-center align-content-center me-3">
-            {% if subject == 'heonbeob' %}
-                {% for i in '1234' %}
-                    <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score_v2:no_student_modal' %}" hx-swap="innerHTML"
-                         hx-target="#modalContainer" data-bs-toggle="modal"
-                         data-bs-target="#modalContainer">{{ i }}</div>
-                {% endfor %}
-            {% else %}
-                {% for i in '12345' %}
-                    <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score_v2:no_student_modal' %}" hx-swap="innerHTML"
-                         hx-target="#modalContainer" data-bs-toggle="modal"
-                         data-bs-target="#modalContainer">{{ i }}</div>
-                {% endfor %}
-            {% endif %}
-        </div>
-    </div>
-{% endpartial no_student %}
+{% endpartialdef answer_table_tr %}

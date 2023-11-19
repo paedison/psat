@@ -12,7 +12,7 @@
 
 
 {# Partial Template for POST request #}
-{% startpartial list_main %}
+{% partialdef list_main %}
     <section>
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
@@ -20,11 +20,11 @@
         </div><!-- End Page Title -->
         {% partial list_content %}
     </section><!-- End Main Content -->
-{% endpartial %}
+{% endpartialdef %}
 
 
 {# Partial Template for HTMX request #}
-{% startpartial list_content %}
+{% partialdef list_content %}
     <section class="section htmx-fade-out">
     {% #content_row class3='p-4' %}
         <div class="p-0 my-2 d-flex justify-content-between">
@@ -49,4 +49,4 @@
         {{ calendar }}
     {% /content_row %}
     </section>
-{% endpartial %}
+{% endpartialdef %}

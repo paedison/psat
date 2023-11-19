@@ -7,61 +7,48 @@
 
 {% block head_title %}{{ title }}{% endblock head_title %}
 
-{% block main %}{% partial list_main %}{% endblock %}
-
-{# List main partial #}
-{% startpartial list_main %}
-    {{ info|json_script:'info' }}
-    <div class="pagetitle my-2">
-        <h1>{{ icon|safe }} {{ title }}
-            <span class="fs-6 text-bg-primary">{{ sub_title }}</span>
-        </h1>
-    </div><!-- Page Title End -->
-    {% partial list_content %}
-{% endpartial list_main %}
-
-
-{# ################## #}
-{# List content start #}
-{# ################## #}
-
-{# List content partial #}
-{% startpartial list_content %}
-    <section class="section htmx-fade-in htmx-fade-out"
-             hx-target="#main" hx-swap="innerHTML swap:0.25s">
-    {% #content_row class3='p-4' %}
-        <div class="row mx-0 mb-4">
-            <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
-               hx-post="{% url 'score_prime:list' %}" hx-target="#main"
-               hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
-                {{ icon_nav.list|safe }}
-            </a>
-        </div>
-        <div class="mb-4">
-            {% partial student_info %}
-        </div>
-        <div class="mb-4">
-            {% include 'score/prime/snippets/score_chart.html' %}
-        </div>
-        <div class="mb-4">
-            {% include 'score/prime/snippets/score_sheet.html' %}
-        </div>
-        <div class="mb-4">
-            {% include 'score/prime/snippets/score_answers.html' %}
-        </div>
-    {% /content_row %}
-    </section>
-{% endpartial %}
+{% block main %}
+    {% partialdef list_main inline=True %}
+        {{ info|json_script:'info' }}
+        <div class="pagetitle my-2">
+            <h1>{{ icon|safe }} {{ title }}
+                <span class="fs-6 text-bg-primary">{{ sub_title }}</span>
+            </h1>
+        </div><!-- Page Title End -->
+        <section class="section htmx-fade-in htmx-fade-out"
+                 hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        {% #content_row class3='p-4' %}
+            <div class="row justify-content-between mx-0 mb-4">
+                <a class="btn btn-circle btn-sm btn-outline-secondary" title="Score List"
+                   href="{% url 'score_prime:list' %}" hx-post="{% url 'score_prime:list' %}">
+                    {{ icon_nav.list|safe }}
+                </a>
+                <a class="btn btn-circle btn-sm btn-outline-secondary" title="Score sheet for print"
+                   href="{% url 'score_prime:print' year round %}" target="_blank">
+                    {{ icon_nav.print|safe }}
+                </a>
+            </div>
+            <div class="mb-4">
+                {% partial student_info %}
+            </div>
+            <div class="mb-4">
+                {% include 'score/prime/snippets/score_chart.html' %}
+            </div>
+            <div class="mb-4">
+                {% include 'score/prime/snippets/score_sheet.html' %}
+            </div>
+            <div class="mb-4">
+                {% include 'score/prime/snippets/score_answers.html' %}
+            </div>
+        {% /content_row %}
+        </section>
+    {% endpartialdef list_main %}
+{% endblock main %}
 
 
-{# ################## #}
-{# Student info start #}
-{# ################## #}
-
-{# Student info partial #}
-{% startpartial student_info %}
+{% partialdef student_info %}
     <nav>
-        <div class="nav nav-tabs" id="studentInfoTab" role="tablist">
+        <div class="nav nav-tabs nav-tabs-bordered" id="studentInfoTab" role="tablist">
             {% #nav_tab prefix='my' id='0' %}
                 수험정보
             {% /nav_tab %}
@@ -71,13 +58,22 @@
         {% #nav_content prefix='info' id='0' %}
             {% #responsive_table %}
                 <tbody>
-                    <tr>
-                        <td class="col-1">응시번호 : {{ student.serial }}</td>
-                        <td class="col-1">이름 : {{ student.name }}</td>
-                        <td class="col-1">응시직렬 : {{ student.department.name }}</td>
+                    <tr class="d-table-row d-md-none">
+                        <td>
+                            <p class="mb-1">응시번호 : {{ student.serial }}</p>
+                            <p class="mb-1">직렬 : {{ student.department.name }}</p>
+                            <p class="mb-1">이름 : {{ student.name }}</p>
+                        </td>
+                    </tr>
+                    <tr class="d-none d-md-table-row">
+                        <td class="d-flex justify-content-between">
+                            <span>응시번호 : {{ student.serial }}</span>
+                            <span>직렬 : {{ student.department.name }}</span>
+                            <span>이름 : {{ student.name }}</span>
+                        </td>
                     </tr>
                 </tbody>
             {% /responsive_table %}
         {% /nav_content %}
     </div>
-{% endpartial student_info %}
+{% endpartialdef student_info %}

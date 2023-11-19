@@ -56,7 +56,7 @@
 </div>
 
 
-{% startpartial answer_table %}
+{% partialdef answer_table %}
     <tbody>
         {% with loop_counter=10 loop_min=0 loop_max=10 %}
             {% partial answer_table_tr %}
@@ -77,10 +77,10 @@
             {% endwith %}
         {% endif %}
     </tbody>
-{% endpartial answer_table %}
+{% endpartialdef answer_table %}
 
 
-{% startpartial answer_table_tr %}
+{% partialdef answer_table_tr %}
     <tr class="text-center table-warning">
         <td></td>
         {% for _ in 'x'|ljust:loop_counter %}
@@ -124,4 +124,4 @@
             {% endif %}
         {% endfor %}
     </tr>
-{% endpartial answer_table_tr %}
+{% endpartialdef answer_table_tr %}

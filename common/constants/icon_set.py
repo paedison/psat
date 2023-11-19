@@ -19,7 +19,7 @@ class ConstantIconSet:
         'logout': '<i class="fa-solid fa-sign-out-alt fa-fw"></i>',
         'search': '<i class="fa-solid fa-magnifying-glass fa-fw"></i>',
         'tag': '<i class="fa-solid fa-tag fa-fw"></i>',
-        'study': '<i class="fa-solid fa-tag fa-fw"></i>'
+        'study': '<i class="fa-solid fa-tag fa-fw"></i>',
     }
 
     BOARD_ICON_SET = {
@@ -82,6 +82,7 @@ class ConstantIconSet:
         'prev_prob': '<i class="fa-solid fa-arrow-up"></i>',
         'next_prob': '<i class="fa-solid fa-arrow-down"></i>',
         'list': '<i class="fa-solid fa-list"></i>',
+        'print': '<i class="fa-solid fa-print"></i>',
     }
     ICON_MENU = {
         'psat': '<i class="fa-solid fa-layer-group fa-fw"></i>',

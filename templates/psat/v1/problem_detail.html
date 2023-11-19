@@ -10,7 +10,7 @@
 {% block main %}{% partial detail_main %}{% endblock %}
 
 
-{% startpartial detail_main %}
+{% partialdef detail_main %}
     <section>
         {{ info|json_script:'info' }}
         <div class="pagetitle my-2">
@@ -40,10 +40,10 @@
         {% /content_row %}
         </section>
     </section><!-- Main Content End -->
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial thead %}
+{% partialdef thead %}
     <tr>
         <th class="p-0">
             {% if problem.image_file.tag1 == 'Preparing Image' %}
@@ -58,10 +58,10 @@
             {% endif %}
         </th>
     </tr>
-{% endpartial %}
+{% endpartialdef %}
 
 
-{% startpartial tbody %}
+{% partialdef tbody %}
     <tr>
         <td class="px-0">
             <div class="d-flex justify-content-end pb-2">
@@ -104,4 +104,4 @@
             </td>
         </tr>
     {% endif %}
-{% endpartial %}
+{% endpartialdef %}
