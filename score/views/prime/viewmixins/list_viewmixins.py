@@ -39,7 +39,8 @@ class ScoreListViewMixin(
 
         for obj in page_obj:
             student = self.get_student(obj)
-            student.psat_average = student.psat_score / 3
+            if student:
+                student.psat_average = student.psat_score / 3
             obj['student'] = student
         return page_obj, page_range
 

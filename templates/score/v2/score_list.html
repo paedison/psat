@@ -82,6 +82,9 @@
                     <td class="text-nowrap p-2">
                         {% partial create_student %}
                     </td>
+                    <td class="text-nowrap p-2">
+                        {% partial create_student %}
+                    </td>
                 {% endif %}
                 <td class="text-nowrap p-2">
                     {% if obj.is_completed %}
@@ -106,8 +109,6 @@
                 <td class="text-nowrap p-2">
                     {% if obj.heonbeob %}
                         {% with target=obj.heonbeob %}{% partial process_badge %}{% endwith %}
-                    {% else %}
-
                     {% endif %}
                 </td>
             </tr>
