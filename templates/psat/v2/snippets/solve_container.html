@@ -25,7 +25,6 @@
         <input type="text" name="problem_id" value="{{ problem.id }}" aria-label="Problem ID" hidden/>
         <a class="btn btn-circle btn-success btn-sm fs-6"
            hx-post="{% url 'psat_v2:solve_modal' %}?problem_id={{ problem.id }}"
-           hx-
            hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
            data-bs-toggle="modal" data-bs-target="#modalContainer">
             <i class="fa-solid fa-check"></i>

@@ -7,24 +7,32 @@
 {% block head_title %}{{ info.title }}{% endblock head_title %}
 
 {% block main %}
-    {% partial list_main %}
-{% endblock %}
-
-
-{# Partial Template for POST request #}
-{% partialdef list_main %}
-    <section>
-        <div class="pagetitle my-2">
-            <a hx-target="section .section" href="" title="{{ info.menu|capfirst }}"
-               hx-boost="true" hx-swap="outerHTML swap:0.25s"
-               hx-get="{{ info.post_list_navigation_url }}"
-               hx-push-url="{{ info.post_list_url }}">
-                <h1>{{ info.icon|safe }} {{ info.menu|capfirst }}</h1>
-            </a>
+    {% partialdef list_main inline=True %}
+        <div class="pagetitle">
+            <h1>
+                <a hx-target="section .section" href="" title="{{ info.menu|capfirst }}"
+                   hx-boost="true" hx-swap="outerHTML swap:0.25s"
+                   hx-get="{{ info.post_list_navigation_url }}"
+                   hx-push-url="{{ info.post_list_url }}">
+                    {{ info.menu|title }}
+                </a>
+                <span class="fs-6 text-secondary">{{ title }}</span>
+            </h1>
+            <nav>
+                <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ info.menu|title }}</li>
+                </ol>
+            </nav>
         </div><!-- Page Title End -->
-        {% partial navigation %}
-    </section><!-- Main Content End -->
-{% endpartialdef %}
+
+        <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            {% partial navigation %}
+        </section><!-- Main Content End -->
+    {% endpartialdef %}
+{% endblock %}
 
 
 {# Partial Template for HTMX request #}
@@ -33,7 +41,7 @@
         {{ info|json_script:'info' }}
         {% #content_row class3='p-4' %}
             <nav>
-                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <div class="nav nav-tabs nav-tabs-bordered" id="nav-tab" role="tablist">
                     {% #nav_tab id='0' %}
                         {{ PSAT_ICON_SET.all|safe }} 전체
                     {% /nav_tab %}
@@ -45,7 +53,7 @@
                                     data-bs-target="#navContent{{ category.choice }}"
                                     aria-controls="navContent{{ c }}"
                                     aria-selected="{% if not category.choice %}true{% else %}false{% endif %}">
-                                <span class="fw-bold small text-primary"
+                                <span class="fw-bold text-primary"
                                       hx-get="{{ category.url }}" hx-swap="innerHtml"
                                       hx-target="#navContent{{ category.choice }}"
                                       hx-trigger="load delay:0.5*{{ category.choice }}s">

@@ -7,13 +7,13 @@ app_name = 'psat_v2'
 urlpatterns = [
     # List Views [view_type: problem, like, rate, solve, search]
     path('', list_views.base_view, name='base'),
-    path('list/<str:view_type>/', list_views.base_view, name='list'),
+    path('<str:view_type>/', list_views.base_view, name='list'),
 
     # Detail Views [view_type: problem, like, rate, solve]
-    path('detail/<str:view_type>/<int:problem_id>/', detail_views.base_view, name='detail'),
+    path('<str:view_type>/<int:problem_id>/', detail_views.base_view, name='detail'),
 
     # Custom Update [view_type: like, rate, solve]
-    path('update/<str:view_type>/<int:problem_id>', detail_views.custom_update_view, name='custom'),
+    path('update/<str:view_type>/<int:problem_id>/', detail_views.custom_update_view, name='custom'),
     path('update/rate/modal/', detail_views.rate_modal_view, name='rate_modal'),
     path('update/solve/modal/', detail_views.solve_modal_view, name='solve_modal'),
 

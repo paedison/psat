@@ -5,7 +5,7 @@ from score.views.v2 import list_views, detail_views, modal_views
 app_name = 'score_v2'
 
 urlpatterns = [
-    path('list/', list_views.base_view, name='list'),
+    path('', list_views.base_view, name='list'),
 
     path('detail/', detail_views.base_view, name='detail'),
     path('detail/<int:year>/<str:ex>/', detail_views.base_view, name='detail_year_ex'),

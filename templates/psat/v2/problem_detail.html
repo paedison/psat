@@ -10,23 +10,43 @@
 {% block main %}
     {% partialdef detail_main inline=True %}
         {{ info|json_script:'info' }}
-        <div class="pagetitle my-2">
-            <div class="d-flex align-items-center pb-2 fs-6">
-                <div>
-                    {% partial nav_container %}
-                </div>
-                <div class="small">
-                    {% include 'psat/v2/snippets/icon_container.html' %}
-                </div>
-            </div>
-            <h1>
-                {{ problem.psat.year }}년 '{{ problem.psat.exam.name }}' {{ problem.psat.subject.name }} {{ problem.number }}번
+        <div class="pagetitle">
+            <h1>PSAT
+                <span class="fs-6 text-secondary">{{ problem.psat.year }}년 {{ problem.psat.exam.name }} {{ problem.psat.subject.name }} {{ problem.number }}번</span>
             </h1>
+            <nav>
+                <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">PSAT</li>
+                    <li class="breadcrumb-item">{{ info.view_type|title }}</li>
+                    <li class="breadcrumb-item active">{{ problem.psat.year }}{{ problem.psat.exam.abbr }}{{ problem.psat.subject.abbr }}-{{ problem.number|add_0 }}</li>
+                </ol>
+            </nav>
         </div><!-- Page Title End -->
 
         <section class="section">
-        {% #content_row %}
-            <table class="table my-4">
+        {% #content_row class1='col-12' %}
+            <h5 class="card-title mb-0">
+                <div class="row">
+                    <div class="d-flex align-items-center fs-6">
+                        <div class="d-flex align-items-center">
+                            {% partial nav_container %}
+                            <div class="small text-nowrap me-auto">
+                                {% include 'psat/v2/snippets/icon_container.html' %}
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-2 d-none d-sm-inline-block ms-auto">
+                            {% include 'psat/v2/snippets/solve_container.html' %}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-2 d-sm-none">
+                        {% include 'psat/v2/snippets/solve_container.html' %}
+                    </div>
+                </div>
+            </h5>
+            <table class="table">
                 <thead>{% partial thead %}</thead>
                 <tbody>{% partial tbody %}</tbody>
             </table>
@@ -41,7 +61,7 @@
 
 {# Navigation container partial #}
 {% partialdef nav_container %}
-    <article id="detail_nav_container" class="input-group me-2"
+    <article id="detail_nav_container" class="flex-nowrap input-group me-2"
              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
         <a id="problem_list" class="btn btn-{{ info.color }}" href=""
            hx-get="{% url 'psat_v2:list' info.view_type %}">
@@ -183,9 +203,6 @@
 {% partialdef tbody %}
     <tr>
         <td class="px-0">
-            <div class="d-flex justify-content-end pb-2">
-                {% include 'psat/v2/snippets/solve_container.html' %}
-            </div>
             <div class="d-flex flex-wrap align-items-start justify-content-start">
                 {% with image=problem.image_file %}
                     {% if image.tag1 == 'Preparing Image' %}

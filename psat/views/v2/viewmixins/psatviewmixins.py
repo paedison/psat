@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from common.constants.icon_set import ConstantIconSet
 from psat.models import Open, Like, Rate, Solve, Memo, Tag
 from reference.models.base_models import Exam, Subject
-from reference.models.psat_models import PsatProblem
+from reference.models.psat_models import Psat, PsatProblem
 from dashboard.models.psat_data_models import (
     PsatOpenLog,
     PsatLikeLog,
@@ -218,29 +218,36 @@ class PsatListViewMixIn(
     @property
     def title(self) -> str:
         title_dict = {
-            'problem': 'PSAT 기출문제',
-            'like': 'PSAT 즐겨찾기',
-            'rate': 'PSAT 난이도',
-            'solve': 'PSAT 정답확인',
-            'search': 'PSAT 검색 결과',
+            'problem': '기출문제',
+            'like': '즐겨찾기',
+            'rate': '난이도',
+            'solve': '정답확인',
+            'search': '검색 결과',
         }
         return title_dict[self.view_type]
 
     @property
     def sub_title(self):
-        exam_list = dict(Exam.objects.filter(category__name='PSAT').values_list('abbr', 'label'))
-        subject_list = dict(Subject.objects.filter(category__name='PSAT').values_list('abbr', 'name'))
+        psat_filter = Q()
+        if self.year:
+            psat_filter &= Q(year=self.year)
+        if self.ex:
+            psat_filter &= Q(exam__abbr=self.ex)
+        if self.sub:
+            psat_filter &= Q(subject__abbr=self.sub)
+        psat = Psat.objects.filter(psat_filter).select_related('exam', 'subject').first()
+
         title_parts = []
         sub_title = ''
         if self.view_type == 'problem':
             if self.year or self.ex or self.sub:
                 if self.year != '':
-                    title_parts.append(f'{self.year}년')
+                    title_parts.append(f'{psat.year}년')
                 if self.ex != '':
-                    title_parts.append(f'"{exam_list[self.ex]}"')
+                    title_parts.append(psat.exam.name)
                 if self.sub != '':
-                    title_parts.append(subject_list[self.sub])
-                sub_title = f'[{" ".join(title_parts)}]'
+                    title_parts.append(psat.subject.name)
+                sub_title = f'{" ".join(title_parts)} PSAT 기출문제'
         return sub_title
 
     ##################
