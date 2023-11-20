@@ -276,11 +276,9 @@ div.td-div-xl {
     }
 }
 
-@media print {
-    .chart-container {
-        display: flex;
-        justify-content: center;
-        width: 1000px;
-        height: 500px;
-    }
+.chart-container.print {
+    display: flex;
+    justify-content: center;
+    width: 1000px;
+    height: 500px;
 }

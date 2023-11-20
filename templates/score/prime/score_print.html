@@ -5,22 +5,24 @@
 {% load partials %}
 {% load slippers %}
 
-{% block head_title %}{{ title }}{% endblock head_title %}
+{% block head_title %}{{ student.serial }}_{{ student.department.name }}_{{ student.name }}_제{{ round }}회_전국모의고사_성적표{% endblock head_title %}
 
 {% block html_body %}
 <body class="bg-white">
     {{ info|json_script:'info' }}
     <h2 class="fw-bold text-center mb-4">{{ sub_title }} 성적표</h2>
-        <div class="mb-2">
-            {% partial student_info %}
-        </div>
-        <div class="mb-2">
-            {% partial score_sheet %}
-        </div>
-        <div class="mb-2">
-            {% partial score_answers %}
-        </div>
-        {% include 'score/v2/snippets/score_chart.html#chart_canvas' %}
+    <div class="mb-2">
+        {% partial student_info %}
+    </div>
+    <div class="mb-2">
+        {% partial score_sheet %}
+    </div>
+    <div class="mb-2">
+        {% partial score_answers %}
+    </div>
+    <div class="table-responsive">
+        {% include 'score/v2/snippets/score_chart.html#chart_canvas' with print_class='print' %}
+    </div>
 
     {# Student info partial #}
     {% partialdef student_info %}
