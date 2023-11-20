@@ -52,7 +52,7 @@ class BaseView(
             'info': info,
             'year': self.year,
             'round': self.round,
-            'title': '프라임 모의고사',
+            'title': 'Score',
             'sub_title': exam_name['sub_title'],
             'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
 

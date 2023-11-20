@@ -262,8 +262,7 @@ div.td-div-xl {
         margin: auto;
         width: 80vw;
         max-width: 800px;
-        height: 50vh;
-        max-height: 400px;
+        height: 100vh;
     }
 }
 

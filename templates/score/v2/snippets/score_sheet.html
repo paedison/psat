@@ -5,17 +5,9 @@
 
 <nav>
     <div class="nav nav-tabs nav-tabs-bordered" id="scoreSheetTab" role="tablist">
-        {% #nav_tab prefix='my' id='0' %}
-            내 성적
-        {% /nav_tab %}
-
-        {% #nav_tab prefix='all' id='1' %}
-            전체 기준
-        {% /nav_tab %}
-
-        {% #nav_tab prefix='department' id='2' %}
-            직렬 기준
-        {% /nav_tab %}
+        {% #nav_tab prefix='my' id='0' %}내 성적{% /nav_tab %}
+        {% #nav_tab prefix='all' id='1' %}전체 기준{% /nav_tab %}
+        {% #nav_tab prefix='department' id='2' %}직렬 기준{% /nav_tab %}
     </div>
 </nav>
 <div class="tab-content" id="scoreSheetContent">
@@ -65,7 +57,20 @@
 {# Score thead1 partial #}
 {% partialdef score_thead1 %}
     <thead>
-        <tr class="text-center align-middle table-warning">
+        <tr class="d-table-row d-md-none text-center align-middle table-warning">
+            <th class="text-nowrap" rowspan="2">과목</th>
+            <th class="text-nowrap" rowspan="2">내 점수<br/>(점)</th>
+            <th class="p-1" colspan="2">전체 석차</th>
+            <th class="p-1" colspan="2">직렬 석차</th>
+        </tr>
+        <tr class="d-table-row d-md-none text-center align-middle table-warning">
+            <th class="p-1">(등)</th>
+            <th class="p-1">(%)</th>
+            <th class="p-1">(등)</th>
+            <th class="p-1">(%)</th>
+        </tr>
+
+        <tr class="d-none d-md-table-row text-center align-middle table-warning">
            <th class="col-1">과목</th>
            <th class="col-1">내 점수(점)</th>
            <th class="col-1">전체 석차(등)</th>
@@ -79,7 +84,16 @@
 {# Score thead2 partial #}
 {% partialdef score_thead2 %}
     <thead>
-        <tr class="text-center align-middle table-warning">
+        <tr class="d-table-row d-md-none text-center align-middle table-warning">
+            <th class="text-nowrap">과목</th>
+            <th class="text-nowrap">내 점수</th>
+            <th class="text-nowrap">최고<br/>점수</th>
+            <th class="text-nowrap">상위<br/>10%</th>
+            <th class="text-nowrap">상위<br/>20%</th>
+            <th class="text-nowrap">평균<br/>점수</th>
+        </tr>
+
+        <tr class="d-none d-md-table-row text-center align-middle table-warning">
            <th class="col-1">과목</th>
            <th class="col-1">내 점수(점)</th>
            <th class="col-1">최고 점수(점)</th>

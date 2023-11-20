@@ -10,8 +10,19 @@
 {% block main %}
     {% partialdef list_main inline=True %}
         {{ info|json_script:'info' }}
-        <div class="pagetitle my-2">
-            <h1>{{ icon|safe }} {{ title }}</h1>
+        <div class="pagetitle">
+            <h1>{{ title }}
+                <span class="fs-6 text-secondary">기출문제 성적표</span>
+            </h1>
+            <nav>
+                <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">Score</li>
+                    <li class="breadcrumb-item active">PSAT</li>
+                </ol>
+            </nav>
         </div><!-- Page Title End -->
 
         <section class="section htmx-fade-in htmx-fade-out"

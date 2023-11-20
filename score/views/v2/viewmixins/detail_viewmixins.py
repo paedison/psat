@@ -113,9 +113,22 @@ class ScoreResultVariableMixin(ScoreModelVariableSet):
                         problem__psat__subject__abbr=sub)
                 .annotate(result=Case(
                     When(problem__answer=F('answer'), then=Value('O')),
-                    default=Value('X'), output_field=CharField()))
-                .values('problem__number', 'problem__answer', 'answer', 'result')
+                    default=Value('X'), output_field=CharField()),
+                    number=F('problem__number'),
+                    correct_answer=F('problem__answer'),
+                    student_answer=F('answer'),
+                )
+                .values('number', 'correct_answer', 'student_answer', 'result')
             )
+            # return (
+            #     self.confirmed_model.objects
+            #     .filter(user_id=self.user_id, problem__psat_id__in=psat_ids,
+            #             problem__psat__subject__abbr=sub)
+            #     .annotate(result=Case(
+            #         When(problem__answer=F('answer'), then=Value('O')),
+            #         default=Value('X'), output_field=CharField()))
+            #     .values('problem__number', 'problem__answer', 'answer', 'result')
+            # )
 
         def get_problems(sub: str):
             try:
@@ -312,8 +325,11 @@ class ScoreResultVariableMixin(ScoreModelVariableSet):
             self.answer_count_model.objects
             .filter(problem__psat_id__in=self.psat_ids, problem__psat__subject__abbr=sub)
             .order_by('problem__id')
-            .annotate(correct=Case(case(1), case(2), case(3), case(4), case(5), default=0.0))
-            .values('problem__number', 'correct')
+            .annotate(
+                correct=Case(case(1), case(2), case(3), case(4), case(5), default=0.0),
+                number=F('problem__number')
+            )
+            .values('number', 'correct')
         )
 
     def get_status(self):

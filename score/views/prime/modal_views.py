@@ -14,7 +14,7 @@ class NoStudentModalView(
     TemplateView
 ):
     """ Represent modal view when there is no PSAT student data. """
-    template_name = 'score/prime/snippets/score_modal.html#no_student_modal'
+    template_name = 'score/prime/score_modal.html#no_student_modal'
     login_url = settings.LOGIN_URL
 
 
@@ -24,7 +24,7 @@ class StudentConnectModalView(
     TemplateView
 ):
     """ Represent modal view for creating PSAT student data. """
-    template_name = 'score/prime/snippets/score_modal.html#student_connect'
+    template_name = 'score/prime/score_modal.html#student_connect'
     login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:

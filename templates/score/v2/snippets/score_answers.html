@@ -5,22 +5,11 @@
 
 <nav>
     <div class="nav nav-tabs nav-tabs-bordered" id="scoreAnswersTab" role="tablist">
-        {% #nav_tab prefix='eoneo_answers' id='0' %}
-            {{ icon_subject.언어|safe }} 언어
-        {% /nav_tab %}
-
-        {% #nav_tab prefix='jaryo_answers' id='1' %}
-            {{ icon_subject.자료|safe }} 자료
-        {% /nav_tab %}
-
-        {% #nav_tab prefix='sanghwang_answers' id='2' %}
-            {{ icon_subject.상황|safe }} 상황
-        {% /nav_tab %}
-
+        {% #nav_tab prefix='eoneo_answers' id='0' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
+        {% #nav_tab prefix='jaryo_answers' id='1' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
+        {% #nav_tab prefix='sanghwang_answers' id='2' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
         {% if heonbeob_answer or heonbeob_temporary %}
-            {% #nav_tab prefix='heonbeob_answers' id='3' %}
-                {{ icon_subject.헌법|safe }} 헌법
-            {% /nav_tab %}
+            {% #nav_tab prefix='heonbeob_answers' id='3' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
         {% endif %}
     </div>
 </nav>
@@ -124,7 +113,7 @@
             {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
                 <td>
                     <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                        {{ answer.problem__answer }}</button>
+                        {{ answer.correct_answer }}</button>
                 </td>
             {% endif %}
         {% endfor %}
@@ -136,7 +125,7 @@
                 <td>
                     <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
                         btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
-                        {{ answer.answer }}</button>
+                        {{ answer.student_answer }}</button>
                 </td>
             {% endif %}
         {% endfor %}
@@ -146,7 +135,7 @@
         {% for answer_rate in answer_rates %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
                 <td>
-                    <span data-number="{{ answer_rate.problem__number }}">
+                    <span data-number="{{ answer_rate.number }}">
                         {{ answer_rate.correct|floatformat:0 }}
                     </span>
                 </td>

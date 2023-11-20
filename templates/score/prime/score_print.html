@@ -10,7 +10,7 @@
 {% block html_body %}
 <body class="bg-white">
     {{ info|json_script:'info' }}
-    <h2 class="fw-bold text-center mb-4">{{ icon|safe }} {{ sub_title }} {{ title }} 성적표</h2>
+    <h2 class="fw-bold text-center mb-4">{{ sub_title }} 성적표</h2>
         <div class="mb-2">
             {% partial student_info %}
         </div>
@@ -20,7 +20,7 @@
         <div class="mb-2">
             {% partial score_answers %}
         </div>
-        {% include 'score/prime/snippets/score_chart.html#chart_canvas' %}
+        {% include 'score/v2/snippets/score_chart.html#chart_canvas' %}
 
     {# Student info partial #}
     {% partialdef student_info %}

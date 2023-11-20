@@ -27,9 +27,6 @@ class ScoreListViewMixin(
     def user_id(self) -> int:
         return self.request.user.id
 
-    def get_subtitle(self):
-        return f"{self.exam_list[0]['year']}년 대비"
-
     def get_paginator_info(self) -> tuple[object, object]:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)

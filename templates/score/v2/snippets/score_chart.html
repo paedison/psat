@@ -11,9 +11,7 @@
 <div class="tab-content" id="scoreChartContent">
     {% #nav_content prefix='chart' id='0' %}
         {% if is_confirmed %}
-            <div class="mt-4 chart-container ms-auto me-auto">
-                <canvas id="scoreChart"></canvas>
-            </div>
+            {% partial chart_canvas %}
         {% else %}
             {% #responsive_table %}
                 <tbody>
@@ -28,8 +26,12 @@
     {% /nav_content %}
 </div>
 
-{% if is_confirmed %}
+{% partialdef chart_canvas %}
+    <div class="mt-4 chart-container ms-auto me-auto">
+        <canvas id="scoreChart"></canvas>
+    </div>
     <script>
+        screenWidth = window.innerWidth;
         my_score = [
             {{ student.eoneo_score|floatformat:1 }},
             {{ student.jaryo_score|floatformat:1 }},
@@ -132,7 +134,7 @@
                 datasets: chart_datasets,
             },
             options: {
-                indexAxis: 'x',
+                indexAxis: (screenWidth < 768) ? 'y' : 'x',
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
@@ -167,4 +169,4 @@
             new Chart(chart_canvas, chart_data);
         }
     </script>
-{% endif %}
+{% endpartialdef chart_canvas %}

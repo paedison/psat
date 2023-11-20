@@ -32,7 +32,7 @@ class ScoreCommonVariableMixin(
     def get_exam_name(self):
         exam = self.category_model.objects.filter(
             year=self.year, round=self.round).first().exam.name
-        sub_title = f'{self.year}년 대비 제{self.round}회'
+        sub_title = f'제{self.round}회 프라임 모의고사'
         return {'exam': exam, 'sub_title': sub_title}
 
     @property
@@ -92,14 +92,15 @@ class ScoreResultVariableMixin(ScoreModelVariableSet):
                 year=self.year, round=self.round, subject__abbr=sub).id
             answers: list[dict] = list(
                 self.problem_model.objects.filter(prime_id=prime_id)
-                .values('number', 'answer')
+                .annotate(correct_answer=F('answer'))
+                .values('number', 'correct_answer')
             )
             student_answers = self.answer_model.objects.get(
                 prime_id=prime_id, student__user_id=self.user_id)
 
             for answer in answers:
                 number = answer['number']
-                correct_answer = answer['answer']
+                correct_answer = answer['correct_answer']
                 student_answer = getattr(student_answers, f'prob{number}')
                 result = 'O' if student_answer == correct_answer else 'X'
                 answer.update(

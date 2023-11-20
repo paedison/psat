@@ -42,8 +42,7 @@ class BaseView(
         }
         context = {
             'info': info,
-            'title': '프라임 모의고사',
-            'sub_title': self.get_subtitle(),
+            'title': 'Score',
             'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
             'page_obj': page_obj,
             'page_range': page_range,

@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from common.views import base_views
 
 urlpatterns = [
-    path('', base_views.index),
+    path('', base_views.index, name='index'),
     path('ads.txt', base_views.ads),
     path('privacy/', base_views.privacy, name='privacy_policy'),  # Privacy Policy
 
