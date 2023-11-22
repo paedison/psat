@@ -64,7 +64,8 @@
          hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
         {% if user.is_authenticated %}
             <a class="logo d-flex align-items-center" role="banner"
-               hx-post="{% url 'dashboard:base' %}" href="" data-target="'#dashboardList'">
+               hx-post="{% url 'dashboard:base' %}"
+               href="{% url 'dashboard:base' %}" data-target="#dashboardList">
                 <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
                 <span class="d-none d-sm-block">Paedison</span>
             </a>

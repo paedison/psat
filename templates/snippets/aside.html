@@ -61,13 +61,6 @@
                 </ul>
             </li><!-- PSAT Nav End -->
 
-            <li class="nav-item">
-                <a id="scheduleList" class="nav-link collapsed"
-                   href="{% url 'schedule:base' %}" hx-post="{% url 'schedule:base' %}">
-                    {{ schedule_icon|safe }}<span>Schedule</span>
-                </a>
-            </li><!-- Schedule Nav End -->
-
             {% if user.is_admin or user.is_staff %}
                 <li class="nav-item" role="menuitem" aria-label="Score Menu">
                     <a class="nav-link collapsed" href="" aria-expanded="false"
@@ -77,12 +70,12 @@
                     </a>
                     <ul id="score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
                         <li>
-                            <a id="psatScore" class="aside-nav-icon"
+                            <a id="psatScoreList" class="aside-nav-icon"
                                href="{% url 'score_v2:list' %}"
                                hx-post="{% url 'score_v2:list' %}">
                                 {{ problem_icon|safe }}<span>PSAT 기출문제</span>
                             </a>
-                            <a id="primeScore" class="aside-nav-icon"
+                            <a id="primeScoreList" class="aside-nav-icon"
                                href="{% url 'score_prime:list' %}"
                                hx-post="{% url 'score_prime:list' %}">
                                 {{ like_icon|safe }}<span>프라임 모의고사</span>
@@ -91,6 +84,13 @@
                     </ul>
                 </li><!-- Score Nav End -->
             {% endif %}
+
+            <li class="nav-item">
+                <a id="scheduleList" class="nav-link collapsed"
+                   href="{% url 'schedule:base' %}" hx-post="{% url 'schedule:base' %}">
+                    {{ schedule_icon|safe }}<span>Schedule</span>
+                </a>
+            </li><!-- Schedule Nav End -->
 
         {% else %}
             <li class="nav-item">

@@ -19,6 +19,7 @@ class BaseView(
 ):
     """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
     menu = 'score'
+    view_type = 'psatScore'
     template_name = 'score/v2/score_detail.html'
     login_url = settings.LOGIN_URL
 
@@ -43,8 +44,7 @@ class BaseView(
     def get_context_data(self, **kwargs) -> dict:
         info = {
             'menu': self.menu,
-            'view_type': self.menu,
-            'type': f'{self.menu}List',
+            'view_type': self.view_type,
         }
         exam_name = self.get_exam_name()
         all_answer_set = self.get_all_answer_set()

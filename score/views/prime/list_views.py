@@ -12,6 +12,7 @@ class BaseView(
 ):
     """ Represent information related PsatTemporaryAnswer and PsatConfirmedAnswer models. """
     menu = 'score'
+    view_type = 'primeScore'
     template_name = 'score/prime/score_list.html'
     login_url = settings.LOGIN_URL
 
@@ -37,8 +38,7 @@ class BaseView(
         page_obj, page_range = self.get_paginator_info()
         info = {
             'menu': self.menu,
-            'view_type': self.menu,
-            'type': f'{self.menu}List',
+            'view_type': self.view_type,
         }
         context = {
             'info': info,
