@@ -6,7 +6,7 @@
     <div class="td-div-xs" aria-label="Like">
         {% if user.is_authenticated %}
             <form id="likeButton{{ problem.id }}">
-                <a hx-post="{% url 'psat_v2:custom' 'like' problem.id %}" href=""
+                <a hx-post="{% url 'psat:custom' 'like' problem.id %}" href=""
                    class="htmx-fade-in htmx-fade-out" hx-target="this"
                    hx-swap="innerHTML swap:0.25s">
                     {% if like_data %}
@@ -31,7 +31,7 @@
     <div class="td-div-lg" aria-label="Rate">
         {% if user.is_authenticated %}
             <a id="psatRate{{ problem.id }}" href="" class="htmx-fade-in htmx-fade-out"
-               hx-get="{% url 'psat_v2:rate_modal' %}?problem_id={{ problem.id }}&icon_id=psatRate{{ problem.id }}"
+               hx-get="{% url 'psat:rate_modal' %}?problem_id={{ problem.id }}&icon_id=psatRate{{ problem.id }}"
                hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
                data-bs-toggle="modal" data-bs-target="#modalContainer">
                 {% partial rate %}
@@ -65,7 +65,7 @@
                 {% endfor %}
             </fieldset>
             <button class="btn btn-primary m-1" data-bs-dismiss="modal"
-                    hx-post="{% url 'psat_v2:custom' 'rate' problem_id %}"
+                    hx-post="{% url 'psat:custom' 'rate' problem_id %}"
                     hx-trigger="click" hx-target="#{{ icon_id }}" type="button"
                     hx-swap="innerHTML swap:0.25s">
                 입력

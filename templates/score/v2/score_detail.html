@@ -19,7 +19,7 @@
                     </li>
                     <li class="breadcrumb-item">Score</li>
                     <li class="breadcrumb-item">
-                        <a href="{% url 'score_v2:list' %}" hx-post="{% url 'score_v2:list' %}">PSAT</a>
+                        <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
                     </li>
                     <li class="breadcrumb-item">{{ year }}</li>
                     <li class="breadcrumb-item active">{{ exam }}</li>
@@ -32,8 +32,8 @@
         {% #content_row class1='col-12' %}
             <h5 class="card-title mb-0">
                 <div class="row m-0">
-                    <a class="btn btn-circle btn-sm btn-outline-secondary" href="{% url 'score_v2:list' %}"
-                       hx-post="{% url 'score_v2:list' %}" title="Score List">
+                    <a class="btn btn-circle btn-sm btn-outline-secondary" href="{% url 'score:list' %}"
+                       hx-post="{% url 'score:list' %}" title="Score List">
                         {{ icon_nav.list|safe }}
                     </a>
                     <div class="ms-auto col-10 col-sm-8 col-md-5 col-lg-4">
@@ -75,7 +75,7 @@
                                 {{ student.serial }}
                                 {% partialdef update_student inline=True %}
                                     <a class="badge rounded-pill text-bg-warning mx-2"
-                                       hx-get="{% url 'score_v2:student_update_modal' student.id %}" href=""
+                                       hx-get="{% url 'score:student_update_modal' student.id %}" href=""
                                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         수정
@@ -84,7 +84,7 @@
                             {% else %}
                                 {% partialdef create_student inline=True %}
                                     <a class="badge rounded-pill text-bg-warning mx-2"
-                                       hx-get="{% url 'score_v2:student_create_modal' year ex %}" href=""
+                                       hx-get="{% url 'score:student_create_modal' year ex %}" href=""
                                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         입력
@@ -152,7 +152,7 @@
     <form>
         <div class="input-group">
             <select id="id_exam_year" class="form-select" name="year"
-                    hx-post="{% url 'score_v2:filter' %}" aria-label="Select Year"
+                    hx-post="{% url 'score:filter' %}" aria-label="Select Year"
                     hx-trigger="change" hx-target="#id_exam_name" hx-swap="outerHTML">
                 <option>연도</option>
                 {% for y in year_option %}
@@ -163,7 +163,7 @@
             </select>
             {% partialdef exam_select inline=True %}
                 <select id="id_exam_name" class="form-select" name="ex" aria-label="Select Year"
-                        hx-post="{% url 'score_v2:detail' %}" hx-trigger="change">
+                        hx-post="{% url 'score:detail' %}" hx-trigger="change">
                     {% for e in ex_option %}
                         <option value="{{ e.0 }}"{% if e.0 == ex %} selected{% endif %}>
                             {{ e.1 }}

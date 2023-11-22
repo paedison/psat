@@ -153,7 +153,7 @@ class PsatListViewMixIn(
     PsatCustomVariableSet,
 ):
     """Represent PSAT list view mixin."""
-    url_name = 'psat_v2:list'
+    url_name = 'psat:list'
 
     #############
     # Variables #
@@ -364,7 +364,7 @@ class PsatDetailViewMixIn(
     PsatCustomVariableSet,
 ):
     """Represent PSAT detail view mixin."""
-    url_name = 'psat_v2:detail'
+    url_name = 'psat:detail'
 
     def get_open_instance(self):
         with transaction.atomic():

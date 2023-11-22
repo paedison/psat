@@ -38,7 +38,7 @@ class MemoDetailView(MemoViewMixIn, DetailView):
 class MemoCreateView(MemoViewMixIn, CreateView):
 
     def get_success_url(self):
-        return reverse_lazy('psat_v2:memo_detail', args=[self.object.id])
+        return reverse_lazy('psat:memo_detail', args=[self.object.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -50,12 +50,12 @@ class MemoUpdateView(MemoViewMixIn, UpdateView):
     template_name = 'psat/v2/snippets/memo_container.html#update'
 
     def get_success_url(self):
-        return reverse_lazy('psat_v2:memo_detail', args=[self.object.id])
+        return reverse_lazy('psat:memo_detail', args=[self.object.id])
 
 
 class MemoDeleteView(MemoViewMixIn, DeleteView):
     def get_success_url(self):
-        return reverse_lazy('psat_v2:memo_create')
+        return reverse_lazy('psat:memo_create')
 
 
 create_view = MemoCreateView.as_view()

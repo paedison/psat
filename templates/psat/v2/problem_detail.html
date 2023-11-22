@@ -62,7 +62,7 @@
     <article id="detail_nav_container" class="flex-nowrap input-group me-2"
              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
         <a id="problem_list" class="btn btn-{{ info.color }}" href=""
-           hx-get="{% url 'psat_v2:list' info.view_type %}">
+           hx-get="{% url 'psat:list' info.view_type %}">
             {{ icon_nav.left_arrow|safe }}
         </a>
 
@@ -92,17 +92,17 @@
 {% partialdef nav_prob %}
     {% if prob %}
         {% if info.view_type == 'problem' %}
-            <a class="btn btn-{{ info.color }}" href="{% url 'psat_v2:detail' 'problem' prob.id %}"
-               hx-get="{% url 'psat_v2:detail' 'problem' prob.id %}">{{ icon }}</a>
+            <a class="btn btn-{{ info.color }}" href="{% url 'psat:detail' 'problem' prob.id %}"
+               hx-get="{% url 'psat:detail' 'problem' prob.id %}">{{ icon }}</a>
         {% elif info.view_type == 'like' %}
-            <a class="btn btn-{{ info.color }}" href="{% url 'psat_v2:detail' 'like' prob.id %}"
-               hx-get="{% url 'psat_v2:detail' 'like' prob.id %}">{{ icon }}</a>
+            <a class="btn btn-{{ info.color }}" href="{% url 'psat:detail' 'like' prob.id %}"
+               hx-get="{% url 'psat:detail' 'like' prob.id %}">{{ icon }}</a>
         {% elif info.view_type == 'rate' %}
-            <a class="btn btn-{{ info.color }}" href="{% url 'psat_v2:detail' 'rate' prob.id %}"
-               hx-get="{% url 'psat_v2:detail' 'rate' prob.id %}">{{ icon }}</a>
+            <a class="btn btn-{{ info.color }}" href="{% url 'psat:detail' 'rate' prob.id %}"
+               hx-get="{% url 'psat:detail' 'rate' prob.id %}">{{ icon }}</a>
         {% elif info.view_type == 'solve' %}
-            <a class="btn btn-{{ info.color }}" href="{% url 'psat_v2:detail' 'solve' prob.id %}"
-               hx-get="{% url 'psat_v2:detail' 'solve' prob.id %}">{{ icon }}</a>
+            <a class="btn btn-{{ info.color }}" href="{% url 'psat:detail' 'solve' prob.id %}"
+               hx-get="{% url 'psat:detail' 'solve' prob.id %}">{{ icon }}</a>
         {% endif %}
     {% else %}
         <a class="btn btn-{{ info.color }} text-{{ info.color }}">{{ icon }}</a>
@@ -129,8 +129,8 @@
 {% partialdef filtered_content %}
     {% for _ in '_'|ljust:problem_count %}
             <div class="col-2 text-center small p-1">
-                <a href="{% url 'psat_v2:detail' 'problem' problem.number|subtract:problem.id|add:forloop.counter %}"
-                   hx-get="{% url 'psat_v2:detail' 'problem' problem.number|subtract:problem.id|add:forloop.counter %}"
+                <a href="{% url 'psat:detail' 'problem' problem.number|subtract:problem.id|add:forloop.counter %}"
+                   hx-get="{% url 'psat:detail' 'problem' problem.number|subtract:problem.id|add:forloop.counter %}"
                    class="p-1 dropdown-item text-nowrap text-center
                    {% if forloop.counter == problem.number %} active{% endif %}">
                     {{ forloop.counter }}번
@@ -220,9 +220,9 @@
             <td class="p-0">
                 <div id="detailMemo" hx-trigger="load"
                     {% if memo is None %}
-                        hx-get="{% url 'psat_v2:memo_create' problem.id %}"
+                        hx-get="{% url 'psat:memo_create' problem.id %}"
                     {% else %}
-                        hx-get="{% url 'psat_v2:memo_detail' memo.id %}"
+                        hx-get="{% url 'psat:memo_detail' memo.id %}"
                     {% endif %}
                         hx-swap="innerHTML"></div>
             </td>
@@ -231,9 +231,9 @@
             <td class="p-0">
                 <div id="detailTags" hx-trigger="load"
                     {% if my_tag is None %}
-                        hx-get="{% url 'psat_v2:tag_create' problem.id %}"
+                        hx-get="{% url 'psat:tag_create' problem.id %}"
                     {% else %}
-                        hx-get="{% url 'psat_v2:tag_container' my_tag.id %}"
+                        hx-get="{% url 'psat:tag_container' my_tag.id %}"
                     {% endif %}
                         hx-swap="innerHTML"></div>
             </td>

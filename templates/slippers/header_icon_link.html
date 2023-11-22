@@ -12,8 +12,8 @@
             {{ admin_icon }}
         </a>
     {% else %}
-        <a class="nav-link px-1" hx-post="{% url 'psat_v2:list' type %}"
-           href="{% url 'psat_v2:list' type %}" hx-push-url="true"
+        <a class="nav-link px-1" hx-post="{% url 'psat:list' type %}"
+           href="{% url 'psat:list' type %}" hx-push-url="true"
            hx-target="#main" hx-swap="innerHTML swap:0.25s">
             {% if type == 'problem' %}{{ problem_icon }}
             {% elif type == 'like' %}{{ like_icon }}

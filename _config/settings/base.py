@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     'study',
     'reference',
     'dashboard',
+    'community',
 ]
 
 MIDDLEWARE = [

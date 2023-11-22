@@ -19,7 +19,7 @@
                     </li>
                     <li class="breadcrumb-item">Score</li>
                     <li class="breadcrumb-item">
-                        <a href="{% url 'score_prime:list' %}" hx-post="{% url 'score_prime:list' %}">Prime</a>
+                        <a href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">Prime</a>
                     </li>
                     <li class="breadcrumb-item active">1st</li>
                 </ol>
@@ -31,11 +31,11 @@
             {% #content_row class1='col-12' %}
                 <h5 class="card-title mb-0">
                     <a class="btn btn-circle btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-                       href="{% url 'score_prime:list' %}" hx-post="{% url 'score_prime:list' %}">
+                       href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">
                         {{ icon_nav.list|safe }}
                     </a>
                     <a class="btn btn-circle btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-                       href="{% url 'score_prime:print' year round %}" target="_blank">
+                       href="{% url 'prime:print' year round %}" target="_blank">
                         {{ icon_nav.print|safe }}
                     </a>
                 </h5>

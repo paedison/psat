@@ -30,7 +30,7 @@ class TagCreateView(TagViewMixIn, CreateView):
     template_name = 'psat/v2/snippets/tag_create.html'
 
     def get_success_url(self):
-        return reverse_lazy(f'psat_v2:tag_container', args=[self.object.id])
+        return reverse_lazy(f'psat:tag_container', args=[self.object.id])
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -53,7 +53,7 @@ class TagAddView(TagViewMixIn, UpdateView):
     template_name = 'psat/v2/snippets/tag_container.html'
 
     def get_success_url(self):
-        return reverse_lazy(f'psat_v2:tag_container', args=[self.object.id])
+        return reverse_lazy(f'psat:tag_container', args=[self.object.id])
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -80,7 +80,7 @@ class TagDeleteView(TagViewMixIn, DeleteView):
     @property
     def success_url(self):
         """Return success_url 'before' deleting the tag."""
-        return reverse_lazy(f'psat_v2:tag_container', args=[self.object.id])
+        return reverse_lazy(f'psat:tag_container', args=[self.object.id])
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()

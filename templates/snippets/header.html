@@ -23,7 +23,7 @@
                    placeholder="{% trans 'Enter search keyword' %}"
                    title="{% trans 'Enter search keyword' %}">
             <button type="submit" title="Search" hx-swap="innerHtml swap:0.5s"
-                    hx-post="{% url 'psat_v2:list' 'search' %}" hx-target="#main">
+                    hx-post="{% url 'psat:list' 'search' %}" hx-target="#main">
                 {{ search_icon|safe }}
             </button>
         </form>
@@ -71,7 +71,7 @@
             </a>
         {% else %}
             <a class="logo d-flex align-items-center" role="banner"
-               hx-post="{% url 'psat_v2:base' %}" href="" data-target="#problemList">
+               hx-post="{% url 'psat:base' %}" href="" data-target="#problemList">
                 <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
                 <span class="d-none d-sm-block">Paedison</span>
             </a>

@@ -2,7 +2,7 @@ from django.urls import path
 
 from score.views.prime import list_views, detail_views, modal_views
 
-app_name = 'score_prime'
+app_name = 'prime'
 
 urlpatterns = [
     path('', list_views.base_view, name='list'),

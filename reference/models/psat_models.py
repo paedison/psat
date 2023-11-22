@@ -20,7 +20,7 @@ class PsatProblem(ProblemBase):
     question = models.TextField()
     data = models.TextField()
 
-    url_name = 'psat_v2:detail'
+    url_name = 'psat:detail'
 
     class Meta:
         ordering = ['-psat__year', 'id']

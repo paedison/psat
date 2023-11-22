@@ -98,8 +98,8 @@
                 <td class="text-nowrap p-2">
                     {% if obj.is_completed %}
                         <a class="badge rounded-pill text-bg-success"
-                           href="{% url 'score_v2:detail_year_ex' obj.year obj.ex %}"
-                           hx-get="{% url 'score_v2:detail_year_ex' obj.year obj.ex %}"
+                           href="{% url 'score:detail_year_ex' obj.year obj.ex %}"
+                           hx-get="{% url 'score:detail_year_ex' obj.year obj.ex %}"
                            hx-push-url="true" hx-target="#main"
                            hx-swap="innerHTML swap:0.25s">
                             확인
@@ -127,7 +127,7 @@
 
 {% partialdef update_student %}
     <a class="badge rounded-pill text-bg-warning"
-       hx-get="{% url 'score_v2:student_update_modal' obj.student.id %}" href=""
+       hx-get="{% url 'score:student_update_modal' obj.student.id %}" href=""
        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
        data-bs-toggle="modal" data-bs-target="#modalContainer">
         수정
@@ -136,7 +136,7 @@
 
 {% partialdef create_student %}
     <a class="badge rounded-pill text-bg-warning mx-2"
-       hx-get="{% url 'score_v2:student_create_modal' obj.year obj.ex %}" href=""
+       hx-get="{% url 'score:student_create_modal' obj.year obj.ex %}" href=""
        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
        data-bs-toggle="modal" data-bs-target="#modalContainer">
         입력
@@ -148,27 +148,27 @@
         {% if target.status is None %}
             {% if obj.student %}
                 <a class="badge rounded-pill text-bg-primary"
-                   href="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}"
-                   hx-get="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}">
+                   href="{% url 'score:detail_year_ex' target.year target.exam.abbr %}"
+                   hx-get="{% url 'score:detail_year_ex' target.year target.exam.abbr %}">
                     작성 전
                 </a>
             {% else %}
                 <a class="badge rounded-pill text-bg-primary" href="" hx-push-url="false"
-                   hx-get="{% url 'score_v2:no_student_modal' %}" hx-target="#modalContainer"
+                   hx-get="{% url 'score:no_student_modal' %}" hx-target="#modalContainer"
                    data-bs-toggle="modal" data-bs-target="#modalContainer">
                     작성 전
                 </a>
             {% endif %}
         {% elif target.status is False %}
             <a class="badge rounded-pill text-bg-warning"
-               href="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}"
-               hx-get="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}">
+               href="{% url 'score:detail_year_ex' target.year target.exam.abbr %}"
+               hx-get="{% url 'score:detail_year_ex' target.year target.exam.abbr %}">
                 작성 중
             </a>
         {% elif target.status is True %}
             <a class="badge rounded-pill text-bg-success"
-               href="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}"
-               hx-get="{% url 'score_v2:detail_year_ex' target.year target.exam.abbr %}">
+               href="{% url 'score:detail_year_ex' target.year target.exam.abbr %}"
+               hx-get="{% url 'score:detail_year_ex' target.year target.exam.abbr %}">
                 제출 완료
             </a>
         {% elif target.status == 'N/A' %}
