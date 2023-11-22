@@ -5,8 +5,6 @@
 {% load partials %}
 {% load psat_filter %}
 
-{% block head_title %}{{ title }}{% endblock head_title %}
-
 {% block main %}
     {% partialdef list_main inline=True %}
         {{ info|json_script:'info' }}
@@ -352,9 +350,9 @@ hx-get="{{ base_url }}?year={% if var == 'year' %}{{ opt.0 }}{% else %}{{ year }
 {% endpartialdef pagination %}
 
 {% block page_script %}
-    {% if not user.is_authenticated %}
-        <script>
+    <script>
+        {% if not user.is_authenticated %}
             $('#problemList').removeClass('collapsed');
-        </script>
-    {% endif %}
+        {% endif %}
+    </script>
 {% endblock page_script %}

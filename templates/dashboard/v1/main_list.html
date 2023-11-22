@@ -4,8 +4,6 @@
 {% load partials %}
 {% load psat_filter %}
 
-{% block head_title %}{{ title }}{% endblock head_title %}
-
 {% block main %}
     {% partialdef list_main inline=True %}
         {{ info|json_script:'info' }}
