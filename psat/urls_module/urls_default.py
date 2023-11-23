@@ -1,6 +1,6 @@
 from django.urls import path
 
-from psat.views.v2 import list_views, detail_views, memo_views, tag_views
+from psat.views.v2 import list_views, detail_views, memo_views, tag_views, update_views
 
 app_name = 'psat'
 
@@ -13,9 +13,9 @@ urlpatterns = [
     path('<str:view_type>/<int:problem_id>/', detail_views.base_view, name='detail'),
 
     # Custom Update [view_type: like, rate, solve]
-    path('update/<str:view_type>/<int:problem_id>/', detail_views.custom_update_view, name='custom'),
-    path('update/rate/modal/', detail_views.rate_modal_view, name='rate_modal'),
-    path('update/solve/modal/', detail_views.solve_modal_view, name='solve_modal'),
+    path('update/<str:view_type>/<int:problem_id>/', update_views.custom_update_view, name='custom'),
+    path('update/rate/modal/', update_views.rate_modal_view, name='rate_modal'),
+    path('update/solve/modal/', update_views.solve_modal_view, name='solve_modal'),
 
     # Memo Views
     path('memo/create/problem<int:problem_id>/', memo_views.create_view, name='memo_create'),

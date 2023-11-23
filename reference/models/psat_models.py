@@ -28,30 +28,25 @@ class PsatProblem(ProblemBase):
     def __str__(self):
         return f'{self.psat.year}{self.psat.exam.abbr}{self.psat.subject.abbr}-{self.number:02}'
 
-    def get_url(self, view_type):
+    def get_url(self, view_type: str):
         return reverse_lazy(
             self.url_name,
             kwargs={'view_type': view_type, 'problem_id': self.id}
         )
 
-    @property
-    def problem_url(self):
+    def get_problem_url(self):
         return self.get_url('problem')
 
-    @property
-    def like_url(self):
+    def get_like_url(self):
         return self.get_url('like')
 
-    @property
-    def rate_url(self):
+    def get_rate_url(self):
         return self.get_url('rate')
 
-    @property
-    def solve_url(self):
+    def get_solve_url(self):
         return self.get_url('solve')
 
-    @property
-    def image_file(self) -> dict:
+    def get_image_file(self) -> dict:
         year, ex, sub = self.psat.year, self.psat.exam.abbr, self.psat.subject.abbr
         year_ex_sub = f'{year}{ex}{sub}'
         number = f'{self.number:02}'

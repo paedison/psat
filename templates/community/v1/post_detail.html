@@ -1,0 +1,126 @@
+{% extends 'list.html' %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+{% load psat_filter %}
+{% load partials %}
+
+{% block main %}
+    <section>
+        <div class="pagetitle my-2">
+            <a hx-target="section .section" href="" title="{{ info.menu|capfirst }}"
+               hx-boost="true" hx-swap="outerHTML swap:0.25s"
+               hx-get="{{ info.post_list_navigation_url }}"
+               hx-push-url="{{ info.post_list_url }}">
+                <h1>{{ info.icon|safe }} {{ info.menu|capfirst }}</h1>
+            </a>
+        </div><!-- Page Title End -->
+        {% partial container %}
+    </section><!-- Main Content End -->
+{% endblock %}
+
+
+{% partialdef container %}
+    <section class="section htmx-fade-in htmx-fade-out">
+        {{ info|json_script:'info' }}
+        <div class="row">
+            <div class="col-12 my-2">
+                <div class="card m-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between">
+                            {% partial buttons %}
+                        </div>
+
+                        <hr class="my-2">
+                        {% partial post_header %}
+                        <hr class="my-2">
+
+                        <div class="my-4">
+                            {{ post.content|safe }}
+                        </div>
+                        {% include 'board/comment_list.html' %}
+                    </div>
+                </div>
+            </div>
+        </div><!-- Content Row End -->
+    </section>
+{% endpartialdef %}
+
+
+{% partialdef buttons %}
+    <div class="left-button col-auto px-0" hx-target="section .section"
+         hx-boost="true" hx-swap="outerHTML swap:0.25s">
+        <a class="btn btn-circle btn-sm btn-outline-secondary"
+           hx-get="{{ post.post_list_navigation_url }}" href=""
+           hx-push-url="{{ post.post_list_url }}" title="List">
+            {{ info.board_icon.list|safe }}
+        </a>
+        {% if next_post %}
+            <a id="next_post" class="btn btn-circle btn-sm btn-outline-secondary"
+               hx-get="{{ next_post.post_detail_content_url }}" href=""
+               hx-push-url="{{ next_post.post_detail_url }}" title="Next">
+                {{ info.board_icon.next|safe }}
+            </a>
+        {% else %}
+            <a id="next_post" class="btn btn-circle btn-sm btn-outline-secondary"></a>
+        {%  endif %}
+        {% if prev_post %}
+            <a id="prev_post" class="btn btn-circle btn-sm btn-outline-secondary"
+               hx-get="{{ prev_post.post_detail_content_url }}" href=""
+               hx-push-url="{{ prev_post.post_detail_url }}" title="Previous">
+                {{ info.board_icon.previous|safe }}
+            </a>
+        {% else %}
+            <a id="prev_post" class="btn btn-circle btn-sm btn-outline-secondary"></a>
+        {% endif %}
+    </div>
+    <div class="right-button" hx-target="section .section"
+         hx-boost="true" hx-swap="outerHTML swap:0.25s">
+        <a class="btn btn-circle btn-sm btn-outline-warning"
+           hx-get="{{ post.post_list_navigation_url }}" href=""
+           hx-push-url="{{ post.post_list_url }}" title="Reply">
+            {{ info.board_icon.reply|safe }}
+        </a>
+        {% if post.user == user %}
+            <a class="btn btn-circle btn-sm btn-outline-success"
+               hx-get="{{ post.post_update_content_url }}" href=""
+               hx-push-url="{{ post.post_update_url }}" title="Update">
+                {{ info.board_icon.update|safe }}
+            </a>
+            <a class="btn btn-circle btn-sm btn-outline-danger"
+               hx-post="{{ post.post_delete_url }}" hx-boost="false"
+               hx-push-url="{{ post.post_list_url }}" title="Delete"
+               hx-confirm="{% trans 'Are you sure you wish to delete your post?' %}">
+                {{ info.board_icon.delete|safe }}
+            </a>
+        {% endif %}
+    </div>
+{% endpartialdef %}
+
+
+{% partialdef post_header %}
+    <h6 class="text-primary fw-bold">
+        {% if post.top_fixed %}
+            <span class="text-danger">{{ info.board_icon.top_fixed|safe }}</span>
+        {% endif %}
+        {% if post.is_hidden %}
+            <span class="text-danger">{{ info.board_icon.is_hidden|safe }}</span>
+        {% endif %}
+        {{ post.title }}
+    </h6>
+    <div class="small text-secondary">
+        <span class="me-1">{{ post.user.username }}</span>
+        <span class="me-1">조회
+            <span class="text-danger fw-bold">{{ post.hit }}</span>
+        </span>
+        <span class="me-1">
+            {% with timestamp=post.created_at %}
+                {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+                {{ timestamp|time:'H:i' }}
+            {% endwith %}
+        </span>
+        <span class="me-1">댓글
+            <span class="text-danger fw-bold">{{ post.comment_count }}</span>
+        </span>
+    </div>
+{% endpartialdef %}

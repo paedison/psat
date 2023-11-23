@@ -1,10 +1,6 @@
 from vanilla import TemplateView
 
-from .viewmixins import (
-    PsatDetailViewMixIn,
-    PsatSolveModalViewMixIn,
-    PsatCustomUpdateViewMixIn,
-)
+from .viewmixins.detail_view_mixins import PsatDetailViewMixIn
 
 
 class PsatDetailView(
@@ -22,26 +18,32 @@ class PsatDetailView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
-        self.get_open_instance()
-        prev_prob, next_prob = self.prev_next_prob
+        variable = self.get_detail_variable(self.request, **self.kwargs)
+        view_type = variable.view_type
+
+        variable.get_open_instance()
+        custom_data = self.get_custom_data(view_type)
+        prev_prob, next_prob = variable.get_prev_next_prob(custom_data)
+        list_data = variable.get_list_data(custom_data)
+
         return {
-            # Target problem & info
-            'problem': self.problem,
-            'info': self.info,
+            # Info & target problem
+            'info': self.get_info(view_type),
+            'problem': variable.problem,
 
             # Navigation data
             'prev_prob': prev_prob,
             'next_prob': next_prob,
-            'list_data': self.list_data,
+            'list_data': list_data,
 
             # Custom data
-            'like_data': self.like_data,
-            'rate_data': self.rate_data,
-            'solve_data': self.solve_data,
+            'like_data': self.get_like_data(),
+            'rate_data': self.get_rate_data(),
+            'solve_data': self.get_solve_data(),
 
             # Memo & tag
-            'memo': self.memo,
-            'my_tag': self.my_tag,
+            'memo': variable.memo,
+            'my_tag': variable.my_tag,
 
             # Icons
             'icon_like': self.ICON_LIKE,
@@ -51,58 +53,4 @@ class PsatDetailView(
         }
 
 
-class PsatCustomUpdateView(
-    PsatCustomUpdateViewMixIn,
-    TemplateView,
-):
-    template_name = 'psat/v2/snippets/icon_container.html'
-
-    def get_template_names(self):
-        return f'{self.template_name}#{self.view_type}'
-
-    def post(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        self.make_log_instance()
-        return {
-            self.option_name: getattr(self.data_instance, self.option_name),
-            'problem': self.data_instance,
-            'icon_like': self.ICON_LIKE if self.view_type == 'like' else '',
-            'icon_rate': self.ICON_RATE if self.view_type == 'rate' else '',
-            'icon_solve': self.ICON_SOLVE if self.view_type == 'solve' else '',
-        }
-
-
-class PsatRateModalView(TemplateView):
-    template_name = 'psat/v2/snippets/icon_container.html#rate_modal'
-
-    def get_context_data(self, **kwargs):
-        return {
-            'problem_id': self.request.GET.get('problem_id'),
-            'icon_id': self.request.GET.get('icon_id'),
-        }
-
-
-class PsatSolveModalView(
-    PsatSolveModalViewMixIn,
-    TemplateView,
-):
-    template_name = 'psat/v2/snippets/solve_container.html#answer_modal'
-
-    def post(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        return {
-            'problem_id': self.problem_id,
-            'answer': self.answer,
-            'is_correct': self.is_correct,
-            'icon_solve': self.ICON_SOLVE,
-        }
-
-
 base_view = PsatDetailView.as_view()
-custom_update_view = PsatCustomUpdateView.as_view()
-rate_modal_view = PsatRateModalView.as_view()
-solve_modal_view = PsatSolveModalView.as_view()

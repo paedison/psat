@@ -22,12 +22,14 @@ urlpatterns = [
     path('account/', include('common.urls.account')),  # Login, Logout
     path('account/', include('allauth.urls')),  # Django All-auth
     path('psat/', include('psat.urls')),  # PSAT
+    path('community/', include('community.urls')),  # PSAT
+    path('score/', include('score.urls')),  # Score
     path('schedule/', include('schedule.urls')),  # Schedule
+
     # path('quiz/', include('quiz.urls')),  # Quiz
     path('log/', include('log.urls')),  # Log
     path('analysis/', include('analysis.urls')),  # Analysis
-    path('score/', include('score.urls')),  # Score
-    path('study/', include('study.urls')),  # Score
+    path('study/', include('study.urls')),  # Study
 
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
 ]

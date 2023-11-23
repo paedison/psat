@@ -12,6 +12,7 @@ class ConstantIconSet:
         'rate': '<i class="fa-solid fa-star fa-fw"></i>',
         'answer': '<i class="fa-solid fa-circle-check fa-fw"></i>',
         'qna': '<i class="fa-solid fa-clipboard-question fa-fw"></i>',
+        'community': '',
         'score': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
         'prime': '<i class="fa-solid fa-file fa-fw"></i>',
         'schedule': '<i class="fa-regular fa-calendar-days fa-fw"></i>',
