@@ -5,7 +5,7 @@ from common.constants.icon_set import ConstantIconSet
 from dashboard.models.psat_data_models import PsatOpenLog
 from psat.models import Open, Memo, Tag
 from reference.models import PsatProblem
-from .base_view_mixins import PsatCustomVariableSet, PsatViewInfo
+from .base_view_mixins import PsatCustomDataSet, PsatViewInfo
 
 
 class DetailViewVariable:
@@ -29,6 +29,8 @@ class DetailViewVariable:
         if request.user.is_authenticated:
             self.memo: Memo = Memo.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
             self.my_tag: Tag = Tag.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
+        else:
+            self.memo = self.my_tag = None
 
     def get_find_filter(self):
         find_filter = {
@@ -71,23 +73,17 @@ class DetailViewVariable:
     def get_list_data(self, custom_data) -> list:
         organized_dict = {}
         organized_list = []
-
-        target_data = custom_data.values(
-            'id', 'psat_id', 'psat__year', 'psat__exam__name',
-            'psat__subject__name', 'number'
-        )
-
-        for prob in target_data:
+        for prob in custom_data:
             key = prob['psat_id']
             if key not in organized_dict:
                 organized_dict[key] = []
-            year, exam2, subject = prob['psat__year'], prob['psat__exam__name'], prob['psat__subject__name']
+            year, exam, subject = prob['year'], prob['exam'], prob['subject']
             problem_url = reverse_lazy(
                 'psat:detail',
                 kwargs={'view_type': self.view_type, 'problem_id': prob['id']}
             )
             list_item = {
-                'exam_name': f"{year}년 '{exam2}' {subject}",
+                'exam_name': f"{year}년 {exam} {subject}",
                 'problem_number': prob['number'],
                 'problem_id': prob['id'],
                 'problem_url': problem_url
@@ -108,7 +104,7 @@ class PsatDetailViewMixIn(
     ConstantIconSet,
     PsatViewInfo,
     # PsatProblemVariableSet,
-    PsatCustomVariableSet,
+    PsatCustomDataSet,
 ):
     """Represent PSAT detail view mixin."""
     @staticmethod

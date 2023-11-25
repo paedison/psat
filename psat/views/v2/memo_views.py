@@ -1,12 +1,15 @@
 from django.urls import reverse_lazy
 from vanilla import DetailView, CreateView, UpdateView, DeleteView
 
+from common.constants.icon_set import ConstantIconSet
 from psat.forms import MemoForm
 from psat.models import Memo
 from reference.models.psat_models import PsatProblem
 
 
-class MemoViewMixIn:
+class MemoViewMixIn(
+    ConstantIconSet,
+):
     """Setting mixin for Memo views."""
     kwargs: dict
     object: any
@@ -32,7 +35,11 @@ class MemoViewMixIn:
 
 
 class MemoDetailView(MemoViewMixIn, DetailView):
-    pass
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['icon_board'] = self.ICON_BOARD
+        context['icon_memo'] = self.ICON_MEMO
+        return context
 
 
 class MemoCreateView(MemoViewMixIn, CreateView):

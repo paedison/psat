@@ -22,9 +22,10 @@ class PsatDetailView(
         view_type = variable.view_type
 
         variable.get_open_instance()
-        custom_data = self.get_custom_data(view_type)
-        prev_prob, next_prob = variable.get_prev_next_prob(custom_data)
-        list_data = variable.get_list_data(custom_data)
+        custom_data = self.get_custom_data()
+        view_custom_data = custom_data[view_type]
+        prev_prob, next_prob = variable.get_prev_next_prob(view_custom_data)
+        list_data = variable.get_list_data(view_custom_data)
 
         return {
             # Info & target problem
@@ -37,9 +38,11 @@ class PsatDetailView(
             'list_data': list_data,
 
             # Custom data
-            'like_data': self.get_like_data(),
-            'rate_data': self.get_rate_data(),
-            'solve_data': self.get_solve_data(),
+            'like_data': custom_data['like'],
+            'rate_data': custom_data['rate'],
+            'solve_data': custom_data['solve'],
+            'memo_data': custom_data['memo'],
+            'tag_data': custom_data['tag'],
 
             # Memo & tag
             'memo': variable.memo,
@@ -49,7 +52,11 @@ class PsatDetailView(
             'icon_like': self.ICON_LIKE,
             'icon_rate': self.ICON_RATE,
             'icon_solve': self.ICON_SOLVE,
+            'icon_memo': self.ICON_MEMO,
+            'icon_tag': self.ICON_TAG,
             'icon_nav': self.ICON_NAV,
+            'icon_board': self.ICON_BOARD,
+            'icon_menu': self.ICON_MENU,
         }
 
 

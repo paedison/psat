@@ -57,24 +57,16 @@ def round_number(content):
 
 
 @register.filter()
-def get_like_status(problem, data):
+def get_status(problem, data: list[dict]):
+    key_list = ['is_liked', 'rating', 'is_correct']
     for instance in data:
         if instance['id'] == problem.id:
-            return instance['likes__is_liked']
-
-
-@register.filter()
-def get_rate_status(problem, data):
-    for instance in data:
-        if instance['id'] == problem.id:
-            return instance['rates__rating']
-
-
-@register.filter()
-def get_solve_status(problem, data):
-    for instance in data:
-        if instance['id'] == problem.id:
-            return instance['solves__is_correct']
+            target_key = None
+            for key in instance.keys():
+                target_key = key if key in key_list else None
+            if target_key:
+                return instance[target_key]
+            return True
 
 
 @register.tag

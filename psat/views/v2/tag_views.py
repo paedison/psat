@@ -1,28 +1,22 @@
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from taggit.models import Tag
-from taggit_templatetags2.templatetags.taggit_templatetags2_tags import get_weight_fun
-from vanilla import DetailView, TemplateView, CreateView, DeleteView, UpdateView
+from vanilla import TemplateView, CreateView, DeleteView, UpdateView
 
-from common import constants
-from psat.models import Tag
 from .viewmixins import TagViewMixIn
-from reference.models.psat_models import Psat
 
 
-class TagContainerView(TagViewMixIn, DetailView):
+class TagContainerView(TagViewMixIn, TemplateView):
     """View for loading problem tag container."""
     template_name = 'psat/v2/snippets/tag_container.html'
 
     def get_context_data(self, **kwargs) -> dict:
-        context = super().get_context_data(**kwargs)
-        context['my_tag'] = self.object
-        context['my_tag_list'] = self.my_tag_list
-        context['all_tags'] = self.all_tags
-        context['problem'] = self.problem
-        return context
+        variable = self.get_tag_variable(self.request, **self.kwargs)
+        return {
+            'my_tag': variable.my_tag,
+            'my_tag_list': variable.get_my_tag_list(),
+            'all_tags': variable.get_all_tag_list(),
+            'problem': variable.problem,
+        }
 
 
 class TagCreateView(TagViewMixIn, CreateView):
@@ -42,10 +36,11 @@ class TagCreateView(TagViewMixIn, CreateView):
         return response
 
     def get_context_data(self, **kwargs) -> dict:
-        context = super().get_context_data(**kwargs)
-        context['all_tags'] = self.all_tags
-        context['problem'] = self.problem
-        return context
+        variable = self.get_tag_variable(self.request, **self.kwargs)
+        return {
+            'all_tags': variable.get_all_tag_list(),
+            'problem': variable.problem,
+        }
 
 
 class TagAddView(TagViewMixIn, UpdateView):
@@ -63,10 +58,11 @@ class TagAddView(TagViewMixIn, UpdateView):
         return response
 
     def get_context_data(self, **kwargs) -> dict:
-        context = super().get_context_data(**kwargs)
-        context['all_tags'] = self.all_tags
-        context['problem'] = self.problem
-        return context
+        variable = self.get_tag_variable(self.request, **self.kwargs)
+        return {
+            'all_tags': variable.get_all_tag_list(),
+            'problem': variable.problem,
+        }
 
 
 class TagDeleteView(TagViewMixIn, DeleteView):
@@ -92,75 +88,21 @@ class TagCloudView(TagViewMixIn, TemplateView):
     """View for loading problem tag cloud."""
     template_name = 'psat/v2/problem_tag_cloud.html'
 
-    @property
-    def info(self):
-        return {
-            'menu': self.menu,
-            'view_type': 'tag',
-            'type': f'tagCloudList',
-            'title': 'Tag Cloud',
-            'icon': constants.icon.MENU_ICON_SET['tag'],
-        }
-
-    @property
-    def content_type(self) -> ContentType:
-        return ContentType.objects.get(app_label='psat', model='tag')
-
-    def get_tags(self, category: str = None, sub: str = None) -> Tag:
-        if category is None:
-            problem_tag = Tag.objects.all()
-        else:
-            problem_tag = Tag.objects.filter(user_id=self.user_id)
-
-        if sub is None:
-            tag_id_list = problem_tag.values_list('id', flat=True)
-        else:
-            psat_list = Psat.objects.filter(subject__abbr=sub)
-            tag_id_list = problem_tag.filter(problem__psat__in=psat_list).values_list('id', flat=True)
-
-        my_tags = Tag.objects.filter(
-            taggit_taggeditem_items__object_id__in=tag_id_list,
-            taggit_taggeditem_items__content_type=self.content_type,
-        ).annotate(num_times=Count('taggit_taggeditem_items')).order_by('name')
-        num_times = my_tags.values_list('num_times', flat=True)
-        for my_tag in my_tags:
-            weight_fun = get_weight_fun(1, 6, min(num_times), max(num_times))
-            my_tag.weight = weight_fun(my_tag.num_times)
-        return my_tags
-
-    def get_my_tags(self, sub: str) -> Tag:
-        problem_tag = Tag.objects.filter(user_id=self.user_id)
-        if sub == '':
-            tag_id_list = problem_tag.values_list('id', flat=True)
-        else:
-            psat_list = Psat.objects.filter(subject__abbr=sub)
-            tag_id_list = problem_tag.filter(problem__psat__in=psat_list).values_list('id', flat=True)
-        return self.get_tags(tag_id_list)
-
-    def get_all_tags(self, sub: str) -> Tag:
-        problem_tag = Tag.objects.all()
-        if sub == '':
-            tag_id_list = problem_tag.values_list('id', flat=True)
-        else:
-            psat_list = Psat.objects.filter(subject__abbr=sub)
-            tag_id_list = problem_tag.filter(problem__psat__in=psat_list).values_list('id', flat=True)
-        return self.get_tags(tag_id_list)
-
     def get_context_data(self, **kwargs) -> dict:
-        context = super().get_context_data(**kwargs)
+        variable = self.get_tag_variable(self.request, **self.kwargs)
 
-        context['all_total_tags'] = self.get_tags()
-        context['all_eoneo_tags'] = self.get_tags(sub='언어')
-        context['all_jaryo_tags'] = self.get_tags(sub='자료')
-        context['all_sanghwang_tags'] = self.get_tags(sub='상황')
+        return {
+            'info': self.get_info('tag'),
+            'all_total_tags': variable.get_tags(),
+            'all_eoneo_tags': variable.get_tags(sub='언어'),
+            'all_jaryo_tags': variable.get_tags(sub='자료'),
+            'all_sanghwang_tags': variable.get_tags(sub='상황'),
 
-        context['my_total_tags'] = self.get_tags(category='my')
-        context['my_eoneo_tags'] = self.get_tags(category='my', sub='언어')
-        context['my_jaryo_tags'] = self.get_tags(category='my', sub='자료')
-        context['my_sanghwang_tags'] = self.get_tags(category='my', sub='상황')
-
-        context['info'] = self.info
-        return context
+            'my_total_tags': variable.get_tags(category='my'),
+            'my_eoneo_tags': variable.get_tags(category='my', sub='언어'),
+            'my_jaryo_tags': variable.get_tags(category='my', sub='자료'),
+            'my_sanghwang_tags': variable.get_tags(category='my', sub='상황'),
+        }
 
 
 container_view = TagContainerView.as_view()

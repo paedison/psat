@@ -5,7 +5,6 @@
 
 <div role="button" aria-label="answer-button">
     <form class="m-1 answer-group" aria-label="Answer Button">
-        {% csrf_token %}
         <input type="radio" class="btn-check" name="answer" id="answer1" value="1">
         <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer1">1</label>
 
@@ -30,7 +29,9 @@
             <i class="fa-solid fa-check"></i>
         </a>
     {% else %}
-        <a class="answer-button" href="" data-bs-toggle="modal" data-bs-target="#loginModal">
+        <a hx-get="{% url 'account_login_modal' %}" href=""
+           hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
             <button class="btn btn-circle btn-success btn-sm fs-6">
                 <i class="fa-solid fa-check"></i>
             </button>
@@ -39,8 +40,7 @@
     </form>
 </div>
 
-
-{% partialdef answer_modal %}
+{% partialdef answer_modal %} {# answer_modal partial #}
     {% #modal header='정답 확인' %}
         <input id="solve_answer" type="text" name="answer" value="{{ answer }}"
                hidden aria-label="Answer"/>
@@ -64,4 +64,4 @@
             {% endif %}
         {% endif %}
     {% /modal %}
-{% endpartialdef %}
+{% endpartialdef answer_modal %}

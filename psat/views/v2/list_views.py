@@ -24,6 +24,7 @@ class PsatListView(
         variable = self.get_list_variable(self.request, **self.kwargs)
         view_type = variable.view_type
 
+        custom_data = self.get_custom_data()
         page_obj, page_range = variable.get_paginator_info()
         options = variable.get_options()
 
@@ -60,9 +61,11 @@ class PsatListView(
             'page_range': page_range,
 
             # Custom data
-            'like_data': self.get_like_data(),
-            'rate_data': self.get_rate_data(),
-            'solve_data': self.get_solve_data(),
+            'like_data': custom_data['like'],
+            'rate_data': custom_data['rate'],
+            'solve_data': custom_data['solve'],
+            'memo_data': custom_data['memo'],
+            'tag_data': custom_data['tag'],
 
             # View type boolean
             'problem_list': view_type == 'problem',
@@ -77,6 +80,8 @@ class PsatListView(
             'icon_rate': self.ICON_RATE,
             'icon_solve': self.ICON_SOLVE,
             'icon_filter': self.ICON_FILTER,
+            'icon_memo': self.ICON_MEMO,
+            'icon_tag': self.ICON_TAG,
         }
 
 

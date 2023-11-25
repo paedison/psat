@@ -8,7 +8,9 @@
 {# TagAddView -> context: all_tags, problem #}
 
 <div id="myTags" class="htmx-fade-in htmx-fade-out">
-    <div class="badge bg-success m-2">MY TAGS</div>
+    <div class="badge bg-primary m-2">
+        <i class="fa-solid fa-tag fa-fw text-white"></i> MY TAGS
+    </div>
     <div class="mb-2 mx-2">
         <form>
             <div class="input-group">
@@ -31,7 +33,7 @@
             {% get_sorted_tags_for_object my_tag as "tags" %}
             {% for tag in tags %}
                 <div class="btn-group">
-                    <span class="badge rounded-pill bg-primary dropdown-toggle" type="button"
+                    <span class="badge rounded-pill text-bg-light dropdown-toggle" type="button"
                           data-bs-toggle="dropdown" aria-expanded="false">{{ tag }}</span>
                     <ul class="dropdown-menu">
                         <li>
@@ -56,13 +58,15 @@
     </div>
 </div><!-- My Tags End -->
 <div id="allTags" class="htmx-fade-in htmx-fade-out">
-    <div class="badge bg-success m-2">ALL TAGS</div>
+    <div class="badge bg-primary m-2">
+        <i class="fa-solid fa-tag fa-fw text-white"></i> ALL TAGS
+    </div>
     <div class="d-flex align-items-start mb-2 mx-2">
         {% if all_tags %}
             <div class="border-start border-secondary-subtle ps-2">
                 {% for tag in all_tags %}
                 <div class="btn-group">
-                    <span class="badge rounded-pill bg-primary dropdown-toggle" type="button"
+                    <span class="badge rounded-pill text-bg-light dropdown-toggle" type="button"
                           data-bs-toggle="dropdown" aria-expanded="false">{{ tag }}</span>
                     <ul class="dropdown-menu">
                         <li>

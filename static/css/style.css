@@ -1,55 +1,83 @@
+/* Font change */
+h1, h2, h3, h4, h5, h6, .breadcrumb, .logo span {
+    font-family: "Nunito", "Noto Sans KR", sans-serif;
+}
+
+body {
+    font-family: "Open Sans", "Noto Sans KR", sans-serif;
+}
+
+.card-title, .alert-heading {
+    font-family: "Poppins", "Noto Sans KR", sans-serif;
+}
+
+/* info */
 #info {
     display: none;
 }
 
-/* Empty Heart */
+.text-gray-300 {
+    color: var(--bs-gray-300) !important;
+}
+
+/* empty heart */
 i.fa-regular.fa-heart {
     color: #ddd;
     cursor: pointer;
 }
 
-/* Solid Red Heart */
+/* solid red heart */
 i.fa-solid.fa-heart {
     --bs-text-opacity: 1;
     color: #e74a3b;  /* Danger */
     cursor: pointer;
 }
 
-/* Empty Star */
+/* empty star */
 i.fa-regular.fa-star {
     color: #ddd;
     cursor: pointer;
 }
 
-/* Solid Yellow Star */
+/* solid yellow star */
 i.fa-solid.fa-star {
     color: #f6c23e;  /* Warning */
     cursor: pointer;
 }
 
-/* Solid Yellow Crown */
+/* solid yellow crown */
 i.fa-solid.fa-crown {
     color: #f6c23e;  /* Warning */
     cursor: pointer;
 }
 
-/* Solid Blue File */
+/* solid blue file */
 i.fa-solid.fa-file-lines {
     color: #0d6efd;  /* Primary */
     cursor: pointer;
 }
 
-/* Solid Green Check */
+/* solid green check */
 i.fa-solid.fa-circle-check {
     color: #1cc88a;  /* Success */
 }
 
-/* Solid Red Xmark */
+/* solid red xmark */
 i.fa-solid.fa-circle-xmark {
     color: #e74a3b;  /* Danger */
 }
 
-/* Rate Button */
+/* solid blue tag */
+i.fa-solid.fa-tag {
+    color: #0d6efd;  /* Primary */
+}
+
+/* solid yellow note */
+i.fa-solid.fa-note-sticky {
+    color: #f6c23e;  /* Warning */
+}
+
+/* rate button */
 #rateButton fieldset{
     display: inline-block; /* 하위 별점 이미지들이 있는 영역만 자리를 차지함.*/
     direction: rtl; /* 이모지 순서 반전 */
@@ -94,7 +122,7 @@ i.fa-solid.fa-circle-xmark {
     overflow: auto;
 }
 
-/* Header Style */
+/* header */
 .img-profile {
     height: 2rem;
     width: 2rem;
@@ -111,7 +139,7 @@ i.fa-solid.fa-circle-xmark {
   top: -60px;
 }
 
-/* Circled Button */
+/* circled button */
 .btn-circle {
     border-radius: 100%;
     height: 2.5rem;
@@ -134,7 +162,7 @@ i.fa-solid.fa-circle-xmark {
     font-size: 1.35rem;
 }
 
-/* User style */
+/* user style */
 form.user .custom-checkbox.small label {
     line-height: 1.5rem;
 }
@@ -152,7 +180,7 @@ form.user .btn-user {
 }
 
 
-/* Table Header */
+/* table header */
 div.td-div-xs {
     width: 1.5rem;
     display: inline-block;
@@ -255,7 +283,7 @@ div.td-div-xl {
   transition: opacity 0.25s ease-out;
 }
 
-/* Chart container */
+/* chart container */
 @media screen {
     .chart-container {
         position: relative;

@@ -1,45 +1,53 @@
 <!doctype html>{% load static %}{% load psat_filter %}{% lineless %}
 <html lang="ko">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-    <meta name="description" content="오직 나만을 위한 맞춤형 PSAT 기출노트를 만들어보세요!"/>
-    <meta name="author" content="Paedison"/>
-    <meta name="keywords" content="PSAT, 기출문제, 5급, 행정고시, 7급, 입법고시, 외교원, 외교관, 외무고시, 지역인재, 민간경력, 공무원"/>
-    <meta name="google-site-verification" content="jv9Vpec7TB34EdIig5UYbDqQ_ueu3uNlLM_FbIzwWWM"/>
-    <meta property="og:type" content="website"/>
-    <meta property="og:url" content="https://paedison.com"/>
-    <meta property="og:title" content="PSAT 기출노트 플랫폼"/>
-    <meta property="og:description" content="나만의 PSAT 기출노트 세상!"/>
-    <meta property="og:image" content="{% static 'favicon/logo_typo.png' %}"/>
-    <title>{% block head_title %}PSAT 기출노트 플랫폼{% endblock head_title %}</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+<meta name="description" content="오직 나만을 위한 맞춤형 PSAT 기출노트를 만들어보세요!"/>
+<meta name="author" content="Paedison"/>
+<meta name="keywords" content="PSAT, 기출문제, 5급, 행정고시, 7급, 입법고시, 외교원, 외교관, 외무고시, 지역인재, 민간경력, 공무원"/>
+<meta name="google-site-verification" content="jv9Vpec7TB34EdIig5UYbDqQ_ueu3uNlLM_FbIzwWWM"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://paedison.com"/>
+<meta property="og:title" content="PSAT 기출노트 플랫폼"/>
+<meta property="og:description" content="나만의 PSAT 기출노트 세상!"/>
+<meta property="og:image" content="{% static 'favicon/logo_typo.png' %}"/>
+<title>{% block head_title %}PSAT 기출노트 플랫폼{% endblock head_title %}</title>
 
-    <!-- Favicons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}"/>
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}"/>
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}"/>
-    <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}"/>
+<!-- Favicons -->
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}"/>
+<link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}"/>
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}"/>
+<link rel="manifest" href="{% static 'favicon/site.webmanifest' %}"/>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2
+?family=Black+Han+Sans
+&family=Noto+Sans+KR:wght@100;200;300;400;500;600;700;800;900
+&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000
+&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800
+&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900
+&display=swap" rel="stylesheet">
 
     <!-- Vendor CSS Files -->
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/nice-admin/css/style.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'vendor/nice-admin/css/style.css' %}"/>
 
-    <!-- Vendor JS Files -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Vendor JS Files -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-    <!-- Template Main CSS File -->
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/schedule.css' %}"/>
+<!-- Template Main CSS File -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'css/schedule.css' %}"/>
 
-    <!-- Googld AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3543306443016219"
-            crossorigin="anonymous"></script>
+<!-- Googld AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3543306443016219"
+        crossorigin="anonymous"></script>
 
-    {% block extra_head %}{% endblock extra_head %}
+{% block extra_head %}{% endblock extra_head %}
 </head>
 
 {% block html_body %}

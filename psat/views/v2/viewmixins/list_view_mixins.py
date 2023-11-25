@@ -4,7 +4,7 @@ from django.db.models.functions import Concat, Cast
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from .base_view_mixins import PsatViewInfo, PsatCustomVariableSet
+from .base_view_mixins import PsatViewInfo, PsatCustomDataSet
 from reference.models.psat_models import Psat, PsatProblem
 
 
@@ -133,19 +133,20 @@ class ListVariable(ConstantIconSet):
 
         queryset = self.get_queryset()
 
-        year_list = queryset.annotate(
-            year_suffix=Cast(
-                Concat(F('psat__year'), Value('년')), CharField()
-            )).distinct().values_list('psat__year', 'year_suffix').order_by('-psat__year')
+        year_list = (
+            queryset.annotate(
+                year=F('psat__year'),
+                year_suffix=Cast(Concat(F('psat__year'), Value('년')), CharField()))
+            .distinct().values_list('year', 'year_suffix').order_by('-psat__year'))
 
-        ex_list = queryset.distinct().values_list(
-            'psat__exam__abbr', 'psat__exam__label').order_by('psat__exam_id')
+        ex_list = (
+            queryset.annotate(ex=F('psat__exam__abbr'), exam=F('psat__exam__label'))
+            .distinct().values_list('ex', 'exam').order_by('psat__exam_id'))
 
-        sub_list = queryset.distinct().values_list(
-            'psat__subject__abbr', 'psat__subject__name').order_by('psat__subject_id')
-        new_sub_list = [
-            (sub[0], f'{self.ICON_SUBJECT[sub[0]]}{sub[1]}') for sub in list(sub_list)
-        ]
+        sub_list = (
+            queryset.annotate(sub=F('psat__subject__abbr'), subject=F('psat__subject__name'))
+            .distinct().values_list('sub', 'subject').order_by('psat__subject_id'))
+        new_sub_list = [(s[0], f'{self.ICON_SUBJECT[s[0]]}{s[1]}') for s in sub_list]
 
         like_option = [
             (True, f'{self.ICON_LIKE["true"]}즐겨찾기 추가 문제'),
@@ -159,8 +160,8 @@ class ListVariable(ConstantIconSet):
             (1, self.ICON_RATE['star1'])
         ]
         solve_option = [
-            (True, f'{self.ICON_SOLVE["correct"]}맞힌 문제'),
-            (False, f'{self.ICON_SOLVE["wrong"]}틀린 문제')
+            (True, f'{self.ICON_SOLVE["true"]}맞힌 문제'),
+            (False, f'{self.ICON_SOLVE["false"]}틀린 문제')
         ]
 
         return {
@@ -186,7 +187,7 @@ class ListVariable(ConstantIconSet):
 class PsatListViewMixIn(
     ConstantIconSet,
     PsatViewInfo,
-    PsatCustomVariableSet,
+    PsatCustomDataSet,
 ):
     """Represent PSAT list view mixin."""
 
