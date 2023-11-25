@@ -49,6 +49,7 @@ class PsatDetailView(
             'my_tag': variable.my_tag,
 
             # Icons
+            'icon_menu': self.ICON_MENU['psat'],
             'icon_like': self.ICON_LIKE,
             'icon_rate': self.ICON_RATE,
             'icon_solve': self.ICON_SOLVE,
@@ -56,7 +57,6 @@ class PsatDetailView(
             'icon_tag': self.ICON_TAG,
             'icon_nav': self.ICON_NAV,
             'icon_board': self.ICON_BOARD,
-            'icon_menu': self.ICON_MENU,
         }
 
 

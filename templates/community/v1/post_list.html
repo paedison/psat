@@ -9,7 +9,7 @@
     {% partialdef list_main inline=True %}
         {{ info|json_script:'info' }}
         <div class="pagetitle">
-            <h1>Community
+            <h1>{{ info.icon|safe }} Community
                 <span class="fs-6 text-secondary">{{ title }}</span>
             </h1>
             <nav>

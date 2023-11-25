@@ -14,6 +14,7 @@ class PsatViewInfo:
             'rate': 'warning',
             'solve': 'success',
             'search': 'primary',
+            'memo': 'warning',
             'tag': 'primary',
         }
         return {

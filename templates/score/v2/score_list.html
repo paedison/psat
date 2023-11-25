@@ -9,7 +9,7 @@
     {% partialdef list_main inline=True %}
         {{ info|json_script:'info' }}
         <div class="pagetitle">
-            <h1>{{ title }}
+            <h1>{{ icon|safe }} {{ title }}
                 <span class="fs-6 text-secondary">PSAT 기출문제 성적표</span>
             </h1>
             <nav>

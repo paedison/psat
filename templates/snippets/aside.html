@@ -16,52 +16,28 @@
 <aside id="sidebar" class="sidebar"
        hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <ul id="sidebar-nav" class="sidebar-nav">
-        {% if user.is_authenticated %}
-            <li class="nav-item">
-                <a id="noticeList" class="nav-link collapsed"
-                   href="{% url 'notice:base' %}" hx-post="{% url 'notice:base' %}">
-                    {{ notice_icon|safe }}<span>Notice</span>
-                </a>
-            </li><!-- Notice Nav End -->
+        <li class="nav-item">
+            <a id="noticeList" class="nav-link collapsed"
+               href="{% url 'notice:base' %}" hx-post="{% url 'notice:base' %}">
+                {{ notice_icon|safe }}<span>Notice</span>
+            </a>
+        </li><!-- Notice Nav End -->
 
+        {% if user.is_authenticated %}
             <li class="nav-item">
                 <a id="dashboardList" class="nav-link collapsed"
                    href="{% url 'dashboard:base' %}" hx-post="{% url 'dashboard:base' %}">
                     {{ dashboard_icon|safe }}<span>Dashboard</span>
                 </a>
             </li><!-- Dashboard Nav End -->
+        {% endif %}
 
-            <li class="nav-item" role="menuitem" aria-label="PSAT Menu">
-                <a class="nav-link collapsed" href="" aria-expanded="false"
-                   data-bs-target="#psat-nav" data-bs-toggle="collapse">
-                    {{ psat_icon|safe }}<span>PSAT</span>
-                    <i class="fa-solid fa-chevron-down ms-auto"></i>
-                </a>
-                <ul id="psat-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-                    <li>
-                        <a id="problemList" class="aside-nav-icon"
-                           href="{% url 'psat:list' 'problem' %}"
-                           hx-post="{% url 'psat:list' 'problem' %}">
-                            {{ problem_icon|safe }}<span>기출문제</span>
-                        </a>
-                        <a id="likeList" class="aside-nav-icon"
-                           href="{% url 'psat:list' 'like' %}"
-                           hx-post="{% url 'psat:list' 'like' %}">
-                            {{ like_icon|safe }}<span>즐겨찾기</span>
-                        </a>
-                        <a id="rateList" class="aside-nav-icon"
-                           href="{% url 'psat:list' 'rate' %}"
-                           hx-post="{% url 'psat:list' 'rate' %}">
-                            {{ rate_icon|safe }}<span>난이도</span>
-                        </a>
-                        <a id="answerList" class="aside-nav-icon"
-                           href="{% url 'psat:list' 'solve' %}"
-                           hx-post="{% url 'psat:list' 'solve' %}">
-                            {{ answer_icon|safe }}<span>정답확인</span>
-                        </a>
-                    </li>
-                </ul>
-            </li><!-- PSAT Nav End -->
+        <li class="nav-item">
+            <a id="psatList" class="nav-link collapsed"
+               href="{% url 'psat:base' %}" hx-post="{% url 'psat:base' %}">
+                {{ psat_icon|safe }}<span>PSAT</span>
+            </a>
+        </li><!-- PSAT Nav End -->
 
             <li class="nav-item">
                 <a id="communityList" class="nav-link collapsed"
@@ -94,33 +70,13 @@
                 </li><!-- Score Nav End -->
             {% endif %}
 
-            <li class="nav-item">
-                <a id="scheduleList" class="nav-link collapsed"
-                   href="{% url 'schedule:base' %}" hx-post="{% url 'schedule:base' %}">
-                    {{ schedule_icon|safe }}<span>Schedule</span>
-                </a>
-            </li><!-- Schedule Nav End -->
+        <li class="nav-item">
+            <a id="scheduleList" class="nav-link collapsed"
+               href="{% url 'schedule:base' %}" hx-post="{% url 'schedule:base' %}">
+                {{ schedule_icon|safe }}<span>Schedule</span>
+            </a>
+        </li><!-- Schedule Nav End -->
 
-        {% else %}
-            <li class="nav-item">
-                <a id="noticeList" class="nav-link collapsed"
-                   href="{% url 'notice:base' %}" hx-post="{% url 'notice:base' %}">
-                    {{ notice_icon|safe }}<span>Notice</span>
-                </a>
-            </li><!-- Notice Nav End -->
-            <li class="nav-item">
-                <a id="problemList" class="nav-link collapsed"
-                   href="{% url 'psat:base' %}" hx-post="{% url 'psat:base' %}">
-                    {{ psat_icon|safe }}<span>PSAT</span>
-                </a>
-            </li><!-- PSAT Nav End -->
-            <li class="nav-item">
-                <a id="scheduleList" class="nav-link collapsed"
-                   href="{% url 'schedule:base' %}" hx-post="{% url 'schedule:base' %}">
-                    {{ schedule_icon|safe }}<span>Schedule</span>
-                </a>
-            </li><!-- Schedule Nav End -->
-        {% endif %}
     </ul>
     <div class="d-none d-md-block text-center">
         <button id="sidebarToggle" class="rounded-circle border-0"></button>

@@ -2,11 +2,9 @@
 h1, h2, h3, h4, h5, h6, .breadcrumb, .logo span {
     font-family: "Nunito", "Noto Sans KR", sans-serif;
 }
-
 body {
     font-family: "Open Sans", "Noto Sans KR", sans-serif;
 }
-
 .card-title, .alert-heading {
     font-family: "Poppins", "Noto Sans KR", sans-serif;
 }
@@ -20,61 +18,38 @@ body {
     color: var(--bs-gray-300) !important;
 }
 
-/* empty heart */
-i.fa-regular.fa-heart {
-    color: #ddd;
-    cursor: pointer;
-}
-
-/* solid red heart */
+/* custom icons */
 i.fa-solid.fa-heart {
-    --bs-text-opacity: 1;
-    color: #e74a3b;  /* Danger */
+    color: #e74a3b;  /* danger(red) */
     cursor: pointer;
 }
-
-/* empty star */
-i.fa-regular.fa-star {
-    color: #ddd;
-    cursor: pointer;
-}
-
-/* solid yellow star */
 i.fa-solid.fa-star {
-    color: #f6c23e;  /* Warning */
+    color: #f6c23e;  /* warning(yellow) */
     cursor: pointer;
 }
-
-/* solid yellow crown */
 i.fa-solid.fa-crown {
-    color: #f6c23e;  /* Warning */
+    color: #f6c23e;  /* warning(yellow) */
     cursor: pointer;
 }
-
-/* solid blue file */
 i.fa-solid.fa-file-lines {
-    color: #0d6efd;  /* Primary */
+    color: #0d6efd;  /* primary(blue) */
     cursor: pointer;
 }
-
-/* solid green check */
 i.fa-solid.fa-circle-check {
-    color: #1cc88a;  /* Success */
+    color: #1cc88a;  /* success(green) */
+    cursor: pointer;
 }
-
-/* solid red xmark */
 i.fa-solid.fa-circle-xmark {
-    color: #e74a3b;  /* Danger */
+    color: #e74a3b;  /* danger(red) */
+    cursor: pointer;
 }
-
-/* solid blue tag */
-i.fa-solid.fa-tag {
-    color: #0d6efd;  /* Primary */
-}
-
-/* solid yellow note */
+/*i.fa-solid.fa-tag {*/
+/*    color: #0d6efd;  !* primary(blue) *!*/
+/*    cursor: pointer;*/
+/*}*/
 i.fa-solid.fa-note-sticky {
-    color: #f6c23e;  /* Warning */
+    color: #f6c23e;  /* warning(yellow) */
+    cursor: pointer;
 }
 
 /* rate button */
@@ -111,7 +86,6 @@ i.fa-solid.fa-note-sticky {
     border:none;
     resize:none;
 }
-
 .comment-form:focus {
     outline:none;
 }
@@ -127,14 +101,12 @@ i.fa-solid.fa-note-sticky {
     height: 2rem;
     width: 2rem;
 }
-
 .topbar-divider {
     width: 0;
     border-right: 1px solid #e3e6f0;
     height: calc(4.375rem - 2rem);
     margin: auto 1rem;
 }
-
 .header.hide {
   top: -60px;
 }
@@ -149,13 +121,11 @@ i.fa-solid.fa-note-sticky {
     align-items: center;
     justify-content: center;
 }
-
 .btn-circle.btn-sm, .btn-group-sm > .btn-circle.btn {
     height: 1.8rem;
     width: 1.8rem;
     font-size: 0.75rem;
 }
-
 .btn-circle.btn-lg, .btn-group-lg > .btn-circle.btn {
     height: 3.5rem;
     width: 3.5rem;
@@ -166,13 +136,11 @@ i.fa-solid.fa-note-sticky {
 form.user .custom-checkbox.small label {
     line-height: 1.5rem;
 }
-
 form.user .form-control-user {
     font-size: 0.8rem;
     border-radius: 10rem;
     padding: 1.5rem 1rem;
 }
-
 form.user .btn-user {
     font-size: 0.8rem;
     border-radius: 10rem;
@@ -186,25 +154,21 @@ div.td-div-xs {
     display: inline-block;
     text-align: center;
 }
-
 div.td-div-sm {
     width: 2rem;
     display: inline-block;
     text-align: center;
 }
-
 div.td-div-md {
     width: 3rem;
     display: inline-block;
     text-align: center;
 }
-
 div.td-div-lg {
     width: 5rem;
     display: inline-block;
     text-align: center;
 }
-
 div.td-div-xl {
     width: 7.5rem;
     display: inline-block;
@@ -216,18 +180,15 @@ div.td-div-xl {
   margin-right: 0;
   transition: transform 0.2s ease-in-out;
 }
-
 .sidebar-nav .nav-link:not(.collapsed) .fa-chevron-down {
   transform: rotate(180deg);
 }
-
 .sidebar-nav .nav-content a i {
   font-size: 14px;
   margin-right: 8px;
   line-height: 0;
   border-radius: 50%;
 }
-
 .sidebar #sidebarToggle {
   width: 2.5rem;
   height: 2.5rem;
@@ -235,18 +196,15 @@ div.td-div-xl {
   margin-bottom: 1rem;
   cursor: pointer;
 }
-
 .sidebar #sidebarToggle::after {
   font-weight: 900;
   content: '\f104';
   font-family: 'Font Awesome 5 Free';
   margin-right: 0.1rem;
 }
-
 .sidebar #sidebarToggle:hover {
   text-decoration: none;
 }
-
 .sidebar #sidebarToggle:focus {
   outline: none;
 }
@@ -254,7 +212,6 @@ div.td-div-xl {
 .tag-name {
     cursor: pointer;
 }
-
 .tag-button {
     border-radius: 50rem;
 }
@@ -293,7 +250,6 @@ div.td-div-xl {
         height: 100vh;
     }
 }
-
 @media screen and (min-width: 768px) {
     .chart-container {
         position: relative;
@@ -303,7 +259,6 @@ div.td-div-xl {
         min-height: 400px;
     }
 }
-
 .chart-container.print {
     display: flex;
     justify-content: center;

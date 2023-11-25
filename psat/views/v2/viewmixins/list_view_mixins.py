@@ -25,21 +25,13 @@ class ListVariable(ConstantIconSet):
         self.sub: str = request.GET.get('sub', '')
         self.page_number: str | int = request.GET.get('page', 1)
 
-        is_liked: str = request.GET.get('is_liked', '')
-        is_liked_dict: dict = {'True': True, 'False': False}
-        self.is_liked: str | bool = '' if is_liked == '' else is_liked_dict[is_liked]
-
-        rating: str = request.GET.get('rating', '')
-        self.rating: str | int = '' if rating == '' else int(rating)
-
-        is_correct: str = request.GET.get('is_correct', '')
-        is_correct_dict: dict = {'': None, 'True': True, 'False': False}
-        self.is_correct: str | bool = '' if is_correct == '' else is_correct_dict[is_correct]
-
-        if request.method == 'GET':
-            self.search_data: str = request.GET.get('data', '')
-        else:
-            self.search_data: str = request.POST.get('data', '')
+        options = self.get_request_options()
+        self.is_liked: str | bool = options['is_liked']
+        self.rating: str | int = options['rating']
+        self.is_correct: str | bool = options['is_correct']
+        self.has_memo: str | bool = options['has_memo']
+        self.has_tag: str | bool = options['has_tag']
+        self.search_data: str = options['search_data']
 
         self.ip_address: str = request.META.get('REMOTE_ADDR')
 
@@ -51,12 +43,33 @@ class ListVariable(ConstantIconSet):
             f'&data={self.search_data}'
         )
 
+    def get_request_options(self) -> dict:
+        true_false_dict = {'True': True, 'False': False}
+
+        req_is_liked = self.request.GET.get('is_liked') if self.view_type == 'like' else ''
+        req_rating = self.request.GET.get('rating') if self.view_type == 'rate' else ''
+        req_is_correct = self.request.GET.get('is_correct') if self.view_type == 'solve' else ''
+        req_has_memo = self.request.GET.get('has_memo') if self.view_type == 'memo' else ''
+        req_has_tag = self.request.GET.get('has_tag') if self.view_type == 'tag' else ''
+        req_search_data = self.request.GET.get('data', '') or self.request.POST.get('data', '')
+
+        return {
+            'is_liked': '' if req_is_liked == '' else true_false_dict[req_is_liked],
+            'rating': '' if req_rating == '' else int(req_rating),
+            'is_correct': '' if req_is_correct == '' else true_false_dict[req_is_correct],
+            'has_memo': '' if req_has_memo == '' else true_false_dict[req_has_memo],
+            'has_tag': '' if req_has_tag == '' else true_false_dict[req_has_tag],
+            'search_data': req_search_data if self.view_type == 'search' else '',
+        }
+
     def get_title(self) -> str:
         title_dict = {
             'problem': '기출문제',
             'like': '즐겨찾기',
             'rate': '난이도',
             'solve': '정답확인',
+            'memo': '메모',
+            'tag': '태그',
             'search': '검색 결과',
         }
         return title_dict[self.view_type]
@@ -75,6 +88,8 @@ class ListVariable(ConstantIconSet):
             'like': ('likes__is_liked', self.is_liked),
             'rate': ('rates__rating', self.rating),
             'solve': ('solves__is_correct', self.is_correct),
+            'memo': (None, None),
+            'tag': (None, None),
             'search': (None, None),
         }
         field, value = custom_field[self.view_type]
@@ -89,6 +104,8 @@ class ListVariable(ConstantIconSet):
             'like': {'likes__user_id': self.user_id},
             'rate': {'rates__user_id': self.user_id},
             'solve': {'solves__user_id': self.user_id},
+            'memo': {'memos__user_id': self.user_id},
+            'tag': {'tags__user_id': self.user_id},
             'search': {'data__contains': self.search_data},
         }
         problem_filter &= Q(**additional_filter[self.view_type])
@@ -98,6 +115,9 @@ class ListVariable(ConstantIconSet):
             .only('id', 'psat_id', 'number', 'answer', 'question')
             .select_related('psat', 'psat__exam', 'psat__subject')
             .prefetch_related('likes', 'rates', 'solves')
+            .annotate(
+                year=F('psat__year'), ex=F('psat__exam__abbr'), exam=F('psat__exam__name'),
+                sub=F('psat__subject__abbr'), subject=F('psat__subject__name'))
         )
 
     def get_sub_title(self) -> str:
@@ -112,6 +132,7 @@ class ListVariable(ConstantIconSet):
 
         title_parts = []
         sub_title = ''
+
         if self.view_type == 'problem':
             if self.year or self.ex or self.sub:
                 if self.year != '':
@@ -121,6 +142,48 @@ class ListVariable(ConstantIconSet):
                 if self.sub != '':
                     title_parts.append(psat.subject.name)
                 sub_title = f'{" ".join(title_parts)} PSAT 기출문제'
+            else:
+                sub_title = '전체 PSAT 기출문제'
+
+        elif self.view_type == 'like':
+            if self.is_liked:
+                sub_title = self.ICON_LIKE['true'] + ' 즐겨찾기 추가'
+            else:
+                sub_title = self.ICON_LIKE['false'] + ' 즐겨찾기 제외'
+
+        elif self.view_type == 'rate':
+            sub_title = self.ICON_RATE[f'star{self.rating}']
+
+        elif self.view_type == 'solve':
+            if self.is_correct:
+                sub_title = self.ICON_SOLVE['true'] + ' 맞힌 문제'
+            else:
+                sub_title = self.ICON_SOLVE['false'] + ' 틀린 문제'
+
+        elif self.view_type == 'memo':
+            if self.has_memo:
+                sub_title = self.ICON_MEMO['true'] + ' 메모 달린 문제'
+            else:
+                sub_title = self.ICON_MEMO['false'] + ' 메모 없는 문제'
+
+        elif self.view_type == 'tag':
+            if self.has_tag:
+                sub_title = self.ICON_TAG['true'] + ' 태그 달린 문제'
+            else:
+                sub_title = self.ICON_TAG['false'] + ' 태그 없는 문제'
+
+        elif self.view_type == 'search':
+            if self.year or self.ex or self.sub:
+                if self.year != '':
+                    title_parts.append(f'{psat.year}년')
+                if self.ex != '':
+                    title_parts.append(psat.exam.label)
+                if self.sub != '':
+                    title_parts.append(psat.subject.name)
+                sub_title = f'{" ".join(title_parts)} 검색 결과'
+            else:
+                sub_title = '전체 검색 결과'
+
         return sub_title
 
     def get_options(self) -> dict:
@@ -149,8 +212,8 @@ class ListVariable(ConstantIconSet):
         new_sub_list = [(s[0], f'{self.ICON_SUBJECT[s[0]]}{s[1]}') for s in sub_list]
 
         like_option = [
-            (True, f'{self.ICON_LIKE["true"]}즐겨찾기 추가 문제'),
-            (False, f'{self.ICON_LIKE["false"]}즐겨찾기 제외 문제')
+            (True, f'{self.ICON_LIKE["true"]}즐겨찾기 추가'),
+            (False, f'{self.ICON_LIKE["false"]}즐겨찾기 제외')
         ]
         rate_option = [
             (5, self.ICON_RATE['star5']),
@@ -163,6 +226,14 @@ class ListVariable(ConstantIconSet):
             (True, f'{self.ICON_SOLVE["true"]}맞힌 문제'),
             (False, f'{self.ICON_SOLVE["false"]}틀린 문제')
         ]
+        memo_option = [
+            (True, f'{self.ICON_MEMO["true"]}메모 남긴 문제'),
+            (False, f'{self.ICON_MEMO["false"]}메모 없는 문제')
+        ]
+        tag_option = [
+            (True, f'{self.ICON_TAG["true"]}태그 달린 문제'),
+            (False, f'{self.ICON_TAG["false"]}태그 없는 문제')
+        ]
 
         return {
             'year_option': get_option(year_list),
@@ -171,6 +242,8 @@ class ListVariable(ConstantIconSet):
             'like_option': like_option,
             'rate_option': rate_option,
             'solve_option': solve_option,
+            'memo_option': memo_option,
+            'tag_option': tag_option,
         }
 
     def get_paginator_info(self) -> tuple[object, object]:
@@ -179,8 +252,7 @@ class ListVariable(ConstantIconSet):
 
         paginator = Paginator(queryset, 10)
         page_obj = paginator.get_page(self.page_number)
-        page_range = paginator.get_elided_page_range(
-            number=self.page_number, on_each_side=3, on_ends=1)
+        page_range = paginator.get_elided_page_range(number=self.page_number, on_each_side=3, on_ends=1)
         return page_obj, page_range
 
 

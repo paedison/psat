@@ -1,7 +1,7 @@
 const info = JSON.parse($('#info').text());
 const menu = info['menu'];  // notice, dashboard, psat, score, schedule
 const view_type = info['view_type'];  // problem, like, rate, solve, search, psatScore, primeScore
-const parent_menu = ['psat', 'score']  // menu with child branches
+const parent_menu = ['score']  // menu with child branches
 
 
 // Toggle the side navigation

@@ -9,7 +9,7 @@
 {% partialdef detail_main inline=True %} {# detail_main partial #}
 {{ info|json_script:'info' }}
 <div class="pagetitle">
-    <h1>PSAT
+    <h1>{{ icon_menu|safe }} PSAT
         <span class="fs-6 text-secondary">{{ problem.psat.year }}년 {{ problem.psat.exam.name }}
             {{ problem.psat.subject.name }} {{ problem.number }}번</span>
     </h1>

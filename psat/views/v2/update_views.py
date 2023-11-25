@@ -28,6 +28,9 @@ class PsatCustomUpdateView(
         return {
             option_name: getattr(data_instance, option_name),
             'problem': data_instance,
+            'like_data': None,
+            'rate_data': None,
+            'solve_data': None,
             'icon_like': self.ICON_LIKE if view_type == 'like' else '',
             'icon_rate': self.ICON_RATE if view_type == 'rate' else '',
             'icon_solve': self.ICON_SOLVE if view_type == 'solve' else '',

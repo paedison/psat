@@ -44,22 +44,26 @@ class ConstantIconSet:
     ICON_LIKE = {
         'true': '<i class="fa-solid fa-heart"></i>',
         'false': '<i class="fa-solid fa-heart text-gray-300"></i>',
+        'filter': '<i class="fa-regular fa-heart"></i>',
     }
 
     ICON_SOLVE = {
         'true': '<i class="fa-solid fa-circle-check"></i>',
         'false': '<i class="fa-solid fa-circle-xmark"></i>',
         'none': '<i class="fa-solid fa-circle-check text-gray-300"></i>',
+        'filter': '<i class="fa-regular fa-circle-check"></i>',
     }
 
     ICON_MEMO = {
         'true': '<i class="fa-solid fa-note-sticky"></i>',
         'false': '<i class="fa-solid fa-note-sticky text-gray-300"></i>',
+        'filter': '<i class="fa-regular fa-note-sticky"></i>',
     }
 
     ICON_TAG = {
-        'true': '<i class="fa-solid fa-tag"></i>',
+        'true': '<i class="fa-solid fa-tag text-primary"></i>',
         'false': '<i class="fa-solid fa-tag text-gray-300"></i>',
+        'filter': '<i class="fa-solid fa-tag"></i>',
     }
 
     @staticmethod
@@ -73,6 +77,7 @@ class ConstantIconSet:
             'star3': "".join([solid_star for _ in range(0, 3)] + [empty_star for _ in range(0, 2)]),
             'star4': "".join([solid_star for _ in range(0, 4)] + [empty_star for _ in range(0, 1)]),
             'star5': "".join([solid_star for _ in range(0, 5)]),
+            'filter': '<i class="fa-regular fa-star"></i>',
         }
     ICON_RATE = get_star_icons()
 

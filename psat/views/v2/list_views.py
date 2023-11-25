@@ -42,6 +42,8 @@ class PsatListView(
             'is_liked': variable.is_liked,
             'rating': variable.rating,
             'is_correct': variable.is_correct,
+            'has_memo': variable.has_memo,
+            'has_tag': variable.has_tag,
             'search_data': variable.search_data,
 
             # Urls
@@ -55,6 +57,8 @@ class PsatListView(
             'like_option': options['like_option'],
             'rate_option': options['rate_option'],
             'solve_option': options['solve_option'],
+            'memo_option': options['memo_option'],
+            'tag_option': options['tag_option'],
 
             # Paginator
             'page_obj': page_obj,
@@ -75,7 +79,7 @@ class PsatListView(
             'search_list': view_type == 'search',
 
             # Icons
-            'icon_menu': self.ICON_MENU[view_type],
+            'icon_menu': self.ICON_MENU['psat'],
             'icon_like': self.ICON_LIKE,
             'icon_rate': self.ICON_RATE,
             'icon_solve': self.ICON_SOLVE,
