@@ -26,13 +26,12 @@ class PsatListView(
 
         custom_data = self.get_custom_data()
         page_obj, page_range = variable.get_paginator_info()
-        options = variable.get_options()
 
         return {
             # Info & title
             'info': self.get_info(view_type),
-            'title': variable.get_title(),
-            'sub_title': variable.get_sub_title(),
+            'title': variable.title,
+            'sub_title': variable.sub_title,
 
             # Variables
             'year': variable.year,
@@ -51,14 +50,14 @@ class PsatListView(
             'pagination_url': variable.pagination_url,
 
             # Filter options
-            'year_option': options['year_option'],
-            'ex_option': options['ex_option'],
-            'sub_option': options['sub_option'],
-            'like_option': options['like_option'],
-            'rate_option': options['rate_option'],
-            'solve_option': options['solve_option'],
-            'memo_option': options['memo_option'],
-            'tag_option': options['tag_option'],
+            'year_option': variable.year_option,
+            'ex_option': variable.ex_option,
+            'sub_option': variable.sub_option,
+            'like_option': variable.like_option,
+            'rate_option': variable.rate_option,
+            'solve_option': variable.solve_option,
+            'memo_option': variable.memo_option,
+            'tag_option': variable.tag_option,
 
             # Paginator
             'page_obj': page_obj,

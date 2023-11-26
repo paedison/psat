@@ -1,66 +1,60 @@
 {% load i18n %}
 {% load partials %}
 
-{# MemoDetailView -> context: memo #}
-{# MemoUpdateView -> context: memo #}
-{# MemoCreateView -> context: problem #}
-
-<div id="myMemo" class="htmx-fade-in htmx-fade-out">
-    <div class="badge bg-warning m-2">
-        <i class="fa-solid fa-note-sticky fa-fw text-white"></i> MEMO
+<div id="myMemo" class="border-bottom p-2 htmx-fade-in htmx-fade-out">
+    <div class="badge bg-warning mb-2">
+        {{ icon_memo.white|safe }} MEMO
     </div>
-    {% if memo %}
-        <div class="d-flex align-items-start mb-2 mx-2">
+    {% if my_memo %}
+        <div class="d-flex align-items-start mb-2">
             <div id="myMemoContent" class="flex-fill border-start border-secondary-subtle px-2">
-                <span class="text-secondary fw-bold text-break">{{ memo.content }}</span>
+                <span class="text-secondary fw-bold text-break">{{ my_memo.content }}</span>
             </div>
             <a class="btn btn-circle btn-sm btn-outline-success me-1" title="{% trans 'Update' %}"
-               hx-get="{% url 'psat:memo_update' memo.id %}"
+               hx-get="{% url 'psat:memo_update' my_memo.id %}"
                hx-target="#myMemoContent" hx-swap="innerHTML" href="">
                 {{ icon_board.update|safe }}
             </a>
             <a class="btn btn-circle btn-sm btn-outline-danger" title="{% trans 'Delete' %}"
-               hx-post="{% url 'psat:memo_delete' memo.id %}"
+               hx-post="{% url 'psat:memo_delete' my_memo.id %}"
                hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
                hx-target="#detailMemo" hx-swap="innerHTML" href="">
                 {{ icon_board.delete|safe }}
             </a>
         </div>
     {% else %}
-        <div class="mb-2 mx-2">
-            <form>
-                <div class="input-group">
-                    {% csrf_token %}
-                    <input name="user_id" type="text" value="{{ user.id }}"
-                           aria-label="User" hidden/>
-                    <input name="problem" type="text" value="{{ problem.id }}"
-                           aria-label="Problem" hidden/>
-                    <input name="content" type="text" aria-label="Content" required
-                           class="form-control form-control-sm"
-                           placeholder="{% trans 'Leave memo' %}"/>
-                    <button class="btn btn-sm btn-outline-primary" hx-target="#detailMemo"
-                            hx-post="{% url 'psat:memo_create' problem.id %}" hx-swap="innerHTML">
-                        {% trans 'Create' %}
-                    </button>
-                </div>
-            </form>
-        </div>
+        <form>
+            <div class="input-group">
+                {% csrf_token %}
+                <input name="user_id" type="text" value="{{ user.id }}"
+                       aria-label="User" hidden/>
+                <input name="problem" type="text" value="{{ problem.id }}"
+                       aria-label="Problem" hidden/>
+                <input name="content" type="text" aria-label="Content" required
+                       class="form-control form-control-sm"
+                       placeholder="{% trans 'Leave memo' %}"/>
+                <button class="btn btn-sm btn-outline-primary" hx-target="#detailMemo"
+                        hx-post="{% url 'psat:memo_create' problem.id %}" hx-swap="innerHTML">
+                    {% trans 'Create' %}
+                </button>
+            </div>
+        </form>
     {% endif %}
-</div><!-- Problem Memo End -->
+</div><!-- My Memo End -->
 
 {% partialdef update %} {# update partial #}
 <form>
     <div class="input-group">
         {% csrf_token %}
-        <input name="user_id" type="text" value="{{ memo.user_id }}"
+        <input name="user_id" type="text" value="{{ my_memo.user_id }}"
                aria-label="User" hidden/>
-        <input name="problem" type="text" value="{{ memo.problem.id }}"
+        <input name="problem" type="text" value="{{ my_memo.problem.id }}"
                aria-label="Problem" hidden/>
         <input name="content" type="text" aria-label="Content" required
-               class="form-control form-control-sm" value="{{ memo.content }}"
+               class="form-control form-control-sm" value="{{ my_memo.content }}"
                placeholder="{% trans 'Leave memo' %}"/>
         <button class="btn btn-sm btn-outline-primary" hx-target="#detailMemo"
-                hx-post="{% url 'psat:memo_update' memo.id %}" hx-swap="innerHTML">
+                hx-post="{% url 'psat:memo_update' my_memo.id %}" hx-swap="innerHTML">
             {% trans 'Update' %}
         </button>
     </div>

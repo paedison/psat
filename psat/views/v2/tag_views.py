@@ -7,7 +7,8 @@ from .viewmixins import TagViewMixIn
 
 class TagContainerView(TagViewMixIn, TemplateView):
     """View for loading problem tag container."""
-    template_name = 'psat/v2/snippets/tag_container.html'
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
         variable = self.get_tag_variable(self.request, **self.kwargs)
@@ -16,13 +17,12 @@ class TagContainerView(TagViewMixIn, TemplateView):
             'my_tag_list': variable.get_my_tag_list(),
             'all_tags': variable.get_all_tag_list(),
             'problem': variable.problem,
+            'icon_tag': self.ICON_TAG,
         }
 
 
 class TagCreateView(TagViewMixIn, CreateView):
     """View for creating problem tag."""
-    template_name = 'psat/v2/snippets/tag_create.html'
-
     def get_success_url(self):
         return reverse_lazy(f'psat:tag_container', args=[self.object.id])
 
@@ -40,13 +40,12 @@ class TagCreateView(TagViewMixIn, CreateView):
         return {
             'all_tags': variable.get_all_tag_list(),
             'problem': variable.problem,
+            'icon_tag': self.ICON_TAG,
         }
 
 
 class TagAddView(TagViewMixIn, UpdateView):
     """View for adding problem tag."""
-    template_name = 'psat/v2/snippets/tag_container.html'
-
     def get_success_url(self):
         return reverse_lazy(f'psat:tag_container', args=[self.object.id])
 
@@ -57,13 +56,6 @@ class TagAddView(TagViewMixIn, UpdateView):
             self.object.tags.add(tag)
         return response
 
-    def get_context_data(self, **kwargs) -> dict:
-        variable = self.get_tag_variable(self.request, **self.kwargs)
-        return {
-            'all_tags': variable.get_all_tag_list(),
-            'problem': variable.problem,
-        }
-
 
 class TagDeleteView(TagViewMixIn, DeleteView):
     """View for deleting problem tag."""
@@ -73,15 +65,11 @@ class TagDeleteView(TagViewMixIn, DeleteView):
         """Return tag_name for deleting."""
         return self.kwargs.get('tag_name')
 
-    @property
-    def success_url(self):
-        """Return success_url 'before' deleting the tag."""
-        return reverse_lazy(f'psat:tag_container', args=[self.object.id])
-
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        success_url = reverse_lazy(f'psat:tag_container', args=[self.object.id])
         self.object.tags.remove(self.tag_name)
-        return HttpResponseRedirect(self.success_url)
+        return HttpResponseRedirect(success_url)
 
 
 class TagCloudView(TagViewMixIn, TemplateView):

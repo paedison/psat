@@ -1,9 +1,11 @@
 from django.db import transaction
+from django.db.models import F
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
 from dashboard.models.psat_data_models import PsatOpenLog
-from psat.models import Open, Memo, Tag
+from psat.models import Open, Memo
+from psat.models import Tag as PsatTag
 from reference.models import PsatProblem
 from .base_view_mixins import PsatCustomDataSet, PsatViewInfo
 
@@ -21,6 +23,9 @@ class DetailViewVariable:
             PsatProblem.objects.only('id', 'psat_id', 'number', 'answer', 'question')
             .select_related('psat', 'psat__exam', 'psat__subject')
             .prefetch_related('likes', 'rates', 'solves')
+            .annotate(
+                year=F('psat__year'), ex=F('psat__exam__abbr'), exam=F('psat__exam__name'),
+                sub=F('psat__subject__abbr'), subject=F('psat__subject__name'))
             .get(id=self.problem_id)
         )
 
@@ -28,7 +33,7 @@ class DetailViewVariable:
 
         if request.user.is_authenticated:
             self.memo: Memo = Memo.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
-            self.my_tag: Tag = Tag.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
+            self.my_tag: PsatTag = PsatTag.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
         else:
             self.memo = self.my_tag = None
 

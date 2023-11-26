@@ -48,6 +48,9 @@
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="dropdown{{ var|title }}Link">
                                     {% for opt in option %}
+                                        {% if forloop.last %}
+                                            <li><hr class="dropdown-divider"></li>
+                                        {% endif %}
                                         <li class="text-center">
                                             <a class="dropdown-item {% if opt.0 == current %}bg-primary-light{% endif %}"
                                                href="" hx-get="{% partial target_url %}">
@@ -60,15 +63,15 @@
                         {% endwith %}
 
 {% partialdef target_url %} {# target_url partial #}
+{% if var != 'year' and var != 'ex' and var != 'sub' %}
+{{ opt.2 }}
+{% else %}
 {{ base_url }}?year={% if var == 'year' %}{{ opt.0 }}{% else %}{{ year }}{% endif %}
 &ex={% if var == 'ex' %}{{ opt.0 }}{% else %}{{ ex }}{% endif %}
 &sub={% if var == 'sub' %}{{ opt.0 }}{% else %}{{ sub }}{% endif %}
-&is_liked={% if var == 'like' %}{{ opt.0 }}{% else %}{{ is_liked }}{% endif %}
-&rating={% if var == 'rate' %}{{ opt.0 }}{% else %}{{ rating }}{% endif %}
-&is_correct={% if var == 'solve' %}{{ opt.0 }}{% else %}{{ is_correct }}{% endif %}
-&has_memo={% if var == 'memo' %}{{ opt.0 }}{% else %}{{ has_memo }}{% endif %}
-&has_tag={% if var == 'tag' %}{{ opt.0 }}{% else %}{{ has_tag }}{% endif %}
-&data={{ search_data }}&date={{ search_date }}
+&is_liked={{ is_liked }}&rating={{rating }}&is_correct={{ is_correct }}
+&has_memo={{ has_memo }}&has_tag={{ has_tag }}&data={{ search_data }}&date={{ search_date }}
+{% endif %}
 {% endpartialdef target_url %}
 
                         {% with var='solve' text=icon_solve.filter|safe current=is_correct option=solve_option base_url='/psat/solve/' %}
@@ -90,7 +93,7 @@
                     {% endif %}
                 </div>
                 <div class="col-12 col-sm-6 dropdown text-center text-sm-end text-nowrap">
-                    <a type="button" class="btn btn-sm btn-primary" href="" hx-get="/psat/">전체</a>
+                    <a type="button" class="btn btn-sm btn-primary" href="" hx-get="/psat/" hx-push-url="true">전체</a>
                     {% with var='year' text='연도' total='전체 연도' current=year option=year_option %}
                         {% partial filter_snippet %}
                     {% endwith %}

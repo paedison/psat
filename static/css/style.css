@@ -265,3 +265,17 @@ div.td-div-xl {
     width: 1000px;
     height: 500px;
 }
+
+.card-title > div > span > i {
+    margin-right: 7px;
+}
+
+/* Dropdown menus */
+.dropdown-menu {
+  padding: 0;
+}
+.dropdown-menu .dropdown-item i {
+  margin-right: 5px;
+  line-height: 1;
+  font-size: 14px;
+}

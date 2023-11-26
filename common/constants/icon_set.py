@@ -58,12 +58,14 @@ class ConstantIconSet:
         'true': '<i class="fa-solid fa-note-sticky"></i>',
         'false': '<i class="fa-solid fa-note-sticky text-gray-300"></i>',
         'filter': '<i class="fa-regular fa-note-sticky"></i>',
+        'white': '<i class="fa-regular fa-note-sticky fa-fw text-white"></i>',
     }
 
     ICON_TAG = {
         'true': '<i class="fa-solid fa-tag text-primary"></i>',
         'false': '<i class="fa-solid fa-tag text-gray-300"></i>',
         'filter': '<i class="fa-solid fa-tag"></i>',
+        'white': '<i class="fa-solid fa-tag fa-fw text-white"></i>',
     }
 
     @staticmethod
@@ -71,6 +73,8 @@ class ConstantIconSet:
         solid_star = '<i class="fa-solid fa-star m-0"></i>'
         empty_star = '<i class="fa-solid fa-star m-0 text-gray-300"></i>'
         return {
+            'star': "".join([empty_star for _ in range(0, 5)]),
+            'starNone': "".join([empty_star for _ in range(0, 5)]),
             'star0': "".join([empty_star for _ in range(0, 5)]),
             'star1': "".join([solid_star for _ in range(0, 1)] + [empty_star for _ in range(0, 4)]),
             'star2': "".join([solid_star for _ in range(0, 2)] + [empty_star for _ in range(0, 3)]),

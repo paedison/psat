@@ -11,7 +11,7 @@ from reference.models.psat_models import PsatProblem
 from .base_view_mixins import PsatViewInfo
 
 
-class ListVariable(ConstantIconSet):
+class TagViewVariable(ConstantIconSet):
     menu = 'tag'
 
     def __init__(self, request, **kwargs):
@@ -80,12 +80,15 @@ class TagViewMixIn(
     PsatViewInfo,
 ):
     """Setting mixin for Tag views."""
+    object: any
+
     model = PsatTag
-    form_class = TagForm
-    context_object_name = 'my_tag'
     lookup_field = 'id'
     lookup_url_kwarg = 'tag_id'
+    form_class = TagForm
+    context_object_name = 'my_tag'
+    template_name = 'psat/v2/snippets/tag_container.html'
 
     @staticmethod
     def get_tag_variable(request, **kwargs):
-        return ListVariable(request, **kwargs)
+        return TagViewVariable(request, **kwargs)
