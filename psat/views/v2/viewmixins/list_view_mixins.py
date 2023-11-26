@@ -121,7 +121,7 @@ class ListVariable(ConstantIconSet):
         req_search_data = self.request.GET.get('data', '') or self.request.POST.get('data', '')
 
         rating_dict = {
-            '': '', '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, 'pass': 'pass'
+            '': '', '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, 'pass': 'pass', 'None': None
         }
         rating = rating_dict[req_rating]
 
