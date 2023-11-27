@@ -18,6 +18,10 @@ body {
     color: var(--bs-gray-300) !important;
 }
 
+.bg-gray-300 {
+    background-color: var(--bs-gray-300) !important;
+}
+
 /* custom icons */
 i.fa-solid.fa-heart {
     color: #e74a3b;  /* danger(red) */
@@ -43,10 +47,6 @@ i.fa-solid.fa-circle-xmark {
     color: #e74a3b;  /* danger(red) */
     cursor: pointer;
 }
-/*i.fa-solid.fa-tag {*/
-/*    color: #0d6efd;  !* primary(blue) *!*/
-/*    cursor: pointer;*/
-/*}*/
 i.fa-solid.fa-note-sticky {
     color: #f6c23e;  /* warning(yellow) */
     cursor: pointer;

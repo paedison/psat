@@ -1,0 +1,109 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+
+{% block main %}
+{% partialdef detail_main inline=True %} {# detail_main partial #}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon|safe }} {{ info.menu|title }}
+        <span class="fs-6 text-secondary">공지사항</span>
+    </h1>
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item active">{{ info.menu|title }}</li>
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
+
+<section class="section">
+    {% #content_row class1='col-12' %}
+        <h5 class="card-title mb-0">
+            {% partial buttons %}
+        </h5>
+
+        <h6 class="border-top pt-2 text-primary fw-bold">
+            {% if post.top_fixed %}
+                <span class="text-danger">{{ board_icon.top_fixed|safe }}</span>
+            {% endif %}
+            {% if post.is_hidden %}
+                <span class="text-danger">{{ board_icon.is_hidden|safe }}</span>
+            {% endif %}
+            {{ post.title }}
+        </h6>
+        <div class="border-bottom pb-2 small text-secondary">
+            <span class="me-1">{{ post.user.username }}</span>
+            <span class="me-1">조회
+                <span class="text-danger fw-bold">{{ post.hit }}</span>
+            </span>
+            <span class="me-1">
+                {% with timestamp=post.created_at %}
+                    {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+                    {{ timestamp|time:'H:i' }}
+                {% endwith %}
+            </span>
+            <span class="me-1">댓글
+                <span class="text-danger fw-bold">{{ post.comment_count }}</span>
+            </span>
+        </div>
+
+        <div class="my-4">
+            {{ post.content|safe }}
+        </div>
+        {% include 'notice/v2/comment_container.html' %}
+    {% /content_row %}
+</section>
+{% endpartialdef detail_main %}
+{% endblock %}
+
+{% partialdef buttons %} {# buttons partial #}
+<div class="d-flex justify-content-between" hx-target="#main"
+     hx-push-url="true" hx-boost="true" hx-swap="innerHTML swap:0.25s">
+    <div class="left-button col-auto px-0">
+        <a class="btn btn-circle btn-sm btn-outline-secondary"
+           hx-get="{{ post_list_url }}" href="" title="List">
+            {{ board_icon.list|safe }}
+        </a>
+        {% with nav=navigation.next %}
+            {% partialdef adjacent_post inline=True %} {# adjacent_post partial #}
+                {% if nav.post %}
+                    <a id="{{ nav.type }}_post" class="btn btn-circle btn-sm btn-outline-secondary"
+                       hx-get="{{ nav.url }}" href="" title="{{ nav.type|title }}">
+                        {{ nav.icon|safe }}
+                    </a>
+                {% else %}
+                    <a id="{{ nav.type }}_post" class="btn btn-circle btn-sm btn-outline-secondary"></a>
+                {%  endif %}
+            {% endpartialdef %}
+        {% endwith %}
+
+        {% with nav=navigation.prev %}
+            {% partial adjacent_post %}
+        {% endwith %}
+    </div>
+    <div class="right-button">
+        <a class="btn btn-circle btn-sm btn-outline-warning"
+           hx-get="{{ post_list_url }}" href="" title="Reply">
+            {{ board_icon.reply|safe }}
+        </a>
+        {% if post.user == user %}
+            <a class="btn btn-circle btn-sm btn-outline-success"
+               hx-get="{{ post_update_url }}" href="" title="Update">
+                {{ board_icon.update|safe }}
+            </a>
+            <a class="btn btn-circle btn-sm btn-outline-danger"
+               hx-post="{{ post_delete_url }}" hx-boost="false"
+               hx-push-url="{{ post_list_url }}" title="Delete"
+               hx-confirm="{% trans 'Are you sure you wish to delete your post?' %}">
+                {{ board_icon.delete|safe }}
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endpartialdef buttons %}

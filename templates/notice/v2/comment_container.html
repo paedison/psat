@@ -1,0 +1,109 @@
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+
+<section id="commentContainer" class="bg-gray-300 small p-3">
+    {% if comments %}
+        {% for comment in comments %}
+            <div id="commentContents">
+                <div id="comment{{ comment.id }}" class="htmx-fade-out htmx-fade-in p-2">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <span class="text-gray-500 mr-1">
+                                {{ comment.user.username }}
+                            </span>
+                            <span class="mr-1">
+                                {% with timestamp=comment.created_at %}
+                                    {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+                                    {{ timestamp|time:'H:i' }}
+                                {% endwith %}
+                            </span>
+                        </div>
+                    {% if comment.user == user %}
+                        <div>
+                            <a class="btn btn-circle btn-sm btn-outline-success" href=""
+                               hx-get="{% url 'notice:comment_update' post_id comment.id %}"
+{#                               hx-get="{{ comment.comment_update_url }}"#}
+                               title="{% trans 'Update' %}"
+                               hx-target="#commentUpdate{{ comment.id }}"
+                               hx-swap="innerHTML swap:0.25s">
+                                {{ board_icon.update|safe }}
+                            </a>
+                            <a class="btn btn-circle btn-sm btn-outline-danger" href=""
+                               hx-post="{{ comment.comment_delete_url }}"
+                               title="{% trans 'Delete' %}"
+                               hx-target="#commentContainer"
+                               hx-swap="outerHTML swap:0.25s"
+                               hx-confirm="{% trans 'Are you sure you wish to delete your comment?' %}">
+                                {{ board_icon.delete|safe }}
+                            </a>
+                        </div>
+                    {% endif %}
+                    </div>
+                    <div id="commentContent{{ comment.id }}" class="comment text-gray-900">
+                        {{ comment.content }}
+                    </div>
+                </div>
+                <div id="commentUpdate{{ comment.id }}">
+
+                </div>
+            </div>
+            <hr class="my-2">
+        {% endfor %}
+    {% endif %}
+
+    {% partialdef comment_create inline=True %} {# comment_create partial #}
+        {% if user.is_authenticated %}
+            <div class="p-2 bg-white">
+                <form method="post">
+                    {% csrf_token %}
+                    {% if form.errors.content %}
+                        <div class="alert alert-danger fade show small py-2 fw-bold" role="alert">
+                            {% trans 'Enter comments' %}
+                        </div>
+                    {% endif %}
+                    <input id="id_user{{ comment_id }}" type="text" name="user"
+                           value="{{ user.id }}" aria-label="User" hidden/>
+                    <input id="id_post{{ comment_id }}" type="text" name="post"
+                           value="{{ post_id }}" aria-label="Post" hidden/>
+                    <div class="input-group">
+                        <textarea name="content" cols="40" rows="1" required
+                                  class='form-control form-control-sm' aria-label="Content"
+                                  placeholder="{% trans 'Enter comments' %}"
+                                  id="id_content{{ comment_id }}">{{ form.content.value }}</textarea>
+                        <div class="d-flex justify-content-end">
+                            {% if info.view_type == 'commentUpdate' %}
+                                <button type="submit" class="btn btn-sm btn-outline-primary"
+                                        hx-boost="true" hx-swap="outerHTML swap:0.25s"
+                                        hx-post="{{ comment_update_url }}"
+                                        hx-push-url="{{ post_detail_url }}"
+                                        title="{% trans 'Update' %}" hx-target="#commentContainer">
+                                    {% trans 'Update' %}
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-primary"
+                                        hx-boost="true" hx-swap="outerHTML swap:0.25s"
+                                        hx-post="{{ comment_create_url }}"
+                                        hx-push-url="{{ post_detail_url }}"
+                                        title="{% trans 'Create' %}" hx-target="#commentContainer">
+                                    {% trans 'Create' %}
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        {% else %}
+            <div class="p-2 bg-white">
+                <ul class="list-group">
+                   <li class="list-group-item" hx-get="{% url 'account_login' %}"
+                       hx-target="#main" hx-swap="outerHTML"
+                       hx-confirm="{% trans 'Do you want to log in?' %}">
+                       {% trans 'Log in to comment' %}
+                   </li>
+                </ul>
+            </div>
+        {% endif %}
+    {% endpartialdef comment_create %}
+</section>

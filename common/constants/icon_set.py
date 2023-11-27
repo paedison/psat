@@ -34,7 +34,7 @@ class ConstantIconSet:
         'reply': '<i class="fa-solid fa-reply fa-fw"></i>',
         'update': '<i class="fa-solid fa-pen"></i>',
         'delete': '<i class="fa-solid fa-trash"></i>',
-        'previous': '<i class="fa-solid fa-arrow-down fa-fw"></i>',
+        'prev': '<i class="fa-solid fa-arrow-down fa-fw"></i>',
         'next': '<i class="fa-solid fa-arrow-up fa-fw"></i>',
         'category0': '<i class="fa-solid fa-bars fa-fw"></i>',
         'category1': '<i class="fa-regular fa-bell fa-fw"></i>',
