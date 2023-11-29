@@ -1,6 +1,6 @@
 from vanilla import TemplateView
 
-from .viewmixins import PsatSolveModalViewMixIn, PsatCustomUpdateViewMixIn
+from .viewmixins.update_view_mixins import PsatSolveModalViewMixIn, PsatCustomUpdateViewMixIn
 
 
 class PsatCustomUpdateView(

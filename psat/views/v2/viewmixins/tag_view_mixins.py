@@ -8,7 +8,6 @@ from psat.forms import TagForm
 from psat.models import Tag as PsatTag
 from reference.models.psat_models import Psat
 from reference.models.psat_models import PsatProblem
-from .base_view_mixins import PsatViewInfo
 
 
 class TagViewVariable(ConstantIconSet):
@@ -33,6 +32,17 @@ class TagViewVariable(ConstantIconSet):
             self.problem = PsatProblem.objects.get(id=self.my_tag.problem_id)
 
         self.content_type: str = ContentType.objects.get(app_label='psat', model='tag')
+
+        self.info = self.get_info()
+
+    @staticmethod
+    def get_info() -> dict:
+        """ Get the meta-info for the current view. """
+        return {
+            'menu': 'psat',
+            'view_type': 'tag',
+            'color': 'primary',
+        }
 
     def get_my_tag_list(self) -> list | None:
         """Return my_tag_list if my_tag is not none."""
@@ -75,10 +85,7 @@ class TagViewVariable(ConstantIconSet):
         return my_tags
 
 
-class TagViewMixIn(
-    ConstantIconSet,
-    PsatViewInfo,
-):
+class TagViewMixIn(ConstantIconSet):
     """Setting mixin for Tag views."""
     object: any
 

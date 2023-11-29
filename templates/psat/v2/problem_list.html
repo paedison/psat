@@ -39,20 +39,20 @@
                 <div class="col-12 col-sm-6 dropdown text-center text-sm-start text-nowrap">
                     {% if user.is_authenticated and info.view_type != 'search' %}
 
-                        {% with var='like' text=icon_like.filter|safe current=is_liked option=like_option base_url='/psat/like/' %}
+                        {% with option=like_option %}
                             {% partialdef filter_snippet inline=True %} {# filter_snippet partial #}
-                                <button id="dropdown{{ var|title }}Link" type="button"
+                                <button id="dropdown{{ option.var|title }}Link" type="button"
                                         class="btn btn-sm btn-outline-primary dropdown-toggle"
                                         data-bs-toggle="dropdown" aria-expanded="false">
-                                    {{ text }}
+                                    {{ option.text|safe }}
                                 </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdown{{ var|title }}Link">
-                                    {% for opt in option %}
-                                        {% if forloop.last %}
+                                <ul class="dropdown-menu" aria-labelledby="dropdown{{ option.var|title }}Link">
+                                    {% for opt in option.options %}
+                                        {% if option.var != 'year' and option.var != 'ex' and option.var != 'sub' and forloop.last %}
                                             <li><hr class="dropdown-divider"></li>
                                         {% endif %}
                                         <li class="text-center">
-                                            <a class="dropdown-item {% if opt.0 == current %}bg-primary-light{% endif %}"
+                                            <a class="dropdown-item {% if opt.0 == option.current %}bg-primary-light{% endif %}"
                                                href="" hx-get="{% partial target_url %}">
                                                 {{ opt.1|safe }}
                                             </a>
@@ -63,48 +63,28 @@
                         {% endwith %}
 
 {% partialdef target_url %} {# target_url partial #}
-{% if var != 'year' and var != 'ex' and var != 'sub' %}
+{% if option.var != 'year' and option.var != 'ex' and option.var != 'sub' %}
 {{ opt.2 }}
 {% else %}
-{{ base_url }}?year={% if var == 'year' %}{{ opt.0 }}{% else %}{{ year }}{% endif %}
-&ex={% if var == 'ex' %}{{ opt.0 }}{% else %}{{ ex }}{% endif %}
-&sub={% if var == 'sub' %}{{ opt.0 }}{% else %}{{ sub }}{% endif %}
-&is_liked={{ is_liked }}&rating={{rating }}&is_correct={{ is_correct }}
+{{ base_url }}?year={% if option.var == 'year' %}{{ opt.0 }}{% else %}{{ year }}{% endif %}
+&ex={% if option.var == 'ex' %}{{ opt.0 }}{% else %}{{ ex }}{% endif %}
+&sub={% if option.var == 'sub' %}{{ opt.0 }}{% else %}{{ sub }}{% endif %}
+&is_liked={{ is_liked }}&rating={{ rating }}&is_correct={{ is_correct }}
 &has_memo={{ has_memo }}&has_tag={{ has_tag }}&data={{ search_data }}&date={{ search_date }}
 {% endif %}
 {% endpartialdef target_url %}
 
-                        {% with var='solve' text=icon_solve.filter|safe current=is_correct option=solve_option base_url='/psat/solve/' %}
-                            {% partial filter_snippet %}
-                        {% endwith %}
-
-                        {% with var='memo' text=icon_memo.filter|safe current=has_memo option=memo_option base_url='/psat/memo/' %}
-                            {% partial filter_snippet %}
-                        {% endwith %}
-
-                        {% with var='tag' text=icon_tag.filter|safe current=has_tag option=tag_option base_url='/psat/tag/' %}
-                            {% partial filter_snippet %}
-                        {% endwith %}
-
-                        {% with var='rate' text=icon_rate.filter|safe current=rating option=rate_option base_url='/psat/rate/' %}
-                            {% partial filter_snippet %}
-                        {% endwith %}
-
+                        {% with option=solve_option %}{% partial filter_snippet %}{% endwith %}
+                        {% with option=memo_option %}{% partial filter_snippet %}{% endwith %}
+                        {% with option=tag_option %}{% partial filter_snippet %}{% endwith %}
+                        {% with option=rate_option %}{% partial filter_snippet %}{% endwith %}
                     {% endif %}
                 </div>
                 <div class="col-12 col-sm-6 dropdown text-center text-sm-end text-nowrap">
                     <a type="button" class="btn btn-sm btn-primary" href="" hx-get="/psat/" hx-push-url="true">전체</a>
-                    {% with var='year' text='연도' total='전체 연도' current=year option=year_option %}
-                        {% partial filter_snippet %}
-                    {% endwith %}
-
-                    {% with var='ex' text='시험' total='전체 시험' current=ex option=ex_option %}
-                        {% partial filter_snippet %}
-                    {% endwith %}
-
-                    {% with var='sub' text='과목' total='전체 과목' current=sub option=sub_option %}
-                        {% partial filter_snippet %}
-                    {% endwith %}
+                    {% with option=year_option %}{% partial filter_snippet %}{% endwith %}
+                    {% with option=ex_option %}{% partial filter_snippet %}{% endwith %}
+                    {% with option=sub_option %}{% partial filter_snippet %}{% endwith %}
                 </div>
             </div>
         </h5>
@@ -116,10 +96,14 @@
                         {% if not search_list %}
                             {% ifchanged %}
                                 {% #list_divider %}
-                                    <a href=""
-                                       hx-get="{% url 'psat:list' 'problem' %}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
+                                    {% if info.view_type == 'problem' %}
+                                        <a href=""
+                                           hx-get="{% url 'psat:list' 'problem' %}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
+                                            {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                                        </a>
+                                    {% else %}
                                         {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                    </a>
+                                    {% endif %}
                                 {% /list_divider %}
                             {% endifchanged %}
                         {% endif %}
@@ -130,14 +114,22 @@
                                         {% if like_list and not problem|get_status:like_data %}
 
                                             {% with view_type='problem' %}
+
                                                 {% partialdef reference_link inline=True %} {# reference_link partial #}
                                                     <a class="text-decoration-none fw-bold"
                                                        href="{% url 'psat:detail' view_type problem.id %}"
-                                                       hx-get="{% url 'psat:detail' view_type problem.id %}">
+                                                       hx-push-url="{% url 'psat:detail' view_type problem.id %}"
+                                                       hx-get="{% partial detail_link_url %}">
                                                         {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|add_0 }}
                                                     </a>
                                                 {% endpartialdef reference_link %}
                                             {% endwith %}
+
+{% partialdef detail_link_url %} {# detail_link_url partial #}
+{% url 'psat:detail' info.view_type problem.id %}?year={{ year }}&ex={{ ex }}&sub={{ sub }}
+&is_liked={{ is_liked }}&rating={{ rating }}&is_correct={{ is_correct }}
+&has_memo={{ has_memo }}&has_tag={{ has_tag }}&data={{ search_data }}
+{% endpartialdef detail_link_url %}
 
                                         {% elif search_list %}
                                             {% with view_type='problem' %}{% partial reference_link %}{% endwith %}
@@ -161,7 +153,8 @@
                                                         {% partialdef link_snippet inline=True %} {# link_snippet partial #}
                                                             <a class="text-decoration-none {{ class }}"
                                                                href="{% url 'psat:detail' view_type problem.id %}"
-                                                               hx-get="{% url 'psat:detail' view_type problem.id %}">
+                                                               hx-push-url="{% url 'psat:detail' view_type problem.id %}"
+                                                               hx-get="{% partial detail_link_url %}">
                                                                 <h3 class="fs-6 small m-0">
                                                                     {{ problem.question|truncatechars:chars }}
                                                                 </h3>

@@ -3,12 +3,10 @@ from vanilla import TemplateView
 from .viewmixins.detail_view_mixins import PsatDetailViewMixIn
 
 
-class PsatDetailView(
-    PsatDetailViewMixIn,
-    TemplateView,
-):
+class PsatDetailView(TemplateView):
     """Represent PSAT base detail view."""
     template_name = 'psat/v2/problem_detail.html'
+    request: any
 
     def get_template_names(self):
         htmx_template = {
@@ -18,19 +16,23 @@ class PsatDetailView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
-        variable = self.get_detail_variable(self.request, **self.kwargs)
+        variable = PsatDetailViewMixIn(self.request, **self.kwargs)
         view_type = variable.view_type
 
         variable.get_open_instance()
-        custom_data = self.get_custom_data()
+        custom_data = variable.get_custom_data()
         view_custom_data = custom_data[view_type]
         prev_prob, next_prob = variable.get_prev_next_prob(view_custom_data)
         list_data = variable.get_list_data(view_custom_data)
 
         return {
             # Info & target problem
-            'info': self.get_info(view_type),
+            'info': variable.get_info(),
+            'sub_title': variable.sub_title,
             'problem': variable.problem,
+
+            # Urls
+            'url_options': variable.url_options,
 
             # Navigation data
             'prev_prob': prev_prob,
@@ -49,14 +51,14 @@ class PsatDetailView(
             'my_tag': variable.my_tag,
 
             # Icons
-            'icon_menu': self.ICON_MENU['psat'],
-            'icon_like': self.ICON_LIKE,
-            'icon_rate': self.ICON_RATE,
-            'icon_solve': self.ICON_SOLVE,
-            'icon_memo': self.ICON_MEMO,
-            'icon_tag': self.ICON_TAG,
-            'icon_nav': self.ICON_NAV,
-            'icon_board': self.ICON_BOARD,
+            'icon_menu': variable.ICON_MENU['psat'],
+            'icon_like': variable.ICON_LIKE,
+            'icon_rate': variable.ICON_RATE,
+            'icon_solve': variable.ICON_SOLVE,
+            'icon_memo': variable.ICON_MEMO,
+            'icon_tag': variable.ICON_TAG,
+            'icon_nav': variable.ICON_NAV,
+            'icon_board': variable.ICON_BOARD,
         }
 
 

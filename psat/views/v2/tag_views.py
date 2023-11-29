@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from vanilla import TemplateView, CreateView, DeleteView, UpdateView
 
-from .viewmixins import TagViewMixIn
+from .viewmixins.tag_view_mixins import TagViewMixIn
 
 
 class TagContainerView(TagViewMixIn, TemplateView):
@@ -17,7 +17,7 @@ class TagContainerView(TagViewMixIn, TemplateView):
             'my_tag_list': variable.get_my_tag_list(),
             'all_tags': variable.get_all_tag_list(),
             'problem': variable.problem,
-            'icon_tag': self.ICON_TAG,
+            'icon_tag': variable.ICON_TAG,
         }
 
 
@@ -40,7 +40,7 @@ class TagCreateView(TagViewMixIn, CreateView):
         return {
             'all_tags': variable.get_all_tag_list(),
             'problem': variable.problem,
-            'icon_tag': self.ICON_TAG,
+            'icon_tag': variable.ICON_TAG,
         }
 
 
@@ -80,7 +80,7 @@ class TagCloudView(TagViewMixIn, TemplateView):
         variable = self.get_tag_variable(self.request, **self.kwargs)
 
         return {
-            'info': self.get_info('tag'),
+            'info': variable.get_info(),
             'all_total_tags': variable.get_tags(),
             'all_eoneo_tags': variable.get_tags(sub='언어'),
             'all_jaryo_tags': variable.get_tags(sub='자료'),

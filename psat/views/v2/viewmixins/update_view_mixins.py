@@ -4,7 +4,6 @@ from common.constants.icon_set import ConstantIconSet
 from dashboard.models.psat_data_models import PsatLikeLog, PsatRateLog, PsatSolveLog
 from psat.models import Like, Rate, Solve
 from reference.models.psat_models import PsatProblem
-from .base_view_mixins import PsatViewInfo
 
 
 class UpdateViewVariable:
@@ -116,10 +115,7 @@ class UpdateViewVariable:
         return option_dict[self.view_type]
 
 
-class PsatCustomUpdateViewMixIn(
-    ConstantIconSet,
-    PsatViewInfo,
-):
+class PsatCustomUpdateViewMixIn(ConstantIconSet):
     """Represent PSAT custom data update view mixin."""
     @staticmethod
     def get_update_variable(request, **kwargs):

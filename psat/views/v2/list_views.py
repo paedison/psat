@@ -3,12 +3,10 @@ from vanilla import TemplateView
 from .viewmixins.list_view_mixins import PsatListViewMixIn
 
 
-class PsatListView(
-    PsatListViewMixIn,
-    TemplateView,
-):
+class PsatListView(TemplateView):
     """ Represent PSAT base list view. """
     template_name = 'psat/v2/problem_list.html'
+    request: any
 
     def get_template_names(self):
         htmx_template = {
@@ -21,15 +19,13 @@ class PsatListView(
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        variable = self.get_list_variable(self.request, **self.kwargs)
-        view_type = variable.view_type
-
-        custom_data = self.get_custom_data()
+        variable = PsatListViewMixIn(self.request, **self.kwargs)
+        custom_data = variable.get_custom_data()
         page_obj, page_range = variable.get_paginator_info()
 
         return {
             # Info & title
-            'info': self.get_info(view_type),
+            'info': variable.get_info(),
             'title': variable.title,
             'sub_title': variable.sub_title,
 
@@ -71,20 +67,20 @@ class PsatListView(
             'tag_data': custom_data['tag'],
 
             # View type boolean
-            'problem_list': view_type == 'problem',
-            'like_list': view_type == 'like',
-            'rate_list': view_type == 'rate',
-            'solve_list': view_type == 'solve',
-            'search_list': view_type == 'search',
+            'problem_list': variable.view_type == 'problem',
+            'like_list': variable.view_type == 'like',
+            'rate_list': variable.view_type == 'rate',
+            'solve_list': variable.view_type == 'solve',
+            'search_list': variable.view_type == 'search',
 
             # Icons
-            'icon_menu': self.ICON_MENU['psat'],
-            'icon_like': self.ICON_LIKE,
-            'icon_rate': self.ICON_RATE,
-            'icon_solve': self.ICON_SOLVE,
-            'icon_filter': self.ICON_FILTER,
-            'icon_memo': self.ICON_MEMO,
-            'icon_tag': self.ICON_TAG,
+            'icon_menu': variable.ICON_MENU['psat'],
+            'icon_like': variable.ICON_LIKE,
+            'icon_rate': variable.ICON_RATE,
+            'icon_solve': variable.ICON_SOLVE,
+            'icon_filter': variable.ICON_FILTER,
+            'icon_memo': variable.ICON_MEMO,
+            'icon_tag': variable.ICON_TAG,
         }
 
 
