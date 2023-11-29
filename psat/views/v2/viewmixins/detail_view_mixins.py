@@ -103,13 +103,15 @@ class PsatDetailViewMixIn(BaseViewMixin):
                     organized_list.extend(row)
             return organized_list
 
-        if self.view_type == 'like' and self.is_liked is not None:
+        if self.view_type == 'problem':
             return get_view_list_data()
-        if self.view_type == 'rate' and self.rating is not None:
+        elif self.view_type == 'like' and self.is_liked is not None:
             return get_view_list_data()
-        if self.view_type == 'solve' and self.is_correct is not None:
+        elif self.view_type == 'rate' and self.rating is not None:
             return get_view_list_data()
-        if self.view_type == 'memo' and self.has_memo:
+        elif self.view_type == 'solve' and self.is_correct is not None:
             return get_view_list_data()
-        if self.view_type == 'tag' and self.has_tag:
+        elif self.view_type == 'memo' and self.has_memo:
+            return get_view_list_data()
+        elif self.view_type == 'tag' and self.has_tag:
             return get_view_list_data()
