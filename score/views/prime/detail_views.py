@@ -1,86 +1,67 @@
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
-from .viewmixins.detail_viewmixins import (
-    ScoreCommonVariableMixin,
-    ScoreResultVariableMixin,
-    ScoreFilterVariableMixin,
-)
+from .viewmixins.detail_viewmixins import PrimeScoreDetailViewMixin
 
 
 class BaseView(
     LoginRequiredMixin,
-    ScoreCommonVariableMixin,
-    ScoreFilterVariableMixin,
-    ScoreResultVariableMixin,
     TemplateView,
 ):
     """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
     menu = 'score'
     view_type = 'primeScore'
     template_name = 'score/prime/score_detail.html'
-    login_url = settings.LOGIN_URL
-
     request: any
 
-    def get_template_names(self) -> str:
-        """
-        Get the template name.
-        base(GET): whole page > main(POST): main page > content(GET): content page
-        :return: str
-        """
-        base_template = self.template_name
-        main_template = f'{base_template}#list_main'
-        if self.request.method == 'GET':
-            return main_template if self.request.htmx else base_template
-        else:
-            return main_template
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#detail_main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
 
     def post(self, request, *args, **kwargs):
         return super().get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        info = {
-            'menu': self.menu,
-            'view_type': self.view_type,
-        }
-        exam_name = self.get_exam_name()
-        all_answer_set = self.get_all_answer_set()
-        all_rank = self.get_all_rank()
-        context = {
+        variable = PrimeScoreDetailViewMixin(self.request, **self.kwargs)
+
+        info = variable.get_info()
+        all_answers = variable.get_all_answers()
+        all_ranks = variable.get_all_ranks()
+        all_stat = variable.get_all_stat()
+        all_answer_rates = variable.get_all_answer_rates()
+
+        return {
             'info': info,
-            'year': self.year,
-            'round': self.round,
-            'title': 'Score',
-            'sub_title': exam_name['sub_title'],
-            'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
+            'year': variable.year,
+            'round': variable.round,
+            'title': variable.title,
+            'sub_title': variable.sub_title,
 
-            'student': all_rank['student'],
-            'my_total_rank': all_rank['my_total_rank'],
-            'my_department_rank': all_rank['my_department_rank'],
+            'eoneo_answer': all_answers['언어'],
+            'jaryo_answer': all_answers['자료'],
+            'sanghwang_answer': all_answers['상황'],
+            'heonbeob_answer': all_answers['헌법'],
 
-            'total_stat': self.get_stat('total'),
-            'department_stat': self.get_stat('department'),
+            'student': variable.student,
+            'my_total_rank': all_ranks['전체'],
+            'my_department_rank': all_ranks['직렬'],
 
-            'eoneo_answer': all_answer_set['eoneo_answer'],
-            'jaryo_answer': all_answer_set['jaryo_answer'],
-            'sanghwang_answer': all_answer_set['sanghwang_answer'],
-            'heonbeob_answer': all_answer_set['heonbeob_answer'],
+            'total_stat': all_stat['전체'],
+            'department_stat': all_stat['직렬'],
 
-            'eoneo_rates': self.get_answer_rates('언어'),
-            'jaryo_rates': self.get_answer_rates('자료'),
-            'sanghwang_rates': self.get_answer_rates('상황'),
-            'heonbeob_rates': self.get_answer_rates('헌법'),
-
-            'year_option': self.year_option,
+            'eoneo_rates': all_answer_rates['언어'],
+            'jaryo_rates': all_answer_rates['자료'],
+            'sanghwang_rates': all_answer_rates['상황'],
+            'heonbeob_rates': all_answer_rates['헌법'],
 
             # Icons
-            'icon_menu': self.ICON_MENU,
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
+            'icon_menu': variable.ICON_MENU['score'],
+            'icon_subject': variable.ICON_SUBJECT,
+            'icon_nav': variable.ICON_NAV,
         }
-        return context
 
 
 class PrintView(BaseView):

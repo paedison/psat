@@ -36,9 +36,6 @@
 <link rel="stylesheet" type="text/css" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}"/>
 <link rel="stylesheet" type="text/css" href="{% static 'vendor/nice-admin/css/style.css' %}"/>
 
-<!-- Vendor JS Files -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
 <!-- Template Main CSS File -->
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
 <link rel="stylesheet" type="text/css" href="{% static 'css/schedule.css' %}"/>
@@ -46,6 +43,17 @@
 <!-- Googld AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3543306443016219"
         crossorigin="anonymous"></script>
+
+<!-- Vendor JS Files -->
+<script defer src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script defer src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+<script defer src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script defer src="{% static 'vendor/nice-admin/js/main.js' %}"></script>
+<script defer src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+{#<script defer src="{% static 'vendor/chart.js/chart.umd.js' %}"></script>#}
+
+<!-- Template Main JS File -->
+<script defer src="{% static 'js/common.js' %}"></script>
 
 {% block extra_head %}{% endblock extra_head %}
 </head>
@@ -71,17 +79,6 @@
 <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
     <i class="fas fa-angle-up"></i>
 </a>
-
-<!-- Vendor JS Files -->
-<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
-<script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'vendor/nice-admin/js/main.js' %}"></script>
-<script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
-{#<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>#}
-
-<!-- Template Main JS File -->
-<script type="module" src="{% static 'js/common.js' %}"></script>
 
 <!-- Page Javascript File -->
 {% block page_script %}{% endblock page_script %}

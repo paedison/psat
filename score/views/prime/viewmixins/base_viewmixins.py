@@ -15,3 +15,10 @@ class ScoreModelVariableSet:
     answer_count_model = score_models.PrimeAnswerCount
 
     student_form = score_forms.PrimeStudentForm
+
+    @staticmethod
+    def get_info() -> dict:
+        return {
+            'menu': 'score',
+            'view_type': 'primeScore',
+        }
