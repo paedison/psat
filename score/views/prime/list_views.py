@@ -9,7 +9,6 @@ class BaseView(
     LoginRequiredMixin,
     TemplateView
 ):
-    """ Represent information related PsatTemporaryAnswer and PsatConfirmedAnswer models. """
     template_name = 'score/prime/score_list.html'
     login_url = settings.LOGIN_URL
     request: any
@@ -26,9 +25,11 @@ class BaseView(
 
     def get_context_data(self, **kwargs) -> dict:
         variable = PrimeScoreListViewMixin(self.request, **self.kwargs)
+
         page_obj, page_range = variable.get_paginator_info()
         info = variable.get_info()
-        context = {
+
+        return {
             'info': info,
             'title': 'Score',
             'page_obj': page_obj,
@@ -38,7 +39,6 @@ class BaseView(
             'icon_menu': variable.ICON_MENU['score'],
             'icon_subject': variable.ICON_SUBJECT,
         }
-        return context
 
 
 base_view = BaseView.as_view()

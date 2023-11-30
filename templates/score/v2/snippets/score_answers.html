@@ -73,81 +73,93 @@
     {% endif %}
 </div>
 
-
-{% partialdef confirmed_answer_table %}
+{% partialdef confirmed_answer_table %} {# confirmed_answer_table partial #}
     <tbody>
-        {% with loop_counter=10 loop_min=0 loop_max=10 %}
+
+        {% with loop_counter=10 loop_min=0 %}
+            {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
+                <tr class="text-center table-warning">
+                    <td></td>
+                    {% for _ in 'x'|ljust:loop_counter %}
+                        <td class="text-nowrap fw-bold text-secondary">
+                            문 {{ forloop.counter|add:loop_min }}
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <td class="text-nowrap align-center">정답</td>
+                    {% for answer in answers %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>
+                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                                    {{ answer.correct_answer }}</button>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <td class="text-nowrap">제출 답안</td>
+                    {% for answer in answers %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>
+                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                                    btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
+                                    {{ answer.student_answer }}</button>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <td class="text-nowrap" >정답률(%)</td>
+                    {% for answer_rate in answer_rates %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>
+                                <span data-number="{{ answer_rate.number }}">
+                                    {{ answer_rate.correct|floatformat:0 }}
+                                </span>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endpartialdef answer_table_tr %}
+        {% endwith %}
+
+        {% with loop_counter=10 loop_min=10 %}
             {% partial answer_table_tr %}
         {% endwith %}
-        {% with loop_counter=10 loop_min=10 loop_max=20 %}
-            {% partial answer_table_tr %}
-        {% endwith %}
-        {% if ex == '칠급' %}
-            {% with loop_counter=5 loop_min=20 loop_max=25 %}
+
+        {% if ex == '칠급' or answers|length == 25  %}
+            {% with loop_counter=5 loop_min=20 %}
                 {% partial answer_table_tr %}
             {% endwith %}
         {% else %}
-            {% with loop_counter=10 loop_min=20 loop_max=30 %}
+            {% with loop_counter=10 loop_min=20 %}
                 {% partial answer_table_tr %}
             {% endwith %}
-            {% with loop_counter=10 loop_min=30 loop_max=40 %}
+
+            {% with loop_counter=10 loop_min=30 %}
                 {% partial answer_table_tr %}
             {% endwith %}
         {% endif %}
     </tbody>
 {% endpartialdef confirmed_answer_table %}
 
-
-{% partialdef answer_table_tr %}
-    <tr class="text-center table-warning">
-        <td></td>
-        {% for _ in 'x'|ljust:loop_counter %}
-            <td class="text-nowrap fw-bold text-secondary">
-                문 {{ forloop.counter|add:loop_min }}
-            </td>
-        {% endfor %}
-    </tr>
-    <tr class="text-center">
-        <td class="text-nowrap align-center">정답</td>
-        {% for answer in answers %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
-                <td>
-                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                        {{ answer.correct_answer }}</button>
-                </td>
-            {% endif %}
-        {% endfor %}
-    </tr>
-    <tr class="text-center">
-        <td class="text-nowrap">제출 답안</td>
-        {% for answer in answers %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
-                <td>
-                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
-                        btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
-                        {{ answer.student_answer }}</button>
-                </td>
-            {% endif %}
-        {% endfor %}
-    </tr>
-    <tr class="text-center">
-        <td class="text-nowrap" >정답률(%)</td>
-        {% for answer_rate in answer_rates %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_max %}
-                <td>
-                    <span data-number="{{ answer_rate.number }}">
-                        {{ answer_rate.correct|floatformat:0 }}
-                    </span>
-                </td>
-            {% endif %}
-        {% endfor %}
-    </tr>
-{% endpartialdef answer_table_tr %}
-
-
-{% partialdef temporary_answer_table %}
+{% partialdef temporary_answer_table %} {# temporary_answer_table partial #}
     <div class="col-12 d-flex align-items-center justify-content-between pt-3 pb-2">
-        {% partial submit_button %}
+
+        {% partialdef submit_button inline=True %} {# submit_button partial #}
+            <form class="ms-auto me-auto">
+                <input type="text" name="year" value="{{ year }}" aria-label="Year" hidden/>
+                <input type="text" name="ex" value="{{ ex }}" aria-label="Exam" hidden/>
+                <input type="text" name="psat_id" value="{{ problems.0.psat.id }}" aria-label="PSAT ID" hidden/>
+                <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
+                        hx-post="{% url 'score:confirm_modal' %}" hx-swap="innerHTML" hx-trigger="click"
+                        data-bs-toggle="modal" data-bs-target="#modalContainer">
+                    최종 답안 제출
+                </button>
+            </form>
+        {% endpartialdef submit_button %}
+
     </div>
     <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
         <div class="col-md-6 col-lg-4 justify-content-center pb-2">
@@ -173,8 +185,7 @@
     </div>
 {% endpartialdef temporary_answer_table %}
 
-
-{% partialdef form %}
+{% partialdef form %} {# form partial #}
     <form>
         <input type="text" name="sub" value="{{ problem.psat.subject.abbr }}" aria-label="Subject" hidden/>
         <div class="d-flex justify-content-center align-content-center">
@@ -188,33 +199,34 @@
                  hx-post="{% url 'score:submit' problem.id %}" hx-swap="innerHTML" hx-push-url="false"
                  hx-include="#p{{ problem.id }}_answer>input[name='answer']:checked"
                  hx-include="#p{{ problem.id }}" hx-target="this" hx-trigger="change">
-                {% partial initial_form %}
+                {% with target_answer=problem.submitted_answer target_problem=problem %}
+                    {% if subject == 'heonbeob' or sub == '헌법' %}
+                        {% for i in '1234' %}
+                            {% partial answer_buttons %}
+                        {% endfor %}
+                    {% else %}
+                        {% for i in '12345' %}
+                            {% partial answer_buttons %}
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
             </div>
         </div>
     </form>
 {% endpartialdef form %}
 
-
-{% partialdef initial_form %}
-    {% with target_answer=problem.submitted_answer target_problem=problem %}
-        {% if subject == 'heonbeob' or sub == '헌법' %}
-            {% for i in '1234' %}
-                {% partial answer_buttons %}
-            {% endfor %}
-        {% else %}
-            {% for i in '12345' %}
-                {% partial answer_buttons %}
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-{% endpartialdef initial_form %}
-
-
-{% partialdef scored_form %}
+{% partialdef scored_form %} {# scored_form partial #}
     {% with target_answer=scored.answer target_problem=scored.problem %}
         {% if subject == 'heonbeob' or sub == '헌법' %}
             {% for i in '1234' %}
-                {% partial answer_buttons %}
+                {% partialdef answer_buttons inline=True %} {# confirmed_answer_table partial #}
+                    <input id="p{{ target_problem.id }}_answer{{ i }}" type="radio"
+                           class="btn-check" name="answer" value="{{ i }}"/>
+                    <label class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                           {% if i|add:0 == target_answer %}btn-secondary
+                           {% else %} btn-outline-secondary{% endif %}"
+                           for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
+                {% endpartialdef answer_buttons %}
             {% endfor %}
         {% else %}
             {% for i in '12345' %}
@@ -224,35 +236,10 @@
     {% endwith %}
 {% endpartialdef scored_form %}
 
-
-{% partialdef answer_buttons %}
-    <input id="p{{ target_problem.id }}_answer{{ i }}" type="radio"
-           class="btn-check" name="answer" value="{{ i }}"/>
-    <label class="btn btn-circle btn-sm fs-6 mx-1 my-2
-           {% if i|add:0 == target_answer %}btn-secondary
-           {% else %} btn-outline-secondary{% endif %}"
-           for="p{{ target_problem.id }}_answer{{ i }}">{{ i }}</label>
-{% endpartialdef answer_buttons %}
-
-
-{% partialdef submit_button %}
-    <form class="ms-auto me-auto">
-        <input type="text" name="year" value="{{ year }}" aria-label="Year" hidden/>
-        <input type="text" name="ex" value="{{ ex }}" aria-label="Exam" hidden/>
-        <input type="text" name="psat_id" value="{{ problems.0.psat.id }}" aria-label="PSAT ID" hidden/>
-        <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
-                hx-post="{% url 'score:confirm_modal' %}" hx-swap="innerHTML" hx-trigger="click"
-                data-bs-toggle="modal" data-bs-target="#modalContainer">
-            최종 답안 제출
-        </button>
-    </form>
-{% endpartialdef submit_button %}
-
-
-{% partialdef no_student %}
+{% partialdef no_student %} {# no_student partial #}
     <div class="d-flex justify-content-center align-content-center">
         <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-            <a href="" hx-get="{% url 'psat:problem_detail' problem.id %}" hx-push-url="true">
+            <a href="" hx-get="{% url 'psat:detail' 'problem' problem.id %}" hx-push-url="true">
                 문 {{ problem.number|add_0 }}.
             </a>
         </p>

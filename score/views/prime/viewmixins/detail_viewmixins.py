@@ -5,20 +5,18 @@ from django.db.models import (
 from django.db.models.functions import Rank, PercentRank
 
 from common.constants.icon_set import ConstantIconSet
-from .base_viewmixins import ScoreModelVariableSet
+from .base_viewmixins import PrimeScoreBaseViewMixin
 
 
 class PrimeScoreDetailViewMixin(
     ConstantIconSet,
-    ScoreModelVariableSet,
+    PrimeScoreBaseViewMixin,
 ):
     request: any
     kwargs: dict
 
     def __init__(self, request, **kwargs):
-        self.request = request
-        self.kwargs: dict = kwargs
-        self.user_id: int | None = request.user.id if request.user.is_authenticated else None
+        super().__init__(request, **kwargs)
 
         self.year: int = int(kwargs.get('year'))
         self.round: int = int(kwargs.get('round'))

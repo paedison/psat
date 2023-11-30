@@ -1,12 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from vanilla import TemplateView
 
-from .viewmixins.base_viewmixins import ScoreModelVariableSet
+from .viewmixins.base_viewmixins import PrimeScoreBaseViewMixin
 
 
 class NoStudentModalView(
@@ -14,22 +13,23 @@ class NoStudentModalView(
     TemplateView
 ):
     """ Represent modal view when there is no PSAT student data. """
-    template_name = 'score/prime/score_modal.html#no_student_modal'
+    template_name = 'score/prime/snippets/score_modal.html#no_student_modal'
     login_url = settings.LOGIN_URL
 
 
 class StudentConnectModalView(
     LoginRequiredMixin,
-    ScoreModelVariableSet,
     TemplateView
 ):
     """ Represent modal view for creating PSAT student data. """
-    template_name = 'score/prime/score_modal.html#student_connect'
+    template_name = 'score/prime/snippets/score_modal.html#student_connect'
     login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
+        variable = PrimeScoreBaseViewMixin(self.request, **self.kwargs)
+
         year, exam_round = self.kwargs['year'], self.kwargs['round']
-        prime = self.category_model.objects.filter(
+        prime = variable.category_model.objects.filter(
             year=year, round=exam_round).select_related('exam').first()
         exam = prime.exam.name
         context = {
@@ -43,7 +43,7 @@ class StudentConnectModalView(
 @login_required
 def student_connect_view(request):
     """ Create new PSAT student instance. """
-    models = ScoreModelVariableSet()
+    models = PrimeScoreBaseViewMixin(request=request)
     if request.method == 'POST':
         form = models.student_form(request.POST)
         if form.is_valid():

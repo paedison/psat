@@ -17,78 +17,7 @@
     {% #nav_content prefix='eoneo_answers' id='0' %}
         {% #responsive_table %}
             {% with answers=eoneo_answer answer_rates=eoneo_rates %}
-
-                {% partialdef confirmed_answer_table inline=True %} {# confirmed_answer_table partial #}
-                    <tbody>
-
-                        {% with loop_counter=10 loop_min=0 %}
-                            {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
-                                <tr class="text-center table-warning">
-                                    <td></td>
-                                    {% for _ in 'x'|ljust:loop_counter %}
-                                        <td class="text-nowrap fw-bold text-secondary">
-                                            문 {{ forloop.counter|add:loop_min }}
-                                        </td>
-                                    {% endfor %}
-                                </tr>
-                                <tr class="text-center">
-                                    <td class="text-nowrap align-center">정답</td>
-                                    {% for answer in answers %}
-                                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                                            <td>
-                                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                                                    {{ answer.answer_correct }}</button>
-                                            </td>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tr>
-                                <tr class="text-center">
-                                    <td class="text-nowrap">제출 답안</td>
-                                    {% for answer in answers %}
-                                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                                            <td>
-                                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
-                                                    btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
-                                                    {{ answer.answer_student }}</button>
-                                            </td>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tr>
-                                <tr class="text-center">
-                                    <td class="text-nowrap" >정답률(%)</td>
-                                    {% for answer_rate in answer_rates %}
-                                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                                            <td>
-                                                <span data-number="{{ answer_rate.number }}">
-                                                    {{ answer_rate.correct|floatformat:0 }}
-                                                </span>
-                                            </td>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tr>
-                            {% endpartialdef answer_table_tr %}
-                        {% endwith %}
-
-                        {% with loop_counter=10 loop_min=10 %}
-                            {% partial answer_table_tr %}
-                        {% endwith %}
-
-                        {% if ex == '칠급' or answers|length == 25  %}
-                            {% with loop_counter=5 loop_min=20 %}
-                                {% partial answer_table_tr %}
-                            {% endwith %}
-                        {% else %}
-                            {% with loop_counter=10 loop_min=20 %}
-                                {% partial answer_table_tr %}
-                            {% endwith %}
-
-                            {% with loop_counter=10 loop_min=30 %}
-                                {% partial answer_table_tr %}
-                            {% endwith %}
-                        {% endif %}
-                    </tbody>
-                {% endpartialdef confirmed_answer_table %}
-
+                {% partial confirmed_answer_table %}
             {% endwith %}
         {% /responsive_table %}
     {% /nav_content %}
@@ -120,3 +49,73 @@
     {% endif %}
 </div>
 
+{% partialdef confirmed_answer_table %} {# confirmed_answer_table partial #}
+    <tbody>
+
+        {% with loop_counter=10 loop_min=0 %}
+            {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
+                <tr class="text-center table-warning">
+                    <td></td>
+                    {% for _ in 'x'|ljust:loop_counter %}
+                        <td class="text-nowrap fw-bold text-secondary">
+                            문 {{ forloop.counter|add:loop_min }}
+                        </td>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <td class="text-nowrap align-center">정답</td>
+                    {% for answer in answers %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>
+                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                                    {{ answer.answer_correct }}</button>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <td class="text-nowrap">제출 답안</td>
+                    {% for answer in answers %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>
+                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                                    btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
+                                    {{ answer.answer_student }}</button>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <td class="text-nowrap" >정답률(%)</td>
+                    {% for answer_rate in answer_rates %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>
+                                <span data-number="{{ answer_rate.number }}">
+                                    {{ answer_rate.correct|floatformat:0 }}
+                                </span>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endpartialdef answer_table_tr %}
+        {% endwith %}
+
+        {% with loop_counter=10 loop_min=10 %}
+            {% partial answer_table_tr %}
+        {% endwith %}
+
+        {% if ex == '칠급' or answers|length == 25  %}
+            {% with loop_counter=5 loop_min=20 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+        {% else %}
+            {% with loop_counter=10 loop_min=20 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+
+            {% with loop_counter=10 loop_min=30 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+        {% endif %}
+    </tbody>
+{% endpartialdef confirmed_answer_table %}

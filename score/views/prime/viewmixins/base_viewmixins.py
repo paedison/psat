@@ -1,9 +1,9 @@
 from reference import models as reference_models
-from score import forms as score_forms
+from score import forms
 from score import models as score_models
 
 
-class ScoreModelVariableSet:
+class PrimeScoreBaseViewMixin:
     category_model = reference_models.Prime
     exam_model = reference_models.Exam
     problem_model = reference_models.PrimeProblem
@@ -14,7 +14,12 @@ class ScoreModelVariableSet:
     answer_model = score_models.PrimeAnswer
     answer_count_model = score_models.PrimeAnswerCount
 
-    student_form = score_forms.PrimeStudentForm
+    student_form = forms.PrimeStudentForm
+
+    def __init__(self, request, **kwargs):
+        self.request = request
+        self.kwargs: dict = kwargs
+        self.user_id: int | None = request.user.id if request.user.is_authenticated else None
 
     @staticmethod
     def get_info() -> dict:

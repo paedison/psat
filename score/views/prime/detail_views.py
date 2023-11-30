@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
@@ -8,10 +9,8 @@ class BaseView(
     LoginRequiredMixin,
     TemplateView,
 ):
-    """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
-    menu = 'score'
-    view_type = 'primeScore'
     template_name = 'score/prime/score_detail.html'
+    login_url = settings.LOGIN_URL
     request: any
 
     def get_template_names(self):

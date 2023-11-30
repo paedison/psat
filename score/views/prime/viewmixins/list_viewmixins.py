@@ -2,23 +2,17 @@ from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from .base_viewmixins import ScoreModelVariableSet
+from .base_viewmixins import PrimeScoreBaseViewMixin
 
 
 class PrimeScoreListViewMixin(
     ConstantIconSet,
-    ScoreModelVariableSet,
+    PrimeScoreBaseViewMixin,
 ):
     request: any
     exam_list = [
         {'year': 2023, 'round': 1, 'date': '1/7'},
     ]
-
-    def __init__(self, request, **kwargs):
-        self.request = request
-        self.kwargs: dict = kwargs
-
-        self.user_id: int | None = request.user.id if request.user.is_authenticated else None
 
     def get_paginator_info(self) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
