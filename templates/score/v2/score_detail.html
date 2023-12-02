@@ -46,8 +46,8 @@
                                         hx-trigger="change" hx-target="#id_exam_name" hx-swap="outerHTML">
                                     <option>연도</option>
                                     {% for y in option_year %}
-                                        <option value="{{ y.0 }}"{% if y.0 == year %} selected{% endif %}>
-                                            {{ y.1 }}
+                                        <option value="{{ y }}"{% if y == year %} selected{% endif %}>
+                                            {{ y }}년
                                         </option>
                                     {% endfor %}
                                 </select>
@@ -57,8 +57,8 @@
                                             hx-post="{% url 'score:detail' %}">
                                         <option>시험</option>
                                         {% for e in option_ex %}
-                                            <option value="{{ e.0 }}"{% if e.0 == ex %} selected{% endif %}>
-                                                {{ e.1 }}
+                                            <option value="{{ e.ex }}"{% if e.ex == ex %} selected{% endif %}>
+                                                {{ e.exam_name }}
                                             </option>
                                         {% endfor %}
                                     </select>

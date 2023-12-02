@@ -18,8 +18,8 @@ class PsatScoreStudentUpdateModalViewMixin(PsatScoreBaseViewMixin):
     def __init__(self, request, **kwargs):
         super().__init__(request, **kwargs)
 
-        self.units = self.unit_model.objects.filter(exam=self.exam)
         self.student = self.get_student()
+        self.units = self.unit_model.objects.filter(exam=self.student.department.unit.exam)
         self.header = f'{self.student.year}년 {self.student.exam} 수험 정보 수정'
         self.departments = (
             self.department_model.objects.filter(unit=self.student.department.unit)

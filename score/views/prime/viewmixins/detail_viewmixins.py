@@ -1,10 +1,9 @@
-import numpy as np
 from django.db.models import (
-    When, Value, F, Case, ExpressionWrapper, FloatField, Window, Count, Max, Avg
+    When, Value, F, Case, ExpressionWrapper, FloatField
 )
-from django.db.models.functions import Rank, PercentRank
 
 from common.constants.icon_set import ConstantIconSet
+from score.utils import get_rank_qs, get_stat
 from .base_viewmixins import PrimeScoreBaseViewMixin
 
 
@@ -27,7 +26,7 @@ class PrimeScoreDetailViewMixin(
 
         self.student = self.get_student()
 
-    def get_students_queryset(self, rank_type='전체'):
+    def get_students_qs(self, rank_type='전체'):
         filter_expr = {
             'year': self.year,
             'round': self.round,
@@ -38,7 +37,7 @@ class PrimeScoreDetailViewMixin(
         return self.student_model.objects.defer('timestamp').filter(**filter_expr)
 
     def get_student(self):
-        students_queryset = self.get_students_queryset()
+        students_queryset = self.get_students_qs()
         student = (
             students_queryset.filter(user_id=self.user_id)
             .annotate(department_name=F('department__name'))
@@ -73,7 +72,7 @@ class PrimeScoreDetailViewMixin(
             '헌법': all_raw_student_answers[3],
         }
 
-        def get_answers(sub: str) -> dict:
+        def get_answers(sub: str) -> list:
             student_answers = all_student_answers[sub]
 
             answer_list = []
@@ -107,99 +106,38 @@ class PrimeScoreDetailViewMixin(
         }
 
     def get_all_ranks(self):
-        def get_rank_queryset(rank_type: str):
-            def rank_func(field_name) -> Window:
-                return Window(expression=Rank(), order_by=F(field_name).desc())
+        rank_total = rank_department = None
 
-            def rank_ratio_func(field_name) -> Window:
-                return Window(expression=PercentRank(), order_by=F(field_name).desc())
+        students_qs_total = self.get_students_qs('전체')
+        rank_qs_total = get_rank_qs(students_qs_total)
+        for qs in rank_qs_total:
+            if qs.user_id == self.user_id:
+                rank_total = qs
 
-            return self.get_students_queryset(rank_type).annotate(
-                eoneo_rank=rank_func('eoneo_score'),
-                eoneo_rank_ratio=rank_ratio_func('eoneo_score'),
-                jaryo_rank=rank_func('jaryo_score'),
-                jaryo_rank_ratio=rank_ratio_func('jaryo_score'),
-                sanghwang_rank=rank_func('sanghwang_score'),
-                sanghwang_rank_ratio=rank_ratio_func('sanghwang_score'),
-                psat_rank=rank_func('psat_score'),
-                psat_rank_ratio=rank_ratio_func('psat_score'),
-                heonbeob_rank=rank_func('heonbeob_score'),
-                heonbeob_rank_ratio=rank_ratio_func('heonbeob_score'),
-            )
-
-        my_total_rank = my_department_rank = None
-        total_rank_queryset = get_rank_queryset('전체')
-        for queryset in total_rank_queryset:
-            if queryset.user_id == self.user_id:
-                my_total_rank = queryset
-
-        department_rank_queryset = get_rank_queryset('직렬')
-        for queryset in department_rank_queryset:
-            if queryset.user_id == self.user_id:
-                my_department_rank = queryset
+        students_qs_department = self.get_students_qs('직렬')
+        rank_qs_department = get_rank_qs(students_qs_department)
+        for qs in rank_qs_department:
+            if qs.user_id == self.user_id:
+                rank_department = qs
 
         return {
-            '전체': my_total_rank,
-            '직렬': my_department_rank,
+            '전체': rank_total,
+            '직렬': rank_department,
         }
 
     def get_all_stat(self):
-        def get_stat(stat_type):
-            students_queryset = self.get_students_queryset(stat_type)
-            stat_queryset = students_queryset.aggregate(
-                num_students=Count('id'),
+        stat_total = stat_department = None
 
-                eoneo_score_max=Max('eoneo_score', default=0),
-                jaryo_score_max=Max('jaryo_score', default=0),
-                sanghwang_score_max=Max('sanghwang_score', default=0),
-                psat_average_max=Max('psat_score', default=0)/3,
-                heonbeob_score_max=Max('heonbeob_score', default=0),
+        if self.student:
+            students_qs_total = self.get_students_qs('전체')
+            stat_total = get_stat(students_qs_total)
 
-                eoneo_score_avg=Avg('eoneo_score', default=0),
-                jaryo_score_avg=Avg('jaryo_score', default=0),
-                sanghwang_score_avg=Avg('sanghwang_score', default=0),
-                psat_average_avg=Avg('psat_score', default=0)/3,
-                heonbeob_score_avg=Avg('heonbeob_score', default=0),
-            )
+            students_qs_department = self.get_students_qs('직렬')
+            stat_department = get_stat(students_qs_department)
 
-            score_list_all = list(students_queryset.values(
-                'eoneo_score', 'jaryo_score', 'sanghwang_score', 'psat_score', 'heonbeob_score'))
-            score_list_eoneo = [s['eoneo_score'] for s in score_list_all]
-            score_list_jaryo = [s['jaryo_score'] for s in score_list_all]
-            score_list_sanghwang = [s['sanghwang_score'] for s in score_list_all]
-            score_list_psat = [s['psat_score'] for s in score_list_all]
-            score_list_heonbeob = [s['heonbeob_score'] for s in score_list_all]
-
-            def get_top_score(score_list: list):
-                return np.percentile(score_list, [90, 80], interpolation='nearest')
-
-            top_score_eoneo = get_top_score(score_list_eoneo)
-            top_score_jaryo = get_top_score(score_list_jaryo)
-            top_score_sanghwang = get_top_score(score_list_sanghwang)
-            top_score_psat = get_top_score(score_list_psat)
-            top_score_heonbeob = get_top_score(score_list_heonbeob)
-
-            try:
-                stat_queryset['eoneo_score_10'] = top_score_eoneo[0]
-                stat_queryset['eoneo_score_20'] = top_score_eoneo[1]
-                stat_queryset['jaryo_score_10'] = top_score_jaryo[0]
-                stat_queryset['jaryo_score_20'] = top_score_jaryo[1]
-                stat_queryset['sanghwang_score_10'] = top_score_sanghwang[0]
-                stat_queryset['sanghwang_score_20'] = top_score_sanghwang[1]
-                stat_queryset['psat_average_10'] = top_score_psat[0] / 3
-                stat_queryset['psat_average_20'] = top_score_psat[1] / 3
-                stat_queryset['heonbeob_score_10'] = top_score_heonbeob[0]
-                stat_queryset['heonbeob_score_20'] = top_score_heonbeob[1]
-            except TypeError:
-                pass
-
-            return stat_queryset
-
-        total_stat = get_stat('전체')
-        department_stat = get_stat('직렬')
         return {
-            '전체': total_stat,
-            '직렬': department_stat,
+            '전체': stat_total,
+            '직렬': stat_department,
         }
 
     def get_all_answer_rates(self):

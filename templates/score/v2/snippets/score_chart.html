@@ -38,7 +38,7 @@
         {{ student.jaryo_score|floatformat:1 }},
         {{ student.sanghwang_score|floatformat:1 }},
         {{ student.psat_average|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ student.heonbeob_score|floatformat:1 }},
         {% endif %}
     ]
@@ -47,7 +47,7 @@
         {{ stat_department.jaryo_score_avg|floatformat:1 }},
         {{ stat_department.sanghwang_score_avg|floatformat:1 }},
         {{ stat_department.psat_average_avg|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ stat_department.heonbeob_score_avg|floatformat:1 }},
         {% endif %}
     ]
@@ -56,7 +56,7 @@
         {{ stat_total.jaryo_score_avg|floatformat:1 }},
         {{ stat_total.sanghwang_score_avg|floatformat:1 }},
         {{ stat_total.psat_average_avg|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ stat_total.heonbeob_score_avg|floatformat:1 }},
         {% endif %}
     ]
@@ -65,7 +65,7 @@
         {{ stat_department.jaryo_score_20|floatformat:1 }},
         {{ stat_department.sanghwang_score_20|floatformat:1 }},
         {{ stat_department.psat_average_20|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ stat_department.heonbeob_score_20|floatformat:1 }},
         {% endif %}
     ]
@@ -74,7 +74,7 @@
         {{ stat_total.jaryo_score_20|floatformat:1 }},
         {{ stat_total.sanghwang_score_20|floatformat:1 }},
         {{ stat_total.psat_average_20|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ stat_total.heonbeob_score_20|floatformat:1 }},
         {% endif %}
     ]
@@ -83,7 +83,7 @@
         {{ stat_department.jaryo_score_10|floatformat:1 }},
         {{ stat_department.sanghwang_score_10|floatformat:1 }},
         {{ stat_department.psat_average_10|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ stat_department.heonbeob_score_10|floatformat:1 }},
         {% endif %}
     ]
@@ -92,7 +92,7 @@
         {{ stat_total.jaryo_score_10|floatformat:1 }},
         {{ stat_total.sanghwang_score_10|floatformat:1 }},
         {{ stat_total.psat_average_10|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ stat_total.heonbeob_score_10|floatformat:1 }},
         {% endif %}
     ]
@@ -101,7 +101,7 @@
         {{ stat_department.jaryo_score_max|floatformat:1 }},
         {{ stat_department.sanghwang_score_max|floatformat:1 }},
         {{ stat_department.psat_average_max|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ stat_department.heonbeob_score_max|floatformat:1 }},
         {% endif %}
     ]
@@ -110,7 +110,7 @@
         {{ stat_total.jaryo_score_max|floatformat:1 }},
         {{ stat_total.sanghwang_score_max|floatformat:1 }},
         {{ stat_total.psat_average_max|floatformat:1 }},
-        {% if confirmed_heonbeob %}
+        {% if confirmed.헌법 %}
             {{ stat_total.heonbeob_score_max|floatformat:1 }},
         {% endif %}
     ]
@@ -130,7 +130,7 @@
         type: 'bar',
         data: {
             labels: ['언어논리', '자료해석', '상황판단', 'PSAT 평균',
-                {% if confirmed_heonbeob %}'헌법'{% endif %}
+                {% if confirmed.헌법 %}'헌법'{% endif %}
             ],
             datasets: chart_datasets,
         },

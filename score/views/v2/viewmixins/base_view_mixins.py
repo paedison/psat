@@ -1,6 +1,16 @@
+from django.db.models import F
+
 from reference import models as reference_models
 from score import forms as score_forms
 from score import models as score_models
+
+
+def get_option(target) -> list[tuple]:
+    target_option = []
+    for t in target:
+        if t not in target_option:
+            target_option.append(t)
+    return target_option
 
 
 class PsatScoreBaseViewMixin:
@@ -26,6 +36,9 @@ class PsatScoreBaseViewMixin:
         self.year: int = self.get_year()
         self.ex: str = self.get_ex()
         self.exam = self.get_exam()
+
+        self.option_year = self.get_year_option()
+        self.option_ex = self.get_ex_option()
 
     @staticmethod
     def get_info() -> dict:
@@ -60,3 +73,17 @@ class PsatScoreBaseViewMixin:
         else:
             return self.exam_model.objects.get(
                 psat_exams__year=self.year, abbr=self.ex, psat_exams__subject__abbr='언어')
+
+    def get_year_option(self) -> list[tuple]:
+        year_list = (
+            self.category_model.objects.distinct()
+            .values_list('year', flat=True).order_by('-year')
+        )
+        return get_option(year_list)
+
+    def get_ex_option(self) -> list[tuple]:
+        ex_list = (
+            self.category_model.objects.filter(year=self.year).distinct()
+            .values(ex=F('exam__abbr'), exam_name=F('exam__name')).order_by('exam_id')
+        )
+        return get_option(ex_list)

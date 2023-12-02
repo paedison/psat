@@ -72,7 +72,7 @@
                             <td>{{ rank_department.psat_rank }}</td>
                             <td>{{ rank_department.psat_rank_ratio|percentage|floatformat:1 }}</td>
                         </tr>
-                        {% if confirmed_heonbeob or temporary_heonbeob %}
+                        {% if confirmed.헌법 or temporary.헌법 %}
                             <tr class="text-center">
                                 <th class="text-nowrap">헌법</th>
                                 <td>{{ student.heonbeob_score|floatformat:1 }}</td>
@@ -163,7 +163,7 @@
                                 <td>{{ stat.psat_average_20|floatformat:1 }}</td>
                                 <td>{{ stat.psat_average_avg|floatformat:1 }}</td>
                             </tr>
-                            {% if confirmed_heonbeob or temporary_heonbeob %}
+                            {% if confirmed.헌법 or temporary.헌법 %}
                                 <tr class="text-center">
                                     <th class="text-nowrap">헌법</th>
                                     <td>{{ student.heonbeob_score|floatformat:1 }}</td>
