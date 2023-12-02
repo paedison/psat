@@ -110,9 +110,9 @@
                         <tr>
                             <td class="text-nowrap p-2 col-1">
                                 <div class="d-inline-block d-sm-none me-1" hx-push-url="true">
+
                                     {% partialdef reference inline=True %} {# reference partial #}
                                         {% if like_list and not problem|get_status:like_data %}
-
                                             {% with view_type='problem' %}
 
                                                 {% partialdef reference_link inline=True %} {# reference_link partial #}
@@ -123,6 +123,7 @@
                                                         {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|add_0 }}
                                                     </a>
                                                 {% endpartialdef reference_link %}
+
                                             {% endwith %}
 
 {% partialdef detail_link_url %} {# detail_link_url partial #}
@@ -132,24 +133,31 @@
 {% endpartialdef detail_link_url %}
 
                                         {% elif search_list %}
-                                            {% with view_type='problem' %}{% partial reference_link %}{% endwith %}
+                                            {% with view_type='problem' %}
+                                                {% partial reference_link %}
+                                            {% endwith %}
                                         {% else %}
-                                            {% with view_type=info.view_type %}{% partial reference_link %}{% endwith %}
+                                            {% with view_type=info.view_type %}
+                                                {% partial reference_link %}
+                                            {% endwith %}
                                         {% endif %}
                                     {% endpartialdef reference %}
+
                                 </div>
                                 {% include 'psat/v2/snippets/icon_container.html' %}
                                 <div class="d-none d-sm-inline-block td-div-lg text-start ps-1" hx-push-url="true">
                                     {% partial reference %}
                                 </div>
                                 <div class="d-sm-none pt-2" hx-push-url="true">
+
                                     {% partialdef question inline=True %} {# question partial #}
                                         {% if like_list and not problem|get_status:like_data %}
 
                                             {% with view_type='problem' %}
-                                                {% partialdef question_link inline=True %} {# question_link partial #}
 
+                                                {% partialdef question_link inline=True %} {# question_link partial #}
                                                     {% with class='d-md-none' chars=30 %}
+
                                                         {% partialdef link_snippet inline=True %} {# link_snippet partial #}
                                                             <a class="text-decoration-none {{ class }}"
                                                                href="{% url 'psat:detail' view_type problem.id %}"
@@ -160,6 +168,7 @@
                                                                 </h3>
                                                             </a>
                                                         {% endpartialdef link_snippet %}
+
                                                     {% endwith %}
 
                                                     {% with class='d-none d-md-inline d-lg-none' chars=40 %}
@@ -173,8 +182,8 @@
                                                     {% with class='d-none d-xl-inline' chars=60 %}
                                                         {% partial link_snippet %}
                                                     {% endwith %}
-
                                                 {% endpartialdef question_link %}
+
                                             {% endwith %}
 
                                         {% elif search_list %}
@@ -187,6 +196,7 @@
                                             {% endwith %}
                                         {% endif %}
                                     {% endpartialdef question %}
+
                                 </div>
                             </td>
                             <td class="d-none d-sm-table-cell text-start text-nowrap p-2" hx-push-url="true">
@@ -204,8 +214,8 @@
 
         {% #pagination_nav %}
             {% if page_obj.has_previous %}
-
                 {% with page_num=page_obj.number|add:-1 chevron='left' %}
+
                     {% partialdef pagination_link inline=True %} {# pagination_link partial #}
                         <li class="page-item {{ status }}"
                             {% if status == 'active' %}aria-current="page"{% endif %}>
@@ -223,9 +233,10 @@
                             </a>
                         </li>
                     {% endpartialdef pagination_link %}
-                {% endwith %}
 
+                {% endwith %}
             {% endif %}
+
             {% for number in page_range %}
                 {% with page_num=number anchor_text=number %}
                     {% if number == page_obj.number %}
@@ -241,6 +252,7 @@
                     {% endif %}
                 {% endwith %}
             {% endfor %}
+
             {% if page_obj.has_next %}
                 {% with page_num=page_obj.number|add:1 chevron='right' %}
                     {% partial pagination_link %}

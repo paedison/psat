@@ -1,0 +1,92 @@
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+<nav>
+    <div class="nav nav-tabs nav-tabs-bordered" id="studentInfoTab" role="tablist">
+        {% #nav_tab prefix='my' id='0' %}수험정보{% /nav_tab %}
+    </div>
+</nav>
+
+<div class="tab-content" id="studentInfoContent">
+    {% #nav_content prefix='info' id='0' %}
+        {% #responsive_table %}
+            <tbody>
+                <tr class="d-table-row d-md-none">
+                    <td class="col-3 text-nowrap">수험번호</td>
+                    <td>
+                        {% if student %}
+                            {{ student.serial }}
+                            {% partialdef update_student inline=True %}
+                                <a class="badge rounded-pill text-bg-warning mx-2"
+                                   hx-get="{% url 'score:student_update_modal' student.id %}" href=""
+                                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                   data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                    수정
+                                </a>
+                            {% endpartialdef update_student %}
+                        {% else %}
+                            {% partialdef create_student inline=True %}
+                                <a class="badge rounded-pill text-bg-warning mx-2"
+                                   hx-get="{% url 'score:student_create_modal' year ex %}" href=""
+                                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                   data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                    입력
+                                </a>
+                            {% endpartialdef create_student %}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="d-table-row d-md-none">
+                    <td>모집단위</td>
+                    <td>
+                        {% if student %}
+                            {{ student.unit_name }} {% partial update_student %}
+                        {% else %}
+                            {% partial create_student %}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="d-table-row d-md-none">
+                    <td>직렬</td>
+                    <td>
+                        {% if student %}
+                            {{ student.department_name }} {% partial update_student %}
+                        {% else %}
+                            {% partial create_student %}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr class="d-none d-md-table-row">
+                    <td>
+                        수험번호
+                        {% if student %}
+                            {% if student.serial %}
+                                : {{ student.serial }}
+                            {% endif %}
+                            {% partial update_student %}
+                        {% else %}
+                            {% partial create_student %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        모집단위
+                        {% if student.unit_name %}
+                            : {{ student.unit_name }} {% partial update_student %}
+                        {% else %}
+                            {% partial create_student %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        직렬
+                        {% if student.department_name %}
+                            : {{ student.department_name }} {% partial update_student %}
+                        {% else %}
+                            {% partial create_student %}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        {% /responsive_table %}
+    {% /nav_content %}
+</div>

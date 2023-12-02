@@ -1,176 +1,92 @@
 {% extends 'list.html' %}
 {% load static %}
-{% load i18n %}
 {% load psat_filter %}
 {% load partials %}
 {% load slippers %}
 
 {% block main %}
-    {% partialdef list_main inline=True %}
-        {{ info|json_script:'info' }}
-        <div class="pagetitle">
-            <h1>{{ icon|safe }} {{ title }}
-                <span class="fs-6 text-secondary">{{ sub_title }}</span>
-            </h1>
-            <nav>
-                <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
-                    </li>
-                    <li class="breadcrumb-item">Score</li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
-                    </li>
-                    <li class="breadcrumb-item">{{ year }}</li>
-                    <li class="breadcrumb-item active">{{ exam }}</li>
-                </ol>
-            </nav>
-        </div><!-- Page Title End -->
+{% partialdef detail_main inline=True %} {# detail_main partial #}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon_menu|safe }} {{ title }}
+        <span class="fs-6 text-secondary">{{ sub_title }}</span>
+    </h1>
 
-        <section class="section htmx-fade-in htmx-fade-out"
-                 hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-        {% #content_row class1='col-12' %}
-            <h5 class="card-title mb-0">
-                <div class="row m-0">
-                    <a class="btn btn-circle btn-sm btn-outline-secondary" href="{% url 'score:list' %}"
-                       hx-post="{% url 'score:list' %}" title="Score List">
-                        {{ icon_nav.list|safe }}
-                    </a>
-                    <div class="ms-auto col-10 col-sm-8 col-md-5 col-lg-4">
-                        {% partial exam_filter %}
-                    </div>
-                </div>
-            </h5>
-            <div>
-                {% partial student_info %}
-            </div>
-            <div>
-                {% include 'score/v2/snippets/score_sheet.html' %}
-            </div>
-            <div>
-                {% include 'score/v2/snippets/score_answers.html' %}
-            </div>
-            <div>
-                {% include 'score/v2/snippets/score_chart.html' %}
-            </div>
-        {% /content_row %}
-        </section>
-    {% endpartialdef list_main %}
-{% endblock main %}
-
-{% partialdef student_info %}
     <nav>
-        <div class="nav nav-tabs nav-tabs-bordered" id="studentInfoTab" role="tablist">
-            {% #nav_tab prefix='my' id='0' %}수험정보{% /nav_tab %}
-        </div>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">Score</li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
+            </li>
+            <li class="breadcrumb-item">{{ year }}</li>
+            <li class="breadcrumb-item active">{{ exam }}</li>
+        </ol>
     </nav>
-    <div class="tab-content" id="studentInfoContent">
-        {% #nav_content prefix='info' id='0' %}
-            {% #responsive_table %}
-                <tbody>
-                    <tr class="d-table-row d-md-none">
-                        <td class="col-3 text-nowrap">수험번호</td>
-                        <td>
-                            {% if student %}
-                                {{ student.serial }}
-                                {% partialdef update_student inline=True %}
-                                    <a class="badge rounded-pill text-bg-warning mx-2"
-                                       hx-get="{% url 'score:student_update_modal' student.id %}" href=""
-                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        수정
-                                    </a>
-                                {% endpartialdef update_student %}
-                            {% else %}
-                                {% partialdef create_student inline=True %}
-                                    <a class="badge rounded-pill text-bg-warning mx-2"
-                                       hx-get="{% url 'score:student_create_modal' year ex %}" href=""
-                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        입력
-                                    </a>
-                                {% endpartialdef create_student %}
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr class="d-table-row d-md-none">
-                        <td>모집단위</td>
-                        <td>
-                            {% if student %}
-                                {{ student.department.name }} {% partial update_student %}
-                            {% else %}
-                                {% partial create_student %}
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr class="d-table-row d-md-none">
-                        <td>직렬</td>
-                        <td>
-                            {% if student %}
-                                {{ student.department.name }} {% partial update_student %}
-                            {% else %}
-                                {% partial create_student %}
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr class="d-none d-md-table-row">
-                        <td>
-                            수험번호
-                            {% if student %}
-                                {% if student.serial %}
-                                    : {{ student.serial }}
-                                {% endif %}
-                                {% partial update_student %}
-                            {% else %}
-                                {% partial create_student %}
-                            {% endif %}
-                        </td>
-                        <td>
-                            모집단위
-                            {% if student.department %}
-                                : {{ student.department.unit.name }} {% partial update_student %}
-                            {% else %}
-                                {% partial create_student %}
-                            {% endif %}
-                        </td>
-                        <td>
-                            직렬
-                            {% if student.department %}
-                                : {{ student.department.name }} {% partial update_student %}
-                            {% else %}
-                                {% partial create_student %}
-                            {% endif %}
-                        </td>
-                    </tr>
-                </tbody>
-            {% /responsive_table %}
-        {% /nav_content %}
-    </div>
-{% endpartialdef student_info %}
+</div><!-- Page Title End -->
 
-{% partialdef exam_filter %}
-    <form>
-        <div class="input-group">
-            <select id="id_exam_year" class="form-select" name="year"
-                    hx-post="{% url 'score:filter' %}" aria-label="Select Year"
-                    hx-trigger="change" hx-target="#id_exam_name" hx-swap="outerHTML">
-                <option>연도</option>
-                {% for y in year_option %}
-                    <option value="{{ y.0 }}"{% if y.0 == year %} selected{% endif %}>
-                        {{ y.1 }}
-                    </option>
-                {% endfor %}
-            </select>
-            {% partialdef exam_select inline=True %}
-                <select id="id_exam_name" class="form-select" name="ex" aria-label="Select Year"
-                        hx-post="{% url 'score:detail' %}" hx-trigger="change">
-                    {% for e in ex_option %}
-                        <option value="{{ e.0 }}"{% if e.0 == ex %} selected{% endif %}>
-                            {{ e.1 }}
-                        </option>
-                    {% endfor %}
-                </select>
-            {% endpartialdef exam_select %}
+<section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+    {% #content_row class1='col-12' %}
+        <h5 class="card-title mb-0">
+            <div class="row m-0">
+                <a class="btn btn-circle btn-sm btn-outline-secondary" href="{% url 'score:list' %}"
+                   hx-post="{% url 'score:list' %}" title="Score List">
+                    {{ icon_nav.list|safe }}
+                </a>
+                <div class="ms-auto col-10 col-sm-8 col-md-5 col-lg-4">
+
+                    {% partialdef exam_filter inline=True %} {# exam_filter partial #}
+                        <form>
+                            <div class="input-group">
+                                <select id="id_exam_year" class="form-select" name="year"
+                                        hx-post="{% url 'score:filter' %}" aria-label="Select Year"
+                                        hx-trigger="change" hx-target="#id_exam_name" hx-swap="outerHTML">
+                                    <option>연도</option>
+                                    {% for y in option_year %}
+                                        <option value="{{ y.0 }}"{% if y.0 == year %} selected{% endif %}>
+                                            {{ y.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% partialdef exam_select inline=True %}
+                                    <select id="id_exam_name" class="form-select" name="ex"
+                                            aria-label="Select Year" hx-trigger="change"
+                                            hx-post="{% url 'score:detail' %}">
+                                        <option>시험</option>
+                                        {% for e in option_ex %}
+                                            <option value="{{ e.0 }}"{% if e.0 == ex %} selected{% endif %}>
+                                                {{ e.1 }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                {% endpartialdef exam_select %}
+                            </div>
+                        </form>
+                    {% endpartialdef exam_filter %}
+
+                </div>
+            </div>
+        </h5>
+
+        <div>
+            {% include 'score/v2/snippets/score_student.html' %}
         </div>
-    </form>
-{% endpartialdef exam_filter %}
+
+        <div>
+            {% include 'score/v2/snippets/score_sheet.html' %}
+        </div>
+
+        <div>
+            {% include 'score/v2/snippets/score_answers.html' %}
+        </div>
+
+        <div>
+            {% include 'score/v2/snippets/score_chart.html' %}
+        </div>
+    {% /content_row %}
+</section>
+{% endpartialdef detail_main %}
+{% endblock main %}

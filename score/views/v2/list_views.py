@@ -2,12 +2,11 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
-from .viewmixins.list_viewmixins import ScoreListViewMixin
+from .viewmixins.list_view_mixins import PsatScoreListViewMixin
 
 
 class BaseView(
     LoginRequiredMixin,
-    ScoreListViewMixin,
     TemplateView
 ):
     """ Represent information related PsatTemporaryAnswer and PsatConfirmedAnswer models. """
@@ -18,40 +17,32 @@ class BaseView(
 
     request: any
 
-    def get_template_names(self) -> str:
-        """
-        Get the template name.
-        base(GET): whole page > main(POST): main page > content(GET): content page
-        :return: str
-        """
-        base_template = self.template_name
-        main_template = f'{base_template}#list_main'
-        if self.request.method == 'GET':
-            return main_template if self.request.htmx else base_template
-        else:
-            return main_template
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#list_main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
 
     def post(self, request, *args, **kwargs):
         return super().get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        page_obj, page_range = self.get_paginator_info()
-        info = {
-            'menu': self.menu,
-            'view_type': self.view_type,
-        }
-        context = {
+        variable = PsatScoreListViewMixin(self.request, **self.kwargs)
+
+        page_obj, page_range = variable.get_paginator_info()
+        info = variable.get_info()
+
+        return {
             'info': info,
             'title': 'Score',
-            'icon': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
             'page_obj': page_obj,
             'page_range': page_range,
 
             # Icons
-            'icon_menu': self.ICON_MENU,
-            'icon_subject': self.ICON_SUBJECT,
+            'icon_menu': variable.ICON_MENU['score'],
+            'icon_subject': variable.ICON_SUBJECT,
         }
-        return context
 
 
 base_view = BaseView.as_view()

@@ -6,207 +6,120 @@
 {% load slippers %}
 
 {% block main %}
-    {% partialdef list_main inline=True %}
-        {{ info|json_script:'info' }}
-        <div class="pagetitle">
-            <h1>{{ icon_menu|safe }} {{ title }}
-                <span class="fs-6 text-secondary">프라임 모의고사 성적표</span>
-            </h1>
-            <nav>
-                <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
-                    </li>
-                    <li class="breadcrumb-item">Score</li>
-                    <li class="breadcrumb-item active">Prime</li>
-                </ol>
-            </nav>
-        </div><!-- Page Title End -->
+{% partialdef list_main inline=True %} {# list_main partial #}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon_menu|safe }} {{ title }}
+        <span class="fs-6 text-secondary">프라임 모의고사 성적표</span>
+    </h1>
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">Score</li>
+            <li class="breadcrumb-item active">Prime</li>
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
 
-        <section class="section htmx-fade-in htmx-fade-out"
-                 hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-        {% #content_row class3='p-4' %}
-            {% #responsive_table %}
-                <thead>{% partial thead %}</thead>
-                <tbody>{% partial tbody %}</tbody>
-            {% /responsive_table %}
-        {% /content_row %}
-        </section>
-    {% endpartialdef list_main %}
+<section class="section htmx-fade-in htmx-fade-out"
+         hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+    {% #content_row class3='p-4' %}
+        {% #responsive_table %}
+            <thead>
+                <tr class="text-center table-warning">
+                    <th class="text-primary text-nowrap p-2 col-1">회차</th>
+                    <th class="text-primary text-nowrap p-2 col-1">시험일</th>
+                    <th class="text-primary text-nowrap p-2 col-1">수험번호</th>
+                    <th class="text-primary text-nowrap p-2 col-1">직렬</th>
+                    <th class="text-primary text-nowrap p-2 col-1">성적표</th>
+                    <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">언어</th>
+                    <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">자료</th>
+                    <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">상황</th>
+                    <th class="text-primary text-nowrap p-2 col-1">PSAT 평균</th>
+                    <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">헌법</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
+                                        제{{ obj.round }}회
+                                    </a>
+                                {% else %}
+                                    제{{ obj.round }}회
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
+                                        {{ obj.date }}
+                                    </a>
+                                {% else %}
+                                    {{ obj.date }}
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
+                                        {{ obj.student.serial }}
+                                    </a>
+                                {% else %}
+
+                                    {% partialdef input_button inline=True %} {# input_button partial #}
+                                        <a class="badge rounded-pill text-bg-warning"
+                                           hx-get="{% url 'prime:student_connect_modal' obj.year obj.round %}" href=""
+                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            입력
+                                        </a>
+                                    {% endpartialdef input_button %}
+
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
+                                        {{ obj.student.department.name }}
+                                    </a>
+                                {% else %}
+                                    {% partial input_button %}
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student %}
+                                    <a class="badge rounded-pill text-bg-success"
+                                       href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
+                                        확인
+                                    </a>
+                                {% else %}
+                                    <a class="badge rounded-pill text-bg-danger"
+                                       hx-get="{% url 'prime:no_student_modal' %}" href=""
+                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        미제공
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td class="d-none d-lg-table-cell">{{ obj.student.eoneo_score|floatformat:1 }}</td>
+                            <td class="d-none d-lg-table-cell">{{ obj.student.jaryo_score|floatformat:1 }}</td>
+                            <td class="d-none d-lg-table-cell">{{ obj.student.sanghwang_score|floatformat:1 }}</td>
+                            <td>{{ obj.student.psat_average|floatformat:1 }}</td>
+                            <td class="d-none d-lg-table-cell">
+                                {% if obj.student.heonbeob_score %}
+                                    {{ obj.student.heonbeob_score|floatformat:1 }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        {% /responsive_table %}
+    {% /content_row %}
+</section>
+{% endpartialdef list_main %}
 {% endblock main %}
-
-{% partialdef thead %}
-    <tr class="text-center table-warning">
-        <th class="text-primary text-nowrap p-2 col-1">회차</th>
-        <th class="text-primary text-nowrap p-2 col-1">시험일</th>
-        <th class="text-primary text-nowrap p-2 col-1">수험번호</th>
-        <th class="text-primary text-nowrap p-2 col-1">직렬</th>
-        <th class="text-primary text-nowrap p-2 col-1">성적표</th>
-        <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">언어</th>
-        <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">자료</th>
-        <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">상황</th>
-        <th class="text-primary text-nowrap p-2 col-1">PSAT 평균</th>
-        <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">헌법</th>
-    </tr>
-{% endpartialdef thead %}
-
-{% partialdef tbody %}
-    {% if page_obj %}
-        {% for obj in page_obj %}
-            <tr class="text-center">
-                <td class="text-nowrap p-2">
-                    {% if obj.student %}
-                        <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
-                            제{{ obj.round }}회
-                        </a>
-                    {% else %}
-                        제{{ obj.round }}회
-                    {% endif %}
-                </td>
-                <td class="text-nowrap p-2">
-                    {% if obj.student %}
-                        <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
-                            {{ obj.date }}
-                        </a>
-                    {% else %}
-                        {{ obj.date }}
-                    {% endif %}
-                </td>
-                <td class="text-nowrap p-2">
-                    {% if obj.student %}
-                        <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
-                            {{ obj.student.serial }}
-                        </a>
-                    {% else %}
-                        {% partial input_button %}
-                    {% endif %}
-                </td>
-                <td class="text-nowrap p-2">
-                    {% if obj.student %}
-                        <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
-                            {{ obj.student.department.name }}
-                        </a>
-                    {% else %}
-                        {% partial input_button %}
-                    {% endif %}
-                </td>
-                <td class="text-nowrap p-2">
-                    {% if obj.student %}
-                        <a class="badge rounded-pill text-bg-success"
-                           href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
-                            확인
-                        </a>
-                    {% else %}
-                        <a class="badge rounded-pill text-bg-danger"
-                           hx-get="{% url 'prime:no_student_modal' %}" href=""
-                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                           data-bs-toggle="modal" data-bs-target="#modalContainer">
-                            미제공
-                        </a>
-                    {% endif %}
-                </td>
-                <td class="d-none d-lg-table-cell">{{ obj.student.eoneo_score|floatformat:1 }}</td>
-                <td class="d-none d-lg-table-cell">{{ obj.student.jaryo_score|floatformat:1 }}</td>
-                <td class="d-none d-lg-table-cell">{{ obj.student.sanghwang_score|floatformat:1 }}</td>
-                <td>{{ obj.student.psat_average|floatformat:1 }}</td>
-                <td class="d-none d-lg-table-cell">
-                    {% if obj.student.heonbeob_score %}
-                        {{ obj.student.heonbeob_score|floatformat:1 }}
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-    {% endif %}
-{% endpartialdef tbody %}
-
-{% partialdef input_button %}
-    <a class="badge rounded-pill text-bg-warning"
-       hx-get="{% url 'prime:student_connect_modal' obj.year obj.round %}" href=""
-       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-       data-bs-toggle="modal" data-bs-target="#modalContainer">
-        입력
-    </a>
-{% endpartialdef input_button %}
-{##}
-{#{% partialdef tbody %}#}
-{#    {% if page_obj %}#}
-{#        {% for obj in page_obj %}#}
-{#            <tr class="text-center">#}
-{#                <td class="text-nowrap p-2">#}
-{#                    {% if obj.student %}#}
-{#                        <a href="{% url 'prime:detail_year_round' obj.year obj.round %}"#}
-{#                           hx-get="{% url 'prime:detail_year_round' obj.year obj.round %}">#}
-{#                            제{{ obj.round }}회#}
-{#                        </a>#}
-{#                    {% else %}#}
-{#                        제{{ obj.round }}회#}
-{#                    {% endif %}#}
-{#                </td>#}
-{#                <td class="text-nowrap p-2">#}
-{#                    {% if obj.student %}#}
-{#                        <a href="{% url 'prime:detail_year_round' obj.year obj.round %}"#}
-{#                           hx-get="{% url 'prime:detail_year_round' obj.year obj.round %}">#}
-{#                            {{ obj.date }}#}
-{#                        </a>#}
-{#                    {% else %}#}
-{#                        {{ obj.date }}#}
-{#                    {% endif %}#}
-{#                </td>#}
-{#                <td class="text-nowrap p-2">#}
-{#                    {% if obj.student %}#}
-{#                        <a href="{% url 'prime:detail_year_round' obj.year obj.round %}"#}
-{#                           hx-get="{% url 'prime:detail_year_round' obj.year obj.round %}">#}
-{#                            {{ obj.student.serial }}#}
-{#                        </a>#}
-{#                    {% else %}#}
-{#                        {% partial input_button %}#}
-{#                    {% endif %}#}
-{#                </td>#}
-{#                <td class="text-nowrap p-2">#}
-{#                    {% if obj.student %}#}
-{#                        <a href="{% url 'prime:detail_year_round' obj.year obj.round %}"#}
-{#                           hx-get="{% url 'prime:detail_year_round' obj.year obj.round %}">#}
-{#                            {{ obj.student.department.name }}#}
-{#                        </a>#}
-{#                    {% else %}#}
-{#                        {% partial input_button %}#}
-{#                    {% endif %}#}
-{#                </td>#}
-{#                <td class="text-nowrap p-2">#}
-{#                    {% if obj.student %}#}
-{#                        <a class="badge rounded-pill text-bg-success"#}
-{#                           href="{% url 'prime:detail_year_round' obj.year obj.round %}"#}
-{#                           hx-get="{% url 'prime:detail_year_round' obj.year obj.round %}">#}
-{#                            확인#}
-{#                        </a>#}
-{#                    {% else %}#}
-{#                        <a class="badge rounded-pill text-bg-danger"#}
-{#                           hx-get="{% url 'prime:no_student_modal' %}" href=""#}
-{#                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"#}
-{#                           data-bs-toggle="modal" data-bs-target="#modalContainer">#}
-{#                            미제공#}
-{#                        </a>#}
-{#                    {% endif %}#}
-{#                </td>#}
-{#                <td class="d-none d-lg-table-cell">{{ obj.student.eoneo_score|floatformat:1 }}</td>#}
-{#                <td class="d-none d-lg-table-cell">{{ obj.student.jaryo_score|floatformat:1 }}</td>#}
-{#                <td class="d-none d-lg-table-cell">{{ obj.student.sanghwang_score|floatformat:1 }}</td>#}
-{#                <td>{{ obj.student.psat_average|floatformat:1 }}</td>#}
-{#                <td class="d-none d-lg-table-cell">#}
-{#                    {% if obj.student.heonbeob_score %}#}
-{#                        {{ obj.student.heonbeob_score|floatformat:1 }}#}
-{#                    {% endif %}#}
-{#                </td>#}
-{#            </tr>#}
-{#        {% endfor %}#}
-{#    {% endif %}#}
-{#{% endpartialdef tbody %}#}
-{##}
-{#{% partialdef input_button %}#}
-{#    <a class="badge rounded-pill text-bg-warning"#}
-{#       hx-get="{% url 'prime:student_connect_modal' obj.year obj.round %}" href=""#}
-{#       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"#}
-{#       data-bs-toggle="modal" data-bs-target="#modalContainer">#}
-{#        입력#}
-{#    </a>#}
-{#{% endpartialdef input_button %}#}
