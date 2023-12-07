@@ -5,7 +5,7 @@
 {% load partials %}
 {% load slippers %}
 
-{% block head_title %}{{ student.serial }}_{{ student.department.name }}_{{ student.name }}_제{{ round }}회_전국모의고사_성적표{% endblock head_title %}
+{% block head_title %}{{ student.serial }}_{{ student.department_name }}_{{ student.name }}_제{{ round }}회_전국모의고사_성적표{% endblock head_title %}
 
 {% block html_body %}
 <body class="bg-white">
@@ -30,7 +30,7 @@
             <tbody>
                 <tr class="text-center">
                     <td>응시번호 : {{ student.serial }}</td>
-                    <td>직렬 : {{ student.department.name }}</td>
+                    <td>직렬 : {{ student.department_name }}</td>
                     <td>이름 : {{ student.name }}</td>
                 </tr>
             </tbody>
