@@ -40,43 +40,43 @@
                 <tr class="text-center">
                     <th class="text-nowrap">언어논리</th>
                     <td>{{ student.eoneo_score|floatformat:1 }}</td>
-                    <td>{{ my_total_rank.eoneo_rank }}</td>
-                    <td>{{ my_total_rank.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ my_department_rank.eoneo_rank }}</td>
-                    <td>{{ my_department_rank.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ rank_total.eoneo_rank }}</td>
+                    <td>{{ rank_total.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ rank_department.eoneo_rank }}</td>
+                    <td>{{ rank_department.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center">
                     <th class="text-nowrap">자료해석</th>
                     <td>{{ student.jaryo_score|floatformat:1 }}</td>
-                    <td>{{ my_total_rank.jaryo_rank }}</td>
-                    <td>{{ my_total_rank.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ my_department_rank.jaryo_rank }}</td>
-                    <td>{{ my_department_rank.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ rank_total.jaryo_rank }}</td>
+                    <td>{{ rank_total.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ rank_department.jaryo_rank }}</td>
+                    <td>{{ rank_department.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center">
                     <th class="text-nowrap">상황판단</th>
                     <td>{{ student.sanghwang_score|floatformat:1 }}</td>
-                    <td>{{ my_total_rank.sanghwang_rank }}</td>
-                    <td>{{ my_total_rank.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ my_department_rank.sanghwang_rank }}</td>
-                    <td>{{ my_department_rank.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ rank_total.sanghwang_rank }}</td>
+                    <td>{{ rank_total.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ rank_department.sanghwang_rank }}</td>
+                    <td>{{ rank_department.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center table-warning">
                     <th class="text-nowrap">PSAT 평균</th>
                     <td>{{ student.psat_average|floatformat:1 }}</td>
-                    <td>{{ my_total_rank.psat_rank }}</td>
-                    <td>{{ my_total_rank.psat_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ my_department_rank.psat_rank }}</td>
-                    <td>{{ my_department_rank.psat_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ rank_total.psat_rank }}</td>
+                    <td>{{ rank_total.psat_rank_ratio|percentage|floatformat:1 }}</td>
+                    <td>{{ rank_department.psat_rank }}</td>
+                    <td>{{ rank_department.psat_rank_ratio|percentage|floatformat:1 }}</td>
                 </tr>
                 {% if heonbeob_answer or heonbeob_temporary %}
                     <tr class="text-center">
                         <th class="text-nowrap">헌법</th>
                         <td>{{ student.heonbeob_score|floatformat:1 }}</td>
-                        <td>{{ my_total_rank.heonbeob_rank }}</td>
-                        <td>{{ my_total_rank.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
-                        <td>{{ my_department_rank.heonbeob_rank }}</td>
-                        <td>{{ my_department_rank.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
+                        <td>{{ rank_total.heonbeob_rank }}</td>
+                        <td>{{ rank_total.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
+                        <td>{{ rank_department.heonbeob_rank }}</td>
+                        <td>{{ rank_department.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
                     </tr>
                 {% endif %}
             </tbody>

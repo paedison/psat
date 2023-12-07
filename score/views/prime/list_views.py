@@ -2,13 +2,11 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
-from .viewmixins.list_viewmixins import PrimeScoreListViewMixin
+from .viewmixins.list_view_mixins import PrimeScoreListViewMixin
 
 
-class BaseView(
-    LoginRequiredMixin,
-    TemplateView
-):
+class BaseView(LoginRequiredMixin, TemplateView):
+    """ Represent information related PrimeTemporaryAnswer and PrimeConfirmedAnswer models. """
     template_name = 'score/prime/score_list.html'
     login_url = settings.LOGIN_URL
     request: any

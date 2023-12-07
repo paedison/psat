@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
-from .viewmixins.detail_viewmixins import PrimeScoreDetailViewMixin
+from .viewmixins.detail_view_mixins import PrimeScoreDetailViewMixin
 
 
 class BaseView(
@@ -33,33 +33,37 @@ class BaseView(
         all_answer_rates = variable.get_all_answer_rates()
 
         return {
+            # base info
             'info': info,
             'year': variable.year,
             'round': variable.round,
-            'title': variable.title,
+            'title': 'Score',
             'sub_title': variable.sub_title,
-
-            'eoneo_answer': all_answers['언어'],
-            'jaryo_answer': all_answers['자료'],
-            'sanghwang_answer': all_answers['상황'],
-            'heonbeob_answer': all_answers['헌법'],
-
-            'student': variable.student,
-            'my_total_rank': all_ranks['전체'],
-            'my_department_rank': all_ranks['직렬'],
-
-            'total_stat': all_stat['전체'],
-            'department_stat': all_stat['직렬'],
-
-            'eoneo_rates': all_answer_rates['언어'],
-            'jaryo_rates': all_answer_rates['자료'],
-            'sanghwang_rates': all_answer_rates['상황'],
-            'heonbeob_rates': all_answer_rates['헌법'],
 
             # Icons
             'icon_menu': variable.ICON_MENU['score'],
             'icon_subject': variable.ICON_SUBJECT,
             'icon_nav': variable.ICON_NAV,
+
+            # score_student.html
+            'student': variable.student,
+
+            # score_sheet.html
+            'rank_total': all_ranks['전체'],
+            'rank_department': all_ranks['직렬'],
+            'stat_total': all_stat['전체'],
+            'stat_department': all_stat['직렬'],
+
+            # score_answers.html
+            'eoneo_answer': all_answers['언어'],
+            'jaryo_answer': all_answers['자료'],
+            'sanghwang_answer': all_answers['상황'],
+            'heonbeob_answer': all_answers['헌법'],
+
+            'eoneo_rates': all_answer_rates['언어'],
+            'jaryo_rates': all_answer_rates['자료'],
+            'sanghwang_rates': all_answer_rates['상황'],
+            'heonbeob_rates': all_answer_rates['헌법'],
         }
 
 

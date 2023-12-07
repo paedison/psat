@@ -1,9 +1,18 @@
 import numpy as np
-from django.db.models import (
-    F, Count, Max, Avg
-)
+from django.db.models import F, Count, Max, Avg
 from django.db.models import Window
 from django.db.models.functions import Rank, PercentRank
+
+
+def get_dict_by_sub(target_list: list[dict]) -> dict:
+    result_dict = {'언어': [], '자료': [], '상황': [], '헌법': []}
+    for key in result_dict.keys():
+        result_list = []
+        for t in target_list:
+            if t and t['sub'] == key:
+                result_list.append(t)
+        result_dict[key] = result_list
+    return result_dict
 
 
 def get_rank_qs(queryset):
@@ -25,6 +34,31 @@ def get_rank_qs(queryset):
         heonbeob_rank=rank_func('heonbeob_score'),
         heonbeob_rank_ratio=rank_ratio_func('heonbeob_score'),
     )
+
+
+def get_all_ranks_dict(get_students_qs, user_id) -> dict:
+    rank_total = rank_department = None
+
+    students_qs_total = get_students_qs('전체')
+    rank_qs_total = get_rank_qs(students_qs_total)
+    for qs in rank_qs_total:
+        if qs.user_id == user_id:
+            rank_total = qs
+
+    students_qs_department = get_students_qs('직렬')
+    rank_qs_department = get_rank_qs(students_qs_department)
+    for qs in rank_qs_department:
+        if qs.user_id == user_id:
+            rank_department = qs
+
+    return {
+        '전체': rank_total,
+        '직렬': rank_department,
+    }
+
+
+def get_top_score(score_list: str):
+    return np.percentile(score_list, [90, 80], interpolation='nearest')
 
 
 def get_stat(queryset) -> dict:
@@ -52,9 +86,6 @@ def get_stat(queryset) -> dict:
     score_list_psat = [s['psat_score'] for s in score_list_all]
     score_list_heonbeob = [s['heonbeob_score'] for s in score_list_all]
 
-    def get_top_score(score_list: str):
-        return np.percentile(score_list, [90, 80], interpolation='nearest')
-
     top_score_eoneo = get_top_score(score_list_eoneo)
     top_score_jaryo = get_top_score(score_list_jaryo)
     top_score_sanghwang = get_top_score(score_list_sanghwang)
@@ -76,3 +107,39 @@ def get_stat(queryset) -> dict:
         pass
 
     return stat_queryset
+
+
+def get_all_stat_dict(get_students_qs, student) -> dict:
+    stat_total = stat_department = None
+
+    if student:
+        students_qs_total = get_students_qs('전체')
+        stat_total = get_stat(students_qs_total)
+
+        students_qs_department = get_students_qs('직렬')
+        stat_department = get_stat(students_qs_department)
+
+    return {
+        '전체': stat_total,
+        '직렬': stat_department,
+    }
+
+
+def get_all_answer_rates_dict(all_raw_answer_rates) -> dict:
+    def get_answer_rates(sub: str) -> list:
+        answer_rates = []
+        for rates in all_raw_answer_rates:
+            if rates['sub'] == sub:
+                answer_rates_dict = {
+                    'number': rates['number'],
+                    'correct': rates['correct'],
+                }
+                answer_rates.append(answer_rates_dict)
+        return answer_rates
+
+    return {
+        '언어': get_answer_rates('언어'),
+        '자료': get_answer_rates('자료'),
+        '상황': get_answer_rates('상황'),
+        '헌법': get_answer_rates('헌법'),
+    }

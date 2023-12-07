@@ -5,16 +5,10 @@ from vanilla import TemplateView
 from .viewmixins.list_view_mixins import PsatScoreListViewMixin
 
 
-class BaseView(
-    LoginRequiredMixin,
-    TemplateView
-):
+class BaseView(LoginRequiredMixin, TemplateView):
     """ Represent information related PsatTemporaryAnswer and PsatConfirmedAnswer models. """
-    menu = 'score'
-    view_type = 'psatScore'
     template_name = 'score/v2/score_list.html'
     login_url = settings.LOGIN_URL
-
     request: any
 
     def get_template_names(self):

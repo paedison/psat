@@ -2,7 +2,7 @@ import csv
 
 from django.core.management.base import BaseCommand
 
-from common.utils import create_instance_get_messages
+from .utils.db_setup import create_instance_get_messages
 from score import models as score_models
 from reference import models as reference_models
 

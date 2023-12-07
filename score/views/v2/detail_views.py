@@ -11,8 +11,6 @@ from .viewmixins.detail_view_mixins import (
 
 class BaseView(LoginRequiredMixin, TemplateView):
     """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
-    menu = 'score'
-    view_type = 'psatScore'
     template_name = 'score/v2/score_detail.html'
     login_url = settings.LOGIN_URL
 

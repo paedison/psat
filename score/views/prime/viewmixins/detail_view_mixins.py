@@ -1,0 +1,109 @@
+from django.db.models import When, Value, F, Case, ExpressionWrapper, FloatField
+
+from common.constants.icon_set import ConstantIconSet
+from score.utils import get_all_ranks_dict, get_all_stat_dict, get_all_answer_rates_dict
+from .base_view_mixins import PrimeScoreBaseViewMixin
+
+
+class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
+
+    def __init__(self, request, **kwargs):
+        super().__init__(request, **kwargs)
+
+        self.year: int = int(kwargs.get('year'))
+        self.round: int = int(kwargs.get('round'))
+        self.exam_name: str = self.category_model.objects.filter(
+            year=self.year, round=self.round).first().exam.name
+
+        self.sub_title: str = self.get_sub_title()
+        self.student = self.get_student()
+
+    def get_sub_title(self) -> str:
+        return f'제{self.round}회 프라임 모의고사'
+
+    def get_students_qs(self, rank_type='전체'):
+        filter_expr = {
+            'year': self.year,
+            'round': self.round,
+        }
+        if rank_type == '직렬':
+            if self.student:
+                filter_expr['department_id'] = self.student['department_id']
+        return self.student_model.objects.defer('timestamp').filter(**filter_expr)
+
+    def get_student(self):
+        student_qs = self.get_students_qs()
+        student = (
+            student_qs.filter(user_id=self.user_id)
+            .annotate(department_name=F('department__name')).values().first())
+        if student:
+            try:
+                student['psat_average'] = student['psat_score'] / 3
+            except TypeError:
+                pass
+        return student
+
+    def get_all_answers(self) -> dict:
+        all_correct_answers: list[dict] = list(
+            self.problem_model.objects.defer('timestamp')
+            .filter(prime__year=self.year, prime__round=self.round)
+            .order_by('prime__subject_id', 'number')
+            .values('number', sub=F('prime__subject__abbr'), answer_correct=F('answer')))
+        all_raw_student_answers: list[dict] = list(
+            self.answer_model.objects.defer('timestamp')
+            .filter(prime__year=self.year, prime__round=self.round, student__user_id=self.user_id)
+            .annotate(sub=F('prime__subject__abbr')).values())
+        all_student_answers = {
+            '언어': all_raw_student_answers[0],
+            '자료': all_raw_student_answers[1],
+            '상황': all_raw_student_answers[2],
+            '헌법': all_raw_student_answers[3],
+        }
+
+        def get_answers(sub: str) -> list:
+            student_answers = all_student_answers[sub]
+
+            answer_list = []
+            for answer in all_correct_answers:
+                if answer['sub'] == sub:
+                    answer_number = answer['number']
+                    answer_correct = answer['answer_correct']
+                    answer_student = student_answers[f'prob{answer_number}']
+                    result = 'O' if answer_student == answer_correct else 'X'
+
+                    answer_copy = {
+                        'number': answer['number'],
+                        'answer_correct': answer['answer_correct'],
+                        'answer_student': answer_student,
+                        'result': result,
+                    }
+                    answer_list.append(answer_copy)
+            return answer_list
+
+        return {
+            '언어': get_answers('언어'),
+            '자료': get_answers('자료'),
+            '상황': get_answers('상황'),
+            '헌법': get_answers('헌법'),
+        }
+
+    def get_all_ranks(self) -> dict:
+        return get_all_ranks_dict(self.get_students_qs, self.user_id)
+
+    def get_all_stat(self) -> dict:
+        return get_all_stat_dict(self.get_students_qs, self.student)
+
+    def get_all_answer_rates(self) -> dict:
+        def case(num):
+            return When(problem__answer=Value(num), then=ExpressionWrapper(
+                F(f'count_{num}') * 100 / F('count_total'), output_field=FloatField()))
+
+        all_raw_answer_rates: list[dict] = list(
+            self.answer_count_model.objects
+            .filter(problem__prime__year=self.year, problem__prime__round=self.round)
+            .order_by('problem__prime__subject_id', 'problem__number')
+            .values('number',
+                    sub=F('problem__prime__subject__abbr'), number=F('problem__number'),
+                    correct=Case(case(1), case(2), case(3), case(4), case(5), default=0.0)))
+
+        return get_all_answer_rates_dict(all_raw_answer_rates)

@@ -2,7 +2,7 @@ from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from .base_viewmixins import PrimeScoreBaseViewMixin
+from .base_view_mixins import PrimeScoreBaseViewMixin
 
 
 class PrimeScoreListViewMixin(

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from common.utils import create_instance_get_messages
+from score.management.commands.utils.db_setup import create_instance_get_messages
 from reference.models import Category, Exam, Subject, Psat, PsatProblem
 
 

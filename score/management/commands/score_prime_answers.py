@@ -4,7 +4,7 @@ import django.db.utils
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from common.utils import add_update_list
+from .utils.db_setup import add_update_list
 from reference import models as reference_models
 from score import models as score_models
 

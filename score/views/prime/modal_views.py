@@ -5,22 +5,16 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from vanilla import TemplateView
 
-from .viewmixins.base_viewmixins import PrimeScoreBaseViewMixin
+from .viewmixins.base_view_mixins import PrimeScoreBaseViewMixin
 
 
-class NoStudentModalView(
-    LoginRequiredMixin,
-    TemplateView
-):
+class NoStudentModalView(LoginRequiredMixin, TemplateView):
     """ Represent modal view when there is no PSAT student data. """
     template_name = 'score/prime/snippets/score_modal.html#no_student_modal'
     login_url = settings.LOGIN_URL
 
 
-class StudentConnectModalView(
-    LoginRequiredMixin,
-    TemplateView
-):
+class StudentConnectModalView(LoginRequiredMixin, TemplateView):
     """ Represent modal view for creating PSAT student data. """
     template_name = 'score/prime/snippets/score_modal.html#student_connect'
     login_url = settings.LOGIN_URL
