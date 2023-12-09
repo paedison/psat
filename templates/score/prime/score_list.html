@@ -25,7 +25,20 @@
 
 <section class="section htmx-fade-in htmx-fade-out"
          hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-    {% #content_row class3='p-4' %}
+    {% #content_row class1='col-12' %}
+        {% if user.is_staff %}
+            <h5 class="card-title mb-0">
+                <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
+                    2024년 대비 프라임 모의고사
+                </span>
+                <a class="btn btn-sm btn-outline-primary ms-4"
+                   href="{% url 'prime_admin:list' %}"
+                   hx-get="{% url 'prime_admin:list' %}">
+                    관리자 페이지
+                </a>
+            </h5>
+        {% endif %}
+
         {% #responsive_table %}
             <thead>
                 <tr class="text-center table-warning">
@@ -101,7 +114,7 @@
                                        hx-get="{% url 'prime:no_student_modal' %}" href=""
                                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        미제공
+                                        미응시
                                     </a>
                                 {% endif %}
                             </td>

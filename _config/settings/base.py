@@ -71,6 +71,7 @@ INSTALLED_APPS = [
 
     # Additionally Installed  //  Django Apps
     'django.contrib.sites',
+    'django.contrib.humanize',
 
     # Third Party Apps
     'allauth',

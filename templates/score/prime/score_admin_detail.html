@@ -6,7 +6,7 @@
 {% load slippers %}
 
 {% block main %}
-{% partialdef detail_main inline=True %} {# detail_main partial #}
+{% partialdef admin_main inline=True %} {# admin_main partial #}
 {{ info|json_script:'info' }}
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
@@ -30,21 +30,14 @@
          hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
     {% #content_row class1='col-12' %}
         <h5 class="card-title mb-0">
-            <div class="d-flex">
-                <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
-                    2024년 대비 제{{ round }}회 프라임 모의고사
-                </span>
-                <div class="btn-group ms-auto">
-                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-                       href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">
-                        목록
-                    </a>
-                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-                       href="{% url 'prime:print' year round %}" target="_blank">
-                        인쇄하기
-                    </a>
-                </div>
-            </div>
+            <a class="btn btn-circle btn-sm btn-outline-secondary" title="{% trans 'List' %}"
+               href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">
+                {{ icon_nav.list|safe }}
+            </a>
+            <a class="btn btn-circle btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
+               href="{% url 'prime:print' year round %}" target="_blank">
+                {{ icon_nav.print|safe }}
+            </a>
         </h5>
         <div>
             <nav>
@@ -91,5 +84,5 @@
         </div>
     {% /content_row %}
 </section>
-{% endpartialdef detail_main %}
+{% endpartialdef admin_main %}
 {% endblock main %}

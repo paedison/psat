@@ -39,12 +39,12 @@
             </a>
         </li><!-- PSAT Nav End -->
 
-            <li class="nav-item">
-                <a id="communityList" class="nav-link collapsed"
-                   href="{% url 'community:base' %}" hx-post="{% url 'community:base' %}">
-                    {{ community_icon|safe }}<span>Community</span>
-                </a>
-            </li><!-- Dashboard Nav End -->
+{#            <li class="nav-item">#}
+{#                <a id="communityList" class="nav-link collapsed"#}
+{#                   href="{% url 'community:base' %}" hx-post="{% url 'community:base' %}">#}
+{#                    {{ community_icon|safe }}<span>Community</span>#}
+{#                </a>#}
+{#            </li><!-- Community Nav End -->#}
 
             {% if user.is_admin or user.is_staff %}
                 <li class="nav-item" role="menuitem" aria-label="Score Menu">

@@ -16,10 +16,24 @@ class PrimeScoreBaseViewMixin:
 
     student_form = forms.PrimeStudentForm
 
+    exam_list = [
+        {'year': 2023, 'round': 1, 'date': '1/7'},
+        {'year': 2024, 'round': 1, 'date': '12/30'},
+        {'year': 2024, 'round': 2, 'date': '1/13'},
+        {'year': 2024, 'round': 3, 'date': '1/27'},
+        {'year': 2024, 'round': 4, 'date': '2/3'},
+        {'year': 2024, 'round': 5, 'date': '2/17'},
+        {'year': 2024, 'round': 6, 'date': '2/25'},
+    ]
+
     def __init__(self, request, **kwargs):
         self.request = request
         self.kwargs: dict = kwargs
         self.user_id: int | None = request.user.id if request.user.is_authenticated else None
+
+        self.year: int | None = self.get_int_kwargs('year')
+        self.round: int | None = self.get_int_kwargs('round')
+        self.exam_name: str = self.get_exam_name()
 
     @staticmethod
     def get_info() -> dict:
@@ -27,3 +41,11 @@ class PrimeScoreBaseViewMixin:
             'menu': 'score',
             'view_type': 'primeScore',
         }
+
+    def get_int_kwargs(self, kw: str):
+        kwarg = self.kwargs.get(kw)
+        return int(kwarg) if kwarg else None
+
+    def get_exam_name(self):
+        return self.category_model.objects.filter(
+            year=self.year, round=self.round).first().exam.name

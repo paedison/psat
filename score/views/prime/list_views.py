@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
-from .viewmixins.list_view_mixins import PrimeScoreListViewMixin
+from .viewmixins.normal_view_mixins import PrimeScoreListViewMixin
 
 
 class BaseView(LoginRequiredMixin, TemplateView):
