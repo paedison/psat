@@ -47,5 +47,7 @@ class PrimeScoreBaseViewMixin:
         return int(kwarg) if kwarg else None
 
     def get_exam_name(self):
-        return self.category_model.objects.filter(
-            year=self.year, round=self.round).first().exam.name
+        target_exam = self.category_model.objects.select_related('exam').filter(
+            year=self.year, round=self.round).first()
+        if target_exam:
+            return target_exam.exam.name
