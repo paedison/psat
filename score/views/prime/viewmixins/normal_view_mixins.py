@@ -3,7 +3,7 @@ from django.db.models import When, Value, F, Case, ExpressionWrapper, FloatField
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from score.utils import get_all_ranks_dict, get_all_stat_dict, get_all_answer_rates_dict
+from score.utils import get_all_answer_rates_dict, get_all_score_stat_dict
 from .base_view_mixins import PrimeScoreBaseViewMixin
 
 
@@ -18,16 +18,23 @@ class PrimeScoreListViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
 
         for obj in page_obj:
-            student = self.get_student(obj)
-            if student:
-                student.psat_average = student.psat_score / 3
-            obj['student'] = student
+            obj['student'] = self.get_student(obj)
+            obj['student_score'] = self.get_student_score(obj)
             obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
     def get_student(self, obj):
-        return self.student_model.objects.filter(
-            user_id=self.user_id, year=obj['year'], round=obj['round']).first()
+        try:
+            return self.student_model.objects.get(user_id=self.user_id, year=obj['year'], round=obj['round'])
+        except self.student_model.DoesNotExist:
+            return None
+
+    def get_student_score(self, obj):
+        try:
+            return self.statistics_model.objects.get(
+                student__user_id=self.user_id, student__year=obj['year'], student__round=obj['round'])
+        except self.statistics_model.DoesNotExist:
+            return None
 
 
 class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
@@ -41,6 +48,13 @@ class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
     def get_sub_title(self) -> str:
         return f'제{self.round}회 프라임 모의고사'
 
+    def get_student(self):
+        student_qs = self.get_students_qs()
+        return (
+            student_qs.filter(user_id=self.user_id)
+            .annotate(department_name=F('department__name')).values().first()
+        )
+
     def get_students_qs(self, rank_type='전체'):
         filter_expr = {
             'year': self.year,
@@ -51,17 +65,15 @@ class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
                 filter_expr['department_id'] = self.student['department_id']
         return self.student_model.objects.defer('timestamp').filter(**filter_expr)
 
-    def get_student(self):
-        student_qs = self.get_students_qs()
-        student = (
-            student_qs.filter(user_id=self.user_id)
-            .annotate(department_name=F('department__name')).values().first())
-        if student:
-            try:
-                student['psat_average'] = student['psat_score'] / 3
-            except TypeError:
-                pass
-        return student
+    def get_statistics_qs(self, rank_type='전체'):
+        filter_expr = {
+            'student__year': self.year,
+            'student__round': self.round,
+        }
+        if rank_type == '직렬':
+            if self.student:
+                filter_expr['student__department_id'] = self.student['department_id']
+        return self.statistics_model.objects.defer('timestamp').filter(**filter_expr)
 
     def get_all_answers(self) -> dict:
         all_correct_answers: list[dict] = list(
@@ -107,11 +119,11 @@ class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
             '헌법': get_answers('헌법'),
         }
 
-    def get_all_ranks(self) -> dict:
-        return get_all_ranks_dict(self.get_students_qs, self.user_id)
+    def get_student_score(self) -> dict:
+        return self.statistics_model.objects.get(student_id=self.student['id'])
 
-    def get_all_stat(self) -> dict:
-        return get_all_stat_dict(self.get_students_qs, self.student)
+    def get_all_score_stat(self) -> dict:
+        return get_all_score_stat_dict(self.get_statistics_qs, self.student)
 
     def get_all_answer_rates(self) -> dict:
         def case(num):

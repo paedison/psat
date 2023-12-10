@@ -8,7 +8,7 @@
         {% #nav_tab prefix='eoneo_answers' id='0' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
         {% #nav_tab prefix='jaryo_answers' id='1' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
         {% #nav_tab prefix='sanghwang_answers' id='2' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
-        {% if heonbeob_answer %}
+        {% if answers_heonbeob %}
             {% #nav_tab prefix='heonbeob_answers' id='3' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
         {% endif %}
     </div>
@@ -16,7 +16,7 @@
 <div class="tab-content" id="scoreAnswersContent">
     {% #nav_content prefix='eoneo_answers' id='0' %}
         {% #responsive_table %}
-            {% with answers=eoneo_answer answer_rates=eoneo_rates %}
+            {% with answers=answers_eoneo rates=rates_eoneo %}
                 {% partial confirmed_answer_table %}
             {% endwith %}
         {% /responsive_table %}
@@ -24,7 +24,7 @@
 
     {% #nav_content prefix='jaryo_answers' id='1' %}
         {% #responsive_table %}
-            {% with answers=jaryo_answer answer_rates=jaryo_rates %}
+            {% with answers=answers_jaryo rates=rates_jaryo %}
                 {% partial confirmed_answer_table %}
             {% endwith %}
         {% /responsive_table %}
@@ -32,16 +32,16 @@
 
     {% #nav_content prefix='sanghwang_answers' id='2' %}
         {% #responsive_table %}
-            {% with answers=sanghwang_answer answer_rates=sanghwang_rates %}
+            {% with answers=answers_sanghwang rates=rates_sanghwang %}
                 {% partial confirmed_answer_table %}
             {% endwith %}
         {% /responsive_table %}
     {% /nav_content %}
 
-    {% if heonbeob_answer %}
+    {% if answers_heonbeob %}
         {% #nav_content prefix='heonbeob_answers' id='3' %}
             {% #responsive_table %}
-                {% with answers=heonbeob_answer answer_rates=heonbeob_rates %}
+                {% with answers=answers_heonbeob rates=rates_heonbeob %}
                     {% partial confirmed_answer_table %}
                 {% endwith %}
             {% /responsive_table %}
@@ -87,11 +87,11 @@
                 </tr>
                 <tr class="text-center">
                     <td class="text-nowrap" >정답률(%)</td>
-                    {% for answer_rate in answer_rates %}
+                    {% for rate in rates %}
                         {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                             <td>
-                                <span data-number="{{ answer_rate.number }}">
-                                    {{ answer_rate.correct|floatformat:0 }}
+                                <span data-number="{{ rate.number }}">
+                                    {{ rate.correct|floatformat:0 }}
                                 </span>
                             </td>
                         {% endif %}

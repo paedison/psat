@@ -26,13 +26,8 @@ class PrimeStudent(StudentBase):
     password = models.IntegerField()
     department = models.ForeignKey(PrimeDepartment, on_delete=models.CASCADE, related_name='students')
 
-    eoneo_score = models.FloatField(default=0)
-    jaryo_score = models.FloatField(default=0)
-    sanghwang_score = models.FloatField(default=0)
-    psat_score = models.FloatField(default=0)
-    heonbeob_score = models.FloatField(default=0)
-
     user_id = models.IntegerField(default=0)
+    category = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
         verbose_name = "수험 정보"
@@ -40,8 +35,6 @@ class PrimeStudent(StudentBase):
 
     def __str__(self):
         return f'{self.year}{self.department.exam.abbr}-{self.department}-{self.user_id}'
-
-    def average(self) -> float: return self.psat_score / 3
 
 
 class PrimeAnswer(AnswerBase):
@@ -113,28 +106,38 @@ class PrimeAnswerCount(models.Model):
         verbose_name = "답안 개수"
         verbose_name_plural = "답안 개수"
 
-    @property
-    def count_correct(self):
-        answer_dict = {
-            '0': self.count_0,
-            '1': self.count_1,
-            '2': self.count_2,
-            '3': self.count_3,
-            '4': self.count_4,
-            '5': self.count_5,
-        }
-        correct_answer = self.problem.answer
-        return answer_dict[correct_answer]
 
-    @property
-    def answer_1_rate(self): return self.count_1 / self.count_total
-    @property
-    def answer_2_rate(self): return self.count_2 / self.count_total
-    @property
-    def answer_3_rate(self): return self.count_3 / self.count_total
-    @property
-    def answer_4_rate(self): return self.count_4 / self.count_total
-    @property
-    def answer_5_rate(self): return self.count_5 / self.count_total
-    @property
-    def correctness_rate(self): return self.count_correct / self.count_total
+class PrimeStatistics(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    student = models.OneToOneField(PrimeStudent, on_delete=models.CASCADE, related_name='statistics')
+
+    score_eoneo = models.FloatField(null=True, blank=True)
+    score_jaryo = models.FloatField(null=True, blank=True)
+    score_sanghwang = models.FloatField(null=True, blank=True)
+    score_psat = models.FloatField(null=True, blank=True)
+    score_psat_avg = models.FloatField(null=True, blank=True)
+    score_heonbeob = models.FloatField(null=True, blank=True)
+
+    rank_total_eoneo = models.PositiveIntegerField(null=True, blank=True)
+    rank_total_jaryo = models.PositiveIntegerField(null=True, blank=True)
+    rank_total_sanghwang = models.PositiveIntegerField(null=True, blank=True)
+    rank_total_psat = models.PositiveIntegerField(null=True, blank=True)
+    rank_total_heonbeob = models.PositiveIntegerField(null=True, blank=True)
+
+    rank_department_eoneo = models.PositiveIntegerField(null=True, blank=True)
+    rank_department_jaryo = models.PositiveIntegerField(null=True, blank=True)
+    rank_department_sanghwang = models.PositiveIntegerField(null=True, blank=True)
+    rank_department_psat = models.PositiveIntegerField(null=True, blank=True)
+    rank_department_heonbeob = models.PositiveIntegerField(null=True, blank=True)
+
+    rank_ratio_total_eoneo = models.FloatField(null=True, blank=True)
+    rank_ratio_total_jaryo = models.FloatField(null=True, blank=True)
+    rank_ratio_total_sanghwang = models.FloatField(null=True, blank=True)
+    rank_ratio_total_psat = models.FloatField(null=True, blank=True)
+    rank_ratio_total_heonbeob = models.FloatField(null=True, blank=True)
+
+    rank_ratio_department_eoneo = models.FloatField(null=True, blank=True)
+    rank_ratio_department_jaryo = models.FloatField(null=True, blank=True)
+    rank_ratio_department_sanghwang = models.FloatField(null=True, blank=True)
+    rank_ratio_department_psat = models.FloatField(null=True, blank=True)
+    rank_ratio_department_heonbeob = models.FloatField(null=True, blank=True)

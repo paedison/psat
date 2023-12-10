@@ -118,13 +118,13 @@
                                     </a>
                                 {% endif %}
                             </td>
-                            <td class="d-none d-lg-table-cell">{{ obj.student.eoneo_score|floatformat:1 }}</td>
-                            <td class="d-none d-lg-table-cell">{{ obj.student.jaryo_score|floatformat:1 }}</td>
-                            <td class="d-none d-lg-table-cell">{{ obj.student.sanghwang_score|floatformat:1 }}</td>
-                            <td>{{ obj.student.psat_average|floatformat:1 }}</td>
+                            <td class="d-none d-lg-table-cell">{{ obj.student_score.score_eoneo|floatformat:1 }}</td>
+                            <td class="d-none d-lg-table-cell">{{ obj.student_score.score_jaryo|floatformat:1 }}</td>
+                            <td class="d-none d-lg-table-cell">{{ obj.student_score.score_sanghwang|floatformat:1 }}</td>
+                            <td>{{ obj.student_score.score_psat_avg|floatformat:1 }}</td>
                             <td class="d-none d-lg-table-cell">
-                                {% if obj.student.heonbeob_score %}
-                                    {{ obj.student.heonbeob_score|floatformat:1 }}
+                                {% if obj.student_score.score_heonbeob %}
+                                    {{ obj.student_score.score_heonbeob|floatformat:1 }}
                                 {% endif %}
                             </td>
                         </tr>

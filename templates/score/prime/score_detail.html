@@ -47,38 +47,7 @@
             </div>
         </h5>
         <div>
-            <nav>
-                <div class="nav nav-tabs nav-tabs-bordered" id="studentInfoTab" role="tablist">
-                    {% #nav_tab prefix='my' id='0' %}수험정보{% /nav_tab %}
-                </div>
-            </nav>
-            <div class="tab-content" id="studentInfoContent">
-                {% #nav_content prefix='info' id='0' %}
-                    {% #responsive_table %}
-                        <tbody>
-                            <tr class="d-table-row d-md-none">
-                                <td class="col-3 text-nowrap">수험번호</td>
-                                <td>{{ student.serial }}</td>
-                            </tr>
-                            <tr class="d-table-row d-md-none">
-                                <td>직렬</td>
-                                <td>{{ student.department_name }}</td>
-                            </tr>
-                            <tr class="d-table-row d-md-none">
-                                <td>이름</td>
-                                <td>{{ student.name }}</td>
-                            </tr>
-                            <tr class="d-none d-md-table-row">
-                                <td class="d-flex justify-content-between">
-                                    <span>수험번호 : {{ student.serial }}</span>
-                                    <span>직렬 : {{ student.department_name }}</span>
-                                    <span>이름 : {{ student.name }}</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    {% /responsive_table %}
-                {% /nav_content %}
-            </div>
+            {% include 'score/prime/snippets/score_student.html' %}
         </div>
         <div>
             {% include 'score/prime/snippets/score_sheet.html' with is_confirmed=True %}
@@ -87,7 +56,7 @@
             {% include 'score/prime/snippets/score_answers.html' %}
         </div>
         <div>
-            {% include 'score/v2/snippets/score_chart.html' with is_confirmed=True %}
+            {% include 'score/prime/snippets/score_chart.html' with is_confirmed=True %}
         </div>
     {% /content_row %}
 </section>

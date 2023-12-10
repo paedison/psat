@@ -2,8 +2,6 @@
 {% load partials %}
 {% load slippers %}
 
-<script src="{% static 'vendor/chart.js/chart.umd.js' %}"></script>
-{#{{ student|json_script:'info' }}#}
 <nav>
     <div class="nav nav-tabs nav-tabs-bordered" id="scoreChartTab" role="tablist">
         {% #nav_tab prefix='my' id='0' %}
@@ -15,9 +13,12 @@
 <div class="tab-content" id="scoreChartContent">
     {% #nav_content prefix='chart' id='0' %}
         {% if is_confirmed %}
-            <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
-                <canvas id="scoreChart"></canvas>
-            </div>
+            {% partialdef chart_canvas inline=True %}
+                <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
+                    <canvas id="scoreChart"></canvas>
+                    {% partial chart_contents %}
+                </div>
+            {% endpartialdef chart_canvas %}
         {% else %}
             {% #responsive_table %}
                 <tbody>
@@ -32,87 +33,88 @@
     {% /nav_content %}
 </div>
 
-<script>
+{% partialdef chart_contents %}
+<script type="text/javascript">
     screenWidth = window.innerWidth;
     my_score = [
-        {{ student.eoneo_score|floatformat:1 }},
-        {{ student.jaryo_score|floatformat:1 }},
-        {{ student.sanghwang_score|floatformat:1 }},
-        {{ student.psat_average|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ student.heonbeob_score|floatformat:1 }},
+        {{ student_score.score_eoneo|floatformat:1 }},
+        {{ student_score.score_jaryo|floatformat:1 }},
+        {{ student_score.score_sanghwang|floatformat:1 }},
+        {{ student_score.score_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ student_score.score_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     department_average = [
-        {{ department_stat.eoneo_score_avg|floatformat:1 }},
-        {{ department_stat.jaryo_score_avg|floatformat:1 }},
-        {{ department_stat.sanghwang_score_avg|floatformat:1 }},
-        {{ department_stat.psat_average_avg|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ department_stat.heonbeob_score_avg|floatformat:1 }},
+        {{ stat_department.avg_score_eoneo|floatformat:1 }},
+        {{ stat_department.avg_score_jaryo|floatformat:1 }},
+        {{ stat_department.avg_score_sanghwang|floatformat:1 }},
+        {{ stat_department.avg_score_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ stat_department.avg_score_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     total_average = [
-        {{ total_stat.eoneo_score_avg|floatformat:1 }},
-        {{ total_stat.jaryo_score_avg|floatformat:1 }},
-        {{ total_stat.sanghwang_score_avg|floatformat:1 }},
-        {{ total_stat.psat_average_avg|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ total_stat.heonbeob_score_avg|floatformat:1 }},
+        {{ stat_total.avg_score_eoneo|floatformat:1 }},
+        {{ stat_total.avg_score_jaryo|floatformat:1 }},
+        {{ stat_total.avg_score_sanghwang|floatformat:1 }},
+        {{ stat_total.avg_score_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ stat_total.avg_score_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     department_score_20 = [
-        {{ department_stat.eoneo_score_20|floatformat:1 }},
-        {{ department_stat.jaryo_score_20|floatformat:1 }},
-        {{ department_stat.sanghwang_score_20|floatformat:1 }},
-        {{ department_stat.psat_average_20|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ department_stat.heonbeob_score_20|floatformat:1 }},
+        {{ stat_department.top_score_20_eoneo|floatformat:1 }},
+        {{ stat_department.top_score_20_jaryo|floatformat:1 }},
+        {{ stat_department.top_score_20_sanghwang|floatformat:1 }},
+        {{ stat_department.top_score_20_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ stat_department.top_score_20_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     total_score_20 = [
-        {{ total_stat.eoneo_score_20|floatformat:1 }},
-        {{ total_stat.jaryo_score_20|floatformat:1 }},
-        {{ total_stat.sanghwang_score_20|floatformat:1 }},
-        {{ total_stat.psat_average_20|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ total_stat.heonbeob_score_20|floatformat:1 }},
+        {{ stat_total.top_score_20_eoneo|floatformat:1 }},
+        {{ stat_total.top_score_20_jaryo|floatformat:1 }},
+        {{ stat_total.top_score_20_sanghwang|floatformat:1 }},
+        {{ stat_total.top_score_20_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ stat_total.top_score_20_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     department_score_10 = [
-        {{ department_stat.eoneo_score_10|floatformat:1 }},
-        {{ department_stat.jaryo_score_10|floatformat:1 }},
-        {{ department_stat.sanghwang_score_10|floatformat:1 }},
-        {{ department_stat.psat_average_10|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ department_stat.heonbeob_score_10|floatformat:1 }},
+        {{ stat_department.top_score_10_eoneo|floatformat:1 }},
+        {{ stat_department.top_score_10_jaryo|floatformat:1 }},
+        {{ stat_department.top_score_10_sanghwang|floatformat:1 }},
+        {{ stat_department.top_score_10_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ stat_department.top_score_10_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     total_score_10 = [
-        {{ total_stat.eoneo_score_10|floatformat:1 }},
-        {{ total_stat.jaryo_score_10|floatformat:1 }},
-        {{ total_stat.sanghwang_score_10|floatformat:1 }},
-        {{ total_stat.psat_average_10|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ total_stat.heonbeob_score_10|floatformat:1 }},
+        {{ stat_total.top_score_10_eoneo|floatformat:1 }},
+        {{ stat_total.top_score_10_jaryo|floatformat:1 }},
+        {{ stat_total.top_score_10_sanghwang|floatformat:1 }},
+        {{ stat_total.top_score_10_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ stat_total.top_score_10_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     department_top = [
-        {{ department_stat.eoneo_score_max|floatformat:1 }},
-        {{ department_stat.jaryo_score_max|floatformat:1 }},
-        {{ department_stat.sanghwang_score_max|floatformat:1 }},
-        {{ department_stat.psat_average_max|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ department_stat.heonbeob_score_max|floatformat:1 }},
+        {{ stat_department.max_score_eoneo|floatformat:1 }},
+        {{ stat_department.max_score_jaryo|floatformat:1 }},
+        {{ stat_department.max_score_sanghwang|floatformat:1 }},
+        {{ stat_department.max_score_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ stat_department.max_score_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     total_top = [
-        {{ total_stat.eoneo_score_max|floatformat:1 }},
-        {{ total_stat.jaryo_score_max|floatformat:1 }},
-        {{ total_stat.sanghwang_score_max|floatformat:1 }},
-        {{ total_stat.psat_average_max|floatformat:1 }},
-        {% if heonbeob_answer or heonbeob_temporary %}
-            {{ total_stat.heonbeob_score_max|floatformat:1 }},
+        {{ stat_total.max_score_eoneo|floatformat:1 }},
+        {{ stat_total.max_score_jaryo|floatformat:1 }},
+        {{ stat_total.max_score_sanghwang|floatformat:1 }},
+        {{ stat_total.max_score_psat_avg|floatformat:1 }},
+        {% if answers_heonbeob %}
+            {{ stat_total.max_score_heonbeob|floatformat:1 }},
         {% endif %}
     ]
     chart_datasets = [
@@ -131,7 +133,7 @@
         type: 'bar',
         data: {
             labels: ['언어논리', '자료해석', '상황판단', 'PSAT 평균',
-                {% if heonbeob_answer or heonbeob_temporary %}'헌법'{% endif %}
+                {% if answers_heonbeob %}'헌법'{% endif %}
             ],
             datasets: chart_datasets,
         },
@@ -171,3 +173,4 @@
         new Chart(chart_canvas, chart_data);
     }
 </script>
+{% endpartialdef chart_contents %}

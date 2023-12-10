@@ -12,20 +12,6 @@
     {{ info|json_script:'info' }}
     <h2 class="fw-bold text-center mb-4">{{ sub_title }} 성적표</h2>
     <div class="mb-2">
-        {% partial student_info %}
-    </div>
-    <div class="mb-2">
-        {% partial score_sheet %}
-    </div>
-    <div class="mb-2">
-        {% partial score_answers %}
-    </div>
-    <div class="table-responsive">
-        {% include 'score/v2/snippets/score_chart.html#chart_canvas' with print_class='print' %}
-    </div>
-
-    {# Student info partial #}
-    {% partialdef student_info %}
         <table class="table table-sm table-bordered small align-middle">
             <tbody>
                 <tr class="text-center">
@@ -35,9 +21,8 @@
                 </tr>
             </tbody>
         </table>
-    {% endpartialdef student_info %}
-
-    {% partialdef score_sheet %}
+    </div>
+    <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
             <thead>
                 <tr class="text-center small align-middle">
@@ -70,89 +55,88 @@
             <tbody>
                 <tr class="text-center small">
                     <th>언어논리</th>
-                    <td>{{ student.eoneo_score|floatformat:1 }}</td>
-                    <td>{{ rank_total.eoneo_rank }}</td>
-                    <td>{{ rank_total.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ rank_department.eoneo_rank }}</td>
-                    <td>{{ rank_department.eoneo_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ stat_total.eoneo_score_max|floatformat:1 }}</td>
-                    <td>{{ stat_total.eoneo_score_10|floatformat:1 }}</td>
-                    <td>{{ stat_total.eoneo_score_20|floatformat:1 }}</td>
-                    <td>{{ stat_total.eoneo_score_avg|floatformat:1 }}</td>
-                    <td>{{ stat_department.eoneo_score_max|floatformat:1 }}</td>
-                    <td>{{ stat_department.eoneo_score_10|floatformat:1 }}</td>
-                    <td>{{ stat_department.eoneo_score_20|floatformat:1 }}</td>
-                    <td>{{ stat_department.eoneo_score_avg|floatformat:1 }}</td>
+                    <td>{{ student_score.score_eoneo|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_total_eoneo }}</td>
+                    <td>{{ student_score.rank_ratio_total_eoneo|percentage|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_department_eoneo }}</td>
+                    <td>{{ student_score.rank_ratio_department_eoneo|percentage|floatformat:1 }}</td>
+                    <td>{{ stat_total.max_score_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_10_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_20_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_total.avg_score_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_department.max_score_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_10_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_20_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_department.avg_score_eoneo|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center small">
                     <th>자료해석</th>
-                    <td>{{ student.jaryo_score|floatformat:1 }}</td>
-                    <td>{{ rank_total.jaryo_rank }}</td>
-                    <td>{{ rank_total.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ rank_department.jaryo_rank }}</td>
-                    <td>{{ rank_department.jaryo_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ stat_total.jaryo_score_max|floatformat:1 }}</td>
-                    <td>{{ stat_total.jaryo_score_10|floatformat:1 }}</td>
-                    <td>{{ stat_total.jaryo_score_20|floatformat:1 }}</td>
-                    <td>{{ stat_total.jaryo_score_avg|floatformat:1 }}</td>
-                    <td>{{ stat_department.jaryo_score_max|floatformat:1 }}</td>
-                    <td>{{ stat_department.jaryo_score_10|floatformat:1 }}</td>
-                    <td>{{ stat_department.jaryo_score_20|floatformat:1 }}</td>
-                    <td>{{ stat_department.jaryo_score_avg|floatformat:1 }}</td>
+                    <td>{{ student_score.score_jaryo|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_total_jaryo }}</td>
+                    <td>{{ student_score.rank_ratio_total_jaryo|percentage|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_department_jaryo }}</td>
+                    <td>{{ student_score.rank_ratio_department_jaryo|percentage|floatformat:1 }}</td>
+                    <td>{{ stat_total.max_score_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_10_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_20_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_total.avg_score_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_department.max_score_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_10_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_20_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_department.avg_score_jaryo|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center small">
                     <th>상황판단</th>
-                    <td>{{ student.sanghwang_score|floatformat:1 }}</td>
-                    <td>{{ rank_total.sanghwang_rank }}</td>
-                    <td>{{ rank_total.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ rank_department.sanghwang_rank }}</td>
-                    <td>{{ rank_department.sanghwang_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ stat_total.sanghwang_score_max|floatformat:1 }}</td>
-                    <td>{{ stat_total.sanghwang_score_10|floatformat:1 }}</td>
-                    <td>{{ stat_total.sanghwang_score_20|floatformat:1 }}</td>
-                    <td>{{ stat_total.sanghwang_score_avg|floatformat:1 }}</td>
-                    <td>{{ stat_department.sanghwang_score_max|floatformat:1 }}</td>
-                    <td>{{ stat_department.sanghwang_score_10|floatformat:1 }}</td>
-                    <td>{{ stat_department.sanghwang_score_20|floatformat:1 }}</td>
-                    <td>{{ stat_department.sanghwang_score_avg|floatformat:1 }}</td>
+                    <td>{{ student_score.score_sanghwang|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_total_sanghwang }}</td>
+                    <td>{{ student_score.rank_ratio_total_sanghwang|percentage|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_department_sanghwang }}</td>
+                    <td>{{ student_score.rank_ratio_department_sanghwang|percentage|floatformat:1 }}</td>
+                    <td>{{ stat_total.max_score_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_10_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_20_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_total.avg_score_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_department.max_score_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_10_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_20_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_department.avg_score_sanghwang|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center small">
                     <th>PSAT 평균</th>
-                    <td>{{ student.psat_average|floatformat:1 }}</td>
-                    <td>{{ rank_total.psat_rank }}</td>
-                    <td>{{ rank_total.psat_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ rank_department.psat_rank }}</td>
-                    <td>{{ rank_department.psat_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ stat_total.psat_average_max|floatformat:1 }}</td>
-                    <td>{{ stat_total.psat_average_10|floatformat:1 }}</td>
-                    <td>{{ stat_total.psat_average_20|floatformat:1 }}</td>
-                    <td>{{ stat_total.psat_average_avg|floatformat:1 }}</td>
-                    <td>{{ stat_department.psat_average_max|floatformat:1 }}</td>
-                    <td>{{ stat_department.psat_average_10|floatformat:1 }}</td>
-                    <td>{{ stat_department.psat_average_20|floatformat:1 }}</td>
-                    <td>{{ stat_department.psat_average_avg|floatformat:1 }}</td>
+                    <td>{{ student_score.score_psat_avg|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_total_psat }}</td>
+                    <td>{{ student_score.rank_ratio_total_psat|percentage|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_department_psat }}</td>
+                    <td>{{ student_score.rank_ratio_department_psat|percentage|floatformat:1 }}</td>
+                    <td>{{ stat_total.max_score_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_10_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_20_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_total.avg_score_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_department.max_score_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_10_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_20_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_department.avg_score_psat_avg|floatformat:1 }}</td>
                 </tr>
                 <tr class="text-center small">
                     <th>헌법</th>
-                    <td>{{ student.heonbeob_score|floatformat:1 }}</td>
-                    <td>{{ rank_total.heonbeob_rank }}</td>
-                    <td>{{ rank_total.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ rank_department.heonbeob_rank }}</td>
-                    <td>{{ rank_department.heonbeob_rank_ratio|percentage|floatformat:1 }}</td>
-                    <td>{{ stat_total.heonbeob_score_max|floatformat:1 }}</td>
-                    <td>{{ stat_total.heonbeob_score_10|floatformat:1 }}</td>
-                    <td>{{ stat_total.heonbeob_score_20|floatformat:1 }}</td>
-                    <td>{{ stat_total.heonbeob_score_avg|floatformat:1 }}</td>
-                    <td>{{ stat_department.heonbeob_score_max|floatformat:1 }}</td>
-                    <td>{{ stat_department.heonbeob_score_10|floatformat:1 }}</td>
-                    <td>{{ stat_department.heonbeob_score_20|floatformat:1 }}</td>
-                    <td>{{ stat_department.heonbeob_score_avg|floatformat:1 }}</td>
+                    <td>{{ student_score.score_heonbeob|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_total_heonbeob }}</td>
+                    <td>{{ student_score.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_department_heonbeob }}</td>
+                    <td>{{ student_score.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
+                    <td>{{ stat_total.max_score_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_10_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_total.top_score_20_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_total.avg_score_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_department.max_score_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_10_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_department.top_score_20_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_department.avg_score_heonbeob|floatformat:1 }}</td>
                 </tr>
             </tbody>
         </table>
-    {% endpartialdef score_sheet %}
-
-    {% partialdef score_answers %}
+    </div>
+    <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
             <thead>
                 <tr class="text-center small align-middle">
@@ -166,22 +150,22 @@
                 <tr class="text-center small">
                     <th class="text-nowrap align-center" rowspan="3">언어<br/>논리</th>
                     <th class="text-nowrap">답안</th>
-                    {% for answer in eoneo_answer %}
+                    {% for answer in answers_eoneo %}
                         <td>{{ answer.answer_student }}</td>
                     {% endfor %}
                 </tr>
                 <tr class="text-center small">
                     <th class="text-nowrap">정오</th>
-                    {% for answer in eoneo_answer %}
+                    {% for answer in answers_eoneo %}
                         <td>{{ answer.result }}</td>
                     {% endfor %}
                 </tr>
                 <tr class="text-center small">
                     <th class="text-nowrap small">정답률(%)</th>
-                    {% for answer_rate in eoneo_rates %}
+                    {% for rate in rates_eoneo %}
                         <td>
-                            <span data-number="{{ answer_rate.problem__number }}">
-                                {{ answer_rate.correct|floatformat:0 }}
+                            <span data-number="{{ rate.problem__number }}">
+                                {{ rate.correct|floatformat:0 }}
                             </span>
                         </td>
                     {% endfor %}
@@ -190,22 +174,22 @@
                 <tr class="text-center small">
                     <th class="text-nowrap align-center" rowspan="3">자료<br/>해석</th>
                     <th class="text-nowrap">답안</th>
-                    {% for answer in jaryo_answer %}
+                    {% for answer in answers_jaryo %}
                         <td>{{ answer.answer_student }}</td>
                     {% endfor %}
                 </tr>
                 <tr class="text-center small">
                     <th class="text-nowrap">정오</th>
-                    {% for answer in jaryo_answer %}
+                    {% for answer in answers_jaryo %}
                         <td>{{ answer.result }}</td>
                     {% endfor %}
                 </tr>
                 <tr class="text-center small">
                     <th class="text-nowrap small">정답률(%)</th>
-                    {% for answer_rate in jaryo_rates %}
+                    {% for rate in rates_jaryo %}
                         <td>
-                            <span data-number="{{ answer_rate.problem__number }}">
-                                {{ answer_rate.correct|floatformat:0 }}
+                            <span data-number="{{ rate.problem__number }}">
+                                {{ rate.correct|floatformat:0 }}
                             </span>
                         </td>
                     {% endfor %}
@@ -214,22 +198,22 @@
                 <tr class="text-center small">
                     <th class="text-nowrap align-center" rowspan="3">상황<br/>판단</th>
                     <th class="text-nowrap">답안</th>
-                    {% for answer in sanghwang_answer %}
+                    {% for answer in answers_sanghwang %}
                         <td>{{ answer.answer_student }}</td>
                     {% endfor %}
                 </tr>
                 <tr class="text-center small">
                     <th class="text-nowrap">정오</th>
-                    {% for answer in sanghwang_answer %}
+                    {% for answer in answers_sanghwang %}
                         <td>{{ answer.result }}</td>
                     {% endfor %}
                 </tr>
                 <tr class="text-center small">
                     <th class="text-nowrap small">정답률(%)</th>
-                    {% for answer_rate in sanghwang_rates %}
+                    {% for rate in rates_sanghwang %}
                         <td>
-                            <span data-number="{{ answer_rate.problem__number }}">
-                                {{ answer_rate.correct|floatformat:0 }}
+                            <span data-number="{{ rate.problem__number }}">
+                                {{ rate.correct|floatformat:0 }}
                             </span>
                         </td>
                     {% endfor %}
@@ -238,7 +222,7 @@
                 <tr class="text-center small">
                     <th class="text-nowrap align-center" rowspan="3">헌법</th>
                     <th class="text-nowrap">답안</th>
-                    {% for answer in heonbeob_answer %}
+                    {% for answer in answers_heonbeob %}
                         <td>{{ answer.answer_student }}</td>
                     {% endfor %}
                     {% for _ in 'x'|ljust:15 %}
@@ -247,7 +231,7 @@
                 </tr>
                 <tr class="text-center small">
                     <th class="text-nowrap">정오</th>
-                    {% for answer in heonbeob_answer %}
+                    {% for answer in answers_heonbeob %}
                         <td>{{ answer.result }}</td>
                     {% endfor %}
                     {% for _ in 'x'|ljust:15 %}
@@ -256,10 +240,10 @@
                 </tr>
                 <tr class="text-center small">
                     <th class="text-nowrap small">정답률(%)</th>
-                    {% for answer_rate in heonbeob_rates %}
+                    {% for rate in rates_heonbeob %}
                         <td>
-                            <span data-number="{{ answer_rate.problem__number }}">
-                                {{ answer_rate.correct|floatformat:0 }}
+                            <span data-number="{{ rate.problem__number }}">
+                                {{ rate.correct|floatformat:0 }}
                             </span>
                         </td>
                     {% endfor %}
@@ -269,7 +253,11 @@
                 </tr>
             </tbody>
         </table>
-    {% endpartialdef score_answers %}
+    </div>
+    <div class="table-responsive">
+        {% include 'score/prime/snippets/score_chart.html#chart_canvas' with print_class='print' %}
+    </div>
+
     <script>
         window.onload = function () {
             setTimeout(function () {

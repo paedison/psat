@@ -29,7 +29,11 @@ class PrimeScoreAdminListViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
         return page_obj, page_range
 
 
-class PrimeScoreAdminDetailViewMixin(PrimeScoreDetailViewMixin):
+class PrimeScoreAdminStatisticsViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
+    pass
+
+
+class PrimeScoreAdminDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
     pass
     # def get_students_qs(self, rank_type='전체'):
     #     students_qs = super().get_students_qs(rank_type)

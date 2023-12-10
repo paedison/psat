@@ -14,6 +14,8 @@ class PrimeScoreBaseViewMixin:
     answer_model = score_models.PrimeAnswer
     answer_count_model = score_models.PrimeAnswerCount
 
+    statistics_model = score_models.PrimeStatistics
+
     student_form = forms.PrimeStudentForm
 
     exam_list = [
