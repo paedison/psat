@@ -4,6 +4,7 @@
 {% load psat_filter %}
 {% load partials %}
 {% load slippers %}
+{% load humanize %}
 
 {% block main %}
 {% partialdef admin_main inline=True %} {# admin_main partial #}
@@ -30,59 +31,183 @@
          hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
     {% #content_row class1='col-12' %}
         <h5 class="card-title mb-0">
-            <a class="btn btn-circle btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-               href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">
-                {{ icon_nav.list|safe }}
-            </a>
-            <a class="btn btn-circle btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-               href="{% url 'prime:print' year round %}" target="_blank">
-                {{ icon_nav.print|safe }}
-            </a>
-        </h5>
-        <div>
-            <nav>
-                <div class="nav nav-tabs nav-tabs-bordered" id="studentInfoTab" role="tablist">
-                    {% #nav_tab prefix='my' id='0' %}수험정보{% /nav_tab %}
+            <div class="d-flex">
+                <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
+                    2024년 대비 제{{ round }}회 프라임 모의고사 | 관리자 페이지
+                </span>
+                <div class="btn-group ms-auto">
+                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
+                       href="{% url 'prime_admin:list' %}" hx-post="{% url 'prime_admin:list' %}">
+                        목록
+                    </a>
+                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
+                       href="{% url 'prime:print' year round %}" target="_blank">
+                        인쇄하기
+                    </a>
                 </div>
-            </nav>
-            <div class="tab-content" id="studentInfoContent">
-                {% #nav_content prefix='info' id='0' %}
-                    {% #responsive_table %}
-                        <tbody>
-                            <tr class="d-table-row d-md-none">
-                                <td class="col-3 text-nowrap">수험번호</td>
-                                <td>{{ student.serial }}</td>
-                            </tr>
-                            <tr class="d-table-row d-md-none">
-                                <td>직렬</td>
-                                <td>{{ student.department_name }}</td>
-                            </tr>
-                            <tr class="d-table-row d-md-none">
-                                <td>이름</td>
-                                <td>{{ student.name }}</td>
-                            </tr>
-                            <tr class="d-none d-md-table-row">
-                                <td class="d-flex justify-content-between">
-                                    <span>수험번호 : {{ student.serial }}</span>
-                                    <span>직렬 : {{ student.department_name }}</span>
-                                    <span>이름 : {{ student.name }}</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    {% /responsive_table %}
-                {% /nav_content %}
             </div>
-        </div>
-        <div>
-            {% include 'score/prime/snippets/score_sheet.html' with is_confirmed=True %}
-        </div>
-        <div>
-            {% include 'score/prime/snippets/score_answers.html' %}
-        </div>
-        <div>
-            {% include 'score/v2/snippets/score_chart.html' with is_confirmed=True %}
-        </div>
+        </h5>
+
+        <article class="table-responsive">
+            <table class="table table-bordered table-striped small align-middle m-0">
+                <thead>
+                    <tr class="text-center table-warning align-middle">
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="3">등수</th>
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="3">이름</th>
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="3">수험번호</th>
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="3">직렬</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="6">PSAT</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="5">언어논리</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="5">자료해석</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="5">상황판단</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="5">헌법</th>
+                    </tr>
+
+                    <tr class="text-center table-warning align-middle">
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="2">총점</th>
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="2">평균</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">직렬 석차</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">직렬 석차</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">직렬 석차</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">직렬 석차</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2 col-1" colspan="2">직렬 석차</th>
+                    </tr>
+
+                    <tr class="text-center table-warning align-middle">
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+                        <th class="text-primary text-nowrap p-2 col-1">등</th>
+                        <th class="text-primary text-nowrap p-2 col-1">%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if page_obj %}
+                        {% for obj in page_obj %}
+                            <tr class="text-center">
+                                <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
+                                <td class="text-nowrap p-2">{{ obj.student.name }}</td>
+                                <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
+                                <td class="text-nowrap p-2">{{ obj.student.department.name }}</td>
+
+                                <td class="text-nowrap p-2">{{ obj.score_psat|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.score_psat_avg|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_psat|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_department_psat }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_psat|percentage|floatformat:1 }}</td>
+
+                                <td class="text-nowrap p-2">{{ obj.score_eoneo|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_total_eoneo }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_eoneo|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_department_eoneo }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_eoneo|percentage|floatformat:1 }}</td>
+
+                                <td class="text-nowrap p-2">{{ obj.score_jaryo|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_total_jaryo }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_jaryo|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_department_jaryo }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_jaryo|percentage|floatformat:1 }}</td>
+
+                                <td class="text-nowrap p-2">{{ obj.score_sanghwang|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_total_sanghwang }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_sanghwang|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_department_sanghwang }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_sanghwang|percentage|floatformat:1 }}</td>
+
+                                <td class="text-nowrap p-2">{{ obj.score_heonbeob|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_total_heonbeob }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_department_heonbeob }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </article>
+
+        {% #pagination_nav %}
+            {% if page_obj.has_previous %}
+                {% with page_num=page_obj.number|add:-1 chevron='left' %}
+
+                    {% partialdef pagination_link inline=True %} {# pagination_link partial #}
+                        <li class="page-item {{ status }}"
+                            {% if status == 'active' %}aria-current="page"{% endif %}>
+                            <a class="page-link" href=""
+                                {% if status == 'disabled' %}
+                                    tabindex="-1" aria-disabled="true"
+                                {% else %}
+                                    hx-get="?page={{ page_num }}"
+                                {% endif %}>
+                                {% if chevron %}
+                                    <i class="fa-solid fa-chevron-{{ chevron }}"></i>
+                                {% else %}
+                                    {{ anchor_text }}
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endpartialdef pagination_link %}
+
+                {% endwith %}
+            {% endif %}
+
+            {% for number in page_range %}
+                {% with page_num=number anchor_text=number %}
+                    {% if number == page_obj.number %}
+                        {% with status='active' %}
+                            {% partial pagination_link %}
+                        {% endwith %}
+                    {% elif number == page_obj.paginator.ELLIPSIS %}
+                        {% with status='disabled' %}
+                            {% partial pagination_link %}
+                        {% endwith %}
+                    {% else %}
+                        {% partial pagination_link %}
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                {% with page_num=page_obj.number|add:1 chevron='right' %}
+                    {% partial pagination_link %}
+                {% endwith %}
+            {% endif %}
+        {% /pagination_nav %}
     {% /content_row %}
 </section>
-{% endpartialdef admin_main %}
+{% endpartialdef list_main %}
 {% endblock main %}

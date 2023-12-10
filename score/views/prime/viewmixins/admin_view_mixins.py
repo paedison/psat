@@ -9,8 +9,6 @@ from .normal_view_mixins import PrimeScoreDetailViewMixin
 
 
 class PrimeScoreAdminListViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
-    request: any
-
     def get_paginator_info(self) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)
@@ -29,23 +27,45 @@ class PrimeScoreAdminListViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
         return page_obj, page_range
 
 
-class PrimeScoreAdminStatisticsViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
-    pass
-
-
 class PrimeScoreAdminDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
-    pass
-    # def get_students_qs(self, rank_type='전체'):
-    #     students_qs = super().get_students_qs(rank_type)
-    #     students = students_qs.annotate(
-    #         department_name=F('department__name'),
-    #         psat_average=F('psat_score') / 3,
-    #     )
-    #     return students
-    #
-    # def get_all_ranks(self) -> dict:
-    #     return get_rank_qs(self.get_students_qs)
-    #
-    # def get_all_stat(self) -> dict:
-    #     return get_rank_qs(self.get_students_qs)
-    #
+
+    def __init__(self, request, **kwargs):
+        super().__init__(request, **kwargs)
+
+        self.sub_title: str = self.get_sub_title()
+
+    def get_sub_title(self) -> str:
+        return f'제{self.round}회 프라임 모의고사'
+
+    def get_paginator_info(self) -> tuple:
+        """ Get paginator, elided page range, and collect the evaluation info. """
+        page_number = self.request.GET.get('page', 1)
+        all_stat = (
+            self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
+            .select_related('student', 'student__department').order_by('rank_total_psat')
+        )
+        paginator = Paginator(all_stat, 20)
+        page_obj = paginator.get_page(page_number)
+        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+
+        return page_obj, page_range
+
+    def get_statistics_qs_list(self):
+        filter_expr = {
+            'student__year': self.year,
+            'student__round': self.round,
+        }
+        department_list = self.department_model.objects.all().values_list('name', flat=True)
+        statistics_qs = (
+            self.statistics_model.objects.defer('timestamp')
+            .select_related('student', 'student__department').filter(**filter_expr)
+        )
+        statistics_qs_list = {
+            '전체': statistics_qs
+        }
+        for department in department_list:
+            filter_expr['student__department__name'] = department
+            statistics_qs_list[department] = statistics_qs.filter(**filter_expr)
+        print(statistics_qs_list)
+        return statistics_qs_list
+

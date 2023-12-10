@@ -27,11 +27,16 @@
 <section class="section htmx-fade-in htmx-fade-out"
          hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
     {% #content_row class1='col-12' %}
-        <h5 class="card-title mb-1">
-            <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
-                관리자 페이지
-            </span>
-        </h5>
+            <h5 class="card-title mb-0">
+                <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
+                    2024년 대비 프라임 모의고사 | 관리자 페이지
+                </span>
+                <a class="btn btn-sm btn-outline-primary ms-4"
+                   href="{% url 'prime:list' %}"
+                   hx-get="{% url 'prime:list' %}">
+                    일반 페이지
+                </a>
+            </h5>
 
         {% #responsive_table %}
             <thead>
@@ -39,8 +44,6 @@
                     <th class="text-primary text-nowrap p-2 col-1">회차</th>
                     <th class="text-primary text-nowrap p-2 col-1">시험일</th>
                     <th class="text-primary text-nowrap p-2 col-1">응시자 수</th>
-                    <th class="text-primary text-nowrap p-2 col-1">직렬</th>
-                    <th class="text-primary text-nowrap p-2 col-1">성적표</th>
                     <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">언어</th>
                     <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">자료</th>
                     <th class="text-primary text-nowrap p-2 col-1 d-none d-lg-table-cell">상황</th>
@@ -65,17 +68,6 @@
                             <td class="text-nowrap p-2">
                                 <a href="{{ obj.admin_detail_url }}" hx-get="{{ obj.admin_detail_url }}">
                                     {{ obj.num_students|intcomma }}
-                                </a>
-                            </td>
-                            <td class="text-nowrap p-2">
-                                <a href="{{ obj.admin_detail_url }}" hx-get="{{ obj.admin_detail_url }}">
-                                    {{ obj.student.department.name }}
-                                </a>
-                            </td>
-                            <td class="text-nowrap p-2">
-                                <a class="badge rounded-pill text-bg-success"
-                                   href="{{ obj.admin_detail_url }}" hx-get="{{ obj.admin_detail_url }}">
-                                    확인
                                 </a>
                             </td>
                             <td class="d-none d-lg-table-cell">{{ obj.student.eoneo_score|floatformat:1 }}</td>
