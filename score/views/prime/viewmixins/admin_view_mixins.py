@@ -1,33 +1,59 @@
 from django.core.paginator import Paginator
-from django.db.models import Count, F
+from django.db.models import Count
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from score.utils import get_rank_qs
+from score.utils import get_score_stat
 from .base_view_mixins import PrimeScoreBaseViewMixin
-from .normal_view_mixins import PrimeScoreDetailViewMixin
 
 
-class PrimeScoreAdminListViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
+class PrimeScoreAdminBaseViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
+    def get_statistics_qs_list(self, year, exam_round):
+        filter_expr = {
+            'student__year': year,
+            'student__round': exam_round,
+        }
+        statistics_qs = (
+            self.statistics_model.objects.defer('timestamp')
+            .select_related('student', 'student__department').filter(**filter_expr)
+        )
+        if statistics_qs:
+            statistics_qs_list = [{'department': '전체', 'queryset': statistics_qs}]
+
+            department_list = self.department_model.objects.values_list('name', flat=True)
+            for department in department_list:
+                filter_expr['student__department__name'] = department
+                statistics_qs_list.append({'department': department, 'queryset': statistics_qs.filter(**filter_expr)})
+            return statistics_qs_list
+
+    def get_statistics(self, year, exam_round):
+        score_statistics_list = []
+        statistics_qs_list = self.get_statistics_qs_list(year, exam_round)
+        if statistics_qs_list:
+            for qs_list in statistics_qs_list:
+                statistics_dict = {'department': qs_list['department']}
+                statistics_dict.update(get_score_stat(qs_list['queryset']))
+                score_statistics_list.append(statistics_dict)
+            return score_statistics_list
+
+
+class PrimeScoreAdminListViewMixin(PrimeScoreAdminBaseViewMixin):
     def get_paginator_info(self) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)
         paginator = Paginator(self.exam_list, 10)
-        page_obj = paginator.get_page(page_number)
+        page_obj: list[dict] = paginator.get_page(page_number)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-        stat_list_students = self.student_model.objects.values('year', 'round').annotate(
-            num_students=Count('id')
-        )
 
         for obj in page_obj:
-            for stat in stat_list_students:
-                if stat['year'] == obj['year'] and stat['round'] == obj['round']:
-                    obj['num_students'] = stat['num_students']
-            obj['admin_detail_url'] = reverse_lazy('prime_admin:detail_year_round', args=[obj['year'], obj['round']])
+            statistics = self.get_statistics(obj['year'], obj['round'])
+            obj['statistics'] = statistics
+            obj['detail_url'] = reverse_lazy('prime_admin:detail_year_round', args=[obj['year'], obj['round']])
+            print(obj)
         return page_obj, page_range
 
 
-class PrimeScoreAdminDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
+class PrimeScoreAdminDetailViewMixin(PrimeScoreAdminBaseViewMixin):
 
     def __init__(self, request, **kwargs):
         super().__init__(request, **kwargs)
@@ -50,22 +76,5 @@ class PrimeScoreAdminDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
 
         return page_obj, page_range
 
-    def get_statistics_qs_list(self):
-        filter_expr = {
-            'student__year': self.year,
-            'student__round': self.round,
-        }
-        department_list = self.department_model.objects.all().values_list('name', flat=True)
-        statistics_qs = (
-            self.statistics_model.objects.defer('timestamp')
-            .select_related('student', 'student__department').filter(**filter_expr)
-        )
-        statistics_qs_list = {
-            '전체': statistics_qs
-        }
-        for department in department_list:
-            filter_expr['student__department__name'] = department
-            statistics_qs_list[department] = statistics_qs.filter(**filter_expr)
-        print(statistics_qs_list)
-        return statistics_qs_list
-
+    def get_statistics_current(self):
+        return self.get_statistics(self.year, self.round)

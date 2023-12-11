@@ -62,7 +62,7 @@ class AdminDetailView(LoginRequiredMixin, TemplateView):
 
         info = variable.get_info()
         page_obj, page_range = variable.get_paginator_info()
-        statistics_qs_list = variable.get_statistics_qs_list()
+        statistics = variable.get_statistics_current()
 
         return {
             # base info
@@ -71,6 +71,9 @@ class AdminDetailView(LoginRequiredMixin, TemplateView):
             'round': variable.round,
             'title': 'Score',
             'sub_title': variable.sub_title,
+
+            # score statistics
+            'statistics': statistics,
 
             # page objectives
             'page_obj': page_obj,
