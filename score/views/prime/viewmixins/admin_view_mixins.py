@@ -63,13 +63,16 @@ class PrimeScoreAdminDetailViewMixin(PrimeScoreAdminBaseViewMixin):
     def get_sub_title(self) -> str:
         return f'제{self.round}회 프라임 모의고사'
 
-    def get_paginator_info(self) -> tuple:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        all_stat = (
+    def get_all_stat(self):
+        return (
             self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
             .select_related('student', 'student__department').order_by('rank_total_psat')
         )
+
+    def get_paginator_info(self) -> tuple:
+        """ Get paginator, elided page range, and collect the evaluation info. """
+        page_number = self.request.GET.get('page', 1)
+        all_stat = self.get_all_stat()
         paginator = Paginator(all_stat, 20)
         page_obj = paginator.get_page(page_number)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)

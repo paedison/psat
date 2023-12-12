@@ -4,7 +4,7 @@
         data-bs-target="#navContent{{ prefix }}{{ id }}"
         aria-controls="navContent{{ prefix }}{{ id }}"
         aria-selected="{% if id == '0' %}true{% else %}false{% endif %}">
-    <span class="fw-bold text-primary">
+    <span class="fw-bold {{ class }}">
         {{ children }}
     </span>
 </button>

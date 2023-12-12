@@ -86,11 +86,17 @@ class AdminDetailView(LoginRequiredMixin, TemplateView):
         }
 
 
-class PrintView(AdminDetailView):
-    template_name = 'score/prime/score_print.html'
+class AdminPrintView(AdminDetailView):
+    template_name = 'score/prime/score_admin_print.html'
     view_type = 'print'
+
+    def get_context_data(self, **kwargs) -> dict:
+        variable = PrimeScoreAdminDetailViewMixin(self.request, **self.kwargs)
+        context = super().get_context_data(**kwargs)
+        context['all_stat'] = variable.get_all_stat()
+        return context
 
 
 admin_list_view = AdminListView.as_view()
 admin_detail_view = AdminDetailView.as_view()
-admin_print_view = PrintView.as_view()
+admin_print_view = AdminPrintView.as_view()

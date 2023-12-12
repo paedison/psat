@@ -279,3 +279,18 @@ div.td-div-xl {
   line-height: 1;
   font-size: 14px;
 }
+
+/* Colored Tabs */
+.nav-tabs-colored {
+  border-bottom: 2px solid #ebeef4;
+}
+
+.nav-tabs-colored .nav-link:hover,
+.nav-tabs-colored .nav-link:focus {
+  color: #4154f1;
+}
+
+.nav-tabs-colored .nav-link.active {
+  color: #fff;
+  background-color: #0d6efd;
+}

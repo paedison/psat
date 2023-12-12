@@ -12,6 +12,7 @@
     <h1>{{ icon_menu|safe }} {{ title }}
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
     </h1>
+
     <nav>
         <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             <li class="breadcrumb-item">
@@ -46,15 +47,19 @@
                 </div>
             </div>
         </h5>
-        <div>
+
+        <div class="mb-4">
             {% include 'score/prime/snippets/score_student.html' %}
         </div>
-        <div>
+
+        <div class="mb-4">
             {% include 'score/prime/snippets/score_sheet.html' with is_confirmed=True %}
         </div>
-        <div>
+
+        <div class="mb-4">
             {% include 'score/prime/snippets/score_answers.html' %}
         </div>
+
         <div>
             {% include 'score/prime/snippets/score_chart.html' with is_confirmed=True %}
         </div>
