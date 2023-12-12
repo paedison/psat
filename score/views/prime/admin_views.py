@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from vanilla import TemplateView
 
+from .normal_views import DetailView
 from .viewmixins.admin_view_mixins import PrimeScoreAdminListViewMixin, PrimeScoreAdminDetailViewMixin
 
 
@@ -97,6 +98,12 @@ class AdminPrintView(AdminDetailView):
         return context
 
 
+class AdminStudentPrintView(DetailView):
+    template_name = 'score/prime/score_print.html'
+    view_type = 'print'
+
+
 admin_list_view = AdminListView.as_view()
 admin_detail_view = AdminDetailView.as_view()
 admin_print_view = AdminPrintView.as_view()
+admin_student_print_view = AdminStudentPrintView.as_view()

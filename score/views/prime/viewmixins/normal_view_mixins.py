@@ -57,11 +57,10 @@ class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
 
     def get_student_id(self):
         student_qs = self.get_students_qs()
-        student_id_post = self.request.POST.get('student_id')
-        if student_id_post:
-            return int(student_id_post)
-        else:
-            return student_qs.filter(user_id=self.user_id).first().id
+        student_id_request = self.kwargs.get('student_id')
+        if student_id_request:
+            return int(student_id_request)
+        return student_qs.filter(user_id=self.user_id).first().id
 
     def get_student(self):
         student_qs = self.get_students_qs()
