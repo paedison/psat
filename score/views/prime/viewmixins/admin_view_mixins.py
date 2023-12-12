@@ -49,7 +49,6 @@ class PrimeScoreAdminListViewMixin(PrimeScoreAdminBaseViewMixin):
             statistics = self.get_statistics(obj['year'], obj['round'])
             obj['statistics'] = statistics
             obj['detail_url'] = reverse_lazy('prime_admin:detail_year_round', args=[obj['year'], obj['round']])
-            print(obj)
         return page_obj, page_range
 
 

@@ -25,14 +25,19 @@ class PrimeScoreListViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
 
     def get_student(self, obj):
         try:
-            return self.student_model.objects.get(user_id=self.user_id, year=obj['year'], round=obj['round'])
+            return (
+                self.student_model.objects
+                .filter(user_id=self.user_id, year=obj['year'], round=obj['round']).first()
+            )
         except self.student_model.DoesNotExist:
             return None
 
     def get_student_score(self, obj):
         try:
-            return self.statistics_model.objects.get(
-                student__user_id=self.user_id, student__year=obj['year'], student__round=obj['round'])
+            return (
+                self.statistics_model.objects
+                .filter(student__user_id=self.user_id, student__year=obj['year'], student__round=obj['round']).first()
+            )
         except self.statistics_model.DoesNotExist:
             return None
 
@@ -42,18 +47,25 @@ class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
     def __init__(self, request, **kwargs):
         super().__init__(request, **kwargs)
 
+        self.student_id: int = self.get_student_id()
+
         self.sub_title: str = self.get_sub_title()
         self.student = self.get_student()
 
     def get_sub_title(self) -> str:
         return f'제{self.round}회 프라임 모의고사'
 
+    def get_student_id(self):
+        student_qs = self.get_students_qs()
+        student_id_post = self.request.POST.get('student_id')
+        if student_id_post:
+            return int(student_id_post)
+        else:
+            return student_qs.filter(user_id=self.user_id).first().id
+
     def get_student(self):
         student_qs = self.get_students_qs()
-        return (
-            student_qs.filter(user_id=self.user_id)
-            .annotate(department_name=F('department__name')).values().first()
-        )
+        return student_qs.annotate(department_name=F('department__name')).values().get(id=self.student_id)
 
     def get_students_qs(self, rank_type='전체'):
         filter_expr = {
@@ -83,7 +95,7 @@ class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
             .values('number', sub=F('prime__subject__abbr'), answer_correct=F('answer')))
         all_raw_student_answers: list[dict] = list(
             self.answer_model.objects.defer('timestamp')
-            .filter(prime__year=self.year, prime__round=self.round, student__user_id=self.user_id)
+            .filter(student_id=self.student_id)
             .annotate(sub=F('prime__subject__abbr')).values())
         all_student_answers = {
             '언어': all_raw_student_answers[0],
