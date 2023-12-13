@@ -27,21 +27,7 @@ class ListView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs) -> dict:
         variable = PrimeScoreListViewMixin(self.request, **self.kwargs)
-
-        page_obj, page_range = variable.get_paginator_info()
-        info = variable.get_info()
-
-        return {
-            # base info
-            'info': info,
-            'title': 'Score',
-            'page_obj': page_obj,
-            'page_range': page_range,
-
-            # icons
-            'icon_menu': variable.ICON_MENU['score'],
-            'icon_subject': variable.ICON_SUBJECT,
-        }
+        return variable.get_context_data()
 
 
 class DetailView(LoginRequiredMixin, TemplateView):
@@ -61,45 +47,7 @@ class DetailView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs) -> dict:
         variable = PrimeScoreDetailViewMixin(self.request, **self.kwargs)
-
-        info = variable.get_info()
-        all_answers = variable.get_all_answers()
-        student_score = variable.get_student_score()  # score, rank, rank_ratio
-        all_score_stat = variable.get_all_score_stat()
-        all_answer_rates = variable.get_all_answer_rates()
-
-        return {
-            # base info
-            'info': info,
-            'year': variable.year,
-            'round': variable.round,
-            'title': 'Score',
-            'sub_title': variable.sub_title,
-
-            # icons
-            'icon_menu': variable.ICON_MENU['score'],
-            'icon_subject': variable.ICON_SUBJECT,
-            'icon_nav': variable.ICON_NAV,
-
-            # score_student.html
-            'student': variable.student,
-
-            # score_sheet.html, score_chart.html
-            'student_score': student_score,
-            'stat_total': all_score_stat['전체'],
-            'stat_department': all_score_stat['직렬'],
-
-            # score_answers.html
-            'answers_eoneo': all_answers['언어'],
-            'answers_jaryo': all_answers['자료'],
-            'answers_sanghwang': all_answers['상황'],
-            'answers_heonbeob': all_answers['헌법'],
-
-            'rates_eoneo': all_answer_rates['언어'],
-            'rates_jaryo': all_answer_rates['자료'],
-            'rates_sanghwang': all_answer_rates['상황'],
-            'rates_heonbeob': all_answer_rates['헌법'],
-        }
+        return variable.get_context_data()
 
 
 class PrintView(DetailView):

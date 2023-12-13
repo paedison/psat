@@ -1,5 +1,9 @@
+import io
+import zipfile
+
+import pdfkit
 from django.core.paginator import Paginator
-from django.db.models import Count
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
@@ -51,6 +55,24 @@ class PrimeScoreAdminListViewMixin(PrimeScoreAdminBaseViewMixin):
             obj['detail_url'] = reverse_lazy('prime_admin:detail_year_round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
+    def get_context_data(self) -> dict:
+        info = self.get_info()
+        page_obj, page_range = self.get_paginator_info()
+
+        return {
+            # base info
+            'info': info,
+            'title': 'Score',
+
+            # page objectives
+            'page_obj': page_obj,
+            'page_range': page_range,
+
+            # Icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+        }
+
 
 class PrimeScoreAdminDetailViewMixin(PrimeScoreAdminBaseViewMixin):
 
@@ -76,7 +98,68 @@ class PrimeScoreAdminDetailViewMixin(PrimeScoreAdminBaseViewMixin):
         page_obj = paginator.get_page(page_number)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
 
-        return page_obj, page_range
+        student_ids = []
+        for obj in page_obj:
+            student_ids.append(obj.student.id)
+
+        return page_obj, page_range, student_ids
 
     def get_statistics_current(self):
         return self.get_statistics(self.year, self.round)
+
+    def get_context_data(self) -> dict:
+        info = self.get_info()
+        page_obj, page_range, student_ids = self.get_paginator_info()
+        statistics = self.get_statistics_current()
+
+        return {
+            # base info
+            'info': info,
+            'year': self.year,
+            'round': self.round,
+            'title': 'Score',
+            'sub_title': self.sub_title,
+
+            # score statistics
+            'statistics': statistics,
+
+            # page objectives
+            'page_obj': page_obj,
+            'page_range': page_range,
+            'student_ids': student_ids,
+
+            # Icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+        }
+
+
+class PrimeScoreAllStudentPrintViewMixin(PrimeScoreAdminBaseViewMixin):
+    def post(self, request, *args, **kwargs):
+        from ..admin_views import AdminStudentPrintView
+        # Extract parameters from URL
+        student_ids = [int(student_id) for student_id in request.POST.get('student_ids').split(',')]
+
+        # Create a zip file to store the individual PDFs
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+            for student_id in student_ids:
+                html_content = AdminStudentPrintView.as_view()(
+                    request, student_id=student_id, *args, **kwargs).rendered_content
+
+                # Convert HTML to PDF using pdfkit
+                options = {
+                    '--page-width': '297mm',
+                    '--page-height': '210mm',
+                }
+                pdf_file_path = f"transcript_{student_id}.pdf"
+                pdf_content = pdfkit.from_string(html_content, False, options=options)
+
+                # Add the PDF to the zip file
+                zip_file.writestr(pdf_file_path, pdf_content)
+
+        # Create a response with the zipped content
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename=batch_transcripts.zip'
+        return response

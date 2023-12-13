@@ -45,7 +45,7 @@
                     </a>
                     <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Export to Excel' %}"
                        href="{% url 'prime_admin:export_statistics' year round %}">
-                        엑셀로 내보내기
+                        Excel로 내보내기
                     </a>
                 </div>
             </div>
@@ -140,20 +140,30 @@
                 <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
                     제{{ round }}회 | 성적 일람표
                 </span>
-                <div class="btn-group ms-auto">
-                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-                       href="{% url 'prime_admin:list' %}" hx-post="{% url 'prime_admin:list' %}">
-                        목록
-                    </a>
-                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-                       href="{% url 'prime_admin:print' year round %}" target="_blank">
-                        인쇄하기
-                    </a>
-                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Export to Excel' %}"
-                       href="{% url 'prime_admin:export_students_score' year round %}">
-                        엑셀로 내보내기
-                    </a>
-                </div>
+                <form method="POST" action="{% url 'prime_admin:export_transcripts' year round %}"
+                      class="ms-auto">
+                    {% csrf_token %}
+                    <div class="btn-group">
+                        <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
+                           href="{% url 'prime_admin:list' %}" hx-post="{% url 'prime_admin:list' %}">
+                            목록
+                        </a>
+                        <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
+                           href="{% url 'prime_admin:print' year round %}" target="_blank">
+                            인쇄하기
+                        </a>
+                        <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Export to Excel' %}"
+                           href="{% url 'prime_admin:export_students_score' year round %}">
+                            Excel로 내보내기
+                        </a>
+                        <input name="student_ids" type="text" aria-label="Student IDs" hidden
+                               value="{% for id in student_ids %}{{ id }}{% if not forloop.last %},{% endif %}{% endfor %}"/>
+                        <button class="btn btn-sm btn-outline-secondary"
+                                title="{% trans 'Export to PDF' %}" type="submit">
+                            PDF로 내보내기
+                        </button>
+                    </div>
+                </form>
             </div>
         </h5>
 
@@ -161,6 +171,7 @@
             <table class="table table-bordered table-striped small align-middle m-0">
                 <thead>
                     <tr class="text-center table-warning align-middle">
+                        <th class="text-primary text-nowrap p-2" rowspan="3">ID</th>
                         <th class="text-primary text-nowrap p-2" rowspan="3">등수</th>
                         <th class="text-primary text-nowrap p-2" rowspan="3">이름</th>
                         <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
@@ -227,6 +238,7 @@
                     {% if page_obj %}
                         {% for obj in page_obj %}
                             <tr class="text-center">
+                                <td class="text-nowrap p-2">{{ obj.student.id }}</td>
                                 <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
                                 <td class="text-nowrap p-2">
                                     <a href="{% url 'prime_admin:student_print' year round obj.student.id %}"

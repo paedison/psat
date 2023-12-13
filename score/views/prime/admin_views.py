@@ -5,11 +5,12 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F
 from django.http import HttpResponse
-from vanilla import TemplateView
+from vanilla import TemplateView, View
 
+from score.utils import get_score_stat_korean
 from .normal_views import DetailView
-from .viewmixins.admin_view_mixins import PrimeScoreAdminListViewMixin, PrimeScoreAdminDetailViewMixin
-from ...utils import get_score_stat_korean
+from .viewmixins.admin_view_mixins import PrimeScoreAdminListViewMixin, PrimeScoreAdminDetailViewMixin, \
+    PrimeScoreAllStudentPrintViewMixin
 
 
 class AdminListView(LoginRequiredMixin, TemplateView):
@@ -30,23 +31,7 @@ class AdminListView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs) -> dict:
         variable = PrimeScoreAdminListViewMixin(self.request, **self.kwargs)
-
-        info = variable.get_info()
-        page_obj, page_range = variable.get_paginator_info()
-
-        return {
-            # base info
-            'info': info,
-            'title': 'Score',
-
-            # page objectives
-            'page_obj': page_obj,
-            'page_range': page_range,
-
-            # Icons
-            'icon_menu': variable.ICON_MENU['score'],
-            'icon_subject': variable.ICON_SUBJECT,
-        }
+        return variable.get_context_data()
 
 
 class AdminDetailView(LoginRequiredMixin, TemplateView):
@@ -66,31 +51,7 @@ class AdminDetailView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs) -> dict:
         variable = PrimeScoreAdminDetailViewMixin(self.request, **self.kwargs)
-
-        info = variable.get_info()
-        page_obj, page_range = variable.get_paginator_info()
-        statistics = variable.get_statistics_current()
-
-        return {
-            # base info
-            'info': info,
-            'year': variable.year,
-            'round': variable.round,
-            'title': 'Score',
-            'sub_title': variable.sub_title,
-
-            # score statistics
-            'statistics': statistics,
-
-            # page objectives
-            'page_obj': page_obj,
-            'page_range': page_range,
-
-            # Icons
-            'icon_menu': variable.ICON_MENU['score'],
-            'icon_subject': variable.ICON_SUBJECT,
-            'icon_nav': variable.ICON_NAV,
-        }
+        return variable.get_context_data()
 
 
 class AdminPrintView(AdminDetailView):
@@ -105,8 +66,16 @@ class AdminPrintView(AdminDetailView):
 
 
 class AdminStudentPrintView(DetailView):
-    template_name = 'score/prime/score_print.html'
+    template_name = 'score/prime/score_print_test.html'
     view_type = 'print'
+
+
+class AdminAllStudentPrintView(View):
+    view_type = 'print'
+
+    def post(self, request, *args, **kwargs):
+        variable = PrimeScoreAllStudentPrintViewMixin(request, **kwargs)
+        return variable.post(request, *args, **kwargs)
 
 
 def export_statistics_view(request, **kwargs):
@@ -192,3 +161,4 @@ admin_list_view = AdminListView.as_view()
 admin_detail_view = AdminDetailView.as_view()
 admin_print_view = AdminPrintView.as_view()
 admin_student_print_view = AdminStudentPrintView.as_view()
+admin_all_student_print_view = AdminAllStudentPrintView.as_view()

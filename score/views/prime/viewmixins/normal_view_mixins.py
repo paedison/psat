@@ -41,6 +41,22 @@ class PrimeScoreListViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
         except self.statistics_model.DoesNotExist:
             return None
 
+    def get_context_data(self) -> dict:
+        info = self.get_info()
+        page_obj, page_range = self.get_paginator_info()
+
+        return {
+            # base info
+            'info': info,
+            'title': 'Score',
+            'page_obj': page_obj,
+            'page_range': page_range,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+        }
+
 
 class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
 
@@ -150,3 +166,43 @@ class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
                     correct=Case(case(1), case(2), case(3), case(4), case(5), default=0.0)))
 
         return get_all_answer_rates_dict(all_raw_answer_rates)
+
+    def get_context_data(self) -> dict:
+        info = self.get_info()
+        student_score = self.get_student_score()  # score, rank, rank_ratio
+        all_score_stat = self.get_all_score_stat()
+        all_answers = self.get_all_answers()
+        all_answer_rates = self.get_all_answer_rates()
+
+        return {
+            # base info
+            'info': info,
+            'year': self.year,
+            'round': self.round,
+            'title': 'Score',
+            'sub_title': self.sub_title,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+
+            # score_student.html
+            'student': self.student,
+
+            # score_sheet.html, score_chart.html
+            'student_score': student_score,
+            'stat_total': all_score_stat['전체'],
+            'stat_department': all_score_stat['직렬'],
+
+            # score_answers.html
+            'answers_eoneo': all_answers['언어'],
+            'answers_jaryo': all_answers['자료'],
+            'answers_sanghwang': all_answers['상황'],
+            'answers_heonbeob': all_answers['헌법'],
+
+            'rates_eoneo': all_answer_rates['언어'],
+            'rates_jaryo': all_answer_rates['자료'],
+            'rates_sanghwang': all_answer_rates['상황'],
+            'rates_heonbeob': all_answer_rates['헌법'],
+        }
