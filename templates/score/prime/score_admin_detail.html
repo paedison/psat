@@ -1,6 +1,5 @@
 {% extends 'list.html' %}
 {% load static %}
-{% load i18n %}
 {% load psat_filter %}
 {% load partials %}
 {% load slippers %}
@@ -13,6 +12,7 @@
     <h1>{{ icon_menu|safe }} {{ title }}
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
     </h1>
+
     <nav>
         <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             <li class="breadcrumb-item">
@@ -27,7 +27,7 @@
     </nav>
 </div><!-- Page Title End -->
 
-<section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+<section id="statistics" class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
     {% #content_row class1='col-12 mb-4' %}
         <h5 class="card-title mb-0">
             <div class="d-flex">
@@ -35,15 +35,15 @@
                     제{{ round }}회 | 성적 통계
                 </span>
                 <div class="btn-group ms-auto">
-                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
+                    <a class="btn btn-sm btn-outline-secondary" title="목록"
                        href="{% url 'prime_admin:list' %}" hx-post="{% url 'prime_admin:list' %}">
                         목록
                     </a>
-                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
+                    <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"
                        href="{% url 'prime_admin:print' year round %}" target="_blank">
                         인쇄하기
                     </a>
-                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Export to Excel' %}"
+                    <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
                        href="{% url 'prime_admin:export_statistics' year round %}">
                         Excel로 내보내기
                     </a>
@@ -128,12 +128,11 @@
                 </tbody>
             </table>
         </article>
-
-
     {% /content_row %}
 </section>
 
-<section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+{% partialdef catalog inline=True %}
+<section id="catalog" class="section htmx-fade-in htmx-fade-out" hx-target="#catalog" hx-swap="outerHTML swap:0.25s">
     {% #content_row class1='col-12' %}
         <h5 class="card-title mb-0">
             <div class="d-flex">
@@ -144,22 +143,22 @@
                       class="ms-auto">
                     {% csrf_token %}
                     <div class="btn-group">
-                        <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
+                        <a class="btn btn-sm btn-outline-secondary" title="목록"
                            href="{% url 'prime_admin:list' %}" hx-post="{% url 'prime_admin:list' %}">
                             목록
                         </a>
-                        <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
+                        <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"
                            href="{% url 'prime_admin:print' year round %}" target="_blank">
                             인쇄하기
                         </a>
-                        <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Export to Excel' %}"
+                        <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
                            href="{% url 'prime_admin:export_students_score' year round %}">
                             Excel로 내보내기
                         </a>
                         <input name="student_ids" type="text" aria-label="Student IDs" hidden
                                value="{% for id in student_ids %}{{ id }}{% if not forloop.last %},{% endif %}{% endfor %}"/>
                         <button class="btn btn-sm btn-outline-secondary"
-                                title="{% trans 'Export to PDF' %}" type="submit">
+                                title="PDF로 내보내기" type="submit">
                             PDF로 내보내기
                         </button>
                     </div>
@@ -167,11 +166,46 @@
             </div>
         </h5>
 
+        <div class="d-flex">
+            <form class="d-flex align-items-center">
+                <div class="input-group mb-3">
+                    <input id="id_student_name" type="text" name="student_name" class="form-control form-control-sm"
+                           placeholder="학생 이름" title="학생 이름" aria-label="학생 이름">
+                    <button type="submit" title="Search" class="btn btn-sm btn-outline-secondary"
+                            hx-post="{% url 'prime_admin:catalog_year_round' year round %}">
+                        {{ icon_search|safe }}
+                    </button>
+                </div>
+            </form>
+            <div class="ms-auto">
+                <button id="dropdownCategoryLink" type="button"
+                        class="btn btn-sm btn-outline-primary dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    구분
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownCategoryLink">
+                    <li class="text-center">
+                    </li>
+                    {% for category in category_list %}
+                        {% if category %}
+                            <li class="text-center">
+                                <a class="dropdown-item {% if category == current_category %}bg-primary-light{% endif %}"
+                                   href="" hx-get="{{ base_url }}?category={{ category }}">
+                                    {{ category }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
         <article class="table-responsive">
             <table class="table table-bordered table-striped small align-middle m-0">
                 <thead>
                     <tr class="text-center table-warning align-middle">
                         <th class="text-primary text-nowrap p-2" rowspan="3">ID</th>
+                        <th class="text-primary text-nowrap p-2" rowspan="3">구분</th>
                         <th class="text-primary text-nowrap p-2" rowspan="3">등수</th>
                         <th class="text-primary text-nowrap p-2" rowspan="3">이름</th>
                         <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
@@ -239,6 +273,11 @@
                         {% for obj in page_obj %}
                             <tr class="text-center">
                                 <td class="text-nowrap p-2">{{ obj.student.id }}</td>
+                                <td class="text-nowrap p-2">
+                                    {% if obj.student.category is not None %}
+                                        {{ obj.student.category }}
+                                    {% endif %}
+                                </td>
                                 <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
                                 <td class="text-nowrap p-2">
                                     <a href="{% url 'prime_admin:student_print' year round obj.student.id %}"
@@ -297,7 +336,7 @@
                                 {% if status == 'disabled' %}
                                     tabindex="-1" aria-disabled="true"
                                 {% else %}
-                                    hx-get="?page={{ page_num }}"
+                                    hx-get="{{ pagination_url }}&page={{ page_num }}"
                                 {% endif %}>
                                 {% if chevron %}
                                     <i class="fa-solid fa-chevron-{{ chevron }}"></i>
@@ -335,5 +374,6 @@
         {% /pagination_nav %}
     {% /content_row %}
 </section>
+{% endpartialdef statistics %}
 {% endpartialdef list_main %}
 {% endblock main %}

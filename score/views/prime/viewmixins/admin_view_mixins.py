@@ -1,9 +1,4 @@
-import io
-import zipfile
-
-import pdfkit
 from django.core.paginator import Paginator
-from django.http import HttpResponse
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
@@ -11,7 +6,7 @@ from score.utils import get_score_stat
 from .base_view_mixins import PrimeScoreBaseViewMixin
 
 
-class PrimeScoreAdminBaseViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
+class BaseViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
     def get_statistics_qs_list(self, year, exam_round):
         filter_expr = {
             'student__year': year,
@@ -41,7 +36,7 @@ class PrimeScoreAdminBaseViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
             return score_statistics_list
 
 
-class PrimeScoreAdminListViewMixin(PrimeScoreAdminBaseViewMixin):
+class ListViewMixin(BaseViewMixin):
     def get_paginator_info(self) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)
@@ -74,21 +69,49 @@ class PrimeScoreAdminListViewMixin(PrimeScoreAdminBaseViewMixin):
         }
 
 
-class PrimeScoreAdminDetailViewMixin(PrimeScoreAdminBaseViewMixin):
+class DetailViewMixin(BaseViewMixin):
 
     def __init__(self, request, **kwargs):
         super().__init__(request, **kwargs)
 
         self.sub_title: str = self.get_sub_title()
 
+        self.search_student_name: str = self.get_variable('student_name')
+        self.current_category: str = self.get_variable('category') or '전체'
+
+        self.base_url: str = reverse_lazy(
+            'prime_admin:catalog_year_round', args=[self.year, self.round])
+        self.pagination_url: str = f'{self.base_url}?category={self.current_category}'
+
     def get_sub_title(self) -> str:
         return f'제{self.round}회 프라임 모의고사'
 
+    def get_variable(self, variable: str) -> str:
+        variable_get = self.request.GET.get(variable, '')
+        variable_post = self.request.POST.get(variable, '')
+        if variable_get:
+            return variable_get
+        return variable_post
+
+    def get_category_list(self):
+        category_list = ['전체']
+        all_category = list(
+            self.student_model.objects.filter(year=self.year, round=self.round)
+            .order_by('category').values_list('category', flat=True).distinct()
+        )
+        category_list.extend(all_category)
+        return category_list
+
     def get_all_stat(self):
-        return (
+        qs = (
             self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
             .select_related('student', 'student__department').order_by('rank_total_psat')
         )
+        if self.search_student_name:
+            return qs.filter(student__name=self.search_student_name)
+        if self.current_category and self.current_category != '전체':
+            return qs.filter(student__category=self.current_category)
+        return qs
 
     def get_paginator_info(self) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
@@ -128,38 +151,50 @@ class PrimeScoreAdminDetailViewMixin(PrimeScoreAdminBaseViewMixin):
             'page_range': page_range,
             'student_ids': student_ids,
 
+            # filtering and searching
+            'current_category': self.current_category,
+            'category_list': self.get_category_list(),
+            'search_student_name': self.search_student_name,
+
+            # urls
+            'base_url': self.base_url,
+            'pagination_url': self.pagination_url,
+
             # Icons
             'icon_menu': self.ICON_MENU['score'],
             'icon_subject': self.ICON_SUBJECT,
             'icon_nav': self.ICON_NAV,
+            'icon_search': self.ICON_SEARCH,
         }
 
 
-class PrimeScoreAllStudentPrintViewMixin(PrimeScoreAdminBaseViewMixin):
-    def post(self, request, *args, **kwargs):
-        from ..admin_views import AdminStudentPrintView
-        # Extract parameters from URL
-        student_ids = [int(student_id) for student_id in request.POST.get('student_ids').split(',')]
+class CatalogViewMixin(DetailViewMixin):
+    def get_context_data(self) -> dict:
+        info = self.get_info()
+        page_obj, page_range, student_ids = self.get_paginator_info()
 
-        # Create a zip file to store the individual PDFs
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-            for student_id in student_ids:
-                html_content = AdminStudentPrintView.as_view()(
-                    request, student_id=student_id, *args, **kwargs).rendered_content
+        return {
+            # base info
+            'year': self.year,
+            'round': self.round,
 
-                # Convert HTML to PDF using pdfkit
-                options = {
-                    '--page-width': '297mm',
-                    '--page-height': '210mm',
-                }
-                pdf_file_path = f"transcript_{student_id}.pdf"
-                pdf_content = pdfkit.from_string(html_content, False, options=options)
+            # page objectives
+            'page_obj': page_obj,
+            'page_range': page_range,
+            'student_ids': student_ids,
 
-                # Add the PDF to the zip file
-                zip_file.writestr(pdf_file_path, pdf_content)
+            # filtering and searching
+            'current_category': self.current_category,
+            'category_list': self.get_category_list(),
+            'search_student_name': self.search_student_name,
 
-        # Create a response with the zipped content
-        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-        response['Content-Disposition'] = 'attachment; filename=batch_transcripts.zip'
-        return response
+            # urls
+            'base_url': self.base_url,
+            'pagination_url': self.pagination_url,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+            'icon_search': self.ICON_SEARCH,
+        }
