@@ -7,7 +7,7 @@ from .viewmixins.list_view_mixins import PsatScoreListViewMixin
 
 class BaseView(LoginRequiredMixin, TemplateView):
     """ Represent information related PsatTemporaryAnswer and PsatConfirmedAnswer models. """
-    template_name = 'score/v2/score_list.html'
+    template_name = 'score/psat_v2/score_list.html'
     login_url = settings.LOGIN_URL
     request: any
 

@@ -11,7 +11,7 @@ from .viewmixins.detail_view_mixins import (
 
 class BaseView(LoginRequiredMixin, TemplateView):
     """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
-    template_name = 'score/v2/score_detail.html'
+    template_name = 'score/psat_v2/score_detail.html'
     login_url = settings.LOGIN_URL
 
     request: any
@@ -71,7 +71,7 @@ class BaseView(LoginRequiredMixin, TemplateView):
 
 
 class ExamFilterView(LoginRequiredMixin, TemplateView):
-    template_name = 'score/v2/score_detail.html#exam_select'
+    template_name = 'score/psat_v2/score_detail.html#exam_select'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
@@ -84,7 +84,7 @@ class ExamFilterView(LoginRequiredMixin, TemplateView):
 
 class SubmitView(LoginRequiredMixin, TemplateView):
     menu = 'score'
-    template_name = 'score/v2/snippets/score_answers.html#scored_form'
+    template_name = 'score/psat_v2/snippets/score_answers.html#scored_form'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from score.views.v2 import list_views, detail_views, modal_views
+from score.views.psat_v2 import list_views, detail_views, modal_views
 
 app_name = 'score_v2'
 

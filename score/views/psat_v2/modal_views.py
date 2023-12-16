@@ -18,7 +18,7 @@ class PsatScoreNoStudentModalView(
     TemplateView
 ):
     """ Represent modal view when there is no PSAT student data. """
-    template_name = 'score/v2/snippets/score_modal.html#no_student_modal'
+    template_name = 'score/psat_v2/snippets/score_modal.html#no_student_modal'
     login_url = settings.LOGIN_URL
 
 
@@ -27,7 +27,7 @@ class PsatScoreStudentCreateModalView(
     TemplateView
 ):
     """ Represent modal view for creating PSAT student data. """
-    template_name = 'score/v2/snippets/score_modal.html#student_create'
+    template_name = 'score/psat_v2/snippets/score_modal.html#student_create'
     login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
@@ -44,7 +44,7 @@ class PsatScoreStudentCreateDepartment(
     TemplateView
 ):
     """ Return department list for PSAT student create modal. """
-    template_name = 'score/v2/snippets/score_modal.html#student_create_department'
+    template_name = 'score/psat_v2/snippets/score_modal.html#student_create_department'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
@@ -62,7 +62,7 @@ class PsatScoreStudentUpdateModalView(
     TemplateView
 ):
     """ Represent modal view for updating PSAT student data. """
-    template_name = 'score/v2/snippets/score_modal.html#student_update'
+    template_name = 'score/psat_v2/snippets/score_modal.html#student_update'
     login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
@@ -80,7 +80,7 @@ class PsatScoreStudentUpdateDepartment(
     TemplateView
 ):
     """ Return department list for PSAT student create modal. """
-    template_name = 'score/v2/snippets/score_modal.html#student_update_department'
+    template_name = 'score/psat_v2/snippets/score_modal.html#student_update_department'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
@@ -100,7 +100,7 @@ class PsatScoreConfirmModalView(
 ):
     """ Represent modal view for confirming answers. """
     menu = 'score'
-    template_name = 'score/v2/snippets/score_modal.html#score_confirmed'
+    template_name = 'score/psat_v2/snippets/score_modal.html#score_confirmed'
     login_url = settings.LOGIN_URL
 
     def get(self, request, *args, **kwargs):

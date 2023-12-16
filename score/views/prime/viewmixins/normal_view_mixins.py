@@ -14,7 +14,7 @@ class ListViewMixin(
     page_obj: any
     page_range: any
 
-    def get_context_data(self) -> dict:
+    def get_context_data(self, **kwargs) -> dict:
         self.get_properties()
 
         return {

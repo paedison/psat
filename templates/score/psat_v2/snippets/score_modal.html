@@ -1,0 +1,110 @@
+{% load slippers %}
+{% load partials %}
+
+{% partialdef no_student_modal %} {# no_student_modal partial #}
+    {% #modal header='수험 정보 오류' %}
+        <h5 class="modal-title mx-auto fw-bold">
+            <span class="text-danger">수험정보를 입력해주세요.</span>
+        </h5>
+    {% /modal %}
+{% endpartialdef no_student_modal %}
+
+{% partialdef student_create %} {# student_create partial #}
+    {% #modal header=header size=" " %}
+        <form>
+            <input id="id_year" type="text" name="year" value="{{ year }}" aria-label="Year" hidden>
+            <input name="ex" value="{{ ex }}" aria-label="Exam" hidden>
+            <div class="form-floating">
+                <input id="id_serial" class="form-control form-control-sm"
+                       type="text" placeholder="수험번호(선택사항)" name="serial"/>
+                <label for="id_serial">수험번호(선택사항)</label>
+            </div>
+            <select id="id_unit" class="form-select mt-3" name="unit_id" aria-label="Select unit"
+                    hx-post="{% url 'score:student_create_department' %}"
+                    hx-trigger="change" hx-target="#student_create_department">
+                <option selected>모집 단위를 선택해주세요.</option>
+                {% for unit in units %}
+                    <option value="{{ unit.id }}">{{ unit.name }}</option>
+                {% endfor %}
+            </select>
+            <div id="student_create_department" class="input-group mt-3">
+            </div>
+        </form>
+    {% /modal %}
+{% endpartialdef student_create %}
+
+{% partialdef student_create_department %} {# student_create_department partial #}
+    <select id="id_department" class="form-select" name="department" aria-label="Select department">
+        <option selected>직렬을 선택해주세요.</option>
+        {% for department in departments %}
+            <option value="{{ department.id }}">
+                {{ department.name }}
+            </option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-outline-secondary" type="submit" data-bs-dismiss="modal" hx-swap="innerHTML swap:0.25s"
+            hx-post="{% url 'score:student_create' %}" hx-target="#main">
+        입력
+    </button>
+{% endpartialdef student_create_department %}
+
+{% partialdef student_update %} {# student_update partial #}
+    {% #modal header=header size=" " %}
+        <form>
+            <input id="id_year" type="text" name="year" value="{{ student.year }}" aria-label="Year" hidden>
+            <div class="form-floating">
+                <input id="id_serial" class="form-control form-control-sm"
+                       type="text" placeholder="수험번호" name="serial"
+                       value="{{ student.serial|default:'' }}"/>
+                <label for="id_serial">수험번호(선택사항)</label>
+            </div>
+            <select id="id_unit" class="form-select mt-3" name="unit_id" aria-label="Select unit"
+                    hx-post="{% url 'score:student_update_department' student.id %}"
+                    hx-trigger="change" hx-target="#student_update_department">
+                <option selected>모집 단위를 선택해주세요.</option>
+                {% for unit in units %}
+                    <option value="{{ unit.id }}"
+                            {% if unit == student.department.unit %}selected{% endif %}>
+                        {{ unit.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <div id="student_update_department" class="input-group mt-3">
+                {% partial student_update_department %}
+            </div>
+        </form>
+    {% /modal %}
+{% endpartialdef student_update %}
+
+{% partialdef student_update_department %} {# student_update_department partial #}
+    <select id="id_department" class="form-select" name="department" aria-label="Select department">
+        <option selected>직렬을 선택해주세요.</option>
+        {% for department in departments %}
+            <option value="{{ department.id }}"
+                    {% if department == student.department %}selected{% endif %}>
+                {{ department.name }}
+            </option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-outline-secondary" type="submit" data-bs-dismiss="modal" hx-swap="innerHTML swap:0.25s"
+            hx-post="{% url 'score:student_update' student.id %}" hx-target="#main">
+        수정
+    </button>
+{% endpartialdef student_update_department %}
+
+{% partialdef score_confirmed %} {# score_confirmed partial #}
+    {% #modal header='최종 답안 제출' %}
+        <h5 class="modal-title mx-auto fw-bold">
+            {% if student.is_confirmed == True %}
+                <span class="text-success" hx-trigger="load delay:0.25s" hx-target="#main" hx-push-url="true"
+                      hx-get="{% url 'score:detail_year_ex' psat.year psat.exam.abbr %}">
+                    답안이 정상적으로<br/>제출되었습니다.
+                </span>
+            {% elif student.is_confirmed == False %}
+                <span class="text-danger">모든 문제의 답안을<br/>제출해주세요.</span>
+            {% else %}
+                <span class="text-danger">이미 제출한 답안은<br/>수정할 수 없습니다.</span>
+            {% endif %}
+        </h5>
+    {% /modal %}
+{% endpartialdef score_confirmed %}
