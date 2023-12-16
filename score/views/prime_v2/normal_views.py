@@ -13,7 +13,8 @@ class ListView(
     normal_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime/score_list.html'
+    """ Represent information related PrimeTemporaryAnswer and PrimeConfirmedAnswer models. """
+    template_name = 'score/prime_v2/score_list.html'
     login_url = settings.LOGIN_URL
 
     def get_template_names(self):
@@ -32,7 +33,7 @@ class DetailView(
     normal_view_mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime/score_detail.html'
+    template_name = 'score/prime_v2/score_detail.html'
     login_url = settings.LOGIN_URL
 
     def get_template_names(self):
@@ -47,7 +48,7 @@ class DetailView(
 
 
 class PrintView(DetailView):
-    template_name = 'score/prime/score_print.html'
+    template_name = 'score/prime_v2/score_print.html'
     view_type = 'print'
 
 
@@ -55,8 +56,8 @@ class NoStudentModalView(
     LoginRequiredMixin,
     vanilla.TemplateView,
 ):
-    """ Represent modal view when there is no student data. """
-    template_name = 'score/prime/snippets/score_modal.html#no_student_modal'
+    """ Represent modal view when there is no PSAT student data. """
+    template_name = 'score/prime_v2/snippets/score_modal.html#no_student_modal'
     login_url = settings.LOGIN_URL
 
 
@@ -65,8 +66,8 @@ class StudentConnectModalView(
     normal_view_mixins.StudentConnectModalViewMixin,
     vanilla.TemplateView,
 ):
-    """ Represent modal view for connecting student data. """
-    template_name = 'score/prime/snippets/score_modal.html#student_connect'
+    """ Represent modal view for creating PSAT student data. """
+    template_name = 'score/prime_v2/snippets/score_modal.html#student_connect'
     login_url = settings.LOGIN_URL
 
 
@@ -92,7 +93,7 @@ class StudentConnectView(
             student_form.user_id = self.request.user.id
             student_form.save()
             success_url = reverse_lazy(
-                'prime:detail_year_round', args=[student_form.year, student_form.round]
+                'prime_v2:detail_year_round', args=[student_form.year, student_form.round]
             )
             return HttpResponseRedirect(success_url)
         except self.student_model.DoesNotExist:

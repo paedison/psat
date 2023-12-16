@@ -1,0 +1,40 @@
+{% load slippers %}
+{% load partials %}
+
+{% partialdef no_student_modal %} {# no_student_modal partial #}
+    {% #modal header='수험 정보 오류' %}
+        <h5 class="modal-title mx-auto fw-bold">
+            <span class="text-danger">수험정보를 입력해주세요.</span>
+        </h5>
+    {% /modal %}
+{% endpartialdef no_student_modal %}
+
+{% partialdef student_connect %} {# student_connect partial #}
+    {% #modal header=header size=" " %}
+        <form>
+            <input id="id_year" type="text" name="year" value="{{ year }}" aria-label="Year" hidden>
+            <input id="id_round" type="text" name="round" value="{{ round }}" aria-label="Round" hidden>
+            <div class="form-floating">
+                <input id="id_serial" class="form-control form-control-sm"
+                       type="text" placeholder="수험번호" name="serial"/>
+                <label for="id_serial">수험번호</label>
+            </div>
+            <div class="form-floating mt-3">
+                <input id="id_name" class="form-control form-control-sm"
+                       type="text" placeholder="이름" name="name"/>
+                <label for="id_name">이름</label>
+            </div>
+            <div class="input-group mt-3">
+                <div class="form-floating">
+                    <input id="id_password" class="form-control form-control-sm"
+                           type="text" placeholder="이름" name="password"/>
+                    <label for="id_password">비밀번호</label>
+                </div>
+                <button class="btn btn-outline-secondary" type="submit" data-bs-dismiss="modal" hx-swap="innerHTML swap:0.25s"
+                        hx-post="{% url 'prime_v2:student_connect' %}" hx-target="#main">
+                    입력
+                </button>
+            </div>
+        </form>
+    {% /modal %}
+{% endpartialdef student_connect %}

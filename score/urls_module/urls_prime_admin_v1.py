@@ -1,24 +1,23 @@
 from django.urls import path
 
-from score.views.prime import admin_views
+from score.views.prime_v1 import admin_views
 
-app_name = 'prime_admin'  # score/prime/admin/
+app_name = 'prime_admin_v1'  # score/prime/admin/
 
 urlpatterns = [
     path('', admin_views.list_view, name='list'),
-
     path('detail/', admin_views.detail_view, name='detail'),
     path('detail/<int:year>/<int:round>/', admin_views.detail_view, name='detail_year_round'),
     path('search/<int:year>/<int:round>/', admin_views.catalog_view, name='catalog_year_round'),
 
     path('print/<int:year>/<int:round>/', admin_views.print_view, name='print'),
     path('print/<int:year>/<int:round>/<int:student_id>',
-         admin_views.individual_student_print_view, name='individual_student_print'),
+         admin_views.student_print_view, name='student_print'),
 
     path('export/transcript/<int:year>/<int:round>/',
-         admin_views.export_transcript_to_pdf_view, name='export_transcript'),
+         admin_views.export_transcripts_view, name='export_transcripts'),
     path('export/statistics/<int:year>/<int:round>/',
-         admin_views.export_statistics_to_excel_view, name='export_statistics'),
+         admin_views.export_statistics_view, name='export_statistics'),
     path('export/students_score/<int:year>/<int:round>/',
-         admin_views.export_student_score_to_excel_view, name='export_student_score'),
+         admin_views.export_students_score_view, name='export_students_score'),
 ]

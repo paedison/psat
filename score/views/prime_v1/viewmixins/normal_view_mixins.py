@@ -4,36 +4,11 @@ from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
 from score.utils import get_all_answer_rates_dict, get_all_score_stat_dict
-from . import base_mixins
+from .base_view_mixins import PrimeScoreBaseViewMixin
 
 
-class ListViewMixin(
-    ConstantIconSet,
-    base_mixins.BaseMixin,
-):
-    page_obj: any
-    page_range: any
-
-    def get_context_data(self) -> dict:
-        self.get_properties()
-
-        return {
-            # base info
-            'info': self.info,
-            'title': 'Score',
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-
-            # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-        }
-
-    def get_properties(self):
-        super().get_properties()
-        self.page_obj, self.page_range = self.get_paginator_info()
+class PrimeScoreListViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
+    request: any
 
     def get_paginator_info(self) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
@@ -66,68 +41,37 @@ class ListViewMixin(
         except self.statistics_model.DoesNotExist:
             return None
 
-
-class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
-    student_id: int
-
-    sub_title: str
-    student: any
-
-    student_score: dict  # score, rank, rank_ratio
-    all_score_stat: dict
-    all_answers: dict
-    all_answer_rates: dict
-
     def get_context_data(self) -> dict:
-        self.get_properties()
+        info = self.get_info()
+        page_obj, page_range = self.get_paginator_info()
 
         return {
             # base info
-            'info': self.info,
-            'year': self.year,
-            'round': self.round,
+            'info': info,
             'title': 'Score',
-            'sub_title': self.sub_title,
+            'page_obj': page_obj,
+            'page_range': page_range,
 
             # icons
             'icon_menu': self.ICON_MENU['score'],
             'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-
-            # score_student.html
-            'student': self.student,
-
-            # score_sheet.html, score_chart.html
-            'student_score': self.student_score,
-            'stat_total': self.all_score_stat['전체'],
-            'stat_department': self.all_score_stat['직렬'],
-
-            # score_answers.html
-            'answers_eoneo': self.all_answers['언어'],
-            'answers_jaryo': self.all_answers['자료'],
-            'answers_sanghwang': self.all_answers['상황'],
-            'answers_heonbeob': self.all_answers['헌법'],
-
-            'rates_eoneo': self.all_answer_rates['언어'],
-            'rates_jaryo': self.all_answer_rates['자료'],
-            'rates_sanghwang': self.all_answer_rates['상황'],
-            'rates_heonbeob': self.all_answer_rates['헌법'],
         }
 
-    def get_properties(self):
-        super().get_properties()
 
-        self.student_id = self.get_student_id()
+class PrimeScoreDetailViewMixin(ConstantIconSet, PrimeScoreBaseViewMixin):
 
-        self.sub_title = f'제{self.round}회 프라임 모의고사'
+    def __init__(self, request, **kwargs):
+        super().__init__(request, **kwargs)
+
+        self.student_id: int = self.get_student_id()
+
+        self.sub_title: str = self.get_sub_title()
         self.student = self.get_student()
 
-        self.student_score = self.statistics_model.objects.get(student_id=self.student['id'])  # score, rank, rank_ratio
-        self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
-        self.all_answers = self.get_all_answers()
-        self.all_answer_rates = self.get_all_answer_rates()
+    def get_sub_title(self) -> str:
+        return f'제{self.round}회 프라임 모의고사'
 
-    def get_student_id(self) -> int:
+    def get_student_id(self):
         student_qs = self.get_students_qs()
         student_id_request = self.kwargs.get('student_id')
         if student_id_request:
@@ -202,6 +146,12 @@ class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
             '헌법': get_answers('헌법'),
         }
 
+    def get_student_score(self) -> dict:
+        return self.statistics_model.objects.get(student_id=self.student['id'])
+
+    def get_all_score_stat(self) -> dict:
+        return get_all_score_stat_dict(self.get_statistics_qs, self.student)
+
     def get_all_answer_rates(self) -> dict:
         def case(num):
             return When(problem__answer=Value(num), then=ExpressionWrapper(
@@ -217,15 +167,42 @@ class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
 
         return get_all_answer_rates_dict(all_raw_answer_rates)
 
+    def get_context_data(self) -> dict:
+        info = self.get_info()
+        student_score = self.get_student_score()  # score, rank, rank_ratio
+        all_score_stat = self.get_all_score_stat()
+        all_answers = self.get_all_answers()
+        all_answer_rates = self.get_all_answer_rates()
 
-class StudentConnectModalViewMixin(base_mixins.BaseMixin):
-    def get_context_data(self, **kwargs) -> dict:
-        year, exam_round = self.kwargs['year'], self.kwargs['round']
-        prime = self.category_model.objects.filter(
-            year=year, round=exam_round).select_related('exam').first()
-        exam = prime.exam.name
         return {
-            'header': f'{year}년 대비 제{exam_round}회 {exam} 수험 정보 입력',
-            'year': year,
-            'round': exam_round,
+            # base info
+            'info': info,
+            'year': self.year,
+            'round': self.round,
+            'title': 'Score',
+            'sub_title': self.sub_title,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+
+            # score_student.html
+            'student': self.student,
+
+            # score_sheet.html, score_chart.html
+            'student_score': student_score,
+            'stat_total': all_score_stat['전체'],
+            'stat_department': all_score_stat['직렬'],
+
+            # score_answers.html
+            'answers_eoneo': all_answers['언어'],
+            'answers_jaryo': all_answers['자료'],
+            'answers_sanghwang': all_answers['상황'],
+            'answers_heonbeob': all_answers['헌법'],
+
+            'rates_eoneo': all_answer_rates['언어'],
+            'rates_jaryo': all_answer_rates['자료'],
+            'rates_sanghwang': all_answer_rates['상황'],
+            'rates_heonbeob': all_answer_rates['헌법'],
         }

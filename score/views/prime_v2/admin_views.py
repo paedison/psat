@@ -11,7 +11,8 @@ class ListView(
     admin_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime/score_admin_list.html'
+    """ Represent information related PrimeTemporaryAnswer and PrimeConfirmedAnswer models. """
+    template_name = 'score/prime_v2/score_admin_list.html'
     login_url = settings.LOGIN_URL
 
     def get_template_names(self):
@@ -30,7 +31,7 @@ class DetailView(
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime/score_admin_detail.html'
+    template_name = 'score/prime_v2/score_admin_detail.html'
     login_url = settings.LOGIN_URL
 
     def get_template_names(self):
@@ -49,7 +50,7 @@ class CatalogView(
     admin_view_mixins.CatalogViewMixin,
     vanilla.TemplateView
 ):
-    template_name = 'score/prime/score_admin_detail.html#catalog'
+    template_name = 'score/prime_v2/score_admin_detail.html#catalog'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
@@ -61,7 +62,7 @@ class PrintView(
     admin_view_mixins.PrintViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime/score_admin_print.html'
+    template_name = 'score/prime_v2/score_admin_print.html'
     view_type = 'print'
 
     def post(self, request, *args, **kwargs):
@@ -69,7 +70,7 @@ class PrintView(
 
 
 class IndividualStudentPrintView(normal_views.DetailView):
-    template_name = 'score/prime/score_individual_print.html'
+    template_name = 'score/prime_v2/score_individual_print.html'
     view_type = 'print'
 
 
