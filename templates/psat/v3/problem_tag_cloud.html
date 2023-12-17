@@ -1,0 +1,111 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+
+{% block main %}
+    {% partialdef list_main inline=True %}
+        {{ info|json_script:'info' }}
+        <div class="pagetitle">
+            <h1>PSAT Tag
+                <span class="fs-6 text-secondary">{{ title }}</span>
+            </h1>
+            <nav>
+                <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">PSAT</li>
+                    <li class="breadcrumb-item active">Tag</li>
+                </ol>
+            </nav>
+        </div><!-- Page Title End -->
+
+        <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        {% #content_row class1='col-12' %}
+            <h5 class="card-title mb-0">My Tags</h5>
+            <nav>
+                <div class="nav nav-tabs nav-tabs-bordered" id="nav-tabMy" role="tablist">
+                    {% #nav_tab prefix='My' id='0' %}
+                        {{ PSAT_ICON_SET.all|safe }} 전체
+                    {% /nav_tab %}
+                    {% #nav_tab prefix='My' id='1' %}
+                        {{ PSAT_ICON_SET.eoneo|safe }} 언어
+                    {% /nav_tab %}
+                    {% #nav_tab prefix='My' id='2' %}
+                        {{ PSAT_ICON_SET.jaryo|safe }} 자료
+                    {% /nav_tab %}
+                    {% #nav_tab prefix='My' id='3' %}
+                        {{ PSAT_ICON_SET.sanghwang|safe }} 상황
+                    {% /nav_tab %}
+                </div>
+            </nav><!-- Navigation End -->
+            <div class="tab-content" id="nav-contentMy">
+                {% #nav_content prefix='My' id='0' %}
+                    {% with my_total_tags as tags %}{% partial tag_cloud %}{% endwith %}
+                {% /nav_content %}<!-- All Subject Tab End -->
+
+                {% #nav_content prefix='My' id='1' %}
+                    {% with my_eoneo_tags as tags %}{% partial tag_cloud %}{% endwith %}
+                {% /nav_content %}<!-- Eoneo Tab End -->
+
+                {% #nav_content prefix='My' id='2' %}
+                    {% with my_jaryo_tags as tags %}{% partial tag_cloud %}{% endwith %}
+                {% /nav_content %}<!-- Jaryo Tab End -->
+
+                {% #nav_content prefix='My' id='3' %}
+                    {% with my_sanghwang_tags as tags %}{% partial tag_cloud %}{% endwith %}
+                {% /nav_content %}<!-- Sanghwang Tab End -->
+            </div>
+        {% /content_row %}
+
+        {% #content_row %}
+            <h5 class="card-title mb-0">All Tags</h5>
+            <nav>
+                <div class="nav nav-tabs nav-tabs-bordered" id="nav-tabAll" role="tablist">
+                    {% #nav_tab prefix='All' id='0' %}
+                        {{ PSAT_ICON_SET.all|safe }} 전체
+                    {% /nav_tab %}
+                    {% #nav_tab prefix='All' id='1' %}
+                        {{ PSAT_ICON_SET.eoneo|safe }} 언어
+                    {% /nav_tab %}
+                    {% #nav_tab prefix='All' id='2' %}
+                        {{ PSAT_ICON_SET.jaryo|safe }} 자료
+                    {% /nav_tab %}
+                    {% #nav_tab prefix='All' id='3' %}
+                        {{ PSAT_ICON_SET.sanghwang|safe }} 상황
+                    {% /nav_tab %}
+                </div>
+            </nav><!-- Navigation End -->
+            <div class="tab-content" id="nav-contentAll">
+                {% #nav_content prefix='All' id='0' %}
+                    {% with all_total_tags as tags %}{% partial tag_cloud %}{% endwith %}
+                {% /nav_content %}<!-- All Subject Tab End -->
+
+                {% #nav_content prefix='All' id='1' %}
+                    {% with all_eoneo_tags as tags %}{% partial tag_cloud %}{% endwith %}
+                {% /nav_content %}<!-- Eoneo Tab End -->
+
+                {% #nav_content prefix='All' id='2' %}
+                    {% with all_jaryo_tags as tags %}{% partial tag_cloud %}{% endwith %}
+                {% /nav_content %}<!-- Jaryo Tab End -->
+
+                {% #nav_content prefix='All' id='3' %}
+                    {% with all_sanghwang_tags as tags %}{% partial tag_cloud %}{% endwith %}
+                {% /nav_content %}<!-- Sanghwang Tab End -->
+            </div>
+        {% /content_row %}
+        </section>
+    {% endpartialdef %}
+{% endblock %}
+
+
+{% partialdef tag_cloud %}
+    {% for tag in tags %}
+        <span class="tag-{{ tag.weight|floatformat:0 }}">
+            <a href="">{{ tag.name }}({{ tag.num_times }})</a>
+        </span>
+    {% endfor %}
+{% endpartialdef %}
