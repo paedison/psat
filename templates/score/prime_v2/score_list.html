@@ -32,8 +32,8 @@
             </span>
             {% if user.is_staff %}
                 <a class="btn btn-sm btn-outline-primary ms-4"
-                   href="{% url 'prime_admin_v2:list' %}"
-                   hx-get="{% url 'prime_admin_v2:list' %}">
+                   href="{% url 'prime_admin:list' %}"
+                   hx-get="{% url 'prime_admin:list' %}">
                     관리자 페이지
                 </a>
             {% endif %}
@@ -85,7 +85,7 @@
 
                                     {% partialdef input_button inline=True %} {# input_button partial #}
                                         <a class="badge rounded-pill text-bg-warning"
-                                           hx-get="{% url 'prime_v2:student_connect_modal' obj.year obj.round %}" href=""
+                                           hx-get="{% url 'prime:student_connect_modal' obj.year obj.round %}" href=""
                                            hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
                                             입력
@@ -111,7 +111,7 @@
                                     </a>
                                 {% else %}
                                     <a class="badge rounded-pill text-bg-danger"
-                                       hx-get="{% url 'prime_v2:no_student_modal' %}" href=""
+                                       hx-get="{% url 'prime:no_student_modal' %}" href=""
                                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         미응시

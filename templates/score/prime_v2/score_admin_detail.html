@@ -36,15 +36,15 @@
                 </span>
                 <div class="btn-group ms-auto">
                     <a class="btn btn-sm btn-outline-secondary" title="목록"
-                       href="{% url 'prime_admin_v2:list' %}" hx-post="{% url 'prime_admin_v2:list' %}">
+                       href="{% url 'prime_admin:list' %}" hx-post="{% url 'prime_admin:list' %}">
                         목록
                     </a>
                     <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"
-                       href="{% url 'prime_admin_v2:print' year round %}" target="_blank">
+                       href="{% url 'prime_admin:print' year round %}" target="_blank">
                         인쇄하기
                     </a>
                     <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-                       href="{% url 'prime_admin_v2:export_statistics' year round %}">
+                       href="{% url 'prime_admin:export_statistics' year round %}">
                         Excel로 내보내기
                     </a>
                 </div>
@@ -139,12 +139,12 @@
                 <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
                     제{{ round }}회 | 성적 일람표
                 </span>
-                <form method="POST" action="{% url 'prime_admin_v2:export_transcript' year round %}"
+                <form method="POST" action="{% url 'prime_admin:export_transcript' year round %}"
                       class="ms-auto">
                     {% csrf_token %}
                     <div class="btn-group">
                         <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-                           href="{% url 'prime_admin_v2:export_student_score' year round %}">
+                           href="{% url 'prime_admin:export_student_score' year round %}">
                             Excel로 내보내기
                         </a>
                         <input name="student_ids" type="text" aria-label="Student IDs" hidden
@@ -164,7 +164,7 @@
                     <input id="id_student_name" type="text" name="student_name" class="form-control form-control-sm"
                            placeholder="학생 이름" title="학생 이름" aria-label="학생 이름">
                     <button type="submit" title="Search" class="btn btn-sm btn-outline-secondary"
-                            hx-post="{% url 'prime_admin_v2:catalog_year_round' year round %}">
+                            hx-post="{% url 'prime_admin:catalog_year_round' year round %}">
                         {{ icon_search|safe }}
                     </button>
                 </div>
@@ -272,7 +272,7 @@
                                 </td>
                                 <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
                                 <td class="text-nowrap p-2">
-                                    <a href="{% url 'prime_admin_v2:individual_student_print' year round obj.student.id %}"
+                                    <a href="{% url 'prime_admin:individual_student_print' year round obj.student.id %}"
                                        target="score_print">
                                         {{ obj.student.name }}
                                     </a>

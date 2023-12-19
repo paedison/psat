@@ -14,7 +14,7 @@ class ListViewMixin(
     page_obj: any
     page_range: any
 
-    def get_context_data(self) -> dict:
+    def get_context_data(self, **kwargs) -> dict:
         self.get_properties()
 
         return {
@@ -45,7 +45,7 @@ class ListViewMixin(
         for obj in page_obj:
             obj['student'] = self.get_student(obj)
             obj['student_score'] = self.get_student_score(obj)
-            obj['detail_url'] = reverse_lazy('prime_v2:detail_year_round', args=[obj['year'], obj['round']])
+            obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
     def get_student(self, obj):

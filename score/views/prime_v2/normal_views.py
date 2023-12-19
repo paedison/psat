@@ -13,7 +13,6 @@ class ListView(
     normal_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
-    """ Represent information related PrimeTemporaryAnswer and PrimeConfirmedAnswer models. """
     template_name = 'score/prime_v2/score_list.html'
     login_url = settings.LOGIN_URL
 
@@ -56,7 +55,7 @@ class NoStudentModalView(
     LoginRequiredMixin,
     vanilla.TemplateView,
 ):
-    """ Represent modal view when there is no PSAT student data. """
+    """ Represent modal view when there is no student data. """
     template_name = 'score/prime_v2/snippets/score_modal.html#no_student_modal'
     login_url = settings.LOGIN_URL
 
@@ -66,7 +65,7 @@ class StudentConnectModalView(
     normal_view_mixins.StudentConnectModalViewMixin,
     vanilla.TemplateView,
 ):
-    """ Represent modal view for creating PSAT student data. """
+    """ Represent modal view for connecting student data. """
     template_name = 'score/prime_v2/snippets/score_modal.html#student_connect'
     login_url = settings.LOGIN_URL
 
@@ -81,19 +80,19 @@ class StudentConnectView(
         return self.student_form
 
     def form_valid(self, form):
-        student_form = form.save(commit=False)
+        target_student = form.save(commit=False)
         try:
-            student_form = self.student_model.objects.get(
-                year=student_form.year,
-                round=student_form.round,
-                serial=student_form.serial,
-                name=student_form.name,
-                password=student_form.password,
+            target_student = self.student_model.objects.get(
+                year=target_student.year,
+                round=target_student.round,
+                serial=target_student.serial,
+                name=target_student.name,
+                password=target_student.password,
             )
-            student_form.user_id = self.request.user.id
-            student_form.save()
+            target_student.user_id = self.request.user.id
+            target_student.save()
             success_url = reverse_lazy(
-                'prime_v2:detail_year_round', args=[student_form.year, student_form.round]
+                'prime:detail_year_round', args=[target_student.year, target_student.round]
             )
             return HttpResponseRedirect(success_url)
         except self.student_model.DoesNotExist:

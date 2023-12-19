@@ -14,7 +14,7 @@ class NoStudentModalView(
     vanilla.TemplateView,
 ):
     """ Represent modal view when there is no PSAT student data. """
-    template_name = 'score/psat/snippets/score_modal.html#no_student_modal'
+    template_name = 'score/psat_v3/snippets/score_modal.html#no_student_modal'
     login_url = settings.LOGIN_URL
 
 
@@ -24,7 +24,7 @@ class StudentCreateModalView(
     vanilla.TemplateView,
 ):
     """ Represent modal view for creating PSAT student data. """
-    template_name = 'score/psat/snippets/score_modal.html#student_create'
+    template_name = 'score/psat_v3/snippets/score_modal.html#student_create'
     login_url = settings.LOGIN_URL
 
 
@@ -34,7 +34,7 @@ class StudentCreateDepartment(
     vanilla.TemplateView,
 ):
     """ Return department list for PSAT student create modal. """
-    template_name = 'score/psat/snippets/score_modal.html#student_create_department'
+    template_name = 'score/psat_v3/snippets/score_modal.html#student_create_department'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
@@ -70,7 +70,7 @@ class StudentUpdateModalView(
     vanilla.TemplateView,
 ):
     """ Represent modal view for updating PSAT student data. """
-    template_name = 'score/psat/snippets/score_modal.html#student_update'
+    template_name = 'score/psat_v3/snippets/score_modal.html#student_update'
     login_url = settings.LOGIN_URL
 
 
@@ -80,7 +80,7 @@ class StudentUpdateDepartment(
     vanilla.TemplateView,
 ):
     """ Return department list for PSAT student create modal. """
-    template_name = 'score/psat/snippets/score_modal.html#student_update_department'
+    template_name = 'score/psat_v3/snippets/score_modal.html#student_update_department'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):

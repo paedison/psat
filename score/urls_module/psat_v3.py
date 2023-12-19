@@ -1,6 +1,6 @@
 from django.urls import path
 
-from score.views.psat import score_views, student_views
+from score.views.psat_v3 import score_views, student_views
 
 app_name = 'score'
 

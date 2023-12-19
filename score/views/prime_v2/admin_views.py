@@ -11,7 +11,6 @@ class ListView(
     admin_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
-    """ Represent information related PrimeTemporaryAnswer and PrimeConfirmedAnswer models. """
     template_name = 'score/prime_v2/score_admin_list.html'
     login_url = settings.LOGIN_URL
 

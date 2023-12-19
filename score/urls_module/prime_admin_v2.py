@@ -2,7 +2,7 @@ from django.urls import path
 
 from score.views.prime_v2 import admin_views
 
-app_name = 'prime_admin_v2'  # score/prime/admin/
+app_name = 'prime_admin'  # score/prime/admin/
 
 urlpatterns = [
     path('', admin_views.list_view, name='list'),

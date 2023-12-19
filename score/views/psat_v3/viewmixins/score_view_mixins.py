@@ -81,7 +81,6 @@ class ListViewMixin(
             for stu in all_student:
                 if stu['year'] == obj['year'] and stu['ex'] == obj['ex']:
                     obj['student'] = stu
-        print(page_obj[0]['eoneo'])
         return page_obj, page_range
 
     def get_all_psat_info(self):

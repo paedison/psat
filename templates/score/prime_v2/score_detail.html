@@ -20,7 +20,7 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a href="{% url 'prime_v2:list' %}" hx-post="{% url 'prime_v2:list' %}">Prime</a>
+                <a href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">Prime</a>
             </li>
             <li class="breadcrumb-item active">1st</li>
         </ol>
@@ -37,11 +37,11 @@
                 </span>
                 <div class="btn-group ms-auto">
                     <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-                       href="{% url 'prime_v2:list' %}" hx-post="{% url 'prime_v2:list' %}">
+                       href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">
                         목록
                     </a>
                     <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-                       href="{% url 'prime_v2:print' year round %}" target="score_print">
+                       href="{% url 'prime:print' year round %}" target="score_print">
                         인쇄하기
                     </a>
                 </div>
@@ -49,19 +49,19 @@
         </h5>
 
         <div class="mb-4">
-            {% include 'score/prime/snippets/score_student.html' %}
+            {% include 'score/prime_v2/snippets/score_student.html' %}
         </div>
 
         <div class="mb-4">
-            {% include 'score/prime/snippets/score_sheet.html' with is_confirmed=True %}
+            {% include 'score/prime_v2/snippets/score_sheet.html' with is_confirmed=True %}
         </div>
 
         <div class="mb-4">
-            {% include 'score/prime/snippets/score_answers.html' %}
+            {% include 'score/prime_v2/snippets/score_answers.html' %}
         </div>
 
         <div>
-            {% include 'score/prime/snippets/score_chart.html' with is_confirmed=True %}
+            {% include 'score/prime_v2/snippets/score_chart.html' with is_confirmed=True %}
         </div>
     {% /content_row %}
 </section>

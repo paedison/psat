@@ -11,7 +11,7 @@ class ListView(
     vanilla.TemplateView,
 ):
     """ Represent information related PsatTemporaryAnswer and PsatConfirmedAnswer models. """
-    template_name = 'score/psat/score_list.html'
+    template_name = 'score/psat_v3/score_list.html'
     login_url = settings.LOGIN_URL
 
     def get_template_names(self):
@@ -31,7 +31,7 @@ class DetailView(
     vanilla.TemplateView,
 ):
     """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
-    template_name = 'score/psat/score_detail.html'
+    template_name = 'score/psat_v3/score_detail.html'
     login_url = settings.LOGIN_URL
 
     def get_template_names(self):
@@ -50,7 +50,7 @@ class ExamFilterView(
     base_mixins.BaseMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/psat/score_detail.html#exam_select'
+    template_name = 'score/psat_v3/score_detail.html#exam_select'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
@@ -67,7 +67,7 @@ class SubmitView(
     vanilla.TemplateView,
 ):
     menu = 'score'
-    template_name = 'score/psat/snippets/score_answers.html#scored_form'
+    template_name = 'score/psat_v3/snippets/score_answers.html#scored_form'
     login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
@@ -88,7 +88,7 @@ class ConfirmModalView(
 ):
     """ Represent modal view for confirming answers. """
     menu = 'score'
-    template_name = 'score/psat/snippets/score_modal.html#score_confirmed'
+    template_name = 'score/psat_v3/snippets/score_modal.html#score_confirmed'
     login_url = settings.LOGIN_URL
 
     def get(self, request, *args, **kwargs):

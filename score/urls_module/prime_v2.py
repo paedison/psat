@@ -1,6 +1,6 @@
 from django.urls import path
 
-from score.views.prime import normal_views
+from score.views.prime_v2 import normal_views
 
 app_name = 'prime'
 

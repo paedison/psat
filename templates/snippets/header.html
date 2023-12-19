@@ -16,7 +16,7 @@
     <div class="d-flex align-items-center justify-content-between"
          hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
         <a class="logo d-flex align-items-center" role="banner"
-           hx-post="{% url 'psat:base' %}" href="" data-target="#problemList">
+           hx-post="{% url 'psat:base' %}" href="" data-target="#psatList">
             <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
             <span class="d-none d-sm-block">Paedison</span>
         </a>
@@ -25,7 +25,6 @@
 
     <div class="search-bar">
         <form class="search-form d-flex align-items-center">
-            {% csrf_token %}
             <input id="id_data" type="text" name="data"
                    placeholder="{% trans 'Enter search keyword' %}"
                    title="{% trans 'Enter search keyword' %}">
@@ -59,45 +58,39 @@
                          alt="Profile" class="img-profile rounded-circle">
                     <span class="d-none d-md-block dropdown-toggle ps-2">{{ user.username }}</span>
                 </a><!-- Profile Image Icon End -->
-                {% partial profile %}
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                    {% if user.is_authenticated %}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center"
+                               hx-post="{% url 'dashboard:base' %}" href="{% url 'dashboard:base' %}"
+                               hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                                {{ dashboard_icon|safe }} <span>Dashboard</span>
+                            </a>
+                        </li>
+                        {{ divider }}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href=""
+                               hx-get="{% url 'account_logout_modal' %}"
+                               hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+                               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                {{ logout_icon|safe }} <span>{% trans 'Logout' %}</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'account_login' %}">
+                                {{ login_icon|safe }} <span>{% trans 'Login' %}</span>
+                            </a>
+                        </li>
+                        {{ divider }}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="{% url 'account_signup' %}">
+                                {{ signup_icon|safe }} <span>{% trans 'Signup' %}</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul><!-- Profile Dropdown Items End -->
             </li><!-- Profile Nav End -->
         </ul>
     </nav><!-- Icons Navigation End -->
 </header><!-- Main Header End -->
-
-{# Profile partial #}
-{% partialdef profile %}
-    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-        {% if user.is_authenticated %}
-            <li>
-                <a class="dropdown-item d-flex align-items-center"
-                   hx-post="{% url 'dashboard:base' %}" href="{% url 'dashboard:base' %}"
-                   hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    {{ dashboard_icon|safe }} <span>Dashboard</span>
-                </a>
-            </li>
-            {{ divider }}
-            <li>
-                <a class="dropdown-item d-flex align-items-center" href=""
-                   hx-get="{% url 'account_logout_modal' %}"
-                   hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
-                   data-bs-toggle="modal" data-bs-target="#modalContainer">
-                    {{ logout_icon|safe }} <span>{% trans 'Logout' %}</span>
-                </a>
-            </li>
-        {% else %}
-            <li>
-                <a class="dropdown-item d-flex align-items-center" href="{% url 'account_login' %}">
-                    {{ login_icon|safe }} <span>{% trans 'Login' %}</span>
-                </a>
-            </li>
-            {{ divider }}
-            <li>
-                <a class="dropdown-item d-flex align-items-center" href="{% url 'account_signup' %}">
-                    {{ signup_icon|safe }} <span>{% trans 'Signup' %}</span>
-                </a>
-            </li>
-        {% endif %}
-    </ul><!-- Profile Dropdown Items End -->
-{% endpartialdef profile %}
-
