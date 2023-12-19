@@ -1,0 +1,24 @@
+<form class="input-group mb-3">
+    {% csrf_token %}
+    <span class="input-group-text">태그</span>
+    <input id="tag" name="tag" type="text" class="form-control" placeholder="입력시 콤마(,)로 구분해주세요" aria-label="Tag" aria-describedby="tagInputBox">
+    <button id="tagSubmit" type="button" class="btn btn-outline-secondary">추가</button>
+</form>
+
+<h2>Tags</h2>
+<ul>
+    {% for hashtag in problem.hashtags.all %}
+        <li>{{ hashtag.tag }}</li>
+    {% empty %}
+        <li>No hashtags added for this problem.</li>
+    {% endfor %}
+</ul>
+
+{% if problem.tags.all %}
+    {% for tag in tw.tags.all %}
+        <a class="text-decoration-none badge rounded-pill bg-success" href="{% url 'tagged_object_list' tag.name %}">
+            {{ tag.name }}
+        </a>
+    {% endfor %}
+    <a class="text-decoration-none" href="{% url 'tag_cloud' %}">TagCloud</a>
+{% endif %}

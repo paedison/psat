@@ -2,10 +2,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from vanilla import model_views, views
 
-from common import constants
 from common.constants.icon_set import ConstantIconSet
-from ..forms import CommentForm, PostForm  # Should Change App Name
-from ..models import Comment, Post  # Should Change App Name
+from notice.forms import CommentForm, PostForm  # Should Change App Name
+from notice.models import Comment, Post  # Should Change App Name
 
 
 class CommentViewMixIn:

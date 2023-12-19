@@ -1,0 +1,202 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+
+{% block main %}
+{% partialdef list_main inline=True %} {# list_main partial #}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon|safe }} {{ info.menu|title }}
+        <span class="fs-6 text-secondary">공지사항</span>
+    </h1>
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item active">{{ info.menu|title }}</li>
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
+
+<section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <section class="htmx-fade-in htmx-fade-out">
+        {% #content_row class3='p-4' %}
+            <nav>
+                <div class="nav nav-tabs nav-tabs-bordered" id="nav-tab" role="tablist"
+                     hx-target="section .section" hx-swap="innerHTML swap:0.25s">
+                    {% #nav_tab id='0' %}전체{% /nav_tab %}
+                    {% if category_list %}
+                        {% for category in category_list %}
+                            <button id="navCategory{{ category.choice }}"
+                                    class="nav-link p-2{% if not category.choice %} active{% endif %}"
+                                    type="button" role="tab" data-bs-toggle="tab"
+                                    data-bs-target="#navContent{{ category.choice }}"
+                                    aria-controls="navContent{{ c }}"
+                                    aria-selected="{% if not category.choice %}true{% else %}false{% endif %}">
+                                <span class="fw-bold text-primary"
+                                      hx-get="{{ category.url }}" hx-swap="innerHtml"
+                                      hx-target="#navContent{{ category.choice }}"
+                                      hx-trigger="load delay:0.5*{{ category.choice }}s">
+                                    {{ category.name }}
+                                </span>
+                            </button>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </nav><!-- Navigation End -->
+            <div class="tab-content" id="nav-tabContent">
+                {% #nav_content id='0' %}
+                    {% partial list_content %}
+                {% /nav_content id='0' %}<!-- All Category End -->
+                {% if category_list %}
+                    {% for category in category_list %}
+                        <div id="navContent{{ category.choice }}"
+                             class="tab-pane fade{% if not category.choice %} show active{% endif %}"
+                             role="tabpanel" aria-labelledby="navCategory{{ category.choice }}">
+                        </div><!-- Category{{ category.choice }} End -->
+                    {% endfor %}
+                {% endif %}
+            </div><!-- Category End -->
+        {% /content_row %}
+    </section>
+</section>
+{% endpartialdef list_main %}
+{% endblock %}
+
+{% partialdef list_content %} {# list_content partial #}
+<section class="htmx-fade-in htmx-fade-out" hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    {% #responsive_table %}
+        <thead>
+            <tr>
+                <th class="text-center text-nowrap px-2">제목</th>
+                <th class="text-center text-nowrap px-0 col-1">글쓴이</th>
+                <th class="text-nowrap px-2 col-1">
+                    <div class="td-div-md" aria-label="Date">작성일</div>
+                    <div class="td-div-sm" aria-label="Hits">조회</div>
+                    <div class="td-div-sm" aria-label="Comment">댓글</div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if top_fixed %}
+                {% for post in top_fixed %}
+                    {% partialdef tbody inline=True %}
+                        <tr{% if post.top_fixed %} class="table-warning"{% endif %}>
+                            <td class="text-start text-nowrap fw-bold px-2">
+                                <span class="badge rounded-pill bg-secondary">{{ post.get_category_display }}</span>
+                                {% if post.top_fixed %}
+                                    <span class="text-danger">{{ board_icon.top_fixed|safe }}</span>
+                                {% endif %}
+                                {% if post.is_hidden %}
+                                    <span class="text-danger">{{ board_icon.is_hidden|safe }}</span>
+                                {% endif %}
+                                <a class="text-decoration-none d-md-none"
+                                   hx-get="{{ post.get_absolute_url }}" href=""
+                                   hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
+                                    {{ post.title|truncatechars:30 }}
+                                </a>
+                                <a class="text-decoration-none d-none d-md-inline d-lg-none"
+                                   hx-get="{{ post.get_absolute_url }}" href=""
+                                   hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
+                                    {{ post.title|truncatechars:40 }}
+                                </a>
+                                <a class="text-decoration-none d-none d-lg-inline"
+                                   hx-get="{{ post.get_absolute_url }}" href=""
+                                   hx-push-url="{{ post.get_absolute_url }}" title="{{ post.title }}">
+                                    {{ post.title|truncatechars:50 }}
+                                </a>
+                            </td>
+                            <td class="text-center text-nowrap px-0 col-1">{{ post.user.username }}</td>
+                            <td class="text-nowrap px-2 col-1">
+                                <div class="td-div-md" aria-label="Date">{{ post.created_at|date:'n/j' }}</div>
+                                <div class="td-div-sm" aria-label="Hit">{{ post.hit }}</div>
+                                <div class="td-div-sm" aria-label="Comment">{{ post.comment_count }}</div>
+                            </td>
+                        </tr>
+                    {% endpartialdef %}
+                {% endfor %}
+            {% endif %}
+            {% if page_obj %}
+                {% for post in page_obj %}
+                    {% if not post.top_fixed %}{% partial tbody %}{% endif %}
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td class="text-center text-nowrap px-2" colspan="5">
+                        추가된 자료가 없습니다.
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    {% /responsive_table %}
+
+    <section class="d-flex flex-wrap">
+        <div class="p-2 me-auto ms-auto">
+            {% partial pagination %}
+        </div>
+        {% if staff_menu %}
+            {% if user.is_admin %}
+                {% partialdef create_button inline=True %}
+                    <div class="p-2">
+                        <a class="btn btn-sm btn-outline-primary" hx-boost="true"
+                           hx-get="{{ post_create_url }}" href=""
+                           hx-push-url="true" title="Create">
+                            글쓰기
+                        </a>
+                    </div>
+                {% endpartialdef %}
+            {% endif %}
+        {% else %}
+            {% partial create_button %}
+        {% endif %}
+    </section>
+</section>
+{% endpartialdef list_content %}
+
+{% partialdef pagination %} {# pagination partial #}
+<div role="navigation" aria-label="pagination">
+    <ul class="pagination pagination-sm justify-content-center m-0"
+        hx-target="#navContent{{ category|default:0 }}"
+        hx-swap="innerHTML swap:0.25s">
+        {% with url=pagination_url %}
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href=""
+                   hx-get="{{ url }}?page={{ page_obj.number|add:-1 }}">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+            </li>
+        {% endif %}
+        {% for number in page_range %}
+            {% if number == page_obj.number %}
+                <li class="page-item active" aria-current="page">
+                    <a class="page-link" href=""
+                       hx-get="{{ url }}?page={{ number }}">{{ number }}</a>
+                </li>
+            {% elif number == page_obj.paginator.ELLIPSIS %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="" tabindex="-1" aria-disabled="true"
+                       hx-get="{{ url }}?page={{ number }}">{{ number }}</a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link" href=""
+                       hx-get="{{ url }}?page={{ number }}">{{ number }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href=""
+                   hx-get="{{ url }}?page={{ page_obj.number|add:1 }}">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    {% endwith %}
+    </ul>
+</div><!-- Pagination End -->
+{% endpartialdef pagination %}

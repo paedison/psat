@@ -25,7 +25,7 @@ class ListView(
 
         return {
             # base info
-            'info': self.get_info(),
+            'info': self.info,
             'title': self.title,
             'sub_title': self.sub_title,
 
@@ -104,7 +104,7 @@ class DetailView(
 
         return {
             # base info
-            'info': self.get_info(),
+            'info': self.info,
             'sub_title': self.sub_title,
             'problem': self.problem,
 

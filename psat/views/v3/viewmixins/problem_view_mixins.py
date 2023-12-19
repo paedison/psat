@@ -18,6 +18,7 @@ class BaseMixin(ConstantIconSet):
 
     user_id: int | None
     view_type: str
+    info: dict
 
     year: str
     ex: str
@@ -51,6 +52,7 @@ class BaseMixin(ConstantIconSet):
     def get_properties(self):
         self.user_id = self.request.user.id if self.request.user.is_authenticated else None
         self.view_type = self.kwargs.get('view_type', 'problem')
+        self.info = self.get_info()
 
         self.year = self.request.GET.get('year', '')
         self.ex = self.request.GET.get('ex', '')

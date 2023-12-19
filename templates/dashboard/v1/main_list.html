@@ -5,65 +5,61 @@
 {% load psat_filter %}
 
 {% block main %}
-    {% partialdef list_main inline=True %}
-        {{ info|json_script:'info' }}
-        <div class="pagetitle">
-            <h1>{{ icon|safe }} Dashboard
-                <span class="fs-6 text-secondary">대쉬보드</span>
-            </h1>
-            <nav>
-                <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
-                    </li>
-                    <li class="breadcrumb-item active">Dashboard</li>
-                </ol>
-            </nav>
-        </div><!-- Page Title End -->
+{% partialdef list_main inline=True %}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon|safe }} Dashboard
+        <span class="fs-6 text-secondary">대쉬보드</span>
+    </h1>
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
 
-        {% partial list_content %}
-    {% endpartialdef list_main %}
+<section class="section dashboard" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <div class="row">
+        <div class="col-md-6 my-2">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-0">
+                        PSAT <span>| {{ icon_menu.like|safe }} 즐겨찾기</span>
+                    </h5>
+                    <div class="htmx-fade-in htmx-fade-out" id="dashboard-like">
+                        {% include 'dashboard/v1/main_content.html' with view_type='like' page_obj=like_page_obj page_range=like_page_range pagination_url=like_pagination_url %}
+                    </div>
+                </div>
+            </div>
+        </div><!-- End Like Card -->
+        <div class="col-6 my-2">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-0">
+                        PSAT <span>| {{ icon_menu.rate|safe }} 난이도</span>
+                    </h5>
+                    <div class="htmx-fade-in htmx-fade-out" id="dashboard-rate">
+                        {% include 'dashboard/v1/main_content.html' with view_type='rate' page_obj=rate_page_obj page_range=rate_page_range pagination_url=rate_pagination_url %}
+                    </div>
+                </div>
+            </div>
+        </div><!-- End Rate Card -->
+        <div class="col-6 my-2">
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-0">
+                        PSAT <span>| {{ icon_menu.solve|safe }} 정답확인</span>
+                    </h5>
+                    <div class="htmx-fade-in htmx-fade-out" id="dashboard-solve">
+                        {% include 'dashboard/v1/main_content.html' with view_type='solve' page_obj=solve_page_obj page_range=solve_page_range pagination_url=solve_pagination_url %}
+                    </div>
+                </div>
+            </div>
+        </div><!-- End Rate Card -->
+    </div>
+</section>
+{% endpartialdef list_main %}
 {% endblock %}
-
-{% partialdef list_content %}
-    <section class="section dashboard" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-        <div class="row">
-            <div class="col-md-6 my-2">
-                <div class="card info-card">
-                    <div class="card-body">
-                        <h5 class="card-title mb-0">
-                            PSAT <span>| {{ icon_menu.like|safe }} 즐겨찾기</span>
-                        </h5>
-                        <div class="htmx-fade-in htmx-fade-out" id="dashboard-like">
-                            {% include 'dashboard/v1/main_content.html' with view_type='like' page_obj=like_page_obj page_range=like_page_range pagination_url=like_pagination_url %}
-                        </div>
-                    </div>
-                </div>
-            </div><!-- End Like Card -->
-            <div class="col-6 my-2">
-                <div class="card info-card">
-                    <div class="card-body">
-                        <h5 class="card-title mb-0">
-                            PSAT <span>| {{ icon_menu.rate|safe }} 난이도</span>
-                        </h5>
-                        <div class="htmx-fade-in htmx-fade-out" id="dashboard-rate">
-                            {% include 'dashboard/v1/main_content.html' with view_type='rate' page_obj=rate_page_obj page_range=rate_page_range pagination_url=rate_pagination_url %}
-                        </div>
-                    </div>
-                </div>
-            </div><!-- End Rate Card -->
-            <div class="col-6 my-2">
-                <div class="card info-card">
-                    <div class="card-body">
-                        <h5 class="card-title mb-0">
-                            PSAT <span>| {{ icon_menu.solve|safe }} 정답확인</span>
-                        </h5>
-                        <div class="htmx-fade-in htmx-fade-out" id="dashboard-solve">
-                            {% include 'dashboard/v1/main_content.html' with view_type='solve' page_obj=solve_page_obj page_range=solve_page_range pagination_url=solve_pagination_url %}
-                        </div>
-                    </div>
-                </div>
-            </div><!-- End Rate Card -->
-        </div>
-    </section>
-{% endpartialdef content %}

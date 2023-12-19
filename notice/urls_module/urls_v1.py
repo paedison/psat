@@ -1,6 +1,6 @@
 from django.urls import path
 
-from notice.views import post_views, comment_views
+from notice.views.v1 import comment_views, post_views
 
 app_name = 'notice'
 

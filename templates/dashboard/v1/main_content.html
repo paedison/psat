@@ -3,8 +3,7 @@
 {% load partials %}
 {% load psat_filter %}
 
-<div class="htmx-fade-in htmx-fade-out"
-     hx-swap="innerHTML swap:0.25s">
+<div class="htmx-fade-in htmx-fade-out" hx-swap="innerHTML swap:0.25s">
     {% #responsive_table %}
         <tbody>
             {% if page_obj %}
@@ -21,9 +20,48 @@
                                     {% endwith %}
                                 </a>
                             </div>
-                            {% if view_type == 'like' %}{% partial like %}{% endif %}
-                            {% if view_type == 'rate' %}{% partial rate %}{% endif %}
-                            {% if view_type == 'solve' %}{% partial solve %}{% endif %}
+                            {% if view_type == 'like' %}
+                                {% partialdef like inline=True %} {# like partial #}
+                                    <div class="td-div-xs" aria-label="Like">
+                                        {% if log.is_liked %}
+                                            {{ icon_like.true|safe }}
+                                        {% else %}
+                                            {{ icon_like.false|safe }}
+                                        {% endif %}
+                                    </div>
+                                {% endpartialdef %}
+                            {% endif %}
+                            {% if view_type == 'rate' %}
+                                {% partialdef rate inline=True %} {# rate partial #}
+                                    <div class="td-div-lg" aria-label="Rate">
+                                        {% if log.rating == 1 %}
+                                            {{ icon_rate.star1|safe }}
+                                        {% elif log.rating == 2 %}
+                                            {{ icon_rate.star2|safe }}
+                                        {% elif log.rating == 3 %}
+                                            {{ icon_rate.star3|safe }}
+                                        {% elif log.rating == 4 %}
+                                            {{ icon_rate.star4|safe }}
+                                        {% elif log.rating == 5 %}
+                                            {{ icon_rate.star5|safe }}
+                                        {% else %}
+                                            {{ icon_rate.star0|safe }}
+                                        {% endif %}
+                                    </div>
+                                {% endpartialdef %}
+                            {% endif %}
+                            {% if view_type == 'solve' %}
+                                {% partialdef solve inline=True %} {# solve partial #}
+                                    <div class="td-div-xs" aria-label="Solve">
+                                        {% if log.is_correct is True %}
+                                            {{ icon_solve.true|safe }}
+                                        {% elif log.is_correct is False %}
+                                            {{ icon_solve.false|safe }}
+                                        {% else %}
+                                        {% endif %}
+                                    </div>
+                                {% endpartialdef %}
+                            {% endif %}
                             <div class="ms-5 d-inline-block text-secondary small">
                                 {{ log.timestamp|date:'y/m/d' }}({{ log.timestamp|date:'w'|int2kor }})
                             </div>
@@ -50,7 +88,24 @@
     {% #pagination_nav %}
         {% if page_obj.has_previous %}
             {% with page_num=page_obj.number|add:-1 chevron='left' %}
-                {% partial pagination_link %}
+                {% partialdef pagination_link inline=True %}
+                    <li class="page-item {{ status }}"
+                        {% if status == 'active' %}aria-current="page"{% endif %}>
+                        <a class="page-link" href="" hx-target="#dashboard-{{ view_type }}"
+                            hx-swap="innerHTML swap:0.25s"
+                            {% if status == 'disabled' %}
+                                tabindex="-1" aria-disabled="true"
+                            {% else %}
+                                hx-get="{{ pagination_url }}?page={{ page_num }}"
+                            {% endif %}>
+                            {% if chevron %}
+                                <i class="fa-solid fa-chevron-{{ chevron }}"></i>
+                            {% else %}
+                                {{ anchor_text }}
+                            {% endif %}
+                        </a>
+                    </li>
+                {% endpartialdef pagination_link %}
             {% endwith %}
         {% endif %}
         {% for number in page_range %}
@@ -71,73 +126,3 @@
         {% endif %}
     {% /pagination_nav %}
 </div>
-
-{# ########## #}
-{# Icon start #}
-{# ########## #}
-
-{% partialdef like %}
-    <div class="td-div-xs" aria-label="Like">
-        {% if log.is_liked %}
-            {{ icon_like.true|safe }}
-        {% else %}
-            {{ icon_like.false|safe }}
-        {% endif %}
-    </div>
-{% endpartialdef %}
-
-
-{% partialdef rate %}
-    <div class="td-div-lg" aria-label="Rate">
-        {% if log.rating == 1 %}
-            {{ icon_rate.star1|safe }}
-        {% elif log.rating == 2 %}
-            {{ icon_rate.star2|safe }}
-        {% elif log.rating == 3 %}
-            {{ icon_rate.star3|safe }}
-        {% elif log.rating == 4 %}
-            {{ icon_rate.star4|safe }}
-        {% elif log.rating == 5 %}
-            {{ icon_rate.star5|safe }}
-        {% else %}
-            {{ icon_rate.star0|safe }}
-        {% endif %}
-    </div>
-{% endpartialdef %}
-
-
-{% partialdef solve %}
-    <div class="td-div-xs" aria-label="Solve">
-        {% if log.is_correct is True %}
-            {{ icon_solve.correct|safe }}
-        {% elif log.is_correct is False %}
-            {{ icon_solve.wrong|safe }}
-        {% else %}
-        {% endif %}
-    </div>
-{% endpartialdef %}
-
-
-{# ################ #}
-{# Pagination start #}
-{# ################ #}
-
-{# Pagination link partial #}
-{% partialdef pagination_link %}
-    <li class="page-item {{ status }}"
-        {% if status == 'active' %}aria-current="page"{% endif %}>
-        <a class="page-link" href="" hx-target="#dashboard-{{ view_type }}"
-            hx-swap="innerHTML swap:0.25s"
-            {% if status == 'disabled' %}
-                tabindex="-1" aria-disabled="true"
-            {% else %}
-                hx-get="{{ pagination_url }}?page={{ page_num }}"
-            {% endif %}>
-            {% if chevron %}
-                <i class="fa-solid fa-chevron-{{ chevron }}"></i>
-            {% else %}
-                {{ anchor_text }}
-            {% endif %}
-        </a>
-    </li>
-{% endpartialdef pagination_link %}
