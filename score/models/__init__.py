@@ -10,5 +10,8 @@ from .psat_score_models import (
     PsatConfirmedAnswer, PsatAnswerCount,
 )
 from .prime_score_models import (
-    PrimeDepartment, PrimeStudent, PrimeAnswer, PrimeAnswerCount, PrimeStatistics,
+    PrimeDepartment,
+    PrimeStudent, PrimeVerifiedUser,
+    PrimeAnswer, PrimeAnswerCount,
+    PrimeStatistics,
 )

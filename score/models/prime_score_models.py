@@ -1,5 +1,6 @@
 from django.db import models
 
+from common.models import User
 from reference.models.base_models import Exam
 from reference.models.prime_models import PrimeProblem, Prime
 from score.models.base_models import UnitBase, StudentBase, AnswerBase
@@ -20,13 +21,14 @@ class PrimeDepartment(UnitBase):
 class PrimeStudent(StudentBase):
     # Parent-Parent[InfoBase] fields: timestamp, updated_at, user_id
     # Parent[StudentBase] fields: year, serial
+    user_id = None
     updated_at = None
     round = models.IntegerField()
+    serial = models.CharField(max_length=20)
     name = models.CharField(max_length=10)
     password = models.IntegerField()
     department = models.ForeignKey(PrimeDepartment, on_delete=models.CASCADE, related_name='students')
 
-    user_id = models.IntegerField(default=0)
     category = models.CharField(max_length=20, null=True, blank=True)
 
     class Meta:
@@ -35,6 +37,11 @@ class PrimeStudent(StudentBase):
 
     def __str__(self):
         return f'{self.year}{self.department.exam.abbr}-{self.department}-{self.user_id}'
+
+
+class PrimeVerifiedUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prime_verified_users')
+    student = models.ForeignKey(PrimeStudent, on_delete=models.CASCADE, related_name='prime_verified_users')
 
 
 class PrimeAnswer(AnswerBase):
