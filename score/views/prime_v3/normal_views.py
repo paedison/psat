@@ -171,9 +171,6 @@ class StudentConnectView(
             verified_user, _ = self.verified_user_model.objects.get_or_create(
                 user=self.request.user, student=target_student
             )
-            success_url = reverse_lazy(
-                'prime:detail_year_round', args=[verified_user.student.year, verified_user.student.round]
-            )
             context = self.get_context_data(
                 form=form, year=self.year, round=self.round, user_verified=True)
             return self.render_to_response(context)
@@ -190,6 +187,24 @@ class StudentConnectView(
         return self.render_to_response(context)
 
 
+class StudentResetView(
+    LoginRequiredMixin,
+    base_mixins.BaseMixin,
+    vanilla.FormView,
+):
+    def post(self, request, *args, **kwargs):
+        self.get_properties()
+
+        try:
+            verified_user = self.verified_user_model.objects.get(
+                student__year=self.year, student__round=self.round, user_id=self.user_id)
+            verified_user.delete()
+        except self.verified_user_model.DoesNotExist:
+            pass
+        list_url = reverse_lazy('prime:list')
+        return HttpResponseRedirect(list_url)
+
+
 list_view = ListView.as_view()
 
 detail_view = DetailView.as_view()
@@ -199,3 +214,4 @@ no_student_modal_view = NoStudentModalView.as_view()
 student_modal_view = StudentModalView.as_view()
 
 student_connect_view = StudentConnectView.as_view()
+student_reset_view = StudentResetView.as_view()

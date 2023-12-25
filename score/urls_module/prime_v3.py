@@ -17,4 +17,6 @@ urlpatterns = [
          normal_views.student_modal_view, name='student_modal'),
     path('student/connect/<int:year>/<int:round>/',
          normal_views.student_connect_view, name='student_connect'),
+    path('student/reset/<int:year>/<int:round>/',
+         normal_views.student_reset_view, name='student_reset'),
 ]

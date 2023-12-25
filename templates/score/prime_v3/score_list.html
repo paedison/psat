@@ -81,6 +81,16 @@
                                     <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
                                         {{ obj.student.serial }}
                                     </a>
+                                    {% partialdef delete_student inline=True %}
+                                        {% if user.is_staff %}
+                                            <a class="badge rounded-pill text-bg-danger"
+                                               hx-confirm="수험 정보를 삭제하시겠습니까?"
+                                               href="{% url 'prime:student_reset' obj.year obj.round %}"
+                                               hx-post="{% url 'prime:student_reset' obj.year obj.round %}">
+                                                삭제
+                                            </a>
+                                        {% endif %}
+                                    {% endpartialdef %}
                                 {% else %}
 
                                     {% partialdef input_button inline=True %} {# input_button partial #}
@@ -99,6 +109,7 @@
                                     <a href="{{ obj.detail_url }}" hx-get="{{ obj.detail_url }}">
                                         {{ obj.student.department.name }}
                                     </a>
+                                    {% partial delete_student %}
                                 {% else %}
                                     {% partial input_button %}
                                 {% endif %}

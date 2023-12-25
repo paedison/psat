@@ -15,11 +15,21 @@
             {% if user_verified %}
                 <div class="py-4">
                     <h5 class="modal-title mx-auto fw-bold" hx-trigger="load delay:0.5s"
-                        hx-swap="innerHTML swap:0.25s" hx-target="#main"
+                        hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true"
                         hx-get="{% url 'prime:detail_year_round' year round %}">
                         <span class="text-success">수험 정보가 입력되었습니다.</span>
                     </h5>
                 </div>
+                <script>
+                    let button = document.querySelector('.btn-close');
+                    if (button) {
+                        setTimeout(function () {
+                                button.click();
+                            }, 1000);
+                    } else {
+                        console.log('button not found');
+                    }
+                </script>
             {% else %}
                 <form id="student_info">
                     {% if no_student %}
