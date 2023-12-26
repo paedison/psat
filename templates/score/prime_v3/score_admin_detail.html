@@ -144,7 +144,7 @@
                     {% csrf_token %}
                     <div class="btn-group">
                         <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-                           href="{% url 'prime_admin:export_student_score' year round %}">
+                           href="{% url 'prime_admin:export_scores' year round %}">
                             Excel로 내보내기
                         </a>
                         <input name="student_ids" type="text" aria-label="Student IDs" hidden

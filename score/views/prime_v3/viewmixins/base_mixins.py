@@ -20,13 +20,13 @@ class BaseMixin:
     student_form = forms.PrimeStudentForm
 
     exam_list = [
-        {'year': 2023, 'round': 1, 'date': '1/7'},
-        {'year': 2024, 'round': 1, 'date': '12/30'},
-        {'year': 2024, 'round': 2, 'date': '1/13'},
-        {'year': 2024, 'round': 3, 'date': '1/27'},
-        {'year': 2024, 'round': 4, 'date': '2/3'},
-        {'year': 2024, 'round': 5, 'date': '2/17'},
-        {'year': 2024, 'round': 6, 'date': '2/25'},
+        {'year': 2023, 'round': 1, 'date': '1/7', 'staff': True},
+        {'year': 2024, 'round': 1, 'date': '12/30', 'staff': False},
+        {'year': 2024, 'round': 2, 'date': '1/13', 'staff': False},
+        {'year': 2024, 'round': 3, 'date': '1/27', 'staff': False},
+        {'year': 2024, 'round': 4, 'date': '2/3', 'staff': False},
+        {'year': 2024, 'round': 5, 'date': '2/17', 'staff': False},
+        {'year': 2024, 'round': 6, 'date': '2/25', 'staff': False},
     ]
 
     request: any

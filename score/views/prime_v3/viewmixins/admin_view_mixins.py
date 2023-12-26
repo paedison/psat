@@ -4,14 +4,28 @@ from urllib.parse import quote
 
 import pandas as pd
 import pdfkit
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.db.models import F
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
 from score.utils import get_score_stat
 from . import base_mixins
+
+
+class OnlyStaffAllowedMixin(
+    LoginRequiredMixin,
+    UserPassesTestMixin,
+):
+    request: any
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(reverse_lazy('prime:list'))
 
 
 class BaseViewMixin(ConstantIconSet, base_mixins.BaseMixin):
@@ -226,7 +240,7 @@ class PrintViewMixin(DetailViewMixin):
         return context
 
 
-class ExportStatisticsToExcelViewMixin(DetailViewMixin):
+class ExportStatisticsToExcelMixin(DetailViewMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
         statistics = self.get_statistics(self.year, self.round)
@@ -247,7 +261,7 @@ class ExportStatisticsToExcelViewMixin(DetailViewMixin):
         return response
 
 
-class ExportStudentScoreToExcelViewMixin(DetailViewMixin):
+class ExportScoresToExcelMixin(DetailViewMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
 

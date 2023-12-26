@@ -1,5 +1,4 @@
 import vanilla
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -14,7 +13,6 @@ class ListView(
     vanilla.TemplateView,
 ):
     template_name = 'score/prime_v3/score_list.html'
-    login_url = settings.LOGIN_URL
 
     def get_template_names(self):
         htmx_template = {
@@ -50,7 +48,6 @@ class DetailView(
     vanilla.TemplateView,
 ):
     template_name = 'score/prime_v3/score_detail.html'
-    login_url = settings.LOGIN_URL
 
     def get_template_names(self):
         htmx_template = {
@@ -110,7 +107,6 @@ class NoStudentModalView(
 ):
     """ Represent modal view when there is no student data. """
     template_name = 'score/prime_v3/snippets/score_modal.html#no_student_modal'
-    login_url = settings.LOGIN_URL
 
 
 class StudentModalView(
@@ -120,7 +116,6 @@ class StudentModalView(
 ):
     """ Represent modal view for connecting student data. """
     template_name = 'score/prime_v3/snippets/score_modal.html#student_connect'
-    login_url = settings.LOGIN_URL
 
     def get_context_data(self, **kwargs) -> dict:
         self.get_properties()

@@ -46,29 +46,27 @@
 {#                </a>#}
 {#            </li><!-- Community Nav End -->#}
 
-            {% if user.is_admin or user.is_staff %}
-                <li class="nav-item" role="menuitem" aria-label="Score Menu">
-                    <a class="nav-link collapsed" href="" aria-expanded="false"
-                       data-bs-target="#score-nav" data-bs-toggle="collapse">
-                        {{ score_icon|safe }}<span>Score</span>
-                        <i class="fa-solid fa-chevron-down ms-auto"></i>
+        <li class="nav-item" role="menuitem" aria-label="Score Menu">
+            <a class="nav-link collapsed" href="" aria-expanded="false"
+               data-bs-target="#score-nav" data-bs-toggle="collapse">
+                {{ score_icon|safe }}<span>Score</span>
+                <i class="fa-solid fa-chevron-down ms-auto"></i>
+            </a>
+            <ul id="score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                <li>
+                    <a id="psatScoreList" class="aside-nav-icon"
+                       href="{% url 'score:list' %}"
+                       hx-post="{% url 'score:list' %}">
+                        {{ problem_icon|safe }}<span>기출문제 성적표</span>
                     </a>
-                    <ul id="score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-                        <li>
-                            <a id="psatScoreList" class="aside-nav-icon"
-                               href="{% url 'score:list' %}"
-                               hx-post="{% url 'score:list' %}">
-                                {{ problem_icon|safe }}<span>PSAT 기출문제</span>
-                            </a>
-                            <a id="primeScoreList" class="aside-nav-icon"
-                               href="{% url 'prime:list' %}"
-                               hx-post="{% url 'prime:list' %}">
-                                {{ prime_icon|safe }}<span>프라임 모의고사</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li><!-- Score Nav End -->
-            {% endif %}
+                    <a id="primeScoreList" class="aside-nav-icon"
+                       href="{% url 'prime:list' %}"
+                       hx-post="{% url 'prime:list' %}">
+                        {{ prime_icon|safe }}<span>모의고사 성적표</span>
+                    </a>
+                </li>
+            </ul>
+        </li><!-- Score Nav End -->
 
         <li class="nav-item">
             <a id="scheduleList" class="nav-link collapsed"

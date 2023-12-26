@@ -104,6 +104,12 @@
                                        href="{% url 'score:detail_year_ex' obj.year obj.ex %}">
                                         확인
                                     </a>
+                                {% else %}
+                                    <a class="badge rounded-pill text-bg-danger" href="" hx-push-url="false"
+                                       hx-get="{% url 'score:no_student_modal' %}" hx-target="#modalContainer"
+                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        미응시
+                                    </a>
                                 {% endif %}
                             </td>
                             <td class="text-nowrap p-2">
@@ -119,18 +125,6 @@
                                             {% elif target.confirmed %}
                                                 {{ score }}
                                             {% else %}
-                                                {% if obj.student %}
-                                                    <a class="badge rounded-pill text-bg-primary" hx-boost="true"
-                                                       href="{% url 'score:detail_year_ex' obj.year obj.ex %}">
-                                                        작성 전
-                                                    </a>
-                                                {% else %}
-                                                    <a class="badge rounded-pill text-bg-primary" href="" hx-push-url="false"
-                                                       hx-get="{% url 'score:no_student_modal' %}" hx-target="#modalContainer"
-                                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                        작성 전
-                                                    </a>
-                                                {% endif %}
                                             {% endif %}
                                         {% endif %}
                                     {% endpartialdef process_badge %}

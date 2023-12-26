@@ -20,5 +20,5 @@ urlpatterns = [
     path('export/statistics/<int:year>/<int:round>/',
          admin_views.export_statistics_to_excel_view, name='export_statistics'),
     path('export/students_score/<int:year>/<int:round>/',
-         admin_views.export_student_score_to_excel_view, name='export_student_score'),
+         admin_views.export_scores_to_excel_view, name='export_scores'),
 ]
