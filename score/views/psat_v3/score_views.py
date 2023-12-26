@@ -6,7 +6,6 @@ from .viewmixins import base_mixins, score_view_mixins
 
 
 class ListView(
-    LoginRequiredMixin,
     score_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):

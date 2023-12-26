@@ -8,7 +8,7 @@ from .viewmixins import normal_view_mixins
 
 
 class ListView(
-    LoginRequiredMixin,
+    # LoginRequiredMixin,
     normal_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):

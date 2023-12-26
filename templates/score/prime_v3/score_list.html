@@ -68,67 +68,96 @@
                             {% partialdef exam_list inline=True %}
                                 <tr class="text-center">
                                     <td class="text-nowrap p-2">
-                                        {% if obj.student %}
-                                            <a href="{{ obj.detail_url }}" hx-boost="true">
+                                        {% if user.is_authenticated %}
+                                            {% if obj.student %}
+                                                <a href="{{ obj.detail_url }}" hx-boost="true">
+                                                    제{{ obj.round }}회
+                                                </a>
+                                            {% else %}
                                                 제{{ obj.round }}회
-                                            </a>
+                                            {% endif %}
                                         {% else %}
                                             제{{ obj.round }}회
                                         {% endif %}
                                     </td>
                                     <td class="text-nowrap p-2">
-                                        {% if obj.student %}
-                                            <a href="{{ obj.detail_url }}" hx-boost="true">
-                                                {{ obj.student.serial }}
-                                            </a>
+                                        {% if user.is_authenticated %}
+                                            {% if obj.student %}
+                                                <a href="{{ obj.detail_url }}" hx-boost="true">
+                                                    {{ obj.student.serial }}
+                                                </a>
 
-                                            {% partialdef delete_student inline=True %} {# delete_student partial #}
-                                                {% if user.is_staff %}
-                                                    <a class="badge rounded-pill text-bg-danger"
-                                                       hx-confirm="수험 정보를 삭제하시겠습니까?"
-                                                       href="{% url 'prime:student_reset' obj.year obj.round %}"
-                                                       hx-post="{% url 'prime:student_reset' obj.year obj.round %}">
-                                                        삭제
+                                                {% partialdef delete_student inline=True %} {# delete_student partial #}
+                                                    {% if user.is_staff %}
+                                                        <a class="badge rounded-pill text-bg-danger"
+                                                           hx-confirm="수험 정보를 삭제하시겠습니까?"
+                                                           href="{% url 'prime:student_reset' obj.year obj.round %}"
+                                                           hx-post="{% url 'prime:student_reset' obj.year obj.round %}">
+                                                            삭제
+                                                        </a>
+                                                    {% endif %}
+                                                {% endpartialdef delete_student %}
+
+                                            {% else %}
+
+                                                {% partialdef input_button inline=True %} {# input_button partial #}
+                                                    <a class="badge rounded-pill text-bg-warning"
+                                                       hx-get="{% url 'prime:student_modal' obj.year obj.round %}" href=""
+                                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                        입력
                                                     </a>
-                                                {% endif %}
-                                            {% endpartialdef delete_student %}
+                                                {% endpartialdef input_button %}
 
+                                            {% endif %}
                                         {% else %}
-
-                                            {% partialdef input_button inline=True %} {# input_button partial #}
-                                                <a class="badge rounded-pill text-bg-warning"
-                                                   hx-get="{% url 'prime:student_modal' obj.year obj.round %}" href=""
+                                            {% with class='warning' text='입력' %}
+                                                {% partialdef login_modal inline=True %}
+                                                    <a class="badge rounded-pill text-bg-{{ class }}"
+                                                       hx-get="{% url 'account_login_modal' %}" href=""
+                                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                        {{ text }}
+                                                    </a>
+                                                {% endpartialdef %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-nowrap p-2">
+                                        {% if user.is_authenticated %}
+                                            {% if obj.student %}
+                                                <a href="{{ obj.detail_url }}" hx-boost="true">
+                                                    {{ obj.student.department.name }}
+                                                </a>
+                                                {% partial delete_student %}
+                                            {% else %}
+                                                {% partial input_button %}
+                                            {% endif %}
+                                        {% else %}
+                                            {% with class='warning' text='입력' %}
+                                                {% partial login_modal %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-nowrap p-2">
+                                        {% if user.is_authenticated %}
+                                            {% if obj.student %}
+                                                <a class="badge rounded-pill text-bg-success" hx-boost="true"
+                                                   href="{{ obj.detail_url }}">
+                                                    확인
+                                                </a>
+                                            {% else %}
+                                                <a class="badge rounded-pill text-bg-danger"
+                                                   hx-get="{% url 'prime:no_student_modal' %}" href=""
                                                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                    입력
+                                                    미응시
                                                 </a>
-                                            {% endpartialdef input_button %}
-
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-nowrap p-2">
-                                        {% if obj.student %}
-                                            <a href="{{ obj.detail_url }}" hx-boost="true">
-                                                {{ obj.student.department.name }}
-                                            </a>
-                                            {% partial delete_student %}
+                                            {% endif %}
                                         {% else %}
-                                            {% partial input_button %}
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-nowrap p-2">
-                                        {% if obj.student %}
-                                            <a class="badge rounded-pill text-bg-success" hx-boost="true"
-                                               href="{{ obj.detail_url }}">
-                                                확인
-                                            </a>
-                                        {% else %}
-                                            <a class="badge rounded-pill text-bg-danger"
-                                               hx-get="{% url 'prime:no_student_modal' %}" href=""
-                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                               data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                미응시
-                                            </a>
+                                            {% with class='danger' text='미응시' %}
+                                                {% partial login_modal %}
+                                            {% endwith %}
                                         {% endif %}
                                     </td>
                                     <td class="d-none d-md-table-cell">

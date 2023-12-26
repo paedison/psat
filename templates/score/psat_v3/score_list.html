@@ -65,51 +65,77 @@
                                     {{ obj.exam }}
                                 </a>
                             </td>
-                            {% if obj.student %}
-                                <td class="text-nowrap p-2">
-                                    {% if obj.student.serial %}{{ obj.student.serial }}{% endif %}
+                            {% if user.is_authenticated %}
+                                {% if obj.student %}
+                                    <td class="text-nowrap p-2">
+                                        {% if obj.student.serial %}{{ obj.student.serial }}{% endif %}
 
-                                    {% partialdef update_student inline=True %} {# update_student partial #}
-                                        <a class="badge rounded-pill text-bg-warning"
-                                           hx-get="{% url 'score:student_update_modal' obj.student.id %}" href=""
-                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                            수정
-                                        </a>
-                                    {% endpartialdef update_student %}
+                                        {% partialdef update_student inline=True %} {# update_student partial #}
+                                            <a class="badge rounded-pill text-bg-warning"
+                                               hx-get="{% url 'score:student_update_modal' obj.student.id %}" href=""
+                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                수정
+                                            </a>
+                                        {% endpartialdef update_student %}
 
-                                </td>
-                                <td class="text-nowrap p-2">
-                                    {{ obj.student.department_name }}
-                                    {% partial update_student %}
-                                </td>
+                                    </td>
+                                    <td class="text-nowrap p-2">
+                                        {{ obj.student.department_name }}
+                                        {% partial update_student %}
+                                    </td>
+                                {% else %}
+                                    <td class="text-nowrap p-2">
+                                        {% partialdef create_student inline=True %} {# create_student partial #}
+                                            <a class="badge rounded-pill text-bg-warning mx-2"
+                                               hx-get="{% url 'score:student_create_modal' obj.year obj.ex %}" href=""
+                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                입력
+                                            </a>
+                                        {% endpartialdef create_student %}
+                                    </td>
+                                    <td class="text-nowrap p-2">
+                                        {% partial create_student %}
+                                    </td>
+                                {% endif %}
                             {% else %}
                                 <td class="text-nowrap p-2">
-                                    {% partialdef create_student inline=True %} {# create_student partial #}
-                                        <a class="badge rounded-pill text-bg-warning mx-2"
-                                           hx-get="{% url 'score:student_create_modal' obj.year obj.ex %}" href=""
-                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                            입력
-                                        </a>
-                                    {% endpartialdef create_student %}
+                                    {% with class='warning' text='입력' %}
+                                        {% partialdef login_modal inline=True %}
+                                            <a class="badge rounded-pill text-bg-{{ class }}"
+                                               hx-get="{% url 'account_login_modal' %}" href=""
+                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                {{ text }}
+                                            </a>
+                                        {% endpartialdef %}
+                                    {% endwith %}
                                 </td>
                                 <td class="text-nowrap p-2">
-                                    {% partial create_student %}
+                                    {% with class='warning' text='입력' %}
+                                        {% partial login_modal %}
+                                    {% endwith %}
                                 </td>
                             {% endif %}
                             <td class="text-nowrap p-2">
-                                {% if obj.student %}
-                                    <a class="badge rounded-pill text-bg-success" hx-boost="true"
-                                       href="{% url 'score:detail_year_ex' obj.year obj.ex %}">
-                                        확인
-                                    </a>
+                                {% if user.is_authenticated %}
+                                    {% if obj.student %}
+                                        <a class="badge rounded-pill text-bg-success" hx-boost="true"
+                                           href="{% url 'score:detail_year_ex' obj.year obj.ex %}">
+                                            확인
+                                        </a>
+                                    {% else %}
+                                        <a class="badge rounded-pill text-bg-danger" href="" hx-push-url="false"
+                                           hx-get="{% url 'score:no_student_modal' %}" hx-target="#modalContainer"
+                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            미응시
+                                        </a>
+                                    {% endif %}
                                 {% else %}
-                                    <a class="badge rounded-pill text-bg-danger" href="" hx-push-url="false"
-                                       hx-get="{% url 'score:no_student_modal' %}" hx-target="#modalContainer"
-                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        미응시
-                                    </a>
+                                    {% with class='danger' text='미응시' %}
+                                        {% partial login_modal %}
+                                    {% endwith %}
                                 {% endif %}
                             </td>
                             <td class="text-nowrap p-2">

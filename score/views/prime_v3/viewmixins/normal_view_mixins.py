@@ -26,8 +26,8 @@ class ListViewMixin(
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
 
         for obj in page_obj:
-            obj['student'] = self.get_student(obj)
-            obj['student_score'] = self.get_student_score(obj)
+            obj['student'] = self.get_student(obj) if self.request.user.is_authenticated else None
+            obj['student_score'] = self.get_student_score(obj) if self.request.user.is_authenticated else None
             obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
