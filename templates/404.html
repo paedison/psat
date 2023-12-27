@@ -1,21 +1,16 @@
-{% extends 'base.html' %}
+{% extends 'list.html' %}
 {% load static %}
 {% load psat_filter %}
 
 {% block head_title %}페이지를 찾을 수 없습니다.{% endblock head_title %}
-{% block header %}{% include 'psat/v1/snippets/header.html' %}{% endblock %}
-{% block aside %}{% include 'psat/v1/snippets/aside.html' %}{% endblock %}
 
-{% block section_detail %}
-<div class="container-fluid">
-    <div class="text-center">
-        <div class="error mx-auto" data-text="404">404</div>
-        <p class="lead text-gray-800 mb-5">페이지를 찾을 수 없습니다</p>
-        <p class="text-gray-500 mb-0">It looks like you found a glitch in the matrix...</p>
-        <a href="javascript:history.back()">&larr; 뒤로 가기</a>
-    </div>
+{% block main %}
+<div class="container">
+    <section class="section error-404 min-vh-100 d-flex flex-column align-items-center justify-content-center">
+        <h1>404</h1>
+        <h2>페이지를 찾을 수 없습니다.</h2>
+        <a class="btn" href="/">홈으로 가기</a>
+{#        <img src="assets/img/not-found.svg" class="img-fluid py-5" alt="Page Not Found">#}
+    </section>
 </div>
 {% endblock %}
-
-{% block footer %}{% include "psat/v1/snippets/footer.html" %}{% endblock %}
-{% block page_script %}{% endblock %}

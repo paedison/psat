@@ -1,9 +1,5 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.utils.datetime_safe import datetime
-from django.utils.timezone import make_aware
-
-now = make_aware(datetime.now())
 
 
 def index(request):
@@ -23,7 +19,8 @@ def page_404(request):
 
 
 def ads(request):
-    return HttpResponse("google.com, pub-3543306443016219, DIRECT, f08c47fec0942fa0")
+    if request:
+        return HttpResponse("google.com, pub-3543306443016219, DIRECT, f08c47fec0942fa0")
 
 
 def privacy(request):

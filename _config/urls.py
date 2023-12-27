@@ -1,28 +1,19 @@
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
-from common.views import base_views
+from django.contrib import admin
+from django.urls import path, include
 
 urlpatterns = [
-    path('', base_views.index, name='index'),
-    path('ads.txt', base_views.ads),
-    path('privacy/', base_views.privacy, name='privacy_policy'),  # Privacy Policy
-
-    path('ckeditor/', include('ckeditor_uploader.urls')),  # CKEditor URLs
-
     path('admin/', admin.site.urls, name='admin'),  # Admin
-    path('notice/', include('notice.urls')),  # Notice
-    path('common/', include('common.urls.base')),  # Common
-
-    path('dashboard/', include('dashboard.urls')),  # Dashboard
-    # path('dashboard/', include('common.urls.dashboard')),  # Dashboard
-
-    path('account/', include('common.urls.account')),  # Login, Logout
     path('account/', include('allauth.urls')),  # Django All-auth
+    path('ckeditor/', include('ckeditor_uploader.urls')),  # CKEditor URLs
+    path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
+
+    path('', include('common.urls')),  # Common [index, base, account, ads, privacy_policy]
+    path('notice/', include('notice.urls')),  # Notice
+    path('dashboard/', include('dashboard.urls')),  # Dashboard
     path('psat/', include('psat.urls')),  # PSAT
-    path('community/', include('community.urls')),  # PSAT
+    path('community/', include('community.urls')),  # Community
     path('score/', include('score.urls')),  # Score
     path('schedule/', include('schedule.urls')),  # Schedule
 
@@ -30,8 +21,6 @@ urlpatterns = [
     path('log/', include('log.urls')),  # Log
     path('analysis/', include('analysis.urls')),  # Analysis
     path('study/', include('study.urls')),  # Study
-
-    path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
 ]
 
 if settings.DEBUG:
