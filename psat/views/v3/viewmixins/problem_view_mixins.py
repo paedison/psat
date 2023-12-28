@@ -248,6 +248,7 @@ class BaseMixin(ConstantIconSet):
             'solve': solve_data,
             'memo': memo_data,
             'tag': tag_data,
+            'search': problem_data,
         }
 
     def get_list_queryset(self, view_type) -> reference_models.PsatProblem.objects:
