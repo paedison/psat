@@ -54,6 +54,13 @@
             </a>
             <ul id="score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
                 <li>
+{#                    {% if user.is_staff %}#}
+{#                        <a id="psatScoreList" class="aside-nav-icon"#}
+{#                           href="{% url 'score:predict' 2023 '행시' %}"#}
+{#                           hx-post="{% url 'score:predict' 2023 '행시' %}">#}
+{#                            {{ problem_icon|safe }}<span>2023 합격 예측</span>#}
+{#                        </a>#}
+{#                    {% endif %}#}
                     <a id="psatScoreList" class="aside-nav-icon"
                        href="{% url 'score:list' %}"
                        hx-post="{% url 'score:list' %}">

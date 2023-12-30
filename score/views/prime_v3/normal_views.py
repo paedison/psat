@@ -3,12 +3,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from .viewmixins import base_mixins
-from .viewmixins import normal_view_mixins
+from .viewmixins import base_mixins, normal_view_mixins
 
 
 class ListView(
-    # LoginRequiredMixin,
     normal_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
@@ -31,6 +29,7 @@ class ListView(
             # base info
             'info': self.info,
             'title': 'Score',
+            'current_time': self.current_time,
 
             # icons
             'icon_menu': self.ICON_MENU['score'],
@@ -101,6 +100,24 @@ class PrintView(DetailView):
     view_type = 'print'
 
 
+class NoOpenModalView(
+    LoginRequiredMixin,
+    base_mixins.BaseMixin,
+    vanilla.TemplateView,
+):
+    """ Represent modal view when there is no student data. """
+    template_name = 'score/prime_v3/snippets/score_modal.html#no_open_modal'
+
+    def get_context_data(self, **kwargs):
+        self.get_properties()
+
+        exam = {}
+        for e in self.exam_list:
+            if self.year == e['year'] and self.round == e['round']:
+                exam = e
+        return {'exam': exam}
+
+
 class NoStudentModalView(
     LoginRequiredMixin,
     vanilla.TemplateView,
@@ -109,7 +126,7 @@ class NoStudentModalView(
     template_name = 'score/prime_v3/snippets/score_modal.html#no_student_modal'
 
 
-class StudentModalView(
+class StudentConnectModalView(
     LoginRequiredMixin,
     base_mixins.BaseMixin,
     vanilla.TemplateView,
@@ -205,8 +222,9 @@ list_view = ListView.as_view()
 detail_view = DetailView.as_view()
 detail_print_view = PrintView.as_view()
 
+no_open_modal_view = NoOpenModalView.as_view()
 no_student_modal_view = NoStudentModalView.as_view()
-student_modal_view = StudentModalView.as_view()
+student_connect_modal_view = StudentConnectModalView.as_view()
 
 student_connect_view = StudentConnectView.as_view()
 student_reset_view = StudentResetView.as_view()

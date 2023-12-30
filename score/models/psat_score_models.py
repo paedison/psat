@@ -1,7 +1,7 @@
 from django.db import models
 
 from reference.models.base_models import Exam
-from reference.models.psat_models import PsatProblem
+from reference.models.psat_models import PsatProblem, Psat
 from score.models.base_models import UnitBase, StudentBase, AnswerBase
 
 
@@ -108,3 +108,145 @@ class PsatAnswerCount(models.Model):
     def answer_5_rate(self): return self.count_5 / self.count_total
     @property
     def correctness_rate(self): return self.count_correct / self.count_total
+
+
+class PsatAnswerTemporary(AnswerBase):
+    # Parent-Parent[InfoBase] fields: timestamp, updated_at, user_id
+    # Parent[AnswerBase] fields: answer
+    user_id = None
+    answer = None
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='psat_answers_temporary')
+    student = models.ForeignKey(PsatStudent, on_delete=models.CASCADE, related_name='psat_answers_temporary')
+    prob1 = models.IntegerField(blank=True, null=True)
+    prob2 = models.IntegerField(blank=True, null=True)
+    prob3 = models.IntegerField(blank=True, null=True)
+    prob4 = models.IntegerField(blank=True, null=True)
+    prob5 = models.IntegerField(blank=True, null=True)
+    prob6 = models.IntegerField(blank=True, null=True)
+    prob7 = models.IntegerField(blank=True, null=True)
+    prob8 = models.IntegerField(blank=True, null=True)
+    prob9 = models.IntegerField(blank=True, null=True)
+    prob10 = models.IntegerField(blank=True, null=True)
+    prob11 = models.IntegerField(blank=True, null=True)
+    prob12 = models.IntegerField(blank=True, null=True)
+    prob13 = models.IntegerField(blank=True, null=True)
+    prob14 = models.IntegerField(blank=True, null=True)
+    prob15 = models.IntegerField(blank=True, null=True)
+    prob16 = models.IntegerField(blank=True, null=True)
+    prob17 = models.IntegerField(blank=True, null=True)
+    prob18 = models.IntegerField(blank=True, null=True)
+    prob19 = models.IntegerField(blank=True, null=True)
+    prob20 = models.IntegerField(blank=True, null=True)
+    prob21 = models.IntegerField(blank=True, null=True)
+    prob22 = models.IntegerField(blank=True, null=True)
+    prob23 = models.IntegerField(blank=True, null=True)
+    prob24 = models.IntegerField(blank=True, null=True)
+    prob25 = models.IntegerField(blank=True, null=True)
+    prob26 = models.IntegerField(blank=True, null=True)
+    prob27 = models.IntegerField(blank=True, null=True)
+    prob28 = models.IntegerField(blank=True, null=True)
+    prob29 = models.IntegerField(blank=True, null=True)
+    prob30 = models.IntegerField(blank=True, null=True)
+    prob31 = models.IntegerField(blank=True, null=True)
+    prob32 = models.IntegerField(blank=True, null=True)
+    prob33 = models.IntegerField(blank=True, null=True)
+    prob34 = models.IntegerField(blank=True, null=True)
+    prob35 = models.IntegerField(blank=True, null=True)
+    prob36 = models.IntegerField(blank=True, null=True)
+    prob37 = models.IntegerField(blank=True, null=True)
+    prob38 = models.IntegerField(blank=True, null=True)
+    prob39 = models.IntegerField(blank=True, null=True)
+    prob40 = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "제출 답안"
+        verbose_name_plural = "제출 답안"
+
+
+class PsatAnswerConfirmed(AnswerBase):
+    # Parent-Parent[InfoBase] fields: timestamp, updated_at, user_id
+    # Parent[AnswerBase] fields: answer
+    user_id = None
+    answer = None
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='psat_answers_confirmed')
+    student = models.ForeignKey(PsatStudent, on_delete=models.CASCADE, related_name='psat_answers_confirmed')
+    prob1 = models.IntegerField(blank=True, null=True)
+    prob2 = models.IntegerField(blank=True, null=True)
+    prob3 = models.IntegerField(blank=True, null=True)
+    prob4 = models.IntegerField(blank=True, null=True)
+    prob5 = models.IntegerField(blank=True, null=True)
+    prob6 = models.IntegerField(blank=True, null=True)
+    prob7 = models.IntegerField(blank=True, null=True)
+    prob8 = models.IntegerField(blank=True, null=True)
+    prob9 = models.IntegerField(blank=True, null=True)
+    prob10 = models.IntegerField(blank=True, null=True)
+    prob11 = models.IntegerField(blank=True, null=True)
+    prob12 = models.IntegerField(blank=True, null=True)
+    prob13 = models.IntegerField(blank=True, null=True)
+    prob14 = models.IntegerField(blank=True, null=True)
+    prob15 = models.IntegerField(blank=True, null=True)
+    prob16 = models.IntegerField(blank=True, null=True)
+    prob17 = models.IntegerField(blank=True, null=True)
+    prob18 = models.IntegerField(blank=True, null=True)
+    prob19 = models.IntegerField(blank=True, null=True)
+    prob20 = models.IntegerField(blank=True, null=True)
+    prob21 = models.IntegerField(blank=True, null=True)
+    prob22 = models.IntegerField(blank=True, null=True)
+    prob23 = models.IntegerField(blank=True, null=True)
+    prob24 = models.IntegerField(blank=True, null=True)
+    prob25 = models.IntegerField(blank=True, null=True)
+    prob26 = models.IntegerField(blank=True, null=True)
+    prob27 = models.IntegerField(blank=True, null=True)
+    prob28 = models.IntegerField(blank=True, null=True)
+    prob29 = models.IntegerField(blank=True, null=True)
+    prob30 = models.IntegerField(blank=True, null=True)
+    prob31 = models.IntegerField(blank=True, null=True)
+    prob32 = models.IntegerField(blank=True, null=True)
+    prob33 = models.IntegerField(blank=True, null=True)
+    prob34 = models.IntegerField(blank=True, null=True)
+    prob35 = models.IntegerField(blank=True, null=True)
+    prob36 = models.IntegerField(blank=True, null=True)
+    prob37 = models.IntegerField(blank=True, null=True)
+    prob38 = models.IntegerField(blank=True, null=True)
+    prob39 = models.IntegerField(blank=True, null=True)
+    prob40 = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "제출 답안"
+        verbose_name_plural = "제출 답안"
+
+
+class PsatStatistics(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    student = models.OneToOneField(PsatStudent, on_delete=models.CASCADE, related_name='statistics')
+
+    score_eoneo = models.FloatField(null=True, blank=True)
+    score_jaryo = models.FloatField(null=True, blank=True)
+    score_sanghwang = models.FloatField(null=True, blank=True)
+    score_psat = models.FloatField(null=True, blank=True)
+    score_psat_avg = models.FloatField(null=True, blank=True)
+    score_heonbeob = models.FloatField(null=True, blank=True)
+
+    rank_total_eoneo = models.PositiveIntegerField(null=True, blank=True)
+    rank_total_jaryo = models.PositiveIntegerField(null=True, blank=True)
+    rank_total_sanghwang = models.PositiveIntegerField(null=True, blank=True)
+    rank_total_psat = models.PositiveIntegerField(null=True, blank=True)
+    rank_total_heonbeob = models.PositiveIntegerField(null=True, blank=True)
+
+    rank_department_eoneo = models.PositiveIntegerField(null=True, blank=True)
+    rank_department_jaryo = models.PositiveIntegerField(null=True, blank=True)
+    rank_department_sanghwang = models.PositiveIntegerField(null=True, blank=True)
+    rank_department_psat = models.PositiveIntegerField(null=True, blank=True)
+    rank_department_heonbeob = models.PositiveIntegerField(null=True, blank=True)
+
+    rank_ratio_total_eoneo = models.FloatField(null=True, blank=True)
+    rank_ratio_total_jaryo = models.FloatField(null=True, blank=True)
+    rank_ratio_total_sanghwang = models.FloatField(null=True, blank=True)
+    rank_ratio_total_psat = models.FloatField(null=True, blank=True)
+    rank_ratio_total_heonbeob = models.FloatField(null=True, blank=True)
+
+    rank_ratio_department_eoneo = models.FloatField(null=True, blank=True)
+    rank_ratio_department_jaryo = models.FloatField(null=True, blank=True)
+    rank_ratio_department_sanghwang = models.FloatField(null=True, blank=True)
+    rank_ratio_department_psat = models.FloatField(null=True, blank=True)
+    rank_ratio_department_heonbeob = models.FloatField(null=True, blank=True)

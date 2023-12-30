@@ -1,6 +1,18 @@
 {% load slippers %}
 {% load partials %}
 
+{% partialdef no_open_modal %} {# no_open_modal partial #}
+    {% #modal header='시험 결과 안내' %}
+        <h5 class="modal-title mx-auto fw-bold">
+            <span class="text-secondary">
+                제{{ exam.round }}회 모의고사 성적은<br/>
+                <span class="text-danger">{{ exam.opened_at|date:'n/j(D)' }}</span>
+                이후 공개됩니다.
+            </span>
+        </h5>
+    {% /modal %}
+{% endpartialdef no_student_modal %}
+
 {% partialdef no_student_modal %} {# no_student_modal partial #}
     {% #modal header='수험 정보 오류' %}
         <h5 class="modal-title mx-auto fw-bold">

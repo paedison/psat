@@ -6,8 +6,12 @@ from .old_models import (
 )
 from .psat_score_models import (
     PsatUnit, PsatUnitDepartment,
-    PsatStudent, PsatTemporaryAnswer,
-    PsatConfirmedAnswer, PsatAnswerCount,
+    PsatStudent,
+    PsatTemporaryAnswer, PsatConfirmedAnswer,
+
+    PsatAnswerCount,
+    PsatAnswerTemporary, PsatAnswerConfirmed,
+    PsatStatistics,
 )
 from .prime_score_models import (
     PrimeDepartment,

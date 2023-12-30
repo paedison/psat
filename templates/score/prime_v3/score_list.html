@@ -86,7 +86,6 @@
                                                 <a href="{{ obj.detail_url }}" hx-boost="true">
                                                     {{ obj.student.serial }}
                                                 </a>
-
                                                 {% partialdef delete_student inline=True %} {# delete_student partial #}
                                                     {% if user.is_staff %}
                                                         <a class="badge rounded-pill text-bg-danger"
@@ -97,18 +96,28 @@
                                                         </a>
                                                     {% endif %}
                                                 {% endpartialdef delete_student %}
-
                                             {% else %}
-
-                                                {% partialdef input_button inline=True %} {# input_button partial #}
-                                                    <a class="badge rounded-pill text-bg-warning"
-                                                       hx-get="{% url 'prime:student_modal' obj.year obj.round %}" href=""
-                                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                        입력
-                                                    </a>
-                                                {% endpartialdef input_button %}
-
+                                                {% if current_time < obj.opened_at %}
+                                                    {% partialdef no_open_button inline=True %} {# no_open partial #}
+                                                        <a class="badge rounded-pill text-bg-warning" href=""
+                                                           hx-get="{% url 'prime:no_open_modal' obj.year obj.round %}"
+                                                           hx-target="#modalContainer" hx-swap="innerHTML"
+                                                           hx-push-url="false"
+                                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                            미공개
+                                                        </a>
+                                                    {% endpartialdef no_open %}
+                                                {% else %}
+                                                    {% partialdef input_button inline=True %} {# input_button partial #}
+                                                        <a class="badge rounded-pill text-bg-warning" href=""
+                                                           hx-get="{% url 'prime:student_connect_modal' obj.year obj.round %}"
+                                                           hx-target="#modalContainer" hx-swap="innerHTML"
+                                                           hx-push-url="false"
+                                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                            입력
+                                                        </a>
+                                                    {% endpartialdef input_button %}
+                                                {% endif %}
                                             {% endif %}
                                         {% else %}
                                             {% with class='warning' text='입력' %}
@@ -127,11 +136,15 @@
                                         {% if user.is_authenticated %}
                                             {% if obj.student %}
                                                 <a href="{{ obj.detail_url }}" hx-boost="true">
-                                                    {{ obj.student.department.name }}
+                                                    {{ obj.student.department_name }}
                                                 </a>
                                                 {% partial delete_student %}
                                             {% else %}
-                                                {% partial input_button %}
+                                                {% if current_time < obj.opened_at %}
+                                                    {% partial no_open_button %}
+                                                {% else %}
+                                                    {% partial input_button %}
+                                                {% endif %}
                                             {% endif %}
                                         {% else %}
                                             {% with class='warning' text='입력' %}
@@ -147,12 +160,16 @@
                                                     확인
                                                 </a>
                                             {% else %}
-                                                <a class="badge rounded-pill text-bg-danger"
-                                                   hx-get="{% url 'prime:no_student_modal' %}" href=""
-                                                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                                   data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                    미응시
-                                                </a>
+                                                {% if current_time < obj.opened_at %}
+                                                    {% partial no_open_button %}
+                                                {% else %}
+                                                    <a class="badge rounded-pill text-bg-danger"
+                                                       hx-get="{% url 'prime:no_student_modal' %}" href=""
+                                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                        미응시
+                                                    </a>
+                                                {% endif %}
                                             {% endif %}
                                         {% else %}
                                             {% with class='danger' text='미응시' %}

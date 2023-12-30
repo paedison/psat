@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.core.paginator import Paginator
 from django.db.models import When, Value, F, Case, ExpressionWrapper, FloatField
 from django.urls import reverse_lazy
@@ -13,10 +15,12 @@ class ListViewMixin(
 ):
     page_obj: any
     page_range: any
+    current_time: datetime
 
     def get_properties(self):
         super().get_properties()
         self.page_obj, self.page_range = self.get_paginator_info()
+        self.current_time = datetime.now()
 
     def get_paginator_info(self) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
@@ -25,33 +29,31 @@ class ListViewMixin(
         page_obj = paginator.get_page(page_number)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
 
+        all_student = self.get_all_student()
+        all_score = self.get_all_score()
+
         for obj in page_obj:
-            obj['student'] = self.get_student(obj) if self.request.user.is_authenticated else None
-            obj['student_score'] = self.get_student_score(obj) if self.request.user.is_authenticated else None
+            for student in all_student:
+                if student['year'] == obj['year'] and student['round'] == obj['round']:
+                    obj['student'] = student
+            for score in all_score:
+                if score['year'] == obj['year'] and score['round'] == obj['round']:
+                    obj['student_score'] = score
             obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
-    def get_student(self, obj):
-        try:
-            return (
-                self.student_model.objects
-                .filter(
-                    prime_verified_users__user=self.request.user,
-                    year=obj['year'], round=obj['round']).first()
-            )
-        except self.student_model.DoesNotExist:
-            return None
+    def get_all_student(self):
+        return (
+            self.student_model.objects.annotate(department_name=F('department__name'))
+            .filter(prime_verified_users__user=self.request.user).values()
+        )
 
-    def get_student_score(self, obj):
-        try:
-            return (
-                self.statistics_model.objects
-                .filter(
-                    student__prime_verified_users__user=self.request.user,
-                    student__year=obj['year'], student__round=obj['round']).first()
-            )
-        except self.statistics_model.DoesNotExist:
-            return None
+    def get_all_score(self):
+        return (
+            self.statistics_model.objects
+            .annotate(year=F('student__year'), round=F('student__round'))
+            .filter(student__prime_verified_users__user=self.request.user).values()
+        )
 
 
 class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):

@@ -76,6 +76,12 @@ def get_status(problem, data: list[dict]):
                 pass
 
 
+@register.filter()
+def get_range(content):
+    last_number = content + 1 if isinstance(content, int) else int(content) + 1
+    return range(1, last_number)
+
+
 @register.tag
 def lineless(parser, token):  # Delete Blank Lines
     nodelist = parser.parse(('endlineless',))

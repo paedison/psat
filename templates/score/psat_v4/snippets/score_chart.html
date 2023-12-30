@@ -1,0 +1,189 @@
+{% load static %}
+{% load partials %}
+{% load slippers %}
+
+<script src="{% static 'vendor/chart.js/chart.umd.js' %}"></script>
+<nav>
+    <div class="nav nav-tabs nav-tabs-colored" id="scoreChartTab" role="tablist">
+        {% #nav_tab prefix='chart' id='0' %}
+            성적 분포 차트
+        {% /nav_tab %}
+    </div>
+</nav>
+
+<div class="tab-content" id="scoreChartContent">
+    {% #nav_content prefix='chart' id='0' %}
+        {% if is_confirmed %}
+            {% partialdef chart_canvas inline=True %}
+                <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
+                    <script src="{% static 'vendor/chart.js/chart.umd.js' %}"></script>
+                    <canvas id="scoreChart"></canvas>
+                    {% partial chart_contents %}
+                </div>
+            {% endpartialdef chart_canvas %}
+        {% else %}
+            {% #responsive_table %}
+                <tbody>
+                    <tr class="text-center align-middle">
+                        <th colspan="6" class="text-danger fs-6 py-4">
+                            {% if student %}
+                                <span class="text-danger fs-6 py-4">
+                                    모든 과목의 답안을 입력해주세요.
+                                </span>
+                            {% else %}
+                                <a class="badge rounded-pill text-bg-danger"
+                                   hx-get="{% url 'score:student_create_modal' year ex %}" href=""
+                                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                   data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                    수험 정보를 입력해주세요.
+                                </a>
+                            {% endif %}
+                       </th>
+                    </tr>
+                </tbody>
+            {% /responsive_table %}
+        {% endif %}
+    {% /nav_content %}
+</div>
+
+{% partialdef chart_contents %}
+<script>
+    screenWidth = window.innerWidth;
+    my_score = [
+        {{ student.eoneo_score|floatformat:1 }},
+        {{ student.jaryo_score|floatformat:1 }},
+        {{ student.sanghwang_score|floatformat:1 }},
+        {{ student.psat_average|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ student.heonbeob_score|floatformat:1 }},
+        {% endif %}
+    ]
+    department_average = [
+        {{ stat_department.eoneo_score_avg|floatformat:1 }},
+        {{ stat_department.jaryo_score_avg|floatformat:1 }},
+        {{ stat_department.sanghwang_score_avg|floatformat:1 }},
+        {{ stat_department.psat_average_avg|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ stat_department.heonbeob_score_avg|floatformat:1 }},
+        {% endif %}
+    ]
+    total_average = [
+        {{ stat_total.eoneo_score_avg|floatformat:1 }},
+        {{ stat_total.jaryo_score_avg|floatformat:1 }},
+        {{ stat_total.sanghwang_score_avg|floatformat:1 }},
+        {{ stat_total.psat_average_avg|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ stat_total.heonbeob_score_avg|floatformat:1 }},
+        {% endif %}
+    ]
+    department_score_20 = [
+        {{ stat_department.eoneo_score_20|floatformat:1 }},
+        {{ stat_department.jaryo_score_20|floatformat:1 }},
+        {{ stat_department.sanghwang_score_20|floatformat:1 }},
+        {{ stat_department.psat_average_20|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ stat_department.heonbeob_score_20|floatformat:1 }},
+        {% endif %}
+    ]
+    total_score_20 = [
+        {{ stat_total.eoneo_score_20|floatformat:1 }},
+        {{ stat_total.jaryo_score_20|floatformat:1 }},
+        {{ stat_total.sanghwang_score_20|floatformat:1 }},
+        {{ stat_total.psat_average_20|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ stat_total.heonbeob_score_20|floatformat:1 }},
+        {% endif %}
+    ]
+    department_score_10 = [
+        {{ stat_department.eoneo_score_10|floatformat:1 }},
+        {{ stat_department.jaryo_score_10|floatformat:1 }},
+        {{ stat_department.sanghwang_score_10|floatformat:1 }},
+        {{ stat_department.psat_average_10|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ stat_department.heonbeob_score_10|floatformat:1 }},
+        {% endif %}
+    ]
+    total_score_10 = [
+        {{ stat_total.eoneo_score_10|floatformat:1 }},
+        {{ stat_total.jaryo_score_10|floatformat:1 }},
+        {{ stat_total.sanghwang_score_10|floatformat:1 }},
+        {{ stat_total.psat_average_10|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ stat_total.heonbeob_score_10|floatformat:1 }},
+        {% endif %}
+    ]
+    department_top = [
+        {{ stat_department.eoneo_score_max|floatformat:1 }},
+        {{ stat_department.jaryo_score_max|floatformat:1 }},
+        {{ stat_department.sanghwang_score_max|floatformat:1 }},
+        {{ stat_department.psat_average_max|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ stat_department.heonbeob_score_max|floatformat:1 }},
+        {% endif %}
+    ]
+    total_top = [
+        {{ stat_total.eoneo_score_max|floatformat:1 }},
+        {{ stat_total.jaryo_score_max|floatformat:1 }},
+        {{ stat_total.sanghwang_score_max|floatformat:1 }},
+        {{ stat_total.psat_average_max|floatformat:1 }},
+        {% if confirmed.헌법 %}
+            {{ stat_total.heonbeob_score_max|floatformat:1 }},
+        {% endif %}
+    ]
+    chart_datasets = [
+        {label: '내 점수', borderWidth: 1, data: my_score},
+        {label: '직렬 평균', borderWidth: 1, data: department_average},
+        {label: '전체 평균', borderWidth: 1, data: total_average},
+        {label: '직렬 상위 20%', borderWidth: 1, data: department_score_20, hidden: true},
+        {label: '전체 상위 20%', borderWidth: 1, data: total_score_20, hidden: true},
+        {label: '직렬 상위 10%', borderWidth: 1, data: department_score_10},
+        {label: '전체 상위 10%', borderWidth: 1, data: total_score_10},
+        {label: '직렬 최고', borderWidth: 1, data: department_top, hidden: true},
+        {label: '전체 최고', borderWidth: 1, data: total_top, hidden: true},
+    ]
+
+    chart_data = {
+        type: 'bar',
+        data: {
+            labels: ['언어논리', '자료해석', '상황판단', 'PSAT 평균',
+                {% if confirmed.헌법 %}'헌법'{% endif %}
+            ],
+            datasets: chart_datasets,
+        },
+        options: {
+            indexAxis: (screenWidth < 768) ? 'y' : 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                datalabels: {
+                    align: 'end',
+                    color: 'black',
+                    font: {
+                        weight: 'bold',
+                    }
+                }
+            },
+            scales: {
+                y: {ticks: {font: {weight: 'bold'}}},
+                x: {ticks: {font: {weight: 'bold'}}},
+            },
+            elements: {
+                bar: {
+                    barPercentage: 0.5,
+                },
+            },
+        }
+    }
+
+    if (typeof chart_canvas === 'undefined') {
+        const chart_canvas = document.getElementById('scoreChart');
+        new Chart(chart_canvas, chart_data);
+    } else {
+        chart_canvas.chart.destroy();
+        new Chart(chart_canvas, chart_data);
+    }
+</script>
+{% endpartialdef chart_contents %}
