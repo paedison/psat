@@ -137,7 +137,7 @@
                 <input type="text" name="psat_id" value="{{ problems.0.psat_id }}" aria-label="PSAT ID" hidden/>
                 <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
                         hx-post="{% url 'score:confirm_modal' %}" hx-swap="innerHTML" hx-trigger="click"
-                        hx-push-url="False"
+                        hx-push-url="false"
                         data-bs-toggle="modal" data-bs-target="#modalContainer">
                     최종 답안 제출
                 </button>

@@ -1,8 +1,8 @@
 from django.urls import path, include
 
 urlpatterns = [
-    # path('psat/', include('score.urls_module.psat_v4')),  # Psat score current version
-    path('psat/', include('score.urls_module.psat_v3')),  # Psat score current version
+    path('psat/', include('score.urls_module.psat_v4')),  # Psat score current version
+    # path('psat/', include('score.urls_module.psat_v3')),  # Psat score current version
     # path('psat_v2/', include('score.urls_module.psat_v2')),  # Psat score version 2.0
     # path('psat_v1/', include('score.urls_module.psat_v1')),  # Psat score version 1.0
 

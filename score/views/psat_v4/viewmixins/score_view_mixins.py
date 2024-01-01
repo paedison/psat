@@ -1,12 +1,12 @@
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import (
-    F, When, Value, CharField, Case, ExpressionWrapper, IntegerField, FloatField, Count
+    F, When, Value, Case, ExpressionWrapper, FloatField, Count
 )
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from score.utils import get_dict_by_sub, get_all_ranks_dict, get_all_stat_dict, get_all_answer_rates_dict
+from score.utils import get_all_ranks_dict, get_all_stat_dict, get_all_answer_rates_dict
 from . import base_mixins
 from .base_mixins import BaseMixin
 
@@ -279,8 +279,8 @@ class ConfirmModalViewMixin(
 
         self.year = self.get_post_variable('year')
         self.ex = self.get_post_variable('ex')
-
         self.psat_id = self.get_post_variable('psat_id')
+
         self.psat = self.get_psat()
         self.problem_count = self.psat.psat_problems.count()
 
@@ -290,9 +290,6 @@ class ConfirmModalViewMixin(
 
         if self.is_confirmed:
             self.confirmed = self.create_answer_confirmed()
-
-    def get_post_variable(self, variable: str, default='') -> str:
-        return self.request.POST.get(variable, default)
 
     def get_psat(self):
         """ Return PSAT instance for requested PSAT ID. """
@@ -322,12 +319,11 @@ class ConfirmModalViewMixin(
             pass
 
     def get_is_confirmed(self):
-        if self.temporary is None:
-            return False
-        for i in range(1, self.problem_count + 1):
-            if not getattr(self.temporary, f'prob{i}'):
-                return False
-        return True
+        if self.temporary:
+            for i in range(1, self.problem_count + 1):
+                if not getattr(self.temporary, f'prob{i}'):
+                    return False
+            return True
 
     def create_answer_confirmed(self):
         with transaction.atomic():
@@ -339,17 +335,17 @@ class ConfirmModalViewMixin(
                 setattr(answer_confirmed, f'prob{i}', temp_answer)
             answer_confirmed.save()
             self.update_score(answer_confirmed)
-            # self.update_answer_statistics()
+            self.update_answer_count(answer_confirmed)
+            self.temporary.delete()
             return answer_confirmed
-            # student.is_confirmed = True
 
     def update_score(self, answer_confirmed):
         """ Update scores in PSAT student instances. """
         sub_list = {
-            '언어': 'eoneo_score',
-            '자료': 'jaryo_score',
-            '상황': 'sanghwang_score',
-            '헌법': 'heonbeob_score',
+            '언어': 'score_eoneo',
+            '자료': 'score_jaryo',
+            '상황': 'score_sanghwang',
+            '헌법': 'score_heonbeob',
         }
         sub = answer_confirmed.psat.subject.abbr
         field = sub_list[sub]
@@ -359,171 +355,45 @@ class ConfirmModalViewMixin(
         )
         total_count = len(problems)
         correct_count = 0
+        stat, _ = self.statistics_model.objects.get_or_create(student=self.student)
 
         for problem in problems:
             number = problem['number']
             answer_correct = problem['answer']
             answer_student = getattr(answer_confirmed, f'prob{number}')
-            # answer_student = answer_confirmed[f'prob{number}']
             if answer_student == answer_correct:
                 correct_count += 1
         score = 100 * correct_count / total_count
-        setattr(self.student, field, score)
-        self.student.save()
+        setattr(stat, field, score)
 
-        # for sub, field in sub_list.items():
-        #     answers = (
-        #         self.confirmed_model.objects
-        #         .filter(
-        #             user_id=self.user_id,
-        #             problem__psat__exam=self.exam,
-        #             problem__psat__subject__abbr=sub,
-        #         )
-        #         .annotate(result=Case(
-        #             When(problem__answer=F('answer'), then=1),
-        #             default=0, output_field=IntegerField()))
-        #         .values_list('result', flat=True)
-        #     )
-        #     if answers:
-        #         total_count = len(answers)
-        #         correct_count = sum(answers)
-        #         score[field] = (100 / total_count) * correct_count
-        #     else:
-        #         score[field] = 0
-        # score['psat_score'] = score['eoneo_score'] + score['jaryo_score'] + score['sanghwang_score']
-        #
-        # with transaction.atomic():
-        #     for key, value in score.items():
-        #         if value:
-        #             setattr(student, key, value)
-        #         student.save()
-        # return student
+        score_eoneo = stat.score_eoneo or 0
+        score_jaryo = stat.score_jaryo or 0
+        score_sanghwang = stat.score_sanghwang or 0
+        stat.score_psat = score_eoneo + score_jaryo + score_sanghwang
+        stat.score_psat_avg = stat.score_psat / 3
+        stat.save()
 
-    def get_all_answers(self) -> dict:
-        def get_problems(sub: str):
-            return (
-                self.problem_model.objects
-                .filter(psat__year=self.year, psat__exam=self.exam, psat__subject__abbr=sub)
-                .values('psat_id', 'id', 'number', sub=F('psat__subject__abbr'),
-                        answer_correct=F('answer'), answer_temporary=Value(''))
-            )
-
-        def get_answers_confirmed_by_sub(sub: str):
-            problems = (
-                self.problem_model.objects
-                .filter(psat__year=self.year, psat__exam=self.exam, psat__subject__abbr=sub)
-                .values('psat_id', 'id', 'number', sub=F('psat__subject__abbr'),
-                        answer_correct=F('answer'), answer_temporary=Value(''))
-            )
-            try:
-                answers_confirmed = (
-                    self.confirmed_model.objects.defer('timestamp').values()
-                    .get(student__user_id=self.user_id, psat__year=self.year, psat__exam=self.exam,
-                         psat__subject__abbr=sub)
-                )
-            except self.confirmed_model.DoesNotExist:
-                return None
-
-            for problem in problems:
-                number = problem['number']
-                answer_correct = problem['answer_correct']
-                answer_student = answers_confirmed[f'prob{number}']
-                result = 'O' if answer_student == answer_correct else 'X'
-
-                problem['answer_student'] = answer_student
-                problem['result'] = result
-
-            return problems
-
-        return {
-            '언어': get_answers_confirmed_by_sub('언어'),
-            '자료': get_answers_confirmed_by_sub('자료'),
-            '상황': get_answers_confirmed_by_sub('상황'),
-            '헌법': get_answers_confirmed_by_sub('헌법'),
-        }
-
-    #
-    # def update_score(self, student):
-    #     """ Update scores in PSAT student instances. """
-    #     score = {}
-    #     sub_list = {
-    #         '언어': 'eoneo_score',
-    #         '자료': 'jaryo_score',
-    #         '상황': 'sanghwang_score',
-    #         '헌법': 'heonbeob_score',
-    #     }
-    #     for sub, field in sub_list.items():
-    #         answers = (
-    #             self.confirmed_model.objects
-    #             .filter(
-    #                 user_id=self.user_id,
-    #                 problem__psat__exam=self.exam,
-    #                 problem__psat__subject__abbr=sub,
-    #             )
-    #             .annotate(result=Case(
-    #                 When(problem__answer=F('answer'), then=1),
-    #                 default=0, output_field=IntegerField()))
-    #             .values_list('result', flat=True)
-    #         )
-    #         if answers:
-    #             total_count = len(answers)
-    #             correct_count = sum(answers)
-    #             score[field] = (100 / total_count) * correct_count
-    #         else:
-    #             score[field] = 0
-    #     score['psat_score'] = score['eoneo_score'] + score['jaryo_score'] + score['sanghwang_score']
-    #
-    #     with transaction.atomic():
-    #         for key, value in score.items():
-    #             if value:
-    #                 setattr(student, key, value)
-    #             student.save()
-    #     return student
-
-    def update_answer_statistics(self):
+    def update_answer_count(self, answer_confirmed):
         """
-        Create PSAT confirmed answer instances.
         Update or create PSAT answer count instances.
-        Delete PSAT temporary answer instances.
         """
+        problems = (
+            self.problem_model.objects.filter(psat=answer_confirmed.psat)
+            .order_by('number')
+            .values('id', 'psat_id', 'number', 'answer')
+        )
         with transaction.atomic():
-            confirmed = self.confirmed_model.objects.get_or_create(
-                psat_id=self.temporary.psat_id,
-                student_id=self.temporary.student_id,
-            )
-            problem_id = self.temporary_model.problem_id
-            answer = temp.answer
-            confirmed_answers.append(
-                self.confirmed_model(
-                    user_id=self.user_id, problem_id=problem_id, answer=answer)
-            )
-            answer_count, _ = self.answer_count_model.objects.get_or_create(problem_id=problem_id)
-            for i in range(1, 6):
-                if i == answer:
-                    old_count = getattr(answer_count, f'count_{i}')
-                    setattr(answer_count, f'count_{i}', old_count + 1)
-                    answer_count.count_total += 1
-                    answer_count.save()
-            temp.delete()
-        self.confirmed_model.objects.bulk_create(confirmed_answers)
-        # confirmed_answers = []
-        # with transaction.atomic():
-        #     for temp in self.temporary:
-        #         problem_id = temp.problem_id
-        #         answer = temp.answer
-        #         confirmed_answers.append(
-        #             self.confirmed_model(
-        #                 user_id=self.user_id, problem_id=problem_id, answer=answer)
-        #         )
-        #         answer_count, _ = self.answer_count_model.objects.get_or_create(problem_id=problem_id)
-        #         for i in range(1, 6):
-        #             if i == answer:
-        #                 old_count = getattr(answer_count, f'count_{i}')
-        #                 setattr(answer_count, f'count_{i}', old_count + 1)
-        #                 answer_count.count_total += 1
-        #                 answer_count.save()
-        #         temp.delete()
-        #     self.confirmed_model.objects.bulk_create(confirmed_answers)
+            for problem in problems:
+                problem_id = problem['id']
+                number = problem['number']
+                answer = getattr(answer_confirmed, f'prob{number}')
+                answer_count, _ = self.answer_count_model.objects.get_or_create(problem_id=problem_id)
+                for i in range(1, 6):
+                    if i == answer:
+                        old_count = getattr(answer_count, f'count_{i}')
+                        setattr(answer_count, f'count_{i}', old_count + 1)
+                        answer_count.count_total += 1
+                        answer_count.save()
 
 
 class PredictViewMixin(DetailViewMixin):

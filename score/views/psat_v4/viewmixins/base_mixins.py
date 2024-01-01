@@ -86,9 +86,8 @@ class BaseMixin(ScoreExamList):
     student_model = score_models.PsatStudent
     temporary_model = score_models.PsatAnswerTemporary
     confirmed_model = score_models.PsatAnswerConfirmed
-    # temporary_model = score_models.PsatTemporaryAnswer
-    # confirmed_model = score_models.PsatConfirmedAnswer
     answer_count_model = score_models.PsatAnswerCount
+    statistics_model = score_models.PsatStatistics
 
     student_form = score_forms.PsatStudentForm
 
@@ -108,8 +107,8 @@ class BaseMixin(ScoreExamList):
     def get_properties(self):
         self.user_id: int | None = self.request.user.id if self.request.user.is_authenticated else None
 
-        self.year: str = self.get_kwargs('year')
-        self.ex: str = self.get_kwargs('ex')
+        self.year: str = self.get_kwargs('year') or self.get_post_variable('year')
+        self.ex: str = self.get_kwargs('ex') or self.get_post_variable('ex')
 
         if self.year and self.ex:
             self.exam = self.get_exam()
@@ -121,8 +120,11 @@ class BaseMixin(ScoreExamList):
             'view_type': 'psatScore',
         }
 
-    def get_kwargs(self, kw: str, default=''):
+    def get_kwargs(self, kw: str, default=None):
         return self.kwargs.get(kw, default)
+
+    def get_post_variable(self, kw: str, default=None):
+        return self.request.POST.get(kw, default)
 
     def get_exam(self):
         if self.year == '2020' and self.ex == '칠급':

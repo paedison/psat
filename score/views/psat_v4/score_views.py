@@ -1,5 +1,4 @@
 import vanilla
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .viewmixins import base_mixins, score_view_mixins
@@ -11,7 +10,6 @@ class ListView(
 ):
     """ Represent information related PsatTemporaryAnswer and PsatConfirmedAnswer models. """
     template_name = 'score/psat_v4/score_list.html'
-    login_url = settings.LOGIN_URL
 
     def get_template_names(self):
         htmx_template = {
@@ -48,7 +46,6 @@ class DetailView(
 ):
     """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
     template_name = 'score/psat_v4/score_detail.html'
-    login_url = settings.LOGIN_URL
 
     def get_template_names(self):
         htmx_template = {
@@ -105,7 +102,6 @@ class ExamFilterView(
     vanilla.TemplateView,
 ):
     template_name = 'score/psat_v4/score_detail.html#exam_select'
-    login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
@@ -122,7 +118,6 @@ class SubmitView(
 ):
     menu = 'score'
     template_name = 'score/psat_v4/snippets/score_answers.html#scored_form'
-    login_url = settings.LOGIN_URL
 
     def post(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -143,7 +138,6 @@ class ConfirmModalView(
     """ Represent modal view for confirming answers. """
     menu = 'score'
     template_name = 'score/psat_v4/snippets/score_modal.html#score_confirmed'
-    login_url = settings.LOGIN_URL
 
     def get(self, request, *args, **kwargs):
         return self.render_to_response({})
@@ -169,7 +163,6 @@ class PredictView(
 ):
     """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
     template_name = 'score/psat_v4/score_predict.html'
-    login_url = settings.LOGIN_URL
 
     def get_template_names(self):
         htmx_template = {
