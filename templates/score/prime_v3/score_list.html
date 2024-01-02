@@ -166,8 +166,7 @@
                                                hx-target="#modalContainer" hx-swap="innerHTML"
                                                hx-push-url="false"
                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                {{ obj.opened_at|date:'n/d(D)' }} 이후 공개 예정
-{#                                                미공개#}
+                                                성적 공개일 : {{ obj.opened_at|date:'n/d(D)' }}
                                             </a>
                                         </td>
                                     {% endif %}

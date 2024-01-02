@@ -23,19 +23,19 @@ class BaseMixin:
 
     exam_list = [
         {'year': 2023, 'round': 1, 'date': '1/7', 'staff': True,
-         'opened_at': datetime(2023, 1, 2, 23)},
+         'opened_at': datetime(2023, 1, 4, 23)},
         {'year': 2024, 'round': 1, 'date': '12/30', 'staff': False,
-         'opened_at': datetime(2024, 1, 2, 23)},
+         'opened_at': datetime(2024, 1, 4, 23)},
         {'year': 2024, 'round': 2, 'date': '1/13', 'staff': False,
-         'opened_at': datetime(2024, 1, 15, 23)},
+         'opened_at': datetime(2024, 1, 18, 23)},
         {'year': 2024, 'round': 3, 'date': '1/27', 'staff': False,
-         'opened_at': datetime(2024, 1, 29, 23)},
+         'opened_at': datetime(2024, 2, 1, 23)},
         {'year': 2024, 'round': 4, 'date': '2/3', 'staff': False,
-         'opened_at': datetime(2024, 2, 5, 23)},
+         'opened_at': datetime(2024, 2, 8, 23)},
         {'year': 2024, 'round': 5, 'date': '2/17', 'staff': False,
-         'opened_at': datetime(2024, 2, 19, 23)},
+         'opened_at': datetime(2024, 2, 22, 23)},
         {'year': 2024, 'round': 6, 'date': '2/25', 'staff': False,
-         'opened_at': datetime(2024, 2, 27, 23)},
+         'opened_at': datetime(2024, 2, 29, 23)},
     ]
 
     request: any
