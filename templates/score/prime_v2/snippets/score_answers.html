@@ -68,8 +68,18 @@
                     {% for answer in answers %}
                         {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                             <td>
-                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                                    {{ answer.answer_correct }}</button>
+                                {% if answer.answer_correct <= 5 %}
+                                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                                        {{ answer.answer_correct }}</button>
+                                {% elif answer.answer_correct == 12345 %}
+                                    <span class="badge rounded-pill text-bg-secondary">
+                                        전체 정답</span>
+                                {% else %}
+                                    {% for ans in answer.answer_correct_list %}
+                                        <button class="btn btn-circle btn-sm fs-6 my-2 btn-outline-secondary">
+                                            {{ ans }}</button>
+                                    {% endfor %}
+                                {% endif %}
                             </td>
                         {% endif %}
                     {% endfor %}

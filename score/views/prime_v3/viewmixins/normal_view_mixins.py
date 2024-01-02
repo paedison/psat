@@ -136,12 +136,18 @@ class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
                 if answer['sub'] == sub:
                     answer_number = answer['number']
                     answer_correct = answer['answer_correct']
+                    answer_correct_list = []
                     answer_student = student_answers[f'prob{answer_number}']
-                    result = 'O' if answer_student == answer_correct else 'X'
+                    if answer_correct in range(1, 6):
+                        result = 'O' if answer_student == answer_correct else 'X'
+                    else:
+                        answer_correct_list = [int(digit) for digit in str(answer_correct)]
+                        result = 'O' if answer_student in answer_correct_list else 'X'
 
                     answer_copy = {
                         'number': answer['number'],
-                        'answer_correct': answer['answer_correct'],
+                        'answer_correct': answer_correct,
+                        'answer_correct_list': answer_correct_list,
                         'answer_student': answer_student,
                         'result': result,
                     }
@@ -160,12 +166,30 @@ class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
             return When(problem__answer=Value(num), then=ExpressionWrapper(
                 F(f'count_{num}') * 100 / F('count_total'), output_field=FloatField()))
 
-        all_raw_answer_rates: list[dict] = list(
+        all_answer_count = (
             self.answer_count_model.objects
             .filter(problem__prime__year=self.year, problem__prime__round=self.round)
             .order_by('problem__prime__subject_id', 'problem__number')
-            .values('number',
-                    sub=F('problem__prime__subject__abbr'), number=F('problem__number'),
-                    correct=Case(case(1), case(2), case(3), case(4), case(5), default=0.0)))
+            .values(sub=F('problem__prime__subject__abbr'), number=F('problem__number'),
+                    correct=Case(case(1), case(2), case(3), case(4), case(5), default=0.0))
+        )
 
-        return get_all_answer_rates_dict(all_raw_answer_rates)
+        multiple_answer_count = (
+            self.answer_count_model.objects
+            .filter(problem__prime__year=self.year, problem__prime__round=self.round, problem__answer__gt=5)
+            .order_by('problem__prime__subject_id', 'problem__number')
+            .annotate(sub=F('problem__prime__subject__abbr'), number=F('problem__number'), answer=F('problem__answer'))
+            .values()
+        )
+        for multiple in multiple_answer_count:
+            correct_answers = multiple['answer']
+            correct_answers_list = [int(digit) for digit in str(correct_answers)]
+
+            for a in all_answer_count:
+                if a['sub'] == multiple['sub'] and a['number'] == multiple['number']:
+                    count_sum = 0
+                    for num in correct_answers_list:
+                        count_sum += multiple[f'count_{num}']
+                    a['correct'] = count_sum * 100 / multiple['count_total']
+
+        return get_all_answer_rates_dict(all_answer_count)

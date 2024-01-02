@@ -37,15 +37,22 @@ class Command(BaseCommand):
 
         def get_score_subject(student: any, sub: str):
             prime_id = category_model.objects.get(year=exam_year, round=exam_round, subject__abbr=sub).id
-            answers = list(
+            problem_answers = list(
                 problem_model.objects.filter(prime_id=prime_id).values_list('answer', flat=True)
             )
-            student_answer = answer_model.objects.get(prime_id=prime_id, student=student)
+            student_answers = answer_model.objects.get(prime_id=prime_id, student=student)
             correct_count = 0
             problem_number = 25 if sub == '헌법' else 40
             for i in range(0, problem_number):
-                if answers[i] == getattr(student_answer, f'prob{i + 1}'):
+                answer_correct = problem_answers[i]
+                answer_student = getattr(student_answers, f'prob{i + 1}')
+                if answer_correct <= 5 and answer_correct == answer_student:
                     correct_count += 1
+                if answer_correct > 5:
+                    answer_correct_list = [int(digit) for digit in str(problem_answers)]
+                    if answer_student in answer_correct_list:
+                        correct_count += 1
+
             score_subject = correct_count * 100 / problem_number
             return score_subject
 
