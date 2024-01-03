@@ -12,6 +12,11 @@
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
         <span class="fs-6 text-secondary">프라임 모의고사 성적표</span>
+        <a class="btn btn-sm btn-outline-primary ms-2"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
+           href="{% url 'prime:list' %}">
+            일반 페이지
+        </a>
     </h1>
     <nav>
         <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
@@ -31,11 +36,6 @@
                 <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
                     2024년 대비 프라임 모의고사 | 관리자 페이지
                 </span>
-                <a class="btn btn-sm btn-outline-primary ms-4"
-                   href="{% url 'prime:list' %}"
-                   hx-get="{% url 'prime:list' %}">
-                    일반 페이지
-                </a>
             </h5>
 
         <article class="table-responsive">

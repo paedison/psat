@@ -29,7 +29,7 @@ class ListViewMixin(
         page_obj = paginator.get_page(page_number)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
 
-        all_student = list(
+        all_student = (
             self.student_model.objects
             .annotate(department_name=F('department__name'), ex=F('department__unit__exam__abbr'))
             .filter(user_id=self.user_id).values()
@@ -68,7 +68,7 @@ class ListViewMixin(
 
     def get_all_psat_info(self):
         def get_psat_info(model):
-            return list(
+            return (
                 model.objects.filter(student__user_id=self.user_id)
                 .order_by('psat')
                 .annotate(year=F('psat__year'), ex=F('psat__exam__abbr'), sub=F('psat__subject__abbr'))
@@ -87,23 +87,29 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
 
     problem_count: dict
 
-    is_confirmed: bool
+    is_complete: bool
     all_ranks: dict
     all_stat: dict
-    all_answers: dict
+
+    all_problems: dict[list]
+    all_answers: dict[list]
     all_answer_rates: dict
 
     def get_properties(self):
         super().get_properties()
 
         self.sub_title: str = self.get_sub_title()
+        self.problem_count = self.get_problem_count()
         self.student = self.get_student()
 
-        self.problem_count = self.get_problem_count()
+        self.is_complete = self.get_is_complete()
+        if self.is_complete:
+            self.all_ranks = get_all_ranks_dict(self.get_students_qs, self.user_id)
+            self.all_stat = get_all_stat_dict(self.get_students_qs, self.student)
+        else:
+            self.all_ranks = self.all_stat = {'전체': '', '직렬': ''}
 
-        self.is_confirmed = self.get_is_confirmed()
-        self.all_ranks = get_all_ranks_dict(self.get_students_qs, self.user_id)
-        self.all_stat = get_all_stat_dict(self.get_students_qs, self.student)
+        self.all_problems = self.get_all_problems()
         self.all_answers = self.get_all_answers()
         self.all_answer_rates = self.get_all_answer_rates()
 
@@ -111,15 +117,15 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
         return f'{self.year}년 {self.exam.name}'
 
     def get_problem_count(self):
-        problem_count_list = list(
+        problem_count_queryset = (
             self.problem_model.objects.filter(psat__year=self.year, psat__exam__abbr=self.ex)
             .values(sub=F('psat__subject__abbr'))
             .annotate(count=Count(F('id')))
         )
-        problem_count_dict = {}
-        for c in problem_count_list:
-            problem_count_dict.update({c['sub']: c['count']})
-        return problem_count_dict
+        problem_count = {}
+        for item in problem_count_queryset:
+            problem_count.update({item['sub']: item['count']})
+        return problem_count
 
     def get_students_qs(self, rank_type='전체'):
         filter_expr = {
@@ -133,84 +139,80 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
 
     def get_student(self):
         student_qs = self.get_students_qs()
-        student = (
-            student_qs.filter(user_id=self.user_id)
-            .annotate(department_name=F('department__name'), unit_name=F('department__unit__name'))
-            .values().first())
-        if student:
-            try:
-                student['psat_average'] = student['psat_score'] / 3
-            except TypeError:
-                pass
+        try:
+            student = (
+                student_qs
+                .annotate(department_name=F('department__name'), unit_name=F('department__unit__name'))
+                .values().get(user_id=self.user_id)
+            )
+            student['psat_average'] = student['psat_score'] / 3
+        except self.student_model.DoesNotExist:
+            return None
         return student
 
+    @staticmethod
+    def get_dict_by_sub(data: list[dict]) -> dict[list]:
+        dict_by_sub = {}
+        for datum in data:
+            sub = datum.pop('sub')
+            if sub not in dict_by_sub:
+                dict_by_sub[sub] = []
+            dict_by_sub[sub].append(datum)
+        return dict_by_sub
+
+    def get_all_problems(self) -> dict[list]:
+        all_problems_queryset = (
+            self.problem_model.objects
+            .filter(psat__year=self.year, psat__exam=self.exam)
+            .order_by('psat__subject_id', 'number')
+            .values('id', 'number', ex=F('psat__exam__abbr'), sub=F('psat__subject__abbr'), answer_correct=F('answer'))
+        )
+        return self.get_dict_by_sub(all_problems_queryset)
+
     def get_all_answers(self) -> dict:
-        def get_problems(sub: str):
-            return (
-                self.problem_model.objects
-                .filter(psat__year=self.year, psat__exam=self.exam, psat__subject__abbr=sub)
-                .values('psat_id', 'id', 'number', 'answer', sub=F('psat__subject__abbr'),
-                        answer_correct=F('answer'), answer_temporary=Value(''))
-            )
+        all_problems = self.all_problems
+        all_answers_confirmed = {}
+        all_answers_temporary = {}
 
-        def get_answers_confirmed_by_sub(sub: str):
-            problems = get_problems(sub)
-            try:
-                answers_confirmed = (
-                    self.confirmed_model.objects.defer('timestamp').values()
-                    .get(student__user_id=self.user_id, psat__year=self.year, psat__exam=self.exam,
-                         psat__subject__abbr=sub)
-                )
-            except self.confirmed_model.DoesNotExist:
-                return None
+        confirmed_queryset: list[dict] = (
+            self.confirmed_model.objects.defer('timestamp')
+            .annotate(sub=F('psat__subject__abbr'))
+            .filter(student__user_id=self.user_id, psat__year=self.year, psat__exam=self.exam)
+            .values()
+        )
+        temporary_queryset: list[dict] = (
+            self.temporary_model.objects.defer('timestamp')
+            .annotate(sub=F('psat__subject__abbr'))
+            .filter(student__user_id=self.user_id, psat__year=self.year, psat__exam=self.exam)
+            .values()
+        )
 
-            for problem in problems:
-                number = problem['number']
-                answer_correct = problem['answer']
-                answer_student = answers_confirmed[f'prob{number}']
-                result = 'O' if answer_student == answer_correct else 'X'
+        confirmed_dict = self.get_dict_by_sub(confirmed_queryset)
+        temporary_dict = self.get_dict_by_sub(temporary_queryset)
 
-                problem['answer_student'] = answer_student
-                problem['result'] = result
+        for sub, problems in all_problems.items():
+            if sub in confirmed_dict.keys():
+                all_answers_confirmed[sub] = problems.copy()
+                for problem in all_answers_confirmed[sub]:
+                    number = problem['number']
+                    answer_correct = problem['answer_correct']
+                    answer_student = confirmed_dict[sub][0][f'prob{number}']
+                    result = 'O' if answer_student == answer_correct else 'X'
 
-            return problems
+                    problem['answer_student'] = answer_student
+                    problem['result'] = result
+            else:
+                all_answers_temporary[sub] = all_problems[sub].copy()
+                if sub in temporary_dict.keys():
+                    for problem in all_problems[sub]:
+                        number = problem['number']
+                        answer_temporary = temporary_dict[sub][0][f'prob{number}']
 
-        all_answers_confirmed = {
-            '언어': get_answers_confirmed_by_sub('언어'),
-            '자료': get_answers_confirmed_by_sub('자료'),
-            '상황': get_answers_confirmed_by_sub('상황'),
-            '헌법': get_answers_confirmed_by_sub('헌법'),
-        }
-
-        def get_problems_by_sub(sub: str):
-            problems = get_problems(sub)
-            try:
-                answers_temporary = (
-                    self.temporary_model.objects.defer('timestamp').values()
-                    .get(student__user_id=self.user_id, psat__year=self.year, psat__exam=self.exam,
-                         psat__subject__abbr=sub)
-                )
-            except self.temporary_model.DoesNotExist:
-                answers_temporary = None
-
-            for problem in problems:
-                number = problem['number']
-                if answers_temporary:
-                    answer_student = answers_temporary[f'prob{number}']
-                    if answer_student:
-                        problem['answer_temporary'] = answer_student
-            return problems
-
-        all_answers_temporary = {
-            '언어': get_problems_by_sub('언어'),
-            '자료': get_problems_by_sub('자료'),
-            '상황': get_problems_by_sub('상황'),
-            '헌법': get_problems_by_sub('헌법'),
-        }
+                        problem['answer_temporary'] = answer_temporary
 
         return {'confirmed': all_answers_confirmed, 'temporary': all_answers_temporary}
 
-    def get_is_confirmed(self) -> bool:
+    def get_is_complete(self) -> bool:
         exam_count = (
             self.psat_model.objects.filter(year=self.year, exam=self.exam)
             .distinct().values_list('subject_id', flat=True).count()
@@ -227,7 +229,7 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
             return When(problem__answer=Value(num), then=ExpressionWrapper(
                 F(f'count_{num}') * 100 / F('count_total'), output_field=FloatField()))
 
-        all_raw_answer_rates: list[dict] = list(
+        all_raw_answer_rates: list[dict] = (
             self.answer_count_model.objects
             .filter(problem__psat__year=self.year, problem__psat__exam=self.exam)
             .order_by('problem__psat__subject_id', 'problem__number')
@@ -271,7 +273,7 @@ class ConfirmModalViewMixin(
 
     student: any
     temporary: any
-    is_confirmed: bool
+    is_complete: bool
     confirmed: any
 
     def get_properties(self):
@@ -286,9 +288,9 @@ class ConfirmModalViewMixin(
 
         self.student = self.get_student()
         self.temporary = self.get_temporary()
-        self.is_confirmed = self.get_is_confirmed()
+        self.is_complete = self.get_is_complete()
 
-        if self.is_confirmed:
+        if self.is_complete:
             self.confirmed = self.create_answer_confirmed()
 
     def get_psat(self):
@@ -318,7 +320,7 @@ class ConfirmModalViewMixin(
         except self.temporary_model.DoesNotExist:
             pass
 
-    def get_is_confirmed(self):
+    def get_is_complete(self):
         if self.temporary:
             for i in range(1, self.problem_count + 1):
                 if not getattr(self.temporary, f'prob{i}'):

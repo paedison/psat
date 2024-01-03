@@ -101,7 +101,7 @@
 {% partialdef score_confirmed %} {# score_confirmed partial #}
     {% #modal header='최종 답안 제출' %}
         <h5 class="modal-title mx-auto fw-bold">
-            {% if is_confirmed %}
+            {% if is_complete %}
                 <span class="text-success" hx-trigger="load delay:0.25s"
                       hx-target="#main" hx-push-url="false"
                       hx-get="{% url 'score:detail_year_ex' psat.year psat.exam.abbr %}">

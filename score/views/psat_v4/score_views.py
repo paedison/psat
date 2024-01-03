@@ -74,15 +74,11 @@ class DetailView(
             'icon_subject': self.ICON_SUBJECT,
             'icon_nav': self.ICON_NAV,
 
-            # filter options
-            'option_year': self.option_year,
-            'option_ex': self.option_ex,
-
             # score_student.html
             'student': self.student,
 
             # score_sheet.html
-            'is_confirmed': self.is_confirmed,
+            'is_complete': self.is_complete,
             'rank_total': self.all_ranks['전체'],
             'rank_department': self.all_ranks['직렬'],
             'stat_total': self.all_stat['전체'],
@@ -152,7 +148,7 @@ class ConfirmModalView(
         return {
             'psat': self.psat,
             'student': self.student,
-            'is_confirmed': self.is_confirmed,
+            'is_complete': self.is_complete,
         }
 
 
@@ -199,7 +195,7 @@ class PredictView(
             'student': self.student,
 
             # score_sheet.html
-            'is_confirmed': self.is_confirmed,
+            'is_confirmed': self.is_complete,
             'rank_total': self.all_ranks['전체'],
             'rank_department': self.all_ranks['직렬'],
             'stat_total': self.all_stat['전체'],

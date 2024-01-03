@@ -13,7 +13,7 @@
 
 <div class="tab-content" id="scoreChartContent">
     {% #nav_content prefix='chart' id='0' %}
-        {% if is_confirmed %}
+        {% if is_complete %}
             {% partialdef chart_canvas inline=True %}
                 <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
                     <script src="{% static 'vendor/chart.js/chart.umd.js' %}"></script>

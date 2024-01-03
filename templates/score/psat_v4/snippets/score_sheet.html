@@ -36,7 +36,7 @@
                    <th class="col-1">직렬 석차(%)</th>
                 </tr>
             </thead>
-            {% if is_confirmed %}
+            {% if is_complete %}
 
                 {% partialdef my_score inline=True %} {# my_score partial #}
                     <tbody>
@@ -136,7 +136,7 @@
                     </thead>
                 {% endpartialdef score_thead2 %}
 
-                {% if is_confirmed %}
+                {% if is_complete %}
 
                     {% partialdef score_statistics inline=True %} {# score_statistics partial #}
                         <tbody>
@@ -196,7 +196,7 @@
         {% #responsive_table %}
             {% with stat=stat_department %}
                 {% partial score_thead2 %}
-                {% if is_confirmed %}
+                {% if is_complete %}
                     {% partial score_statistics %}
                 {% else %}
                     {% partial error_message %}

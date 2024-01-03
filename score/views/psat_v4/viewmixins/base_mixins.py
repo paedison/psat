@@ -1,5 +1,3 @@
-from django.db.models import F
-
 from reference import models as reference_models
 from score import forms as score_forms
 from score import models as score_models
@@ -112,8 +110,6 @@ class BaseMixin(ScoreExamList):
 
         if self.year and self.ex:
             self.exam = self.get_exam()
-            self.option_year = self.get_year_option()
-            self.option_ex = self.get_ex_option()
 
         self.info = {
             'menu': 'score',
@@ -132,17 +128,3 @@ class BaseMixin(ScoreExamList):
         else:
             return self.exam_model.objects.get(
                 psat_exams__year=self.year, abbr=self.ex, psat_exams__subject__abbr='언어')
-
-    def get_year_option(self) -> list[tuple]:
-        year_list = (
-            self.psat_model.objects.distinct()
-            .values_list('year', flat=True).order_by('-year')
-        )
-        return get_option(year_list)
-
-    def get_ex_option(self) -> list[tuple]:
-        ex_list = (
-            self.psat_model.objects.filter(year=self.year).distinct()
-            .values(ex=F('exam__abbr'), exam_name=F('exam__name')).order_by('exam_id')
-        )
-        return get_option(ex_list)
