@@ -101,7 +101,6 @@ class PrintView(DetailView):
 
 
 class NoOpenModalView(
-    LoginRequiredMixin,
     base_mixins.BaseMixin,
     vanilla.TemplateView,
 ):
