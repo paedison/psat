@@ -78,7 +78,7 @@ class Command(BaseCommand):
             }).values(
                 'student_id', f'{rank_type}_eoneo', f'{rank_type}_jaryo', f'{rank_type}_sanghwang',
                 f'{rank_type}_psat', f'{rank_type}_heonbeob',
-                f'ratio_{rank_type}_eoneo',f'ratio_{rank_type}_jaryo', f'ratio_{rank_type}_sanghwang',
+                f'ratio_{rank_type}_eoneo', f'ratio_{rank_type}_jaryo', f'ratio_{rank_type}_sanghwang',
                 f'ratio_{rank_type}_psat', f'ratio_{rank_type}_heonbeob',
             )
 

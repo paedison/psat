@@ -1,84 +1,38 @@
-from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import (
     F, When, Value, Case, ExpressionWrapper, FloatField, Count
 )
-from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
 from score.utils import get_all_ranks_dict, get_all_stat_dict, get_all_answer_rates_dict
-from . import base_mixins
 from .base_mixins import BaseMixin
 
 
-class ListViewMixin(
-    ConstantIconSet,
-    base_mixins.BaseMixin,
-):
-    page_obj: any
-    page_range: any
+class InitialViewMixIn(ConstantIconSet, BaseMixin):
+    sub_title: str
+    units: list
+    student: any
 
     def get_properties(self):
         super().get_properties()
-        self.page_obj, self.page_range = self.get_paginator_info()
 
-    def get_paginator_info(self) -> tuple:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        paginator = Paginator(self.exam_list, 10)
-        page_obj = paginator.get_page(page_number)
-        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+        self.sub_title: str = self.get_sub_title()
+        self.units = self.unit_model.objects.filter(exam=self.exam)
+        self.student = self.get_student()
 
-        all_student = (
-            self.student_model.objects
-            .annotate(department_name=F('department__name'), ex=F('department__unit__exam__abbr'))
-            .filter(user_id=self.user_id).values()
-        )
-        all_psat_info = self.get_all_psat_info()
-        info_temporary = all_psat_info['temporary']
-        info_confirmed = all_psat_info['confirmed']
-        sub_dict = {
-            'eoneo': '언어',
-            'jaryo': '자료',
-            'sanghwang': '상황',
-            'heonbeob': '헌법',
-        }
+    def get_sub_title(self) -> str:
+        return f'{self.year}년 {self.exam.name} 합격 예측'
 
-        for obj in page_obj:
-            base_url = reverse_lazy('psat:base')
-            obj['problem_url'] = f"{base_url}?year={obj['year']}&ex={obj['ex']}"
-            obj.update({'eoneo': {}, 'jaryo': {}, 'sanghwang': {}, 'heonbeob': {}})
-
-            for key, item in sub_dict.items():
-                if item not in obj['sub']:
-                    obj[key]['data'] = False
-                else:
-                    obj[key]['data'] = True
-                    for info in info_confirmed:
-                        if info['year'] == obj['year'] and info['ex'] == obj['ex'] and info['sub'] == item:
-                            obj[key]['confirmed'] = True
-                    for info in info_temporary:
-                        if info['year'] == obj['year'] and info['ex'] == obj['ex'] and info['sub'] == item:
-                            obj[key]['temporary'] = True
-
-            for stu in all_student:
-                if stu['year'] == obj['year'] and stu['ex'] == obj['ex']:
-                    obj['student'] = stu
-        return page_obj, page_range
-
-    def get_all_psat_info(self):
-        def get_psat_info(model):
+    def get_student(self):
+        try:
             return (
-                model.objects.filter(student__user_id=self.user_id)
-                .order_by('psat')
-                .annotate(year=F('psat__year'), ex=F('psat__exam__abbr'), sub=F('psat__subject__abbr'))
-                .distinct().values('psat_id', 'year', 'ex', 'sub')
+                self.student_model.objects
+                .annotate(department_name=F('department__name'), unit_name=F('department__unit__name'))
+                .select_related('department__unit', 'department__unit__exam')
+                .get(year=self.year, department__unit__exam=self.exam, user_id=self.user_id)
             )
-
-        return {
-            'temporary': get_psat_info(self.temporary_model),
-            'confirmed': get_psat_info(self.confirmed_model),
-        }
+        except self.student_model.DoesNotExist:
+            pass
 
 
 class DetailViewMixin(ConstantIconSet, BaseMixin):

@@ -105,8 +105,8 @@ class BaseMixin(ScoreExamList):
     def get_properties(self):
         self.user_id: int | None = self.request.user.id if self.request.user.is_authenticated else None
 
-        self.year: str = self.get_kwargs('year') or self.get_post_variable('year')
-        self.ex: str = self.get_kwargs('ex') or self.get_post_variable('ex')
+        self.year = self.get_year()
+        self.ex = self.get_ex()
 
         if self.year and self.ex:
             self.exam = self.get_exam()
@@ -116,11 +116,19 @@ class BaseMixin(ScoreExamList):
             'view_type': 'psatScore',
         }
 
-    def get_kwargs(self, kw: str, default=None):
-        return self.kwargs.get(kw, default)
+    def get_year(self):
+        try:
+            if self.year is not None:
+                return self.year
+        except AttributeError:
+            return self.kwargs.get('year') or self.request.POST.get('year')
 
-    def get_post_variable(self, kw: str, default=None):
-        return self.request.POST.get(kw, default)
+    def get_ex(self):
+        try:
+            if self.ex is not None:
+                return self.ex
+        except AttributeError:
+            return self.kwargs.get('ex') or self.request.POST.get('ex')
 
     def get_exam(self):
         if self.year == '2020' and self.ex == '칠급':

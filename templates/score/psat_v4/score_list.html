@@ -35,14 +35,15 @@
                     <th class="text-primary text-nowrap p-2 col-1">직렬</th>
                     <th class="text-primary text-nowrap p-2 col-1">성적표</th>
                     <th class="text-primary text-nowrap p-2 col-1">
-                        {{ icon_subject.언어|safe }} 언어논리
+                        {{ icon_subject.언어|safe }} 언어
                     </th>
                     <th class="text-primary text-nowrap p-2 col-1">
-                        {{ icon_subject.자료|safe }} 자료해석
+                        {{ icon_subject.자료|safe }} 자료
                     </th>
                     <th class="text-primary text-nowrap p-2 col-1">
-                        {{ icon_subject.상황|safe }} 상황판단
+                        {{ icon_subject.상황|safe }} 상황
                     </th>
+                    <th class="text-primary text-nowrap p-2 col-1">PSAT 평균</th>
                     <th class="text-primary text-nowrap p-2 col-1">
                         {{ icon_subject.헌법|safe }} 헌법
                     </th>
@@ -168,6 +169,7 @@
                                     {% partial process_badge %}
                                 {% endwith %}
                             </td>
+                            <td>{{ obj.student.score_psat_avg|floatformat:1 }}</td>
                             <td class="text-nowrap p-2">
                                 {% if obj.heonbeob %}
                                     {% with target=obj.heonbeob score=obj.student.heonbeob_score %}

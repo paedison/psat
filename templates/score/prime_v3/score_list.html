@@ -54,13 +54,22 @@
                     <th class="text-primary text-nowrap p-2 col-1">수험번호</th>
                     <th class="text-primary text-nowrap p-2 col-1">직렬</th>
                     <th class="text-primary text-nowrap p-2 col-1">성적표</th>
-                    <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">언어</th>
-                    <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">자료</th>
-                    <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">상황</th>
+                    <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
+                        {{ icon_subject.언어|safe }} 언어
+                    </th>
+                    <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
+                        {{ icon_subject.자료|safe }} 자료
+                    </th>
+                    <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
+                        {{ icon_subject.상황|safe }} 상황
+                    </th>
                     <th class="text-primary text-nowrap p-2 col-1">PSAT 평균</th>
-                    <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">헌법</th>
+                    <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
+                        {{ icon_subject.헌법|safe }} 헌법
+                    </th>
                 </tr>
             </thead>
+
             <tbody>
                 {% if page_obj %}
                     {% for obj in page_obj %}
