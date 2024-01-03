@@ -62,23 +62,6 @@ class ListViewMixin(BaseViewMixin):
     page_obj: any
     page_range: any
 
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-
-        return {
-            # base info
-            'info': self.info,
-            'title': 'Score',
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-
-            # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-        }
-
     def get_properties(self):
         super().get_properties()
         self.page_obj, self.page_range = self.get_paginator_info()
@@ -108,41 +91,6 @@ class DetailViewMixin(BaseViewMixin):
     student_ids: list
     base_url: str
     pagination_url: str
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-
-        return {
-            # base info
-            'info': self.info,
-            'year': self.year,
-            'round': self.round,
-            'title': 'Score',
-            'sub_title': self.sub_title,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-            'icon_search': self.ICON_SEARCH,
-
-            # filtering and searching
-            'current_category': self.current_category,
-            'category_list': self.category_list,
-            'search_student_name': self.search_student_name,
-
-            # score statistics
-            'statistics': self.statistics,
-
-            # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-            'student_ids': self.student_ids,
-
-            # urls
-            'base_url': self.base_url,
-            'pagination_url': self.pagination_url,
-        }
 
     def get_properties(self):
         super().get_properties()

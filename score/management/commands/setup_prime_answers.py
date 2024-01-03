@@ -36,7 +36,7 @@ class Command(BaseCommand):
             wr.writerow(
                 ['id', 'prime_id', 'student_id'] + [f'prob{i}' for i in range(1, 41)]
             )
-            answer_id = 1
+            answer_id = 6213
             for row in csv_data:
                 wr.writerow([answer_id, eoneo_id, row[0]] + row[26:66])
                 answer_id += 1

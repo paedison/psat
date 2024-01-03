@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 if answer_correct <= 5 and answer_correct == answer_student:
                     correct_count += 1
                 if answer_correct > 5:
-                    answer_correct_list = [int(digit) for digit in str(problem_answers)]
+                    answer_correct_list = [int(digit) for digit in str(answer_correct)]
                     if answer_student in answer_correct_list:
                         correct_count += 1
 
