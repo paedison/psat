@@ -51,19 +51,22 @@
                 <tr class="text-center small align-middle">
                     <th rowspan="3">과목</th>
                     <th colspan="5">내 성적</th>
-                    <th colspan="4">전체 기준</th>
-                    <th colspan="4">직렬 기준</th>
+                    <th colspan="5">전체 기준</th>
+                    <th colspan="5">직렬 기준</th>
                 </tr>
                 <tr class="text-center small align-middle">
                     <th rowspan="2">점수(점)</th>
                     <th colspan="2">전체 석차</th>
                     <th colspan="2">직렬 석차</th>
+
                     <th rowspan="2">최고<br/>점수(점)</th>
+                    <th rowspan="2">응시자수</th>
                     <th rowspan="2">상위<br/>10%(점)</th>
                     <th rowspan="2">상위<br/>20%(점)</th>
                     <th rowspan="2">평균<br/>점수(점)</th>
 
                     <th rowspan="2">최고<br/>점수(점)</th>
+                    <th rowspan="2">응시자수</th>
                     <th rowspan="2">상위<br/>10%(점)</th>
                     <th rowspan="2">상위<br/>20%(점)</th>
                     <th rowspan="2">평균<br/>점수(점)</th>
@@ -83,11 +86,15 @@
                     <td>{{ student_score.rank_ratio_total_eoneo|percentage|floatformat:1 }}</td>
                     <td>{{ student_score.rank_department_eoneo }}</td>
                     <td>{{ student_score.rank_ratio_department_eoneo|percentage|floatformat:1 }}</td>
+
                     <td>{{ stat_total.max_score_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_total.num_students }}</td>
                     <td>{{ stat_total.top_score_10_eoneo|floatformat:1 }}</td>
                     <td>{{ stat_total.top_score_20_eoneo|floatformat:1 }}</td>
                     <td>{{ stat_total.avg_score_eoneo|floatformat:1 }}</td>
+
                     <td>{{ stat_department.max_score_eoneo|floatformat:1 }}</td>
+                    <td>{{ stat_department.num_students }}</td>
                     <td>{{ stat_department.top_score_10_eoneo|floatformat:1 }}</td>
                     <td>{{ stat_department.top_score_20_eoneo|floatformat:1 }}</td>
                     <td>{{ stat_department.avg_score_eoneo|floatformat:1 }}</td>
@@ -99,11 +106,15 @@
                     <td>{{ student_score.rank_ratio_total_jaryo|percentage|floatformat:1 }}</td>
                     <td>{{ student_score.rank_department_jaryo }}</td>
                     <td>{{ student_score.rank_ratio_department_jaryo|percentage|floatformat:1 }}</td>
+
                     <td>{{ stat_total.max_score_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_total.num_students }}</td>
                     <td>{{ stat_total.top_score_10_jaryo|floatformat:1 }}</td>
                     <td>{{ stat_total.top_score_20_jaryo|floatformat:1 }}</td>
                     <td>{{ stat_total.avg_score_jaryo|floatformat:1 }}</td>
+
                     <td>{{ stat_department.max_score_jaryo|floatformat:1 }}</td>
+                    <td>{{ stat_department.num_students }}</td>
                     <td>{{ stat_department.top_score_10_jaryo|floatformat:1 }}</td>
                     <td>{{ stat_department.top_score_20_jaryo|floatformat:1 }}</td>
                     <td>{{ stat_department.avg_score_jaryo|floatformat:1 }}</td>
@@ -115,11 +126,15 @@
                     <td>{{ student_score.rank_ratio_total_sanghwang|percentage|floatformat:1 }}</td>
                     <td>{{ student_score.rank_department_sanghwang }}</td>
                     <td>{{ student_score.rank_ratio_department_sanghwang|percentage|floatformat:1 }}</td>
+
                     <td>{{ stat_total.max_score_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_total.num_students }}</td>
                     <td>{{ stat_total.top_score_10_sanghwang|floatformat:1 }}</td>
                     <td>{{ stat_total.top_score_20_sanghwang|floatformat:1 }}</td>
                     <td>{{ stat_total.avg_score_sanghwang|floatformat:1 }}</td>
+
                     <td>{{ stat_department.max_score_sanghwang|floatformat:1 }}</td>
+                    <td>{{ stat_department.num_students }}</td>
                     <td>{{ stat_department.top_score_10_sanghwang|floatformat:1 }}</td>
                     <td>{{ stat_department.top_score_20_sanghwang|floatformat:1 }}</td>
                     <td>{{ stat_department.avg_score_sanghwang|floatformat:1 }}</td>
@@ -131,11 +146,15 @@
                     <td>{{ student_score.rank_ratio_total_psat|percentage|floatformat:1 }}</td>
                     <td>{{ student_score.rank_department_psat }}</td>
                     <td>{{ student_score.rank_ratio_department_psat|percentage|floatformat:1 }}</td>
+
                     <td>{{ stat_total.max_score_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_total.num_students }}</td>
                     <td>{{ stat_total.top_score_10_psat_avg|floatformat:1 }}</td>
                     <td>{{ stat_total.top_score_20_psat_avg|floatformat:1 }}</td>
                     <td>{{ stat_total.avg_score_psat_avg|floatformat:1 }}</td>
+
                     <td>{{ stat_department.max_score_psat_avg|floatformat:1 }}</td>
+                    <td>{{ stat_department.num_students }}</td>
                     <td>{{ stat_department.top_score_10_psat_avg|floatformat:1 }}</td>
                     <td>{{ stat_department.top_score_20_psat_avg|floatformat:1 }}</td>
                     <td>{{ stat_department.avg_score_psat_avg|floatformat:1 }}</td>
@@ -147,11 +166,15 @@
                     <td>{{ student_score.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
                     <td>{{ student_score.rank_department_heonbeob }}</td>
                     <td>{{ student_score.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
+
                     <td>{{ stat_total.max_score_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_total.num_students }}</td>
                     <td>{{ stat_total.top_score_10_heonbeob|floatformat:1 }}</td>
                     <td>{{ stat_total.top_score_20_heonbeob|floatformat:1 }}</td>
                     <td>{{ stat_total.avg_score_heonbeob|floatformat:1 }}</td>
+
                     <td>{{ stat_department.max_score_heonbeob|floatformat:1 }}</td>
+                    <td>{{ stat_department.num_students }}</td>
                     <td>{{ stat_department.top_score_10_heonbeob|floatformat:1 }}</td>
                     <td>{{ stat_department.top_score_20_heonbeob|floatformat:1 }}</td>
                     <td>{{ stat_department.avg_score_heonbeob|floatformat:1 }}</td>
