@@ -25,7 +25,7 @@ class BaseMixin:
         {'year': 2023, 'round': 1, 'date': '1/7', 'staff': True,
          'opened_at': datetime(2023, 1, 4, 23)},
         {'year': 2024, 'round': 1, 'date': '12/30', 'staff': False,
-         'opened_at': datetime(2024, 1, 4, 17)},
+         'opened_at': datetime(2024, 1, 4, 19)},
         {'year': 2024, 'round': 2, 'date': '1/13', 'staff': False,
          'opened_at': datetime(2024, 1, 18, 17)},
         {'year': 2024, 'round': 3, 'date': '1/27', 'staff': False,
