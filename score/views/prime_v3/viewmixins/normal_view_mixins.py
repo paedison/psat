@@ -54,8 +54,8 @@ class ListViewMixin(
     def get_all_score(self):
         return (
             self.statistics_model.objects
-            .annotate(year=F('student__year'), round=F('student__round'))
             .filter(student__prime_verified_users__user_id=self.user_id)
+            .annotate(year=F('student__year'), round=F('student__round'))
             .values()
         )
 

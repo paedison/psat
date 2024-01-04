@@ -170,17 +170,29 @@
                                             {% endif %}
                                         </td>
                                         <td class="d-none d-md-table-cell">
-                                            {{ obj.student_score.score_eoneo|floatformat:1 }}
+                                            {% if obj.student %}
+                                                {{ obj.student_score.score_eoneo|floatformat:1 }}
+                                            {% endif %}
                                         </td>
                                         <td class="d-none d-md-table-cell">
-                                            {{ obj.student_score.score_jaryo|floatformat:1 }}
+                                            {% if obj.student %}
+                                                {{ obj.student_score.score_jaryo|floatformat:1 }}
+                                            {% endif %}
                                         </td>
                                         <td class="d-none d-md-table-cell">
-                                            {{ obj.student_score.score_sanghwang|floatformat:1 }}
+                                            {% if obj.student %}
+                                                {{ obj.student_score.score_sanghwang|floatformat:1 }}
+                                            {% endif %}
                                         </td>
-                                        <td>{{ obj.student_score.score_psat_avg|floatformat:1 }}</td>
+                                        <td>
+                                            {% if obj.student %}
+                                                {{ obj.student_score.score_psat_avg|floatformat:1 }}
+                                            {% endif %}
+                                        </td>
                                         <td class="d-none d-md-table-cell">
-                                            {{ obj.student_score.score_heonbeob|floatformat:1 }}
+                                            {% if obj.student %}
+                                                {{ obj.student_score.score_heonbeob|floatformat:1 }}
+                                            {% endif %}
                                         </td>
                                     {% endpartialdef exam_info %}
 
