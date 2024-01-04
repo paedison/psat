@@ -40,6 +40,7 @@ class PrimeStudent(StudentBase):
 
 
 class PrimeVerifiedUser(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prime_verified_users')
     student = models.ForeignKey(PrimeStudent, on_delete=models.CASCADE, related_name='prime_verified_users')
 
