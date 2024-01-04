@@ -73,11 +73,12 @@
             <tbody>
                 {% if page_obj %}
                     {% for obj in page_obj %}
-                        {% if obj.staff and user.is_staff %}
-                            {% partialdef exam_list inline=True %}
-                                <tr class="text-center">
-                                    <td class="text-nowrap p-2">
-                                        {% if user.is_authenticated %}
+                        <tr class="text-center">
+                            {% if obj.staff %}
+                                {% if user.is_staff %}
+
+                                    {% partialdef exam_round inline=True %} {# exam_round partial #}
+                                        <td class="text-nowrap p-2">
                                             {% if obj.student %}
                                                 <a href="{{ obj.detail_url }}" hx-boost="true">
                                                     제{{ obj.round }}회
@@ -85,12 +86,10 @@
                                             {% else %}
                                                 제{{ obj.round }}회
                                             {% endif %}
-                                        {% else %}
-                                            제{{ obj.round }}회
-                                        {% endif %}
-                                    </td>
+                                        </td>
+                                    {% endpartialdef exam_round %}
 
-                                    {% if current_time > obj.opened_at %}
+                                    {% partialdef exam_info inline=True %} {# exam_info partial #}
                                         <td class="text-nowrap p-2">
                                             {% if user.is_authenticated %}
                                                 {% if obj.student %}
@@ -181,6 +180,16 @@
                                         <td class="d-none d-md-table-cell">
                                             {{ obj.student_score.score_heonbeob|floatformat:1 }}
                                         </td>
+                                    {% endpartialdef exam_info %}
+
+                                {% endif %}
+                            {% else %}
+                                {% partial exam_round %}
+                                {% if user.is_staff %}
+                                    {% partial exam_info %}
+                                {% else %}
+                                    {% if current_time > obj.opened_at %}
+                                        {% partial exam_info %}
                                     {% else %}
                                         <td class="text-nowrap p-2" colspan="8">
                                             <a class="badge rounded-pill text-bg-danger" href=""
@@ -188,15 +197,13 @@
                                                hx-target="#modalContainer" hx-swap="innerHTML"
                                                hx-push-url="false"
                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                성적 공개일 : {{ obj.opened_at|date:'n/d(D)' }}
+                                                성적 공개 일시 : {{ obj.opened_at|date:'n/d(D) H:i' }}
                                             </a>
                                         </td>
                                     {% endif %}
-                                </tr>
-                            {% endpartialdef exam_list %}
-                        {% elif not obj.staff %}
-                            {% partial exam_list %}
-                        {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        </tr>
                     {% endfor %}
                 {% endif %}
             </tbody>
