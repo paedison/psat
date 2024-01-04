@@ -5,6 +5,8 @@
 {% load partials %}
 {% load slippers %}
 
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+
 {% block main %}
 {% partialdef list_main inline=True %} {# list_main partial #}
 {{ info|json_script:'info' }}
