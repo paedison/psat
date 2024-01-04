@@ -36,7 +36,7 @@ class PrimeStudent(StudentBase):
         verbose_name_plural = "수험 정보"
 
     def __str__(self):
-        return f'{self.year}{self.department.exam.abbr}-{self.department}-{self.user_id}'
+        return f'{self.year}{self.department.exam.abbr}-{self.department}'
 
 
 class PrimeVerifiedUser(models.Model):

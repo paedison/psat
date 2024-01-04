@@ -30,17 +30,39 @@ class ListViewMixin(
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
 
         if self.user_id:
-            all_student = self.get_all_student()
-            all_score = self.get_all_score()
-
             for obj in page_obj:
-                for student in all_student:
-                    if student.year == obj['year'] and student.round == obj['round']:
-                        obj['student'] = student
-                for score in all_score:
-                    if score.year == obj['year'] and score.round == obj['round']:
-                        obj['student_score'] = score
+                student = (
+                    self.student_model.objects
+                    .annotate(department_name=F('department__name'))
+                    .filter(
+                        prime_verified_users__user_id=self.user_id,
+                        year=obj['year'], round=obj['round']
+                    ).first()
+                )
+                score = (
+                    self.statistics_model.objects
+                    .annotate(year=F('student__year'), round=F('student__round'))
+                    .filter(
+                        student__prime_verified_users__user_id=self.user_id,
+                        year=obj['year'], round=obj['round']
+                    ).first()
+                    # .values()
+                )
+                obj['student'] = student
+                obj['student_score'] = score
                 obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
+        # if self.user_id:
+        #     all_student = self.get_all_student()
+        #     all_score = self.get_all_score()
+        #
+        #     for obj in page_obj:
+        #         for student in all_student:
+        #             if student.year == obj['year'] and student.round == obj['round']:
+        #                 obj['student'] = student
+        #         for score in all_score:
+        #             if score.year == obj['year'] and score.round == obj['round']:
+        #                 obj['student_score'] = score
+        #         obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
     def get_all_student(self):
@@ -50,6 +72,7 @@ class ListViewMixin(
             .annotate(department_name=F('department__name'))
             # .values()
         )
+        # print(all_student)
         return all_student
 
     def get_all_score(self):
