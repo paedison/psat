@@ -45,15 +45,18 @@ class ListViewMixin(
 
     def get_all_student(self):
         return (
-            self.student_model.objects.annotate(department_name=F('department__name'))
-            .filter(prime_verified_users__user=self.request.user).values()
+            self.student_model.objects
+            .filter(prime_verified_users__user_id=self.user_id)
+            .annotate(department_name=F('department__name'))
+            .values()
         )
 
     def get_all_score(self):
         return (
             self.statistics_model.objects
             .annotate(year=F('student__year'), round=F('student__round'))
-            .filter(student__prime_verified_users__user=self.request.user).values()
+            .filter(student__prime_verified_users__user_id=self.user_id)
+            .values()
         )
 
 
@@ -71,10 +74,11 @@ class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
     def get_properties(self):
         super().get_properties()
 
-        self.student_id = self.get_student_id()
+        # self.student_id = self.get_student_id()
 
-        self.sub_title = f'제{self.round}회 프라임 모의고사'
         self.student = self.get_student()
+        self.student_id = self.get_student_id()
+        self.sub_title = f'제{self.round}회 프라임 모의고사'
 
         self.student_score = self.statistics_model.objects.get(student_id=self.student['id'])  # score, rank, rank_ratio
         self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
@@ -82,16 +86,33 @@ class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
         self.all_answer_rates = self.get_all_answer_rates()
 
     def get_student_id(self) -> int:
-        student_qs = self.get_students_qs()
         student_id_request = self.kwargs.get('student_id')
         if student_id_request:
             return int(student_id_request)
-        return student_qs.filter(prime_verified_users__user_id=self.user_id).first().id
+        if self.student:
+            return self.student['id']
+        # return student_qs.filter(prime_verified_users__user_id=self.user_id).first().id
 
+    # def get_student_id(self) -> int:
+    #     student_qs = self.get_students_qs()
+    #     student_id_request = self.kwargs.get('student_id')
+    #     if student_id_request:
+    #         return int(student_id_request)
+    #     return student_qs.filter(prime_verified_users__user_id=self.user_id).first().id
+    #
     def get_student(self):
         student_qs = self.get_students_qs()
-        return student_qs.annotate(department_name=F('department__name')).values().get(id=self.student_id)
+        student = (
+            student_qs.annotate(department_name=F('department__name'))
+            .filter(prime_verified_users__user_id=self.user_id).values()
+            .first()
+        )
+        return student
 
+    # def get_student(self):
+    #     student_qs = self.get_students_qs()
+    #     return student_qs.annotate(department_name=F('department__name')).values().get(id=self.student_id)
+    #
     def get_students_qs(self, rank_type='전체'):
         filter_expr = {
             'year': self.year,
