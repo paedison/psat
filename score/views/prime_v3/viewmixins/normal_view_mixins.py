@@ -35,29 +35,31 @@ class ListViewMixin(
 
             for obj in page_obj:
                 for student in all_student:
-                    if student['year'] == obj['year'] and student['round'] == obj['round']:
+                    if student.year == obj['year'] and student.round == obj['round']:
                         obj['student'] = student
                 for score in all_score:
-                    if score['year'] == obj['year'] and score['round'] == obj['round']:
+                    if score.year == obj['year'] and score.round == obj['round']:
                         obj['student_score'] = score
                 obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
     def get_all_student(self):
-        return (
+        all_student = (
             self.student_model.objects
             .filter(prime_verified_users__user_id=self.user_id)
             .annotate(department_name=F('department__name'))
-            .values()
+            # .values()
         )
+        return all_student
 
     def get_all_score(self):
-        return (
+        all_score = (
             self.statistics_model.objects
             .filter(student__prime_verified_users__user_id=self.user_id)
             .annotate(year=F('student__year'), round=F('student__round'))
-            .values()
+            # .values()
         )
+        return all_score
 
 
 class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
