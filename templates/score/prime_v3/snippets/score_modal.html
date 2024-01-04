@@ -16,7 +16,10 @@
 {% partialdef no_student_modal %} {# no_student_modal partial #}
     {% #modal header='수험 정보 오류' %}
         <h5 class="modal-title mx-auto fw-bold">
-            <span class="text-danger">수험 정보를 입력해주세요.</span>
+            <span class="text-danger" hx-trigger="load delay:0.5s"
+                  hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s" hx-push-url="false"
+                  hx-get="{% url 'prime:student_connect_modal' year round %}">
+                수험 정보를 입력해주세요.</span>
         </h5>
     {% /modal %}
 {% endpartialdef no_student_modal %}

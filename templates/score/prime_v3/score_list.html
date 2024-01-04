@@ -155,7 +155,7 @@
                                                     </a>
                                                 {% else %}
                                                     <a class="badge rounded-pill text-bg-danger"
-                                                       hx-get="{% url 'prime:no_student_modal' %}" href=""
+                                                       hx-get="{% url 'prime:no_student_modal' obj.year obj.round %}" href=""
                                                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
                                                         미응시

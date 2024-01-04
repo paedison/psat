@@ -119,10 +119,19 @@ class NoOpenModalView(
 
 class NoStudentModalView(
     LoginRequiredMixin,
+    base_mixins.BaseMixin,
     vanilla.TemplateView,
 ):
     """ Represent modal view when there is no student data. """
     template_name = 'score/prime_v3/snippets/score_modal.html#no_student_modal'
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            'year': self.year,
+            'round': self.round,
+        }
 
 
 class StudentConnectModalView(
