@@ -39,6 +39,14 @@
             </thead>
             <tbody>
                 <tr class="text-center">
+                    <th class="text-nowrap">헌법</th>
+                    <td>{{ student_score.score_heonbeob|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_total_heonbeob }}</td>
+                    <td>{{ student_score.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
+                    <td>{{ student_score.rank_department_heonbeob }}</td>
+                    <td>{{ student_score.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
+                </tr>
+                <tr class="text-center">
                     <th class="text-nowrap">언어논리</th>
                     <td>{{ student_score.score_eoneo|floatformat:1 }}</td>
                     <td>{{ student_score.rank_total_eoneo }}</td>
@@ -70,16 +78,6 @@
                     <td>{{ student_score.rank_department_psat }}</td>
                     <td>{{ student_score.rank_ratio_department_psat|percentage|floatformat:1 }}</td>
                 </tr>
-                {% if heonbeob_answer or heonbeob_temporary %}
-                    <tr class="text-center">
-                        <th class="text-nowrap">헌법</th>
-                        <td>{{ student_score.score_heonbeob|floatformat:1 }}</td>
-                        <td>{{ student_score.rank_total_heonbeob }}</td>
-                        <td>{{ student_score.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
-                        <td>{{ student_score.rank_department_heonbeob }}</td>
-                        <td>{{ student_score.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
-                    </tr>
-                {% endif %}
             </tbody>
         {% /responsive_table %}
     {% /nav_content %}
@@ -93,6 +91,7 @@
                         <tr class="d-table-row d-md-none text-center align-middle table-warning">
                             <th class="text-nowrap">과목</th>
                             <th class="text-nowrap">내 점수</th>
+                            <th class="text-nowrap">응시자수</th>
                             <th class="text-nowrap">최고<br/>점수</th>
                             <th class="text-nowrap">상위<br/>10%</th>
                             <th class="text-nowrap">상위<br/>20%</th>
@@ -100,12 +99,13 @@
                         </tr>
 
                         <tr class="d-none d-md-table-row text-center align-middle table-warning">
-                           <th class="col-1">과목</th>
-                           <th class="col-1">내 점수(점)</th>
-                           <th class="col-1">최고 점수(점)</th>
-                           <th class="col-1">상위 10%(점)</th>
-                           <th class="col-1">상위 20%(점)</th>
-                           <th class="col-1">평균 점수(점)</th>
+                            <th class="col-1">과목</th>
+                            <th class="col-1">내 점수(점)</th>
+                            <th class="col-1">응시자수</th>
+                            <th class="col-1">최고 점수(점)</th>
+                            <th class="col-1">상위 10%(점)</th>
+                            <th class="col-1">상위 20%(점)</th>
+                            <th class="col-1">평균 점수(점)</th>
                         </tr>
                     </thead>
                 {% endpartialdef score_thead2 %}
@@ -115,6 +115,7 @@
                         <tr class="text-center">
                             <th class="text-nowrap">언어논리</th>
                             <td>{{ student_score.score_eoneo|floatformat:1 }}</td>
+                            <td>{{ stat.num_students }}</td>
                             <td>{{ stat.max_score_eoneo|floatformat:1 }}</td>
                             <td>{{ stat.top_score_10_eoneo|floatformat:1 }}</td>
                             <td>{{ stat.top_score_20_eoneo|floatformat:1 }}</td>
@@ -123,6 +124,7 @@
                         <tr class="text-center">
                             <th class="text-nowrap">자료해석</th>
                             <td>{{ student_score.score_jaryo|floatformat:1 }}</td>
+                            <td>{{ stat.num_students }}</td>
                             <td>{{ stat.max_score_jaryo|floatformat:1 }}</td>
                             <td>{{ stat.top_score_10_jaryo|floatformat:1 }}</td>
                             <td>{{ stat.top_score_20_jaryo|floatformat:1 }}</td>
@@ -131,6 +133,7 @@
                         <tr class="text-center">
                             <th class="text-nowrap">상황판단</th>
                             <td>{{ student_score.score_sanghwang|floatformat:1 }}</td>
+                            <td>{{ stat.num_students }}</td>
                             <td>{{ stat.max_score_sanghwang|floatformat:1 }}</td>
                             <td>{{ stat.top_score_10_sanghwang|floatformat:1 }}</td>
                             <td>{{ stat.top_score_20_sanghwang|floatformat:1 }}</td>
@@ -139,6 +142,7 @@
                         <tr class="text-center table-warning">
                             <th class="text-nowrap">PSAT 평균</th>
                             <td>{{ student_score.score_psat_avg|floatformat:1 }}</td>
+                            <td>{{ stat.num_students }}</td>
                             <td>{{ stat.max_score_psat_avg|floatformat:1 }}</td>
                             <td>{{ stat.top_score_10_psat_avg|floatformat:1 }}</td>
                             <td>{{ stat.top_score_20_psat_avg|floatformat:1 }}</td>
@@ -148,6 +152,7 @@
                             <tr class="text-center">
                                 <th class="text-nowrap">헌법</th>
                                 <td>{{ student_score.score_heonbeob|floatformat:1 }}</td>
+                                <td>{{ stat.num_students }}</td>
                                 <td>{{ stat.max_score_heonbeob|floatformat:1 }}</td>
                                 <td>{{ stat.top_score_10_heonbeob|floatformat:1 }}</td>
                                 <td>{{ stat.top_score_20_heonbeob|floatformat:1 }}</td>

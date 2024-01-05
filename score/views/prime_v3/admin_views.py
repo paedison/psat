@@ -94,7 +94,7 @@ class DetailView(
 
 class CatalogView(
     admin_view_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.CatalogViewMixin,
+    admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
     template_name = 'score/prime_v3/score_admin_detail.html#catalog'
@@ -102,10 +102,38 @@ class CatalogView(
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            # base info
+            'year': self.year,
+            'round': self.round,
+
+            # page objectives
+            'page_obj': self.page_obj,
+            'page_range': self.page_range,
+            'student_ids': self.student_ids,
+
+            # filtering and searching
+            'current_category': self.current_category,
+            'category_list': self.category_list,
+            'search_student_name': self.search_student_name,
+
+            # urls
+            'base_url': self.base_url,
+            'pagination_url': self.pagination_url,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+            'icon_search': self.ICON_SEARCH,
+        }
+
 
 class PrintView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.PrintViewMixin,
+    DetailView,
     vanilla.TemplateView,
 ):
     template_name = 'score/prime_v3/score_admin_print.html'
@@ -113,6 +141,11 @@ class PrintView(
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        context['all_stat'] = self.get_all_stat()
+        return context
 
 
 class IndividualStudentPrintView(
@@ -130,6 +163,9 @@ class ExportStatisticsToExcelView(
 ):
     view_type = 'export'
 
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
 
 class ExportScoresToExcelView(
     admin_view_mixins.OnlyStaffAllowedMixin,
@@ -137,6 +173,9 @@ class ExportScoresToExcelView(
     vanilla.View,
 ):
     view_type = 'export'
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class ExportTranscriptToPdfView(

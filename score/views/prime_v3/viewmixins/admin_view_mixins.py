@@ -150,44 +150,6 @@ class DetailViewMixin(BaseViewMixin):
         return page_obj, page_range, student_ids
 
 
-class CatalogViewMixin(DetailViewMixin):
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-
-        return {
-            # base info
-            'year': self.year,
-            'round': self.round,
-
-            # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-            'student_ids': self.student_ids,
-
-            # filtering and searching
-            'current_category': self.current_category,
-            'category_list': self.category_list,
-            'search_student_name': self.search_student_name,
-
-            # urls
-            'base_url': self.base_url,
-            'pagination_url': self.pagination_url,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-            'icon_search': self.ICON_SEARCH,
-        }
-
-
-class PrintViewMixin(DetailViewMixin):
-    def get_context_data(self, **kwargs) -> dict:
-        context = super().get_context_data(**kwargs)
-        context['all_stat'] = self.get_all_stat()
-        return context
-
-
 class ExportStatisticsToExcelMixin(DetailViewMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
@@ -218,32 +180,33 @@ class ExportScoresToExcelMixin(DetailViewMixin):
             .annotate(
                 이름=F('student__name'), 수험번호=F('student__serial'), 직렬=F('student__department__name'),
 
-                PSAT_총점=F('score_psat'), PSAT_평균=F('score_psat_avg'), 언어_점수=F('score_eoneo'),
-                자료_점수=F('score_jaryo'), 상황_점수=F('score_sanghwang'), 헌법_점수=F('score_heonbeob'),
+                헌법_점수=F('score_heonbeob'), 언어_점수=F('score_eoneo'),
+                자료_점수=F('score_jaryo'), 상황_점수=F('score_sanghwang'),
+                PSAT_총점=F('score_psat'), PSAT_평균=F('score_psat_avg'),
 
-                PSAT_전체_석차=F('rank_total_psat'), 언어_전체_석차=F('rank_total_eoneo'),
+                헌법_전체_석차=F('rank_total_heonbeob'), 언어_전체_석차=F('rank_total_eoneo'),
                 자료_전체_석차=F('rank_total_jaryo'), 상황_전체_석차=F('rank_total_sanghwang'),
-                헌법_전체_석차=F('rank_total_heonbeob'),
+                PSAT_전체_석차=F('rank_total_psat'),
 
-                PSAT_전체_석차_백분율=F('rank_ratio_total_psat'), 언어_전체_석차_백분율=F('rank_ratio_total_eoneo'),
+                헌법_전체_석차_백분율=F('rank_ratio_total_heonbeob'), 언어_전체_석차_백분율=F('rank_ratio_total_eoneo'),
                 자료_전체_석차_백분율=F('rank_ratio_total_jaryo'), 상황_전체_석차_백분율=F('rank_ratio_total_sanghwang'),
-                헌법_전체_석차_백분율=F('rank_ratio_total_heonbeob'),
+                PSAT_전체_석차_백분율=F('rank_ratio_total_psat'),
 
-                PSAT_직렬_석차=F('rank_department_psat'), 언어_직렬_석차=F('rank_department_eoneo'),
+                헌법_직렬_석차=F('rank_department_heonbeob'), 언어_직렬_석차=F('rank_department_eoneo'),
                 자료_직렬_석차=F('rank_department_jaryo'), 상황_직렬_석차=F('rank_department_sanghwang'),
-                헌법_직렬_석차=F('rank_department_heonbeob'),
+                PSAT_직렬_석차=F('rank_department_psat'),
 
-                PSAT_직렬_석차_백분율=F('rank_ratio_total_psat'), 언어_직렬_석차_백분율=F('rank_ratio_total_eoneo'),
+                헌법_직렬_석차_백분율=F('rank_ratio_total_heonbeob'), 언어_직렬_석차_백분율=F('rank_ratio_total_eoneo'),
                 자료_직렬_석차_백분율=F('rank_ratio_total_jaryo'), 상황_직렬_석차_백분율=F('rank_ratio_total_sanghwang'),
-                헌법_직렬_석차_백분율=F('rank_ratio_total_heonbeob'),
+                PSAT_직렬_석차_백분율=F('rank_ratio_total_psat'),
             )
             .values(
                 '이름', '수험번호', '직렬',
-                'PSAT_총점', 'PSAT_평균', 'PSAT_전체_석차', 'PSAT_전체_석차_백분율', 'PSAT_직렬_석차', 'PSAT_직렬_석차_백분율',
+                '헌법_점수', '헌법_전체_석차', '헌법_전체_석차_백분율', '헌법_직렬_석차', '헌법_직렬_석차_백분율',
                 '언어_점수', '언어_전체_석차', '언어_전체_석차_백분율', '언어_직렬_석차', '언어_직렬_석차_백분율',
                 '자료_점수', '자료_전체_석차', '자료_전체_석차_백분율', '자료_직렬_석차', '자료_직렬_석차_백분율',
                 '상황_점수', '상황_전체_석차', '상황_전체_석차_백분율', '상황_직렬_석차', '상황_직렬_석차_백분율',
-                '헌법_점수', '헌법_전체_석차', '헌법_전체_석차_백분율', '헌법_직렬_석차', '헌법_직렬_석차_백분율',
+                'PSAT_총점', 'PSAT_평균', 'PSAT_전체_석차', 'PSAT_전체_석차_백분율', 'PSAT_직렬_석차', 'PSAT_직렬_석차_백분율',
             )
         )
         df = pd.DataFrame.from_records(queryset)

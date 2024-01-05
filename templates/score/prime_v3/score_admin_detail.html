@@ -57,11 +57,11 @@
                     <tr class="text-center table-warning align-middle">
                         <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
                         <th class="text-primary text-nowrap p-2" rowspan="2">응시 인원</th>
-                        <th class="text-primary text-nowrap p-2" colspan="4">PSAT</th>
+                        <th class="text-primary text-nowrap p-2" colspan="4">헌법</th>
                         <th class="text-primary text-nowrap p-2" colspan="4">언어논리</th>
                         <th class="text-primary text-nowrap p-2" colspan="4">자료해석</th>
                         <th class="text-primary text-nowrap p-2" colspan="4">상황판단</th>
-                        <th class="text-primary text-nowrap p-2" colspan="4">헌법</th>
+                        <th class="text-primary text-nowrap p-2" colspan="4">PSAT</th>
                     </tr>
 
                     <tr class="text-center table-warning align-middle">
@@ -98,10 +98,10 @@
                                 <td class="text-nowrap p-2">{{ obj.department }}</td>
                                 <td class="text-nowrap p-2">{{ obj.num_students|intcomma }}</td>
 
-                                <td class="text-nowrap p-2">{{ obj.max_score_psat_avg|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.top_score_10_psat_avg|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.top_score_20_psat_avg|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.avg_score_psat_avg|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.max_score_heonbeob|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.top_score_10_heonbeob|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.top_score_20_heonbeob|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.avg_score_heonbeob|floatformat:1 }}</td>
 
                                 <td class="text-nowrap p-2">{{ obj.max_score_eoneo|floatformat:1 }}</td>
                                 <td class="text-nowrap p-2">{{ obj.top_score_10_eoneo|floatformat:1 }}</td>
@@ -118,10 +118,10 @@
                                 <td class="text-nowrap p-2">{{ obj.top_score_20_sanghwang|floatformat:1 }}</td>
                                 <td class="text-nowrap p-2">{{ obj.avg_score_sanghwang|floatformat:1 }}</td>
 
-                                <td class="text-nowrap p-2">{{ obj.max_score_heonbeob|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.top_score_10_heonbeob|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.top_score_20_heonbeob|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.avg_score_heonbeob|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.max_score_psat_avg|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.top_score_10_psat_avg|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.top_score_20_psat_avg|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.avg_score_psat_avg|floatformat:1 }}</td>
                             </tr>
                         {% endfor %}
                     {% endif %}
@@ -203,32 +203,32 @@
                         <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
                         <th class="text-primary text-nowrap p-2" rowspan="3">직렬</th>
 
-                        <th class="text-primary text-nowrap p-2" colspan="6">PSAT</th>
+                        <th class="text-primary text-nowrap p-2" colspan="5">헌법</th>
                         <th class="text-primary text-nowrap p-2" colspan="5">언어논리</th>
                         <th class="text-primary text-nowrap p-2" colspan="5">자료해석</th>
                         <th class="text-primary text-nowrap p-2" colspan="5">상황판단</th>
-                        <th class="text-primary text-nowrap p-2" colspan="5">헌법</th>
+                        <th class="text-primary text-nowrap p-2" colspan="6">PSAT</th>
                     </tr>
 
                     <tr class="text-center table-warning align-middle">
+                        <th class="text-primary text-nowrap p-2" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
+
+                        <th class="text-primary text-nowrap p-2" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
+
+                        <th class="text-primary text-nowrap p-2" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
+
+                        <th class="text-primary text-nowrap p-2" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
+
                         <th class="text-primary text-nowrap p-2" rowspan="2">총점</th>
                         <th class="text-primary text-nowrap p-2" rowspan="2">평균</th>
-                        <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
-                        <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
-
-                        <th class="text-primary text-nowrap p-2" rowspan="2">점수</th>
-                        <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
-                        <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
-
-                        <th class="text-primary text-nowrap p-2" rowspan="2">점수</th>
-                        <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
-                        <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
-
-                        <th class="text-primary text-nowrap p-2" rowspan="2">점수</th>
-                        <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
-                        <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
-
-                        <th class="text-primary text-nowrap p-2" rowspan="2">점수</th>
                         <th class="text-primary text-nowrap p-2" colspan="2">전체 석차</th>
                         <th class="text-primary text-nowrap p-2" colspan="2">직렬 석차</th>
                     </tr>
@@ -280,12 +280,11 @@
                                 <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
                                 <td class="text-nowrap p-2">{{ obj.student.department.name }}</td>
 
-                                <td class="text-nowrap p-2">{{ obj.score_psat|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.score_psat_avg|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
-                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_psat|percentage|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.rank_department_psat }}</td>
-                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_psat|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.score_heonbeob|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_total_heonbeob }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_department_heonbeob }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
 
                                 <td class="text-nowrap p-2">{{ obj.score_eoneo|floatformat:1 }}</td>
                                 <td class="text-nowrap p-2">{{ obj.rank_total_eoneo }}</td>
@@ -305,11 +304,12 @@
                                 <td class="text-nowrap p-2">{{ obj.rank_department_sanghwang }}</td>
                                 <td class="text-nowrap p-2">{{ obj.rank_ratio_department_sanghwang|percentage|floatformat:1 }}</td>
 
-                                <td class="text-nowrap p-2">{{ obj.score_heonbeob|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.rank_total_heonbeob }}</td>
-                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2">{{ obj.rank_department_heonbeob }}</td>
-                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.score_psat|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.score_psat_avg|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_total_psat|percentage|floatformat:1 }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_department_psat }}</td>
+                                <td class="text-nowrap p-2">{{ obj.rank_ratio_department_psat|percentage|floatformat:1 }}</td>
                             </tr>
                         {% endfor %}
                     {% endif %}

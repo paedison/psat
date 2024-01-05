@@ -37,85 +37,67 @@
 <script type="text/javascript">
     screenWidth = window.innerWidth;
     my_score = [
+        {{ student_score.score_heonbeob|floatformat:1 }},
         {{ student_score.score_eoneo|floatformat:1 }},
         {{ student_score.score_jaryo|floatformat:1 }},
         {{ student_score.score_sanghwang|floatformat:1 }},
         {{ student_score.score_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ student_score.score_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     department_average = [
+        {{ stat_department.avg_score_heonbeob|floatformat:1 }},
         {{ stat_department.avg_score_eoneo|floatformat:1 }},
         {{ stat_department.avg_score_jaryo|floatformat:1 }},
         {{ stat_department.avg_score_sanghwang|floatformat:1 }},
         {{ stat_department.avg_score_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ stat_department.avg_score_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     total_average = [
+        {{ stat_total.avg_score_heonbeob|floatformat:1 }},
         {{ stat_total.avg_score_eoneo|floatformat:1 }},
         {{ stat_total.avg_score_jaryo|floatformat:1 }},
         {{ stat_total.avg_score_sanghwang|floatformat:1 }},
         {{ stat_total.avg_score_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ stat_total.avg_score_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     department_score_20 = [
+        {{ stat_department.top_score_20_heonbeob|floatformat:1 }},
         {{ stat_department.top_score_20_eoneo|floatformat:1 }},
         {{ stat_department.top_score_20_jaryo|floatformat:1 }},
         {{ stat_department.top_score_20_sanghwang|floatformat:1 }},
         {{ stat_department.top_score_20_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ stat_department.top_score_20_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     total_score_20 = [
+        {{ stat_total.top_score_20_heonbeob|floatformat:1 }},
         {{ stat_total.top_score_20_eoneo|floatformat:1 }},
         {{ stat_total.top_score_20_jaryo|floatformat:1 }},
         {{ stat_total.top_score_20_sanghwang|floatformat:1 }},
         {{ stat_total.top_score_20_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ stat_total.top_score_20_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     department_score_10 = [
+        {{ stat_department.top_score_10_heonbeob|floatformat:1 }},
         {{ stat_department.top_score_10_eoneo|floatformat:1 }},
         {{ stat_department.top_score_10_jaryo|floatformat:1 }},
         {{ stat_department.top_score_10_sanghwang|floatformat:1 }},
         {{ stat_department.top_score_10_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ stat_department.top_score_10_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     total_score_10 = [
+        {{ stat_total.top_score_10_heonbeob|floatformat:1 }},
         {{ stat_total.top_score_10_eoneo|floatformat:1 }},
         {{ stat_total.top_score_10_jaryo|floatformat:1 }},
         {{ stat_total.top_score_10_sanghwang|floatformat:1 }},
         {{ stat_total.top_score_10_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ stat_total.top_score_10_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     department_top = [
+        {{ stat_department.max_score_heonbeob|floatformat:1 }},
         {{ stat_department.max_score_eoneo|floatformat:1 }},
         {{ stat_department.max_score_jaryo|floatformat:1 }},
         {{ stat_department.max_score_sanghwang|floatformat:1 }},
         {{ stat_department.max_score_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ stat_department.max_score_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     total_top = [
+        {{ stat_total.max_score_heonbeob|floatformat:1 }},
         {{ stat_total.max_score_eoneo|floatformat:1 }},
         {{ stat_total.max_score_jaryo|floatformat:1 }},
         {{ stat_total.max_score_sanghwang|floatformat:1 }},
         {{ stat_total.max_score_psat_avg|floatformat:1 }},
-        {% if answers_heonbeob %}
-            {{ stat_total.max_score_heonbeob|floatformat:1 }},
-        {% endif %}
     ]
     chart_datasets = [
         {label: '내 점수', borderWidth: 1, data: my_score},
@@ -132,9 +114,7 @@
     chart_data = {
         type: 'bar',
         data: {
-            labels: ['언어논리', '자료해석', '상황판단', 'PSAT 평균',
-                {% if answers_heonbeob %}'헌법'{% endif %}
-            ],
+            labels: ['헌법', '언어논리', '자료해석', '상황판단', 'PSAT 평균'],
             datasets: chart_datasets,
         },
         options: {

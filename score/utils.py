@@ -23,6 +23,8 @@ def get_rank_qs(queryset):
         return Window(expression=PercentRank(), order_by=F(field_name).desc())
 
     return queryset.annotate(
+        heonbeob_rank=rank_func('heonbeob_score'),
+        heonbeob_rank_ratio=rank_ratio_func('heonbeob_score'),
         eoneo_rank=rank_func('eoneo_score'),
         eoneo_rank_ratio=rank_ratio_func('eoneo_score'),
         jaryo_rank=rank_func('jaryo_score'),
@@ -31,8 +33,6 @@ def get_rank_qs(queryset):
         sanghwang_rank_ratio=rank_ratio_func('sanghwang_score'),
         psat_rank=rank_func('psat_score'),
         psat_rank_ratio=rank_ratio_func('psat_score'),
-        heonbeob_rank=rank_func('heonbeob_score'),
-        heonbeob_rank_ratio=rank_ratio_func('heonbeob_score'),
     )
 
 
@@ -57,7 +57,7 @@ def get_all_ranks_dict(get_students_qs, user_id) -> dict:
     }
 
 
-def get_top_score(score_list: str):
+def get_top_score(score_list: list):
     return np.percentile(score_list, [90, 80], interpolation='nearest')
 
 
@@ -65,34 +65,36 @@ def get_stat(queryset) -> dict:
     stat_queryset = queryset.aggregate(
         num_students=Count('id'),
 
+        heonbeob_score_max=Max('heonbeob_score', default=0),
         eoneo_score_max=Max('eoneo_score', default=0),
         jaryo_score_max=Max('jaryo_score', default=0),
         sanghwang_score_max=Max('sanghwang_score', default=0),
         psat_average_max=Max('psat_score', default=0) / 3,
-        heonbeob_score_max=Max('heonbeob_score', default=0),
 
+        heonbeob_score_avg=Avg('heonbeob_score', default=0),
         eoneo_score_avg=Avg('eoneo_score', default=0),
         jaryo_score_avg=Avg('jaryo_score', default=0),
         sanghwang_score_avg=Avg('sanghwang_score', default=0),
         psat_average_avg=Avg('psat_score', default=0) / 3,
-        heonbeob_score_avg=Avg('heonbeob_score', default=0),
     )
 
     score_list_all = list(queryset.values(
-        'eoneo_score', 'jaryo_score', 'sanghwang_score', 'psat_score', 'heonbeob_score'))
+        'heonbeob_score', 'eoneo_score', 'jaryo_score', 'sanghwang_score', 'psat_score'))
+    score_list_heonbeob = [s['heonbeob_score'] for s in score_list_all]
     score_list_eoneo = [s['eoneo_score'] for s in score_list_all]
     score_list_jaryo = [s['jaryo_score'] for s in score_list_all]
     score_list_sanghwang = [s['sanghwang_score'] for s in score_list_all]
     score_list_psat = [s['psat_score'] for s in score_list_all]
-    score_list_heonbeob = [s['heonbeob_score'] for s in score_list_all]
 
+    top_score_heonbeob = get_top_score(score_list_heonbeob)
     top_score_eoneo = get_top_score(score_list_eoneo)
     top_score_jaryo = get_top_score(score_list_jaryo)
     top_score_sanghwang = get_top_score(score_list_sanghwang)
     top_score_psat = get_top_score(score_list_psat)
-    top_score_heonbeob = get_top_score(score_list_heonbeob)
 
     try:
+        stat_queryset['heonbeob_score_10'] = top_score_heonbeob[0]
+        stat_queryset['heonbeob_score_20'] = top_score_heonbeob[1]
         stat_queryset['eoneo_score_10'] = top_score_eoneo[0]
         stat_queryset['eoneo_score_20'] = top_score_eoneo[1]
         stat_queryset['jaryo_score_10'] = top_score_jaryo[0]
@@ -101,8 +103,6 @@ def get_stat(queryset) -> dict:
         stat_queryset['sanghwang_score_20'] = top_score_sanghwang[1]
         stat_queryset['psat_average_10'] = top_score_psat[0] / 3
         stat_queryset['psat_average_20'] = top_score_psat[1] / 3
-        stat_queryset['heonbeob_score_10'] = top_score_heonbeob[0]
-        stat_queryset['heonbeob_score_20'] = top_score_heonbeob[1]
     except TypeError:
         pass
 
@@ -129,36 +129,36 @@ def get_score_stat(queryset) -> dict:
     stat_queryset = queryset.aggregate(
         num_students=Count('id'),
 
-        max_score_psat_avg=Max('score_psat_avg', default=0),
+        max_score_heonbeob=Max('score_heonbeob', default=0),
         max_score_eoneo=Max('score_eoneo', default=0),
         max_score_jaryo=Max('score_jaryo', default=0),
         max_score_sanghwang=Max('score_sanghwang', default=0),
-        max_score_heonbeob=Max('score_heonbeob', default=0),
+        max_score_psat_avg=Max('score_psat_avg', default=0),
 
-        avg_score_psat_avg=Avg('score_psat_avg', default=0),
+        avg_score_heonbeob=Avg('score_heonbeob', default=0),
         avg_score_eoneo=Avg('score_eoneo', default=0),
         avg_score_jaryo=Avg('score_jaryo', default=0),
         avg_score_sanghwang=Avg('score_sanghwang', default=0),
-        avg_score_heonbeob=Avg('score_heonbeob', default=0),
+        avg_score_psat_avg=Avg('score_psat_avg', default=0),
     )
 
     score_list_all = list(queryset.values(
         'score_eoneo', 'score_jaryo', 'score_sanghwang', 'score_psat_avg', 'score_heonbeob'))
-    score_psat_avg = [s['score_psat_avg'] for s in score_list_all]
+    score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
     score_list_eoneo = [s['score_eoneo'] for s in score_list_all]
     score_list_jaryo = [s['score_jaryo'] for s in score_list_all]
     score_list_sanghwang = [s['score_sanghwang'] for s in score_list_all]
-    score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
+    score_psat_avg = [s['score_psat_avg'] for s in score_list_all]
 
-    top_score_psat_avg = get_top_score(score_psat_avg)
+    top_score_heonbeob = get_top_score(score_list_heonbeob)
     top_score_eoneo = get_top_score(score_list_eoneo)
     top_score_jaryo = get_top_score(score_list_jaryo)
     top_score_sanghwang = get_top_score(score_list_sanghwang)
-    top_score_heonbeob = get_top_score(score_list_heonbeob)
+    top_score_psat_avg = get_top_score(score_psat_avg)
 
     try:
-        stat_queryset['top_score_10_psat_avg'] = top_score_psat_avg[0]
-        stat_queryset['top_score_20_psat_avg'] = top_score_psat_avg[1]
+        stat_queryset['top_score_10_heonbeob'] = top_score_heonbeob[0]
+        stat_queryset['top_score_20_heonbeob'] = top_score_heonbeob[1]
 
         stat_queryset['top_score_10_eoneo'] = top_score_eoneo[0]
         stat_queryset['top_score_20_eoneo'] = top_score_eoneo[1]
@@ -169,8 +169,8 @@ def get_score_stat(queryset) -> dict:
         stat_queryset['top_score_10_sanghwang'] = top_score_sanghwang[0]
         stat_queryset['top_score_20_sanghwang'] = top_score_sanghwang[1]
 
-        stat_queryset['top_score_10_heonbeob'] = top_score_heonbeob[0]
-        stat_queryset['top_score_20_heonbeob'] = top_score_heonbeob[1]
+        stat_queryset['top_score_10_psat_avg'] = top_score_psat_avg[0]
+        stat_queryset['top_score_20_psat_avg'] = top_score_psat_avg[1]
     except TypeError:
         pass
 
@@ -181,36 +181,36 @@ def get_score_stat_korean(queryset) -> dict:
     stat_queryset = queryset.aggregate(
         응시_인원=Count('id'),
 
-        PSAT_최고_점수=Max('score_psat_avg', default=0),
+        헌법_최고_점수=Max('score_heonbeob', default=0),
         언어_최고_점수=Max('score_eoneo', default=0),
         자료_최고_점수=Max('score_jaryo', default=0),
         상황_최고_점수=Max('score_sanghwang', default=0),
-        헌법_최고_점수=Max('score_heonbeob', default=0),
+        PSAT_최고_점수=Max('score_psat_avg', default=0),
 
-        PSAT_평균_점수=Avg('score_psat_avg', default=0),
+        헌법_평균_점수=Avg('score_heonbeob', default=0),
         언어_평균_점수=Avg('score_eoneo', default=0),
         자료_평균_점수=Avg('score_jaryo', default=0),
         상황_평균_점수=Avg('score_sanghwang', default=0),
-        헌법_평균_점수=Avg('score_heonbeob', default=0),
+        PSAT_평균_점수=Avg('score_psat_avg', default=0),
     )
 
     score_list_all = list(queryset.values(
         'score_eoneo', 'score_jaryo', 'score_sanghwang', 'score_psat_avg', 'score_heonbeob'))
+    score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
     score_list_eoneo = [s['score_eoneo'] for s in score_list_all]
     score_list_jaryo = [s['score_jaryo'] for s in score_list_all]
     score_list_sanghwang = [s['score_sanghwang'] for s in score_list_all]
     score_psat_avg = [s['score_psat_avg'] for s in score_list_all]
-    score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
 
+    top_score_heonbeob = get_top_score(score_list_heonbeob)
     top_score_eoneo = get_top_score(score_list_eoneo)
     top_score_jaryo = get_top_score(score_list_jaryo)
     top_score_sanghwang = get_top_score(score_list_sanghwang)
     top_score_psat_avg = get_top_score(score_psat_avg)
-    top_score_heonbeob = get_top_score(score_list_heonbeob)
 
     try:
-        stat_queryset['PSAT_상위_10%'] = top_score_psat_avg[0]
-        stat_queryset['PSAT_상위_20%'] = top_score_psat_avg[1]
+        stat_queryset['헌법_상위_10%'] = top_score_heonbeob[0]
+        stat_queryset['헌법_상위_20%'] = top_score_heonbeob[1]
 
         stat_queryset['언어_상위_10%'] = top_score_eoneo[0]
         stat_queryset['언어_상위_20%'] = top_score_eoneo[1]
@@ -221,8 +221,8 @@ def get_score_stat_korean(queryset) -> dict:
         stat_queryset['상황_상위_10%'] = top_score_sanghwang[0]
         stat_queryset['상황_상위_20%'] = top_score_sanghwang[1]
 
-        stat_queryset['헌법_상위_10%'] = top_score_heonbeob[0]
-        stat_queryset['헌법_상위_20%'] = top_score_heonbeob[1]
+        stat_queryset['PSAT_상위_10%'] = top_score_psat_avg[0]
+        stat_queryset['PSAT_상위_20%'] = top_score_psat_avg[1]
     except TypeError:
         pass
 
@@ -258,8 +258,8 @@ def get_all_answer_rates_dict(all_raw_answer_rates) -> dict:
         return answer_rates
 
     return {
+        '헌법': get_answer_rates('헌법'),
         '언어': get_answer_rates('언어'),
         '자료': get_answer_rates('자료'),
         '상황': get_answer_rates('상황'),
-        '헌법': get_answer_rates('헌법'),
     }
