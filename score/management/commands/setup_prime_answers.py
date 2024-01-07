@@ -14,11 +14,13 @@ class Command(BaseCommand):
         parser.add_argument('file_name', type=str, help='Name of the target file')
         parser.add_argument('year', type=str, help='Year')
         parser.add_argument('round', type=str, help='Round')
+        parser.add_argument('answer_id', type=str, help='Answer ID')
 
     def handle(self, *args, **kwargs):
         file_name = kwargs['file_name']
         exam_year = kwargs['year']
         exam_round = kwargs['round']
+        answer_id = int(kwargs['answer_id'])
         eoneo_id = reference_models.Prime.objects.get(
             year=exam_year, round=exam_round, subject__abbr='언어').id
         jaryo_id = reference_models.Prime.objects.get(
@@ -36,7 +38,6 @@ class Command(BaseCommand):
             wr.writerow(
                 ['id', 'prime_id', 'student_id'] + [f'prob{i}' for i in range(1, 41)]
             )
-            answer_id = 6213
             for row in csv_data:
                 wr.writerow([answer_id, eoneo_id, row[0]] + row[26:66])
                 answer_id += 1
