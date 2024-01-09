@@ -73,7 +73,7 @@ class BaseMixin(ConstantIconSet):
             self.has_memo = self.request.GET.get('has_memo', '')
         if self.view_type == 'tag':
             self.has_tag = self.request.GET.get('has_tag', '')
-        if self.view_type == 'rate':
+        if self.view_type == 'search':
             self.search_data = self.request.GET.get('data', '') or self.request.POST.get('data', '')
 
         self.sub_title_dict = self.get_sub_title_dict()
