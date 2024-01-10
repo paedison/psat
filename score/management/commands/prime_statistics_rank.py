@@ -98,7 +98,7 @@ class Command(BaseCommand):
                     rank_data_dict.update(row)
 
             fields_not_match = any(
-                str(getattr(stat, f'rank_{key}')) != rank_data_dict[key] for key in rank_annotation_keys
+                getattr(stat, f'rank_{key}') != rank_data_dict[key] for key in rank_annotation_keys
             )
             if fields_not_match:
                 for field, value in rank_data_dict.items():

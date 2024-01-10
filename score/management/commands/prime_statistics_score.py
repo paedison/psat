@@ -78,11 +78,11 @@ class Command(BaseCommand):
             try:
                 stat = statistics_model.objects.get(student=stu)
                 fields_not_match = any(
-                    str(getattr(stat, key)) != score[key] for key in score_keys
+                    getattr(stat, key) != score[key] for key in score_keys
                 )
                 if fields_not_match:
                     for field, value in score.items():
-                        setattr(stu.statistics, field, value)
+                        setattr(stat, field, value)
                     update_list.append(stat)
                     update_count += 1
             except statistics_model.DoesNotExist:

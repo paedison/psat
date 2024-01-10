@@ -81,7 +81,13 @@
                     {% endif %}
                 </div>
                 <div class="col-12 col-sm-6 dropdown text-center text-sm-end text-nowrap">
-                    <a type="button" class="btn btn-sm btn-primary" href="" hx-get="/psat/" hx-push-url="true">전체</a>
+                    {% if info.view_type == 'search' %}
+                        <a type="button" class="btn btn-sm btn-primary"
+                           href="/psat/search?data={{ search_data }}" hx-boost="true">전체</a>
+                    {% else %}
+                        <a type="button" class="btn btn-sm btn-primary" href="/psat/" hx-boost="true">전체</a>
+                    {% endif %}
+
                     {% with option=year_option %}{% partial filter_snippet %}{% endwith %}
                     {% with option=ex_option %}{% partial filter_snippet %}{% endwith %}
                     {% with option=sub_option %}{% partial filter_snippet %}{% endwith %}
@@ -93,20 +99,18 @@
             <tbody>
                 {% if page_obj %}
                     {% for problem in page_obj %}
-                        {% if not search_list %}
-                            {% ifchanged %}
-                                {% #list_divider %}
-                                    {% if info.view_type == 'problem' %}
-                                        <a href=""
-                                           hx-get="{% url 'psat:list' 'problem' %}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
-                                            {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                        </a>
-                                    {% else %}
+                        {% ifchanged %}
+                            {% #list_divider %}
+                                {% if info.view_type == 'problem' %}
+                                    <a href=""
+                                       hx-get="{% url 'psat:list' 'problem' %}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
                                         {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                    {% endif %}
-                                {% /list_divider %}
-                            {% endifchanged %}
-                        {% endif %}
+                                    </a>
+                                {% else %}
+                                    {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                                {% endif %}
+                            {% /list_divider %}
+                        {% endifchanged %}
                         <tr>
                             <td class="text-nowrap p-2 col-1">
                                 <div class="d-inline-block d-sm-none me-1" hx-push-url="true">
