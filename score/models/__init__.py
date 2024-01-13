@@ -19,3 +19,7 @@ from .prime_score_models import (
     PrimeAnswer, PrimeAnswerCount,
     PrimeStatistics,
 )
+from .predict_score_models import (
+    PredictStudent, PredictAnswer,
+    PredictAnswerCount, PredictStatistics,
+)

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from score.views.psat_v4 import score_views, student_views, predict_views
+from score.views.psat_v4 import score_views, student_views
 
 app_name = 'score'
 
@@ -10,8 +10,6 @@ urlpatterns = [
     path('detail/', score_views.detail_view, name='detail'),
     path('detail/<int:year>/<str:ex>/', score_views.detail_view, name='detail_year_ex'),
     path('detail/filter/exam/', score_views.exam_filter, name='filter'),
-
-    path('predict/', predict_views.initial_view, name='predict'),
 
     path('submit/<int:problem_id>/', score_views.submit_view, name='submit'),
     path('confirm/modal/', score_views.confirm_modal_view, name='confirm_modal'),

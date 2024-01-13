@@ -1,0 +1,153 @@
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+<div class="card-body">
+    <h5 class="card-title">답안 입력 및 제출 현황</h5>
+    <div class="text-center mb-4">
+        {% with answer_data=answer_data.헌법 %}
+            {% partialdef answer_data_button inline=True %}
+                {% if answer_data.is_confirmed %}
+                    <button class="btn btn-primary{{ margin|default:' me-4' }}">
+                        {{ answer_data.icon|safe }} {{ answer_data.subject }}<br/>
+                        현재 {{ answer_data.answer_count|add:0 }}개 입력<br/>
+                        답안 제출 완료
+                    </button>
+                {% else %}
+                    <a class="btn btn-outline-primary{{ margin|default:' me-4' }}" hx-target="#main"
+                       href="{% url 'predict:answer_input' answer_data.sub %}" hx-boost="true">
+                        {{ answer_data.icon|safe }} {{ answer_data.subject }}<br/>
+                        현재 {{ answer_data.answer_count|add:0 }}개 입력<br/>
+                        답안 미제출
+                    </a>
+                {% endif %}
+            {% endpartialdef %}
+        {% endwith %}
+        {% with answer_data=answer_data.언어 %}
+            {% partial answer_data_button %}
+        {% endwith %}
+        {% with answer_data=answer_data.자료 %}
+            {% partial answer_data_button %}
+        {% endwith %}
+        {% with answer_data=answer_data.상황 %}
+            {% partial answer_data_button %}
+        {% endwith %}
+    </div>
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
+            {% #nav_tab prefix='heonbeob_answers' id='0' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
+            {% #nav_tab prefix='eoneo_answers' id='1' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
+            {% #nav_tab prefix='jaryo_answers' id='2' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
+            {% #nav_tab prefix='sanghwang_answers' id='3' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreAnswersContent">
+        {% #nav_content prefix='heonbeob_answers' id='0' %}
+            {% #responsive_table %}
+                {% with answers=answer_student.헌법 answer_data=answer_data.헌법 %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='eoneo_answers' id='1' %}
+            {% #responsive_table %}
+                {% with answers=answer_student.언어 answer_data=answer_data.언어 %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='jaryo_answers' id='2' %}
+            {% #responsive_table %}
+                {% with answers=answer_student.자료 answer_data=answer_data.자료 %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='sanghwang_answers' id='3' %}
+            {% #responsive_table %}
+                {% with answers=answer_student.상황 answer_data=answer_data.상황 %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% /nav_content %}
+    </div>
+</div>
+
+{% partialdef confirmed_answer_table %} {# confirmed_answer_table partial #}
+    <tbody>
+        {% if answer_data.is_confirmed %}
+            {% with loop_counter=10 loop_min=0 %}
+                {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
+                    <tr class="text-center table-warning">
+                        <th class="text-secondary" scope="row"></th>
+                        {% for _ in 'x'|ljust:loop_counter %}
+                            <th class="text-nowrap text-secondary">{{ forloop.counter|add:loop_min }}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center">
+                        <th class="text-secondary text-nowrap align-center" scope="row">정답</th>
+                        {% if answer_uploaded %}
+                            {% for answer in answers %}
+                                {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                    <td>
+                                        {% if answer.answer_correct <= 5 %}
+                                            <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                                                {{ answer.answer_correct }}</button>
+                                        {% elif answer.answer_correct == 12345 %}
+                                            <span class="badge rounded-pill text-bg-secondary">
+                                                전체 정답</span>
+                                        {% else %}
+                                            {% for ans in answer.answer_correct_list %}
+                                                <button class="btn btn-circle btn-sm fs-6 my-2 btn-outline-secondary">
+                                                    {{ ans }}</button>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                        <td class="text-danger fw-bold fs-5 p-4" colspan="{{ loop_counter }}">정답이 공개되지 않았습니다.</td>
+                        {% endif %}
+                    </tr>
+                    <tr class="text-center">
+                        <th class="text-secondary text-nowrap" scope="row">제출 답안</th>
+                        {% for answer in answers %}
+                            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                <td>
+                                    <button class="btn btn-circle btn-sm btn-outline-secondary fs-6 mx-1 my-2">
+                                        {{ answer.answer_student }}</button>
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endpartialdef answer_table_tr %}
+            {% endwith %}
+
+            {% with loop_counter=10 loop_min=10 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+
+            {% if ex == '칠급' or answers|length == 25  %}
+                {% with loop_counter=5 loop_min=20 %}
+                    {% partial answer_table_tr %}
+                {% endwith %}
+            {% else %}
+                {% with loop_counter=10 loop_min=20 %}
+                    {% partial answer_table_tr %}
+                {% endwith %}
+
+                {% with loop_counter=10 loop_min=30 %}
+                    {% partial answer_table_tr %}
+                {% endwith %}
+            {% endif %}
+        {% else %}
+            <tr class="text-center table-warning">
+                <th class="text-danger fs-5 p-4">답안을 제출해주세요.</th>
+            </tr>
+        {% endif %}
+    </tbody>
+{% endpartialdef confirmed_answer_table %}

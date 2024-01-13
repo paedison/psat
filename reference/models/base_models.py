@@ -47,3 +47,35 @@ class ProblemBase(models.Model):
 
     class Meta:
         abstract = True
+
+
+class UnitBase(models.Model):
+    name = models.CharField(max_length=128)
+
+    class Meta:
+        abstract = True
+        ordering = ['id']
+
+
+class Unit(UnitBase):
+    # Parent[UnitBase] fields: name
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='units')
+
+    class Meta:
+        verbose_name = "모집단위"
+        verbose_name_plural = "모집단위"
+
+    def __str__(self):
+        return self.name
+
+
+class UnitDepartment(UnitBase):
+    # Parent[UnitBase] fields: name
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='departments')
+
+    class Meta:
+        verbose_name = "직렬"
+        verbose_name_plural = "직렬"
+
+    def __str__(self):
+        return f'{self.unit}-{self.name}'

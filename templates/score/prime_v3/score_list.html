@@ -35,17 +35,25 @@
 <section class="section htmx-fade-in htmx-fade-out"
          hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
     {% #content_row class1='col-12' %}
-        <h5 class="card-title mb-1 text-center">
+        <h5 class="card-title mb-0 text-center">
             <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>
             <div class="container p-0">
                 <div class="container">
                     <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
                     <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
                 </div>
-                <a class="btn btn-outline-danger mt-2" target="_blank"
-                   href="https://renew.primeedunet.com/psat/product/14936">
-                    모의고사 신청하기 <i class="fa-solid fa-arrow-pointer"></i>
-                </a>
+                <div class="container mt-2">
+                    <a class="btn btn-outline-danger" target="_blank"
+                       href="https://renew.primeedunet.com/psat/product/prereg/group/108">
+                        모의고사 신청하기 <i class="fa-solid fa-arrow-pointer"></i>
+                    </a>
+                    {% if user.is_staff %}
+                        <a class="btn btn-outline-primary ms-4" hx-target="#main"
+                           href="{% url 'predict:student_create' %}" hx-boost="true">
+                            성적 예측하기 <i class="fa-solid fa-arrow-pointer"></i>
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </h5>
 

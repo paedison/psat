@@ -7,7 +7,7 @@ from score.models.base_models import UnitBase, StudentBase, AnswerBase
 
 class PsatUnit(UnitBase):
     # Parent[UnitBase] fields: name
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='units')
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='psat_units')
 
     class Meta:
         verbose_name = "모집단위"
@@ -19,7 +19,7 @@ class PsatUnit(UnitBase):
 
 class PsatUnitDepartment(UnitBase):
     # Parent[UnitBase] fields: name
-    unit = models.ForeignKey(PsatUnit, on_delete=models.CASCADE, related_name='departments')
+    unit = models.ForeignKey(PsatUnit, on_delete=models.CASCADE, related_name='psat_departments')
 
     class Meta:
         verbose_name = "직렬"
@@ -32,7 +32,7 @@ class PsatUnitDepartment(UnitBase):
 class PsatStudent(StudentBase):
     # Parent-Parent[InfoBase] fields: timestamp, update_at, user_id
     # Parent[StudentBase] fields: year, serial
-    department = models.ForeignKey(PsatUnitDepartment, on_delete=models.CASCADE, related_name='students')
+    department = models.ForeignKey(PsatUnitDepartment, on_delete=models.CASCADE, related_name='psat_students')
     heonbeob_score = models.FloatField(default=0)
     eoneo_score = models.FloatField(default=0)
     jaryo_score = models.FloatField(default=0)

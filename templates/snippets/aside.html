@@ -61,15 +61,17 @@
 {#                            {{ problem_icon|safe }}<span>2023 합격 예측</span>#}
 {#                        </a>#}
 {#                    {% endif %}#}
-                    <a id="psatScoreList" class="aside-nav-icon"
-                       href="{% url 'score:list' %}"
-                       hx-post="{% url 'score:list' %}">
-                        {{ problem_icon|safe }}<span>기출문제 성적표</span>
-                    </a>
+                    {% if user.is_admin %}
+                        <a id="psatScoreList" class="aside-nav-icon"
+                           href="{% url 'score:list' %}"
+                           hx-post="{% url 'score:list' %}">
+                            {{ problem_icon|safe }}<span>PSAT 기출문제</span>
+                        </a>
+                    {% endif %}
                     <a id="primeScoreList" class="aside-nav-icon"
                        href="{% url 'prime:list' %}"
                        hx-post="{% url 'prime:list' %}">
-                        {{ prime_icon|safe }}<span>모의고사 성적표</span>
+                        {{ prime_icon|safe }}<span>프라임 모의고사</span>
                     </a>
                 </li>
             </ul>

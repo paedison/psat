@@ -152,62 +152,6 @@ class ConfirmModalView(
         }
 
 
-class PredictView(
-    LoginRequiredMixin,
-    score_view_mixins.PredictViewMixin,
-    vanilla.TemplateView,
-):
-    """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
-    template_name = 'score/psat_v4/score_predict.html'
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#detail_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
-
-    def post(self, request, *args, **kwargs):
-        return super().get(self, request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-
-        return {
-            # base info
-            'info': self.info,
-            'year': self.year,
-            'ex': self.ex,
-            'exam': self.exam.name,
-            'title': 'Score',
-            'sub_title': self.sub_title,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-
-            # filter options
-            'option_year': self.option_year,
-            'option_ex': self.option_ex,
-
-            # score_student.html
-            'student': self.student,
-
-            # score_sheet.html
-            'is_confirmed': self.is_complete,
-            'rank_total': self.all_ranks['전체'],
-            'rank_department': self.all_ranks['직렬'],
-            'stat_total': self.all_stat['전체'],
-            'stat_department': self.all_stat['직렬'],
-
-            # score_answers.html
-            'confirmed': self.all_answers['confirmed'],
-            'temporary': self.all_answers['temporary'],
-            'all_answer_rates': self.all_answer_rates,
-        }
-
-
 list_view = ListView.as_view()
 
 detail_view = DetailView.as_view()
@@ -215,5 +159,3 @@ exam_filter = ExamFilterView.as_view()
 
 submit_view = SubmitView.as_view()
 confirm_modal_view = ConfirmModalView.as_view()
-
-predict_view = PredictView.as_view()
