@@ -105,7 +105,7 @@ class StudentCreateView(
             form.ex = self.ex
             form.round = self.round
             form.save()
-        return HttpResponseRedirect(reverse_lazy('score_predict:index'))
+        return HttpResponseRedirect(reverse_lazy('predict:index'))
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
@@ -173,9 +173,9 @@ class AnswerInputView(
     def get(self, request, *args, **kwargs):
         self.get_properties()
         if not self.student:
-            return HttpResponseRedirect(reverse_lazy('score_predict:student_create'))
+            return HttpResponseRedirect(reverse_lazy('predict:student_create'))
         if self.is_confirmed:
-            return HttpResponseRedirect(reverse_lazy('score_predict:index'))
+            return HttpResponseRedirect(reverse_lazy('predict:index'))
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -254,7 +254,7 @@ class AnswerConfirmView(
 
     def get(self, request, *args, **kwargs):
         self.get_properties()
-        return HttpResponseRedirect(reverse_lazy('score_predict:answer_input', args=[self.sub]))
+        return HttpResponseRedirect(reverse_lazy('predict:answer_input', args=[self.sub]))
 
     def post(self, request, *args, **kwargs):
         self.get_properties()
