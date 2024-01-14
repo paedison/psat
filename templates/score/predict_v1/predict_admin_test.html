@@ -1,0 +1,171 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+{% load humanize %}
+
+{% block head_title %}{{ sub_title }}{% endblock %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+
+{% block main %}
+{% partialdef admin_main inline=True %} {# admin_main partial #}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon_menu|safe }} {{ title }}
+        <span class="fs-6 text-secondary">{{ sub_title }}</span>
+    </h1>
+
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">Score</li>
+            <li class="breadcrumb-item">
+                {% if category == 'PSAT' %}
+                    <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
+                {% elif category == 'Prime' %}
+                    <a href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">Prime</a>
+                {% endif %}
+            </li>
+            {% if round %}
+                <li class="breadcrumb-item">{{ year }}</li>
+                <li class="breadcrumb-item active">제{{ round }}회</li>
+            {% else %}
+                <li class="breadcrumb-item active">{{ year }}</li>
+            {% endif %}
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
+
+<section id="statistics" class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">제{{ round }}회 | 성적 통계</h5>
+                    <nav>
+                        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
+                            {% #nav_tab prefix='heonbeob_answers' id='0' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
+                            {% #nav_tab prefix='eoneo_answers' id='1' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
+                            {% #nav_tab prefix='jaryo_answers' id='2' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
+                            {% #nav_tab prefix='sanghwang_answers' id='3' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
+                        </div>
+                    </nav>
+
+                    <div class="tab-content" id="scoreAnswersContent">
+                        {% #nav_content prefix='heonbeob_answers' id='0' %}
+                            {% #responsive_table %}
+                                {% with answers=answer_student.헌법 answer_data=answer_data.헌법 %}
+                                    {% partial predicted_answer_table %}
+                                {% endwith %}
+                            {% /responsive_table %}
+                        {% /nav_content %}
+
+                        {% #nav_content prefix='eoneo_answers' id='1' %}
+                            {% #responsive_table %}
+                                {% with answers=answer_student.언어 answer_data=answer_data.언어 %}
+                                    {% partial predicted_answer_table %}
+                                {% endwith %}
+                            {% /responsive_table %}
+                        {% /nav_content %}
+
+                        {% #nav_content prefix='jaryo_answers' id='2' %}
+                            {% #responsive_table %}
+                                {% with answers=answer_student.자료 answer_data=answer_data.자료 %}
+                                    {% partial predicted_answer_table %}
+                                {% endwith %}
+                            {% /responsive_table %}
+                        {% /nav_content %}
+
+                        {% #nav_content prefix='sanghwang_answers' id='3' %}
+                            {% #responsive_table %}
+                                {% with answers=answer_student.상황 answer_data=answer_data.상황 %}
+                                    {% partial predicted_answer_table %}
+                                {% endwith %}
+                            {% /responsive_table %}
+                        {% /nav_content %}
+                    </div>
+                    {% for problem in answer_data.헌법 %}
+                        <p>
+                            {{ problem.number }}<br/>
+                            {% for answer in problem.answer %}
+                                {{ forloop.counter }}: {{ answer.count }}개
+                                {% if answer.percentage %}- {{ answer.percentage }}%{% endif %}
+                                {% if answer.status %}/ {{ answer.status }}{% endif %}
+                                {% if not forloop.last %}<br/>{% endif %}
+                            {% endfor %}
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endpartialdef admin_main %}
+
+{% partialdef predicted_answer_table %} {# predicted_answer_table partial #}
+    <tbody>
+        {% with loop_counter=10 loop_min=0 %}
+            {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
+                <tr class="text-center table-warning">
+                    <th class="text-secondary" scope="row"></th>
+                    {% for _ in 'x'|ljust:loop_counter %}
+                        <th class="text-nowrap text-secondary">{{ forloop.counter|add:loop_min }}</th>
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <th class="text-secondary text-nowrap align-center" scope="row">예상 정답</th>
+                    {% for answer in answer_data %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>
+                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                                    {{ answer.answer_predict }}</button>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <th class="text-secondary text-nowrap align-center" scope="row">정확도</th>
+                    {% for answer in answer_data %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>{{ answer.answer_percentage }}%</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                <tr class="text-center">
+                    <th class="text-secondary text-nowrap" scope="row">제출 답안</th>
+                    {% for answer in answers %}
+                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                            <td>
+                                <button class="btn btn-circle btn-sm btn-outline-secondary fs-6 mx-1 my-2">
+                                    {{ answer.answer_student }}</button>
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endpartialdef answer_table_tr %}
+        {% endwith %}
+
+        {% with loop_counter=10 loop_min=10 %}
+            {% partial answer_table_tr %}
+        {% endwith %}
+
+        {% if ex == '칠급' or answers|length == 25  %}
+            {% with loop_counter=5 loop_min=20 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+        {% else %}
+            {% with loop_counter=10 loop_min=20 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+
+            {% with loop_counter=10 loop_min=30 %}
+                {% partial answer_table_tr %}
+            {% endwith %}
+        {% endif %}
+    </tbody>
+{% endpartialdef predicted_answer_table %}
+
+{% endblock main %}

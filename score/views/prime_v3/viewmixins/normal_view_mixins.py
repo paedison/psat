@@ -6,19 +6,19 @@ from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
 from score.utils import get_all_answer_rates_dict, get_all_score_stat_dict
-from . import base_mixins
+from .base_mixins import BaseMixin
 
 
-class ListViewMixin(
-    ConstantIconSet,
-    base_mixins.BaseMixin,
-):
+class ListViewMixin(ConstantIconSet, BaseMixin):
+    sub_title: str
     page_obj: any
     page_range: any
     current_time: datetime
 
     def get_properties(self):
         super().get_properties()
+        
+        self.sub_title = f'{self.exam_name} 성적표'
         self.page_obj, self.page_range = self.get_paginator_info()
         self.current_time = datetime.now()
 
@@ -36,56 +36,22 @@ class ListViewMixin(
                     .annotate(department_name=F('department__name'))
                     .filter(
                         prime_verified_users__user_id=self.user_id,
-                        year=obj['year'], round=obj['round']
-                    ).first()
+                        year=obj['year'], round=obj['round']).first()
                 )
                 score = (
                     self.statistics_model.objects
                     .annotate(year=F('student__year'), round=F('student__round'))
                     .filter(
                         student__prime_verified_users__user_id=self.user_id,
-                        year=obj['year'], round=obj['round']
-                    ).first()
-                    # .values()
+                        year=obj['year'], round=obj['round']).first()
                 )
                 obj['student'] = student
                 obj['student_score'] = score
                 obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
-        # if self.user_id:
-        #     all_student = self.get_all_student()
-        #     all_score = self.get_all_score()
-        #
-        #     for obj in page_obj:
-        #         for student in all_student:
-        #             if student.year == obj['year'] and student.round == obj['round']:
-        #                 obj['student'] = student
-        #         for score in all_score:
-        #             if score.year == obj['year'] and score.round == obj['round']:
-        #                 obj['student_score'] = score
-        #         obj['detail_url'] = reverse_lazy('prime:detail_year_round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
-    def get_all_student(self):
-        all_student = (
-            self.student_model.objects
-            .filter(prime_verified_users__user_id=self.user_id)
-            .annotate(department_name=F('department__name'))
-            # .values()
-        )
-        # print(all_student)
-        return all_student
 
-    def get_all_score(self):
-        all_score = (
-            self.statistics_model.objects
-            .filter(student__prime_verified_users__user_id=self.user_id)
-            .annotate(year=F('student__year'), round=F('student__round'))
-            # .values()
-        )
-        return all_score
-
-
-class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
+class DetailViewMixin(ConstantIconSet, BaseMixin):
     student_id: int
 
     sub_title: str
@@ -99,11 +65,9 @@ class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
     def get_properties(self):
         super().get_properties()
 
-        # self.student_id = self.get_student_id()
-
         self.student = self.get_student()
         self.student_id = self.get_student_id()
-        self.sub_title = f'제{self.round}회 프라임 모의고사'
+        self.sub_title = f'제{self.round}회 {self.exam_name}'
 
         self.student_score = self.statistics_model.objects.get(student_id=self.student['id'])  # score, rank, rank_ratio
         self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
@@ -116,28 +80,13 @@ class DetailViewMixin(ConstantIconSet, base_mixins.BaseMixin):
             return int(student_id_request)
         if self.student:
             return self.student['id']
-        # return student_qs.filter(prime_verified_users__user_id=self.user_id).first().id
 
-    # def get_student_id(self) -> int:
-    #     student_qs = self.get_students_qs()
-    #     student_id_request = self.kwargs.get('student_id')
-    #     if student_id_request:
-    #         return int(student_id_request)
-    #     return student_qs.filter(prime_verified_users__user_id=self.user_id).first().id
-    #
     def get_student(self):
-        student_qs = self.get_students_qs()
-        student = (
-            student_qs.annotate(department_name=F('department__name'))
-            .filter(prime_verified_users__user_id=self.user_id).values()
-            .first()
+        return (
+            self.get_students_qs().annotate(department_name=F('department__name'))
+            .filter(prime_verified_users__user_id=self.user_id).values().first()
         )
-        return student
 
-    # def get_student(self):
-    #     student_qs = self.get_students_qs()
-    #     return student_qs.annotate(department_name=F('department__name')).values().get(id=self.student_id)
-    #
     def get_students_qs(self, rank_type='전체'):
         filter_expr = {
             'year': self.year,

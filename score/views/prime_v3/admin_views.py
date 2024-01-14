@@ -28,6 +28,7 @@ class ListView(
             # base info
             'info': self.info,
             'title': 'Score',
+            'sub_title': self.sub_title,
 
             # icons
             'icon_menu': self.ICON_MENU['score'],

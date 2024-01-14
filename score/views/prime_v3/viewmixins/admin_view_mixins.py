@@ -11,14 +11,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from score.utils import get_score_stat
-from . import base_mixins
+from .base_mixins import AdminBaseMixin
 
 
-class OnlyStaffAllowedMixin(
-    LoginRequiredMixin,
-    UserPassesTestMixin,
-):
+class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):
     request: any
 
     def test_func(self):
@@ -28,42 +24,15 @@ class OnlyStaffAllowedMixin(
         return HttpResponseRedirect(reverse_lazy('prime:list'))
 
 
-class BaseViewMixin(ConstantIconSet, base_mixins.BaseMixin):
-    def get_statistics_qs_list(self, year, exam_round) -> list:
-        filter_expr = {
-            'student__year': year,
-            'student__round': exam_round,
-        }
-        statistics_qs = (
-            self.statistics_model.objects.defer('timestamp')
-            .select_related('student', 'student__department').filter(**filter_expr)
-        )
-        if statistics_qs:
-            statistics_qs_list = [{'department': '전체', 'queryset': statistics_qs}]
-
-            department_list = self.department_model.objects.values_list('name', flat=True)
-            for department in department_list:
-                filter_expr['student__department__name'] = department
-                statistics_qs_list.append({'department': department, 'queryset': statistics_qs.filter(**filter_expr)})
-            return statistics_qs_list
-
-    def get_statistics(self, year, exam_round) -> list:
-        score_statistics_list = []
-        statistics_qs_list = self.get_statistics_qs_list(year, exam_round)
-        if statistics_qs_list:
-            for qs_list in statistics_qs_list:
-                statistics_dict = {'department': qs_list['department']}
-                statistics_dict.update(get_score_stat(qs_list['queryset']))
-                score_statistics_list.append(statistics_dict)
-            return score_statistics_list
-
-
-class ListViewMixin(BaseViewMixin):
+class ListViewMixin(ConstantIconSet, AdminBaseMixin):
+    sub_title: str
     page_obj: any
     page_range: any
 
     def get_properties(self):
         super().get_properties()
+        
+        self.sub_title = f'{self.exam_name} 관리자 페이지'
         self.page_obj, self.page_range = self.get_paginator_info()
 
     def get_paginator_info(self) -> tuple:
@@ -80,7 +49,7 @@ class ListViewMixin(BaseViewMixin):
         return page_obj, page_range
 
 
-class DetailViewMixin(BaseViewMixin):
+class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
     sub_title: str
     current_category: str
     category_list: list
@@ -95,7 +64,7 @@ class DetailViewMixin(BaseViewMixin):
     def get_properties(self):
         super().get_properties()
 
-        self.sub_title = f'제{self.round}회 프라임 모의고사'
+        self.sub_title = f'제{self.round}회 {self.exam_name} 관리자 페이지'
 
         self.current_category = self.get_variable('category') or '전체'
         self.category_list = self.get_category_list()

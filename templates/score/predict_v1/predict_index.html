@@ -5,6 +5,7 @@
 {% load partials %}
 {% load slippers %}
 
+{% block head_title %}{{ sub_title }}{% endblock %}
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 
 {% block main %}
@@ -18,6 +19,11 @@
                hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
                href="{% url 'predict_admin:index' %}">
                 관리자 페이지
+            </a>
+            <a class="btn btn-sm btn-outline-primary ms-2"
+               hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
+               href="{% url 'predict_admin:test' %}">
+                테스트 페이지
             </a>
         {% endif %}
     </h1>

@@ -5,6 +5,7 @@ from django.conf import settings
 from reference import models as reference_models
 from score import forms as score_forms
 from score import models as score_models
+from ..utils import get_score_stat
 
 
 class BaseMixin:
@@ -113,3 +114,69 @@ class BaseMixin:
             if self.sub:
                 return self.answer_model.objects.filter(student=self.student, sub=self.sub)
             return self.answer_model.objects.filter(student=self.student)
+
+    def get_empty_answer_data(self):
+        answer_data = {}
+        # {
+        #     '헌법':
+        #         [
+        #             {
+        #                 'number': 1,
+        #                 'answer': [
+        #                     {
+        #                         'count': 0,
+        #                         'percentage': 0,
+        #                         'status': '오답 예상'
+        #                     }
+        #                 ]
+        #             }
+        #          ]
+        # }
+        for sub, count in self.problem_count_dict.items():
+            answer_data[sub] = []
+            for i in range(count):
+                problem = {
+                    'number': i + 1,
+                    'answer': [],
+                }
+                last_num = 4 if sub == '헌법' else 5
+                for k in range(last_num):
+                    problem['answer'].append(
+                        {
+                            'ans_number': k + 1,
+                            'count': 0,
+                            'percentage': 0,
+                            'status': 0,  # 0: 데이터 없음, 1: 오답 예상, 2: 정답 보류, 3: 정답 유력, 4: 정답 예상
+                        }
+                    )
+                answer_data[sub].append(problem)
+        return answer_data
+
+
+class AdminBaseMixin(BaseMixin):
+    def get_statistics_qs_list(self, year, exam_round) -> list:
+        filter_expr = {
+            'student__year': year,
+            'student__round': exam_round,
+        }
+        statistics_qs = (
+            self.statistics_model.objects.defer('timestamp').select_related('student').filter(**filter_expr)
+        )
+        if statistics_qs:
+            statistics_qs_list = [{'department': '전체', 'queryset': statistics_qs}]
+
+            department_list = self.department_model.objects.values_list('name', flat=True)
+            for department in department_list:
+                filter_expr['student__department__name'] = department
+                statistics_qs_list.append({'department': department, 'queryset': statistics_qs.filter(**filter_expr)})
+            return statistics_qs_list
+
+    def get_statistics(self, year, exam_round) -> list:
+        score_statistics_list = []
+        statistics_qs_list = self.get_statistics_qs_list(year, exam_round)
+        if statistics_qs_list:
+            for qs_list in statistics_qs_list:
+                statistics_dict = {'department': qs_list['department']}
+                statistics_dict.update(get_score_stat(qs_list['queryset']))
+                score_statistics_list.append(statistics_dict)
+            return score_statistics_list

@@ -29,6 +29,7 @@ class ListView(
             # base info
             'info': self.info,
             'title': 'Score',
+            'sub_title': self.sub_title,
             'current_time': self.current_time,
 
             # icons

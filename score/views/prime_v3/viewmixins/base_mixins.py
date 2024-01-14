@@ -3,6 +3,7 @@ from datetime import datetime
 from reference import models as reference_models
 from score import forms
 from score import models as score_models
+from score.utils import get_score_stat
 
 
 class BaseMixin:
@@ -52,7 +53,7 @@ class BaseMixin:
         self.user_id = self.request.user.id if self.request.user.is_authenticated else None
         self.year = self.get_int_kwargs('year')
         self.round = self.get_int_kwargs('round')
-        self.exam_name = self.get_exam_name()
+        self.exam_name = '프라임 모의고사'
 
         self.info = {
             'menu': 'score',
@@ -63,8 +64,32 @@ class BaseMixin:
         kwarg = self.kwargs.get(kw)
         return int(kwarg) if kwarg else None
 
-    def get_exam_name(self):
-        target_exam = self.category_model.objects.select_related('exam').filter(
-            year=self.year, round=self.round).first()
-        if target_exam:
-            return target_exam.exam.name
+
+class AdminBaseMixin(BaseMixin):
+    def get_statistics_qs_list(self, year, exam_round) -> list:
+        filter_expr = {
+            'student__year': year,
+            'student__round': exam_round,
+        }
+        statistics_qs = (
+            self.statistics_model.objects.defer('timestamp')
+            .select_related('student', 'student__department').filter(**filter_expr)
+        )
+        if statistics_qs:
+            statistics_qs_list = [{'department': '전체', 'queryset': statistics_qs}]
+
+            department_list = self.department_model.objects.values_list('name', flat=True)
+            for department in department_list:
+                filter_expr['student__department__name'] = department
+                statistics_qs_list.append({'department': department, 'queryset': statistics_qs.filter(**filter_expr)})
+            return statistics_qs_list
+
+    def get_statistics(self, year, exam_round) -> list:
+        score_statistics_list = []
+        statistics_qs_list = self.get_statistics_qs_list(year, exam_round)
+        if statistics_qs_list:
+            for qs_list in statistics_qs_list:
+                statistics_dict = {'department': qs_list['department']}
+                statistics_dict.update(get_score_stat(qs_list['queryset']))
+                score_statistics_list.append(statistics_dict)
+            return score_statistics_list

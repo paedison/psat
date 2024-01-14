@@ -15,5 +15,5 @@ urlpatterns = [
     # path('prime_v1/admin/', include('score.urls_module.prime_admin_v1')),  # Prime_admin score version 1.0
 
     path('predict/', include('score.urls_module.predict_v1')),  # Predict score current version
-    path('predict/admin/', include('score.urls_module.predict_admin_v1')),  # Predict score current version
+    path('predict/admin/', include('score.urls_module.predict_admin_v1')),  # Predict_admin score current version
 ]

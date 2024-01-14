@@ -4,6 +4,42 @@ from . import normal_views
 from .viewmixins import admin_view_mixins
 
 
+class TestView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.TestViewMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'score/predict_v1/predict_admin_test.html'
+
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#admin_main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            # base info
+            'info': self.info,
+            'answer_uploaded': self.answer_uploaded,
+            'category': self.category,
+            'year': self.year,
+            'ex': self.ex,
+            'exam': self.exam_name,
+            'round': self.round,
+            'title': 'Score',
+            'sub_title': self.sub_title,
+
+            'answer_data': self.answer_data,
+        }
+
+
 class IndexView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.IndexViewMixin,
@@ -152,6 +188,8 @@ class ExportTranscriptToPdfView(
 
 
 index_view = IndexView.as_view()
+test_view = TestView.as_view()
+
 catalog_view = CatalogView.as_view()
 
 print_view = PrintView.as_view()

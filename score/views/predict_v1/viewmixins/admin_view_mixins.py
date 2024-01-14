@@ -11,14 +11,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from ..utils import get_score_stat
-from .base_mixins import BaseMixin
+from score.models import PrimeAnswer
+from .base_mixins import AdminBaseMixin
 
 
-class OnlyStaffAllowedMixin(
-    LoginRequiredMixin,
-    UserPassesTestMixin,
-):
+class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):
     request: any
 
     def test_func(self):
@@ -28,36 +25,67 @@ class OnlyStaffAllowedMixin(
         return HttpResponseRedirect(reverse_lazy('prime:list'))
 
 
-class BaseViewMixin(ConstantIconSet, BaseMixin):
-    def get_statistics_qs_list(self, year, exam_round) -> list:
-        filter_expr = {
-            'student__year': year,
-            'student__round': exam_round,
-        }
-        statistics_qs = (
-            self.statistics_model.objects.defer('timestamp').select_related('student').filter(**filter_expr)
+class TestViewMixin(ConstantIconSet, AdminBaseMixin):
+    sub_title: str
+    answer_data: dict
+    count_total: int
+
+    def get_properties(self):
+        super().get_properties()
+
+        self.sub_title: str = self.get_sub_title()
+        self.count_total = self.get_count_total()
+        self.answer_data = self.get_answer_data()
+
+    def get_sub_title(self) -> str:
+        return f'제{self.round}회 {self.exam_name} 테스트 페이지'
+
+    @staticmethod
+    def get_prime_answer_qs():
+        return PrimeAnswer.objects.filter(student__year=2024, student__round=1)
+
+    def get_count_total(self):
+        return self.get_prime_answer_qs().distinct().values('student_id').count()
+
+    def get_answer_data(self) -> dict:
+        prime_answer = (
+            self.get_prime_answer_qs().annotate(sub=F('prime__subject__abbr')).values()
         )
-        if statistics_qs:
-            statistics_qs_list = [{'department': '전체', 'queryset': statistics_qs}]
+        answer_data = self.get_empty_answer_data()
 
-            department_list = self.department_model.objects.values_list('name', flat=True)
-            for department in department_list:
-                filter_expr['student__department__name'] = department
-                statistics_qs_list.append({'department': department, 'queryset': statistics_qs.filter(**filter_expr)})
-            return statistics_qs_list
+        for student in prime_answer:
+            sub = student['sub']
+            problem_count = self.problem_count_dict[sub]
+            for i in range(problem_count):
+                ans = student[f'prob{i + 1}']
+                if ans in range(1, 6):
+                    answer_data[sub][i]['answer'][ans - 1]['count'] += 1
 
-    def get_statistics(self, year, exam_round) -> list:
-        score_statistics_list = []
-        statistics_qs_list = self.get_statistics_qs_list(year, exam_round)
-        if statistics_qs_list:
-            for qs_list in statistics_qs_list:
-                statistics_dict = {'department': qs_list['department']}
-                statistics_dict.update(get_score_stat(qs_list['queryset']))
-                score_statistics_list.append(statistics_dict)
-            return score_statistics_list
+        if self.count_total:
+            for sub, problems in answer_data.items():
+                for problem in problems:
+                    answer_count = []
+                    for answer in problem['answer']:
+                        answer_count.append(answer['count'])
+                        percentage = round(answer['count'] * 100 / self.count_total)
+                        answer['percentage'] = percentage
+                        if percentage >= 80:
+                            answer['status'] = 4  # 정답 예상
+                        elif percentage >= 50:
+                            answer['status'] = 3  # 정답 유력
+                        elif percentage >= 20:
+                            answer['status'] = 2  # 정답 보류
+                        elif percentage > 0:
+                            answer['status'] = 1  # 오답 예상
+                    answer_predict_index = answer_count.index(max(answer_count))
+                    answer_predict = answer_predict_index + 1
+                    answer_percentage = problem['answer'][answer_predict_index]['percentage']
+                    problem['answer_predict'] = answer_predict
+                    problem['answer_percentage'] = answer_percentage
+        return answer_data
 
 
-class IndexViewMixin(BaseViewMixin):
+class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
     sub_title: str
     current_category: str
     category_list: list
