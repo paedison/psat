@@ -37,7 +37,7 @@ class ProblemMemoAdmin(admin.ModelAdmin):
 
 
 class ProblemTagAdmin(admin.ModelAdmin):
-    list_display = ('id', 'problem', 'user', 'tags', 'created_at', 'updated_at',)
+    list_display = ('id', 'problem', 'user', 'tag_list', 'created_at', 'updated_at',)
     list_per_page = 20
 
     def get_queryset(self, request):
