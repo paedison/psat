@@ -50,16 +50,14 @@ class IndexView(
             'student': self.student,
             'departments': self.departments,
 
-            # answer_input
+            # answer_student
+            'answer_student_count': self.answer_student_count,
+            'answer_student_data': self.answer_student_data,
             'problem_count': self.problem_count_dict,
-            'answer_data': self.answer_data,
 
             # score_sheet
             'student_score': self.student_score,
             'all_score_stat': self.all_score_stat,
-
-            # answer_student
-            'answer_student': self.all_answer_student,
 
             # 'rates_eoneo': self.all_answer_rates['언어'],
             # 'rates_jaryo': self.all_answer_rates['자료'],
@@ -130,10 +128,6 @@ class StudentCreateView(
                 # student info
                 'student': self.student,
                 'departments': self.departments,
-
-                # answer_input
-                'problem_count': self.problem_count_dict,
-                'answer_data': self.answer_data,
             }
         )
         return context

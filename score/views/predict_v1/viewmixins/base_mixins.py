@@ -22,7 +22,7 @@ class BaseMixin:
     category = 'Prime'
     year = '2024'
     ex = '프모'
-    round = 3
+    round = 1
 
     sub_dict = {'헌법': '헌법', '언어': '언어논리', '자료': '자료해석', '상황': '상황판단'}
 

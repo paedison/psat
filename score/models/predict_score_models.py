@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F
 
 
 class PredictStudent(models.Model):
@@ -80,6 +81,15 @@ class PredictAnswer(models.Model):
 
 
 class PredictAnswerCount(models.Model):
+
+    @staticmethod
+    def rate_dict(ans_number):
+        return {
+            'expression': F(f'count_{ans_number}') * 100 / F('count_total'),
+            'output_field': models.FloatField(),
+            'db_persist': False,
+        }
+
     category = models.CharField(max_length=20)  # PSAT, prime
     year = models.IntegerField()
     ex = models.CharField(max_length=2)
@@ -94,6 +104,11 @@ class PredictAnswerCount(models.Model):
     count_4 = models.IntegerField(default=0)
     count_5 = models.IntegerField(default=0)
     count_total = models.IntegerField(default=0)
+    rate_1 = models.GeneratedField(**rate_dict(1))
+    rate_2 = models.GeneratedField(**rate_dict(2))
+    rate_3 = models.GeneratedField(**rate_dict(3))
+    rate_4 = models.GeneratedField(**rate_dict(4))
+    rate_5 = models.GeneratedField(**rate_dict(5))
 
     class Meta:
         ordering = ['id']
