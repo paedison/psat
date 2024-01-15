@@ -103,7 +103,7 @@ class PredictAnswerCount(models.Model):
     count_3 = models.IntegerField(default=0)
     count_4 = models.IntegerField(default=0)
     count_5 = models.IntegerField(default=0)
-    count_total = models.IntegerField(default=0)
+    count_total = models.IntegerField(default=1)
     rate_1 = models.GeneratedField(**rate_dict(1))
     rate_2 = models.GeneratedField(**rate_dict(2))
     rate_3 = models.GeneratedField(**rate_dict(3))

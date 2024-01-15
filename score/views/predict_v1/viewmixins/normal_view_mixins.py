@@ -310,26 +310,16 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
             for i in range(problem_count):
                 number = i + 1
                 answer = getattr(answer_student, f'prob{number}')
-                try:
-                    answer_count = self.answer_count_model.objects.get(
-                        category=self.category,
-                        year=self.year,
-                        ex=self.ex,
-                        round=self.round,
-                        sub=self.sub,
-                        number=number,
-                    )
+                answer_count, created = self.answer_count_model.objects.get_or_create(
+                    category=self.category,
+                    year=self.year,
+                    ex=self.ex,
+                    round=self.round,
+                    sub=self.sub,
+                    number=number,
+                )
+                if not created:
                     answer_count.count_total += 1
-                except self.answer_count_model.DoesNotExist:
-                    answer_count = self.answer_count_model.objects.create(
-                        category=self.category,
-                        year=self.year,
-                        ex=self.ex,
-                        round=self.round,
-                        sub=self.sub,
-                        number=number,
-                        count_total=1,
-                    )
 
                 for k in range(5):
                     ans_number = k + 1
