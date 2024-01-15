@@ -318,12 +318,12 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
                     sub=self.sub,
                     number=number,
                 )
+                answer_count.count_total += 1
                 for k in range(5):
                     ans_number = k + 1
                     if ans_number == answer:
                         old_count = getattr(answer_count, f'count_{ans_number}')
                         setattr(answer_count, f'count_{ans_number}', old_count + 1)
-                        answer_count.count_total += 1
                         answer_count.save()
 
     def update_score(self, answer_student):
