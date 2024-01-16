@@ -2,35 +2,26 @@
 {% load partials %}
 {% load slippers %}
 
-<nav>
-    <div class="nav nav-tabs nav-tabs-colored" id="scoreChartTab" role="tablist">
-        {% #nav_tab prefix='my' id='0' %}
-            성적 분포 차트
-        {% /nav_tab %}
-    </div>
-</nav>
-
-<div class="tab-content" id="scoreChartContent">
-    {% #nav_content prefix='chart' id='0' %}
-        {% if is_confirmed %}
-            {% partialdef chart_canvas inline=True %}
-                <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
-                    <canvas id="scoreChart"></canvas>
-                    {% partial chart_contents %}
-                </div>
-            {% endpartialdef chart_canvas %}
-        {% else %}
-            {% #responsive_table %}
-                <tbody>
-                    <tr class="text-center align-middle">
-                       <th colspan="6" class="text-danger fs-6 py-4">
-                           모든 과목의 답안을 입력해주세요.
-                       </th>
-                    </tr>
-                </tbody>
-            {% /responsive_table %}
-        {% endif %}
-    {% /nav_content %}
+<div class="card-body">
+    <h5 class="card-title">성적 분포 차트</h5>
+    {% if is_confirmed %}
+        {% partialdef chart_canvas inline=True %}
+            <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
+                <canvas id="scoreChart"></canvas>
+                {% partial chart_contents %}
+            </div>
+        {% endpartialdef chart_canvas %}
+    {% else %}
+        {% #responsive_table %}
+            <tbody>
+                <tr class="text-center align-middle">
+                   <th colspan="6" class="text-danger fs-6 py-4">
+                       모든 과목의 답안을 입력해주세요.
+                   </th>
+                </tr>
+            </tbody>
+        {% /responsive_table %}
+    {% endif %}
 </div>
 
 {% partialdef chart_contents %}

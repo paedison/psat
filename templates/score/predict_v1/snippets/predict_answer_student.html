@@ -4,40 +4,46 @@
 
 <div class="card-body">
     <h5 class="card-title">답안 입력 및 제출 현황</h5>
-    <div class="text-center mb-4">
-        {% with count_data=answer_student_count.헌법 %}
-            {% partialdef count_data_button inline=True %}
-                {% if count_data.is_confirmed %}
-                    <button class="btn btn-primary{{ margin|default:' me-4' }}">
-                        {{ count_data.icon|safe }} {{ count_data.subject }}<br/>
-                        현재 {{ count_data.answer_count|add:0 }}개 입력<br/>
-                        답안 제출 완료
-                    </button>
-                {% else %}
-                    <a class="btn btn-outline-primary{{ margin|default:' me-4' }}" hx-target="#main"
-                       href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
-                        {{ count_data.icon|safe }} {{ count_data.subject }}<br/>
-                        현재 {{ count_data.answer_count|add:0 }}개 입력<br/>
-                        답안 미제출
-                    </a>
-                {% endif %}
-            {% endpartialdef %}
-        {% endwith %}
-        {% with count_data=answer_student_count.언어 %}{% partial count_data_button %}{% endwith %}
-        {% with count_data=answer_student_count.자료 %}{% partial count_data_button %}{% endwith %}
-        {% with count_data=answer_student_count.상황 %}{% partial count_data_button %}{% endwith %}
+    <div class="container text-center mb-4">
+        <div class="row gy-4">
+            <div class="d-none d-lg-block col-2"></div>
+            {% with count_data=answer_student_count.헌법 %}
+                {% partialdef count_data_button inline=True %}
+                    <div class="col-6 col-sm-3 col-lg-2 p-0">
+                        {% if count_data.is_confirmed %}
+                            <button class="btn btn-primary px-1" style="width: 120px;">
+                                {{ count_data.icon|safe }} {{ count_data.subject }}<br/>
+                                {{ count_data.answer_count|add:0 }}문제 입력<br/>
+                                답안 제출 완료
+                            </button>
+                        {% else %}
+                            <a class="btn btn-outline-primary px-1" style="width: 120px;"
+                               href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                {{ count_data.icon|safe }} {{ count_data.subject }}<br/>
+                                {{ count_data.answer_count|add:0 }}문제 입력<br/>
+                                답안 미제출
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endpartialdef count_data_button %}
+            {% endwith %}
+            {% with count_data=answer_student_count.언어 %}{% partial count_data_button %}{% endwith %}
+            {% with count_data=answer_student_count.자료 %}{% partial count_data_button %}{% endwith %}
+            {% with count_data=answer_student_count.상황 %}{% partial count_data_button %}{% endwith %}
+        </div>
     </div>
+
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
-            {% #nav_tab prefix='heonbeob_answers' id='0' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
-            {% #nav_tab prefix='eoneo_answers' id='1' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
-            {% #nav_tab prefix='jaryo_answers' id='2' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
-            {% #nav_tab prefix='sanghwang_answers' id='3' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
+            {% #nav_tab prefix='answer_heonbeob' id='0' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
+            {% #nav_tab prefix='answer_eoneo' id='1' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
+            {% #nav_tab prefix='answer_jaryo' id='2' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
+            {% #nav_tab prefix='answer_sanghwang' id='3' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
         </div>
     </nav>
 
     <div class="tab-content" id="scoreAnswersContent">
-        {% #nav_content prefix='heonbeob_answers' id='0' %}
+        {% #nav_content prefix='answer_heonbeob' id='0' %}
             {% #responsive_table %}
                 {% with answers=answer_student_data.헌법 count_data=answer_student_count.헌법 %}
                     {% partial predicted_answer_table %}
@@ -45,7 +51,7 @@
             {% /responsive_table %}
         {% /nav_content %}
 
-        {% #nav_content prefix='eoneo_answers' id='1' %}
+        {% #nav_content prefix='answer_eoneo' id='1' %}
             {% #responsive_table %}
                 {% with answers=answer_student_data.언어 count_data=answer_student_count.언어 %}
                     {% partial predicted_answer_table %}
@@ -53,7 +59,7 @@
             {% /responsive_table %}
         {% /nav_content %}
 
-        {% #nav_content prefix='jaryo_answers' id='2' %}
+        {% #nav_content prefix='answer_jaryo' id='2' %}
             {% #responsive_table %}
                 {% with answers=answer_student_data.자료 count_data=answer_student_count.자료 %}
                     {% partial predicted_answer_table %}
@@ -61,7 +67,7 @@
             {% /responsive_table %}
         {% /nav_content %}
 
-        {% #nav_content prefix='sanghwang_answers' id='3' %}
+        {% #nav_content prefix='answer_sanghwang' id='3' %}
             {% #responsive_table %}
                 {% with answers=answer_student_data.상황 count_data=answer_student_count.상황 %}
                     {% partial predicted_answer_table %}

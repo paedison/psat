@@ -9,7 +9,7 @@ class ListView(
     admin_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime_v3/score_admin_list.html'
+    template_name = 'score/prime_v3/prime_admin_list.html'
 
     def get_template_names(self):
         htmx_template = {
@@ -45,7 +45,7 @@ class DetailView(
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime_v3/score_admin_detail.html'
+    template_name = 'score/prime_v3/prime_admin_detail.html'
 
     def get_template_names(self):
         htmx_template = {
@@ -98,7 +98,7 @@ class CatalogView(
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
-    template_name = 'score/prime_v3/score_admin_detail.html#catalog'
+    template_name = 'score/prime_v3/prime_admin_detail.html#catalog'
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
@@ -137,7 +137,7 @@ class PrintView(
     DetailView,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime_v3/score_admin_print.html'
+    template_name = 'score/prime_v3/prime_admin_print.html'
     view_type = 'print'
 
     def post(self, request, *args, **kwargs):
@@ -153,7 +153,7 @@ class IndividualStudentPrintView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     normal_views.DetailView
 ):
-    template_name = 'score/prime_v3/score_individual_print.html'
+    template_name = 'score/prime_v3/prime_individual_print.html'
     view_type = 'print'
 
 

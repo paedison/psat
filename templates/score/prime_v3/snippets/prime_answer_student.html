@@ -3,52 +3,54 @@
 {% load partials %}
 {% load slippers %}
 
-<nav>
-    <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
-        {% #nav_tab prefix='heonbeob_answers' id='0' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
-        {% #nav_tab prefix='eoneo_answers' id='1' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
-        {% #nav_tab prefix='jaryo_answers' id='2' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
-        {% #nav_tab prefix='sanghwang_answers' id='3' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
+<div class="card-body">
+    <h5 class="card-title">답안 확인</h5>
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
+            {% #nav_tab prefix='answer_heonbeob' id='0' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
+            {% #nav_tab prefix='answer_eoneo' id='1' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
+            {% #nav_tab prefix='answer_jaryo' id='2' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
+            {% #nav_tab prefix='answer_sanghwang' id='3' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreAnswersContent">
+        {% #nav_content prefix='answer_heonbeob' id='0' %}
+            {% #responsive_table %}
+                {% with answers=answers_heonbeob rates=rates_heonbeob %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='answer_eoneo' id='1' %}
+            {% #responsive_table %}
+                {% with answers=answers_eoneo rates=rates_eoneo %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='answer_jaryo' id='2' %}
+            {% #responsive_table %}
+                {% with answers=answers_jaryo rates=rates_jaryo %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='answer_sanghwang' id='3' %}
+            {% #responsive_table %}
+                {% with answers=answers_sanghwang rates=rates_sanghwang %}
+                    {% partial confirmed_answer_table %}
+                {% endwith %}
+            {% /responsive_table %}
+        {% /nav_content %}
     </div>
-</nav>
-
-<div class="tab-content" id="scoreAnswersContent">
-    {% #nav_content prefix='heonbeob_answers' id='0' %}
-        {% #responsive_table %}
-            {% with answers=answers_heonbeob rates=rates_heonbeob %}
-                {% partial confirmed_answer_table %}
-            {% endwith %}
-        {% /responsive_table %}
-    {% /nav_content %}
-
-    {% #nav_content prefix='eoneo_answers' id='1' %}
-        {% #responsive_table %}
-            {% with answers=answers_eoneo rates=rates_eoneo %}
-                {% partial confirmed_answer_table %}
-            {% endwith %}
-        {% /responsive_table %}
-    {% /nav_content %}
-
-    {% #nav_content prefix='jaryo_answers' id='2' %}
-        {% #responsive_table %}
-            {% with answers=answers_jaryo rates=rates_jaryo %}
-                {% partial confirmed_answer_table %}
-            {% endwith %}
-        {% /responsive_table %}
-    {% /nav_content %}
-
-    {% #nav_content prefix='sanghwang_answers' id='3' %}
-        {% #responsive_table %}
-            {% with answers=answers_sanghwang rates=rates_sanghwang %}
-                {% partial confirmed_answer_table %}
-            {% endwith %}
-        {% /responsive_table %}
-    {% /nav_content %}
 </div>
 
 {% partialdef confirmed_answer_table %} {# confirmed_answer_table partial #}
     <tbody>
-
         {% with loop_counter=10 loop_min=0 %}
             {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
                 <tr class="text-center table-warning">

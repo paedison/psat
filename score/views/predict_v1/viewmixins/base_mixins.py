@@ -53,7 +53,7 @@ class BaseMixin:
 
         self.info = {
             'menu': 'score',
-            'view_type': 'predictScore',
+            'view_type': 'primeScore',
         }
 
     def get_exam_name(self):

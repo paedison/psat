@@ -10,7 +10,7 @@ class ListView(
     normal_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime_v3/score_list.html'
+    template_name = 'score/prime_v3/prime_list.html'
 
     def get_template_names(self):
         htmx_template = {
@@ -47,7 +47,7 @@ class DetailView(
     normal_view_mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/prime_v3/score_detail.html'
+    template_name = 'score/prime_v3/prime_detail.html'
 
     def get_template_names(self):
         htmx_template = {
@@ -75,15 +75,15 @@ class DetailView(
             'icon_subject': self.ICON_SUBJECT,
             'icon_nav': self.ICON_NAV,
 
-            # score_student.html
+            # prime_student_info
             'student': self.student,
 
-            # score_sheet.html, score_chart.html
+            # prime_score_sheet, prime_chart
             'student_score': self.student_score,
             'stat_total': self.all_score_stat['전체'],
             'stat_department': self.all_score_stat['직렬'],
 
-            # score_answers.html
+            # prime_answer_student
             'answers_eoneo': self.all_answers['언어'],
             'answers_jaryo': self.all_answers['자료'],
             'answers_sanghwang': self.all_answers['상황'],
@@ -97,7 +97,7 @@ class DetailView(
 
 
 class PrintView(DetailView):
-    template_name = 'score/prime_v3/score_print.html'
+    template_name = 'score/prime_v3/prime_print.html'
     view_type = 'print'
 
 
@@ -106,7 +106,7 @@ class NoOpenModalView(
     vanilla.TemplateView,
 ):
     """ Represent modal view when there is no student data. """
-    template_name = 'score/prime_v3/snippets/score_modal.html#no_open_modal'
+    template_name = 'score/prime_v3/snippets/prime_modal.html#no_open_modal'
 
     def get_context_data(self, **kwargs):
         self.get_properties()
@@ -124,7 +124,7 @@ class NoStudentModalView(
     vanilla.TemplateView,
 ):
     """ Represent modal view when there is no student data. """
-    template_name = 'score/prime_v3/snippets/score_modal.html#no_student_modal'
+    template_name = 'score/prime_v3/snippets/prime_modal.html#no_student_modal'
 
     def get_context_data(self, **kwargs) -> dict:
         self.get_properties()
@@ -141,7 +141,7 @@ class StudentConnectModalView(
     vanilla.TemplateView,
 ):
     """ Represent modal view for connecting student data. """
-    template_name = 'score/prime_v3/snippets/score_modal.html#student_connect'
+    template_name = 'score/prime_v3/snippets/prime_modal.html#student_connect'
 
     def get_context_data(self, **kwargs) -> dict:
         self.get_properties()
@@ -161,7 +161,7 @@ class StudentConnectView(
     base_mixins.BaseMixin,
     vanilla.FormView,
 ):
-    template_name = 'score/prime_v3/snippets/score_modal.html#student_info'
+    template_name = 'score/prime_v3/snippets/prime_modal.html#student_info'
 
     def get_form_class(self):
         return self.student_form
