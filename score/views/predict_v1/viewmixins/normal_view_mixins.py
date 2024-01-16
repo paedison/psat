@@ -297,8 +297,10 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
             pass
 
     def get_next_url(self):
-        answer_sub_list = self.answer_model.objects.filter(student=self.student).distinct().values_list('sub',
-                                                                                                        flat=True)
+        answer_sub_list = (
+            self.answer_model.objects.filter(student=self.student)
+            .distinct().values_list('sub', flat=True)
+        )
         for sub in self.sub_dict.keys():
             if sub not in answer_sub_list:
                 return reverse_lazy('predict:answer_input', args=[sub])

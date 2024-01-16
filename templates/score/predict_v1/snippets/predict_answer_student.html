@@ -122,7 +122,7 @@
                         <th class="text-secondary text-nowrap align-center" scope="row">정확도(%)</th>
                         {% for answer in answers %}
                             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                                <td>{{ answer.answer_predict.rate }}</td>
+                                <td>{{ answer.answer_predict.rate|floatformat:0 }}</td>
                             {% endif %}
                         {% endfor %}
                     </tr>
