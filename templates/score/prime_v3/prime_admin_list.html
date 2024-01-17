@@ -90,8 +90,8 @@
                                 {% for stat in obj.statistics %}
                                     <tr class="text-center">
                                         {% if forloop.first %}
-                                            <td class="text-nowrap p-2" rowspan="8">{{ obj.round }}</td>
-                                            <td class="text-nowrap p-2" rowspan="8">
+                                            <td class="text-nowrap p-2" rowspan="9">{{ obj.round }}</td>
+                                            <td class="text-nowrap p-2" rowspan="9">
                                                 {{ obj.date }}<br/>
                                                 <a href="{{ obj.detail_url }}" class="btn btn-sm btn-primary"
                                                    hx-get="{{ obj.detail_url }}">

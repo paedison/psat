@@ -1,11 +1,14 @@
 import io
+import traceback
 import zipfile
 from urllib.parse import quote
 
+import django.db.utils
 import pandas as pd
 import pdfkit
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import F
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -106,7 +109,7 @@ class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
         self.category_list = self.get_category_list()
         self.search_student_name = self.get_variable('student_name')
 
-        self.statistics = self.get_statistics(self.year, self.round)
+        self.statistics = self.get_statistics()
 
         self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
         self.base_url = reverse_lazy(
@@ -132,7 +135,7 @@ class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
     def get_all_stat(self):
         qs = (
             self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
-            .select_related('student', 'student__department').order_by('rank_total_psat')
+            .order_by('rank_total_psat')
         )
         if self.search_student_name:
             return qs.filter(student__name=self.search_student_name)
@@ -153,6 +156,97 @@ class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
             student_ids.append(obj.student.id)
 
         return page_obj, page_range, student_ids
+
+
+class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
+    def update_score(self):
+        update_list = []
+        create_list = []
+        update_count = 0
+        create_count = 0
+        score_keys = [
+            'score_heonbeob','score_eoneo', 'score_jaryo', 'score_sanghwang', 'score_psat', 'score_psat_avg',
+        ]
+
+        students = self.student_model.objects.filter(
+            category=self.category,
+            year=self.year,
+            ex=self.ex,
+            round=self.round
+        )
+        for student in students:
+            print(student)
+            score = self.get_score(student)
+            try:
+                stat = self.statistics_model.objects.get(student=student)
+                fields_not_match = any(
+                    getattr(stat, key) != score[key] for key in score_keys
+                )
+                if fields_not_match:
+                    for field, value in score.items():
+                        setattr(stat, field, value)
+                    update_list.append(stat)
+                    update_count += 1
+            except self.statistics_model.DoesNotExist:
+                score['student_id'] = student.id
+                create_list.append(self.statistics_model(**score))
+                create_count += 1
+
+        try:
+            with transaction.atomic():
+                if create_list:
+                    self.statistics_model.objects.bulk_create(create_list)
+                    message = f'총 {create_count}명의 성적 자료가 입력되었습니다.'
+                elif update_list:
+                    self.statistics_model.objects.bulk_update(update_list, score_keys)
+                    message = f'총 {update_count}명의 성적 자료가 업데이트되었습니다.'
+                else:
+                    message = f'기존에 입력된 성적 자료와 일치합니다.'
+        except django.db.utils.IntegrityError:
+            traceback_message = traceback.format_exc()
+            print(traceback_message)
+            message = f'Error occurred.'
+
+        return message
+
+    def get_score(self, student):
+        score_heonbeob = self.get_score_subject(student, '헌법')
+        score_eoneo = self.get_score_subject(student, '언어')
+        score_jaryo = self.get_score_subject(student, '자료')
+        score_sanghwang = self.get_score_subject(student, '상황')
+        score_psat = score_eoneo + score_jaryo + score_sanghwang
+        score_psat_avg = score_psat / 3
+        return {
+            'score_heonbeob': score_heonbeob,
+            'score_eoneo': score_eoneo,
+            'score_jaryo': score_jaryo,
+            'score_sanghwang': score_sanghwang,
+            'score_psat': score_psat,
+            'score_psat_avg': score_psat_avg,
+        }
+
+    def get_score_subject(self, student: any, sub: str):
+        problem_count = self.problem_count_dict[sub]
+        answer_correct_sub = self.answer_correct_dict[sub]
+        try:
+            answer_student_sub = self.answer_model.objects.get(sub=sub, student=student)
+
+            correct_count = 0
+            for i in range(problem_count):
+                number = i + 1
+                answer_correct = answer_correct_sub[f'prob{number}']
+                answer_student = getattr(answer_student_sub, f'prob{number}')
+                if answer_correct <= 5 and answer_correct == answer_student:
+                    correct_count += 1
+                if answer_correct > 5:
+                    answer_correct_list = [int(digit) for digit in str(answer_correct)]
+                    if answer_student in answer_correct_list:
+                        correct_count += 1
+
+            score_subject = correct_count * 100 / problem_count
+        except self.answer_model.DoesNotExist:
+            score_subject = 0
+        return score_subject
 
 
 class ExportStatisticsToExcelMixin(IndexViewMixin):

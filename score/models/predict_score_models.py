@@ -23,9 +23,9 @@ class PredictStudent(models.Model):
 
     def __str__(self):
         if self.round:
-            return f'{self.category}-{self.year}{self.ex}{self.round}-{self.department_id}-{self.user_id}'
+            return f'[PredictStudent#{self.id}]{self.category}-{self.year}{self.ex}{self.round}-{self.department_id}-{self.user_id}'
         else:
-            return f'{self.category}-{self.year}{self.ex}-dep{self.department_id}-user{self.user_id}'
+            return f'[PredictStudent#{self.id}]{self.category}-{self.year}{self.ex}-dep{self.department_id}-user{self.user_id}'
 
 
 class PredictAnswer(models.Model):

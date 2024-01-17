@@ -7,6 +7,7 @@ app_name = 'predict_admin'  # score/predict/admin/
 urlpatterns = [
     path('', admin_views.index_view, name='index'),
     path('test/', admin_views.test_view, name='test'),
+    path('update_score/', admin_views.update_score, name='update_score'),
     path('search/<int:year>/<int:round>/', admin_views.catalog_view, name='catalog_year_round'),
 
     path('print/<int:year>/<int:round>/', admin_views.print_view, name='print'),

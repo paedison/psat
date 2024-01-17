@@ -1,6 +1,5 @@
 import vanilla
 
-from . import normal_views
 from .viewmixins import admin_view_mixins
 
 
@@ -63,6 +62,7 @@ class IndexView(
         return {
             # base info
             'info': self.info,
+            'category': self.category,
             'year': self.year,
             'round': self.round,
             'title': 'Score',
@@ -157,6 +157,19 @@ class PrintView(
 #     view_type = 'print'
 
 
+class UpdateScore(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.UpdateScoreMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'score/predict_v1/snippets/predict_modal.html#update_score'
+
+    def get_context_data(self, **kwargs):
+        self.get_properties()
+
+        return {'message': self.update_score()}
+
+
 class ExportStatisticsToExcelView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ExportStatisticsToExcelMixin,
@@ -189,6 +202,7 @@ class ExportTranscriptToPdfView(
 
 index_view = IndexView.as_view()
 test_view = TestView.as_view()
+update_score = UpdateScore.as_view()
 
 catalog_view = CatalogView.as_view()
 

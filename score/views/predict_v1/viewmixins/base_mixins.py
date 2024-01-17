@@ -28,7 +28,7 @@ class BaseMixin:
 
     base_dir = settings.BASE_DIR
     filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
-    answer_uploaded = False
+    answer_uploaded = True
 
     request: any
     kwargs: dict
@@ -98,6 +98,12 @@ class BaseMixin:
 
     def get_answer_correct_dict(self) -> dict[dict]:
         answer_correct = {}
+        # {
+        #     '헌법': {
+        #         'prob1': 1,
+        #         ...
+        #     }
+        # }
         if self.answer_uploaded:
             with open(self.filename, 'r', encoding='utf-8') as file:
                 csv_data = csv.reader(file)
@@ -154,26 +160,32 @@ class BaseMixin:
 
 
 class AdminBaseMixin(BaseMixin):
-    def get_statistics_qs_list(self, year, exam_round) -> list:
+    def get_statistics_qs_list(self) -> list:
         filter_expr = {
-            'student__year': year,
-            'student__round': exam_round,
+            'student__category': self.category,
+            'student__year': self.year,
+            'student__ex': self.ex,
+            'student__round': self.round,
         }
         statistics_qs = (
             self.statistics_model.objects.defer('timestamp').select_related('student').filter(**filter_expr)
         )
         if statistics_qs:
-            statistics_qs_list = [{'department': '전체', 'queryset': statistics_qs}]
+            statistics_qs_list = [
+                {'department': '전체', 'queryset': statistics_qs}
+            ]
 
-            department_list = self.department_model.objects.values_list('name', flat=True)
+            department_list = self.department_model.objects.filter(unit__exam__abbr=self.ex).values('id', 'name')
             for department in department_list:
-                filter_expr['student__department__name'] = department
-                statistics_qs_list.append({'department': department, 'queryset': statistics_qs.filter(**filter_expr)})
+                filter_expr['student__department_id'] = department['id']
+                statistics_qs_list.append(
+                    {'department': department['name'], 'queryset': statistics_qs.filter(**filter_expr)}
+                )
             return statistics_qs_list
 
-    def get_statistics(self, year, exam_round) -> list:
+    def get_statistics(self) -> list:
         score_statistics_list = []
-        statistics_qs_list = self.get_statistics_qs_list(year, exam_round)
+        statistics_qs_list = self.get_statistics_qs_list()
         if statistics_qs_list:
             for qs_list in statistics_qs_list:
                 statistics_dict = {'department': qs_list['department']}
