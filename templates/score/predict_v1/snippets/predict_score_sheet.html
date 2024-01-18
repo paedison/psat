@@ -116,6 +116,15 @@
                         {% partialdef score_statistics inline=True %}
                             <tbody>
                                 <tr class="text-center">
+                                    <th class="text-nowrap">헌법</th>
+                                    <td>{{ student_score.score_heonbeob|floatformat:1 }}</td>
+                                    <td>{{ stat.num_students }}</td>
+                                    <td>{{ stat.max_score_heonbeob|floatformat:1 }}</td>
+                                    <td>{{ stat.top_score_10_heonbeob|floatformat:1 }}</td>
+                                    <td>{{ stat.top_score_20_heonbeob|floatformat:1 }}</td>
+                                    <td>{{ stat.avg_score_heonbeob|floatformat:1 }}</td>
+                                </tr>
+                                <tr class="text-center">
                                     <th class="text-nowrap">언어논리</th>
                                     <td>{{ student_score.score_eoneo|floatformat:1 }}</td>
                                     <td>{{ stat.num_students }}</td>
@@ -151,17 +160,6 @@
                                     <td>{{ stat.top_score_20_psat_avg|floatformat:1 }}</td>
                                     <td>{{ stat.avg_score_psat_avg|floatformat:1 }}</td>
                                 </tr>
-                                {% if heonbeob_answer or heonbeob_temporary %}
-                                    <tr class="text-center">
-                                        <th class="text-nowrap">헌법</th>
-                                        <td>{{ student_score.score_heonbeob|floatformat:1 }}</td>
-                                        <td>{{ stat.num_students }}</td>
-                                        <td>{{ stat.max_score_heonbeob|floatformat:1 }}</td>
-                                        <td>{{ stat.top_score_10_heonbeob|floatformat:1 }}</td>
-                                        <td>{{ stat.top_score_20_heonbeob|floatformat:1 }}</td>
-                                        <td>{{ stat.avg_score_heonbeob|floatformat:1 }}</td>
-                                    </tr>
-                                {% endif %}
                             </tbody>
                         {% endpartialdef score_statistics %}
                     {% endwith %}

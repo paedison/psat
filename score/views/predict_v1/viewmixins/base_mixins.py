@@ -67,15 +67,15 @@ class BaseMixin:
         return exam_name_dict[self.ex]
 
     def get_problem_count_dict(self) -> dict:
-        problem_count_dict = {
+        count_problem_dict = {
             '헌법': 25,
             '언어': 25 if self.ex == '칠급' else 40,
             '자료': 25 if self.ex == '칠급' else 40,
             '상황': 25 if self.ex == '칠급' else 40,
         }
         if self.ex == '칠급':
-            problem_count_dict.pop('헌법')
-        return problem_count_dict
+            count_problem_dict.pop('헌법')
+        return count_problem_dict
 
     def get_student_filter(self) -> dict:
         return {

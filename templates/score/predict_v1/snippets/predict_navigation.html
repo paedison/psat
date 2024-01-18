@@ -1,0 +1,21 @@
+<nav>
+    <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <li class="breadcrumb-item">
+            <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">Score</li>
+        <li class="breadcrumb-item">
+            {% if category == 'PSAT' %}
+                <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
+            {% elif category == 'Prime' %}
+                <a href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">Prime</a>
+            {% endif %}
+        </li>
+        {% if round %}
+            <li class="breadcrumb-item">{{ year }}</li>
+            <li class="breadcrumb-item active">제{{ round }}회</li>
+        {% else %}
+            <li class="breadcrumb-item active">{{ year }}</li>
+        {% endif %}
+    </ol>
+</nav>

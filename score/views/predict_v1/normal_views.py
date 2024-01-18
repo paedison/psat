@@ -53,7 +53,6 @@ class IndexView(
             # answer_student
             'answer_student_count': self.answer_student_count,
             'answer_student_data': self.answer_student_data,
-            'problem_count': self.problem_count_dict,
 
             # score_sheet
             'student_score': self.student_score,
@@ -196,7 +195,6 @@ class AnswerInputView(
                 'icon_nav': self.ICON_NAV,
 
                 'student': self.student,
-                'problem_count': self.problem_count_dict,
                 'answer_student': self.answer_student,
             }
         )

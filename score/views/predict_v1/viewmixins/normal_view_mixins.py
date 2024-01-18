@@ -17,6 +17,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
     answer_predict: dict
     answer_student_count: dict
     answer_student_data: dict
+    score_predict: dict
 
     all_score_stat: dict
     student_score: dict  # score, rank, rank_ratio
@@ -33,7 +34,9 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         self.answer_student_count = self.get_answer_student_count()
         self.answer_student_data = self.get_answer_student_data()
 
-        if self.answer_uploaded:
+        self.score_predict = self.get_score_predict()
+
+        if self.answer_uploaded and self.student:
             self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
             all_ranks = get_all_ranks_dict(self.get_statistics_qs, self.user_id)
             self.student_score = self.update_student_score(all_ranks)
@@ -89,7 +92,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         )
         for prob in all_raw_answer_count:
             sub = prob['sub']
-            answer_count_list = []
+            answer_count_list = []  # list for counting answers
             for i in range(5):
                 ans_number = i + 1
                 answer_count_list.append(prob[f'count_{ans_number}'])
@@ -142,7 +145,28 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                         'result': result,
                     }
                 )
+        # {
+        #     '헌법': [
+        #         {'ans_number': '', 'count': '', 'rate': ''},
+        #     ]
+        # }
         return answer_student_data
+
+    def get_score_predict(self):
+        score_dict = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
+        if self.ex == '칠급':
+            score_dict.pop('헌법')
+        for sub, score in score_dict.items():
+            problem_count = self.problem_count_dict[sub]
+            correct_count = 0
+            try:
+                for ans in self.answer_student_data[sub]:
+                    if ans['answer_predict']['ans_number'] == ans['answer_student']:
+                        correct_count += 1
+            except KeyError:
+                pass
+            score_dict[sub] = correct_count * 100 / problem_count
+        return score_dict
 
     def get_statistics_qs(self, rank_type='전체'):
         filter_expr = {

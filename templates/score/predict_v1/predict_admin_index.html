@@ -1,12 +1,9 @@
-{% extends 'list.html' %}
+{% extends 'score/predict_v1/predict_base.html' %}
 {% load static %}
 {% load psat_filter %}
 {% load partials %}
 {% load slippers %}
 {% load humanize %}
-
-{% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 
 {% block main %}
 {% partialdef admin_main inline=True %} {# admin_main partial #}
@@ -20,28 +17,7 @@
             일반 페이지
         </a>
     </h1>
-
-    <nav>
-        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-            <li class="breadcrumb-item">
-                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
-            </li>
-            <li class="breadcrumb-item">Score</li>
-            <li class="breadcrumb-item">
-                {% if category == 'PSAT' %}
-                    <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
-                {% elif category == 'Prime' %}
-                    <a href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">Prime</a>
-                {% endif %}
-            </li>
-            {% if round %}
-                <li class="breadcrumb-item">{{ year }}</li>
-                <li class="breadcrumb-item active">제{{ round }}회</li>
-            {% else %}
-                <li class="breadcrumb-item active">{{ year }}</li>
-            {% endif %}
-        </ol>
-    </nav>
+    {% include 'score/predict_v1/snippets/predict_navigation.html' %}
 </div><!-- Page Title End -->
 
 <section id="statistics" class="section htmx-fade-in htmx-fade-out"
