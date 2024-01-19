@@ -82,6 +82,7 @@ class DetailView(
             'student_score': self.student_score,
             'stat_total': self.all_score_stat['전체'],
             'stat_department': self.all_score_stat['직렬'],
+            'frequency_score': self.frequency_score,
 
             # prime_answer_student
             'answers_eoneo': self.all_answers['언어'],

@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from django.core.paginator import Paginator
-from django.db.models import When, Value, F, Case, ExpressionWrapper, FloatField
+from django.db.models import When, Value, F, Case, ExpressionWrapper, FloatField, Count
+from django.db.models.functions import Round
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
@@ -57,8 +58,10 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
     sub_title: str
     student: any
 
-    student_score: dict  # score, rank, rank_ratio
+    student_score: any  # score, rank, rank_ratio
     all_score_stat: dict
+    frequency_score: dict
+
     all_answers: dict
     all_answer_rates: dict
 
@@ -71,6 +74,8 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
 
         self.student_score = self.statistics_model.objects.get(student_id=self.student['id'])  # score, rank, rank_ratio
         self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
+        self.frequency_score = self.get_frequency_score()
+
         self.all_answers = self.get_all_answers()
         self.all_answer_rates = self.get_all_answer_rates()
 
@@ -106,6 +111,29 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
             if self.student:
                 filter_expr['student__department_id'] = self.student['department_id']
         return self.statistics_model.objects.defer('timestamp').filter(**filter_expr)
+
+    def get_frequency_score(self) -> dict:
+        def get_score_counts(field: str):
+            rounded_field = f'round_{field}'
+            score_counts_list = (
+                self.statistics_model.objects.values(
+                    **{rounded_field: Round(F(field),1)}
+                ).annotate(count=Count('id'))
+            )
+            score_counts = {entry[rounded_field]: entry['count'] for entry in score_counts_list}
+            return score_counts
+
+        psat_avg_counts = get_score_counts('score_psat_avg')
+        psat_avg_point_color = []
+        for score, count in psat_avg_counts.items():
+            if score == round(self.student_score.score_psat_avg, 1):
+                psat_avg_point_color.append('blue')
+            psat_avg_point_color.append('white')
+
+        return {
+            'psat_avg': psat_avg_counts,
+            'psat_avg_point': psat_avg_point_color,
+        }
 
     def get_all_answers(self) -> dict:
         all_correct_answers: list[dict] = list(

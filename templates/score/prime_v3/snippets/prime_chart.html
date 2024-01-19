@@ -10,6 +10,12 @@
                 <canvas id="scoreChart"></canvas>
                 {% partial chart_contents %}
             </div>
+            <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
+                {{ frequency_score.psat_avg|json_script:'psat_avg' }}
+                {{ frequency_score.psat_avg_point|json_script:'psat_avg_point' }}
+                <canvas id="scoreChartTotal"></canvas>
+                {% partial chart_contents_total %}
+            </div>
         {% endpartialdef chart_canvas %}
     {% else %}
         {% #responsive_table %}
@@ -142,6 +148,60 @@
     } else {
         chart_canvas.chart.destroy();
         new Chart(chart_canvas, chart_data);
+    }
+</script>
+{% endpartialdef chart_contents %}
+
+{% partialdef chart_contents_total %}
+<script type="text/javascript">
+    const psat_avg = JSON.parse(document.getElementById('psat_avg').textContent);
+    const psat_avg_point = JSON.parse(document.getElementById('psat_avg_point').textContent);
+
+    chart_datasets_total = [
+        {
+            label: 'PSAT 평균',
+            data: Object.values(psat_avg),
+            borderWidth: 2,
+            tension: 0.4,
+            pointBackgroundColor: psat_avg_point,
+        },
+    ]
+
+    chart_data_total = {
+        type: 'line',
+        data: {
+            labels: Object.keys(psat_avg),
+            datasets: chart_datasets_total,
+        },
+        options: {
+            indexAxis: (screenWidth < 768) ? 'y' : 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                datalabels: {
+                    align: 'end',
+                    color: 'black',
+                    font: {
+                        weight: 'bold',
+                    }
+                },
+            },
+            scales: {
+                y: {ticks: {font: {weight: 'bold'}}},
+                x: {ticks: {font: {weight: 'bold'}}},
+            },
+        }
+    }
+
+    if (typeof chart_canvas_total === 'undefined') {
+        const chart_canvas_total = document.getElementById('scoreChartTotal');
+        new Chart(chart_canvas_total, chart_data_total);
+    } else {
+        chart_canvas_total.chart.destroy();
+        new Chart(chart_canvas_total, chart_data_total);
     }
 </script>
 {% endpartialdef chart_contents %}
