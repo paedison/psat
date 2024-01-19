@@ -154,8 +154,8 @@
 
 {% partialdef chart_contents_total %}
 <script type="text/javascript">
-    const psat_avg = JSON.parse(document.getElementById('psat_avg').textContent);
-    const psat_avg_point = JSON.parse(document.getElementById('psat_avg_point').textContent);
+    psat_avg = JSON.parse(document.getElementById('psat_avg').textContent);
+    psat_avg_point = JSON.parse(document.getElementById('psat_avg_point').textContent);
 
     chart_datasets_total = [
         {
