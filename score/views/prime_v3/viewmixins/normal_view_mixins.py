@@ -118,7 +118,7 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
             score_counts_list = (
                 self.statistics_model.objects.values(
                     **{rounded_field: Round(F(field),1)}
-                ).annotate(count=Count('id'))
+                ).annotate(count=Count('id')).order_by(field)
             )
             score_counts = {entry[rounded_field]: entry['count'] for entry in score_counts_list}
             return score_counts
