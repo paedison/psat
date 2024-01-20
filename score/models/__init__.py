@@ -21,5 +21,6 @@ from .prime_score_models import (
 )
 from .predict_score_models import (
     PredictStudent, PredictAnswer,
-    PredictAnswerCount, PredictStatistics,
+    PredictAnswerCount,
+    PredictStatistics, PredictStatisticsVirtual,
 )

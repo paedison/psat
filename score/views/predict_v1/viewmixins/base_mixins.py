@@ -16,6 +16,7 @@ class BaseMixin:
     answer_model = score_models.PredictAnswer
     answer_count_model = score_models.PredictAnswerCount
     statistics_model = score_models.PredictStatistics
+    statistics_virtual_model = score_models.PredictStatisticsVirtual
 
     student_form = score_forms.PredictStudentForm
 
@@ -28,7 +29,7 @@ class BaseMixin:
 
     base_dir = settings.BASE_DIR
     filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
-    answer_uploaded = True
+    answer_uploaded = False
     min_participants = 100
 
     request: any
@@ -100,20 +101,32 @@ class BaseMixin:
     def get_answer_correct_dict(self) -> dict:
         answer_correct = {}
         # {
-        #     '헌법': {
-        #         'prob1': 1,
+        #     '헌법': [
+        #         {
+        #             'number': 10,
+        #             'ans_number': 1,
+        #             'ans_number_list': [],
+        #             'rate_correct': 0,
+        #         },
         #         ...
-        #     }
+        #     ]
         # }
         if self.answer_uploaded:
             with open(self.filename, 'r', encoding='utf-8') as file:
                 csv_data = csv.reader(file)
                 keys = next(csv_data)
                 for key in keys[1:]:
-                    answer_correct[key] = {}
+                    answer_correct[key] = []
                 for row in csv_data:
                     for i in range(1, len(keys)):
-                        answer_correct[keys[i]][f'prob{row[0]}'] = int(row[i]) if row[i] else None
+                        answer_correct[keys[i]].append(
+                            {
+                                'number': row[0],
+                                'ans_number': int(row[i]) if row[i] else None,
+                                'ans_number_list': [],
+                                'rate_correct': 0,
+                            }
+                        )
         return answer_correct
 
     def get_answer_student_qs(self):

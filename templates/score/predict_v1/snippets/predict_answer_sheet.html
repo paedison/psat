@@ -47,13 +47,19 @@
                         </tr>
 
                         {# answer_correct #}
-                        <tr class="text-center">
-                            <th class="text-nowrap td-no-border" scope="row">정답</th>
-                            {% if not answer_uploaded %}
-                                <td colspan="{{ loop_counter }}" class="fw-bold text-bg-success">
+                        {% if not answer_uploaded %}
+                            <tr class="text-center">
+                                <th class="text-nowrap text-bg-success td-no-border" scope="row">정답</th>
+                                <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-success">
                                     답안 공개전입니다.
                                 </td>
-                            {% else %}
+                            </tr>
+                            <tr class="text-center">
+                                <th class="text-nowrap text-bg-success" scope="row">정답률(%)</th>
+                            </tr>
+                        {% else %}
+                            <tr class="text-center">
+                                <th class="text-nowrap td-no-border text-bg-success" scope="row">정답</th>
                                 {% for answer in answer_correct %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td class="td-no-border">
@@ -72,15 +78,9 @@
                                         </td>
                                     {% endif %}
                                 {% endfor %}
-                            {% endif %}
-                        </tr>
-                        <tr class="text-center">
-                            <th class="text-nowrap" scope="row">정답률(%)</th>
-                            {% if not answer_uploaded %}
-                                <td colspan="{{ loop_counter }}" class="fw-bold text-bg-success">
-                                    답안 공개전입니다.
-                                </td>
-                            {% else %}
+                            </tr>
+                            <tr class="text-center">
+                                <th class="text-nowrap" scope="row">정답률(%)</th>
                                 {% for answer in answer_correct %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td>
@@ -90,8 +90,8 @@
                                         </td>
                                     {% endif %}
                                 {% endfor %}
-                            {% endif %}
-                        </tr>
+                            </tr>
+                        {% endif %}
 
                         {# answer_student #}
                         <tr class="text-center">
@@ -133,13 +133,19 @@
                         </tr>
 
                         {# answer_predict #}
-                        <tr class="text-center">
-                            <th class="text-nowrap td-no-border" scope="row">예상 정답</th>
-                            {% if count_data.participants < min_participants %}
-                                <td colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
-                                    답안 수집중입니다.
+                        {% if count_data.participants < min_participants %}
+                            <tr class="text-center">
+                                <th class="text-nowrap text-bg-warning td-no-border" scope="row">예상 정답</th>
+                                <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
+                                    답안 수집중입니다. (현재 {{ count_data.participants }}명 제출 완료)
                                 </td>
-                            {% else %}
+                            </tr>
+                            <tr class="text-center">
+                                <th class="text-nowrap text-bg-warning" scope="row">정확도(%)</th>
+                            </tr>
+                        {% else %}
+                            <tr class="text-center">
+                                <th class="text-nowrap td-no-border" scope="row">예상 정답</th>
                                 {% for answer in answer_predict %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td class="td-no-border">
@@ -148,16 +154,9 @@
                                         </td>
                                     {% endif %}
                                 {% endfor %}
-                            {% endif %}
-                        </tr>
-
-                        <tr class="text-center">
-                            <th class="text-nowrap" scope="row">정확도(%)</th>
-                            {% if count_data.participants < min_participants %}
-                                <td colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
-                                    답안 수집중입니다.
-                                </td>
-                            {% else %}
+                            </tr>
+                            <tr class="text-center">
+                                <th class="text-nowrap" scope="row">정확도(%)</th>
                                 {% for answer in answer_predict %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td>
@@ -167,8 +166,8 @@
                                         </td>
                                     {% endif %}
                                 {% endfor %}
-                            {% endif %}
-                        </tr>
+                            </tr>
+                        {% endif %}
                     {% endpartialdef answer_table_tr %}
                 {% endwith %}
 
@@ -192,7 +191,7 @@
             {% else %}
                 <tr class="text-center">
                     <th>
-                        <a class="btn btn-outline-danger"
+                        <a class="btn btn-outline-danger my-4"
                            href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
                             답안을 제출해주세요.
                         </a>

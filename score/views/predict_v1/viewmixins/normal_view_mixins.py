@@ -1,5 +1,3 @@
-import json
-
 from django.db import transaction
 from django.urls import reverse_lazy
 
@@ -108,38 +106,34 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             }
         return answer_student_count
 
-    def get_answer_data(self) -> list:
-        answer_data_correct = {'헌법': [], '언어': [], '자료': [], '상황': []}
+    def get_answer_data(self) -> dict:
         answer_data_predict = {'헌법': [], '언어': [], '자료': [], '상황': []}
         answer_data_student = {'헌법': [], '언어': [], '자료': [], '상황': []}
         if self.ex == '칠급':
-            answer_data_correct.pop('헌법')
             answer_data_predict.pop('헌법')
             answer_data_student.pop('헌법')
 
+        answer_data_correct = self.answer_correct_dict.copy()
         for a in self.all_answer_count:
             sub = a['sub']  # 과목
             number = a['number']  # 문제 번호
 
-            ans_number_correct = None  # 정답
-            ans_number_list = []  # 복수 정답 리스트
-            rate_correct = 0  # 정답률
             if self.answer_uploaded:
-                ans_number_correct = self.answer_correct_dict[sub][f'prob{number}']
+                prob = answer_data_correct[sub][number - 1]
+                ans_number_correct = prob['ans_number']
 
                 if ans_number_correct in range(1, 6):
+                    ans_number_list = []
                     rate_correct = a[f'rate_{ans_number_correct}']
                 else:
                     ans_number_list = [int(digit) for digit in str(ans_number_correct)]
                     rate_correct = sum(a[f'rate_{ans}'] for ans in ans_number_list)
-            answer_data_correct[sub].append(
-                {
-                    'number': number,
-                    'ans_number': ans_number_correct,
-                    'ans_number_list': ans_number_list,
-                    'rate_correct': rate_correct,
-                }
-            )
+                prob.update(
+                    {
+                        'ans_number_list': ans_number_list,
+                        'rate_correct': rate_correct,
+                    }
+                )
 
             answer_count_list = []  # list for counting answers
             for i in range(5):
@@ -321,18 +315,8 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
         super().get_properties()
 
         self.sub = self.kwargs.get('sub')
-        self.next_url = self.get_next_url()
         self.is_confirmed = self.set_is_confirmed()
-
-    def get_next_url(self):
-        answer_sub_list = (
-            self.answer_model.objects.filter(student=self.student)
-            .distinct().values_list('sub', flat=True)
-        )
-        for sub in self.sub_dict.keys():
-            if sub not in answer_sub_list:
-                return reverse_lazy('predict:answer_input', args=[sub])
-        return reverse_lazy('predict:index')
+        self.next_url = self.get_next_url()
 
     def set_is_confirmed(self):
         try:
@@ -344,11 +328,22 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
                 answer_student.is_confirmed = True
                 answer_student.save()
                 self.update_answer_count(answer_student)
-                answer_predict = self.update_answer_predict()
-                self.update_score(answer_student, answer_predict)
+                answer_predict = self.get_answer_predict()
+                self.update_score_virtual(answer_student, answer_predict)
             return True
         except self.answer_model.DoesNotExist:
             pass
+
+    def get_next_url(self):
+        answer_sub_list = (
+            self.answer_model.objects
+            .filter(student=self.student, is_confirmed=True)
+            .distinct().values_list('sub', flat=True)
+        )
+        for sub in self.sub_dict.keys():
+            if sub not in answer_sub_list:
+                return reverse_lazy('predict:answer_input', args=[sub])
+        return reverse_lazy('predict:index')
 
     def update_answer_count(self, answer_student):
         problem_count = self.problem_count_dict[self.sub]
@@ -374,7 +369,7 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
                         setattr(answer_count, f'count_{ans_number}', old_count + 1)
                         answer_count.save()
 
-    def update_answer_predict(self) -> dict:
+    def get_answer_predict(self) -> dict:
         answer_predict = {'헌법': [], '언어': [], '자료': [], '상황': []}
         if self.ex == '칠급':
             answer_predict.pop('헌법')
@@ -389,6 +384,7 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
         )
         for prob in all_raw_answer_count:
             sub = prob['sub']
+            number = prob['number']
             answer_count_list = []  # list for counting answers
             for i in range(5):
                 ans_number = i + 1
@@ -396,23 +392,13 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
             answer_predict_number = answer_count_list.index(max(answer_count_list)) + 1
             answer_predict[sub].append(
                 {
+                    'number': number,
                     'ans_number': answer_predict_number,
-                    'rate_accuracy': prob[f'rate_{answer_predict_number}'],
-                    'rate_1': prob['rate_1'],
-                    'rate_2': prob['rate_2'],
-                    'rate_3': prob['rate_3'],
-                    'rate_4': prob['rate_4'],
-                    'rate_5': prob['rate_5'],
                 }
             )
-        filename = f'{self.base_dir}/score/views/predict_v1/viewmixins/data/answer_predict.json'
-        with open(filename, 'w') as json_file:
-            json.dump(answer_predict, json_file, indent=2)
-
         return answer_predict
 
-    def update_score(self, answer_student, answer_predict):
-        """ Update scores in PSAT student instances. """
+    def update_score_virtual(self, answer_student, answer_predict):
         sub_field = {
             '언어': 'score_eoneo',
             '자료': 'score_jaryo',
@@ -420,17 +406,17 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
             '헌법': 'score_heonbeob',
         }
         field = sub_field[self.sub]
-        ans_predict = answer_predict[self.sub]
+        answer_predict_sub = answer_predict[self.sub]
 
-        total_count = self.problem_count_dict[self.sub]
+        problem_count = self.problem_count_dict[self.sub]
         correct_count = 0
         stat, _ = self.statistics_model.objects.get_or_create(student=self.student)
 
-        for i in range(total_count):
+        for i in range(problem_count):
             number = i + 1
-            if getattr(answer_student, f'prob{number}') == ans_predict[i]['ans_number']:
+            if getattr(answer_student, f'prob{number}') == answer_predict_sub[i]['ans_number']:
                 correct_count += 1
-        score = 100 * correct_count / total_count
+        score = 100 * correct_count / problem_count
         setattr(stat, field, score)
 
         score_eoneo = stat.score_eoneo or 0

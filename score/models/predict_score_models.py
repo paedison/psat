@@ -1,5 +1,6 @@
 from django.db import models
-from django.db.models import F
+
+from score.models.base_models import StatisticsBase, AnswerCountBase
 
 
 class PredictStudent(models.Model):
@@ -23,9 +24,11 @@ class PredictStudent(models.Model):
 
     def __str__(self):
         if self.round:
-            return f'[PredictStudent#{self.id}]{self.category}-{self.year}{self.ex}{self.round}-{self.department_id}-{self.user_id}'
+            return (f'[PredictStudent#{self.id}]{self.category}-{self.year}{self.ex}{self.round}'
+                    f'-dep{self.department_id}-user{self.user_id}')
         else:
-            return f'[PredictStudent#{self.id}]{self.category}-{self.year}{self.ex}-dep{self.department_id}-user{self.user_id}'
+            return (f'[PredictStudent#{self.id}]{self.category}-{self.year}{self.ex}'
+                    f'-dep{self.department_id}-user{self.user_id}')
 
 
 class PredictAnswer(models.Model):
@@ -80,16 +83,7 @@ class PredictAnswer(models.Model):
         verbose_name_plural = "성적 예측 제출 답안"
 
 
-class PredictAnswerCount(models.Model):
-
-    @staticmethod
-    def rate_dict(ans_number):
-        return {
-            'expression': F(f'count_{ans_number}') * 100 / F('count_total'),
-            'output_field': models.FloatField(),
-            'db_persist': False,
-        }
-
+class PredictAnswerCount(AnswerCountBase):
     category = models.CharField(max_length=20)  # PSAT, prime
     year = models.IntegerField()
     ex = models.CharField(max_length=2)
@@ -97,56 +91,15 @@ class PredictAnswerCount(models.Model):
     sub = models.CharField(max_length=2)
     number = models.IntegerField()
     answer = models.IntegerField(null=True, blank=True)
-    count_0 = models.IntegerField(default=0)
-    count_1 = models.IntegerField(default=0)
-    count_2 = models.IntegerField(default=0)
-    count_3 = models.IntegerField(default=0)
-    count_4 = models.IntegerField(default=0)
-    count_5 = models.IntegerField(default=0)
-    count_total = models.IntegerField(default=1)
-    rate_1 = models.GeneratedField(**rate_dict(1))
-    rate_2 = models.GeneratedField(**rate_dict(2))
-    rate_3 = models.GeneratedField(**rate_dict(3))
-    rate_4 = models.GeneratedField(**rate_dict(4))
-    rate_5 = models.GeneratedField(**rate_dict(5))
 
     class Meta:
-        ordering = ['id']
         verbose_name = "성적 예측 답안 개수"
         verbose_name_plural = "성적 예측 답안 개수"
 
 
-class PredictStatistics(models.Model):
-    timestamp = models.DateTimeField(auto_now_add=True)
+class PredictStatistics(StatisticsBase):
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='statistics')
 
-    score_heonbeob = models.FloatField(null=True, blank=True)
-    score_eoneo = models.FloatField(null=True, blank=True)
-    score_jaryo = models.FloatField(null=True, blank=True)
-    score_sanghwang = models.FloatField(null=True, blank=True)
-    score_psat = models.FloatField(null=True, blank=True)
-    score_psat_avg = models.FloatField(null=True, blank=True)
 
-    rank_total_heonbeob = models.PositiveIntegerField(null=True, blank=True)
-    rank_total_eoneo = models.PositiveIntegerField(null=True, blank=True)
-    rank_total_jaryo = models.PositiveIntegerField(null=True, blank=True)
-    rank_total_sanghwang = models.PositiveIntegerField(null=True, blank=True)
-    rank_total_psat = models.PositiveIntegerField(null=True, blank=True)
-
-    rank_department_heonbeob = models.PositiveIntegerField(null=True, blank=True)
-    rank_department_eoneo = models.PositiveIntegerField(null=True, blank=True)
-    rank_department_jaryo = models.PositiveIntegerField(null=True, blank=True)
-    rank_department_sanghwang = models.PositiveIntegerField(null=True, blank=True)
-    rank_department_psat = models.PositiveIntegerField(null=True, blank=True)
-
-    rank_ratio_total_heonbeob = models.FloatField(null=True, blank=True)
-    rank_ratio_total_eoneo = models.FloatField(null=True, blank=True)
-    rank_ratio_total_jaryo = models.FloatField(null=True, blank=True)
-    rank_ratio_total_sanghwang = models.FloatField(null=True, blank=True)
-    rank_ratio_total_psat = models.FloatField(null=True, blank=True)
-
-    rank_ratio_department_heonbeob = models.FloatField(null=True, blank=True)
-    rank_ratio_department_eoneo = models.FloatField(null=True, blank=True)
-    rank_ratio_department_jaryo = models.FloatField(null=True, blank=True)
-    rank_ratio_department_sanghwang = models.FloatField(null=True, blank=True)
-    rank_ratio_department_psat = models.FloatField(null=True, blank=True)
+class PredictStatisticsVirtual(StatisticsBase):
+    student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='statistics_virtual')
