@@ -104,6 +104,48 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                 'score_predict': 0,
                 'is_confirmed': is_confirmed,
             }
+        answer_student_count['psat'] = {
+            'icon': '',
+            'sub': 'PSAT',
+            'subject': 'PSAT 평균',
+            'participants': (
+                max(
+                    answer_student_count['헌법']['participants'],
+                    answer_student_count['언어']['participants'],
+                    answer_student_count['자료']['participants'],
+                    answer_student_count['상황']['participants'],
+                )
+            ),
+            'problem_count': sum(self.problem_count_dict.values()),
+            'answer_count': (
+                sum(
+                    [
+                        answer_student_count['헌법']['answer_count'],
+                        answer_student_count['언어']['answer_count'],
+                        answer_student_count['자료']['answer_count'],
+                        answer_student_count['상황']['answer_count'],
+                    ]
+                )
+            ),
+            'score_predict': (
+                sum(
+                    [
+                        answer_student_count['헌법']['score_predict'],
+                        answer_student_count['언어']['score_predict'],
+                        answer_student_count['자료']['score_predict'],
+                        answer_student_count['상황']['score_predict'],
+                    ]
+                )
+            ) / 3,
+            'is_confirmed': all(
+                [
+                    answer_student_count['헌법']['is_confirmed'],
+                    answer_student_count['언어']['is_confirmed'],
+                    answer_student_count['자료']['is_confirmed'],
+                    answer_student_count['상황']['is_confirmed'],
+                ]
+            ),
+        }
         return answer_student_count
 
     def get_answer_data(self) -> dict:
@@ -207,6 +249,9 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                 if answer_predict and answer_student and answer_predict == answer_student:
                     correct_count += 1
             score_dict[sub] = correct_count * 100 / problem_count
+        score_dict['psat'] = sum(
+            [score_dict['언어'], score_dict['자료'], score_dict['상황']]
+        ) / 3
         return score_dict
 
     def get_statistics_qs(self, rank_type='전체'):

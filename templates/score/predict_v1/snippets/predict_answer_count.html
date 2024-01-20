@@ -28,23 +28,38 @@
                                 {% if count_data.is_confirmed %}
                                     {{ count_data.icon|safe }} {{ count_data.subject }}
                                 {% else %}
-                                    <a class="text-decoration-none"
-                                       href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                    {% if count_data.sub == 'PSAT' %}
                                         {{ count_data.icon|safe }} {{ count_data.subject }}
-                                    </a>
+                                    {% else %}
+                                        <a class="text-decoration-none"
+                                           href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                            {{ count_data.icon|safe }} {{ count_data.subject }}
+                                        </a>
+                                    {% endif %}
                                 {% endif %}
                             </th>
                             <td>{{ count_data.participants }}</td>
                             <td>
                                 {% if count_data.is_confirmed %}
-                                    {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
-                                    <span class="badge rounded-pill text-bg-success">제출 완료</span>
-                                {% else %}
-                                    <a class="text-decoration-none"
-                                       href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                    <span class="d-inline-block text-end" style="width:75px">
                                         {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
-                                        <span class="badge rounded-pill text-bg-danger">미제출</span>
-                                    </a>
+                                    </span>
+                                    <span class="badge rounded-pill text-bg-success" style="width:60px">제출 완료</span>
+                                {% else %}
+                                    {% if count_data.sub == 'PSAT' %}
+                                        <span class="d-inline-block text-end" style="width:75px">
+                                            {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
+                                        </span>
+                                        <span class="badge rounded-pill text-bg-danger" style="width:60px">미제출</span>
+                                    {% else %}
+                                        <a class="text-decoration-none"
+                                           href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                            <span class="d-inline-block text-end" style="width:75px">
+                                                {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
+                                            </span>
+                                            <span class="badge rounded-pill text-bg-danger" style="width:60px">미제출</span>
+                                        </a>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                             <td>
@@ -55,10 +70,14 @@
                                         {{ score_data }}
                                     {% endif %}
                                 {% else %}
-                                    <a class="text-decoration-none"
-                                       href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                    {% if count_data.sub == 'PSAT' %}
                                         <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
-                                    </a>
+                                    {% else %}
+                                        <a class="text-decoration-none"
+                                           href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                            <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                                        </a>
+                                    {% endif %}
                                 {% endif %}
                             </td>
 {#                            <td>(10)</td>#}
@@ -73,6 +92,9 @@
                     {% partial answer_student_status %}
                 {% endwith %}
                 {% with count_data=answer_student_count.상황 score_data=score_predict.상황 %}
+                    {% partial answer_student_status %}
+                {% endwith %}
+                {% with count_data=answer_student_count.psat score_data=score_predict.psat %}
                     {% partial answer_student_status %}
                 {% endwith %}
             </tbody>
