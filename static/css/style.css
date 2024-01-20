@@ -294,3 +294,7 @@ div.td-div-xl {
   color: #fff;
   background-color: #0d6efd;
 }
+
+.td-no-border {
+    border: none;
+}

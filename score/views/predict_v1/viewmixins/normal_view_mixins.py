@@ -13,10 +13,11 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
     units: list
     departments: list | None
 
+    all_answer_count: list
     participant_count: dict
-    answer_predict: dict
     answer_student_count: dict
-    answer_student_data: dict
+
+    answer_data: dict
     score_predict: dict
 
     all_score_stat: dict
@@ -30,18 +31,17 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         self.units = self.unit_model.objects.filter(exam__abbr=self.ex)
         self.departments = self.get_departments()
 
+        self.all_answer_count = self.get_all_answer_count()
         self.participant_count = self.get_participant_count()
-        self.answer_predict = self.get_answer_predict()
         self.answer_student_count = self.get_answer_student_count()
-        self.answer_student_data = self.get_answer_student_data()
 
+        self.answer_data = self.get_answer_data()
         self.score_predict = self.get_score_predict()
 
         if self.answer_uploaded and self.student:
             self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
             all_ranks = get_all_ranks_dict(self.get_statistics_qs, self.user_id)
             self.student_score = self.update_student_score(all_ranks)
-            self.all_answer_rates = self.get_all_answer_rates()
         else:
             self.all_score_stat = {'전체': '', '직렬': ''}
             self.student_score = {}
@@ -54,10 +54,22 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             return f'제{self.round}회 {self.exam_name} 성적 예측'
 
     def get_departments(self) -> list:
-        if self.category == 'Prime':
-            return self.department_model.objects.filter(unit__exam__abbr=self.ex).values()
+        return self.department_model.objects.filter(unit__exam__abbr=self.ex).values()
+
+    def get_all_answer_count(self) -> list:
+        return (
+            self.answer_count_model.objects.filter(
+                category=self.category,
+                year=self.year,
+                ex=self.ex,
+                round=self.round
+            ).order_by('sub', 'number').values()
+        )
 
     def get_participant_count(self):
+        participant_count = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
+        if self.ex == '칠급':
+            participant_count.pop('헌법')
         participant_count_qs = self.answer_count_model.objects.filter(
             category=self.category,
             year=self.year,
@@ -65,7 +77,6 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             round=self.round,
             number=1
         ).values('sub', 'count_total')
-        participant_count = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
         for query in participant_count_qs:
             sub = query['sub']
             count_total = query['count_total']
@@ -97,64 +108,88 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             }
         return answer_student_count
 
-    def get_answer_predict(self) -> dict:
-        filename = f'{self.base_dir}/score/views/predict_v1/viewmixins/data/answer_predict.json'
-        try:
-            with open(filename, 'r') as json_file:
-                answer_predict = json.load(json_file)
-                return answer_predict
-        except FileNotFoundError:
-            return {'헌법': [], '언어': [], '자료': [], '상황': []}
+    def get_answer_data(self) -> list:
+        answer_data_correct = {'헌법': [], '언어': [], '자료': [], '상황': []}
+        answer_data_predict = {'헌법': [], '언어': [], '자료': [], '상황': []}
+        answer_data_student = {'헌법': [], '언어': [], '자료': [], '상황': []}
+        if self.ex == '칠급':
+            answer_data_correct.pop('헌법')
+            answer_data_predict.pop('헌법')
+            answer_data_student.pop('헌법')
 
-    def get_answer_student_data(self) -> dict:
-        answer_student_data = {}
+        for a in self.all_answer_count:
+            sub = a['sub']  # 과목
+            number = a['number']  # 문제 번호
+
+            ans_number_correct = None  # 정답
+            ans_number_list = []  # 복수 정답 리스트
+            rate_correct = 0  # 정답률
+            if self.answer_uploaded:
+                ans_number_correct = self.answer_correct_dict[sub][f'prob{number}']
+
+                if ans_number_correct in range(1, 6):
+                    rate_correct = a[f'rate_{ans_number_correct}']
+                else:
+                    ans_number_list = [int(digit) for digit in str(ans_number_correct)]
+                    rate_correct = sum(a[f'rate_{ans}'] for ans in ans_number_list)
+            answer_data_correct[sub].append(
+                {
+                    'number': number,
+                    'ans_number': ans_number_correct,
+                    'ans_number_list': ans_number_list,
+                    'rate_correct': rate_correct,
+                }
+            )
+
+            answer_count_list = []  # list for counting answers
+            for i in range(5):
+                answer_count_list.append(a[f'count_{i + 1}'])
+            ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
+            rate_accuracy = a[f'rate_{ans_number_predict}']  # 정확도
+            answer_data_predict[sub].append(
+                {
+                    'number': number,
+                    'ans_number': ans_number_predict,
+                    'rate_accuracy': rate_accuracy,
+                }
+            )
+
         all_raw_student_answers = (
             self.answer_model.objects.defer('timestamp').filter(student=self.student).values()
         )
         for raw_student_answers in all_raw_student_answers:
             sub = raw_student_answers['sub']
-            answer_student_data[sub] = []
-
             problem_count = self.problem_count_dict[sub]
             for i in range(problem_count):
                 number = i + 1
-                answer_student = raw_student_answers[f'prob{number}']
-                answer_correct = None
-                answer_correct_list = []
-                answer_predict_sub = self.answer_predict[sub]
+                ans_number_student = raw_student_answers[f'prob{number}']
 
-                try:
-                    answer_predict = {
-                        'ans_number': answer_predict_sub[i]['ans_number'],
-                        'rate_accuracy': answer_predict_sub[i]['rate_accuracy'],
-                        'rate_selection': answer_predict_sub[i][f'rate_{answer_student}'],
-                    }
-                except IndexError:
-                    answer_predict = {
-                        'ans_number': '',
-                        'rate_accuracy': '',
-                        'rate_selection': '',
-                    }
-
-                result = None
+                result = ''
                 if self.answer_uploaded:
-                    answer_correct = self.answer_correct_dict[sub][f'prob{number}']
-                    if answer_correct in range(1, 6):
-                        result = 'O' if answer_student == answer_correct else 'X'
+                    ans_number_correct = answer_data_correct[sub][i]['ans_number']
+                    ans_number_list_correct = answer_data_correct[sub][i]['ans_number_list']
+                    if ans_number_correct in range(1, 6):
+                        result = 'O' if ans_number_student == ans_number_correct else 'X'
                     else:
-                        answer_correct_list = [int(digit) for digit in str(answer_correct)]
-                        result = 'O' if answer_student in answer_correct_list else 'X'
-                answer_student_data[sub].append(
+                        result = 'O' if ans_number_student in ans_number_list_correct else 'X'
+
+                rate_selection = 0
+                for a in self.all_answer_count:
+                    if sub == a['sub'] and number == a['number']:
+                        rate_selection = a[f'rate_{ans_number_student}']
+                answer_data_student[sub].append(
                     {
                         'number': number,
-                        'answer_correct': answer_correct,
-                        'answer_correct_list': answer_correct_list,
-                        'answer_predict': answer_predict,
-                        'answer_student': answer_student,
+                        'ans_number': ans_number_student,
                         'result': result,
+                        'rate_selection': rate_selection,
                     }
                 )
-        return answer_student_data
+        return {
+            'answer_correct': answer_data_correct,
+            'answer_predict': answer_data_predict,
+            'answer_student': answer_data_student,
+        }
 
     def get_score_predict(self):
         score_dict = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
@@ -163,12 +198,20 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         for sub, score in score_dict.items():
             problem_count = self.problem_count_dict[sub]
             correct_count = 0
-            try:
-                for ans in self.answer_student_data[sub]:
-                    if ans['answer_predict']['ans_number'] == ans['answer_student']:
-                        correct_count += 1
-            except KeyError:
-                pass
+            for i in range(problem_count):
+                answer_predict = None
+                answer_student = None
+
+                answer_predict_sub = self.answer_data['answer_predict'][sub]
+                if answer_predict_sub:
+                    answer_predict = answer_predict_sub[i]['ans_number']
+
+                answer_student_sub = self.answer_data['answer_student'][sub]
+                if answer_student_sub:
+                    answer_student = answer_student_sub[i]['ans_number']
+
+                if answer_predict and answer_student and answer_predict == answer_student:
+                    correct_count += 1
             score_dict[sub] = correct_count * 100 / problem_count
         return score_dict
 
@@ -219,35 +262,6 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         except self.statistics_model.DoesNotExist:
             pass
 
-    def get_all_answer_rates(self) -> dict:
-        all_answer_count = (
-            self.answer_count_model.objects
-            .filter(
-                category=self.category,
-                year=self.year,
-                ex=self.ex,
-                round=self.round,
-            ).order_by('sub', 'number').values()
-        )
-
-        all_answer_rates = {'헌법': [], '언어': [], '자료': [], '상황': []}
-        for a in all_answer_count:
-            sub = a['sub']
-            number = a['number']
-            answer_correct = self.answer_correct_dict[sub][f'prob{number}']
-            if answer_correct in range(1, 6):
-                rate_correct = a[f'rate_{answer_correct}']
-            else:
-                answer_correct_list = [int(digit) for digit in str(answer_correct)]
-                rate_correct = sum(a[f'rate_{ans}'] for ans in answer_correct_list)
-            all_answer_rates[sub].append(
-                {
-                    'number': number,
-                    'rate_correct': rate_correct,
-                }
-            )
-        return all_answer_rates
-
 
 class AnswerInputViewMixin(ConstantIconSet, BaseMixin):
     sub_title: str
@@ -289,7 +303,7 @@ class AnswerInputViewMixin(ConstantIconSet, BaseMixin):
                 answer_student = self.answer_student_qs_list[f'prob{number}']
             answer_student_list.append(
                 {
-                    'number': i,
+                    'number': number,
                     'ex': self.ex,
                     'sub': self.sub,
                     'answer_student': answer_student,

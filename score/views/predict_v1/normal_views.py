@@ -51,22 +51,18 @@ class IndexView(
             'student': self.student,
             'departments': self.departments,
 
-            # answer_student_count
+            # answer_count
             'answer_student_count': self.answer_student_count,
             'score_predict': self.score_predict,
 
-            # answer_student_data
-            'answer_student_data': self.answer_student_data,
-            'answer_rates': self.all_answer_rates,
+            # answer_sheet
+            'answer_data_correct': self.answer_data['answer_correct'],
+            'answer_data_predict': self.answer_data['answer_predict'],
+            'answer_data_student': self.answer_data['answer_student'],
 
             # score_sheet
             'student_score': self.student_score,
             'all_score_stat': self.all_score_stat,
-
-            # 'rates_eoneo': self.all_answer_rates['언어'],
-            # 'rates_jaryo': self.all_answer_rates['자료'],
-            # 'rates_sanghwang': self.all_answer_rates['상황'],
-            # 'rates_heonbeob': self.all_answer_rates['헌법'],
         }
 
 
