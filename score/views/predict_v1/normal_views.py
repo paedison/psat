@@ -32,6 +32,7 @@ class IndexView(
             # base info
             'info': self.info,
             'answer_uploaded': self.answer_uploaded,
+            'min_participants': self.min_participants,
             'category': self.category,
             'year': self.year,
             'ex': self.ex,
@@ -50,9 +51,13 @@ class IndexView(
             'student': self.student,
             'departments': self.departments,
 
-            # answer_student
+            # answer_student_count
             'answer_student_count': self.answer_student_count,
+            'score_predict': self.score_predict,
+
+            # answer_student_data
             'answer_student_data': self.answer_student_data,
+            'answer_rates': self.all_answer_rates,
 
             # score_sheet
             'student_score': self.student_score,

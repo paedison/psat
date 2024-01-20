@@ -85,15 +85,8 @@ class DetailView(
             'frequency_score': self.frequency_score,
 
             # prime_answer_student
-            'answers_eoneo': self.all_answers['언어'],
-            'answers_jaryo': self.all_answers['자료'],
-            'answers_sanghwang': self.all_answers['상황'],
-            'answers_heonbeob': self.all_answers['헌법'],
-
-            'rates_eoneo': self.all_answer_rates['언어'],
-            'rates_jaryo': self.all_answer_rates['자료'],
-            'rates_sanghwang': self.all_answer_rates['상황'],
-            'rates_heonbeob': self.all_answer_rates['헌법'],
+            'answer_student': self.all_answers,
+            'answer_rates': self.all_answer_rates,
         }
 
 

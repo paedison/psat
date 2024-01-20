@@ -60,12 +60,17 @@
 
         {% if student %}
             <div class="col-12">
-                <div id="student_info" class="card htmx-fade-in htmx-fade-out">
+                <div id="answer_count" class="card htmx-fade-in htmx-fade-out">
+                    {% include 'score/predict_v1/snippets/predict_answer_count.html' %}
+                </div>
+            </div>
+            <div class="col-12">
+                <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
                     {% include 'score/predict_v1/snippets/predict_answer_student.html' %}
                 </div>
             </div>
             <div class="col-12">
-                <div id="student_info" class="card htmx-fade-in htmx-fade-out">
+                <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
                     {% include 'score/predict_v1/snippets/predict_score_sheet.html' %}
                 </div>
             </div>

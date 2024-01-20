@@ -1,0 +1,91 @@
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+<div class="card-body">
+    <h5 class="card-title">답안 제출 현황</h5>
+
+    <article class="table-responsive">
+        <table class="table table-bordered small align-middle m-0">
+            <thead>
+                <tr class="text-center align-middle table-warning">
+                    <th class="p-1" rowspan="2">과목</th>
+                    <th class="p-1" rowspan="2">총 참여자수<br/>(명)</th>
+                    <th class="p-1" rowspan="2">선택 답안수<br/>(문제)</th>
+                    <th class="p-1" rowspan="2">예상 점수<br/>(점)</th>
+{#                    <th class="p-1" colspan="2">예상 등수</th>#}
+                </tr>
+{#                <tr class="text-center align-middle table-warning">#}
+{#                    <th class="p-1">(등)</th>#}
+{#                    <th class="p-1">(%)</th>#}
+{#                </tr>#}
+            </thead>
+            <tbody>
+                {% with count_data=answer_student_count.헌법 score_data=score_predict.헌법 %}
+                    {% partialdef answer_student_status inline=True %}
+                        <tr class="text-center">
+                            <th class="text-nowrap">
+                                {% if count_data.is_confirmed %}
+                                    {{ count_data.icon|safe }} {{ count_data.subject }}
+                                {% else %}
+                                    <a class="text-decoration-none"
+                                       href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                        {{ count_data.icon|safe }} {{ count_data.subject }}
+                                    </a>
+                                {% endif %}
+                            </th>
+                            <td>{{ count_data.participants }}</td>
+                            <td>
+                                {% if count_data.is_confirmed %}
+                                    {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
+                                    <span class="badge rounded-pill text-bg-success">제출 완료</span>
+                                {% else %}
+                                    <a class="text-decoration-none"
+                                       href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                        {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
+                                        <span class="badge rounded-pill text-bg-danger">미제출</span>
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if count_data.is_confirmed %}
+                                    {% if count_data.participants < min_participants %}
+                                        <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
+                                    {% else %}
+                                        {{ score_data }}
+                                    {% endif %}
+                                {% else %}
+                                    <a class="text-decoration-none"
+                                       href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                        <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                                    </a>
+                                {% endif %}
+                            </td>
+{#                            <td>(10)</td>#}
+{#                            <td>(5.0)</td>#}
+                        </tr>
+                    {% endpartialdef %}
+                {% endwith %}
+                {% with count_data=answer_student_count.언어 score_data=score_predict.언어 %}
+                    {% partial answer_student_status %}
+                {% endwith %}
+                {% with count_data=answer_student_count.자료 score_data=score_predict.자료 %}
+                    {% partial answer_student_status %}
+                {% endwith %}
+                {% with count_data=answer_student_count.상황 score_data=score_predict.상황 %}
+                    {% partial answer_student_status %}
+                {% endwith %}
+            </tbody>
+        </table>
+        <div class="my-3">
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+            <ol class="text-success small fw-bold">
+                <li>총 참여자수는 과목별로 답안 제출을 완료한 응시생수입니다.</li>
+                <li>선택 답안수는 과목별로 답안을 선택한 문제수 및 총 문제수입니다.</li>
+                <li>최종 제출한 답안만 통계에 포함되니 답안 제출을 완료해주세요.</li>
+                <li>최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
+                <li>예상 점수는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
+            </ol>
+        </div>
+    </article>
+</div>

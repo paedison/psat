@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F
 
 from common.models import User
 from reference.models.base_models import Exam
@@ -100,6 +101,15 @@ class PrimeAnswer(AnswerBase):
 
 
 class PrimeAnswerCount(models.Model):
+
+    @staticmethod
+    def rate_dict(ans_number):
+        return {
+            'expression': F(f'count_{ans_number}') * 100 / F('count_total'),
+            'output_field': models.FloatField(),
+            'db_persist': False,
+        }
+
     problem = models.ForeignKey(PrimeProblem, on_delete=models.CASCADE, related_name='answer_counts')
     count_0 = models.IntegerField(default=0)
     count_1 = models.IntegerField(default=0)
@@ -107,7 +117,12 @@ class PrimeAnswerCount(models.Model):
     count_3 = models.IntegerField(default=0)
     count_4 = models.IntegerField(default=0)
     count_5 = models.IntegerField(default=0)
-    count_total = models.IntegerField(default=0)
+    count_total = models.IntegerField(default=1)
+    rate_1 = models.GeneratedField(**rate_dict(1))
+    rate_2 = models.GeneratedField(**rate_dict(2))
+    rate_3 = models.GeneratedField(**rate_dict(3))
+    rate_4 = models.GeneratedField(**rate_dict(4))
+    rate_5 = models.GeneratedField(**rate_dict(5))
 
     class Meta:
         ordering = ['id']

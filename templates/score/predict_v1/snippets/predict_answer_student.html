@@ -3,35 +3,7 @@
 {% load slippers %}
 
 <div class="card-body">
-    <h5 class="card-title">답안 입력 및 제출 현황</h5>
-    <div class="container text-center mb-4">
-        <div class="row gy-4">
-            <div class="d-none d-lg-block col-2"></div>
-            {% with count_data=answer_student_count.헌법 %}
-                {% partialdef count_data_button inline=True %}
-                    <div class="col-6 col-sm-3 col-lg-2 p-0">
-                        {% if count_data.is_confirmed %}
-                            <button class="btn btn-primary px-1" style="width: 120px;">
-                                {{ count_data.icon|safe }} {{ count_data.subject }}<br/>
-                                {{ count_data.answer_count|add:0 }}문제 입력<br/>
-                                답안 제출 완료
-                            </button>
-                        {% else %}
-                            <a class="btn btn-outline-primary px-1" style="width: 120px;"
-                               href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
-                                {{ count_data.icon|safe }} {{ count_data.subject }}<br/>
-                                {{ count_data.answer_count|add:0 }}문제 입력<br/>
-                                답안 미제출
-                            </a>
-                        {% endif %}
-                    </div>
-                {% endpartialdef count_data_button %}
-            {% endwith %}
-            {% with count_data=answer_student_count.언어 %}{% partial count_data_button %}{% endwith %}
-            {% with count_data=answer_student_count.자료 %}{% partial count_data_button %}{% endwith %}
-            {% with count_data=answer_student_count.상황 %}{% partial count_data_button %}{% endwith %}
-        </div>
-    </div>
+    <h5 class="card-title">답안 확인</h5>
 
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
@@ -43,19 +15,19 @@
     </nav>
 
     <div class="tab-content" id="scoreAnswersContent">
-        {% with answers=answer_student_data.헌법 count_data=answer_student_count.헌법 %}
+        {% with answers=answer_student_data.헌법 count_data=answer_student_count.헌법 rates=answer_rates.헌법 %}
             {% #nav_content prefix='answer_heonbeob' id='0' %}{% partial predicted_answer_table %}{% /nav_content %}
         {% endwith %}
 
-        {% with answers=answer_student_data.언어 count_data=answer_student_count.언어 %}
+        {% with answers=answer_student_data.언어 count_data=answer_student_count.언어 rates=answer_rates.언어 %}
             {% #nav_content prefix='answer_eoneo' id='1' %}{% partial predicted_answer_table %}{% /nav_content %}
         {% endwith %}
 
-        {% with answers=answer_student_data.자료 count_data=answer_student_count.자료 %}
+        {% with answers=answer_student_data.자료 count_data=answer_student_count.자료 rates=answer_rates.자료 %}
             {% #nav_content prefix='answer_jaryo' id='2' %}{% partial predicted_answer_table %}{% /nav_content %}
         {% endwith %}
 
-        {% with answers=answer_student_data.상황 count_data=answer_student_count.상황 %}
+        {% with answers=answer_student_data.상황 count_data=answer_student_count.상황 rates=answer_rates.상황 %}
             {% #nav_content prefix='answer_sanghwang' id='3' %}{% partial predicted_answer_table %}{% /nav_content %}
         {% endwith %}
     </div>
@@ -68,26 +40,26 @@
                 {% with loop_counter=10 loop_min=0 %}
                     {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
                         <tr class="text-center table-warning">
-                            <th class="text-secondary" scope="row"></th>
+                            <th class="text-nowrap" scope="row">문제 번호</th>
                             {% for _ in 'x'|ljust:loop_counter %}
-                                <th class="text-nowrap text-secondary">{{ forloop.counter|add:loop_min }}</th>
+                                <th>{{ forloop.counter|add:loop_min }}</th>
                             {% endfor %}
                         </tr>
                         {% if answer_uploaded %}
                             <tr class="text-center">
-                                <th class="text-secondary text-nowrap align-center" scope="row">공식 정답</th>
+                                <th class="text-nowrap" scope="row">정답</th>
                                 {% for answer in answers %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td>
                                             {% if answer.answer_correct <= 5 %}
-                                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
                                                     {{ answer.answer_correct }}</button>
                                             {% elif answer.answer_correct == 12345 %}
                                                 <span class="badge rounded-pill text-bg-secondary">
                                                     전체 정답</span>
                                             {% else %}
                                                 {% for ans in answer.answer_correct_list %}
-                                                    <button class="btn btn-circle btn-sm fs-6 my-2 btn-outline-secondary">
+                                                    <button class="btn btn-circle btn-sm fs-6 my-2 btn-success">
                                                         {{ ans }}</button>
                                                 {% endfor %}
                                             {% endif %}
@@ -96,54 +68,65 @@
                                 {% endfor %}
                             </tr>
                             <tr class="text-center">
-                                <th class="text-secondary text-nowrap align-center" scope="row">정답률(%)</th>
-                                {% for answer in answers %}
+                                <th class="text-nowrap" scope="row">정답률(%)</th>
+                                {% for rate in rates %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td>
-                                            {% if answer.answer_correct <= 5 %}
-                                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                                                    {{ answer.answer_correct }}</button>
-                                            {% elif answer.answer_correct == 12345 %}
-                                                <span class="badge rounded-pill text-bg-secondary">
-                                                    전체 정답</span>
-                                            {% else %}
-                                                {% for ans in answer.answer_correct_list %}
-                                                    <button class="btn btn-circle btn-sm fs-6 my-2 btn-outline-secondary">
-                                                        {{ ans }}</button>
-                                                {% endfor %}
-                                            {% endif %}
+                                            <span data-number="{{ rate.number }}" class="fw-bold text-success">
+                                                {{ rate.rate_correct|floatformat:0 }}
+                                            </span>
                                         </td>
                                     {% endif %}
                                 {% endfor %}
                             </tr>
                         {% endif %}
                         <tr class="text-center">
-                            <th class="text-secondary text-nowrap align-center" scope="row">예상 정답</th>
-                            {% for answer in answers %}
-                                {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                                    <td>
-                                        <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                                            {{ answer.answer_predict.ans_number }}</button>
-                                    </td>
-                                {% endif %}
-                            {% endfor %}
+                            <th class="text-nowrap" scope="row">예상 정답</th>
+                            {% if count_data.participants < min_participants %}
+                                <td colspan="{{ loop_counter }}" class="fw-bold text-danger">
+                                    답안 수집중입니다.
+                                </td>
+                            {% else %}
+                                {% for answer in answers %}
+                                    {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                        <td>
+                                            <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
+                                                {{ answer.answer_predict.ans_number }}</button>
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
                         </tr>
                         <tr class="text-center">
-                            <th class="text-secondary text-nowrap align-center" scope="row">정확도(%)</th>
-                            {% for answer in answers %}
-                                {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                                    <td>{{ answer.answer_predict.rate|floatformat:0 }}</td>
-                                {% endif %}
-                            {% endfor %}
+                            <th class="text-nowrap" scope="row">정확도(%)</th>
+                            {% if count_data.participants < min_participants %}
+                                <td colspan="{{ loop_counter }}" class="fw-bold text-danger">
+                                    답안 수집중입니다.
+                                </td>
+                            {% else %}
+                                {% for answer in answers %}
+                                    {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                        <td>{{ answer.answer_predict.rate_accuracy|floatformat:0 }}</td>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
                         </tr>
                         <tr class="text-center">
-                            <th class="text-secondary text-nowrap" scope="row">제출 답안</th>
+                            <th class="text-nowrap" scope="row">선택 답안</th>
                             {% for answer in answers %}
                                 {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                     <td>
                                         <button class="btn btn-circle btn-sm btn-outline-secondary fs-6 mx-1 my-2">
                                             {{ answer.answer_student }}</button>
                                     </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                        <tr class="text-center">
+                            <th class="text-nowrap" scope="row">선택률(%)</th>
+                            {% for answer in answers %}
+                                {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                    <td>{{ answer.answer_predict.rate_selection|floatformat:0 }}</td>
                                 {% endif %}
                             {% endfor %}
                         </tr>
@@ -168,16 +151,27 @@
                     {% endwith %}
                 {% endif %}
             {% else %}
-                <tr class="text-center table-warning">
-                    <th class="text-danger fs-5 p-4">답안을 제출해주세요.</th>
+                <tr class="text-center">
+                    <th>
+                        <a class="btn btn-outline-danger"
+                           href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                            답안을 제출해주세요.
+                        </a>
+                    </th>
                 </tr>
             {% endif %}
         </tbody>
     {% /responsive_table %}
     {% if count_data.is_confirmed %}
         <div class="my-3">
-            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
-            <span class="text-success small fw-bold">정확도란 예상 정답을 선택한 학생의 비율을 의미함.</span>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+            <ol class="text-success small fw-bold">
+                <li>정답은 공식적으로 정답이 공개된 이후에 확인 가능합니다.</li>
+                <li>정답률은 과목별 전체 참여자 중 정답을 맞힌 학생의 비율을 의미합니다.</li>
+                <li>정확도는 과목별 전체 참여자 중 예상 정답을 선택한 학생의 비율을 의미합니다.</li>
+                <li>선택률은 과목별 전체 참여자 중 본인과 같은 정답을 선택한 학생의 비율을 의미합니다.</li>
+                <li>예상 정답 및 정확도는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
+            </ol>
         </div>
     {% endif %}
 {% endpartialdef predicted_answer_table %}

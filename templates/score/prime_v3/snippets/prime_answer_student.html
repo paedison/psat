@@ -15,116 +15,112 @@
     </nav>
 
     <div class="tab-content" id="scoreAnswersContent">
-        {% #nav_content prefix='answer_heonbeob' id='0' %}
-            {% #responsive_table %}
-                {% with answers=answers_heonbeob rates=rates_heonbeob %}
-                    {% partial confirmed_answer_table %}
-                {% endwith %}
-            {% /responsive_table %}
-        {% /nav_content %}
+        {% with answers=answer_student.헌법 rates=answer_rates.헌법 %}
+            {% #nav_content prefix='answer_heonbeob' id='0' %}{% partial confirmed_answer_table %}{% /nav_content %}
+        {% endwith %}
 
-        {% #nav_content prefix='answer_eoneo' id='1' %}
-            {% #responsive_table %}
-                {% with answers=answers_eoneo rates=rates_eoneo %}
-                    {% partial confirmed_answer_table %}
-                {% endwith %}
-            {% /responsive_table %}
-        {% /nav_content %}
+        {% with answers=answer_student.언어 rates=answer_rates.언어 %}
+            {% #nav_content prefix='answer_eoneo' id='1' %}{% partial confirmed_answer_table %}{% /nav_content %}
+        {% endwith %}
 
-        {% #nav_content prefix='answer_jaryo' id='2' %}
-            {% #responsive_table %}
-                {% with answers=answers_jaryo rates=rates_jaryo %}
-                    {% partial confirmed_answer_table %}
-                {% endwith %}
-            {% /responsive_table %}
-        {% /nav_content %}
+        {% with answers=answer_student.자료 rates=answer_rates.자료 %}
+            {% #nav_content prefix='answer_jaryo' id='2' %}{% partial confirmed_answer_table %}{% /nav_content %}
+        {% endwith %}
 
-        {% #nav_content prefix='answer_sanghwang' id='3' %}
-            {% #responsive_table %}
-                {% with answers=answers_sanghwang rates=rates_sanghwang %}
-                    {% partial confirmed_answer_table %}
-                {% endwith %}
-            {% /responsive_table %}
-        {% /nav_content %}
+        {% with answers=answer_student.상황 rates=answer_rates.상황 %}
+            {% #nav_content prefix='answer_sanghwang' id='3' %}{% partial confirmed_answer_table %}{% /nav_content %}
+        {% endwith %}
     </div>
 </div>
 
 {% partialdef confirmed_answer_table %} {# confirmed_answer_table partial #}
-    <tbody>
-        {% with loop_counter=10 loop_min=0 %}
-            {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
-                <tr class="text-center table-warning">
-                    <td></td>
-                    {% for _ in 'x'|ljust:loop_counter %}
-                        <td class="text-nowrap fw-bold text-secondary">
-                            문 {{ forloop.counter|add:loop_min }}
-                        </td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center">
-                    <td class="text-nowrap align-center">정답</td>
-                    {% for answer in answers %}
-                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                            <td>
-                                {% if answer.answer_correct <= 5 %}
-                                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-outline-secondary">
-                                        {{ answer.answer_correct }}</button>
-                                {% elif answer.answer_correct == 12345 %}
-                                    <span class="badge rounded-pill text-bg-secondary">
-                                        전체 정답</span>
-                                {% else %}
-                                    {% for ans in answer.answer_correct_list %}
-                                        <button class="btn btn-circle btn-sm fs-6 my-2 btn-outline-secondary">
-                                            {{ ans }}</button>
-                                    {% endfor %}
-                                {% endif %}
-                            </td>
-                        {% endif %}
-                    {% endfor %}
-                </tr>
-                <tr class="text-center">
-                    <td class="text-nowrap">제출 답안</td>
-                    {% for answer in answers %}
-                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                            <td>
-                                <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
-                                    btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
-                                    {{ answer.answer_student }}</button>
-                            </td>
-                        {% endif %}
-                    {% endfor %}
-                </tr>
-                <tr class="text-center">
-                    <td class="text-nowrap" >정답률(%)</td>
-                    {% for rate in rates %}
-                        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                            <td>
-                                <span data-number="{{ rate.number }}">
-                                    {{ rate.correct|floatformat:0 }}
-                                </span>
-                            </td>
-                        {% endif %}
-                    {% endfor %}
-                </tr>
-            {% endpartialdef answer_table_tr %}
-        {% endwith %}
-
-        {% with loop_counter=10 loop_min=10 %}
-            {% partial answer_table_tr %}
-        {% endwith %}
-
-        {% if ex == '칠급' or answers|length == 25  %}
-            {% with loop_counter=5 loop_min=20 %}
-                {% partial answer_table_tr %}
+    {% #responsive_table %}
+        <tbody>
+            {% with loop_counter=10 loop_min=0 %}
+                {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
+                    <tr class="text-center table-warning">
+                        <th class="text-nowrap" scope="row">문제 번호</th>
+                        {% for _ in 'x'|ljust:loop_counter %}
+                            <th>{{ forloop.counter|add:loop_min }}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center">
+                        <th class="text-nowrap" scope="row">정답</th>
+                        {% for answer in answers %}
+                            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                <td>
+                                    {% if answer.answer_correct <= 5 %}
+                                        <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                                            {{ answer.answer_correct }}</button>
+                                    {% elif answer.answer_correct == 12345 %}
+                                        <span class="badge rounded-pill text-bg-secondary">
+                                            전체 정답</span>
+                                    {% else %}
+                                        {% for ans in answer.answer_correct_list %}
+                                            <button class="btn btn-circle btn-sm fs-6 my-2 btn-success">
+                                                {{ ans }}</button>
+                                        {% endfor %}
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center">
+                        <th class="text-nowrap" scope="row">정답률(%)</th>
+                        {% for rate in rates %}
+                            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                <td>
+                                    <span data-number="{{ rate.number }}" class="fw-bold text-success">
+                                        {{ rate.rate_correct|floatformat:0 }}
+                                    </span>
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center">
+                        <th class="text-nowrap" scope="row">선택 답안</th>
+                        {% for answer in answers %}
+                            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                <td>
+                                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                                        btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
+                                        {{ answer.answer_student }}</button>
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center">
+                        <th class="text-nowrap" scope="row">선택률(%)</th>
+                        {% for answer in answers %}
+                            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                                <td>
+                                    <span data-number="{{ answer.number }}"
+                                          class="fw-bold
+                                          text-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
+                                        {{ answer.rate_selection|floatformat:0 }}
+                                    </span>
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endpartialdef answer_table_tr %}
             {% endwith %}
-        {% else %}
-            {% with loop_counter=10 loop_min=20 %}
-                {% partial answer_table_tr %}
-            {% endwith %}
 
-            {% with loop_counter=10 loop_min=30 %}
-                {% partial answer_table_tr %}
-            {% endwith %}
-        {% endif %}
-    </tbody>
+            {% with loop_counter=10 loop_min=10 %}{% partial answer_table_tr %}{% endwith %}
+
+            {% if ex == '칠급' or answers|length == 25  %}
+                {% with loop_counter=5 loop_min=20 %}{% partial answer_table_tr %}{% endwith %}
+            {% else %}
+                {% with loop_counter=10 loop_min=20 %}{% partial answer_table_tr %}{% endwith %}
+                {% with loop_counter=10 loop_min=30 %}{% partial answer_table_tr %}{% endwith %}
+            {% endif %}
+        </tbody>
+    {% /responsive_table %}
+    <div class="my-3">
+        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+        <ol class="text-success small fw-bold">
+            <li>정답률은 전체 응시생 중 정답을 맞힌 학생의 비율을 의미합니다.</li>
+            <li>선택률은 전체 응시생 중 본인과 같은 정답을 선택한 학생의 비율을 의미합니다.</li>
+        </ol>
+    </div>
 {% endpartialdef confirmed_answer_table %}

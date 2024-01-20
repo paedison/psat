@@ -71,20 +71,20 @@
         </div>
 
         <div class="col-12">
-            <div id="student_info" class="card htmx-fade-in htmx-fade-out">
+            <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
                 {% include 'score/prime_v3/snippets/prime_score_sheet.html' with is_confirmed=True %}
             </div>
         </div>
 
         <div class="col-12">
-            <div id="student_info" class="card htmx-fade-in htmx-fade-out">
-                {% include 'score/prime_v3/snippets/prime_answer_student.html' %}
+            <div id="chart" class="card htmx-fade-in htmx-fade-out">
+                {% include 'score/prime_v3/snippets/prime_chart.html' with is_confirmed=True %}
             </div>
         </div>
 
         <div class="col-12">
-            <div id="student_info" class="card htmx-fade-in htmx-fade-out">
-                {% include 'score/prime_v3/snippets/prime_chart.html' with is_confirmed=True %}
+            <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
+                {% include 'score/prime_v3/snippets/prime_answer_student.html' %}
             </div>
         </div>
     </div>

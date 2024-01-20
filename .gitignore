@@ -13,6 +13,7 @@ git_update.sh
 /analysis/util/google_service_key.json
 /analysis/util/google_key.json
 /analysis/util/copy_worksheet.json
+/score/views/predict_v1/viewmixins/data/*.json
 
 ### Django ###
 *.log

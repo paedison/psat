@@ -29,6 +29,7 @@ class BaseMixin:
     base_dir = settings.BASE_DIR
     filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
     answer_uploaded = True
+    min_participants = 100
 
     request: any
     kwargs: dict
@@ -96,7 +97,7 @@ class BaseMixin:
         except self.student_model.DoesNotExist:
             pass
 
-    def get_answer_correct_dict(self) -> dict[dict]:
+    def get_answer_correct_dict(self) -> dict:
         answer_correct = {}
         # {
         #     '헌법': {

@@ -1,12 +1,12 @@
 from datetime import datetime
 
 from django.core.paginator import Paginator
-from django.db.models import When, Value, F, Case, ExpressionWrapper, FloatField, Count
+from django.db.models import F, Count
 from django.db.models.functions import Round
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from score.utils import get_all_answer_rates_dict, get_all_score_stat_dict
+from score.utils import get_all_score_stat_dict
 from .base_mixins import BaseMixin
 
 
@@ -63,6 +63,7 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
     frequency_score: dict
 
     all_answers: dict
+    all_answer_count: list
     all_answer_rates: dict
 
     def get_properties(self):
@@ -72,12 +73,13 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
         self.student_id = self.get_student_id()
         self.sub_title = f'제{self.round}회 {self.exam_name}'
 
-        self.student_score = self.statistics_model.objects.get(student_id=self.student['id'])  # score, rank, rank_ratio
+        self.student_score = self.statistics_model.objects.get(student_id=self.student_id)  # score, rank, rank_ratio
         self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
         self.frequency_score = self.get_frequency_score()
 
-        self.all_answers = self.get_all_answers()
+        self.all_answer_count = self.get_all_answer_count()
         self.all_answer_rates = self.get_all_answer_rates()
+        self.all_answers = self.get_all_answers()
 
     def get_student_id(self) -> int:
         student_id_request = self.kwargs.get('student_id')
@@ -117,7 +119,7 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
             rounded_field = f'round_{field}'
             score_counts_list = (
                 self.statistics_model.objects.values(
-                    **{rounded_field: Round(F(field),1)}
+                    **{rounded_field: Round(F(field), 1)}
                 ).annotate(count=Count('id')).order_by(field)
             )
             score_counts = {entry[rounded_field]: entry['count'] for entry in score_counts_list}
@@ -136,15 +138,21 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
         }
 
     def get_all_answers(self) -> dict:
-        all_correct_answers: list[dict] = list(
-            self.problem_model.objects.defer('timestamp')
-            .filter(prime__year=self.year, prime__round=self.round)
-            .order_by('prime__subject_id', 'number')
-            .values('number', sub=F('prime__subject__abbr'), answer_correct=F('answer')))
-        all_raw_student_answers: list[dict] = list(
+        all_answer_counts = (
+            self.answer_count_model.objects
+            .filter(problem__prime__year=self.year, problem__prime__round=self.round)
+            .order_by('problem__prime__subject_id', 'problem__number')
+            .annotate(
+                sub=F('problem__prime__subject__abbr'),
+                number=F('problem__number'),
+                answer_correct=F('problem__answer'),
+            ).values()
+        )
+        all_raw_student_answers = (
             self.answer_model.objects.defer('timestamp')
             .filter(student_id=self.student_id)
-            .annotate(sub=F('prime__subject__abbr')).values())
+            .annotate(sub=F('prime__subject__abbr')).values()
+        )
         all_student_answers = {
             '언어': all_raw_student_answers[0],
             '자료': all_raw_student_answers[1],
@@ -156,23 +164,25 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
             student_answers = all_student_answers[sub]
 
             answer_list = []
-            for answer in all_correct_answers:
+            for answer in all_answer_counts:
                 if answer['sub'] == sub:
-                    answer_number = answer['number']
+                    number = answer['number']
                     answer_correct = answer['answer_correct']
                     answer_correct_list = []
-                    answer_student = student_answers[f'prob{answer_number}']
+                    answer_student = student_answers[f'prob{number}']
                     if answer_correct in range(1, 6):
                         result = 'O' if answer_student == answer_correct else 'X'
                     else:
                         answer_correct_list = [int(digit) for digit in str(answer_correct)]
                         result = 'O' if answer_student in answer_correct_list else 'X'
+                    rate_selection = answer[f'rate_{answer_student}']
 
                     answer_copy = {
                         'number': answer['number'],
                         'answer_correct': answer_correct,
                         'answer_correct_list': answer_correct_list,
                         'answer_student': answer_student,
+                        'rate_selection': rate_selection,
                         'result': result,
                     }
                     answer_list.append(answer_copy)
@@ -185,35 +195,39 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
             '헌법': get_answers('헌법'),
         }
 
-    def get_all_answer_rates(self) -> dict:
-        def case(num):
-            return When(problem__answer=Value(num), then=ExpressionWrapper(
-                F(f'count_{num}') * 100 / F('count_total'), output_field=FloatField()))
-
-        all_answer_count = (
+    def get_all_answer_count(self) -> list:
+        return (
             self.answer_count_model.objects
             .filter(problem__prime__year=self.year, problem__prime__round=self.round)
             .order_by('problem__prime__subject_id', 'problem__number')
-            .values(sub=F('problem__prime__subject__abbr'), number=F('problem__number'),
-                    correct=Case(case(1), case(2), case(3), case(4), case(5), default=0.0))
+            .annotate(
+                sub=F('problem__prime__subject__abbr'),
+                number=F('problem__number'),
+                answer_correct=F('problem__answer'),
+            ).values()
         )
 
-        multiple_answer_count = (
-            self.answer_count_model.objects
-            .filter(problem__prime__year=self.year, problem__prime__round=self.round, problem__answer__gt=5)
-            .order_by('problem__prime__subject_id', 'problem__number')
-            .annotate(sub=F('problem__prime__subject__abbr'), number=F('problem__number'), answer=F('problem__answer'))
-            .values()
-        )
-        for multiple in multiple_answer_count:
-            correct_answers = multiple['answer']
-            correct_answers_list = [int(digit) for digit in str(correct_answers)]
+    def get_all_answer_rates(self) -> dict:
+        all_answer_rates = {'헌법': [], '언어': [], '자료': [], '상황': []}
+        for a in self.all_answer_count:
+            sub = a['sub']
+            number = a['number']
+            answer_correct = a['answer_correct']
+            if answer_correct in range(1, 6):
+                rate_correct = a[f'rate_{answer_correct}']
+            else:
+                answer_correct_list = [int(digit) for digit in str(answer_correct)]
+                rate_correct = sum(a[f'rate_{ans}'] for ans in answer_correct_list)
+            all_answer_rates[sub].append(
+                {
+                    'number': number,
+                    'rate_correct': rate_correct,
+                    'rate_1': a['rate_1'],
+                    'rate_2': a['rate_2'],
+                    'rate_3': a['rate_3'],
+                    'rate_4': a['rate_4'],
+                    'rate_5': a['rate_5'],
+                }
+            )
 
-            for a in all_answer_count:
-                if a['sub'] == multiple['sub'] and a['number'] == multiple['number']:
-                    count_sum = 0
-                    for num in correct_answers_list:
-                        count_sum += multiple[f'count_{num}']
-                    a['correct'] = count_sum * 100 / multiple['count_total']
-
-        return get_all_answer_rates_dict(all_answer_count)
+        return all_answer_rates
