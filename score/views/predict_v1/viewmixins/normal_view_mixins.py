@@ -160,8 +160,8 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         data_answer_student: 선택 답안
         """
         data_answer_correct = self.answer_correct_dict.copy()
-        data_answer_predict = self.data_answer_dict.copy()
-        data_answer_student = self.data_answer_dict.copy()
+        data_answer_predict = {'헌법': [], '언어': [], '자료': [], '상황': []}
+        data_answer_student = {'헌법': [], '언어': [], '자료': [], '상황': []}
         if self.ex == '칠급':
             data_answer_predict.pop('헌법')
             data_answer_student.pop('헌법')
@@ -239,7 +239,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         }
 
     def update_score_virtual_student(self) -> dict:
-        score_dict = self.score_dict.copy()
+        score_dict = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
         if self.ex == '칠급':
             score_dict.pop('헌법')
 
@@ -275,7 +275,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
 
     def update_score_real_student(self):
         if self.answer_uploaded:
-            score_dict = self.score_dict.copy()
+            score_dict = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
             if self.ex == '칠급':
                 score_dict.pop('헌법')
 

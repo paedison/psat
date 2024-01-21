@@ -41,18 +41,6 @@ class BaseMixin:
         'psat': 'score_psat',
         'psat_avg': 'score_psat_avg',
     }
-    data_answer_dict = {
-        '헌법': [],
-        '언어': [],
-        '자료': [],
-        '상황': [],
-    }
-    score_dict = {
-        '헌법': 0,
-        '언어': 0,
-        '자료': 0,
-        '상황': 0,
-    }
 
     base_dir = settings.BASE_DIR
     filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
