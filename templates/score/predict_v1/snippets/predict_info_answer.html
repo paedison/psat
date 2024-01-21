@@ -21,41 +21,41 @@
 {#                </tr>#}
             </thead>
             <tbody>
-                {% with count_data=answer_student_count.헌법 score_data=score_predict.헌법 %}
+                {% with info_answer=info_answer_student.헌법 score_virtual=score_virtual_student.헌법 %}
                     {% partialdef answer_student_status inline=True %}
                         <tr class="text-center">
                             <th class="text-nowrap">
-                                {% if count_data.is_confirmed %}
-                                    {{ count_data.icon|safe }} {{ count_data.subject }}
+                                {% if info_answer.is_confirmed %}
+                                    {{ info_answer.icon|safe }} {{ info_answer.subject }}
                                 {% else %}
-                                    {% if count_data.sub == 'PSAT' %}
-                                        {{ count_data.icon|safe }} {{ count_data.subject }}
+                                    {% if info_answer.sub == 'PSAT' %}
+                                        {{ info_answer.icon|safe }} {{ info_answer.subject }}
                                     {% else %}
                                         <a class="text-decoration-none"
-                                           href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
-                                            {{ count_data.icon|safe }} {{ count_data.subject }}
+                                           href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
+                                            {{ info_answer.icon|safe }} {{ info_answer.subject }}
                                         </a>
                                     {% endif %}
                                 {% endif %}
                             </th>
-                            <td>{{ count_data.participants }}</td>
+                            <td>{{ info_answer.participants }}</td>
                             <td>
-                                {% if count_data.is_confirmed %}
+                                {% if info_answer.is_confirmed %}
                                     <span class="d-inline-block text-end" style="width:75px">
-                                        {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
+                                        {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
                                     </span>
                                     <span class="badge rounded-pill text-bg-success" style="width:60px">제출 완료</span>
                                 {% else %}
-                                    {% if count_data.sub == 'PSAT' %}
+                                    {% if info_answer.sub == 'PSAT' %}
                                         <span class="d-inline-block text-end" style="width:75px">
-                                            {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
+                                            {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
                                         </span>
                                         <span class="badge rounded-pill text-bg-danger" style="width:60px">미제출</span>
                                     {% else %}
                                         <a class="text-decoration-none"
-                                           href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                           href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
                                             <span class="d-inline-block text-end" style="width:75px">
-                                                {{ count_data.answer_count|add:0 }} / {{ count_data.problem_count }}
+                                                {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
                                             </span>
                                             <span class="badge rounded-pill text-bg-danger" style="width:60px">미제출</span>
                                         </a>
@@ -63,18 +63,18 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if count_data.is_confirmed %}
-                                    {% if count_data.participants < min_participants %}
+                                {% if info_answer.is_confirmed %}
+                                    {% if info_answer.participants < min_participants %}
                                         <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
                                     {% else %}
-                                        {{ score_data }}
+                                        {{ score_virtual }}
                                     {% endif %}
                                 {% else %}
-                                    {% if count_data.sub == 'PSAT' %}
+                                    {% if info_answer.sub == 'PSAT' %}
                                         <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                                     {% else %}
                                         <a class="text-decoration-none"
-                                           href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                                           href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
                                             <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                                         </a>
                                     {% endif %}
@@ -85,16 +85,16 @@
                         </tr>
                     {% endpartialdef %}
                 {% endwith %}
-                {% with count_data=answer_student_count.언어 score_data=score_predict.언어 %}
+                {% with info_answer=info_answer_student.언어 score_virtual=score_virtual_student.언어 %}
                     {% partial answer_student_status %}
                 {% endwith %}
-                {% with count_data=answer_student_count.자료 score_data=score_predict.자료 %}
+                {% with info_answer=info_answer_student.자료 score_virtual=score_virtual_student.자료 %}
                     {% partial answer_student_status %}
                 {% endwith %}
-                {% with count_data=answer_student_count.상황 score_data=score_predict.상황 %}
+                {% with info_answer=info_answer_student.상황 score_virtual=score_virtual_student.상황 %}
                     {% partial answer_student_status %}
                 {% endwith %}
-                {% with count_data=answer_student_count.psat score_data=score_predict.psat %}
+                {% with info_answer=info_answer_student.psat score_virtual=score_virtual_student.psat_avg %}
                     {% partial answer_student_status %}
                 {% endwith %}
             </tbody>

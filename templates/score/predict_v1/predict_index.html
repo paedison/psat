@@ -54,24 +54,24 @@
 
         <div class="col-12">
             <div id="student_info" class="card htmx-fade-in htmx-fade-out">
-                {% include 'score/predict_v1/snippets/predict_student_info.html' %}
+                {% include 'score/predict_v1/snippets/predict_info_student.html' %}
             </div>
         </div>
 
         {% if student %}
             <div class="col-12">
                 <div id="answer_count" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'score/predict_v1/snippets/predict_answer_count.html' %}
+                    {% include 'score/predict_v1/snippets/predict_info_answer.html' %}
                 </div>
             </div>
             <div class="col-12">
                 <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'score/predict_v1/snippets/predict_answer_sheet.html' %}
+                    {% include 'score/predict_v1/snippets/predict_sheet_answer.html' %}
                 </div>
             </div>
             <div class="col-12">
                 <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'score/predict_v1/snippets/predict_score_sheet.html' %}
+                    {% include 'score/predict_v1/snippets/predict_sheet_score.html' %}
                 </div>
             </div>
         {% endif %}

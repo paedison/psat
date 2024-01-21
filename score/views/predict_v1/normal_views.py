@@ -47,21 +47,21 @@ class IndexView(
             'icon_subject': self.ICON_SUBJECT,
             'icon_nav': self.ICON_NAV,
 
-            # student_info
+            # predict_info_student
             'student': self.student,
             'departments': self.departments,
 
-            # answer_count
-            'answer_student_count': self.answer_student_count,
-            'score_predict': self.score_predict,
+            # predict_info_answer
+            'info_answer_student': self.info_answer_student,
+            'score_virtual_student': self.score_virtual_student,
 
-            # answer_sheet
-            'answer_data_correct': self.answer_data['answer_correct'],
-            'answer_data_predict': self.answer_data['answer_predict'],
-            'answer_data_student': self.answer_data['answer_student'],
+            # predict_sheet_answer
+            'data_answer_correct': self.data_answer['answer_correct'],
+            'data_answer_predict': self.data_answer['answer_predict'],
+            'data_answer_student': self.data_answer['answer_student'],
 
-            # score_sheet
-            'student_score': self.student_score,
+            # predict_sheet_score
+            'score_student': self.score_student,
             'all_score_stat': self.all_score_stat,
         }
 
@@ -139,7 +139,7 @@ class StudentCreateDepartment(
     vanilla.TemplateView,
 ):
     """ Return department list for PSAT student create modal. """
-    template_name = 'score/predict_v1/snippets/predict_student_info.html#student_create_department'
+    template_name = 'score/predict_v1/snippets/predict_info_student.html#student_create_department'
 
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)

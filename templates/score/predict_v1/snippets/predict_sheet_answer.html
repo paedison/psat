@@ -15,19 +15,19 @@
     </nav>
 
     <div class="tab-content" id="scoreAnswersContent">
-        {% with answer_correct=answer_data_correct.헌법 answer_predict=answer_data_predict.헌법 answer_student=answer_data_student.헌법 count_data=answer_student_count.헌법 %}
+        {% with answer_correct=data_answer_correct.헌법 answer_predict=data_answer_predict.헌법 answer_student=data_answer_student.헌법 info_answer=info_answer_student.헌법 %}
             {% #nav_content prefix='answer_heonbeob' id='0' %}{% partial predicted_answer_table %}{% /nav_content %}
         {% endwith %}
 
-        {% with answer_correct=answer_data_correct.언어 answer_predict=answer_data_predict.언어 answer_student=answer_data_student.언어 count_data=answer_student_count.언어 %}
+        {% with answer_correct=data_answer_correct.언어 answer_predict=data_answer_predict.언어 answer_student=data_answer_student.언어 info_answer=info_answer_student.언어 %}
             {% #nav_content prefix='answer_eoneo' id='1' %}{% partial predicted_answer_table %}{% /nav_content %}
         {% endwith %}
 
-        {% with answer_correct=answer_data_correct.자료 answer_predict=answer_data_predict.자료 answer_student=answer_data_student.자료 count_data=answer_student_count.자료 %}
+        {% with answer_correct=data_answer_correct.자료 answer_predict=data_answer_predict.자료 answer_student=data_answer_student.자료 info_answer=info_answer_student.자료 %}
             {% #nav_content prefix='answer_jaryo' id='2' %}{% partial predicted_answer_table %}{% /nav_content %}
         {% endwith %}
 
-        {% with answer_correct=answer_data_correct.상황 answer_predict=answer_data_predict.상황 answer_student=answer_data_student.상황 count_data=answer_student_count.상황 %}
+        {% with answer_correct=data_answer_correct.상황 answer_predict=data_answer_predict.상황 answer_student=data_answer_student.상황 info_answer=info_answer_student.상황 %}
             {% #nav_content prefix='answer_sanghwang' id='3' %}{% partial predicted_answer_table %}{% /nav_content %}
         {% endwith %}
     </div>
@@ -36,7 +36,7 @@
 {% partialdef predicted_answer_table %} {# predicted_answer_table partial #}
     {% #responsive_table %}
         <tbody>
-            {% if count_data.is_confirmed %}
+            {% if info_answer.is_confirmed %}
                 {% with loop_counter=10 loop_min=0 %}
                     {% partialdef answer_table_tr inline=True %} {# answer_table_tr partial #}
                         <tr class="text-center table-warning">
@@ -59,7 +59,7 @@
                             </tr>
                         {% else %}
                             <tr class="text-center">
-                                <th class="text-nowrap td-no-border text-bg-success" scope="row">정답</th>
+                                <th class="text-nowrap td-no-border" scope="row">정답</th>
                                 {% for answer in answer_correct %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td class="td-no-border">
@@ -133,11 +133,11 @@
                         </tr>
 
                         {# answer_predict #}
-                        {% if count_data.participants < min_participants %}
+                        {% if info_answer.participants < min_participants %}
                             <tr class="text-center">
                                 <th class="text-nowrap text-bg-warning td-no-border" scope="row">예상 정답</th>
                                 <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
-                                    답안 수집중입니다. (현재 {{ count_data.participants }}명 제출 완료)
+                                    답안 수집중입니다. (현재 {{ info_answer.participants }}명 제출 완료)
                                 </td>
                             </tr>
                             <tr class="text-center">
@@ -192,7 +192,7 @@
                 <tr class="text-center">
                     <th>
                         <a class="btn btn-outline-danger my-4"
-                           href="{% url 'predict:answer_input' count_data.sub %}" hx-boost="true">
+                           href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
                             답안을 제출해주세요.
                         </a>
                     </th>
@@ -200,7 +200,7 @@
             {% endif %}
         </tbody>
     {% /responsive_table %}
-    {% if count_data.is_confirmed %}
+    {% if info_answer.is_confirmed %}
         <div class="my-3">
             <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
             <ol class="text-success small fw-bold">

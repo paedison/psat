@@ -25,12 +25,39 @@ class BaseMixin:
     ex = '프모'
     round = 1
 
-    sub_dict = {'헌법': '헌법', '언어': '언어논리', '자료': '자료해석', '상황': '상황판단'}
+    sub_dict = {
+        '헌법': '헌법',
+        '언어': '언어논리',
+        '자료': '자료해석',
+        '상황': '상황판단',
+        'psat': 'PSAT',
+        'psat_avg': 'PSAT 평균'
+    }
+    sub_field = {
+        '헌법': 'score_heonbeob',
+        '언어': 'score_eoneo',
+        '자료': 'score_jaryo',
+        '상황': 'score_sanghwang',
+        'psat': 'score_psat',
+        'psat_avg': 'score_psat_avg',
+    }
+    data_answer_dict = {
+        '헌법': [],
+        '언어': [],
+        '자료': [],
+        '상황': [],
+    }
+    score_dict = {
+        '헌법': 0,
+        '언어': 0,
+        '자료': 0,
+        '상황': 0,
+    }
 
     base_dir = settings.BASE_DIR
     filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
-    answer_uploaded = False
-    min_participants = 100
+    answer_uploaded = True
+    min_participants = 0
 
     request: any
     kwargs: dict
