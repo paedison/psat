@@ -263,7 +263,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             score_dict[sub] = correct_count * 100 / problem_count
 
         score_dict['psat'] = sum([score_dict['언어'], score_dict['자료'], score_dict['상황']])
-        score_dict['psat_avg'] = score_dict['psat'] / 3
+        score_dict['psat_avg'] = round(score_dict['psat'] / 3, 1)
 
         with transaction.atomic():
             score_virtual_student, _ = self.statistics_virtual_model.objects.get_or_create(student=self.student)
