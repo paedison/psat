@@ -66,6 +66,13 @@ class IndexView(
         }
 
 
+class IndexUpdateView(IndexView):
+    template_name = 'score/predict_v1/snippets/predict_index_update.html'
+
+    def get_template_names(self):
+        return self.template_name
+
+
 class StudentCreateView(
     auth_mixins.LoginRequiredMixin,
     normal_view_mixins.IndexViewMixIn,
@@ -270,3 +277,5 @@ student_create_department = StudentCreateDepartment.as_view()
 answer_input_view = AnswerInputView.as_view()
 answer_submit_view = AnswerSubmitView.as_view()
 answer_confirm_view = AnswerConfirmView.as_view()
+
+index_update_view = IndexUpdateView.as_view()

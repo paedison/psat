@@ -4,6 +4,8 @@
 
 <div class="card-body">
     <h5 class="card-title">답안 제출 현황</h5>
+    <button class="btn btn-primary mb-4" href="" hx-swap="none"
+            hx-get="{% url 'predict:index_update' %}">업데이트</button>
 
     <article class="table-responsive">
         <table class="table table-bordered small align-middle m-0">
@@ -21,8 +23,8 @@
 {#                </tr>#}
             </thead>
             <tbody>
-                {% with info_answer=info_answer_student.헌법 score_virtual=score_virtual_student.헌법 %}
-                    {% partialdef answer_student_status inline=True %}
+                {% with info_answer=info_answer_student.헌법 %}
+                    {% partialdef answer_status inline=True %}
                         <tr class="text-center">
                             <th class="text-nowrap">
                                 {% if info_answer.is_confirmed %}
@@ -38,7 +40,11 @@
                                     {% endif %}
                                 {% endif %}
                             </th>
-                            <td>{{ info_answer.participants }}</td>
+                            <td>
+                                <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in">
+                                    {{ info_answer.participants }}
+                                </div>
+                            </td>
                             <td>
                                 {% if info_answer.is_confirmed %}
                                     <span class="d-inline-block text-end" style="width:75px">
@@ -67,7 +73,7 @@
                                     {% if info_answer.participants < min_participants %}
                                         <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
                                     {% else %}
-                                        {{ score_virtual }}
+                                        {{ info_answer.score_virtual }}
                                     {% endif %}
                                 {% else %}
                                     {% if info_answer.sub == 'PSAT' %}
@@ -83,20 +89,12 @@
 {#                            <td>(10)</td>#}
 {#                            <td>(5.0)</td>#}
                         </tr>
-                    {% endpartialdef %}
+                    {% endpartialdef answer_status %}
                 {% endwith %}
-                {% with info_answer=info_answer_student.언어 score_virtual=score_virtual_student.언어 %}
-                    {% partial answer_student_status %}
-                {% endwith %}
-                {% with info_answer=info_answer_student.자료 score_virtual=score_virtual_student.자료 %}
-                    {% partial answer_student_status %}
-                {% endwith %}
-                {% with info_answer=info_answer_student.상황 score_virtual=score_virtual_student.상황 %}
-                    {% partial answer_student_status %}
-                {% endwith %}
-                {% with info_answer=info_answer_student.psat score_virtual=score_virtual_student.psat_avg %}
-                    {% partial answer_student_status %}
-                {% endwith %}
+                {% with info_answer=info_answer_student.언어 %}{% partial answer_status %}{% endwith %}
+                {% with info_answer=info_answer_student.자료 %}{% partial answer_status %}{% endwith %}
+                {% with info_answer=info_answer_student.상황 %}{% partial answer_status %}{% endwith %}
+                {% with info_answer=info_answer_student.psat %}{% partial answer_status %}{% endwith %}
             </tbody>
         </table>
         <div class="my-3">

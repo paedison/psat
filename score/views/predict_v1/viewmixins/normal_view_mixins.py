@@ -33,10 +33,10 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         self.all_answer_count = self.get_all_answer_count()
         self.dataset_answer_student = self.get_dataset_answer_student()
         self.participant_count = self.get_participant_count()
-        self.info_answer_student = self.get_info_answer_student()
 
         self.data_answer = self.get_data_answer()
         self.score_virtual_student = self.update_score_virtual_student()
+        self.info_answer_student = self.get_info_answer_student()
 
         if self.answer_uploaded and self.student:
             self.update_score_real_student()
@@ -106,50 +106,38 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                 'participants': self.participant_count[sub],
                 'problem_count': problem_count,
                 'answer_count': answer_count,
-                'score_predict': 0,
+                'score_virtual': self.score_virtual_student[sub],
                 'is_confirmed': is_confirmed,
             }
         info_answer_student['psat'] = {
             'icon': '',
             'sub': 'PSAT',
             'subject': 'PSAT 평균',
-            'participants': (
-                max(
-                    info_answer_student['헌법']['participants'],
-                    info_answer_student['언어']['participants'],
-                    info_answer_student['자료']['participants'],
-                    info_answer_student['상황']['participants'],
-                )
+            'participants': max(
+                info_answer_student['헌법']['participants'],
+                info_answer_student['언어']['participants'],
+                info_answer_student['자료']['participants'],
+                info_answer_student['상황']['participants'],
             ),
             'problem_count': sum(self.problem_count_dict.values()),
-            'answer_count': (
-                sum(
-                    [
-                        info_answer_student['헌법']['answer_count'],
-                        info_answer_student['언어']['answer_count'],
-                        info_answer_student['자료']['answer_count'],
-                        info_answer_student['상황']['answer_count'],
-                    ]
-                )
-            ),
-            'score_predict': (
-                sum(
-                    [
-                        info_answer_student['헌법']['score_predict'],
-                        info_answer_student['언어']['score_predict'],
-                        info_answer_student['자료']['score_predict'],
-                        info_answer_student['상황']['score_predict'],
-                    ]
-                )
-            ) / 3,
-            'is_confirmed': all(
-                [
-                    info_answer_student['헌법']['is_confirmed'],
-                    info_answer_student['언어']['is_confirmed'],
-                    info_answer_student['자료']['is_confirmed'],
-                    info_answer_student['상황']['is_confirmed'],
-                ]
-            ),
+            'answer_count': sum([
+                info_answer_student['헌법']['answer_count'],
+                info_answer_student['언어']['answer_count'],
+                info_answer_student['자료']['answer_count'],
+                info_answer_student['상황']['answer_count'],
+            ]),
+            'score_virtual': round(sum([
+                info_answer_student['헌법']['score_virtual'],
+                info_answer_student['언어']['score_virtual'],
+                info_answer_student['자료']['score_virtual'],
+                info_answer_student['상황']['score_virtual'],
+            ]) / 3, 1),
+            'is_confirmed': all([
+                info_answer_student['헌법']['is_confirmed'],
+                info_answer_student['언어']['is_confirmed'],
+                info_answer_student['자료']['is_confirmed'],
+                info_answer_student['상황']['is_confirmed'],
+            ]),
         }
         return info_answer_student
 

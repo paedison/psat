@@ -1,0 +1,14 @@
+{% load partials %}
+
+{% with info_answer=info_answer_student.헌법 %}
+    {% partialdef participants inline=True %}
+        <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in"
+              hx-swap-oob="outerHTML:#{{ info_answer.sub }}_participants">
+            {{ info_answer.participants }}22
+        </div>
+    {% endpartialdef participants %}
+{% endwith %}
+{% with info_answer=info_answer_student.언어 %}{% partial participants %}{% endwith %}
+{% with info_answer=info_answer_student.자료 %}{% partial participants %}{% endwith %}
+{% with info_answer=info_answer_student.상황 %}{% partial participants %}{% endwith %}
+{% with info_answer=info_answer_student.psat %}{% partial participants %}{% endwith %}

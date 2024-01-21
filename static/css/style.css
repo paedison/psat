@@ -298,3 +298,12 @@ div.td-div-xl {
 .td-no-border {
     border: none;
 }
+
+.htmx-fade-up-in.htmx-added {
+    opacity: 0;
+    transform: translate3d(0, 50%, 0);
+}
+.htmx-fade-up-in {
+    opacity: 1;
+    transition: all 0.25s ease-out;
+}
