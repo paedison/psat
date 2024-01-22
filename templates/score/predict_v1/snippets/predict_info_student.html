@@ -105,10 +105,10 @@
             {% if category == 'Prime' %}
                 <div class="input-group mt-3">
                     <div class="form-floating">
-                        <input id="id_password_serial" class="form-control form-control-sm"
-                               type="password" placeholder="비밀번호"
+                        <input id="id_password" class="form-control form-control-sm"
+                               type="text" placeholder="비밀번호"
                                name="password" value="{{ form.password.value|default:'' }}"/>
-                        <label for="id_password_serial">비밀번호</label>
+                        <label for="id_password">비밀번호</label>
                     </div>
                     {% partial form_submit %}
                 </div>
