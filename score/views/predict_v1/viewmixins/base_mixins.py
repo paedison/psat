@@ -44,8 +44,8 @@ class BaseMixin:
 
     base_dir = settings.BASE_DIR
     filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
-    answer_uploaded = True
-    min_participants = 0
+    answer_uploaded = False
+    min_participants = 5
 
     request: any
     kwargs: dict
