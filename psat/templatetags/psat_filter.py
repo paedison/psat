@@ -8,6 +8,14 @@ register = Library()
 
 
 @register.filter
+def digit_of_one(content) -> str:  # Convert to 2-Digit Number
+    digit = abs(content) % 10
+    if digit == 0:
+        return digit + 10
+    return digit
+
+
+@register.filter
 def add_0(content) -> str:  # Convert to 2-Digit Number
     return str(content).zfill(2)
 

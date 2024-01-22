@@ -3,26 +3,30 @@
 {% load slippers %}
 
 <div class="card-body">
-    <h5 class="card-title">답안 제출 현황</h5>
-    {% if user.is_authenticated %}
-        <button class="btn btn-primary mb-4" href="" hx-swap="none"
-                hx-get="{% url 'predict:index_update' %}">업데이트</button>
-    {% endif %}
+    <h5 class="card-title">
+        답안 제출 현황
+        <button class="btn btn-sm btn-outline-primary ms-2" href="" hx-swap="none"
+                hx-get="{% url 'predict:update_info_student' %}">업데이트</button>
+    </h5>
 
     <article class="table-responsive">
         <table class="table table-bordered small align-middle m-0">
             <thead>
                 <tr class="text-center align-middle table-warning">
-                    <th class="p-1" rowspan="2">과목</th>
-                    <th class="p-1" rowspan="2">총 참여자수<br/>(명)</th>
-                    <th class="p-1" rowspan="2">선택 답안수<br/>(문제)</th>
-                    <th class="p-1" rowspan="2">예상 점수<br/>(점)</th>
-{#                    <th class="p-1" colspan="2">예상 등수</th>#}
+                    <th rowspan="2">과목</th>
+                    <th class="text-nowrap" rowspan="2">
+                        <span class="d-sm-none">총 참여자수<br/>(명)</span>
+                        <span class="d-none d-sm-inline">총 참여자수(명)</span>
+                    </th>
+                    <th class="text-nowrap" rowspan="2">
+                        <span class="d-sm-none">선택 답안수<br/>(문제)</span>
+                        <span class="d-none d-sm-inline">선택 답안수(문제)</span>
+                    </th>
+                    <th class="text-nowrap" rowspan="2">
+                        <span class="d-sm-none">예상 점수<br/>(점)</span>
+                        <span class="d-none d-sm-inline">예상 점수(점)</span>
+                    </th>
                 </tr>
-{#                <tr class="text-center align-middle table-warning">#}
-{#                    <th class="p-1">(등)</th>#}
-{#                    <th class="p-1">(%)</th>#}
-{#                </tr>#}
             </thead>
             <tbody>
                 {% with info_answer=info_answer_student.헌법 %}
@@ -30,14 +34,18 @@
                         <tr class="text-center">
                             <th class="text-nowrap">
                                 {% if info_answer.is_confirmed %}
-                                    {{ info_answer.icon|safe }} {{ info_answer.subject }}
+                                    {% partialdef subject_name inline=True %}
+                                        {{ info_answer.icon|safe }}
+                                        <span class="d-sm-none">{{ info_answer.sub }}</span>
+                                        <span class="d-none d-sm-inline">{{ info_answer.subject }}</span>
+                                    {% endpartialdef subject_name %}
                                 {% else %}
                                     {% if info_answer.sub == 'PSAT' %}
-                                        {{ info_answer.icon|safe }} {{ info_answer.subject }}
+                                        {% partial subject_name %}
                                     {% else %}
                                         <a class="text-decoration-none"
                                            href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
-                                            {{ info_answer.icon|safe }} {{ info_answer.subject }}
+                                            {% partial subject_name %}
                                         </a>
                                     {% endif %}
                                 {% endif %}
@@ -49,23 +57,23 @@
                             </td>
                             <td>
                                 {% if info_answer.is_confirmed %}
-                                    <span class="d-inline-block text-end" style="width:75px">
+                                    <span class="d-inline-block">
                                         {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
                                     </span>
-                                    <span class="badge rounded-pill text-bg-success" style="width:60px">제출 완료</span>
+                                    <span class="badge rounded-pill text-bg-success">제출 완료</span>
                                 {% else %}
                                     {% if info_answer.sub == 'PSAT' %}
-                                        <span class="d-inline-block text-end" style="width:75px">
+                                        <span class="d-inline-block">
                                             {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
                                         </span>
-                                        <span class="badge rounded-pill text-bg-danger" style="width:60px">미제출</span>
+                                        <span class="badge rounded-pill text-bg-danger">미제출</span>
                                     {% else %}
                                         <a class="text-decoration-none"
                                            href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
-                                            <span class="d-inline-block text-end" style="width:75px">
+                                            <span class="d-inline-block">
                                                 {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
                                             </span>
-                                            <span class="badge rounded-pill text-bg-danger" style="width:60px">미제출</span>
+                                            <span class="badge rounded-pill text-bg-danger">미제출</span>
                                         </a>
                                     {% endif %}
                                 {% endif %}
@@ -75,7 +83,9 @@
                                     {% if info_answer.participants < min_participants %}
                                         <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
                                     {% else %}
-                                        {{ info_answer.score_virtual }}
+                                        <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in">
+                                            {{ info_answer.score_virtual }}
+                                        </div>
                                     {% endif %}
                                 {% else %}
                                     {% if info_answer.sub == 'PSAT' %}
@@ -88,15 +98,13 @@
                                     {% endif %}
                                 {% endif %}
                             </td>
-{#                            <td>(10)</td>#}
-{#                            <td>(5.0)</td>#}
                         </tr>
                     {% endpartialdef answer_status %}
                 {% endwith %}
                 {% with info_answer=info_answer_student.언어 %}{% partial answer_status %}{% endwith %}
                 {% with info_answer=info_answer_student.자료 %}{% partial answer_status %}{% endwith %}
                 {% with info_answer=info_answer_student.상황 %}{% partial answer_status %}{% endwith %}
-                {% with info_answer=info_answer_student.psat %}{% partial answer_status %}{% endwith %}
+                {% with info_answer=info_answer_student.psat_avg %}{% partial answer_status %}{% endwith %}
             </tbody>
         </table>
         <div class="my-3">

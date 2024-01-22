@@ -16,5 +16,7 @@ urlpatterns = [
     path('answer/submit/<str:sub>/', normal_views.answer_submit_view, name='answer_submit'),
     path('answer/confirm/<str:sub>/', normal_views.answer_confirm_view, name='answer_confirm'),
 
-    path('update/', normal_views.index_update_view, name='index_update'),
+    path('update/info_student/', normal_views.update_info_student, name='update_info_student'),
+    path('update/sheet_answer/', normal_views.update_sheet_answer, name='update_sheet_answer'),
+    path('update/sheet_score/', normal_views.update_sheet_score, name='update_sheet_score'),
 ]

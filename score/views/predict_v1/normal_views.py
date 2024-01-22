@@ -66,8 +66,22 @@ class IndexView(
         }
 
 
-class IndexUpdateView(IndexView):
-    template_name = 'score/predict_v1/snippets/predict_index_update.html'
+class UpdateInfoStudent(IndexView):
+    template_name = 'score/predict_v1/snippets/update_info_student.html'
+
+    def get_template_names(self):
+        return self.template_name
+
+
+class UpdateSheetAnswer(IndexView):
+    template_name = 'score/predict_v1/snippets/update_sheet_answer.html'
+
+    def get_template_names(self):
+        return self.template_name
+
+
+class UpdateSheetScore(IndexView):
+    template_name = 'score/predict_v1/snippets/update_sheet_score.html'
 
     def get_template_names(self):
         return self.template_name
@@ -146,7 +160,7 @@ class StudentCreateDepartment(
     vanilla.TemplateView,
 ):
     """ Return department list for PSAT student create modal. """
-    template_name = 'score/predict_v1/snippets/predict_info_student.html#student_create_department'
+    template_name = 'score/predict_v1/snippets/index_info_student.html#student_create_department'
 
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
@@ -278,4 +292,6 @@ answer_input_view = AnswerInputView.as_view()
 answer_submit_view = AnswerSubmitView.as_view()
 answer_confirm_view = AnswerConfirmView.as_view()
 
-index_update_view = IndexUpdateView.as_view()
+update_info_student = UpdateInfoStudent.as_view()
+update_sheet_answer = UpdateSheetAnswer.as_view()
+update_sheet_score = UpdateSheetScore.as_view()

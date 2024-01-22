@@ -38,6 +38,8 @@ class BaseMixin:
         {'year': 2024, 'round': 6, 'date': '2/25', 'staff': False,
          'opened_at': datetime(2024, 2, 29, 17)},
     ]
+    predict_round = 3
+    predict_opened_at = datetime(2024, 2, 1, 17)
 
     request: any
     kwargs: dict

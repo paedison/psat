@@ -109,7 +109,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                 'score_virtual': self.score_virtual_student[sub],
                 'is_confirmed': is_confirmed,
             }
-        info_answer_student['psat'] = {
+        info_answer_student['psat_avg'] = {
             'icon': '',
             'sub': 'PSAT',
             'subject': 'PSAT 평균',
@@ -127,7 +127,6 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                 info_answer_student['상황']['answer_count'],
             ]),
             'score_virtual': round(sum([
-                info_answer_student['헌법']['score_virtual'],
                 info_answer_student['언어']['score_virtual'],
                 info_answer_student['자료']['score_virtual'],
                 info_answer_student['상황']['score_virtual'],

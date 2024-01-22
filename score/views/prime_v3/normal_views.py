@@ -31,6 +31,7 @@ class ListView(
             'title': 'Score',
             'sub_title': self.sub_title,
             'current_time': self.current_time,
+            'predict_opened_at': self.predict_opened_at,
 
             # icons
             'icon_menu': self.ICON_MENU['score'],
@@ -110,6 +111,22 @@ class NoOpenModalView(
             if self.year == e['year'] and self.round == e['round']:
                 exam = e
         return {'exam': exam}
+
+
+class NoPredictOpenModalView(
+    base_mixins.BaseMixin,
+    vanilla.TemplateView,
+):
+    """ Represent modal view when there is no student data. """
+    template_name = 'score/predict_v1/snippets/predict_modal.html#no_open_modal'
+
+    def get_context_data(self, **kwargs):
+        self.get_properties()
+
+        return {
+            'predict_round': self.predict_round,
+            'predict_opened_at': self.predict_opened_at,
+        }
 
 
 class NoStudentModalView(
@@ -228,6 +245,7 @@ detail_print_view = PrintView.as_view()
 no_open_modal_view = NoOpenModalView.as_view()
 no_student_modal_view = NoStudentModalView.as_view()
 student_connect_modal_view = StudentConnectModalView.as_view()
+no_predict_open_modal = NoPredictOpenModalView.as_view()
 
 student_connect_view = StudentConnectView.as_view()
 student_reset_view = StudentResetView.as_view()

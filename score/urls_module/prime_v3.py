@@ -15,6 +15,8 @@ urlpatterns = [
          normal_views.no_open_modal_view, name='no_open_modal'),
     path('student/modal/no_data/<int:year>/<int:round>/', normal_views.no_student_modal_view, name='no_student_modal'),
 
+    path('predict/no_open/', normal_views.no_predict_open_modal, name='no_predict_open_modal'),
+
     path('student/modal/<int:year>/<int:round>/',
          normal_views.student_connect_modal_view, name='student_connect_modal'),
     path('student/connect/<int:year>/<int:round>/',

@@ -43,20 +43,39 @@
                     <h5 class="card-title mb-0 text-center">
                         <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>
                         <div class="container p-0">
-                            <div class="container">
+                            <div class="container mb-3">
                                 <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
                                 <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
                             </div>
-                            <div class="container mt-4">
-                                <a class="btn btn-outline-danger" target="_blank"
-                                   href="https://renew.primeedunet.com/psat/product/prereg/group/108">
-                                    모의고사 신청하기 <i class="fa-solid fa-arrow-pointer"></i>
-                                </a>
-                                {% if user.is_staff %}
-                                    <a class="btn btn-outline-primary ms-4" hx-target="#main"
-                                       href="{% url 'predict:student_create' %}" hx-boost="true">
-                                        성적 예측하기 <i class="fa-solid fa-arrow-pointer"></i>
+                            <div class="row g-3">
+                                <div class="col-6 text-sm-end">
+                                    <a class="btn btn-outline-danger" target="_blank"
+                                       href="https://renew.primeedunet.com/psat/product/prereg/group/108">
+                                        모의고사 신청
                                     </a>
+                                </div>
+                                {% if user.is_staff %}
+                                    {% partialdef predict_score inline=True %}
+                                        <div class="col-6 text-sm-start">
+                                            <a class="btn btn-outline-primary" hx-target="#main"
+                                               href="{% url 'predict:student_create' %}" hx-boost="true">
+                                                성적 예측하기
+                                            </a>
+                                        </div>
+                                    {% endpartialdef %}
+                                {% else %}
+                                    {% if current_time > predict_opened_at %}
+                                        {% partial predict_score %}
+                                    {% else %}
+                                        <div class="col-6 text-sm-start">
+                                            <a class="btn btn-outline-primary"
+                                               hx-get="{% url 'prime:no_predict_open_modal' %}" href=""
+                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                성적 예측하기
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>
