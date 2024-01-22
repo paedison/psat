@@ -253,12 +253,13 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         score_dict['psat'] = sum([score_dict['언어'], score_dict['자료'], score_dict['상황']])
         score_dict['psat_avg'] = round(score_dict['psat'] / 3, 1)
 
-        with transaction.atomic():
-            score_virtual_student, _ = self.statistics_virtual_model.objects.get_or_create(student=self.student)
-            for sub, score in score_dict.items():
-                field = self.sub_field[sub]
-                setattr(score_virtual_student, field, score_dict[sub])
-            score_virtual_student.save()
+        if self.student:
+            with transaction.atomic():
+                score_virtual_student, _ = self.statistics_virtual_model.objects.get_or_create(student=self.student)
+                for sub, score in score_dict.items():
+                    field = self.sub_field[sub]
+                    setattr(score_virtual_student, field, score_dict[sub])
+                score_virtual_student.save()
         return score_dict
 
     def update_score_real_student(self):
@@ -434,12 +435,18 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
             pass
 
     def get_next_url(self):
+        sub_dict = {
+            '헌법': '헌법',
+            '언어': '언어논리',
+            '자료': '자료해석',
+            '상황': '상황판단',
+        }
         answer_sub_list = (
             self.answer_model.objects
             .filter(student=self.student, is_confirmed=True)
             .distinct().values_list('sub', flat=True)
         )
-        for sub in self.sub_dict.keys():
+        for sub in sub_dict.keys():
             if sub not in answer_sub_list:
                 return reverse_lazy('predict:answer_input', args=[sub])
         return reverse_lazy('predict:index')
