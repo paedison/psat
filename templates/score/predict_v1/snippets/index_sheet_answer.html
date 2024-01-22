@@ -5,8 +5,7 @@
 <div class="card-body">
     <h5 class="card-title">
         답안 확인
-        <button class="btn btn-sm btn-outline-primary ms-2" href=""
-                hx-target="#student_info" hx-swap="innerHTML swap:0.25s"
+        <button class="btn btn-sm btn-outline-primary ms-2" href="" hx-swap="none"
                 hx-get="{% url 'predict:update_sheet_answer' %}">업데이트</button>
     </h5>
 

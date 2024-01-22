@@ -44,7 +44,7 @@ class BaseMixin:
 
     base_dir = settings.BASE_DIR
     filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
-    answer_uploaded = False
+    answer_uploaded = True
     min_participants = 5
 
     request: any
