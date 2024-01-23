@@ -85,7 +85,10 @@
                                 <td>
                                     <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
                                         btn-{% if answer.result == 'O' %}success{% else %}danger{% endif %}">
-                                        {{ answer.answer_student }}</button>
+                                        {% if answer.answer_student != 0 %}
+                                            {{ answer.answer_student }}
+                                        {% endif %}
+                                    </button>
                                 </td>
                             {% endif %}
                         {% endfor %}
