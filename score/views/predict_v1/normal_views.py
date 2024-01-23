@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 from django.db import transaction
@@ -22,8 +24,19 @@ class IndexView(
         }
         return htmx_template[f'{bool(self.request.htmx)}']
 
+    def get(self, request, *args, **kwargs):
+        now = datetime.now()
+        if now > self.predict_opened_at:
+            context = self.get_context_data()
+            return self.render_to_response(context)
+        else:
+            if self.request.user.is_admin or self.request.user.is_staff:
+                context = self.get_context_data()
+                return self.render_to_response(context)
+        return HttpResponseRedirect(reverse_lazy('prime:list'))
+
     def post(self, request, *args, **kwargs):
-        return super().get(self, request, *args, **kwargs)
+        return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
         self.get_properties()
@@ -105,10 +118,17 @@ class StudentCreateView(
         return self.student_form
 
     def get(self, request, *args, **kwargs):
-        self.get_properties()
-        if self.student:
-            return HttpResponseRedirect(reverse_lazy('predict:index'))
-        return super().get(request, *args, **kwargs)
+        now = datetime.now()
+        if now > self.predict_opened_at:
+            self.get_properties()
+            context = self.get_context_data()
+            return self.render_to_response(context)
+        else:
+            if self.request.user.is_admin or self.request.user.is_staff:
+                self.get_properties()
+                context = self.get_context_data()
+                return self.render_to_response(context)
+        return HttpResponseRedirect(reverse_lazy('prime:list'))
 
     def post(self, request, *args, **kwargs):
         self.get_properties()

@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 
 from django.conf import settings
 
@@ -24,6 +25,7 @@ class BaseMixin:
     year = '2024'
     ex = '프모'
     round = 3
+    predict_opened_at = datetime(2024, 1, 27, 9)
 
     base_dir = settings.BASE_DIR
     filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
