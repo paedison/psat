@@ -9,6 +9,16 @@ body {
     font-family: "Poppins", "Noto Sans KR", sans-serif;
 }
 
+/* card */
+.card-header {
+    border-width: 0;
+    background-color: #fff3cd;
+    color: #000;
+    font-weight: bold;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
 /* info */
 #info {
     display: none;

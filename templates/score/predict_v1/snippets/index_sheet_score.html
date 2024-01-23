@@ -3,53 +3,68 @@
 {% load partials %}
 {% load slippers %}
 
+<div class="card-header">
+    성적 예측
+    <a class="text-decoration-none ms-2" href="" hx-swap="none"
+       hx-get="{% url 'predict:update_sheet_score' %}">
+        <span class="badge rounded-pill text-bg-warning">업데이트</span>
+    </a>
+</div>
+
 <div class="card-body">
-    <h5 class="card-title">
-        성적 예측
-        {% if answer_uploaded %}
-            <button class="btn btn-sm btn-outline-primary ms-2" href="" hx-swap="none"
-                    hx-get="{% url 'predict:update_sheet_score' %}">업데이트</button>
-        {% endif %}
-    </h5>
-    {% if answer_uploaded %}
-        <nav>
-            <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTab" role="tablist">
-                {% #nav_tab prefix='my' id='0' class='' %}내 성적{% /nav_tab %}
-                {% #nav_tab prefix='all' id='1' class='' %}전체 기준{% /nav_tab %}
-                {% #nav_tab prefix='department' id='2' class='' %}직렬 기준{% /nav_tab %}
-            </div>
-        </nav>
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTab" role="tablist">
+            {% #nav_tab prefix='my' id='0' class='' %}내 성적{% /nav_tab %}
+            {% #nav_tab prefix='all' id='1' class='' %}전체 기준{% /nav_tab %}
+            {% #nav_tab prefix='department' id='2' class='' %}직렬 기준{% /nav_tab %}
+        </div>
+    </nav>
 
-        <div class="tab-content" id="scoreSheetContent">
-            {% #nav_content prefix='my' id='0' %}
-                <article class="table-responsive">
-                    <table class="table small align-middle">
-                        <thead>
-                            <tr class="d-table-row d-md-none text-center align-middle table-warning">
-                                <th class="text-nowrap" rowspan="2">과목</th>
-                                <th class="text-nowrap" rowspan="2">내 점수<br/>(점)</th>
-                                <th class="p-1" colspan="2">전체 석차</th>
-                                <th class="p-1" colspan="2">직렬 석차</th>
-                            </tr>
-                            <tr class="d-table-row d-md-none text-center align-middle table-warning">
-                                <th class="p-1">(등)</th>
-                                <th class="p-1">(%)</th>
-                                <th class="p-1">(등)</th>
-                                <th class="p-1">(%)</th>
-                            </tr>
+    <div class="tab-content" id="scoreSheetContent">
+        {% #nav_content prefix='my' id='0' %}
+            <article class="table-responsive">
+                <table class="table small align-middle">
+                    <thead>
+                        <tr class="d-table-row d-md-none text-center align-middle table-warning">
+                            <th class="text-nowrap" rowspan="2">과목</th>
+                            <th class="text-nowrap" rowspan="2">내 점수<br/>(점)</th>
+                            <th class="p-1" colspan="2">전체 석차</th>
+                            <th class="p-1" colspan="2">직렬 석차</th>
+                        </tr>
+                        <tr class="d-table-row d-md-none text-center align-middle table-warning">
+                            <th class="p-1">(등)</th>
+                            <th class="p-1">(%)</th>
+                            <th class="p-1">(등)</th>
+                            <th class="p-1">(%)</th>
+                        </tr>
 
-                            <tr class="d-none d-md-table-row text-center align-middle table-warning">
-                               <th class="col-1">과목</th>
-                               <th class="col-1">내 점수(점)</th>
-                               <th class="col-1">전체 석차(등)</th>
-                               <th class="col-1">전체 석차(%)</th>
-                               <th class="col-1">직렬 석차(등)</th>
-                               <th class="col-1">직렬 석차(%)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="text-center">
-                                <th class="text-nowrap">헌법</th>
+                        <tr class="d-none d-md-table-row text-center align-middle table-warning">
+                           <th class="col-1">과목</th>
+                           <th class="col-1">내 점수(점)</th>
+                           <th class="col-1">전체 석차(등)</th>
+                           <th class="col-1">전체 석차(%)</th>
+                           <th class="col-1">직렬 석차(등)</th>
+                           <th class="col-1">직렬 석차(%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-center">
+                            <th class="text-nowrap">헌법</th>
+                            {% if not info_answer_student.헌법.is_confirmed %}
+                                <td colspan="5">
+                                    {% with sub='헌법' %}
+                                        {% partialdef error_message inline=True %}
+                                            {% if sub == 'PSAT' %}
+                                                <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
+                                            {% else %}
+                                                <a hx-boost="true" href="{% url 'predict:answer_input' sub %}">
+                                                    <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
+                                                </a>
+                                            {% endif %}
+                                        {% endpartialdef error_message %}
+                                    {% endwith %}
+                                </td>
+                            {% else %}
                                 <td>
                                     <div id="my_score_heonbeob" class="htmx-fade-up-in delay-0"
                                          hx-swap-oob="outerHTML:#my_score_heonbeob">
@@ -80,9 +95,15 @@
                                         {{ score_student.rank_ratio_department_heonbeob|percentage|floatformat:1 }}
                                     </div>
                                 </td>
-                            </tr>
-                            <tr class="text-center">
-                                <th class="text-nowrap">언어논리</th>
+                            {% endif %}
+                        </tr>
+                        <tr class="text-center">
+                            <th class="text-nowrap">언어논리</th>
+                            {% if not info_answer_student.언어.is_confirmed %}
+                                <td colspan="5">
+                                    {% with sub='언어' %}{% partial error_message %}{% endwith %}
+                                </td>
+                            {% else %}
                                 <td>
                                     <div id="my_score_eoneo" class="htmx-fade-up-in delay-0"
                                          hx-swap-oob="outerHTML:#my_score_eoneo">
@@ -113,9 +134,15 @@
                                         {{ score_student.rank_ratio_department_eoneo|percentage|floatformat:1 }}
                                     </div>
                                 </td>
-                            </tr>
-                            <tr class="text-center">
-                                <th class="text-nowrap">자료해석</th>
+                            {% endif %}
+                        </tr>
+                        <tr class="text-center">
+                            <th class="text-nowrap">자료해석</th>
+                            {% if not info_answer_student.자료.is_confirmed %}
+                                <td colspan="5">
+                                    {% with sub='자료' %}{% partial error_message %}{% endwith %}
+                                </td>
+                            {% else %}
                                 <td>
                                     <div id="my_score_jaryo" class="htmx-fade-up-in delay-0"
                                          hx-swap-oob="outerHTML:#my_score_jaryo">
@@ -146,9 +173,15 @@
                                         {{ score_student.rank_ratio_department_jaryo|percentage|floatformat:1 }}
                                     </div>
                                 </td>
-                            </tr>
-                            <tr class="text-center">
-                                <th class="text-nowrap">상황판단</th>
+                            {% endif %}
+                        </tr>
+                        <tr class="text-center">
+                            <th class="text-nowrap">상황판단</th>
+                            {% if not info_answer_student.상황.is_confirmed %}
+                                <td colspan="5">
+                                    {% with sub='상황' %}{% partial error_message %}{% endwith %}
+                                </td>
+                            {% else %}
                                 <td>
                                     <div id="my_score_sanghwang" class="htmx-fade-up-in delay-0"
                                          hx-swap-oob="outerHTML:#my_score_sanghwang">
@@ -179,9 +212,15 @@
                                         {{ score_student.rank_ratio_department_sanghwang|percentage|floatformat:1 }}
                                     </div>
                                 </td>
-                            </tr>
-                            <tr class="text-center table-warning">
-                                <th class="text-nowrap">PSAT 평균</th>
+                            {% endif %}
+                        </tr>
+                        <tr class="text-center table-warning">
+                            <th class="text-nowrap">PSAT 평균</th>
+                            {% if not info_answer_student.psat_avg.is_confirmed %}
+                                <td colspan="5">
+                                    {% with sub='PSAT' %}{% partial error_message %}{% endwith %}
+                                </td>
+                            {% else %}
                                 <td>
                                     <div id="my_score_psat_avg" class="htmx-fade-up-in delay-0"
                                          hx-swap-oob="outerHTML:#my_score_psat_avg">
@@ -212,42 +251,57 @@
                                         {{ score_student.rank_ratio_department_psat|percentage|floatformat:1 }}
                                     </div>
                                 </td>
+                            {% endif %}
+                        </tr>
+                    </tbody>
+                </table>
+                {% partialdef reference_message inline=True %}
+                    <div>
+                        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+                        <ol class="text-success small fw-bold m-0">
+                            <li>과목별로 답안 제출을 완료한 응시생들을 대상으로 분석한 자료입니다.</li>
+                            <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
+                        </ol>
+                    </div>
+                {% endpartialdef %}
+            </article>
+        {% /nav_content %}
+
+        {% #nav_content prefix='all' id='1' %}
+        {% with prefix='all' stat=all_score_stat.전체 %}
+            {% partialdef statistics inline=True %}
+                <article class="table-responsive">
+                    <table class="table small align-middle">
+                        <thead>
+                            <tr class="d-table-row d-md-none text-center align-middle table-warning">
+                                <th class="text-nowrap">과목</th>
+                                <th class="text-nowrap">내 점수</th>
+                                <th class="text-nowrap">응시자수</th>
+                                <th class="text-nowrap">최고<br/>점수</th>
+                                <th class="text-nowrap">상위<br/>10%</th>
+                                <th class="text-nowrap">상위<br/>20%</th>
+                                <th class="text-nowrap">평균<br/>점수</th>
                             </tr>
-                        </tbody>
-                    </table>
-                </article>
-            {% /nav_content %}
 
-            {% #nav_content prefix='all' id='1' %}
-            {% with prefix='all' stat=all_score_stat.전체 %}
-                {% partialdef statistics inline=True %}
-                    <article class="table-responsive">
-                        <table class="table small align-middle">
-                            <thead>
-                                <tr class="d-table-row d-md-none text-center align-middle table-warning">
-                                    <th class="text-nowrap">과목</th>
-                                    <th class="text-nowrap">내 점수</th>
-                                    <th class="text-nowrap">응시자수</th>
-                                    <th class="text-nowrap">최고<br/>점수</th>
-                                    <th class="text-nowrap">상위<br/>10%</th>
-                                    <th class="text-nowrap">상위<br/>20%</th>
-                                    <th class="text-nowrap">평균<br/>점수</th>
-                                </tr>
+                            <tr class="d-none d-md-table-row text-center align-middle table-warning">
+                                <th class="col-1">과목</th>
+                                <th class="col-1">내 점수(점)</th>
+                                <th class="col-1">응시자수</th>
+                                <th class="col-1">최고 점수(점)</th>
+                                <th class="col-1">상위 10%(점)</th>
+                                <th class="col-1">상위 20%(점)</th>
+                                <th class="col-1">평균 점수(점)</th>
+                            </tr>
+                        </thead>
 
-                                <tr class="d-none d-md-table-row text-center align-middle table-warning">
-                                    <th class="col-1">과목</th>
-                                    <th class="col-1">내 점수(점)</th>
-                                    <th class="col-1">응시자수</th>
-                                    <th class="col-1">최고 점수(점)</th>
-                                    <th class="col-1">상위 10%(점)</th>
-                                    <th class="col-1">상위 20%(점)</th>
-                                    <th class="col-1">평균 점수(점)</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr class="text-center">
-                                    <th class="text-nowrap">헌법</th>
+                        <tbody>
+                            <tr class="text-center">
+                                <th class="text-nowrap">헌법</th>
+                                    {% if not info_answer_student.헌법.is_confirmed %}
+                                        <td colspan="6">
+                                            {% with sub='헌법' %}{% partial error_message %}{% endwith %}
+                                        </td>
+                                    {% else %}
                                     <td>
                                         <div id="{{ prefix }}_score_heonbeob" class="htmx-fade-up-in delay-0"
                                              hx-swap-oob="outerHTML:#{{ prefix }}_score_heonbeob">
@@ -284,9 +338,15 @@
                                             {{ stat.avg_score_heonbeob|floatformat:1 }}
                                         </div>
                                     </td>
-                                </tr>
-                                <tr class="text-center">
-                                    <th class="text-nowrap">언어논리</th>
+                                {% endif %}
+                            </tr>
+                            <tr class="text-center">
+                                <th class="text-nowrap">언어논리</th>
+                                    {% if not info_answer_student.언어.is_confirmed %}
+                                        <td colspan="6">
+                                            {% with sub='언어' %}{% partial error_message %}{% endwith %}
+                                        </td>
+                                    {% else %}
                                     <td>
                                         <div id="{{ prefix }}_score_eoneo" class="htmx-fade-up-in delay-0"
                                              hx-swap-oob="outerHTML:#{{ prefix }}_score_eoneo">
@@ -323,9 +383,15 @@
                                             {{ stat.avg_score_eoneo|floatformat:1 }}
                                         </div>
                                     </td>
-                                </tr>
-                                <tr class="text-center">
-                                    <th class="text-nowrap">자료해석</th>
+                                {% endif %}
+                            </tr>
+                            <tr class="text-center">
+                                <th class="text-nowrap">자료해석</th>
+                                    {% if not info_answer_student.자료.is_confirmed %}
+                                        <td colspan="6">
+                                            {% with sub='자료' %}{% partial error_message %}{% endwith %}
+                                        </td>
+                                    {% else %}
                                     <td>
                                         <div id="{{ prefix }}_score_jaryo" class="htmx-fade-up-in delay-0"
                                              hx-swap-oob="outerHTML:#{{ prefix }}_score_jaryo">
@@ -362,9 +428,15 @@
                                             {{ stat.avg_score_jaryo|floatformat:1 }}
                                         </div>
                                     </td>
-                                </tr>
-                                <tr class="text-center">
-                                    <th class="text-nowrap">상황판단</th>
+                                {% endif %}
+                            </tr>
+                            <tr class="text-center">
+                                <th class="text-nowrap">상황판단</th>
+                                    {% if not info_answer_student.상황.is_confirmed %}
+                                        <td colspan="6">
+                                            {% with sub='상황' %}{% partial error_message %}{% endwith %}
+                                        </td>
+                                    {% else %}
                                     <td>
                                         <div id="{{ prefix }}_score_sanghwang" class="htmx-fade-up-in delay-0"
                                              hx-swap-oob="outerHTML:#{{ prefix }}_score_sanghwang">
@@ -401,9 +473,15 @@
                                             {{ stat.avg_score_sanghwang|floatformat:1 }}
                                         </div>
                                     </td>
-                                </tr>
-                                <tr class="text-center table-warning">
-                                    <th class="text-nowrap">PSAT 평균</th>
+                                {% endif %}
+                            </tr>
+                            <tr class="text-center table-warning">
+                                <th class="text-nowrap">PSAT 평균</th>
+                                    {% if not info_answer_student.psat_avg.is_confirmed %}
+                                        <td colspan="6">
+                                            {% with sub='PSAT' %}{% partial error_message %}{% endwith %}
+                                        </td>
+                                    {% else %}
                                     <td>
                                         <div id="{{ prefix }}_score_psat_avg" class="htmx-fade-up-in delay-0"
                                              hx-swap-oob="outerHTML:#{{ prefix }}_score_psat_avg">
@@ -440,25 +518,20 @@
                                             {{ stat.avg_score_psat_avg|floatformat:1 }}
                                         </div>
                                     </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </article>
-                {% endpartialdef statistics %}
-            {% endwith %}
-            {% /nav_content %}
+                                {% endif %}
+                            </tr>
+                        </tbody>
+                    </table>
+                    {% partial reference_message %}
+                </article>
+            {% endpartialdef statistics %}
+        {% endwith %}
+        {% /nav_content %}
 
-            {% #nav_content prefix='department' id='2' %}
-                {% with prefix='department' stat=all_score_stat.직렬 %}
-                    {% partial statistics %}
-                {% endwith %}
-            {% /nav_content %}
-        </div>
-    {% else %}
-        <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
-            <i class="fa-solid fa-circle-exclamation"></i>
-                정답이 공개되지 않았습니다. 정답 공개 후 확인해주세요.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    {% endif %}
+        {% #nav_content prefix='department' id='2' %}
+            {% with prefix='department' stat=all_score_stat.직렬 %}
+                {% partial statistics %}
+            {% endwith %}
+        {% /nav_content %}
+    </div>
 </div>

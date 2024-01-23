@@ -2,8 +2,9 @@
 {% load partials %}
 {% load slippers %}
 
+<div class="card-header">성적 분포 차트</div>
+
 <div class="card-body">
-    <h5 class="card-title">성적 분포 차트</h5>
     {% if is_confirmed %}
         {% partialdef chart_canvas inline=True %}
             <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">

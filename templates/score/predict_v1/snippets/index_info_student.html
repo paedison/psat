@@ -3,27 +3,28 @@
 {% load partials %}
 {% load slippers %}
 
+<div class="card-header">수험정보</div>
+
 <div class="card-body">
-    <h5 class="card-title">수험정보</h5>
     {% if student %}
         <table class="table">
             <tbody>
                 <tr>
-                    <th scope="row">수험번호</th>
+                    <th class="px-0" scope="row">수험번호</th>
                     <td>{{ student.serial }}</td>
                 </tr>
                 {% if category == 'PSAT' %}
                     <tr>
-                        <th scope="row">모집단위</th>
+                        <th class="px-0" scope="row">모집단위</th>
                         <td>{{ student.unit_name }}</td>
                     </tr>
                 {% endif %}
                 <tr>
-                    <th scope="row">직렬</th>
+                    <th class="px-0" scope="row">직렬</th>
                     <td>{{ student.department_name }}</td>
                 </tr>
                 <tr>
-                    <th scope="row">이름</th>
+                    <th class="px-0" scope="row">이름</th>
                     <td>{{ student.name }}</td>
                 </tr>
             </tbody>

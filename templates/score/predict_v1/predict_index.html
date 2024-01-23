@@ -59,6 +59,13 @@
         </div>
 
         {% if student %}
+            {% if answer_uploaded %}
+                <div class="col-12">
+                    <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
+                        {% include 'score/predict_v1/snippets/index_sheet_score.html' %}
+                    </div>
+                </div>
+            {% endif %}
             <div class="col-12">
                 <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
                     {% include 'score/predict_v1/snippets/index_info_answer.html' %}
@@ -67,11 +74,6 @@
             <div class="col-12">
                 <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
                     {% include 'score/predict_v1/snippets/index_sheet_answer.html' %}
-                </div>
-            </div>
-            <div class="col-12">
-                <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'score/predict_v1/snippets/index_sheet_score.html' %}
                 </div>
             </div>
         {% endif %}

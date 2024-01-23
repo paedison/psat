@@ -23,7 +23,12 @@ class BaseMixin:
     category = 'Prime'
     year = '2024'
     ex = '프모'
-    round = 1
+    round = 3
+
+    base_dir = settings.BASE_DIR
+    filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
+    answer_uploaded = False
+    min_participants = 100
 
     sub_dict = {
         '헌법': '헌법',
@@ -33,6 +38,14 @@ class BaseMixin:
         'psat': 'PSAT',
         'psat_avg': 'PSAT 평균'
     }
+    sub_eng_dict = {
+        '헌법': 'heonbeob',
+        '언어': 'eoneo',
+        '자료': 'jaryo',
+        '상황': 'sanghwang',
+        'psat': 'psat',
+        'psat_avg': 'psat_avg'
+    }
     sub_field = {
         '헌법': 'score_heonbeob',
         '언어': 'score_eoneo',
@@ -41,11 +54,6 @@ class BaseMixin:
         'psat': 'score_psat',
         'psat_avg': 'score_psat_avg',
     }
-
-    base_dir = settings.BASE_DIR
-    filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
-    answer_uploaded = True
-    min_participants = 5
 
     request: any
     kwargs: dict

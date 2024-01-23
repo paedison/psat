@@ -102,6 +102,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             info_answer_student[sub] = {
                 'icon': self.ICON_SUBJECT[sub],
                 'sub': sub,
+                'sub_eng': self.sub_eng_dict[sub],
                 'subject': self.sub_dict[sub],
                 'participants': self.participant_count[sub],
                 'problem_count': problem_count,

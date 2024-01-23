@@ -35,50 +35,110 @@
     </nav>
 </div><!-- Page Title End -->
 
-<section class="section htmx-fade-in htmx-fade-out"
-             hx-target="#main" hx-swap="innerHTML swap:0.25s">
-    {% #content_row class1='col-12' %}
-        <h5 class="card-title d-flex align-items-center">
-            {{ subject }} 답안 입력
-            <a class="btn btn-sm btn-outline-primary ms-auto" hx-boost="true"
-               href="{% url 'predict:index' %}">
-                성적 예측 페이지로 이동
-            </a>
-        </h5>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fa-solid fa-circle-exclamation"></i>
-                답안 선택 후 제출 버튼을 클릭해주세요.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <div class="col-12 d-flex flex-wrap justify-content-center justify-content-md-start">
-            <div class="col-md-6 col-lg-4 justify-content-center pb-2">
-            {% for problem in answer_student %}
-                <div class="col-12 justify-content-center">
-                    {% if student %}
-                        {% partial form %}
-                    {% else %}
-                        {% partial no_student %}
-                    {% endif %}
+<section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title d-flex align-items-center">
+                        {{ subject }} 답안 입력
+                        <a class="btn btn-sm btn-outline-primary ms-auto" hx-boost="true"
+                           href="{% url 'predict:index' %}">
+                            성적 예측 페이지로 이동
+                        </a>
+                    </h5>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                            답안 선택 후 제출 버튼을 클릭해주세요.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
+                    <div class="row d-sm-none mb-3">
+                        {% for problem in answer_student %}
+                            {% with id_prefix='xsm' %}
+                                {% partialdef form_data inline=True %}
+                                    {% if student %}
+                                        {% partial form %}
+                                    {% else %}
+                                        {% partial no_student %}
+                                    {% endif %}
+                                {% endpartialdef form_data %}
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="row d-none d-sm-flex d-lg-none mb-3">
+                        <div class="col-6">
+                            {% for problem in answer_student %}
+                                {% if ex == '칠급' or sub == '헌법' %}
+                                    {% if forloop.counter <= 15 %}
+                                        {% with id_prefix='sm' %}{% partial form_data %}{% endwith %}
+                                    {% endif %}
+                                {% else %}
+                                    {% if forloop.counter <= 20 %}
+                                        {% with id_prefix='sm' %}{% partial form_data %}{% endwith %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="col-6">
+                            {% for problem in answer_student %}
+                                {% if ex == '칠급' or sub == '헌법' %}
+                                    {% if forloop.counter > 15 %}
+                                        {% with id_prefix='sm' %}{% partial form_data %}{% endwith %}
+                                    {% endif %}
+                                {% else %}
+                                    {% if forloop.counter > 20 %}
+                                        {% with id_prefix='sm' %}{% partial form_data %}{% endwith %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row d-none d-lg-flex mb-3">
+                        <div class="col-3">
+                            {% for problem in answer_student %}
+                                {% if forloop.counter <= 10 %}
+                                    {% with id_prefix='lg' %}{% partial form_data %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="col-3">
+                            {% for problem in answer_student %}
+                                {% if forloop.counter > 10 and forloop.counter <= 20 %}
+                                    {% with id_prefix='lg' %}{% partial form_data %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="col-3">
+                            {% for problem in answer_student %}
+                                {% if forloop.counter > 20 and forloop.counter <= 30 %}
+                                    {% with id_prefix='lg' %}{% partial form_data %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="col-3">
+                            {% for problem in answer_student %}
+                                {% if forloop.counter > 30 and forloop.counter <= 40 %}
+                                    {% with id_prefix='lg' %}{% partial form_data %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <form class="text-center">
+                        <input type="text" name="answer_id" value="{{ answer_student.id }}" aria-label="Answer ID" hidden/>
+                        <button class="btn btn-primary" hx-target="#modalContainer" type="submit" hx-push-url="false"
+                                hx-post="{% url 'predict:answer_confirm' sub %}" hx-swap="innerHTML"
+                                data-bs-toggle="modal" data-bs-target="#modalContainer">
+                            답안 제출
+                        </button>
+                    </form>
                 </div>
-                {% if forloop.counter|divisibleby:5 %}
-            <hr/>
             </div>
-                    {% if not forloop.last %}
-            <div class="col-md-6 col-lg-4 justify-content-center pb-2">
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
         </div>
-        <form class="text-center">
-            <input type="text" name="answer_id" value="{{ answer_student.id }}" aria-label="Answer ID" hidden/>
-            <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
-                    hx-post="{% url 'predict:answer_confirm' sub %}" hx-swap="innerHTML" hx-trigger="click"
-                    hx-push-url="false"
-                    data-bs-toggle="modal" data-bs-target="#modalContainer">
-                답안 제출
-            </button>
-        </form>
-    {% /content_row %}
+    </div>
 </section>
 {% endpartialdef detail_main %}
 {% endblock main %}
@@ -87,25 +147,24 @@
 <form>
     <input type="text" name="number" value="{{ problem.number }}" aria-label="Number" hidden/>
     <input type="text" name="student_id" value="{{ student.id }}" aria-label="Student ID" hidden/>
-    <div class="d-flex justify-content-center align-content-center">
-        <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">문 {{ problem.number|add_0 }}.</p>
-        <div id="p{{ problem.number|add_0 }}_answer" class="d-flex justify-content-center align-content-center me-3"
+    <div class="d-flex justify-content-center py-2">
+        <div class="d-inline-block fw-bold text-secondary pe-2">{{ problem.number|add_0 }}.</div>
+        <div id="p{{ problem.number|add_0 }}_answer"
              hx-post="{% url 'predict:answer_submit' sub %}"
              hx-include="#p{{ problem.number|add_0 }}_answer>input[name='answer']:checked"
              hx-target="this" hx-trigger="change" hx-swap="innerHTML" hx-push-url="false">
             {% with target_answer=problem.answer_student target_problem=problem %}
                 {% if subject == 'heonbeob' or sub == '헌법' %}
                     {% for i in '1234' %}
-
                         {% partialdef answer_buttons inline=True %} {# answer_buttons partial #}
-                            <input id="p{{ target_problem.number|add_0 }}_answer{{ i }}" type="radio"
-                                   class="btn-check" name="answer" value="{{ i }}"/>
-                            <label class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                            <input id="{{ id_prefix }}_p{{ target_problem.number|add_0 }}_answer{{ i }}"
+                                   type="radio" class="btn-check" name="answer" value="{{ i }}"/>
+                            <label class="btn btn-circle btn-sm fs-6
                                    {% if i|add:0 == target_answer %}btn-secondary
                                    {% else %} btn-outline-secondary{% endif %}"
-                                   for="p{{ target_problem.number|add_0 }}_answer{{ i }}">{{ i }}</label>
+                                   for="{{ id_prefix }}_p{{ target_problem.number|add_0 }}_answer{{ i }}">
+                                {{ i }}</label>
                         {% endpartialdef answer_buttons %}
-
                     {% endfor %}
                 {% else %}
                     {% for i in '12345' %}
@@ -136,7 +195,7 @@
     <div class="d-flex justify-content-center align-content-center">
         <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
             <a href="" hx-get="{% url 'psat:detail' 'problem' problem.id %}" hx-push-url="true">
-                문 {{ problem.number|add_0 }}.
+                {{ problem.number|add_0 }}.
             </a>
         </p>
         <div class="d-flex justify-content-center align-content-center me-3">

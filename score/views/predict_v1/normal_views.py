@@ -65,8 +65,8 @@ class IndexView(
         }
 
 
-class UpdateInfoStudent(IndexView):
-    template_name = 'score/predict_v1/snippets/update_info_student.html'
+class UpdateInfoAnswer(IndexView):
+    template_name = 'score/predict_v1/snippets/update_info_answer.html'
 
     def get_template_names(self):
         return self.template_name
@@ -123,7 +123,7 @@ class StudentCreateView(
             form.ex = self.ex
             form.round = self.round
             form.save()
-        return HttpResponseRedirect(reverse_lazy('predict:index'))
+        return HttpResponseRedirect(reverse_lazy('predict:answer_input', args=['헌법']))
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
@@ -291,6 +291,6 @@ answer_input_view = AnswerInputView.as_view()
 answer_submit_view = AnswerSubmitView.as_view()
 answer_confirm_view = AnswerConfirmView.as_view()
 
-update_info_student = UpdateInfoStudent.as_view()
+update_info_answer = UpdateInfoAnswer.as_view()
 update_sheet_answer = UpdateSheetAnswer.as_view()
 update_sheet_score = UpdateSheetScore.as_view()
