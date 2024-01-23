@@ -17,7 +17,6 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
     info_answer_student: dict
 
     data_answer: dict
-    score_virtual_student: dict
 
     all_score_stat: dict
     score_student: dict  # score, rank, rank_ratio
@@ -35,7 +34,6 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         self.participant_count = self.get_participant_count()
 
         self.data_answer = self.get_data_answer()
-        self.score_virtual_student = self.update_score_virtual_student()
         self.info_answer_student = self.get_info_answer_student()
 
         if self.answer_uploaded and self.student:
@@ -43,6 +41,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
             all_ranks = get_all_ranks_dict(self.get_statistics_qs, self.user_id)
             self.score_student = self.update_score_student(all_ranks)
+            self.update_info_answer_student()
         else:
             self.all_score_stat = {'전체': '', '직렬': ''}
             self.score_student = {}
@@ -88,6 +87,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         return participant_count
 
     def get_info_answer_student(self) -> dict:
+        score_virtual_student = self.update_score_virtual_student()
         info_answer_student = {}
         for sub, problem_count in self.problem_count_dict.items():
             is_confirmed = False
@@ -106,7 +106,8 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                 'participants': self.participant_count[sub],
                 'problem_count': problem_count,
                 'answer_count': answer_count,
-                'score_virtual': self.score_virtual_student[sub],
+                'score_virtual': score_virtual_student[sub],
+                'score_real': None,
                 'is_confirmed': is_confirmed,
             }
         info_answer_student['psat_avg'] = {
@@ -131,6 +132,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                 info_answer_student['자료']['score_virtual'],
                 info_answer_student['상황']['score_virtual'],
             ]) / 3, 1),
+            'score_real': 0,
             'is_confirmed': all([
                 info_answer_student['헌법']['is_confirmed'],
                 info_answer_student['언어']['is_confirmed'],
@@ -354,6 +356,12 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
 
         score_student.save()
         return score_student
+
+    def update_info_answer_student(self):
+        sub_field = self.sub_field.copy()
+        sub_field.pop('psat')
+        for sub, field in sub_field.items():
+            self.info_answer_student[sub]['score_real'] = round(getattr(self.score_student, field), 1)
 
 
 class AnswerInputViewMixin(ConstantIconSet, BaseMixin):

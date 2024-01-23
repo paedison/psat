@@ -39,7 +39,7 @@ class BaseMixin:
          'opened_at': datetime(2024, 2, 29, 17)},
     ]
     predict_round = 3
-    predict_opened_at = datetime(2024, 2, 1, 17)
+    predict_opened_at = datetime(2024, 1, 27, 9)
 
     request: any
     kwargs: dict

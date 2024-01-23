@@ -14,18 +14,25 @@
             <thead>
                 <tr class="text-center align-middle table-warning">
                     <th rowspan="2">과목</th>
-                    <th class="text-nowrap" rowspan="2">
+                    <th class="text-nowrap">
                         <span class="d-sm-none">총 참여자수<br/>(명)</span>
                         <span class="d-none d-sm-inline">총 참여자수(명)</span>
                     </th>
-                    <th class="text-nowrap" rowspan="2">
+                    <th class="text-nowrap">
                         <span class="d-sm-none">선택 답안수<br/>(문제)</span>
                         <span class="d-none d-sm-inline">선택 답안수(문제)</span>
                     </th>
-                    <th class="text-nowrap" rowspan="2">
-                        <span class="d-sm-none">예상 점수<br/>(점)</span>
-                        <span class="d-none d-sm-inline">예상 점수(점)</span>
-                    </th>
+                    {% if answer_uploaded %}
+                        <th class="text-nowrap">
+                            <span class="d-sm-none">실제 점수<br/>(점)</span>
+                            <span class="d-none d-sm-inline">실제 점수(점)</span>
+                        </th>
+                    {% else %}
+                        <th class="text-nowrap">
+                            <span class="d-sm-none">예상 점수<br/>(점)</span>
+                            <span class="d-none d-sm-inline">예상 점수(점)</span>
+                        </th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -52,52 +59,61 @@
                             </th>
                             <td>
                                 <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in">
-                                    {{ info_answer.participants }}
+                                    {{ info_answer.participants|default:0 }}
                                 </div>
                             </td>
                             <td>
                                 {% if info_answer.is_confirmed %}
                                     <span class="d-inline-block">
-                                        {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
+                                        {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                                     </span>
                                     <span class="badge rounded-pill text-bg-success">제출 완료</span>
                                 {% else %}
                                     {% if info_answer.sub == 'PSAT' %}
                                         <span class="d-inline-block">
-                                            {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
+                                            {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                                         </span>
                                         <span class="badge rounded-pill text-bg-danger">미제출</span>
                                     {% else %}
                                         <a class="text-decoration-none"
                                            href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
                                             <span class="d-inline-block">
-                                                {{ info_answer.answer_count|add:0 }} / {{ info_answer.problem_count }}
+                                                {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                                             </span>
                                             <span class="badge rounded-pill text-bg-danger">미제출</span>
                                         </a>
                                     {% endif %}
                                 {% endif %}
                             </td>
-                            <td>
-                                {% if info_answer.is_confirmed %}
-                                    {% if info_answer.participants < min_participants %}
-                                        <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
+                            {% if answer_uploaded %}
+                                <td>
+                                    <div id="my_score_heonbeob" class="htmx-fade-up-in delay-0"
+                                         hx-swap-oob="outerHTML:#my_score_heonbeob">
+                                        {{ info_answer.score_real|default:0 }}
+                                    </div>
+                                </td>
+                            {% else %}
+                                <td>
+                                    {% if info_answer.is_confirmed %}
+                                        {% if info_answer.participants < min_participants %}
+                                            <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
+                                        {% else %}
+                                            <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in">
+                                                {{ info_answer.score_virtual|default:0 }}
+                                            </div>
+                                        {% endif %}
                                     {% else %}
-                                        <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in">
-                                            {{ info_answer.score_virtual }}
-                                        </div>
-                                    {% endif %}
-                                {% else %}
-                                    {% if info_answer.sub == 'PSAT' %}
-                                        <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
-                                    {% else %}
-                                        <a class="text-decoration-none"
-                                           href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
+                                        {% if info_answer.sub == 'PSAT' %}
                                             <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
-                                        </a>
+                                        {% else %}
+                                            <a class="text-decoration-none"
+                                               href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
+                                                <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                                            </a>
+                                        {% endif %}
                                     {% endif %}
-                                {% endif %}
-                            </td>
+                                </td>
+                            {% endif %}
                         </tr>
                     {% endpartialdef answer_status %}
                 {% endwith %}
@@ -114,7 +130,9 @@
                 <li>선택 답안수는 과목별로 답안을 선택한 문제수 및 총 문제수입니다.</li>
                 <li>최종 제출한 답안만 통계에 포함되니 답안 제출을 완료해주세요.</li>
                 <li>최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
-                <li>예상 점수는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
+                {% if not answer_uploaded %}
+                    <li>예상 점수는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
+                {% endif %}
             </ol>
         </div>
     </article>

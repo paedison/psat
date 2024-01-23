@@ -5,9 +5,11 @@
 
 <div class="card-body">
     <h5 class="card-title">
-        성적 확인
-        <button class="btn btn-sm btn-outline-primary ms-2" href="" hx-swap="none"
-                hx-get="{% url 'predict:update_sheet_score' %}">업데이트</button>
+        성적 예측
+        {% if answer_uploaded %}
+            <button class="btn btn-sm btn-outline-primary ms-2" href="" hx-swap="none"
+                    hx-get="{% url 'predict:update_sheet_score' %}">업데이트</button>
+        {% endif %}
     </h5>
     {% if answer_uploaded %}
         <nav>

@@ -53,7 +53,6 @@ class IndexView(
 
             # predict_info_answer
             'info_answer_student': self.info_answer_student,
-            'score_virtual_student': self.score_virtual_student,
 
             # predict_sheet_answer
             'data_answer_correct': self.data_answer['answer_correct'],
