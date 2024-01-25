@@ -171,6 +171,17 @@ class ExportStatisticsToExcelView(
         return super().get(request, *args, **kwargs)
 
 
+class ExportAnalysisToExcelView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.ExportAnalysisToExcelMixin,
+    vanilla.View,
+):
+    view_type = 'export'
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
 class ExportScoresToExcelView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ExportScoresToExcelMixin,
@@ -198,5 +209,6 @@ print_view = PrintView.as_view()
 individual_student_print_view = IndividualStudentPrintView.as_view()
 
 export_statistics_to_excel_view = ExportStatisticsToExcelView.as_view()
+export_analysis_to_excel_view = ExportAnalysisToExcelView.as_view()
 export_scores_to_excel_view = ExportScoresToExcelView.as_view()
 export_transcript_to_pdf_view = ExportTranscriptToPdfView.as_view()

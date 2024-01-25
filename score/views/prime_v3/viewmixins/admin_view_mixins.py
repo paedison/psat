@@ -104,8 +104,11 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
             .annotate(
                 sub=F('problem__prime__subject__abbr'),
                 number=F('problem__number'),
-                answer_correct=F('problem__answer'),
-            ).values()
+                answer_correct=F('problem__answer'))
+            .values(
+                'sub', 'number', 'answer_correct',
+                'count_total', 'count_1', 'count_2','count_3', 'count_4', 'count_5', 'count_0',
+                'rate_1', 'rate_2','rate_3', 'rate_4', 'rate_5', 'rate_0')
         )
         for problem in answer_count:
             answer_correct = problem['answer_correct']
@@ -166,13 +169,33 @@ class ExportStatisticsToExcelMixin(DetailViewMixin):
 class ExportAnalysisToExcelMixin(DetailViewMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
-        statistics = self.get_statistics(self.year, self.round)
 
-        df = pd.DataFrame.from_records(statistics)
+        def get_df(df_target):
+            df = pd.DataFrame.from_records(df_target)
+            df = df.drop('sub', axis=1)
+            df_target_number = df.pop('number')
+            df_target_answer_correct = df.pop('answer_correct')
+            df_target_rate_correct = df.pop('rate_correct')
+
+            df.insert(0, 'number', df_target_number)
+            df.insert(1, 'answer_correct', df_target_answer_correct)
+            df.insert(2, 'rate_correct', df_target_rate_correct)
+
+            return df
+
+        df_heonbeob = get_df(self.answer_count_analysis['헌법'])
+        df_eoneo = get_df(self.answer_count_analysis['언어'])
+        df_jaryo = get_df(self.answer_count_analysis['자료'])
+        df_sanghwang = get_df(self.answer_count_analysis['상황'])
+
         excel_data = io.BytesIO()
-        df.to_excel(excel_data, index=False, engine='xlsxwriter')
+        with pd.ExcelWriter(excel_data, engine='xlsxwriter') as writer:
+            df_heonbeob.to_excel(writer, sheet_name='헌법', index=False)
+            df_eoneo.to_excel(writer, sheet_name='언어', index=False)
+            df_jaryo.to_excel(writer, sheet_name='자료', index=False)
+            df_sanghwang.to_excel(writer, sheet_name='상황', index=False)
 
-        filename = f'제{self.round}회_전국모의고사_성적통계.xlsx'
+        filename = f'제{self.round}회_전국모의고사_문항분석표.xlsx'
         filename = quote(filename)
 
         response = HttpResponse(

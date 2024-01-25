@@ -9,7 +9,7 @@
         <span>제{{ round }}회 | 문항 분석표</span>
         <div class="btn-group ms-auto">
             <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-               href="">
+               href="{% url 'prime_admin:export_analysis' year round %}">
                 Excel로 내보내기
             </a>
         </div>
