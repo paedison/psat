@@ -146,9 +146,8 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
 class ExportStatisticsToExcelMixin(DetailViewMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
-        statistics = self.get_statistics(self.year, self.round)
 
-        df = pd.DataFrame.from_records(statistics)
+        df = pd.DataFrame.from_records(self.statistics)
         excel_data = io.BytesIO()
         df.to_excel(excel_data, index=False, engine='xlsxwriter')
 
