@@ -61,7 +61,11 @@ def round_number(content):
         '4': '④',
         '5': '⑤',
     }
-    return number_dict[str(content)]
+    if content in range(6):
+        return number_dict[str(content)]
+    else:
+        number_list = [number_dict[digit] for digit in str(content)]
+        return ''.join(number_list)
 
 
 @register.filter()

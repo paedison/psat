@@ -82,6 +82,9 @@ class DetailView(
             # score statistics
             'statistics': self.statistics,
 
+            # answer analysis
+            'answer_count_analysis': self.answer_count_analysis,
+
             # page objectives
             'page_obj': self.page_obj,
             'page_range': self.page_range,
@@ -98,7 +101,7 @@ class CatalogView(
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
-    template_name = 'score/prime_v3/prime_admin_detail.html#catalog'
+    template_name = 'score/prime_v3/snippets_admin/detail_catalog.html'
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)

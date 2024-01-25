@@ -11,6 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
+from score.utils import get_dict_by_sub
 from .base_mixins import AdminBaseMixin
 
 
@@ -55,6 +56,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
     category_list: list
     search_student_name: str
     statistics: list
+    answer_count_analysis: list
     page_obj: any
     page_range: any
     student_ids: list
@@ -71,6 +73,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
         self.search_student_name = self.get_variable('student_name')
 
         self.statistics = self.get_statistics(self.year, self.round)
+        self.answer_count_analysis = self.get_answer_count_analysis()
 
         self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
         self.base_url = reverse_lazy(
@@ -92,6 +95,27 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
         )
         category_list.extend(all_category)
         return category_list
+
+    def get_answer_count_analysis(self):
+        answer_count = (
+            self.answer_count_model.objects
+            .filter(problem__prime__year=self.year, problem__prime__round=self.round)
+            .order_by('problem_id')
+            .annotate(
+                sub=F('problem__prime__subject__abbr'),
+                number=F('problem__number'),
+                answer_correct=F('problem__answer'),
+            ).values()
+        )
+        for problem in answer_count:
+            answer_correct = problem['answer_correct']
+            if answer_correct in range(1, 6):
+                rate_correct = problem[f'rate_{answer_correct}']
+            else:
+                answer_correct_list = [int(digit) for digit in str(answer_correct)]
+                rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
+            problem['rate_correct'] = rate_correct
+        return get_dict_by_sub(answer_count)
 
     def get_all_stat(self):
         qs = (
@@ -120,6 +144,27 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
 
 
 class ExportStatisticsToExcelMixin(DetailViewMixin):
+    def get(self, request, *args, **kwargs):
+        self.get_properties()
+        statistics = self.get_statistics(self.year, self.round)
+
+        df = pd.DataFrame.from_records(statistics)
+        excel_data = io.BytesIO()
+        df.to_excel(excel_data, index=False, engine='xlsxwriter')
+
+        filename = f'제{self.round}회_전국모의고사_성적통계.xlsx'
+        filename = quote(filename)
+
+        response = HttpResponse(
+            excel_data.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        return response
+
+
+class ExportAnalysisToExcelMixin(DetailViewMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
         statistics = self.get_statistics(self.year, self.round)
