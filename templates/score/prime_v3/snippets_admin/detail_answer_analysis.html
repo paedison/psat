@@ -76,19 +76,19 @@
                     <tr class="text-center">
                         <td>{{ problem.number }}</td>
                         <td>{{ problem.answer_correct|round_number }}</td>
-                        <td>{{ problem.rate_correct }}</td>
+                        <td>{{ problem.rate_correct|floatformat:1 }}</td>
                         <td>{{ problem.count_1 }}</td>
                         <td>{{ problem.count_2 }}</td>
                         <td>{{ problem.count_3 }}</td>
                         <td>{{ problem.count_4 }}</td>
                         <td>{{ problem.count_5 }}</td>
                         <td>{{ problem.count_0 }}</td>
-                        <td>{{ problem.rate_1 }}</td>
-                        <td>{{ problem.rate_2 }}</td>
-                        <td>{{ problem.rate_3 }}</td>
-                        <td>{{ problem.rate_4 }}</td>
-                        <td>{{ problem.rate_5 }}</td>
-                        <td>{{ problem.rate_0 }}</td>
+                        <td>{{ problem.rate_1|floatformat:1 }}</td>
+                        <td>{{ problem.rate_2|floatformat:1 }}</td>
+                        <td>{{ problem.rate_3|floatformat:1 }}</td>
+                        <td>{{ problem.rate_4|floatformat:1 }}</td>
+                        <td>{{ problem.rate_5|floatformat:1 }}</td>
+                        <td>{{ problem.rate_0|floatformat:1 }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
