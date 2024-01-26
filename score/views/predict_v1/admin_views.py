@@ -8,7 +8,7 @@ class TestView(
     admin_view_mixins.TestViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/predict_v1/predict_admin_test.html'
+    template_name = 'score/predict_admin_v1/predict_admin_test.html'
 
     def get_template_names(self):
         htmx_template = {
@@ -39,12 +39,100 @@ class TestView(
         }
 
 
+class ListView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.ListViewMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'score/predict_admin_v1/predict_admin_list.html'
+
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#list_main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            # base info
+            'info': self.info,
+            'title': 'Score',
+            'sub_title': self.sub_title,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+
+            # page objectives
+            'page_obj': self.page_obj,
+            'page_range': self.page_range,
+        }
+
+
+class DetailView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.DetailViewMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'score/predict_admin_v1/predict_admin_detail.html'
+
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#admin_main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            # base info
+            'info': self.info,
+            'category': self.category,
+            'year': self.year,
+            'ex': self.ex,
+            'round': self.round,
+            'title': 'Score',
+            'sub_title': self.sub_title,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+            'icon_search': self.ICON_SEARCH,
+
+            # score statistics
+            'statistics': self.statistics,
+
+            # answer analysis
+            'answer_count_analysis': self.answer_count_analysis,
+
+            # page objectives
+            'page_obj': self.page_obj,
+            'page_range': self.page_range,
+            'student_ids': self.student_ids,
+
+            # urls
+            'base_url': self.base_url,
+        }
+
+
 class IndexView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.IndexViewMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/predict_v1/predict_admin_index.html'
+    template_name = 'score/predict_admin_v1/predict_admin_index.html'
 
     def get_template_names(self):
         htmx_template = {
@@ -98,7 +186,7 @@ class CatalogView(
     admin_view_mixins.IndexViewMixin,
     vanilla.TemplateView
 ):
-    template_name = 'score/predict_v1/score_admin_detail.html#catalog'
+    template_name = 'score/predict_admin_v1/score_admin_detail.html#catalog'
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
@@ -137,7 +225,7 @@ class PrintView(
     IndexView,
     vanilla.TemplateView,
 ):
-    template_name = 'score/predict_v1/score_admin_print.html'
+    template_name = 'score/predict_admin_v1/score_admin_print.html'
     view_type = 'print'
 
     def post(self, request, *args, **kwargs):
@@ -149,12 +237,17 @@ class PrintView(
         return context
 
 
-# class IndividualStudentPrintView(
-#     admin_view_mixins.OnlyStaffAllowedMixin,
-#     normal_views.DetailView
-# ):
-#     template_name = 'score/predict_v1/score_individual_print.html'
-#     view_type = 'print'
+class UpdateAnswer(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.UpdateAnswerMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update_answer'
+
+    def get_context_data(self, **kwargs):
+        self.get_properties()
+
+        return {'message': self.update_answer()}
 
 
 class UpdateScore(
@@ -162,12 +255,14 @@ class UpdateScore(
     admin_view_mixins.UpdateScoreMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/predict_v1/snippets/predict_modal.html#update_score'
+    template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update_score'
 
     def get_context_data(self, **kwargs):
         self.get_properties()
 
-        return {'message': self.update_score()}
+        if self.answer_uploaded:
+            return {'message': self.update_score()}
+        return {'message': '답안이 공개되지 않았습니다.'}
 
 
 class ExportStatisticsToExcelView(
@@ -201,7 +296,12 @@ class ExportTranscriptToPdfView(
 
 
 index_view = IndexView.as_view()
+
+list_view = ListView.as_view()
+detail_view = DetailView.as_view()
 test_view = TestView.as_view()
+
+update_answer = UpdateAnswer.as_view()
 update_score = UpdateScore.as_view()
 
 catalog_view = CatalogView.as_view()

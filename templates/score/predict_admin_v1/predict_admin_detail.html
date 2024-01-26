@@ -1,0 +1,43 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load partials %}
+
+{% block head_title %}{{ sub_title }}{% endblock %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+
+{% block main %}
+{% partialdef admin_main inline=True %} {# admin_main partial #}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon_menu|safe }} {{ title }}
+        <span class="fs-6 text-secondary">{{ sub_title }}</span>
+    </h1>
+    {% with predict=True %}
+        {% include 'score/predict_v1/snippets/predict_navigation.html' %}
+    {% endwith %}
+</div><!-- Page Title End -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-12">
+            <div id="statistics" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {% include 'score/predict_admin_v1/snippets/detail_statistics.html' %}
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div id="answer_analysis" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {% include 'score/predict_admin_v1/snippets/detail_answer_analysis.html' %}
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div id="catalog" class="card htmx-fade-in htmx-fade-out"
+                 hx-target="#catalog" hx-swap="innerHTML swap:0.25s">
+                {% include 'score/predict_admin_v1/snippets/detail_catalog.html' %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endpartialdef list_main %}
+{% endblock main %}

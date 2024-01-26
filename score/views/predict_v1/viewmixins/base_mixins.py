@@ -28,9 +28,37 @@ class BaseMixin:
     predict_opened_at = datetime(2024, 1, 27, 9)
 
     base_dir = settings.BASE_DIR
-    filename = f'{base_dir}/score/views/predict_v1/viewmixins/data/answers.csv'
+    data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
+    filename = f'{data_dir}answers.csv'
     answer_uploaded = False
     min_participants = 100
+
+    exam_list = [
+        {
+            'category': 'Prime',
+            'year': 2024,
+            'ex': '프모',
+            'round': 1,
+            'date': datetime(2023, 12, 30),
+            'answer_file': f'{data_dir}answer_file_prime_2024-1.csv',
+        },
+        {
+            'category': 'Prime',
+            'year': 2024,
+            'ex': '프모',
+            'round': 3,
+            'date': datetime(2024, 1, 27),
+            'answer_file': f'{data_dir}answer_file_prime_2024-3.csv',
+        },
+        {
+            'category': 'PSAT',
+            'year': 2024,
+            'ex': '행시',
+            'round': 0,
+            'date': datetime(2024, 3, 2),
+            'answer_file': f'{data_dir}answer_file_psat_2024-행시.csv',
+        },
+    ]
 
     sub_dict = {
         '헌법': '헌법',
@@ -64,7 +92,6 @@ class BaseMixin:
     problem_count_dict: dict
     student_filter: dict
     student: any
-    answer_correct_dict: dict
     sub: str
     info: dict
 
@@ -75,8 +102,6 @@ class BaseMixin:
 
         self.student_filter = self.get_student_filter()
         self.student = self.get_student()
-
-        self.answer_correct_dict = self.get_answer_correct_dict()
 
         self.info = {
             'menu': 'score',
@@ -123,8 +148,14 @@ class BaseMixin:
         except self.student_model.DoesNotExist:
             pass
 
-    def get_answer_correct_dict(self) -> dict:
-        answer_correct = {}
+    def get_answer_filename(self):
+        filename = ''
+        for exam in self.exam_list:
+            if exam['category'] == self.category and exam['year'] == self.year and exam['ex'] == self.ex and exam['round'] == self.round:
+                filename = exam['answer_file']
+        return filename
+
+    def get_answer_correct_dict(self, filename=None) -> dict:
         # {
         #     '헌법': [
         #         {
@@ -136,22 +167,28 @@ class BaseMixin:
         #         ...
         #     ]
         # }
-        if self.answer_uploaded:
-            with open(self.filename, 'r', encoding='utf-8') as file:
+        if filename is None:
+            if self.answer_uploaded:
+                filename = self.filename
+
+        answer_correct = {}
+        if filename:
+            with open(filename, 'r', encoding='utf-8') as file:
                 csv_data = csv.reader(file)
                 keys = next(csv_data)
                 for key in keys[1:]:
                     answer_correct[key] = []
                 for row in csv_data:
                     for i in range(1, len(keys)):
-                        answer_correct[keys[i]].append(
-                            {
-                                'number': row[0],
-                                'ans_number': int(row[i]) if row[i] else None,
-                                'ans_number_list': [],
-                                'rate_correct': 0,
-                            }
-                        )
+                        if row[i]:
+                            answer_correct[keys[i]].append(
+                                {
+                                    'number': row[0],
+                                    'ans_number': int(row[i]),
+                                    'ans_number_list': [],
+                                    'rate_correct': 0,
+                                }
+                            )
         return answer_correct
 
     def get_answer_student_qs(self):
@@ -199,6 +236,14 @@ class BaseMixin:
 
 
 class AdminBaseMixin(BaseMixin):
+    def get_properties(self):
+        super().get_properties()
+
+        self.category = self.kwargs.get('category')
+        self.year = self.kwargs.get('year')
+        self.ex = self.kwargs.get('ex')
+        self.round = self.kwargs.get('round')
+
     def get_statistics_qs_list(self) -> list:
         filter_expr = {
             'student__category': self.category,

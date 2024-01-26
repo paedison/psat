@@ -149,17 +149,17 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         data_answer_predict: 예상 정답
         data_answer_student: 선택 답안
         """
-        data_answer_correct = self.answer_correct_dict.copy()
+        data_answer_correct = self.get_answer_correct_dict()
         data_answer_predict = {'헌법': [], '언어': [], '자료': [], '상황': []}
         data_answer_student = {'헌법': [], '언어': [], '자료': [], '상황': []}
         if self.ex == '칠급':
             data_answer_predict.pop('헌법')
             data_answer_student.pop('헌법')
 
-        for a in self.all_answer_count:
+        for problem in self.all_answer_count:
             # data_answer_correct
-            sub = a['sub']  # 과목
-            number = a['number']  # 문제 번호
+            sub = problem['sub']  # 과목
+            number = problem['number']  # 문제 번호
 
             if self.answer_uploaded:
                 prob = data_answer_correct[sub][number - 1]
@@ -167,10 +167,10 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
 
                 if ans_number_correct in range(1, 6):
                     ans_number_list = []
-                    rate_correct = a[f'rate_{ans_number_correct}']
+                    rate_correct = problem[f'rate_{ans_number_correct}']
                 else:
                     ans_number_list = [int(digit) for digit in str(ans_number_correct)]
-                    rate_correct = sum(a[f'rate_{ans}'] for ans in ans_number_list)
+                    rate_correct = sum(problem[f'rate_{ans}'] for ans in ans_number_list)
                 prob.update(
                     {
                         'ans_number_list': ans_number_list,
@@ -181,9 +181,9 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             # data_answer_predict
             answer_count_list = []  # list for counting answers
             for i in range(5):
-                answer_count_list.append(a[f'count_{i + 1}'])
+                answer_count_list.append(problem[f'count_{i + 1}'])
             ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
-            rate_accuracy = a[f'rate_{ans_number_predict}']  # 정확도
+            rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
             data_answer_predict[sub].append(
                 {
                     'number': number,
@@ -210,9 +210,9 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                         result = 'O' if ans_number_student in ans_number_list_correct else 'X'
 
                 rate_selection = 0
-                for a in self.all_answer_count:
-                    if sub == a['sub'] and number == a['number']:
-                        rate_selection = a[f'rate_{ans_number_student}']
+                for problem in self.all_answer_count:
+                    if sub == problem['sub'] and number == problem['number']:
+                        rate_selection = problem[f'rate_{ans_number_student}']
                 data_answer_student[sub].append(
                     {
                         'number': number,
@@ -267,6 +267,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
     def update_score_real_student(self):
         if self.answer_uploaded:
             score_dict = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
+            answer_correct_dict = self.get_answer_correct_dict()
             if self.ex == '칠급':
                 score_dict.pop('헌법')
 
@@ -277,7 +278,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                     answer_correct = None
                     answer_student = None
 
-                    answer_correct_sub = self.answer_correct_dict[sub]
+                    answer_correct_sub = answer_correct_dict[sub]
                     if answer_correct_sub:
                         answer_correct = answer_correct_sub[i]['ans_number']
 
@@ -330,30 +331,19 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
     def update_score_student(self, all_ranks):
         rank_total = all_ranks['전체']
         rank_department = all_ranks['직렬']
+        sub_list = ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat']
         score_student, _ = self.statistics_model.objects.get_or_create(student=self.student)  # score, rank, rank_ratio
-        score_student.rank_total_heonbeob = rank_total.rank_heonbeob
-        score_student.rank_total_eoneo = rank_total.rank_eoneo
-        score_student.rank_total_jaryo = rank_total.rank_jaryo
-        score_student.rank_total_sanghwang = rank_total.rank_sanghwang
-        score_student.rank_total_psat = rank_total.rank_psat
 
-        score_student.rank_ratio_total_heonbeob = rank_total.rank_ratio_heonbeob
-        score_student.rank_ratio_total_eoneo = rank_total.rank_ratio_eoneo
-        score_student.rank_ratio_total_jaryo = rank_total.rank_ratio_jaryo
-        score_student.rank_ratio_total_sanghwang = rank_total.rank_ratio_sanghwang
-        score_student.rank_ratio_total_psat = rank_total.rank_ratio_psat
+        for sub in sub_list:
+            rank_total_value = getattr(rank_total, f'rank_{sub}')
+            rank_ratio_total_value = getattr(rank_total, f'rank_ratio_{sub}')
+            rank_department_value = getattr(rank_department, f'rank_{sub}')
+            rank_ratio_department_value = getattr(rank_department, f'rank_ratio_{sub}')
 
-        score_student.rank_department_heonbeob = rank_department.rank_heonbeob
-        score_student.rank_department_eoneo = rank_department.rank_eoneo
-        score_student.rank_department_jaryo = rank_department.rank_jaryo
-        score_student.rank_department_sanghwang = rank_department.rank_sanghwang
-        score_student.rank_department_psat = rank_department.rank_psat
-
-        score_student.rank_ratio_department_heonbeob = rank_department.rank_ratio_heonbeob
-        score_student.rank_ratio_department_eoneo = rank_department.rank_ratio_eoneo
-        score_student.rank_ratio_department_jaryo = rank_department.rank_ratio_jaryo
-        score_student.rank_ratio_department_sanghwang = rank_department.rank_ratio_sanghwang
-        score_student.rank_ratio_department_psat = rank_department.rank_ratio_psat
+            setattr(score_student, f'rank_total_{sub}', rank_total_value)
+            setattr(score_student, f'rank_ratio_total_{sub}', rank_ratio_total_value)
+            setattr(score_student, f'rank_department_{sub}', rank_department_value)
+            setattr(score_student, f'rank_ratio_department_{sub}', rank_ratio_department_value)
 
         score_student.save()
         return score_student

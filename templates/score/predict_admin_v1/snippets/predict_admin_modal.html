@@ -1,0 +1,18 @@
+{% load slippers %}
+{% load partials %}
+
+{% partialdef update_score %} {# update_score partial #}
+    {% #modal header=header %}
+        <h5 class="modal-title mx-auto fw-bold">
+            {{ message }}
+        </h5>
+    {% /modal %}
+{% endpartialdef update_score %}
+
+{% partialdef update_answer %} {# update_score partial #}
+    {% #modal header=header %}
+        <h5 class="modal-title mx-auto fw-bold">
+            {{ message }}
+        </h5>
+    {% /modal %}
+{% endpartialdef update_score %}

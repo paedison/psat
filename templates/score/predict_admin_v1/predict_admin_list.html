@@ -1,0 +1,72 @@
+{% extends 'score/predict_v1/predict_base.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+{% load humanize %}
+
+{% block main %}
+{% partialdef list_main inline=True %} {# list_main partial #}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon_menu|safe }} {{ title }}
+        <span class="fs-6 text-secondary">성적 예측</span>
+        <a class="btn btn-sm btn-outline-primary ms-2"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
+           href="{% url 'predict:index' %}">
+            일반 페이지
+        </a>
+    </h1>
+    {% with predict=True %}
+        {% include 'score/predict_v1/snippets/predict_navigation.html' %}
+    {% endwith %}
+</div><!-- Page Title End -->
+
+<section class="section htmx-fade-in htmx-fade-out"
+         hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">시험 목록 | 관리자 페이지</div>
+
+                <div class="card-body">
+                    <article class="table-responsive">
+                        <table class="table table-bordered table-striped small align-middle">
+                            <thead>
+                                <tr class="text-center table-warning align-middle">
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">시험일</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">카테고리</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">연도</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">시험</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">회차</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if page_obj %}
+                                    {% for obj in page_obj %}
+                                        <tr class="text-center">
+                                            <td class="text-nowrap p-2">{{ obj.date|date:'n/d(D)' }}</td>
+                                            <td class="text-nowrap p-2">
+                                                {{ obj.category }}<br/>
+                                                <a class="btn btn-sm btn-primary" hx-boost="true"
+                                                   href="{% url 'predict_admin:detail' obj.category obj.year obj.ex obj.round %}">
+                                                    클릭
+                                                </a>
+                                            </td>
+                                            <td class="text-nowrap p-2">{{ obj.year }}</td>
+                                            <td class="text-nowrap p-2">{{ obj.ex }}</td>
+                                            <td class="text-nowrap p-2">{{ obj.round }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endpartialdef list_main %}
+{% endblock main %}

@@ -1,0 +1,115 @@
+{% load humanize %}
+
+<div class="card-header">
+    <div class="d-flex align-items-center">
+        <span>제{{ round }}회 | 성적 통계</span>
+        <div class="btn-group ms-auto">
+            <a class="btn btn-sm btn-outline-secondary" title="목록" hx-push-url="true"
+               href="{% url 'prime_admin:list' %}" hx-post="{% url 'predict_admin:list' %}">
+                목록
+            </a>
+            <a class="btn btn-sm btn-outline-secondary" title="정답 업데이트"
+               hx-confirm="정답 자료를 업데이트하시겠습니까?" href=""
+               hx-get="{% url 'predict_admin:update_answer' category year ex round %}"
+               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                정답 업데이트
+            </a>
+            <a class="btn btn-sm btn-outline-secondary" title="업데이트"
+               hx-confirm="성적 자료를 업데이트하시겠습니까?" href=""
+               hx-get="{% url 'predict_admin:update_score' category year ex round %}"
+               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                성적 업데이트
+            </a>
+{#            <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"#}
+{#               href="{% url 'prime_admin:print' year round %}" target="_blank">#}
+{#                인쇄하기#}
+{#            </a>#}
+{#            <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"#}
+{#               href="{% url 'prime_admin:export_statistics' year round %}">#}
+{#                Excel로 내보내기#}
+{#            </a>#}
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <article class="table-responsive">
+        <table class="table table-bordered table-striped small align-middle m-0">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">응시 인원</th>
+                    <th class="text-primary text-nowrap p-2" colspan="4">PSAT</th>
+                    <th class="text-primary text-nowrap p-2" colspan="4">헌법</th>
+                    <th class="text-primary text-nowrap p-2" colspan="4">언어논리</th>
+                    <th class="text-primary text-nowrap p-2" colspan="4">자료해석</th>
+                    <th class="text-primary text-nowrap p-2" colspan="4">상황판단</th>
+                </tr>
+
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
+                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
+
+                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
+                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
+
+                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
+                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
+
+                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
+                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
+
+                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
+                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if statistics %}
+                    {% for obj in statistics %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">{{ obj.department }}</td>
+                            <td class="text-nowrap p-2">{{ obj.num_students|intcomma }}</td>
+
+                            <td class="text-nowrap p-2">{{ obj.max_score_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_10_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_20_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.avg_score_psat_avg|floatformat:1 }}</td>
+
+                            <td class="text-nowrap p-2">{{ obj.max_score_heonbeob|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_10_heonbeob|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_20_heonbeob|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.avg_score_heonbeob|floatformat:1 }}</td>
+
+                            <td class="text-nowrap p-2">{{ obj.max_score_eoneo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_10_eoneo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_20_eoneo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.avg_score_eoneo|floatformat:1 }}</td>
+
+                            <td class="text-nowrap p-2">{{ obj.max_score_jaryo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_10_jaryo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_20_jaryo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.avg_score_jaryo|floatformat:1 }}</td>
+
+                            <td class="text-nowrap p-2">{{ obj.max_score_sanghwang|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_10_sanghwang|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.top_score_20_sanghwang|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.avg_score_sanghwang|floatformat:1 }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </article>
+</div>

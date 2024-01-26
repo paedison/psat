@@ -16,6 +16,7 @@ from django.urls import reverse_lazy
 from common.constants.icon_set import ConstantIconSet
 from score.models import PrimeAnswer
 from .base_mixins import AdminBaseMixin
+from ..utils import get_dict_by_sub
 
 
 class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -88,6 +89,111 @@ class TestViewMixin(ConstantIconSet, AdminBaseMixin):
         return answer_data
 
 
+class ListViewMixin(ConstantIconSet, AdminBaseMixin):
+    sub_title: str
+    page_obj: any
+    page_range: any
+
+    def get_properties(self):
+        super().get_properties()
+
+        self.sub_title = f'{self.exam_name} 관리자 페이지'
+        self.page_obj, self.page_range = self.get_paginator_info()
+
+    def get_paginator_info(self) -> tuple:
+        """ Get paginator, elided page range, and collect the evaluation info. """
+        page_number = self.request.GET.get('page', 1)
+        paginator = Paginator(self.exam_list, 10)
+        page_obj: list[dict] = paginator.get_page(page_number)
+        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+
+        for obj in page_obj:
+            # statistics = self.get_statistics(obj['year'], obj['round'])
+            # obj['statistics'] = statistics
+            obj['detail_url'] = reverse_lazy('predict_admin:detail_year_round', args=[obj['year'], obj['round']])
+        return page_obj, page_range
+
+
+class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
+    sub_title: str
+    statistics: list
+    answer_count_analysis: list
+    page_obj: any
+    page_range: any
+    student_ids: list
+    base_url: str
+
+    def get_properties(self):
+        super().get_properties()
+
+        self.sub_title = self.get_sub_title()
+
+        self.statistics = self.get_statistics()
+        self.answer_count_analysis = self.get_answer_count_analysis()
+
+        self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
+        self.base_url = reverse_lazy(
+            'predict_admin:catalog_year_round', args=[self.year, self.round])
+
+    def get_sub_title(self):
+        exam_name = self.get_exam_name()
+        if self.category == 'Prime':
+            return f'제{self.round}회 {exam_name} 성적 예측'
+        return f'{self.year}년 {exam_name} 성적 예측'
+
+    def get_answer_count_analysis(self):
+        answer_count = (
+            self.answer_count_model.objects
+            .filter(category=self.category, year=self.year, ex=self.ex, round=self.round)
+            .annotate(answer_correct=F('answer'))
+            .order_by('sub', 'number')
+            .values(
+                'sub', 'number', 'answer_correct',
+                'count_total', 'count_1', 'count_2','count_3', 'count_4', 'count_5', 'count_0',
+                'rate_1', 'rate_2','rate_3', 'rate_4', 'rate_5', 'rate_0')
+        )
+        filename = self.get_answer_filename()
+        answer_correct_dict = self.get_answer_correct_dict(filename)
+
+        for problem in answer_count:
+            sub = problem['sub']  # 과목
+            number = problem['number']  # 문제 번호
+            prob = answer_correct_dict[sub][number - 1]
+            ans_number_correct = prob['ans_number']
+
+            if ans_number_correct in range(1, 6):
+                rate_correct = problem[f'rate_{ans_number_correct}']
+            else:
+                answer_correct_list = [int(digit) for digit in str(ans_number_correct)]
+                try:
+                    rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
+                except TypeError:
+                    rate_correct = 0
+            problem['rate_correct'] = None
+        return get_dict_by_sub(answer_count)
+
+    def get_all_stat(self):
+        qs = (
+            self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
+            .order_by('rank_total_psat')
+        )
+        return qs
+
+    def get_paginator_info(self) -> tuple:
+        """ Get paginator, elided page range, and collect the evaluation info. """
+        page_number = self.request.GET.get('page', 1)
+        all_stat = self.get_all_stat()
+        paginator = Paginator(all_stat, 20)
+        page_obj = paginator.get_page(page_number)
+        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+
+        student_ids = []
+        for obj in page_obj:
+            student_ids.append(obj.student.id)
+
+        return page_obj, page_range, student_ids
+
+
 class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
     sub_title: str
     current_category: str
@@ -158,6 +264,39 @@ class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
         return page_obj, page_range, student_ids
 
 
+class UpdateAnswerMixin(ConstantIconSet, AdminBaseMixin):
+    def update_answer(self):
+        filename = self.get_answer_filename()
+        answer_correct_dict = self.get_answer_correct_dict(filename)
+        for sub, problems in answer_correct_dict.items():
+            for problem in problems:
+                number = problem['number']
+                answer = problem['ans_number']
+                with transaction.atomic():
+                    try:
+                        answer_count = self.answer_count_model.objects.get(
+                            category=self.category,
+                            year=self.year,
+                            ex=self.ex,
+                            round=self.round,
+                            sub=sub,
+                            number=number,
+                        )
+                    except self.answer_count_model.DoesNotExist:
+                        answer_count = self.answer_count_model.objects.create(
+                            category=self.category,
+                            year=self.year,
+                            ex=self.ex,
+                            round=self.round,
+                            sub=sub,
+                            number=number,
+                            count_total=0
+                        )
+                    answer_count.answer = answer
+                    answer_count.save()
+        return '정답 업데이트를 완료했습니다.'
+
+
 class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
     def update_score(self):
         update_list = []
@@ -175,7 +314,6 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
             round=self.round
         )
         for student in students:
-            print(student)
             score = self.get_score(student)
             try:
                 stat = self.statistics_model.objects.get(student=student)
@@ -227,21 +365,20 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
 
     def get_score_subject(self, student: any, sub: str):
         problem_count = self.problem_count_dict[sub]
-        answer_correct_sub = self.answer_correct_dict[sub]
+        filename = self.get_answer_filename()
+        answer_correct_dict = self.get_answer_correct_dict(filename)
+        answer_correct_sub = answer_correct_dict[sub]
         try:
             answer_student_sub = self.answer_model.objects.get(sub=sub, student=student)
 
             correct_count = 0
             for i in range(problem_count):
                 number = i + 1
-                answer_correct = answer_correct_sub[f'prob{number}']
+                ans_number = answer_correct_sub[i]['ans_number']
+                ans_number_list = answer_correct_sub[i]['ans_number_list']
                 answer_student = getattr(answer_student_sub, f'prob{number}')
-                if answer_correct <= 5 and answer_correct == answer_student:
+                if answer_student in ans_number_list or ans_number == answer_student:
                     correct_count += 1
-                if answer_correct > 5:
-                    answer_correct_list = [int(digit) for digit in str(answer_correct)]
-                    if answer_student in answer_correct_list:
-                        correct_count += 1
 
             score_subject = correct_count * 100 / problem_count
         except self.answer_model.DoesNotExist:
@@ -252,7 +389,7 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
 class ExportStatisticsToExcelMixin(IndexViewMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
-        statistics = self.get_statistics(self.year, self.round)
+        statistics = self.get_statistics()
 
         df = pd.DataFrame.from_records(statistics)
         excel_data = io.BytesIO()

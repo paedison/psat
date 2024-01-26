@@ -56,12 +56,21 @@
                                 </div>
                                 {% if user.is_staff %}
                                     {% partialdef predict_score inline=True %}
-                                        <div class="col-6 text-sm-start">
-                                            <a class="btn btn-outline-primary" hx-target="#main"
-                                               href="{% url 'predict:student_create' %}" hx-boost="true">
-                                                성적 예측하기
-                                            </a>
-                                        </div>
+                                        {% if student %}
+                                            <div class="col-6 text-sm-start">
+                                                <a class="btn btn-outline-primary" hx-target="#main"
+                                                   href="{% url 'predict:student_create' %}" hx-boost="true">
+                                                    성적 예측하기
+                                                </a>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-6 text-sm-start">
+                                                <a class="btn btn-outline-primary" hx-target="#main"
+                                                   href="{% url 'predict:index' %}" hx-boost="true">
+                                                    성적 예측하기
+                                                </a>
+                                            </div>
+                                        {% endif %}
                                     {% endpartialdef %}
                                 {% else %}
                                     {% if current_time > predict_opened_at %}
