@@ -148,7 +148,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
             .annotate(answer_correct=F('answer'))
             .order_by('sub', 'number')
             .values(
-                'sub', 'number', 'answer_correct',
+                'sub', 'number', 'answer',
                 'count_total', 'count_1', 'count_2','count_3', 'count_4', 'count_5', 'count_0',
                 'rate_1', 'rate_2','rate_3', 'rate_4', 'rate_5', 'rate_0')
         )
@@ -169,7 +169,21 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
                     rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
                 except TypeError:
                     rate_correct = 0
-            problem['rate_correct'] = rate_correct
+            problem['answer_correct'] = {
+                'ans_number': ans_number_correct,
+                'rate_correct': rate_correct,
+            }
+
+            answer_count_list = []  # list for counting answers
+            for i in range(5):
+                ans_number = i + 1
+                answer_count_list.append(problem[f'count_{ans_number}'])
+            ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
+            rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
+            problem['answer_predict'] = {
+                'ans_number': ans_number_predict,
+                'rate_accuracy': rate_accuracy,
+            }
         return get_dict_by_sub(answer_count)
 
     def get_all_stat(self):
