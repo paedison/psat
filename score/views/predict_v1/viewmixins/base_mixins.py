@@ -30,7 +30,7 @@ class BaseMixin:
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
     filename = f'{data_dir}answers.csv'
-    answer_uploaded = False
+    answer_uploaded = True
     min_participants = 100
 
     exam_list = [
