@@ -169,7 +169,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
                     rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
                 except TypeError:
                     rate_correct = 0
-            problem['rate_correct'] = None
+            problem['rate_correct'] = rate_correct
         return get_dict_by_sub(answer_count)
 
     def get_all_stat(self):

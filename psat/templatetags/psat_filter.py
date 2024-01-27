@@ -61,7 +61,9 @@ def round_number(content):
         '4': '④',
         '5': '⑤',
     }
-    if content in range(6):
+    if content is None or content == 0:
+        return ''
+    if content in range(1, 6):
         return number_dict[str(content)]
     else:
         number_list = [number_dict[digit] for digit in str(content)]
