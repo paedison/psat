@@ -39,7 +39,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         if self.answer_uploaded and self.student:
             self.update_score_real_student()
             self.all_score_stat = get_all_score_stat_dict(self.get_statistics_qs, self.student)
-            all_ranks = get_all_ranks_dict(self.get_statistics_qs, self.user_id)
+            all_ranks = get_all_ranks_dict(self.get_statistics_qs, self.student.user_id)
             self.score_student = self.update_score_student(all_ranks)
             self.update_info_answer_student()
         else:

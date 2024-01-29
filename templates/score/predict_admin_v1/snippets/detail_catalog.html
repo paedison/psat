@@ -26,7 +26,7 @@
 </div>
 
 <div class="card-body">
-    <article class="table-responsive">
+    <article class="table-responsive" hx-target="#main">
         <table class="table table-bordered table-striped small align-middle m-0">
             <thead>
                 <tr class="text-center table-warning align-middle">
@@ -122,51 +122,53 @@
         </table>
     </article>
 
-    {% #pagination_nav %}
-        {% if page_obj.has_previous %}
-            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+    <nav class="pt-3 me-auto ms-auto" aria-label="pagination" hx-target="#catalog">
+        <ul class="pagination pagination-sm justify-content-center m-0">
+            {% if page_obj.has_previous %}
+                {% with page_num=page_obj.number|add:-1 chevron='left' %}
 
-                {% partialdef pagination_link inline=True %} {# pagination_link partial #}
-                    <li class="page-item {{ status }}"
-                        {% if status == 'active' %}aria-current="page"{% endif %}>
-                        <a class="page-link" href=""
-                            {% if status == 'disabled' %}
-                                tabindex="-1" aria-disabled="true"
-                            {% else %}
-                                hx-get="{{ pagination_url }}&page={{ page_num }}"
-                            {% endif %}>
-                            {% if chevron %}
-                                <i class="fa-solid fa-chevron-{{ chevron }}"></i>
-                            {% else %}
-                                {{ anchor_text }}
-                            {% endif %}
-                        </a>
-                    </li>
-                {% endpartialdef pagination_link %}
+                    {% partialdef pagination_link inline=True %} {# pagination_link partial #}
+                        <li class="page-item {{ status }}"
+                            {% if status == 'active' %}aria-current="page"{% endif %}>
+                            <a class="page-link" href=""
+                                {% if status == 'disabled' %}
+                                    tabindex="-1" aria-disabled="true"
+                                {% else %}
+                                    hx-get="{{ pagination_url }}&page={{ page_num }}"
+                                {% endif %}>
+                                {% if chevron %}
+                                    <i class="fa-solid fa-chevron-{{ chevron }}"></i>
+                                {% else %}
+                                    {{ anchor_text }}
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endpartialdef pagination_link %}
 
-            {% endwith %}
-        {% endif %}
+                {% endwith %}
+            {% endif %}
 
-        {% for number in page_range %}
-            {% with page_num=number anchor_text=number %}
-                {% if number == page_obj.number %}
-                    {% with status='active' %}
+            {% for number in page_range %}
+                {% with page_num=number anchor_text=number %}
+                    {% if number == page_obj.number %}
+                        {% with status='active' %}
+                            {% partial pagination_link %}
+                        {% endwith %}
+                    {% elif number == page_obj.paginator.ELLIPSIS %}
+                        {% with status='disabled' %}
+                            {% partial pagination_link %}
+                        {% endwith %}
+                    {% else %}
                         {% partial pagination_link %}
-                    {% endwith %}
-                {% elif number == page_obj.paginator.ELLIPSIS %}
-                    {% with status='disabled' %}
-                        {% partial pagination_link %}
-                    {% endwith %}
-                {% else %}
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                {% with page_num=page_obj.number|add:1 chevron='right' %}
                     {% partial pagination_link %}
-                {% endif %}
-            {% endwith %}
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-            {% with page_num=page_obj.number|add:1 chevron='right' %}
-                {% partial pagination_link %}
-            {% endwith %}
-        {% endif %}
-    {% /pagination_nav %}
+                {% endwith %}
+            {% endif %}
+        </ul>
+    </nav><!-- Pagination End -->
 </div>
