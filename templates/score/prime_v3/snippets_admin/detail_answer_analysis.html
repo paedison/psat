@@ -78,7 +78,11 @@
                 {% for problem in answer_count %}
                     <tr class="text-center">
                         <td>{{ problem.number }}</td>
-                        <td>{{ problem.answer_correct|round_number }}</td>
+                        <td>
+                            <button class="btn btn-circle btn-sm fs-6 btn-success">
+                                {{ problem.answer_correct }}
+                            </button>
+                        </td>
                         <td>{{ problem.rate_correct|floatformat:1 }}</td>
 
                         <td class="td-right-no-border">{{ problem.count_1 }}</td>
