@@ -122,6 +122,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
     page_range: any
     student_ids: list
     base_url: str
+    pagination_url: str
 
     def get_properties(self):
         super().get_properties()
@@ -133,7 +134,8 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
 
         self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
         self.base_url = reverse_lazy(
-            'predict_admin:catalog_year_round', args=[self.year, self.round])
+            'predict_admin:catalog', args=[self.category, self.year, self.ex, self.round])
+        self.pagination_url = f'{self.base_url}?'
 
     def get_sub_title(self):
         exam_name = self.get_exam_name()

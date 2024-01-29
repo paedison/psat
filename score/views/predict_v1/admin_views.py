@@ -124,6 +124,7 @@ class DetailView(
 
             # urls
             'base_url': self.base_url,
+            'pagination_url': self.pagination_url,
         }
 
 
@@ -183,10 +184,10 @@ class IndexView(
 
 class CatalogView(
     admin_view_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.IndexViewMixin,
+    admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
-    template_name = 'score/predict_admin_v1/score_admin_detail.html#catalog'
+    template_name = 'score/predict_admin_v1/snippets/detail_catalog.html'
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
@@ -203,11 +204,6 @@ class CatalogView(
             'page_obj': self.page_obj,
             'page_range': self.page_range,
             'student_ids': self.student_ids,
-
-            # filtering and searching
-            'current_category': self.current_category,
-            'category_list': self.category_list,
-            'search_student_name': self.search_student_name,
 
             # urls
             'base_url': self.base_url,

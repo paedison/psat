@@ -9,13 +9,14 @@ urlpatterns = [
 
     path('detail/<str:category>/<int:year>/<str:ex>/<int:round>/', admin_views.detail_view, name='detail'),
     # path('detail/<int:year>/<int:round>/', admin_views.detail_view, name='detail_year_round'),
+    path('detail/<str:category>/<int:year>/<str:ex>/<int:round>/catalog/',
+         admin_views.catalog_view, name='catalog'),
 
     path('test/', admin_views.test_view, name='test'),
     path('update/answer/<str:category>/<int:year>/<str:ex>/<int:round>/',
          admin_views.update_answer, name='update_answer'),
     path('update/score/<str:category>/<int:year>/<str:ex>/<int:round>/',
          admin_views.update_score, name='update_score'),
-    path('search/<int:year>/<int:round>/', admin_views.catalog_view, name='catalog_year_round'),
 
     path('print/<int:year>/<int:round>/', admin_views.print_view, name='print'),
     # path('print/<int:year>/<int:round>/<int:student_id>',

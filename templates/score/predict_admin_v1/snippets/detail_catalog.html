@@ -105,12 +105,7 @@
                                 {% endif %}
                             </td>
                             <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
-                            <td class="text-nowrap p-2">
-                                <a href="{% url 'prime_admin:individual_student_print' year round obj.student.id %}"
-                                   target="score_print">
-                                    {{ obj.student.name }}
-                                </a>
-                            </td>
+                            <td class="text-nowrap p-2">{{ obj.student.name }}</td>
                             <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
                             <td class="text-nowrap p-2">{{ obj.student.department.name }}</td>
 
