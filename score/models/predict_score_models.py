@@ -82,6 +82,16 @@ class PredictAnswer(models.Model):
         verbose_name = "성적 예측 제출 답안"
         verbose_name_plural = "성적 예측 제출 답안"
 
+    def __str__(self):
+        if self.student.round:
+            return (f'[PredictAnswer#{self.id}]{self.student.category}'
+                    f'-{self.student.year}{self.student.ex}{self.student.round}{self.sub}'
+                    f'-dep{self.student.department_id}-user{self.student.user_id}')
+        else:
+            return (f'[PredictAnswer#{self.id}]{self.student.category}'
+                    f'-{self.student.year}{self.student.ex}{self.sub}'
+                    f'-dep{self.student.department_id}-user{self.student.user_id}')
+
 
 class PredictAnswerCount(AnswerCountBase):
     category = models.CharField(max_length=20)  # PSAT, prime
@@ -96,9 +106,27 @@ class PredictAnswerCount(AnswerCountBase):
         verbose_name = "성적 예측 답안 개수"
         verbose_name_plural = "성적 예측 답안 개수"
 
+    def __str__(self):
+        if self.round:
+            return (f'[PredictAnswerCount#{self.id}]{self.category}'
+                    f'-{self.year}{self.ex}{self.round}{self.sub}')
+        else:
+            return (f'[PredictStudent#{self.id}]{self.category}'
+                    f'-{self.year}{self.ex}{self.sub}')
+
 
 class PredictStatistics(StatisticsBase):
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='statistics')
+
+    def __str__(self):
+        if self.student.round:
+            return (f'[PredictStatistics#{self.id}]{self.student.category}'
+                    f'-{self.student.year}{self.student.ex}{self.student.round}'
+                    f'-dep{self.student.department_id}-user{self.student.user_id}')
+        else:
+            return (f'[PredictStatistics#{self.id}]{self.student.category}'
+                    f'-{self.student.year}{self.student.ex}'
+                    f'-dep{self.student.department_id}-user{self.student.user_id}')
 
 
 class PredictStatisticsVirtual(StatisticsBase):
