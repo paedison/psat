@@ -53,22 +53,25 @@
                     <th class="text-primary text-nowrap p-2" rowspan="2">문제<br/>번호</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">정답</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">전체<br/>정답률(%)</th>
-                    <th class="text-primary text-nowrap p-2" colspan="6">답안 선택수(명)</th>
-                    <th class="text-primary text-nowrap p-2" colspan="6">답안 선택률(%)</th>
+                    {% if sub == '헌법' %}
+                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)</th>
+                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)</th>
+                    {% else %}
+                        <th class="text-primary text-nowrap p-2" colspan="6">답안 선택수(명)</th>
+                        <th class="text-primary text-nowrap p-2" colspan="6">답안 선택률(%)</th>
+                    {% endif %}
                 </tr>
                 <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap p-2">①</th>
-                    <th class="text-primary text-nowrap p-2">②</th>
-                    <th class="text-primary text-nowrap p-2">③</th>
-                    <th class="text-primary text-nowrap p-2">④</th>
-                    <th class="text-primary text-nowrap p-2">⑤</th>
-                    <th class="text-primary text-nowrap p-2">무응답</th>
-                    <th class="text-primary text-nowrap p-2">①</th>
-                    <th class="text-primary text-nowrap p-2">②</th>
-                    <th class="text-primary text-nowrap p-2">③</th>
-                    <th class="text-primary text-nowrap p-2">④</th>
-                    <th class="text-primary text-nowrap p-2">⑤</th>
-                    <th class="text-primary text-nowrap p-2">무응답</th>
+                    {% for _ in '12' %}
+                        <th class="text-primary text-nowrap p-2 td-right-no-border">①</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">②</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">③</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">④</th>
+                        {% if sub != '헌법' %}
+                            <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">⑤</th>
+                        {% endif %}
+                        <th class="text-primary text-nowrap p-2 td-left-no-border">무응답</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
@@ -77,18 +80,24 @@
                         <td>{{ problem.number }}</td>
                         <td>{{ problem.answer_correct|round_number }}</td>
                         <td>{{ problem.rate_correct|floatformat:1 }}</td>
-                        <td>{{ problem.count_1 }}</td>
-                        <td>{{ problem.count_2 }}</td>
-                        <td>{{ problem.count_3 }}</td>
-                        <td>{{ problem.count_4 }}</td>
-                        <td>{{ problem.count_5 }}</td>
-                        <td>{{ problem.count_0 }}</td>
-                        <td>{{ problem.rate_1|floatformat:1 }}</td>
-                        <td>{{ problem.rate_2|floatformat:1 }}</td>
-                        <td>{{ problem.rate_3|floatformat:1 }}</td>
-                        <td>{{ problem.rate_4|floatformat:1 }}</td>
-                        <td>{{ problem.rate_5|floatformat:1 }}</td>
-                        <td>{{ problem.rate_0|floatformat:1 }}</td>
+
+                        <td class="td-right-no-border">{{ problem.count_1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.count_2 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.count_3 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.count_4 }}</td>
+                        {% if sub != '헌법' %}
+                            <td class="td-left-no-border td-right-no-border">{{ problem.count_5 }}</td>
+                        {% endif %}
+                        <td class="td-left-no-border">{{ problem.count_0 }}</td>
+
+                        <td class="td-right-no-border">{{ problem.rate_1|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.rate_2|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.rate_3|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.rate_4|floatformat:1 }}</td>
+                        {% if sub != '헌법' %}
+                            <td class="td-left-no-border td-right-no-border">{{ problem.rate_5|floatformat:1 }}</td>
+                        {% endif %}
+                        <td class="td-left-no-border">{{ problem.rate_0|floatformat:1 }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

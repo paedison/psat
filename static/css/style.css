@@ -309,6 +309,14 @@ div.td-div-xl {
     border: none;
 }
 
+.td-right-no-border {
+    border-right: none;
+}
+
+.td-left-no-border {
+    border-left: none;
+}
+
 .htmx-fade-up-in.htmx-added {
     opacity: 0;
     transform: translate3d(0, 50%, 0);

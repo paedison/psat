@@ -35,30 +35,12 @@
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
-                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
-
-                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
-                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
-
-                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
-                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
-
-                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
-                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
-
-                    <th class="text-primary text-nowrap p-2">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap p-2">상위<br/>20%</th>
-                    <th class="text-primary text-nowrap p-2">평균<br/>점수</th>
+                    {% for _ in '12345' %}
+                        <th class="text-primary text-nowrap p-2 td-right-no-border">최고<br/>점수</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>20%</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border">평균<br/>점수</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
@@ -68,30 +50,30 @@
                             <td class="text-nowrap p-2">{{ obj.department }}</td>
                             <td class="text-nowrap p-2">{{ obj.num_students|intcomma }}</td>
 
-                            <td class="text-nowrap p-2">{{ obj.max_score_psat_avg|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_10_psat_avg|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_20_psat_avg|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.avg_score_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_psat_avg|floatformat:1 }}</td>
 
-                            <td class="text-nowrap p-2">{{ obj.max_score_heonbeob|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_10_heonbeob|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_20_heonbeob|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.avg_score_heonbeob|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_heonbeob|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_heonbeob|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_heonbeob|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_heonbeob|floatformat:1 }}</td>
 
-                            <td class="text-nowrap p-2">{{ obj.max_score_eoneo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_10_eoneo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_20_eoneo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.avg_score_eoneo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_eoneo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_eoneo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_eoneo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_eoneo|floatformat:1 }}</td>
 
-                            <td class="text-nowrap p-2">{{ obj.max_score_jaryo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_10_jaryo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_20_jaryo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.avg_score_jaryo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_jaryo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_jaryo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_jaryo|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_jaryo|floatformat:1 }}</td>
 
-                            <td class="text-nowrap p-2">{{ obj.max_score_sanghwang|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_10_sanghwang|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.top_score_20_sanghwang|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2">{{ obj.avg_score_sanghwang|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_sanghwang|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_sanghwang|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_sanghwang|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_sanghwang|floatformat:1 }}</td>
                         </tr>
                     {% endfor %}
                 {% endif %}

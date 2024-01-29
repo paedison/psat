@@ -14,6 +14,13 @@
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
+        {% if user.is_staff %}
+            <a class="btn btn-sm btn-outline-primary ms-2"
+               hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
+               href="{% url 'prime_admin:detail' year round %}">
+                관리자 페이지
+            </a>
+        {% endif %}
     </h1>
 
     <nav>

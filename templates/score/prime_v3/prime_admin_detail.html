@@ -11,6 +11,11 @@
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
+        <a class="btn btn-sm btn-outline-primary ms-2"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
+           href="{% url 'prime:detail' year round %}">
+            일반 페이지
+        </a>
     </h1>
 
     <nav>
@@ -30,7 +35,7 @@
 <section class="section">
     <div class="row">
         <div class="col-12">
-            <div id="statistics" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            <div id="statistics" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
                 {% include 'score/prime_v3/snippets_admin/detail_statistics.html' %}
             </div>
         </div>

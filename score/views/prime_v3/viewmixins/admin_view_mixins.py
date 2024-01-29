@@ -46,7 +46,7 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
         for obj in page_obj:
             statistics = self.get_statistics(obj['year'], obj['round'])
             obj['statistics'] = statistics
-            obj['detail_url'] = reverse_lazy('prime_admin:detail_year_round', args=[obj['year'], obj['round']])
+            obj['detail_url'] = reverse_lazy('prime_admin:detail', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
 
