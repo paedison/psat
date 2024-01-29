@@ -4,6 +4,8 @@ from django.utils.translation import gettext_lazy as _
 from taggit_templatetags2 import settings
 from taggit_templatetags2.templatetags.taggit_templatetags2_tags import GetTagForObject
 
+from reference.models import UnitDepartment
+
 register = Library()
 
 
@@ -94,6 +96,11 @@ def get_status(problem, data: list[dict]):
 def get_range(content):
     last_number = content + 1 if isinstance(content, int) else int(content) + 1
     return range(1, last_number)
+
+
+@register.filter()
+def get_department(content):
+    return UnitDepartment.objects.get(id=content).name
 
 
 @register.tag

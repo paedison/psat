@@ -107,7 +107,7 @@
                             <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
                             <td class="text-nowrap p-2">{{ obj.student.name }}</td>
                             <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
-                            <td class="text-nowrap p-2">{{ obj.student.department.name }}</td>
+                            <td class="text-nowrap p-2">{{ obj.student.department_id|get_department }}</td>
 
                             <td class="text-nowrap p-2">{{ obj.score_psat|floatformat:1 }}</td>
                             <td class="text-nowrap p-2">{{ obj.score_psat_avg|floatformat:1 }}</td>
