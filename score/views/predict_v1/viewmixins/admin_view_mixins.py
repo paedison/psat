@@ -191,7 +191,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
     def get_all_stat(self):
         qs = (
             self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
-            .order_by('rank_total_psat')
+            .select_related('student').order_by('rank_total_psat')
         )
         return qs
 

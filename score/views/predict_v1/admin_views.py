@@ -1,5 +1,6 @@
 import vanilla
 
+from .normal_views import IndexView
 from .viewmixins import admin_view_mixins
 
 
@@ -128,60 +129,6 @@ class DetailView(
         }
 
 
-class IndexView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.IndexViewMixin,
-    vanilla.TemplateView,
-):
-    template_name = 'score/predict_admin_v1/predict_admin_index.html'
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#admin_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
-
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-
-        return {
-            # base info
-            'info': self.info,
-            'category': self.category,
-            'year': self.year,
-            'round': self.round,
-            'title': 'Score',
-            'sub_title': self.sub_title,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-            'icon_search': self.ICON_SEARCH,
-
-            # filtering and searching
-            'current_category': self.current_category,
-            'category_list': self.category_list,
-            'search_student_name': self.search_student_name,
-
-            # score statistics
-            'statistics': self.statistics,
-
-            # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-            'student_ids': self.student_ids,
-
-            # urls
-            'base_url': self.base_url,
-            'pagination_url': self.pagination_url,
-        }
-
-
 class CatalogView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.DetailViewMixin,
@@ -217,8 +164,26 @@ class CatalogView(
         }
 
 
+class IndividualIndexView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    IndexView
+):
+    def get_student(self):
+        try:
+            student_filter = self.get_student_filter()
+            student_filter['user_id'] = self.kwargs.get('user_id')
+
+            student = self.student_model.objects.get(**student_filter)
+            department = self.department_model.objects.select_related('unit').get(id=student.department_id)
+            student.department_name = department.name
+            student.unit_name = department.unit.name
+            return student
+        except self.student_model.DoesNotExist:
+            pass
+
+
 class PrintView(
-    IndexView,
+    DetailView,
     vanilla.TemplateView,
 ):
     template_name = 'score/predict_admin_v1/score_admin_print.html'
@@ -291,11 +256,11 @@ class ExportTranscriptToPdfView(
     view_type = 'export'
 
 
-index_view = IndexView.as_view()
-
 list_view = ListView.as_view()
 detail_view = DetailView.as_view()
 test_view = TestView.as_view()
+
+individual_index_view = IndividualIndexView.as_view()
 
 update_answer = UpdateAnswer.as_view()
 update_score = UpdateScore.as_view()

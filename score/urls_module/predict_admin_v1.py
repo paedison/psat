@@ -10,6 +10,9 @@ urlpatterns = [
     path('<str:category>/<int:year>/<str:ex>/<int:round>/', admin_views.detail_view, name='detail'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/catalog/', admin_views.catalog_view, name='catalog'),
 
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/user<int:user_id>/',
+         admin_views.individual_index_view, name='individual'),
+
     path('test/', admin_views.test_view, name='test'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/update/answer/',
          admin_views.update_answer, name='update_answer'),

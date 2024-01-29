@@ -76,7 +76,12 @@
                                 {% endif %}
                             </td>
                             <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
-                            <td class="text-nowrap p-2">{{ obj.student.name }}</td>
+                            <td class="text-nowrap p-2">
+                                <a href="{% url 'predict_admin:individual' category year ex round obj.student.user_id %}"
+                                   hx-boost="true" hx-push-url="true">
+                                    {{ obj.student.name }}
+                                </a>
+                            </td>
                             <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
                             <td class="text-nowrap p-2">{{ obj.student.department_id|get_department }}</td>
 
