@@ -101,6 +101,7 @@ class ConstantIconSet:
         '자료': '<i class="fa-solid fa-table-cells-large fa-fw"></i>',
         '상황': '<i class="fa-solid fa-scale-balanced fa-fw"></i>',
         '헌법': '<i class="fa-solid fa-gavel"></i>',
+        '피셋': '',
     }
 
     ICON_SEARCH = '<i class="fa-solid fa-magnifying-glass fa-fw"></i>'

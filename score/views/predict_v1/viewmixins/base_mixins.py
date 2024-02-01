@@ -25,7 +25,7 @@ class BaseMixin:
     year = '2024'
     ex = '프모'
     round = 3
-    predict_opened_at = datetime(2024, 1, 27, 9)
+    predict_opened_at = datetime(2024, 2, 3, 9)
 
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
@@ -60,21 +60,19 @@ class BaseMixin:
         },
     ]
 
-    sub_dict = {
-        '헌법': '헌법',
-        '언어': '언어논리',
-        '자료': '자료해석',
-        '상황': '상황판단',
-        'psat': 'PSAT',
-        'psat_avg': 'PSAT 평균'
-    }
     sub_eng_dict = {
         '헌법': 'heonbeob',
         '언어': 'eoneo',
         '자료': 'jaryo',
         '상황': 'sanghwang',
-        'psat': 'psat',
-        'psat_avg': 'psat_avg'
+        '피셋': 'psat',
+    }
+    subject_dict = {
+        '헌법': '헌법',
+        '언어': '언어논리',
+        '자료': '자료해석',
+        '상황': '상황판단',
+        '피셋':  'PSAT 평균',
     }
     sub_field = {
         '헌법': 'score_heonbeob',
@@ -87,11 +85,15 @@ class BaseMixin:
 
     request: any
     kwargs: dict
+
     user_id: int | None
     exam_name: str | None
     problem_count_dict: dict
+    answer_correct_dict: dict
+
     student_filter: dict
     student: any
+
     sub: str
     info: dict
 
@@ -99,6 +101,7 @@ class BaseMixin:
         self.user_id: int | None = self.request.user.id if self.request.user.is_authenticated else None
         self.exam_name = self.get_exam_name()
         self.problem_count_dict = self.get_problem_count_dict()
+        self.answer_correct_dict = self.get_answer_correct_dict()
 
         self.student_filter = self.get_student_filter()
         self.student = self.get_student()
@@ -175,13 +178,14 @@ class BaseMixin:
         if filename:
             with open(filename, 'r', encoding='utf-8') as file:
                 csv_data = csv.reader(file)
-                keys = next(csv_data)
-                for key in keys[1:]:
-                    answer_correct[key] = []
+                sub_keys = next(csv_data)  # 헌법, 언어, 자료, 상황
+                for sub in sub_keys[1:]:
+                    answer_correct[sub] = []
                 for row in csv_data:
-                    for i in range(1, len(keys)):
+                    for i in range(1, len(sub_keys)):
                         if row[i]:
-                            answer_correct[keys[i]].append(
+                            sub = sub_keys[i]  # 헌법, 언어, 자료, 상황
+                            answer_correct[sub].append(
                                 {
                                     'number': row[0],
                                     'ans_number': int(row[i]),
