@@ -118,9 +118,10 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
         def get_score_counts(field: str):
             rounded_field = f'round_{field}'
             score_counts_list = (
-                self.statistics_model.objects.values(
-                    **{rounded_field: Round(F(field), 1)}
-                ).annotate(count=Count('id')).order_by(field)
+                self.statistics_model.objects
+                .filter(student__year=self.year, student__round=self.round)
+                .values(**{rounded_field: Round(F(field), 1)})
+                .annotate(count=Count('id')).order_by(field)
             )
             score_counts = {entry[rounded_field]: entry['count'] for entry in score_counts_list}
             return score_counts

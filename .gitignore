@@ -16,6 +16,7 @@ git_update.sh
 /score/views/predict_v1/viewmixins/data/*.json
 /score/views/predict_v1/viewmixins/data/*.bak
 /score/management/commands/temporary.csv
+/temporary.csv
 
 ### Django ###
 *.log
