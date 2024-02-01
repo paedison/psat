@@ -171,12 +171,17 @@ class DetailViewMixin(ConstantIconSet, BaseMixin):
                     answer_correct = answer['answer_correct']
                     answer_correct_list = []
                     answer_student = student_answers[f'prob{number}']
+
                     if answer_correct in range(1, 6):
                         result = 'O' if answer_student == answer_correct else 'X'
                     else:
                         answer_correct_list = [int(digit) for digit in str(answer_correct)]
                         result = 'O' if answer_student in answer_correct_list else 'X'
-                    rate_selection = answer[f'rate_{answer_student}']
+
+                    if answer_student in range(1, 6):
+                        rate_selection = answer[f'rate_{answer_student}']
+                    else:
+                        rate_selection = answer[f'rate_0']
 
                     answer_copy = {
                         'number': answer['number'],
