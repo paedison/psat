@@ -259,7 +259,8 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                     answer_correct_list = [int(digit) for digit in str(answer_correct)]
                     if answer_student in answer_correct_list:
                         correct_count += 1
-            score_dict[sub] = correct_count * 100 / len(data)
+            if data:
+                score_dict[sub] = correct_count * 100 / len(data)
 
         score_dict['psat'] = sum([score_dict['언어'], score_dict['자료'], score_dict['상황']])
         score_dict['psat_avg'] = score_dict['psat'] / 3

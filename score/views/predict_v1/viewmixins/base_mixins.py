@@ -24,13 +24,13 @@ class BaseMixin:
     category = 'Prime'
     year = '2024'
     ex = '프모'
-    round = 3
+    round = 4
     predict_opened_at = datetime(2024, 2, 3, 9)
 
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
     filename = f'{data_dir}answers.csv'
-    answer_uploaded = True
+    answer_uploaded = False
     min_participants = 100
 
     exam_list = [
@@ -48,6 +48,14 @@ class BaseMixin:
             'ex': '프모',
             'round': 3,
             'date': datetime(2024, 1, 27),
+            'answer_file': f'{data_dir}answer_file_prime_2024-3.csv',
+        },
+        {
+            'category': 'Prime',
+            'year': 2024,
+            'ex': '프모',
+            'round': 4,
+            'date': datetime(2024, 2, 3),
             'answer_file': f'{data_dir}answer_file_prime_2024-3.csv',
         },
         {
