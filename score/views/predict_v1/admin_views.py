@@ -144,7 +144,9 @@ class CatalogView(
 
         return {
             # base info
+            'category': self.category,
             'year': self.year,
+            'ex': self.ex,
             'round': self.round,
 
             # page objectives
@@ -168,6 +170,16 @@ class IndividualIndexView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     IndexView
 ):
+
+    def get_properties(self):
+        self.answer_uploaded = True
+        self.category = self.kwargs.get('category')
+        self.year = self.kwargs.get('year')
+        self.ex = self.kwargs.get('ex')
+        self.round = self.kwargs.get('round')
+
+        super().get_properties()
+
     def get_student(self):
         try:
             student_filter = self.get_student_filter()
