@@ -60,19 +60,19 @@ class IndexView(
             'icon_subject': self.ICON_SUBJECT,
             'icon_nav': self.ICON_NAV,
 
-            # index_info_student
+            # index_info_student: 수험 정보
             'student': self.student,
             'departments': self.departments,
 
-            # index_info_answer
+            # index_info_answer: 답안 제출 현황
             'info_answer_student': self.info_answer_student,
 
-            # index_sheet_answer
+            # index_sheet_answer: 답안 확인
             'data_answer_correct': self.data_answer['answer_correct'],
             'data_answer_predict': self.data_answer['answer_predict'],
             'data_answer_student': self.data_answer['answer_student'],
 
-            # index_sheet_score
+            # index_sheet_score: 성적 예측
             'score_student': self.score_student,
             'all_score_stat': self.all_score_stat,
         }

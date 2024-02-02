@@ -8,10 +8,10 @@
     <div class="d-flex align-items-center">
         <span>제{{ round }}회 | 문항 분석표</span>
         <div class="btn-group ms-auto">
-{#            <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"#}
-{#               href="{% url 'prime_admin:export_analysis' year round %}">#}
-{#                Excel로 내보내기#}
-{#            </a>#}
+            <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
+               href="{% url 'predict_admin:export_analysis' category year ex round %}">
+                Excel로 내보내기
+            </a>
         </div>
     </div>
 </div>
@@ -83,22 +83,22 @@
                         <td>{{ problem.number }}</td>
                         <td>
                             <button class="btn btn-circle btn-sm fs-6 btn-success">
-                                {{ problem.answer_correct.ans_number }}
+                                {{ problem.answer_correct }}
                             </button>
                         </td>
-                        <td>{{ problem.answer_correct.rate_correct|floatformat:1 }}</td>
+                        <td>{{ problem.rate_correct|floatformat:1 }}</td>
                         <td>
-                            {% if problem.answer_predict.ans_number == problem.answer_correct.ans_number %}
+                            {% if problem.answer_predict == problem.answer_correct %}
                                 <button class="btn btn-circle btn-sm fs-6 btn-success">
-                                    {{ problem.answer_predict.ans_number }}
+                                    {{ problem.answer_predict }}
                                 </button>
                             {% else %}
                                 <button class="btn btn-circle btn-sm fs-6 btn-danger">
-                                    {{ problem.answer_predict.ans_number }}
+                                    {{ problem.answer_predict }}
                                 </button>
                             {% endif %}
                         </td>
-                        <td>{{ problem.answer_predict.rate_accuracy|floatformat:1 }}</td>
+                        <td>{{ problem.rate_accuracy|floatformat:1 }}</td>
 
                         <td class="td-right-no-border">{{ problem.count_1 }}</td>
                         <td class="td-left-no-border td-right-no-border">{{ problem.count_2 }}</td>

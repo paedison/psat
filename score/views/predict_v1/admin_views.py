@@ -205,6 +205,12 @@ class PrintView(
         return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
+        self.answer_uploaded = True
+        self.category = self.kwargs.get('category')
+        self.year = self.kwargs.get('year')
+        self.ex = self.kwargs.get('ex')
+        self.round = self.kwargs.get('round')
+
         context = super().get_context_data(**kwargs)
         context['all_stat'] = self.get_all_stat()
         return context
@@ -218,6 +224,12 @@ class UpdateAnswer(
     template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update_answer'
 
     def get_context_data(self, **kwargs):
+        self.answer_uploaded = True
+        self.category = self.kwargs.get('category')
+        self.year = self.kwargs.get('year')
+        self.ex = self.kwargs.get('ex')
+        self.round = self.kwargs.get('round')
+
         self.get_properties()
 
         return {'message': self.update_answer()}
@@ -231,6 +243,12 @@ class UpdateScore(
     template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update_score'
 
     def get_context_data(self, **kwargs):
+        self.answer_uploaded = True
+        self.category = self.kwargs.get('category')
+        self.year = self.kwargs.get('year')
+        self.ex = self.kwargs.get('ex')
+        self.round = self.kwargs.get('round')
+
         self.get_properties()
 
         if self.answer_uploaded:
@@ -241,6 +259,17 @@ class UpdateScore(
 class ExportStatisticsToExcelView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ExportStatisticsToExcelMixin,
+    vanilla.View,
+):
+    view_type = 'export'
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class ExportAnalysisToExcelView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.ExportAnalysisToExcelMixin,
     vanilla.View,
 ):
     view_type = 'export'
@@ -283,5 +312,6 @@ print_view = PrintView.as_view()
 # individual_student_print_view = IndividualStudentPrintView.as_view()
 
 export_statistics_to_excel_view = ExportStatisticsToExcelView.as_view()
+export_analysis_to_excel_view = ExportAnalysisToExcelView.as_view()
 export_scores_to_excel_view = ExportScoresToExcelView.as_view()
 export_transcript_to_pdf_view = ExportTranscriptToPdfView.as_view()

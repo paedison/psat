@@ -16,7 +16,7 @@ urlpatterns = [
     path('test/', admin_views.test_view, name='test'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/update/answer/',
          admin_views.update_answer, name='update_answer'),
-    path('<str:category>/<int:year>/<str:ex>/<int:round>/update/answer/',
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/update/score/',
          admin_views.update_score, name='update_score'),
 
     path('<str:category>/<int:year>/<str:ex>/<int:round>/print/', admin_views.print_view, name='print'),
@@ -27,6 +27,8 @@ urlpatterns = [
          admin_views.export_transcript_to_pdf_view, name='export_transcript'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/statistics/',
          admin_views.export_statistics_to_excel_view, name='export_statistics'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/export/analysis/',
+         admin_views.export_analysis_to_excel_view, name='export_analysis'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/students_score/',
          admin_views.export_scores_to_excel_view, name='export_scores'),
 ]

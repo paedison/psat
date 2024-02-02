@@ -6,22 +6,22 @@
 <div class="card-header">
     <div class="d-flex align-items-center">
         제{{ round }}회 | 성적 일람표
-{#        <form method="POST" action="{% url 'prime_admin:export_transcript' year round %}"#}
-{#              class="ms-auto">#}
-{#            {% csrf_token %}#}
-{#            <div class="btn-group">#}
-{#                <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"#}
-{#                   href="{% url 'prime_admin:export_scores' year round %}">#}
-{#                    Excel로 내보내기#}
-{#                </a>#}
+        <form method="POST" action="{% url 'prime_admin:export_transcript' year round %}"
+              class="ms-auto">
+            {% csrf_token %}
+            <div class="btn-group">
+                <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
+                   href="{% url 'predict_admin:export_scores' category year ex round %}">
+                    Excel로 내보내기
+                </a>
 {#                <input name="student_ids" type="text" aria-label="Student IDs" hidden#}
 {#                       value="{% for id in student_ids %}{{ id }}{% if not forloop.last %},{% endif %}{% endfor %}"/>#}
 {#                <button class="btn btn-sm btn-outline-secondary"#}
 {#                        title="PDF로 내보내기" type="submit">#}
 {#                    PDF로 내보내기#}
 {#                </button>#}
-{#            </div>#}
-{#        </form>#}
+            </div>
+        </form>
     </div>
 </div>
 

@@ -147,10 +147,9 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
         answer_count = (
             self.answer_count_model.objects
             .filter(category=self.category, year=self.year, ex=self.ex, round=self.round)
-            .annotate(answer_correct=F('answer'))
             .order_by('sub', 'number')
             .values(
-                'sub', 'number', 'answer',
+                'sub', 'number',
                 'count_total', 'count_1', 'count_2','count_3', 'count_4', 'count_5', 'count_0',
                 'rate_1', 'rate_2','rate_3', 'rate_4', 'rate_5', 'rate_0')
         )
@@ -160,8 +159,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
         for problem in answer_count:
             sub = problem['sub']  # 과목
             number = problem['number']  # 문제 번호
-            prob = answer_correct_dict[sub][number - 1]
-            ans_number_correct = prob['ans_number']
+            ans_number_correct = answer_correct_dict[sub][number - 1]['ans_number']
 
             if ans_number_correct in range(1, 6):
                 rate_correct = problem[f'rate_{ans_number_correct}']
@@ -171,10 +169,8 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
                     rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
                 except TypeError:
                     rate_correct = 0
-            problem['answer_correct'] = {
-                'ans_number': ans_number_correct,
-                'rate_correct': rate_correct,
-            }
+            problem['answer_correct'] = ans_number_correct
+            problem['rate_correct'] = rate_correct
 
             answer_count_list = []  # list for counting answers
             for i in range(5):
@@ -182,10 +178,9 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
                 answer_count_list.append(problem[f'count_{ans_number}'])
             ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
             rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
-            problem['answer_predict'] = {
-                'ans_number': ans_number_predict,
-                'rate_accuracy': rate_accuracy,
-            }
+            problem['answer_predict'] = ans_number_predict
+            problem['rate_accuracy'] = rate_accuracy
+
         return get_dict_by_sub(answer_count)
 
     def get_all_stat(self):
@@ -411,7 +406,59 @@ class ExportStatisticsToExcelMixin(IndexViewMixin):
         excel_data = io.BytesIO()
         df.to_excel(excel_data, index=False, engine='xlsxwriter')
 
-        filename = f'제{self.round}회_전국모의고사_성적통계.xlsx'
+        if self.category == 'PSAT':
+            filename = f'{self.year}{self.ex}_성적통계(예측).xlsx'
+        else:
+            filename = f'{self.year}{self.ex}-{self.round}회_성적통계(예측).xlsx'
+        filename = quote(filename)
+
+        response = HttpResponse(
+            excel_data.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        return response
+
+
+class ExportAnalysisToExcelMixin(DetailViewMixin):
+    def get(self, request, *args, **kwargs):
+        self.get_properties()
+
+        def get_df(df_target):
+            print(df_target)
+            df = pd.DataFrame.from_records(df_target)
+            df = df.drop('sub', axis=1)
+            number = df.pop('number')
+            answer_correct = df.pop('answer_correct')
+            rate_correct = df.pop('rate_correct')
+            answer_predict = df.pop('answer_predict')
+            rate_accuracy = df.pop('rate_accuracy')
+
+            df.insert(0, 'number', number)
+            df.insert(1, 'answer_correct', answer_correct)
+            df.insert(2, 'rate_correct', rate_correct)
+            df.insert(3, 'answer_predict', answer_predict)
+            df.insert(4, 'rate_accuracy', rate_accuracy)
+
+            return df
+
+        df_heonbeob = get_df(self.answer_count_analysis['헌법'])
+        df_eoneo = get_df(self.answer_count_analysis['언어'])
+        df_jaryo = get_df(self.answer_count_analysis['자료'])
+        df_sanghwang = get_df(self.answer_count_analysis['상황'])
+
+        excel_data = io.BytesIO()
+        with pd.ExcelWriter(excel_data, engine='xlsxwriter') as writer:
+            df_heonbeob.to_excel(writer, sheet_name='헌법', index=False)
+            df_eoneo.to_excel(writer, sheet_name='언어', index=False)
+            df_jaryo.to_excel(writer, sheet_name='자료', index=False)
+            df_sanghwang.to_excel(writer, sheet_name='상황', index=False)
+
+        if self.category == 'PSAT':
+            filename = f'{self.year}{self.ex}_문항분석표(예측).xlsx'
+        else:
+            filename = f'{self.year}{self.ex}-{self.round}회_문항분석표(예측).xlsx'
         filename = quote(filename)
 
         response = HttpResponse(
@@ -427,10 +474,22 @@ class ExportScoresToExcelMixin(IndexViewMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
 
+        department_list = self.department_model.objects.values('id', 'name')
+        department_dict = {}
+        for department in department_list:
+            department_id = department['id']
+            department_name = department['name']
+            department_dict[f'id_{department_id}'] = department_name
+
         queryset = (
-            self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
+            self.statistics_model.objects.filter(
+                student__category=self.category,
+                student__year=self.year,
+                student__ex=self.ex,
+                student__round=self.round
+            )
             .annotate(
-                이름=F('student__name'), 수험번호=F('student__serial'), 직렬=F('student__department__name'),
+                이름=F('student__name'), 수험번호=F('student__serial'), department_id=F('student__department_id'),
 
                 헌법_점수=F('score_heonbeob'), 언어_점수=F('score_eoneo'),
                 자료_점수=F('score_jaryo'), 상황_점수=F('score_sanghwang'),
@@ -453,7 +512,7 @@ class ExportScoresToExcelMixin(IndexViewMixin):
                 PSAT_직렬_석차_백분율=F('rank_ratio_total_psat'),
             )
             .values(
-                '이름', '수험번호', '직렬',
+                '이름', '수험번호', 'department_id',
                 '헌법_점수', '헌법_전체_석차', '헌법_전체_석차_백분율', '헌법_직렬_석차', '헌법_직렬_석차_백분율',
                 '언어_점수', '언어_전체_석차', '언어_전체_석차_백분율', '언어_직렬_석차', '언어_직렬_석차_백분율',
                 '자료_점수', '자료_전체_석차', '자료_전체_석차_백분율', '자료_직렬_석차', '자료_직렬_석차_백분율',
@@ -461,6 +520,11 @@ class ExportScoresToExcelMixin(IndexViewMixin):
                 'PSAT_총점', 'PSAT_평균', 'PSAT_전체_석차', 'PSAT_전체_석차_백분율', 'PSAT_직렬_석차', 'PSAT_직렬_석차_백분율',
             )
         )
+
+        for query in queryset:
+            department_id = query.pop('department_id')
+            query['직렬'] = department_dict[f'id_{department_id}']
+
         df = pd.DataFrame.from_records(queryset)
 
         excel_data = io.BytesIO()
