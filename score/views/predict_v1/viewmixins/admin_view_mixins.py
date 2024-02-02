@@ -530,7 +530,10 @@ class ExportScoresToExcelMixin(IndexViewMixin):
         excel_data = io.BytesIO()
         df.to_excel(excel_data, index=False, engine='xlsxwriter')
 
-        filename = f'제{self.round}회_전국모의고사_성적일람표.xlsx'
+        if self.category == 'PSAT':
+            filename = f'{self.year}{self.ex}_성적일람표(예측).xlsx'
+        else:
+            filename = f'{self.year}{self.ex}-{self.round}회_성적일람표(예측).xlsx'
         filename = quote(filename)
 
         response = HttpResponse(
