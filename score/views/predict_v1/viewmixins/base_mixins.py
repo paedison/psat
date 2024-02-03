@@ -183,8 +183,8 @@ class BaseMixin:
         #     ]
         # }
         if filename is None:
-            if self.answer_uploaded:
-                filename = self.filename
+            # if self.answer_uploaded:
+            filename = self.filename
 
         answer_correct = {}
         if filename:
