@@ -233,7 +233,11 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                     else:
                         if ans_number_student not in ans_number_list_correct:
                             result = 'X'
-                rate_selection = self.all_answer_count[sub][i][f'rate_{ans_number_student}']
+
+                problem_set = self.all_answer_count[sub]
+                rate_selection = 0
+                if problem_set:
+                    rate_selection = problem_set[i][f'rate_{ans_number_student}']
                 data_answer_student[sub].append(
                     {
                         'number': number,
