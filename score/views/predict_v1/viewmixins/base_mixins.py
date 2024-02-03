@@ -2,6 +2,7 @@ import csv
 from datetime import datetime
 
 from django.conf import settings
+from django.db.models import F
 
 from reference import models as reference_models
 from score import forms as score_forms
@@ -30,7 +31,7 @@ class BaseMixin:
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
     filename = f'{data_dir}answers.csv'
-    answer_uploaded = False
+    answer_uploaded = True
     min_participants = 100
 
     exam_list = [
@@ -72,6 +73,14 @@ class BaseMixin:
         },
     ]
 
+    exam_name_dict = {
+        '행시': '5급공채',
+        '입시': '입법고시',
+        '칠급': '7급공채',
+        '민경': '민간경력',
+        '프모': '프라임 모의고사',
+    }
+
     sub_eng_dict = {
         '헌법': 'heonbeob',
         '언어': 'eoneo',
@@ -104,6 +113,7 @@ class BaseMixin:
     answer_correct_dict: dict
 
     student_filter: dict
+    department_list: dict
     student: any
 
     sub: str
@@ -111,27 +121,18 @@ class BaseMixin:
 
     def get_properties(self):
         self.user_id: int | None = self.request.user.id if self.request.user.is_authenticated else None
-        self.exam_name = self.get_exam_name()
+        self.exam_name = self.exam_name_dict[self.ex]
         self.problem_count_dict = self.get_problem_count_dict()
         self.answer_correct_dict = self.get_answer_correct_dict()
 
         self.student_filter = self.get_student_filter()
+        self.department_list = self.get_department_list()
         self.student = self.get_student()
 
         self.info = {
             'menu': 'score',
             'view_type': 'primeScore',
         }
-
-    def get_exam_name(self):
-        exam_name_dict = {
-            '행시': '5급공채',
-            '입시': '입법고시',
-            '칠급': '7급공채',
-            '민경': '민간경력',
-            '프모': '프라임 모의고사',
-        }
-        return exam_name_dict[self.ex]
 
     def get_problem_count_dict(self) -> dict:
         count_problem_dict = {
@@ -153,12 +154,26 @@ class BaseMixin:
             'round': self.round,
         }
 
+    def get_department_list(self):
+        return self.department_model.objects.select_related('unit').values(
+            'id',
+            'name',
+            unit_name=F('unit__name'),
+            ex=F('unit__exam__abbr'),
+            exam=F('unit__exam__name'),
+        )
+
     def get_student(self):
         try:
             student = self.student_model.objects.get(**self.student_filter)
-            department = self.department_model.objects.select_related('unit').get(id=student.department_id)
-            student.department_name = department.name
-            student.unit_name = department.unit.name
+            department_name = ''
+            unit_name = ''
+            for d in self.department_list:
+                if d['id'] == student.department_id:
+                    department_name = d['name']
+                    unit_name = d['unit_name']
+            student.department_name = department_name
+            student.unit_name = unit_name
             return student
         except self.student_model.DoesNotExist:
             pass
@@ -252,6 +267,8 @@ class BaseMixin:
 
 
 class AdminBaseMixin(BaseMixin):
+    student_list: list
+
     def get_properties(self):
         super().get_properties()
 
@@ -259,6 +276,22 @@ class AdminBaseMixin(BaseMixin):
         self.year = self.kwargs.get('year')
         self.ex = self.kwargs.get('ex')
         self.round = self.kwargs.get('round')
+        self.student_list = self.get_student_list()
+
+    def get_student_list(self):
+        student_list = self.student_model.objects.values(
+            'user_id', 'category', 'year', 'ex', 'round', 'serial', 'name', 'department_id')
+        for student in student_list:
+            department_name = ''
+            unit_name = ''
+            for d in self.department_list:
+                if d['id'] == student['department_id']:
+                    department_name = d['name']
+                    unit_name = d['unit_name']
+            student['department_name'] = department_name
+            student['unit_name'] = unit_name
+            student['exam'] = self.exam_name_dict[student['ex']]
+        return student_list
 
     def get_statistics_qs_list(self) -> list:
         filter_expr = {

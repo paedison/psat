@@ -42,11 +42,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if page_obj %}
-                                    {% for obj in page_obj %}
+                                {% if exam_page_obj %}
+                                    {% for obj in exam_page_obj %}
                                         <tr class="text-center">
                                             <td class="text-nowrap p-2">
-                                                {{ obj.date|date:'n/d(D)' }}
+                                                {{ obj.date|date:'Y.n.j(D)' }}
                                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
                                                    href="{% url 'predict_admin:detail' obj.category obj.year obj.ex obj.round %}">
                                                     클릭
@@ -65,6 +65,52 @@
                     </article>
                 </div>
             </div>
+
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">참여자 목록 | 관리자 페이지</div>
+
+                <div class="card-body">
+                    <article class="table-responsive">
+                        <table class="table table-bordered table-striped small align-middle">
+                            <thead>
+                                <tr class="text-center table-warning align-middle">
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">연도</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">시험</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">회차</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">수험번호</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">이름</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">모집단위</th>
+                                    <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if student_page_obj %}
+                                    {% for obj in student_page_obj %}
+                                        <tr class="text-center">
+                                            <td class="text-nowrap p-2">{{ obj.year }}</td>
+                                            <td class="text-nowrap p-2">{{ obj.exam }}</td>
+                                            <td class="text-nowrap p-2">
+                                                {% if obj.round %}{{ obj.round }}{% endif %}
+                                            </td>
+                                            <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                                            <td class="text-nowrap p-2">{{ obj.name }}</td>
+                                            <td class="text-nowrap p-2">
+                                                {% if obj.unit_name != '프라임 모의고사' %}
+                                                    {{ obj.unit_name }}
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-nowrap p-2">{{ obj.department_name }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </article>
+                </div>
+            </div>
+        </div>
+
         </div>
     </div>
 </section>

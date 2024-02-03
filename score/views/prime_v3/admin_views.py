@@ -34,9 +34,13 @@ class ListView(
             'icon_menu': self.ICON_MENU['score'],
             'icon_subject': self.ICON_SUBJECT,
 
-            # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
+            # exam_list
+            'exam_page_obj': self.exam_page_obj,
+            'exam_page_range': self.exam_page_range,
+
+            # student_list
+            'student_page_obj': self.student_page_obj,
+            'student_page_range': self.student_page_range,
         }
 
 

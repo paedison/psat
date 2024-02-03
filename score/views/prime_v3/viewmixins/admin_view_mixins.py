@@ -27,26 +27,24 @@ class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):
 
 class ListViewMixin(ConstantIconSet, AdminBaseMixin):
     sub_title: str
-    page_obj: any
-    page_range: any
+    exam_page_obj: any
+    exam_page_range: any
+    student_page_obj: any
+    student_page_range: any
 
     def get_properties(self):
         super().get_properties()
         
         self.sub_title = f'{self.exam_name} 관리자 페이지'
-        self.page_obj, self.page_range = self.get_paginator_info()
+        self.exam_page_obj, self.exam_page_range = self.get_paginator_info(self.exam_list)
+        self.student_page_obj, self.student_page_range = self.get_paginator_info(self.student_list)
 
-    def get_paginator_info(self) -> tuple:
+    def get_paginator_info(self, data) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)
-        paginator = Paginator(self.exam_list, 10)
+        paginator = Paginator(data, 10)
         page_obj: list[dict] = paginator.get_page(page_number)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-
-        for obj in page_obj:
-            statistics = self.get_statistics(obj['year'], obj['round'])
-            obj['statistics'] = statistics
-            obj['detail_url'] = reverse_lazy('prime_admin:detail', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
 
@@ -107,8 +105,8 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
                 answer_correct=F('problem__answer'))
             .values(
                 'sub', 'number', 'answer_correct',
-                'count_total', 'count_1', 'count_2','count_3', 'count_4', 'count_5', 'count_0',
-                'rate_1', 'rate_2','rate_3', 'rate_4', 'rate_5', 'rate_0')
+                'count_total', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0',
+                'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5', 'rate_0')
         )
         for problem in answer_count:
             answer_correct = problem['answer_correct']

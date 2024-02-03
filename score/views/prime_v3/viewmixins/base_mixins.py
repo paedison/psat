@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from django.db.models import F
+
 from reference import models as reference_models
 from score import forms
 from score import models as score_models
@@ -23,20 +25,55 @@ class BaseMixin:
     student_form = forms.PrimeStudentForm
 
     exam_list = [
-        {'year': 2023, 'round': 1, 'date': '1/7', 'staff': True,
-         'opened_at': datetime(2023, 1, 4, 23)},
-        {'year': 2024, 'round': 1, 'date': '12/30', 'staff': False,
-         'opened_at': datetime(2024, 1, 4, 17)},
-        {'year': 2024, 'round': 2, 'date': '1/13', 'staff': False,
-         'opened_at': datetime(2024, 1, 18, 17)},
-        {'year': 2024, 'round': 3, 'date': '1/27', 'staff': False,
-         'opened_at': datetime(2024, 2, 1, 17)},
-        {'year': 2024, 'round': 4, 'date': '2/3', 'staff': False,
-         'opened_at': datetime(2024, 2, 8, 17)},
-        {'year': 2024, 'round': 5, 'date': '2/17', 'staff': False,
-         'opened_at': datetime(2024, 2, 22, 17)},
-        {'year': 2024, 'round': 6, 'date': '2/25', 'staff': False,
-         'opened_at': datetime(2024, 2, 29, 17)},
+        {
+            'year': 2023,
+            'round': 1,
+            'date': datetime(2023, 1, 7),
+            'staff': True,
+            'opened_at': datetime(2023, 1, 4, 23)
+        },
+        {
+            'year': 2024,
+            'round': 1,
+            'date': datetime(2023, 12, 30),
+            'staff': False,
+            'opened_at': datetime(2024, 1, 4, 17)
+        },
+        {
+            'year': 2024,
+            'round': 2,
+            'date': datetime(2024, 1, 13),
+            'staff': False,
+            'opened_at': datetime(2024, 1, 18, 17)
+        },
+        {
+            'year': 2024,
+            'round': 3,
+            'date': datetime(2024, 1, 27),
+            'staff': False,
+            'opened_at': datetime(2024, 2, 1, 17)
+        },
+        {
+            'year': 2024,
+            'round': 4,
+            'date': datetime(2024, 2, 3),
+            'staff': False,
+            'opened_at': datetime(2024, 2, 8, 17)
+        },
+        {
+            'year': 2024,
+            'round': 5,
+            'date': datetime(2024, 2, 17),
+            'staff': False,
+            'opened_at': datetime(2024, 2, 22, 17)
+        },
+        {
+            'year': 2024,
+            'round': 6,
+            'date': datetime(2024, 2, 25),
+            'staff': False,
+            'opened_at': datetime(2024, 2, 29, 17)
+        },
     ]
     predict_round = 4
     predict_opened_at = datetime(2024, 2, 3, 9)
@@ -68,6 +105,26 @@ class BaseMixin:
 
 
 class AdminBaseMixin(BaseMixin):
+    student_list: list
+
+    def get_properties(self):
+        super().get_properties()
+        self.student_list = self.get_student_list()
+
+    def get_student_list(self):
+        student_list = self.verified_user_model.objects.values(
+            'user_id',
+            category=F('student__category'),
+            year=F('student__year'),
+            ex=F('student__department__exam__abbr'),
+            exam=F('student__department__exam__name'),
+            round=F('student__round'),
+            serial=F('student__serial'),
+            name=F('student__name'),
+            department_name=F('student__department__name'),
+        )
+        return student_list
+
     def get_statistics_qs_list(self, year, exam_round) -> list:
         filter_expr = {
             'student__year': year,
