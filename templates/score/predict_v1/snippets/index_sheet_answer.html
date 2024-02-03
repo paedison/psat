@@ -188,13 +188,23 @@
                                         {% for answer in answer_predict %}
                                             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                                 <td class="td-no-border">
-                                                    <button data-number="{{ answer.number }}"
-                                                            class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-warning">
-                                                        <div id="{{ sub }}ans_{{ answer.number }}"
-                                                             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
-                                                            {{ answer.ans_number }}
-                                                        </div>
-                                                    </button>
+                                                    {% if answer.result == 'O' %}
+                                                        <button data-number="{{ answer.number }}"
+                                                                class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-warning">
+                                                            <div id="{{ sub }}ans_{{ answer.number }}"
+                                                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                                                {{ answer.ans_number }}
+                                                            </div>
+                                                        </button>
+                                                    {% else %}
+                                                        <button data-number="{{ answer.number }}"
+                                                                class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-danger">
+                                                            <div id="{{ sub }}ans_{{ answer.number }}"
+                                                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                                                {{ answer.ans_number }}
+                                                            </div>
+                                                        </button>
+                                                    {% endif %}
                                                 </td>
                                             {% endif %}
                                         {% endfor %}
@@ -204,12 +214,21 @@
                                         {% for answer in answer_predict %}
                                             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                                 <td>
-                                                    <div data-number="{{ answer.number }}" class="fw-bold text-warning">
-                                                        <div id="{{ sub }}accracy_{{ answer.number }}"
-                                                             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
-                                                            {{ answer.rate_accuracy|floatformat:0 }}
+                                                    {% if answer.result == 'O' %}
+                                                        <div data-number="{{ answer.number }}" class="fw-bold text-warning">
+                                                            <div id="{{ sub }}accracy_{{ answer.number }}"
+                                                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                                                {{ answer.rate_accuracy|floatformat:0 }}
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    {% else %}
+                                                        <div data-number="{{ answer.number }}" class="fw-bold text-danger">
+                                                            <div id="{{ sub }}accracy_{{ answer.number }}"
+                                                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                                                {{ answer.rate_accuracy|floatformat:0 }}
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
                                                 </td>
                                             {% endif %}
                                         {% endfor %}

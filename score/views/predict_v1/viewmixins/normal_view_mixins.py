@@ -192,15 +192,21 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         for sub, data in self.all_answer_count.items():
             for problem in data:
                 number = problem['number']
+                ans_number_correct = data_answer_correct[sub][number - 1]['ans_number']
                 answer_count_list = []  # list for counting answers
                 for i in range(5):
                     answer_count_list.append(problem[f'count_{i + 1}'])
                 ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
                 rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
+
+                result = 'O'
+                if ans_number_correct and ans_number_correct != ans_number_predict:
+                    result = 'X'
                 data_answer_predict[sub].append(
                     {
                         'number': number,
                         'ans_number': ans_number_predict,
+                        'result': result,
                         'rate_accuracy': rate_accuracy,
                     }
                 )
@@ -212,14 +218,17 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
             for i in range(problem_count):
                 number = i + 1
                 ans_number_student = dataset_answer[f'prob{number}']
-                result = ''
+
+                result = 'O'
                 if self.answer_uploaded:
                     ans_number_correct = data_answer_correct[sub][i]['ans_number']
                     ans_number_list_correct = data_answer_correct[sub][i]['ans_number_list']
                     if ans_number_correct in range(1, 6):
-                        result = 'O' if ans_number_student == ans_number_correct else 'X'
+                        if ans_number_student != ans_number_correct:
+                            result = 'X'
                     else:
-                        result = 'O' if ans_number_student in ans_number_list_correct else 'X'
+                        if ans_number_student not in ans_number_list_correct:
+                            result = 'X'
                 rate_selection = self.all_answer_count[sub][i][f'rate_{ans_number_student}']
                 data_answer_student[sub].append(
                     {
