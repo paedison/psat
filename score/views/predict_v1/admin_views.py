@@ -225,7 +225,7 @@ class UpdateAnswer(
     admin_view_mixins.UpdateAnswerMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update_answer'
+    template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update'
 
     def get_context_data(self, **kwargs):
         self.answer_uploaded = True
@@ -244,7 +244,7 @@ class UpdateScore(
     admin_view_mixins.UpdateScoreMixin,
     vanilla.TemplateView,
 ):
-    template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update_score'
+    template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update'
 
     def get_context_data(self, **kwargs):
         self.answer_uploaded = True
@@ -257,6 +257,30 @@ class UpdateScore(
 
         if self.answer_uploaded:
             return {'message': self.update_score()}
+        return {'message': '답안이 공개되지 않았습니다.'}
+
+
+class UpdateStatistics(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.UpdateStatisticsMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update'
+
+    def get_context_data(self, **kwargs):
+        self.answer_uploaded = True
+        self.category = self.kwargs.get('category')
+        self.year = self.kwargs.get('year')
+        self.ex = self.kwargs.get('ex')
+        self.round = self.kwargs.get('round')
+
+        self.get_properties()
+
+        if self.answer_uploaded:
+            return {
+                'message': self.update_statistics(),
+                'next_url': self.get_next_url()
+            }
         return {'message': '답안이 공개되지 않았습니다.'}
 
 
@@ -309,6 +333,7 @@ individual_index_view = IndividualIndexView.as_view()
 
 update_answer = UpdateAnswer.as_view()
 update_score = UpdateScore.as_view()
+update_statistics = UpdateStatistics.as_view()
 
 catalog_view = CatalogView.as_view()
 

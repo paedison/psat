@@ -18,6 +18,8 @@ urlpatterns = [
          admin_views.update_answer, name='update_answer'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/update/score/',
          admin_views.update_score, name='update_score'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/update/statistics/',
+         admin_views.update_statistics, name='update_statistics'),
 
     path('<str:category>/<int:year>/<str:ex>/<int:round>/print/', admin_views.print_view, name='print'),
     # path('print/<int:year>/<int:round>/<int:student_id>',

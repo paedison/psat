@@ -1,18 +1,33 @@
 {% load slippers %}
 {% load partials %}
 
-{% partialdef update_score %} {# update_score partial #}
+{% partialdef update %}
     {% #modal header=header %}
         <h5 class="modal-title mx-auto fw-bold">
-            {{ message }}
+            <div class="py-2">
+                <h5 class="modal-title mx-auto fw-bold" hx-trigger="load delay:0.5s"
+                    hx-target="#main" hx-swap="none"
+                    hx-get="{{ next_url }}">
+                    <span class="text-success">{{ message }}</span>
+                </h5>
+            </div>
         </h5>
-    {% /modal %}
-{% endpartialdef update_score %}
-
-{% partialdef update_answer %} {# update_score partial #}
-    {% #modal header=header %}
-        <h5 class="modal-title mx-auto fw-bold">
-            {{ message }}
-        </h5>
+        <script>
+            function closeModal(el) {
+                if (el) {
+                    setTimeout(function () {
+                            el.click();
+                        }, 1000);
+                }
+            }
+            if (typeof button === 'undefined') {
+                let button = document.querySelector('div.modal-header > .btn-close');
+                console.log('yes');
+                closeModal(button);
+            } else {
+                console.log('no');
+                closeModal(button);
+            }
+        </script>
     {% /modal %}
 {% endpartialdef update_score %}

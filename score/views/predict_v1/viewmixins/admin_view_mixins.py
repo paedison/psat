@@ -9,8 +9,8 @@ import pdfkit
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import F
-from django.db.models.functions import Coalesce
+from django.db.models import F, Window
+from django.db.models.functions import Rank, PercentRank
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
@@ -320,10 +320,10 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
             category=self.category,
             year=self.year,
             ex=self.ex,
-            round=self.round
+            round=self.round,
         )
         for student in students:
-            score = self.get_score(student)
+            score = self.calculate_score(student)
             try:
                 stat = self.statistics_model.objects.get(student=student)
                 fields_not_match = any(
@@ -352,47 +352,190 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
         except django.db.utils.IntegrityError:
             traceback_message = traceback.format_exc()
             print(traceback_message)
-            message = f'Error occurred.'
+            message = f'업데이트 과정에서 에러가 발생했습니다.'
 
         return message
 
-    def get_score(self, student):
-        score_heonbeob = self.get_score_subject(student, '헌법')
-        score_eoneo = self.get_score_subject(student, '언어')
-        score_jaryo = self.get_score_subject(student, '자료')
-        score_sanghwang = self.get_score_subject(student, '상황')
-        score_psat = score_eoneo + score_jaryo + score_sanghwang
-        score_psat_avg = score_psat / 3
-        return {
-            'score_heonbeob': score_heonbeob,
-            'score_eoneo': score_eoneo,
-            'score_jaryo': score_jaryo,
-            'score_sanghwang': score_sanghwang,
-            'score_psat': score_psat,
-            'score_psat_avg': score_psat_avg,
-        }
+    # def get_score(self, student):
+    #     score_heonbeob = self.get_score_subject(student, '헌법')
+    #     score_eoneo = self.get_score_subject(student, '언어')
+    #     score_jaryo = self.get_score_subject(student, '자료')
+    #     score_sanghwang = self.get_score_subject(student, '상황')
+    #     score_psat = score_eoneo + score_jaryo + score_sanghwang
+    #     score_psat_avg = score_psat / 3
+    #     return {
+    #         'score_heonbeob': score_heonbeob,
+    #         'score_eoneo': score_eoneo,
+    #         'score_jaryo': score_jaryo,
+    #         'score_sanghwang': score_sanghwang,
+    #         'score_psat': score_psat,
+    #         'score_psat_avg': score_psat_avg,
+    #     }
+    #
+    def calculate_score(self, student):
+        score_dict = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
+        if self.ex == '칠급':
+            score_dict.pop('헌법')
 
-    def get_score_subject(self, student: any, sub: str):
-        problem_count = self.problem_count_dict[sub]
         filename = self.get_answer_filename()
         answer_correct_dict = self.get_answer_correct_dict(filename)
-        answer_correct_sub = answer_correct_dict[sub]
+        for sub in score_dict:
+            try:
+                answer_student_sub = self.answer_model.objects.get(sub=sub, student=student)
+                answer_correct_list = answer_correct_dict[sub]
+
+                correct_count = 0
+                for index, problem in enumerate(answer_correct_list):
+                    ans_number = problem['ans_number']
+                    ans_number_list = problem['ans_number_list']
+                    answer_student = getattr(answer_student_sub, f'prob{index + 1}')
+                    if answer_student in ans_number_list or ans_number == answer_student:
+                        correct_count += 1
+                score_dict[sub] = correct_count * 100 / len(answer_correct_list)
+
+            except self.answer_model.DoesNotExist:
+                score_dict[sub] = 0
+
+        score_dict['psat'] = sum([score_dict['언어'], score_dict['자료'], score_dict['상황']])
+        score_dict['psat_avg'] = score_dict['psat'] / 3
+
+        score_field_dict = {}
+        for sub, field in self.sub_field.items():
+            score_field_dict[field] = score_dict[sub]
+
+        return score_field_dict
+
+    # def get_score_subject(self, student: any, sub: str):
+    #     problem_count = self.problem_count_dict[sub]
+    #     filename = self.get_answer_filename()
+    #     answer_correct_dict = self.get_answer_correct_dict(filename)
+    #     answer_correct_sub = answer_correct_dict[sub]
+    #     try:
+    #         answer_student_sub = self.answer_model.objects.get(sub=sub, student=student)
+    #
+    #         correct_count = 0
+    #         for i in range(problem_count):
+    #             number = i + 1
+    #             ans_number = answer_correct_sub[i]['ans_number']
+    #             ans_number_list = answer_correct_sub[i]['ans_number_list']
+    #             answer_student = getattr(answer_student_sub, f'prob{number}')
+    #             if answer_student in ans_number_list or ans_number == answer_student:
+    #                 correct_count += 1
+    #
+    #         score_subject = correct_count * 100 / problem_count
+    #     except self.answer_model.DoesNotExist:
+    #         score_subject = 0
+    #     return score_subject
+
+
+class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):
+    rank_annotation_keys = [
+        'total_eoneo',
+        'total_jaryo',
+        'total_sanghwang',
+        'total_psat',
+        'total_heonbeob',
+
+        'department_eoneo',
+        'department_jaryo',
+        'department_sanghwang',
+        'department_psat',
+        'department_heonbeob',
+
+        'ratio_total_eoneo',
+        'ratio_total_jaryo',
+        'ratio_total_sanghwang',
+        'ratio_total_psat',
+        'ratio_total_heonbeob',
+
+        'ratio_department_eoneo',
+        'ratio_department_jaryo',
+        'ratio_department_sanghwang',
+        'ratio_department_psat',
+        'ratio_department_heonbeob',
+    ]
+
+    rank_update_keys = [
+        f'rank_{key}' for key in rank_annotation_keys
+    ]
+
+    def get_next_url(self):
+        return reverse_lazy('predict_admin:detail', args=[self.category, self.year, self.ex, self.round])
+
+    @staticmethod
+    def get_rank_list(queryset, rank_type: str):
+        def rank_func(field_name) -> Window:
+            return Window(expression=Rank(), order_by=F(field_name).desc())
+
+        def rank_ratio_func(field_name) -> Window:
+            return Window(expression=PercentRank(), order_by=F(field_name).desc())
+
+        return queryset.annotate(**{
+            f'{rank_type}_eoneo': rank_func('score_eoneo'),
+            f'{rank_type}_jaryo': rank_func('score_jaryo'),
+            f'{rank_type}_sanghwang': rank_func('score_sanghwang'),
+            f'{rank_type}_psat': rank_func('score_psat'),
+            f'{rank_type}_heonbeob': rank_func('score_heonbeob'),
+
+            f'ratio_{rank_type}_eoneo': rank_ratio_func('score_eoneo'),
+            f'ratio_{rank_type}_jaryo': rank_ratio_func('score_jaryo'),
+            f'ratio_{rank_type}_sanghwang': rank_ratio_func('score_sanghwang'),
+            f'ratio_{rank_type}_psat': rank_ratio_func('score_psat'),
+            f'ratio_{rank_type}_heonbeob': rank_ratio_func('score_heonbeob'),
+        }).values(
+            'student_id', f'{rank_type}_eoneo', f'{rank_type}_jaryo', f'{rank_type}_sanghwang',
+            f'{rank_type}_psat', f'{rank_type}_heonbeob',
+            f'ratio_{rank_type}_eoneo', f'ratio_{rank_type}_jaryo', f'ratio_{rank_type}_sanghwang',
+            f'ratio_{rank_type}_psat', f'ratio_{rank_type}_heonbeob',
+        )
+
+    def update_statistics(self):
+        update_list = []
+        update_count = 0
+
+        statistics_qs_total = self.statistics_model.objects.filter(
+            student__category=self.category,
+            student__year=self.year,
+            student__ex=self.ex,
+            student__round=self.round,
+        )
+        rank_list_total = self.get_rank_list(statistics_qs_total, 'total')
+
+        for stat in statistics_qs_total:
+            statistics_qs_department = statistics_qs_total.filter(
+                student__department_id=stat.student.department_id)
+            rank_list_department = self.get_rank_list(statistics_qs_department, 'department')
+
+            rank_data_dict = {}
+            for row in rank_list_total:
+                if row['student_id'] == stat.student_id:
+                    rank_data_dict.update(row)
+            for row in rank_list_department:
+                if row['student_id'] == stat.student_id:
+                    rank_data_dict.update(row)
+
+            fields_not_match = any(
+                getattr(stat, f'rank_{key}') != rank_data_dict[key] for key in self.rank_annotation_keys
+            )
+            if fields_not_match:
+                for field, value in rank_data_dict.items():
+                    setattr(stat, f'rank_{field}', value)
+                update_list.append(stat)
+                update_count += 1
+
         try:
-            answer_student_sub = self.answer_model.objects.get(sub=sub, student=student)
+            with transaction.atomic():
+                if update_list:
+                    self.statistics_model.objects.bulk_update(update_list, self.rank_update_keys)
+                    message = f'총 {update_count}명의 통계 자료가 업데이트되었습니다.'
+                else:
+                    message = f'기존에 입력된 통계 자료와 일치합니다.'
+        except django.db.utils.IntegrityError:
+            traceback_message = traceback.format_exc()
+            print(traceback_message)
+            message = f'업데이트 과정에서 에러가 발생했습니다.'
 
-            correct_count = 0
-            for i in range(problem_count):
-                number = i + 1
-                ans_number = answer_correct_sub[i]['ans_number']
-                ans_number_list = answer_correct_sub[i]['ans_number_list']
-                answer_student = getattr(answer_student_sub, f'prob{number}')
-                if answer_student in ans_number_list or ans_number == answer_student:
-                    correct_count += 1
-
-            score_subject = correct_count * 100 / problem_count
-        except self.answer_model.DoesNotExist:
-            score_subject = 0
-        return score_subject
+        return message
 
 
 class ExportStatisticsToExcelMixin(IndexViewMixin):

@@ -22,6 +22,13 @@
                data-bs-toggle="modal" data-bs-target="#modalContainer">
                 성적 업데이트
             </a>
+            <a class="btn btn-sm btn-outline-secondary" title="업데이트"
+               hx-confirm="통계 자료를 업데이트하시겠습니까?" href=""
+               hx-get="{% url 'predict_admin:update_statistics' category year ex round %}"
+               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                통계 업데이트
+            </a>
             <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
                href="{% url 'predict_admin:export_statistics' category year ex round %}">
                 Excel로 내보내기
