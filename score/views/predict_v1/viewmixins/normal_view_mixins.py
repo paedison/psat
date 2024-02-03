@@ -177,14 +177,18 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         # data_answer_correct
         for sub, data in data_answer_correct.items():
             for index, prob in enumerate(data):
-                problem = self.all_answer_count[sub][index]  # 정답률 추출 타겟 문제
+                rate_correct = 0
+                ans_number_list = []
                 ans_number_correct = prob['ans_number']
-                if ans_number_correct in range(1, 6):
-                    ans_number_list = []
-                    rate_correct = problem[f'rate_{ans_number_correct}']
-                else:
-                    ans_number_list = [int(digit) for digit in str(ans_number_correct)]
-                    rate_correct = sum(problem[f'rate_{ans}'] for ans in ans_number_list)
+
+                problem_set = self.all_answer_count[sub]
+                if problem_set:
+                    problem = problem_set[index]  # 정답률 추출 타겟 문제
+                    if ans_number_correct in range(1, 6):
+                        rate_correct = problem[f'rate_{ans_number_correct}']
+                    else:
+                        ans_number_list = [int(digit) for digit in str(ans_number_correct)]
+                        rate_correct = sum(problem[f'rate_{ans}'] for ans in ans_number_list)
                 prob['ans_number_list'] = ans_number_list
                 prob['rate_correct'] = rate_correct
 
