@@ -59,7 +59,7 @@ class BaseMixin:
             'exam': '프라임 모의고사',
             'round': 4,
             'date': datetime(2024, 2, 3),
-            'answer_file': f'{data_dir}answer_file_prime_2024-3.csv',
+            'answer_file': f'{data_dir}answer_file_prime_2024-4.csv',
         },
         {
             'category': 'PSAT',
