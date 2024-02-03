@@ -34,7 +34,9 @@ def divide(content, base) -> float:  # Divide content by base
 
 @register.filter
 def percentage(content) -> float:  # Abstract content from base
-    return content * 100
+    if content:
+        return content * 100
+    return 0
 
 
 @register.filter
