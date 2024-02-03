@@ -10,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
@@ -183,7 +184,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
     def get_all_stat(self):
         qs = (
             self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
-            .select_related('student').order_by('rank_total_psat')
+            .select_related('student').order_by(F('rank_total_psat').asc(nulls_last=True))
         )
         return qs
 

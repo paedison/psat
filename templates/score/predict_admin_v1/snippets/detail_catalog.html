@@ -75,7 +75,7 @@
                                     {{ obj.student.category }}
                                 {% endif %}
                             </td>
-                            <td class="text-nowrap p-2">{{ obj.rank_total_psat }}</td>
+                            <td class="text-nowrap p-2">{{ obj.rank_total_psat|default:'' }}</td>
                             <td class="text-nowrap p-2">
                                 <a href="{% url 'predict_admin:individual' category year ex round obj.student.user_id %}"
                                    hx-boost="true" hx-push-url="true">
@@ -87,33 +87,33 @@
 
                             <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_psat|floatformat:1 }}</td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score_psat_avg|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_psat }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_psat|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_psat|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_psat }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_psat|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_psat|percentage|floatformat:1 }}</td>
 
                             <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_heonbeob|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_heonbeob }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_heonbeob|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_heonbeob }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_heonbeob|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
 
                             <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_eoneo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_eoneo }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_eoneo|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_eoneo|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_eoneo }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_eoneo|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_eoneo|percentage|floatformat:1 }}</td>
 
                             <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_jaryo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_jaryo }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_jaryo|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_jaryo|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_jaryo }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_jaryo|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_jaryo|percentage|floatformat:1 }}</td>
 
                             <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_sanghwang|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_sanghwang }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_sanghwang|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_sanghwang|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_sanghwang }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_sanghwang|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_sanghwang|percentage|floatformat:1 }}</td>
                         </tr>
                     {% endfor %}
