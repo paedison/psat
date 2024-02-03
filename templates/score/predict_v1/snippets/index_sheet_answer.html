@@ -181,18 +181,8 @@
                             </tr>
 
                             {# answer_predict #}
-                            {% if not answer_uploaded %}
-                                {% if info_answer.participants < min_participants %}
-                                    <tr class="text-center">
-                                        <th class="text-nowrap text-bg-warning td-no-border" scope="row">예상 정답</th>
-                                        <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
-                                            답안 수집중입니다. (현재 {{ info_answer.participants }}명 제출 완료)
-                                        </td>
-                                    </tr>
-                                    <tr class="text-center">
-                                        <th class="text-nowrap text-bg-warning" scope="row">정확도(%)</th>
-                                    </tr>
-                                {% else %}
+                            {% if user.is_staff %}
+                                {% partialdef answer_predict_line inline=True %}
                                     <tr class="text-center">
                                         <th class="text-nowrap td-no-border" scope="row">예상 정답</th>
                                         {% for answer in answer_predict %}
@@ -224,6 +214,22 @@
                                             {% endif %}
                                         {% endfor %}
                                     </tr>
+                                {% endpartialdef answer_predict_line %}
+                            {% else %}
+                                {% if not answer_uploaded %}
+                                    {% if info_answer.participants < min_participants %}
+                                        <tr class="text-center">
+                                            <th class="text-nowrap text-bg-warning td-no-border" scope="row">예상 정답</th>
+                                            <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
+                                                답안 수집중입니다. (현재 {{ info_answer.participants }}명 제출 완료)
+                                            </td>
+                                        </tr>
+                                        <tr class="text-center">
+                                            <th class="text-nowrap text-bg-warning" scope="row">정확도(%)</th>
+                                        </tr>
+                                    {% else %}
+                                        {% partial answer_predict_line %}
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
                         {% endpartialdef answer_table_tr %}
