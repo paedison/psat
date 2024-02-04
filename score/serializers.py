@@ -65,6 +65,8 @@ class PredictAnswerSerializer(serializers.ModelSerializer):
 
 
 class PredictAnswerCountSerializer(serializers.ModelSerializer):
+    answer = CustomStringField()
+
     class Meta:
         model = PredictAnswerCount
         fields = '__all__'
