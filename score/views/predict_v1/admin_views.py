@@ -365,6 +365,23 @@ class ExportTranscriptToPdfView(
     view_type = 'export'
 
 
+class ExportPredictDataToGoogleSheetView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.ExportPredictDataToGoogleSheetMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'score/predict_admin_v1/snippets/predict_admin_modal.html#update'
+
+    def get(self, request, *args, **kwargs):
+        self.export_data()
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return {
+            'message': '구글시트가 업데이트되었습니다.'
+        }
+
+
 list_view = ListView.as_view()
 list_student_view = ListStudentView.as_view()
 
@@ -386,3 +403,4 @@ export_statistics_to_excel_view = ExportStatisticsToExcelView.as_view()
 export_analysis_to_excel_view = ExportAnalysisToExcelView.as_view()
 export_scores_to_excel_view = ExportScoresToExcelView.as_view()
 export_transcript_to_pdf_view = ExportTranscriptToPdfView.as_view()
+export_predict_data_to_google_sheet_view = ExportPredictDataToGoogleSheetView.as_view()

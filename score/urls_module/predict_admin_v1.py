@@ -34,4 +34,6 @@ urlpatterns = [
          admin_views.export_analysis_to_excel_view, name='export_analysis'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/students_score/',
          admin_views.export_scores_to_excel_view, name='export_scores'),
+    path('export/predict/google_sheet',
+         admin_views.export_predict_data_to_google_sheet_view, name='export_predict_to_google'),
 ]

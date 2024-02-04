@@ -1,4 +1,19 @@
-<div class="card-header">시험 목록 | 관리자 페이지</div>
+<div class="card-header">
+    <div class="d-flex align-items-center">
+        <span>시험 목록 | 관리자 페이지</span>
+        {% if user.is_authenticated %}
+            <div class="btn-group ms-auto">
+                <a class="btn btn-sm btn-outline-secondary" title="구글시트 내보내기"
+                   hx-confirm="구글시트로 내보내시겠습니까?" href=""
+                   hx-get="{% url 'predict_admin:export_predict_to_google' %}"
+                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                   data-bs-toggle="modal" data-bs-target="#modalContainer">
+                    구글시트로 내보내기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
 
 <div class="card-body">
     <article class="table-responsive col-md-6 ms-auto me-auto">

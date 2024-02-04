@@ -1,11 +1,14 @@
 import io
+import json
 import traceback
 import zipfile
 from urllib.parse import quote
 
 import django.db.utils
+import gspread
 import pandas as pd
 import pdfkit
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -13,10 +16,12 @@ from django.db.models import F, Window
 from django.db.models.functions import Rank, PercentRank
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
+from oauth2client.service_account import ServiceAccountCredentials
 
 from common.constants.icon_set import ConstantIconSet
 from common.models import User
 from score.models import PrimeAnswer
+from score.serializers import PredictStudentSerializer, PredictAnswerSerializer
 from .base_mixins import AdminBaseMixin
 from ..utils import get_dict_by_sub
 
@@ -727,3 +732,43 @@ class ExportTranscriptToPdfViewMixin(IndexViewMixin):
         response['Content-Disposition'] = f'attachment; filename={filename}'
 
         return response
+
+
+class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
+    def export_data(self):
+        student_serializer = PredictStudentSerializer(self.student_model.objects.all(), many=True)
+        answer_serializer = PredictAnswerSerializer(self.answer_model.objects.all(), many=True)
+
+        data_student = student_serializer.data
+        data_answer = answer_serializer.data
+
+        df_student = pd.DataFrame(data_student)
+        df_answer = pd.DataFrame(data_answer)
+        print(df_student)
+
+        # Load credentials from JSON file
+        base_dir = settings.BASE_DIR
+        google_key_json = f'{base_dir}/google_key.json'
+        google_sheet_json = f'{base_dir}/google_sheet.json'
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(google_key_json, scope)
+        gc = gspread.authorize(credentials)
+
+        with open(google_sheet_json, "r") as config_file:
+            config = json.load(config_file)
+
+        sheet_key_predict = config["sheet_key_predict"]
+        workbook = gc.open_by_key(sheet_key_predict)
+
+        worksheet_student = workbook.worksheet('student')
+        worksheet_answer = workbook.worksheet('answer')
+
+        worksheet_student.clear()
+        worksheet_answer.clear()
+
+        worksheet_student.update(
+            [df_student.columns.values.tolist()] + df_student.values.tolist()
+        )
+        worksheet_answer.update(
+            [df_answer.columns.values.tolist()] + df_answer.values.tolist()
+        )
