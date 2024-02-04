@@ -21,7 +21,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from common.constants.icon_set import ConstantIconSet
 from common.models import User
 from score.models import PrimeAnswer
-from score.serializers import PredictStudentSerializer, PredictAnswerSerializer
+from score import serializers
 from .base_mixins import AdminBaseMixin
 from ..utils import get_dict_by_sub
 
@@ -736,16 +736,6 @@ class ExportTranscriptToPdfViewMixin(IndexViewMixin):
 
 class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
     def export_data(self):
-        student_serializer = PredictStudentSerializer(self.student_model.objects.all(), many=True)
-        answer_serializer = PredictAnswerSerializer(self.answer_model.objects.all(), many=True)
-
-        data_student = student_serializer.data
-        data_answer = answer_serializer.data
-
-        df_student = pd.DataFrame(data_student)
-        df_answer = pd.DataFrame(data_answer)
-        print(df_student)
-
         # Load credentials from JSON file
         base_dir = settings.BASE_DIR
         google_key_json = f'{base_dir}/google_key.json'
@@ -757,18 +747,47 @@ class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
         with open(google_sheet_json, "r") as config_file:
             config = json.load(config_file)
 
+        student_serializer = serializers.PredictStudentSerializer(
+            self.student_model.objects.all(), many=True)
+        answer_serializer = serializers.PredictAnswerSerializer(
+            self.answer_model.objects.all(), many=True)
+        answer_count_serializer = serializers.PredictAnswerCountSerializer(
+            self.answer_count_model.objects.all(), many=True)
+        statistics_serializer = serializers.PredictStatisticsSerializer(
+            self.statistics_model.objects.all(), many=True)
+
+        data_student = student_serializer.data
+        data_answer = answer_serializer.data
+        data_answer_count = answer_count_serializer.data
+        data_statistics = statistics_serializer.data
+
+        df_student = pd.DataFrame(data_student)
+        df_answer = pd.DataFrame(data_answer)
+        df_answer_count = pd.DataFrame(data_answer_count)
+        df_statistics = pd.DataFrame(data_statistics)
+
         sheet_key_predict = config["sheet_key_predict"]
         workbook = gc.open_by_key(sheet_key_predict)
 
         worksheet_student = workbook.worksheet('student')
         worksheet_answer = workbook.worksheet('answer')
+        worksheet_answer_count = workbook.worksheet('answer_count')
+        worksheet_statistics = workbook.worksheet('statistics')
 
         worksheet_student.clear()
         worksheet_answer.clear()
+        worksheet_answer_count.clear()
+        worksheet_statistics.clear()
 
         worksheet_student.update(
             [df_student.columns.values.tolist()] + df_student.values.tolist()
         )
         worksheet_answer.update(
             [df_answer.columns.values.tolist()] + df_answer.values.tolist()
+        )
+        worksheet_answer_count.update(
+            [df_answer_count.columns.values.tolist()] + df_answer_count.values.tolist()
+        )
+        worksheet_statistics.update(
+            [df_statistics.columns.values.tolist()] + df_statistics.values.tolist()
         )

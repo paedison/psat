@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import PredictStudent, PredictAnswer
+from .models import (
+    PredictStudent, PredictAnswer, PredictAnswerCount, PredictStatistics
+)
 
 
 class CustomStringField(serializers.CharField):
@@ -59,4 +61,16 @@ class PredictAnswerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PredictAnswer
+        fields = '__all__'
+
+
+class PredictAnswerCountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PredictAnswerCount
+        fields = '__all__'
+
+
+class PredictStatisticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PredictStatistics
         fields = '__all__'
