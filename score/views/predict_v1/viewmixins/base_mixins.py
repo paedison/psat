@@ -4,6 +4,7 @@ from datetime import datetime
 from django.conf import settings
 from django.db.models import F
 
+from common.models import User
 from reference import models as reference_models
 from score import forms as score_forms
 from score import models as score_models
@@ -36,6 +37,7 @@ class BaseMixin:
 
     exam_list = [
         {
+            'code': '2024프모-1',
             'category': 'Prime',
             'year': 2024,
             'ex': '프모',
@@ -45,6 +47,7 @@ class BaseMixin:
             'answer_file': f'{data_dir}answer_file_prime_2024-1.csv',
         },
         {
+            'code': '2024프모-3',
             'category': 'Prime',
             'year': 2024,
             'ex': '프모',
@@ -54,6 +57,7 @@ class BaseMixin:
             'answer_file': f'{data_dir}answer_file_prime_2024-3.csv',
         },
         {
+            'code': '2024프모-4',
             'category': 'Prime',
             'year': 2024,
             'ex': '프모',
@@ -63,6 +67,7 @@ class BaseMixin:
             'answer_file': f'{data_dir}answer_file_prime_2024-4.csv',
         },
         {
+            'code': '2024행시',
             'category': 'PSAT',
             'year': 2024,
             'ex': '행시',
@@ -280,14 +285,16 @@ class AdminBaseMixin(BaseMixin):
 
     def get_student_list(self):
         student_list = self.student_model.objects.values(
-            'user_id', 'category', 'year', 'ex', 'round', 'serial', 'name', 'department_id')
+            'id', 'user_id', 'category', 'year', 'ex', 'round', 'serial', 'name', 'department_id')
         for student in student_list:
+            user_id = student['user_id']
             department_name = ''
             unit_name = ''
             for d in self.department_list:
                 if d['id'] == student['department_id']:
                     department_name = d['name']
                     unit_name = d['unit_name']
+            student['username'] = User.objects.get(id=user_id).username
             student['department_name'] = department_name
             student['unit_name'] = unit_name
             student['exam'] = self.exam_name_dict[student['ex']]

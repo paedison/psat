@@ -15,6 +15,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
+from common.models import User
 from score.models import PrimeAnswer
 from .base_mixins import AdminBaseMixin
 from ..utils import get_dict_by_sub
@@ -94,15 +95,28 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
     sub_title: str
     exam_page_obj: any
     exam_page_range: any
+
     student_page_obj: any
     student_page_range: any
+    student_base_url: str
+    student_pagination_url: str
+
+    participant_list: dict
+    participant_page_obj: any
+    participant_page_range: any
 
     def get_properties(self):
         super().get_properties()
 
         self.sub_title = f'{self.exam_name} 관리자 페이지'
         self.exam_page_obj, self.exam_page_range = self.get_paginator_info(self.exam_list)
+
         self.student_page_obj, self.student_page_range = self.get_paginator_info(self.student_list)
+        self.student_base_url = reverse_lazy('predict_admin:list_student')
+        self.student_pagination_url = f'{self.student_base_url}?'
+
+        # self.participant_list = self.get_participant_list()
+        # self.participant_page_obj, self.participant_page_range = self.get_paginator_info(self.participant_list)
 
     def get_paginator_info(self, data) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
@@ -111,6 +125,28 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
         page_obj: list[dict] = paginator.get_page(page_number)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
         return page_obj, page_range
+
+    def get_participant_list(self) -> dict:
+        all_user_ids = self.student_model.objects.values('user_id').distinct()
+        participant_list = []
+        for user_id in all_user_ids:
+            participant_list.append(
+                {
+                    f'user_{user_id}': {
+                        'user_id': user_id,
+                        'username': User.objects.get(id=user_id).username,
+                    }
+                }
+            )
+        for student in self.student_list:
+            user_id = student['user_id']
+            for exam in self.exam_list:
+                code = exam['code']
+                participant_list[f'user_{user_id}'][code] = False
+                if exam['category'] == student['category'] and exam['year'] == exam['year'] and \
+                        exam['ex'] == student['ex'] and exam['round'] == student['round']:
+                    participant_list[f'user_{user_id}'][code] = True
+        return participant_list
 
 
 class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
@@ -356,22 +392,6 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
 
         return message
 
-    # def get_score(self, student):
-    #     score_heonbeob = self.get_score_subject(student, '헌법')
-    #     score_eoneo = self.get_score_subject(student, '언어')
-    #     score_jaryo = self.get_score_subject(student, '자료')
-    #     score_sanghwang = self.get_score_subject(student, '상황')
-    #     score_psat = score_eoneo + score_jaryo + score_sanghwang
-    #     score_psat_avg = score_psat / 3
-    #     return {
-    #         'score_heonbeob': score_heonbeob,
-    #         'score_eoneo': score_eoneo,
-    #         'score_jaryo': score_jaryo,
-    #         'score_sanghwang': score_sanghwang,
-    #         'score_psat': score_psat,
-    #         'score_psat_avg': score_psat_avg,
-    #     }
-    #
     def calculate_score(self, student):
         score_dict = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
         if self.ex == '칠급':
@@ -404,28 +424,6 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
             score_field_dict[field] = score_dict[sub]
 
         return score_field_dict
-
-    # def get_score_subject(self, student: any, sub: str):
-    #     problem_count = self.problem_count_dict[sub]
-    #     filename = self.get_answer_filename()
-    #     answer_correct_dict = self.get_answer_correct_dict(filename)
-    #     answer_correct_sub = answer_correct_dict[sub]
-    #     try:
-    #         answer_student_sub = self.answer_model.objects.get(sub=sub, student=student)
-    #
-    #         correct_count = 0
-    #         for i in range(problem_count):
-    #             number = i + 1
-    #             ans_number = answer_correct_sub[i]['ans_number']
-    #             ans_number_list = answer_correct_sub[i]['ans_number_list']
-    #             answer_student = getattr(answer_student_sub, f'prob{number}')
-    #             if answer_student in ans_number_list or ans_number == answer_student:
-    #                 correct_count += 1
-    #
-    #         score_subject = correct_count * 100 / problem_count
-    #     except self.answer_model.DoesNotExist:
-    #         score_subject = 0
-    #     return score_subject
 
 
 class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):

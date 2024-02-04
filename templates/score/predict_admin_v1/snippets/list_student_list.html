@@ -1,0 +1,99 @@
+{% load slippers %}
+{% load partials %}
+
+<div class="card-header">참여자 목록 | 관리자 페이지</div>
+
+<div class="card-body">
+    <article class="table-responsive">
+        <table class="table table-bordered table-striped small align-middle">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2" rowspan="2">ID</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">User ID</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">Username</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">연도</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">시험</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">회차</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">수험번호</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">이름</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">모집단위</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if student_page_obj %}
+                    {% for obj in student_page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">{{ obj.id }}</td>
+                            <td class="text-nowrap p-2">{{ obj.user_id }}</td>
+                            <td class="text-nowrap p-2">{{ obj.username }}</td>
+                            <td class="text-nowrap p-2">{{ obj.year }}</td>
+                            <td class="text-nowrap p-2">{{ obj.exam }}</td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.round %}{{ obj.round }}{% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                            <td class="text-nowrap p-2">{{ obj.name }}</td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.unit_name != '프라임 모의고사' %}
+                                    {{ obj.unit_name }}
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">{{ obj.department_name }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </article>
+
+{% with page_obj=student_page_obj page_range=student_page_range pagination_url=student_pagination_url %}
+    {% #pagination_nav %}
+        {% if page_obj.has_previous %}
+            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+
+                {% partialdef pagination_link inline=True %} {# pagination_link partial #}
+                    <li class="page-item {{ status }}"
+                        {% if status == 'active' %}aria-current="page"{% endif %}>
+                        <a class="page-link" href=""
+                            {% if status == 'disabled' %}
+                                tabindex="-1" aria-disabled="true"
+                            {% else %}
+                                hx-get="{{ pagination_url }}&page={{ page_num }}"
+                            {% endif %}>
+                            {% if chevron %}
+                                <i class="fa-solid fa-chevron-{{ chevron }}"></i>
+                            {% else %}
+                                {{ anchor_text }}
+                            {% endif %}
+                        </a>
+                    </li>
+                {% endpartialdef pagination_link %}
+
+            {% endwith %}
+        {% endif %}
+
+        {% for number in page_range %}
+            {% with page_num=number anchor_text=number %}
+                {% if number == page_obj.number %}
+                    {% with status='active' %}
+                        {% partial pagination_link %}
+                    {% endwith %}
+                {% elif number == page_obj.paginator.ELLIPSIS %}
+                    {% with status='disabled' %}
+                        {% partial pagination_link %}
+                    {% endwith %}
+                {% else %}
+                    {% partial pagination_link %}
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            {% with page_num=page_obj.number|add:1 chevron='right' %}
+                {% partial pagination_link %}
+            {% endwith %}
+        {% endif %}
+    {% /pagination_nav %}
+{% endwith %}
+</div>
