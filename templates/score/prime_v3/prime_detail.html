@@ -30,10 +30,12 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">Prime</a>
+                <a href="{% url 'prime:list' %}" hx-boost="true">Prime</a>
             </li>
             <li class="breadcrumb-item">{{ year }}</li>
-            <li class="breadcrumb-item active">제{{ round }}회</li>
+            <li class="breadcrumb-item active">
+                <a class="active" href="{% url 'prime:detail' year round %}" hx-boost="true">제{{ round }}회</a>
+            </li>
         </ol>
     </nav>
 </div><!-- Page Title End -->

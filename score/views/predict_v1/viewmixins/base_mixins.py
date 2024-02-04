@@ -31,7 +31,8 @@ class BaseMixin:
 
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
-    filename = f'{data_dir}answers.csv'
+    answer_file = f'{data_dir}answers.csv'
+    answer_empty_file = f'{data_dir}answers_empty.csv'
     answer_uploaded = True
     min_participants = 100
 
@@ -202,29 +203,36 @@ class BaseMixin:
         #         ...
         #     ]
         # }
-        if filename is None:
-            # if self.answer_uploaded:
-            filename = self.filename
 
-        answer_correct = {}
-        if filename:
+        if filename is None:
+            filename = self.answer_file
+
+        try:
             with open(filename, 'r', encoding='utf-8') as file:
-                csv_data = csv.reader(file)
-                sub_keys = next(csv_data)  # 헌법, 언어, 자료, 상황
-                for sub in sub_keys[1:]:
-                    answer_correct[sub] = []
-                for row in csv_data:
-                    for i in range(1, len(sub_keys)):
-                        if row[i]:
-                            sub = sub_keys[i]  # 헌법, 언어, 자료, 상황
-                            answer_correct[sub].append(
-                                {
-                                    'number': row[0],
-                                    'ans_number': int(row[i]),
-                                    'ans_number_list': [],
-                                    'rate_correct': 0,
-                                }
-                            )
+                return self.get_answer_correct(file)
+        except FileNotFoundError:
+            with open(self.answer_empty_file, 'r', encoding='utf-8') as file:
+                return self.get_answer_correct(file)
+
+    @staticmethod
+    def get_answer_correct(file):
+        answer_correct = {}
+        csv_data = csv.reader(file)
+        sub_keys = next(csv_data)  # 헌법, 언어, 자료, 상황
+        for sub in sub_keys[1:]:
+            answer_correct[sub] = []
+        for row in csv_data:
+            for i in range(1, len(sub_keys)):
+                if row[i]:
+                    sub = sub_keys[i]  # 헌법, 언어, 자료, 상황
+                    answer_correct[sub].append(
+                        {
+                            'number': row[0],
+                            'ans_number': int(row[i]),
+                            'ans_number_list': [],
+                            'rate_correct': 0,
+                        }
+                    )
         return answer_correct
 
     def get_answer_student_qs(self):

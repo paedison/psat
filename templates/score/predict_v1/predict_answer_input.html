@@ -19,18 +19,12 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                {% if category == 'PSAT' %}
-                    <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
-                {% elif category == 'Prime' %}
-                    <a href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">Prime</a>
-                {% endif %}
+                <a href="{% url 'predict:index' %}" hx-boost="true">Predict</a>
             </li>
-            {% if round %}
-                <li class="breadcrumb-item">{{ year }}</li>
-                <li class="breadcrumb-item active">제{{ round }}회</li>
-            {% else %}
-                <li class="breadcrumb-item active">{{ year }}</li>
-            {% endif %}
+            <li class="breadcrumb-item">Answer</li>
+            <li class="breadcrumb-item">
+                <a class="active" href="{% url 'predict:answer_input' sub %}" hx-boost="true">{{ sub }}</a>
+            </li>
         </ol>
     </nav>
 </div><!-- Page Title End -->

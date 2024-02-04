@@ -28,8 +28,9 @@
                 <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
             </li>
             <li class="breadcrumb-item">Score</li>
-            <li class="breadcrumb-item">Prime</li>
-            <li class="breadcrumb-item active">2024</li>
+            <li class="breadcrumb-item">
+                <a class="active" href="{% url 'prime:list' %}" hx-boost="true">Prime</a>
+            </li>
         </ol>
     </nav>
 </div><!-- Page Title End -->
