@@ -29,15 +29,21 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
     sub_title: str
     exam_page_obj: any
     exam_page_range: any
+
     student_page_obj: any
     student_page_range: any
+    student_base_url: str
+    student_pagination_url: str
 
     def get_properties(self):
         super().get_properties()
         
         self.sub_title = f'{self.exam_name} 관리자 페이지'
         self.exam_page_obj, self.exam_page_range = self.get_paginator_info(self.exam_list)
+
         self.student_page_obj, self.student_page_range = self.get_paginator_info(self.student_list)
+        self.student_base_url = reverse_lazy('prime_admin:list_student')
+        self.student_pagination_url = f'{self.student_base_url}?'
 
     def get_paginator_info(self, data) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """

@@ -113,8 +113,9 @@ class AdminBaseMixin(BaseMixin):
 
     def get_student_list(self):
         student_list = self.verified_user_model.objects.values(
+            'id',
             'user_id',
-            category=F('student__category'),
+            username=F('user__username'),
             year=F('student__year'),
             ex=F('student__department__exam__abbr'),
             exam=F('student__department__exam__name'),

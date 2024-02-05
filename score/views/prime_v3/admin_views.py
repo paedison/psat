@@ -41,6 +41,40 @@ class ListView(
             # student_list
             'student_page_obj': self.student_page_obj,
             'student_page_range': self.student_page_range,
+            'student_base_url': self.student_base_url,
+            'student_pagination_url': self.student_pagination_url,
+        }
+
+
+class ListStudentView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.ListViewMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'score/prime_v3/snippets_admin/list_student_list.html'
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            # base info
+            'info': self.info,
+            'title': 'Score',
+            'sub_title': self.sub_title,
+            'exam_list': self.exam_list,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+
+            # student_list
+            'student_page_obj': self.student_page_obj,
+            'student_page_range': self.student_page_range,
+            'student_base_url': self.student_base_url,
+            'student_pagination_url': self.student_pagination_url,
         }
 
 
@@ -206,6 +240,8 @@ class ExportTranscriptToPdfView(
 
 
 list_view = ListView.as_view()
+list_student_view = ListStudentView.as_view()
+
 detail_view = DetailView.as_view()
 catalog_view = CatalogView.as_view()
 

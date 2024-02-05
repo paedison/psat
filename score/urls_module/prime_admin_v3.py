@@ -6,6 +6,7 @@ app_name = 'prime_admin'  # score/prime/admin/
 
 urlpatterns = [
     path('', admin_views.list_view, name='list'),
+    path('student/', admin_views.list_student_view, name='list_student'),
 
     path('<int:year>/<int:round>/', admin_views.detail_view, name='detail'),
     path('search/<int:year>/<int:round>/', admin_views.catalog_view, name='catalog_year_round'),
