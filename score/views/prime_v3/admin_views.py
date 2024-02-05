@@ -1,4 +1,5 @@
 import vanilla
+from django.db.models import F
 
 from . import normal_views
 from .viewmixins import admin_view_mixins
@@ -196,6 +197,13 @@ class IndividualStudentPrintView(
 ):
     template_name = 'score/prime_v3/prime_individual_print.html'
     view_type = 'print'
+
+    def get_student(self):
+        student_id = self.kwargs.get('student_id')
+        return (
+            self.get_students_qs().annotate(department_name=F('department__name'))
+            .filter(id=student_id).values().first()
+        )
 
 
 class ExportStatisticsToExcelView(
