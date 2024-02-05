@@ -1,38 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
 {% load i18n %}
+{% load psat_filter %}
 {% load partials %}
 {% load slippers %}
-<!doctype html>{% load static %}{% load psat_filter %}{% lineless %}
-<html lang="ko">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-<meta name="description" content="오직 나만을 위한 맞춤형 PSAT 기출노트를 만들어보세요!"/>
-<meta name="author" content="Paedison"/>
-<meta name="keywords" content="PSAT, 기출문제, 5급, 행정고시, 7급, 입법고시, 외교원, 외교관, 외무고시, 지역인재, 민간경력, 공무원"/>
-<meta name="google-site-verification" content="jv9Vpec7TB34EdIig5UYbDqQ_ueu3uNlLM_FbIzwWWM"/>
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://paedison.com"/>
-<meta property="og:title" content="PSAT 기출노트 플랫폼"/>
-<meta property="og:description" content="나만의 PSAT 기출노트 세상!"/>
-<meta property="og:image" content="http://paedison.com/static/favicon/logo_.png' %}"/>
-<title>{{ student.serial }}_{{ student.department_name }}_{{ student.name }}_제{{ round }}회_전국모의고사_성적표</title>
-<link rel="stylesheet" type="text/css" href="http://paedison.com/static/vendor/bootstrap/css/bootstrap.min.css"/>
-<link rel="stylesheet" type="text/css" href="http://paedison.com/static/css/style.css"/>
-<style>
-    @font-face {
-        font-family: 'NanumGothic';
-        font-style: normal;
-        font-weight: normal;
-        src: local('NanumGothic'), url('http://paedison.com/static/font/NanumGothic.ttf') format('truetype');
-    }
+{% load humanize %}
 
-    body, h1, h2, h3, h4, h5, h6 {
-        font-family: 'NanumGothic', sans-serif;
-    }
-</style>
-</head>
+{% block head_title %}{{ student.serial }}_{{ student.department_name }}_{{ student.name }}_제{{ round }}회_전국모의고사_성적표{% endblock head_title %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+{% block google_adsense %}{% endblock %}
 
-<body>
+{% block html_body %}
+<body class="bg-white">
     <h2 class="fw-bold text-center mb-4">{{ sub_title }} 성적표</h2>
     <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
@@ -193,161 +172,90 @@
                 </tr>
             </thead>
             <tbody>
-                <tr class="text-center small">
-                    <th class="text-nowrap align-center" rowspan="4">헌법</th>
-                    <th class="text-nowrap">정답</th>
-                    {% for answer in answers_heonbeob %}
-                        <td>
-                            {% if answer.answer_correct <= 5 %}
-                                {{ answer.answer_correct }}
-                            {% else %}
-                                {% for ans in answer.answer_correct_list %}{{ ans }}{% endfor %}
+                {% with sub='헌법' answers=answer_student.헌법 rates=answer_rates.헌법 %}
+                    {% partialdef answer_sub inline=True %}
+                        <tr class="text-center small">
+                            <th class="text-nowrap align-center" rowspan="5">{{ sub }}</th>
+                            <th class="text-nowrap">정답</th>
+                            {% for answer in answers %}
+                                <td>
+                                    {% if answer.answer_correct <= 5 %}
+                                        {{ answer.answer_correct }}
+                                    {% else %}
+                                        {% for ans in answer.answer_correct_list %}{{ ans }}{% endfor %}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                            {% if sub == '헌법' or ex == '칠급' %}
+                                {% for _ in 'x'|ljust:15 %}
+                                    <td></td>
+                                {% endfor %}
                             {% endif %}
-                        </td>
-                    {% endfor %}
-                    {% for _ in 'x'|ljust:15 %}
-                        <td></td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">제출 답안</th>
-                    {% for answer in answers_heonbeob %}
-                        <td>{{ answer.answer_student }}</td>
-                    {% endfor %}
-                    {% for _ in 'x'|ljust:15 %}
-                        <td></td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">정오</th>
-                    {% for answer in answers_heonbeob %}
-                        <td>{{ answer.result }}</td>
-                    {% endfor %}
-                    {% for _ in 'x'|ljust:15 %}
-                        <td></td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">정답률(%)</th>
-                    {% for rate in rates_heonbeob %}
-                        <td>
-                            <span data-number="{{ rate.problem__number }}">
-                                {{ rate.correct|floatformat:0 }}
-                            </span>
-                        </td>
-                    {% endfor %}
-                    {% for _ in 'x'|ljust:15 %}
-                        <td></td>
-                    {% endfor %}
-                </tr>
+                        </tr>
+                        <tr class="text-center small">
+                            <th class="text-nowrap">정답률(%)</th>
+                            {% for rate in rates %}
+                                <td>
+                                    <span data-number="{{ rate.problem__number }}">
+                                        {{ rate.rate_correct|floatformat:0 }}
+                                    </span>
+                                </td>
+                            {% endfor %}
+                            {% if sub == '헌법' or ex == '칠급' %}
+                                {% for _ in 'x'|ljust:15 %}
+                                    <td></td>
+                                {% endfor %}
+                            {% endif %}
+                        </tr>
+                        <tr class="text-center small">
+                            <th class="text-nowrap">제출 답안</th>
+                            {% for answer in answers %}
+                                <td>{{ answer.answer_student }}</td>
+                            {% endfor %}
+                            {% if sub == '헌법' or ex == '칠급' %}
+                                {% for _ in 'x'|ljust:15 %}
+                                    <td></td>
+                                {% endfor %}
+                            {% endif %}
+                        </tr>
+                        <tr class="text-center small">
+                            <th class="text-nowrap">정오</th>
+                            {% for answer in answers %}
+                                <td>{{ answer.result }}</td>
+                            {% endfor %}
+                            {% if sub == '헌법' or ex == '칠급' %}
+                                {% for _ in 'x'|ljust:15 %}
+                                    <td></td>
+                                {% endfor %}
+                            {% endif %}
+                        </tr>
+                        <tr class="text-center small">
+                            <th class="text-nowrap">선택률(%)</th>
+                            {% for answer in answers %}
+                                <td>
+                                    <span data-number="{{ answer.number }}">
+                                        {{ answer.rate_selection|floatformat:0 }}
+                                    </span>
+                                </td>
+                            {% endfor %}
+                            {% if sub == '헌법' or ex == '칠급' %}
+                                {% for _ in 'x'|ljust:15 %}
+                                    <td></td>
+                                {% endfor %}
+                            {% endif %}
+                        </tr>
+                    {% endpartialdef answer_sub %}
+                {% endwith %}
 
-                <tr class="text-center small">
-                    <th class="text-nowrap align-center" rowspan="4">언어<br/>논리</th>
-                    <th class="text-nowrap">정답</th>
-                    {% for answer in answers_eoneo %}
-                        <td>
-                            {% if answer.answer_correct <= 5 %}
-                                {{ answer.answer_correct }}
-                            {% else %}
-                                {% for ans in answer.answer_correct_list %}{{ ans }}{% endfor %}
-                            {% endif %}
-                        </td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">제출 답안</th>
-                    {% for answer in answers_eoneo %}
-                        <td>{{ answer.answer_student }}</td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">정오</th>
-                    {% for answer in answers_eoneo %}
-                        <td>{{ answer.result }}</td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">정답률(%)</th>
-                    {% for rate in rates_eoneo %}
-                        <td>
-                            <span data-number="{{ rate.problem__number }}">
-                                {{ rate.correct|floatformat:0 }}
-                            </span>
-                        </td>
-                    {% endfor %}
-                </tr>
-
-                <tr class="text-center small">
-                    <th class="text-nowrap align-center" rowspan="4">자료<br/>해석</th>
-                    <th class="text-nowrap">정답</th>
-                    {% for answer in answers_jaryo %}
-                        <td>
-                            {% if answer.answer_correct <= 5 %}
-                                {{ answer.answer_correct }}
-                            {% else %}
-                                {% for ans in answer.answer_correct_list %}{{ ans }}{% endfor %}
-                            {% endif %}
-                        </td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">제출 답안</th>
-                    {% for answer in answers_jaryo %}
-                        <td>{{ answer.answer_student }}</td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">정오</th>
-                    {% for answer in answers_jaryo %}
-                        <td>{{ answer.result }}</td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">정답률(%)</th>
-                    {% for rate in rates_jaryo %}
-                        <td>
-                            <span data-number="{{ rate.problem__number }}">
-                                {{ rate.correct|floatformat:0 }}
-                            </span>
-                        </td>
-                    {% endfor %}
-                </tr>
-
-                <tr class="text-center small">
-                    <th class="text-nowrap align-center" rowspan="4">상황<br/>판단</th>
-                    <th class="text-nowrap">정답</th>
-                    {% for answer in answers_sanghwang %}
-                        <td>
-                            {% if answer.answer_correct <= 5 %}
-                                {{ answer.answer_correct }}
-                            {% else %}
-                                {% for ans in answer.answer_correct_list %}{{ ans }}{% endfor %}
-                            {% endif %}
-                        </td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">제출 답안</th>
-                    {% for answer in answers_sanghwang %}
-                        <td>{{ answer.answer_student }}</td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">정오</th>
-                    {% for answer in answers_sanghwang %}
-                        <td>{{ answer.result }}</td>
-                    {% endfor %}
-                </tr>
-                <tr class="text-center small">
-                    <th class="text-nowrap">정답률(%)</th>
-                    {% for rate in rates_sanghwang %}
-                        <td>
-                            <span data-number="{{ rate.problem__number }}">
-                                {{ rate.correct|floatformat:0 }}
-                            </span>
-                        </td>
-                    {% endfor %}
-                </tr>
+                {% with sub='언어' answers=answer_student.언어 rates=answer_rates.언어 %}
+                    {% partial answer_sub %}
+                {% endwith %}
+                {% with sub='자료' answers=answer_student.자료 rates=answer_rates.자료 %}
+                    {% partial answer_sub %}
+                {% endwith %}
+                {% with sub='상황' answers=answer_student.상황 rates=answer_rates.상황 %}
+                    {% partial answer_sub %}
+                {% endwith %}
             </tbody>
         </table>
     </div>
@@ -360,5 +268,4 @@
         };
     </script>
 </body>
-
-</html>{% endlineless %}
+{% endblock html_body %}
