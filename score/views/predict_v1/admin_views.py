@@ -222,6 +222,9 @@ class IndividualIndexView(
         self.ex = self.kwargs.get('ex')
         self.round = self.kwargs.get('round')
 
+        filename = self.get_answer_filename()
+        self.answer_correct_dict = self.get_answer_correct_dict(filename)
+
         super().get_properties()
 
     def get_student(self):
