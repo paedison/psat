@@ -187,7 +187,12 @@ class BaseMixin:
     def get_answer_filename(self):
         filename = ''
         for exam in self.exam_list:
-            if exam['category'] == self.category and exam['year'] == self.year and exam['ex'] == self.ex and exam['round'] == self.round:
+            if (
+                    exam['category'] == self.category and
+                    exam['year'] == self.year and
+                    exam['ex'] == self.ex and
+                    exam['round'] == self.round
+            ):
                 filename = exam['answer_file']
         return filename
 

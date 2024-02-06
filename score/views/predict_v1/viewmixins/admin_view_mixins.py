@@ -131,7 +131,7 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
         return page_obj, page_range
 
-    def get_participant_list(self) -> dict:
+    def get_participant_list(self):
         all_user_ids = self.student_model.objects.values('user_id').distinct()
         participant_list = []
         for user_id in all_user_ids:
@@ -157,7 +157,7 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
 class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
     sub_title: str
     statistics: list
-    answer_count_analysis: list
+    answer_count_analysis: dict
     page_obj: any
     page_range: any
     student_ids: list
