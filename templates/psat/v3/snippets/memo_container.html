@@ -1,12 +1,9 @@
 {% load i18n %}
 {% load partials %}
 
-<div id="myMemo" class="border-bottom p-2 htmx-fade-in htmx-fade-out">
-    <div class="badge bg-warning mb-2">
-        {{ icon_memo.white|safe }} MEMO
-    </div>
+<div id="myMemo" class="htmx-fade-in htmx-fade-out">
     {% if my_memo %}
-        <div class="d-flex align-items-start mb-2">
+        <div class="d-flex align-items-start">
             <div id="myMemoContent" class="flex-fill border-start border-secondary-subtle px-2">
                 <span class="text-secondary fw-bold text-break">{{ my_memo.content }}</span>
             </div>

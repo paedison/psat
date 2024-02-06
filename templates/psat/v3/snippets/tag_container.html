@@ -3,10 +3,7 @@
 {% load taggit_templatetags2_tags %}
 {% load partials %}
 
-<div id="myTag" class="border-bottom p-2 htmx-fade-in htmx-fade-out">
-    <div class="badge bg-primary mb-2">
-        <i class="fa-solid fa-tag fa-fw text-white"></i> TAG
-    </div>
+<div id="myTag" class="htmx-fade-in htmx-fade-out">
     {% if my_tag %}
         <form class="mb-2">
             <div class="input-group">
@@ -71,7 +68,7 @@
 </div><!-- My Tag End -->
 
 {% if user.is_admin %}
-    <div id="allTags" class="p-2 htmx-fade-in htmx-fade-out">
+    <div id="allTags" class="pt-2 htmx-fade-in htmx-fade-out">
         <div class="badge bg-primary mb-2">
             <i class="fa-solid fa-tag fa-fw text-white"></i> ALL TAGS
         </div>

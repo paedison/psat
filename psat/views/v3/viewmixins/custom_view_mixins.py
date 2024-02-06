@@ -170,7 +170,7 @@ class MemoViewMixIn(ConstantIconSet):
     lookup_url_kwarg = 'memo_id'
     form_class = custom_forms.MemoForm
     context_object_name = 'my_memo'
-    template_name = 'psat/v2/snippets/memo_container.html'
+    template_name = 'psat/v3/snippets/memo_container.html'
 
     problem_id: int | None
     problem: reference_models.PsatProblem.objects
