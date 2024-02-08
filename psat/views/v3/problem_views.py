@@ -37,6 +37,7 @@ class ListView(
             'icon_filter': self.ICON_FILTER,
             'icon_memo': self.ICON_MEMO,
             'icon_tag': self.ICON_TAG,
+            'icon_question': self.ICON_QUESTION,
 
             # variables
             'year': self.year,
@@ -115,6 +116,7 @@ class DetailView(
             'icon_solve': self.ICON_SOLVE,
             'icon_memo': self.ICON_MEMO,
             'icon_tag': self.ICON_TAG,
+            'icon_question': self.ICON_QUESTION,
             'icon_nav': self.ICON_NAV,
             'icon_board': self.ICON_BOARD,
 
@@ -132,10 +134,12 @@ class DetailView(
             'solve_data': self.solve_data,
             'memo_data': self.memo_data,
             'tag_data': self.tag_data,
+            'comment_data': self.comment_data,
 
             # memo & tag
             'memo': self.memo,
             'my_tag': self.my_tag,
+            'comments': self.comments,
         }
 
 

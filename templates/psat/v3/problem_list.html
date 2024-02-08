@@ -28,41 +28,183 @@
 </div><!-- Page Title End -->
 
 <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-    {% #content_row class1='col-12' %}
-        <h5 class="card-title mb-1">
-            <div class="mb-4">
-                <span class="border-top border-bottom border-secondary-subtle fs-6 text-black p-1">
-                    {{ sub_title|safe }}
-                </span>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">{{ sub_title|safe }}</div>
+
+                <div class="card-body">
+                    <div class="row gy-2 mb-3">
+                        <div class="col-12 col-sm-6 dropdown text-center text-sm-start text-nowrap">
+                            {% if user.is_authenticated and info.view_type != 'search' %}
+                                {% with option=like_option %}{% partial filter_snippet %}{% endwith %}
+                                {% with option=solve_option %}{% partial filter_snippet %}{% endwith %}
+                                {% with option=memo_option %}{% partial filter_snippet %}{% endwith %}
+                                {% with option=tag_option %}{% partial filter_snippet %}{% endwith %}
+                                {% with option=rate_option %}{% partial filter_snippet %}{% endwith %}
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-sm-6 dropdown text-center text-sm-end text-nowrap">
+                            {% if info.view_type == 'search' %}
+                                <a type="button" class="btn btn-sm btn-primary"
+                                   href="/psat/search?data={{ search_data }}" hx-boost="true">전체</a>
+                            {% else %}
+                                <a type="button" class="btn btn-sm btn-primary" href="/psat/" hx-boost="true">전체</a>
+                            {% endif %}
+
+                            {% with option=year_option %}{% partial filter_snippet %}{% endwith %}
+                            {% with option=ex_option %}{% partial filter_snippet %}{% endwith %}
+                            {% with option=sub_option %}{% partial filter_snippet %}{% endwith %}
+                        </div>
+                    </div>
+
+                    {% #responsive_table %}
+                        <tbody>
+                            {% if page_obj %}
+                                {% for problem in page_obj %}
+                                    {% ifchanged %}
+                                        {% #list_divider %}
+                                            {% if info.view_type == 'problem' %}
+                                                <a href="{% url 'psat:list' 'problem' %}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}"
+                                                   hx-boost="true" hx-push-url="false">
+                                                    {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                                                </a>
+                                            {% else %}
+                                                {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                                            {% endif %}
+                                        {% /list_divider %}
+                                    {% endifchanged %}
+                                    <tr>
+                                        <td class="text-nowrap p-2 col-1">
+                                            <div class="d-inline-block d-sm-none me-1" hx-push-url="true">
+                                                {% partial reference %}
+                                            </div>
+                                            {% include 'psat/v3/snippets/icon_container.html' %}
+                                            <div class="d-none d-sm-inline-block td-div-lg text-start ps-1" hx-push-url="true">
+                                                {% partial reference %}
+                                            </div>
+                                            <div class="d-sm-none pt-2" hx-push-url="true">
+
+                                                {% partialdef question inline=True %} {# question partial #}
+                                                    {% if like_list and not problem|get_status:like_data %}
+
+                                                        {% with view_type='problem' %}
+
+                                                            {% partialdef question_link inline=True %} {# question_link partial #}
+                                                                {% with class='d-md-none' chars=30 %}
+                                                                    {% partial link_snippet %} {# link_snippet partial #}
+                                                                {% endwith %}
+
+                                                                {% with class='d-none d-md-inline d-lg-none' chars=40 %}
+                                                                    {% partial link_snippet %}
+                                                                {% endwith %}
+
+                                                                {% with class='d-none d-lg-inline d-xl-none' chars=50 %}
+                                                                    {% partial link_snippet %}
+                                                                {% endwith %}
+
+                                                                {% with class='d-none d-xl-inline' chars=60 %}
+                                                                    {% partial link_snippet %}
+                                                                {% endwith %}
+                                                            {% endpartialdef question_link %}
+
+                                                        {% endwith %}
+
+                                                    {% elif search_list %}
+                                                        {% with view_type='problem' %}
+                                                            {% partial question_link %}
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        {% with view_type=info.view_type %}
+                                                            {% partial question_link %}
+                                                        {% endwith %}
+                                                    {% endif %}
+                                                {% endpartialdef question %}
+
+                                            </div>
+                                        </td>
+                                        <td class="d-none d-sm-table-cell text-start text-nowrap p-2" hx-push-url="true">
+                                            {% partial question %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    {% /responsive_table %}
+
+                    {% #pagination_nav %}
+                        {% if page_obj.has_previous %}
+                            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+
+                                {% partialdef pagination_link inline=True %} {# pagination_link partial #}
+                                    <li class="page-item {{ status }}"
+                                        {% if status == 'active' %}aria-current="page"{% endif %}>
+                                        <a class="page-link" href=""
+                                            {% if status == 'disabled' %}
+                                                tabindex="-1" aria-disabled="true"
+                                            {% else %}
+                                                hx-get="{{ pagination_url }}&page={{ page_num }}"
+                                            {% endif %}>
+                                            {% if chevron %}
+                                                <i class="fa-solid fa-chevron-{{ chevron }}"></i>
+                                            {% else %}
+                                                {{ anchor_text }}
+                                            {% endif %}
+                                        </a>
+                                    </li>
+                                {% endpartialdef pagination_link %}
+
+                            {% endwith %}
+                        {% endif %}
+
+                        {% for number in page_range %}
+                            {% with page_num=number anchor_text=number %}
+                                {% if number == page_obj.number %}
+                                    {% with status='active' %}
+                                        {% partial pagination_link %}
+                                    {% endwith %}
+                                {% elif number == page_obj.paginator.ELLIPSIS %}
+                                    {% with status='disabled' %}
+                                        {% partial pagination_link %}
+                                    {% endwith %}
+                                {% else %}
+                                    {% partial pagination_link %}
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            {% with page_num=page_obj.number|add:1 chevron='right' %}
+                                {% partial pagination_link %}
+                            {% endwith %}
+                        {% endif %}
+                    {% /pagination_nav %}
+                </div>
             </div>
-            <div class="row gy-2">
-                <div class="col-12 col-sm-6 dropdown text-center text-sm-start text-nowrap">
-                    {% if user.is_authenticated and info.view_type != 'search' %}
+        </div>
+    </div>
+</section>
+{% endpartialdef list_main %}
+{% endblock main %}
 
-                        {% with option=like_option %}
-                            {% partialdef filter_snippet inline=True %} {# filter_snippet partial #}
-                                <button id="dropdown{{ option.var|title }}Link" type="button"
-                                        class="btn btn-sm btn-outline-primary dropdown-toggle"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                    {{ option.text|safe }}
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdown{{ option.var|title }}Link">
-                                    {% for opt in option.options %}
-                                        {% if option.var != 'year' and option.var != 'ex' and option.var != 'sub' and forloop.last %}
-                                            <li><hr class="dropdown-divider"></li>
-                                        {% endif %}
-                                        <li class="text-center">
-                                            <a class="dropdown-item {% if opt.0 == option.current %}bg-primary-light{% endif %}"
-                                               href="" hx-get="{% partial target_url %}">
-                                                {{ opt.1|safe }}
-                                            </a>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% endpartialdef filter_snippet %}
-                        {% endwith %}
-
-{% partialdef target_url %} {# target_url partial #}
+{% partialdef filter_snippet %} {# filter_snippet partial #}
+    <button id="dropdown{{ option.var|title }}Link" type="button"
+            class="btn btn-sm btn-outline-primary dropdown-toggle"
+            data-bs-toggle="dropdown" aria-expanded="false">
+        {{ option.text|safe }}
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdown{{ option.var|title }}Link">
+        {% for opt in option.options %}
+            {% if option.var != 'year' and option.var != 'ex' and option.var != 'sub' and forloop.last %}
+                <li><hr class="dropdown-divider"></li>
+            {% endif %}
+            <li class="text-center">
+                <a class="dropdown-item {% if opt.0 == option.current %}bg-primary-light{% endif %}"
+                   href="" hx-get="
 {% if option.var != 'year' and option.var != 'ex' and option.var != 'sub' %}
 {{ opt.2 }}
 {% else %}
@@ -72,198 +214,74 @@
 &is_liked={{ is_liked }}&rating={{ rating }}&is_correct={{ is_correct }}
 &has_memo={{ has_memo }}&has_tag={{ has_tag }}&data={{ search_data }}&date={{ search_date }}
 {% endif %}
-{% endpartialdef target_url %}
+">
+                    {{ opt.1|safe }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endpartialdef filter_snippet %}
 
-                        {% with option=solve_option %}{% partial filter_snippet %}{% endwith %}
-                        {% with option=memo_option %}{% partial filter_snippet %}{% endwith %}
-                        {% with option=tag_option %}{% partial filter_snippet %}{% endwith %}
-                        {% with option=rate_option %}{% partial filter_snippet %}{% endwith %}
-                    {% endif %}
-                </div>
-                <div class="col-12 col-sm-6 dropdown text-center text-sm-end text-nowrap">
-                    {% if info.view_type == 'search' %}
-                        <a type="button" class="btn btn-sm btn-primary"
-                           href="/psat/search?data={{ search_data }}" hx-boost="true">전체</a>
-                    {% else %}
-                        <a type="button" class="btn btn-sm btn-primary" href="/psat/" hx-boost="true">전체</a>
-                    {% endif %}
+{% partialdef reference %}
+    {% if search_list %}
+        {% with view_type='problem' %}
+            {% partialdef reference_link inline=True %}
+                <a class="text-decoration-none fw-bold"
+                   href="{% url 'psat:detail' view_type problem.id %}"
+                   hx-push-url="true" hx-boost="true">
+                    {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|add_0 }}
+                </a>
+            {% endpartialdef reference_link %}
+        {% endwith %}
+    {% elif info.view_type == 'like' and problem|get_status:like_data %}
+        {% with view_type=info.view_type %}{% partial reference_link %}{% endwith %}
+    {% elif info.view_type == 'rate' and problem|get_status:rate_data is not None %}
+        {% with view_type=info.view_type %}{% partial reference_link %}{% endwith %}
+    {% elif info.view_type == 'solve' and problem|get_status:solve_data is not None %}
+        {% with view_type=info.view_type %}{% partial reference_link %}{% endwith %}
+    {% elif info.view_type == 'memo' and problem|get_status:memo_data is not None %}
+        {% with view_type=info.view_type %}{% partial reference_link %}{% endwith %}
+    {% elif info.view_type == 'tag' and problem|get_status:tag_data is not None %}
+        {% with view_type=info.view_type %}{% partial reference_link %}{% endwith %}
+    {% else %}
+        {% with view_type='problem' %}{% partial reference_link %}{% endwith %}
+    {% endif %}
+{% endpartialdef reference %}
 
-                    {% with option=year_option %}{% partial filter_snippet %}{% endwith %}
-                    {% with option=ex_option %}{% partial filter_snippet %}{% endwith %}
-                    {% with option=sub_option %}{% partial filter_snippet %}{% endwith %}
-                </div>
-            </div>
-        </h5>
+{#{% partialdef reference %}#}
+{#    {% if like_list and not problem|get_status:like_data %}#}
+{#        {% with view_type='problem' %}#}
+{#            {% partialdef reference_link inline=True %}#}
+{#                <a class="text-decoration-none fw-bold"#}
+{#                   href="{% url 'psat:detail' view_type problem.id %}"#}
+{#                   hx-push-url="true" hx-boost="true">#}
+{#                    {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|add_0 }}#}
+{#                </a>#}
+{#            {% endpartialdef reference_link %}#}
+{#        {% endwith %}#}
+{#    {% elif search_list %}#}
+{#        {% with view_type='problem' %}#}
+{#            {% partial reference_link %}#}
+{#        {% endwith %}#}
+{#    {% else %}#}
+{#        {% with view_type=info.view_type %}#}
+{#            {% partial reference_link %}#}
+{#        {% endwith %}#}
+{#    {% endif %}#}
+{#{% endpartialdef reference %}#}
 
-        {% #responsive_table %}
-            <tbody>
-                {% if page_obj %}
-                    {% for problem in page_obj %}
-                        {% ifchanged %}
-                            {% #list_divider %}
-                                {% if info.view_type == 'problem' %}
-                                    <a href=""
-                                       hx-get="{% url 'psat:list' 'problem' %}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
-                                        {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                    </a>
-                                {% else %}
-                                    {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                {% endif %}
-                            {% /list_divider %}
-                        {% endifchanged %}
-                        <tr>
-                            <td class="text-nowrap p-2 col-1">
-                                <div class="d-inline-block d-sm-none me-1" hx-push-url="true">
-
-                                    {% partialdef reference inline=True %} {# reference partial #}
-                                        {% if like_list and not problem|get_status:like_data %}
-                                            {% with view_type='problem' %}
-
-                                                {% partialdef reference_link inline=True %} {# reference_link partial #}
-                                                    <a class="text-decoration-none fw-bold"
-                                                       href="{% url 'psat:detail' view_type problem.id %}"
-                                                       hx-push-url="{% url 'psat:detail' view_type problem.id %}"
-                                                       hx-get="{% partial detail_link_url %}">
-                                                        {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|add_0 }}
-                                                    </a>
-                                                {% endpartialdef reference_link %}
-
-                                            {% endwith %}
-
-{% partialdef detail_link_url %} {# detail_link_url partial #}
+{% partialdef link_snippet %}
+    <a class="text-decoration-none {{ class }}"
+{#       href="{% url 'psat:detail' view_type problem.id %}"#}
+       hx-push-url="{% url 'psat:detail' view_type problem.id %}" hx-boost="true"
+       href="
 {% url 'psat:detail' info.view_type problem.id %}?year={{ year }}&ex={{ ex }}&sub={{ sub }}
 &is_liked={{ is_liked }}&rating={{ rating }}&is_correct={{ is_correct }}
 &has_memo={{ has_memo }}&has_tag={{ has_tag }}&data={{ search_data }}
-{% endpartialdef detail_link_url %}
+">
+        <h3 class="fs-6 small m-0">
+            {{ problem.question|truncatechars:chars }}
+        </h3>
+    </a>
+{% endpartialdef link_snippet %}
 
-                                        {% elif search_list %}
-                                            {% with view_type='problem' %}
-                                                {% partial reference_link %}
-                                            {% endwith %}
-                                        {% else %}
-                                            {% with view_type=info.view_type %}
-                                                {% partial reference_link %}
-                                            {% endwith %}
-                                        {% endif %}
-                                    {% endpartialdef reference %}
-
-                                </div>
-                                {% include 'psat/v2/snippets/icon_container.html' %}
-                                <div class="d-none d-sm-inline-block td-div-lg text-start ps-1" hx-push-url="true">
-                                    {% partial reference %}
-                                </div>
-                                <div class="d-sm-none pt-2" hx-push-url="true">
-
-                                    {% partialdef question inline=True %} {# question partial #}
-                                        {% if like_list and not problem|get_status:like_data %}
-
-                                            {% with view_type='problem' %}
-
-                                                {% partialdef question_link inline=True %} {# question_link partial #}
-                                                    {% with class='d-md-none' chars=30 %}
-
-                                                        {% partialdef link_snippet inline=True %} {# link_snippet partial #}
-                                                            <a class="text-decoration-none {{ class }}"
-                                                               href="{% url 'psat:detail' view_type problem.id %}"
-                                                               hx-push-url="{% url 'psat:detail' view_type problem.id %}"
-                                                               hx-get="{% partial detail_link_url %}">
-                                                                <h3 class="fs-6 small m-0">
-                                                                    {{ problem.question|truncatechars:chars }}
-                                                                </h3>
-                                                            </a>
-                                                        {% endpartialdef link_snippet %}
-
-                                                    {% endwith %}
-
-                                                    {% with class='d-none d-md-inline d-lg-none' chars=40 %}
-                                                        {% partial link_snippet %}
-                                                    {% endwith %}
-
-                                                    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}
-                                                        {% partial link_snippet %}
-                                                    {% endwith %}
-
-                                                    {% with class='d-none d-xl-inline' chars=60 %}
-                                                        {% partial link_snippet %}
-                                                    {% endwith %}
-                                                {% endpartialdef question_link %}
-
-                                            {% endwith %}
-
-                                        {% elif search_list %}
-                                            {% with view_type='problem' %}
-                                                {% partial question_link %}
-                                            {% endwith %}
-                                        {% else %}
-                                            {% with view_type=info.view_type %}
-                                                {% partial question_link %}
-                                            {% endwith %}
-                                        {% endif %}
-                                    {% endpartialdef question %}
-
-                                </div>
-                            </td>
-                            <td class="d-none d-sm-table-cell text-start text-nowrap p-2" hx-push-url="true">
-                                {% partial question %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        {% /responsive_table %}
-
-        {% #pagination_nav %}
-            {% if page_obj.has_previous %}
-                {% with page_num=page_obj.number|add:-1 chevron='left' %}
-
-                    {% partialdef pagination_link inline=True %} {# pagination_link partial #}
-                        <li class="page-item {{ status }}"
-                            {% if status == 'active' %}aria-current="page"{% endif %}>
-                            <a class="page-link" href=""
-                                {% if status == 'disabled' %}
-                                    tabindex="-1" aria-disabled="true"
-                                {% else %}
-                                    hx-get="{{ pagination_url }}&page={{ page_num }}"
-                                {% endif %}>
-                                {% if chevron %}
-                                    <i class="fa-solid fa-chevron-{{ chevron }}"></i>
-                                {% else %}
-                                    {{ anchor_text }}
-                                {% endif %}
-                            </a>
-                        </li>
-                    {% endpartialdef pagination_link %}
-
-                {% endwith %}
-            {% endif %}
-
-            {% for number in page_range %}
-                {% with page_num=number anchor_text=number %}
-                    {% if number == page_obj.number %}
-                        {% with status='active' %}
-                            {% partial pagination_link %}
-                        {% endwith %}
-                    {% elif number == page_obj.paginator.ELLIPSIS %}
-                        {% with status='disabled' %}
-                            {% partial pagination_link %}
-                        {% endwith %}
-                    {% else %}
-                        {% partial pagination_link %}
-                    {% endif %}
-                {% endwith %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-                {% with page_num=page_obj.number|add:1 chevron='right' %}
-                    {% partial pagination_link %}
-                {% endwith %}
-            {% endif %}
-        {% /pagination_nav %}
-    {% /content_row %}
-</section>
-{% endpartialdef list_main %}
-{% endblock main %}

@@ -1,0 +1,77 @@
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+{% load partials %}
+
+{% if comments %}
+    {% for comment in comments %}
+        <div id="commentContents">
+            <div id="comment{{ comment.id }}">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <span class="text-gray-500 mr-1">
+                            {{ comment.user.username }}
+                        </span>
+                        <span class="mr-1">
+                            {{ comment.timestamp|date:'n/j(D) H:i' }}
+                        </span>
+                    </div>
+                {% if comment.user == user %}
+                    <div>
+                        <a class="btn btn-circle btn-sm btn-outline-success me-1" href=""
+                           hx-get="{% url 'psat:comment_update' comment.id %}"
+                           title="{% trans 'Update' %}"
+                           hx-target="#commentUpdate{{ comment.id }}"
+                           hx-swap="innerHTML swap:0.25s">
+                            {{ icon_board.update|safe }}
+                        </a>
+                        <a class="btn btn-circle btn-sm btn-outline-danger" href=""
+                           hx-post="{% url 'psat:comment_delete' comment.id %}"
+                           title="{% trans 'Delete' %}"
+                           hx-target="#commentContainer"
+                           hx-swap="outerHTML swap:0.25s"
+                           hx-confirm="{% trans 'Are you sure you wish to delete your question or comment?' %}">
+                            {{ icon_board.delete|safe }}
+                        </a>
+                    </div>
+                {% endif %}
+                </div>
+                <div id="commentContent{{ comment.id }}" class="comment text-gray-900">
+                    {{ comment.content }}
+                </div>
+            </div>
+            <div id="commentUpdate{{ comment.id }}" class="htmx-fade-in htmx-fade-out"></div>
+        </div>
+        <hr class="my-2">
+    {% endfor %}
+{% endif %}
+<form>
+    <div class="input-group">
+        <input name="parent" type="text" value="" aria-label="User" hidden/>
+        <input name="content" type="text" aria-label="Content" required
+               class="form-control form-control-sm"
+               placeholder="{% trans 'Leave question or comment' %}"/>
+        <button class="btn btn-sm btn-outline-primary" hx-target="#detailComments"
+                hx-post="{% url 'psat:comment_create' problem_id %}" hx-swap="innerHTML">
+            {% trans 'Create' %}
+        </button>
+    </div>
+</form>
+
+{% partialdef update %} {# update partial #}
+<form>
+    <div class="input-group">
+        <input name="user_id" type="text" value="{{ comment.user_id }}"
+               aria-label="User" hidden/>
+        <input name="problem" type="text" value="{{ comment.problem.id }}"
+               aria-label="Problem" hidden/>
+        <input name="content" type="text" aria-label="Content" required
+               class="form-control form-control-sm" value="{{ comment.content }}"
+               placeholder="{% trans 'Leave comment' %}"/>
+        <button class="btn btn-sm btn-outline-primary" hx-target="#detailComments"
+                hx-post="{% url 'psat:comment_update' comment.id %}" hx-swap="innerHTML">
+            {% trans 'Update' %}
+        </button>
+    </div>
+</form>
+{% endpartialdef update %}

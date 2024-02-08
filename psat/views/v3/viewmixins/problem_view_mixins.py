@@ -35,6 +35,7 @@ class BaseMixin(ConstantIconSet):
     has_memo: str
     has_tag: str
     search_data: str
+    has_comment: str
 
     ip_address: str
 
@@ -48,6 +49,7 @@ class BaseMixin(ConstantIconSet):
     solve_data: reference_models.PsatProblem.objects
     memo_data: reference_models.PsatProblem.objects
     tag_data: reference_models.PsatProblem.objects
+    comment_data: reference_models.PsatProblem.objects
 
     def get_properties(self):
         self.user_id = self.request.user.id if self.request.user.is_authenticated else None
@@ -62,6 +64,7 @@ class BaseMixin(ConstantIconSet):
 
         self.is_liked = self.rating = self.is_correct = 'pass'
         self.has_memo = self.has_tag = self.search_data = 'pass'
+        self.has_comment = 'pass'
 
         if self.view_type == 'like':
             self.is_liked = self.request.GET.get('is_liked', '')
@@ -75,6 +78,8 @@ class BaseMixin(ConstantIconSet):
             self.has_tag = self.request.GET.get('has_tag', '')
         if self.view_type == 'search':
             self.search_data = self.request.GET.get('data', '') or self.request.POST.get('data', '')
+        if self.view_type == 'comment':
+            self.has_tag = self.request.GET.get('has_comment', '')
 
         self.sub_title_dict = self.get_sub_title_dict()
         self.sub_title = self.get_sub_title()
@@ -88,6 +93,7 @@ class BaseMixin(ConstantIconSet):
         self.solve_data = self.custom_data['solve']
         self.memo_data = self.custom_data['memo']
         self.tag_data = self.custom_data['tag']
+        self.comment_data = self.custom_data['comment']
 
     def get_urls(self) -> tuple[str, str, str]:
         url_options = (
@@ -113,8 +119,8 @@ class BaseMixin(ConstantIconSet):
         return {
             'like': {
                 '': '즐겨찾기 지정',
-                'True': self.ICON_LIKE['true'] + '즐겨찾기 추가',
-                'False': self.ICON_LIKE['false'] + '즐겨찾기 제외',
+                'True': self.ICON_LIKE['true'] + ' 즐겨찾기 추가',
+                'False': self.ICON_LIKE['false'] + ' 즐겨찾기 제외',
                 'None': '즐겨찾기 미지정',
             },
             'rate': {
@@ -128,21 +134,21 @@ class BaseMixin(ConstantIconSet):
             },
             'solve': {
                 '': '정답 확인',
-                'True': self.ICON_SOLVE['true'] + '맞힌 문제',
-                'False': self.ICON_SOLVE['false'] + '틀린 문제',
+                'True': self.ICON_SOLVE['true'] + ' 맞힌 문제',
+                'False': self.ICON_SOLVE['false'] + ' 틀린 문제',
                 'None': '정답 미확인',
             },
             'memo': {
-                '': self.ICON_MEMO['true'] + '메모 남긴 문제',
-                'True': self.ICON_MEMO['true'] + '메모 남긴 문제',
-                'False': self.ICON_MEMO['false'] + '메모 없는 문제',
-                'None': self.ICON_MEMO['false'] + '메모 없는 문제',
+                '': self.ICON_MEMO['true'] + ' 메모 남긴 문제',
+                'True': self.ICON_MEMO['true'] + ' 메모 남긴 문제',
+                'False': self.ICON_MEMO['false'] + ' 메모 없는 문제',
+                'None': self.ICON_MEMO['false'] + ' 메모 없는 문제',
             },
             'tag': {
-                '': self.ICON_TAG['true'] + '태그 남긴 문제',
-                'True': self.ICON_TAG['true'] + '태그 남긴 문제',
-                'False': self.ICON_TAG['false'] + '태그 없는 문제',
-                'None': self.ICON_TAG['false'] + '태그 없는 문제',
+                '': self.ICON_TAG['true'] + ' 태그 남긴 문제',
+                'True': self.ICON_TAG['true'] + ' 태그 남긴 문제',
+                'False': self.ICON_TAG['false'] + ' 태그 없는 문제',
+                'None': self.ICON_TAG['false'] + ' 태그 없는 문제',
             }
         }
 
@@ -238,8 +244,12 @@ class BaseMixin(ConstantIconSet):
                 tag_data = custom_data.filter(tags__isnull=False, tags__user_id=self.user_id).values(*values_list_keys)
             else:
                 tag_data = custom_data.exclude(tags__isnull=False, tags__user_id=self.user_id).values(*values_list_keys)
+            if self.has_comment:
+                comment_data = custom_data.filter(comments__isnull=False).values(*values_list_keys)
+            else:
+                comment_data = custom_data.exclude(comments__isnull=False).values(*values_list_keys)
         else:
-            like_data = rate_data = solve_data = memo_data = tag_data = None
+            like_data = rate_data = solve_data = memo_data = tag_data = comment_data = None
 
         return {
             'problem': problem_data,
@@ -249,6 +259,7 @@ class BaseMixin(ConstantIconSet):
             'memo': memo_data,
             'tag': tag_data,
             'search': problem_data,
+            'comment': comment_data,
         }
 
     def get_list_queryset(self, view_type) -> reference_models.PsatProblem.objects:
@@ -488,6 +499,7 @@ class DetailViewMixIn(BaseMixin):
     problem: reference_models.PsatProblem.objects
     memo: custom_models.Memo | None
     my_tag: custom_models.Tag | None
+    comments: custom_models.Comment | None
 
     view_custom_data: reference_models.PsatProblem.objects
     prev_prob: reference_models.PsatProblem.objects
@@ -504,6 +516,8 @@ class DetailViewMixIn(BaseMixin):
         if self.request.user.is_authenticated:
             self.memo = custom_models.Memo.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
             self.my_tag = custom_models.Tag.objects.filter(user_id=self.user_id, problem_id=self.problem_id).first()
+
+        self.comments = list(custom_models.Comment.objects.filter(problem_id=self.problem_id).values())
 
         self.view_custom_data = self.custom_data[self.view_type]
         self.prev_prob, self.next_prob = self.get_prev_next_prob(self.view_custom_data)

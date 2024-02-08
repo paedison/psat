@@ -2,6 +2,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 
+from common.models import User
+from reference.models import PsatProblem
 from .base_models import Base
 
 
@@ -55,3 +57,21 @@ class Tag(Base):
         verbose_name = _("Tagged problem")
         verbose_name_plural = _("Tagged problems")
         unique_together = [["user_id", "problem"]]
+
+
+class Comment(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_comments')
+    problem = models.ForeignKey(PsatProblem, on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField()
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    hit = models.IntegerField(default=1, verbose_name='조회수')
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        year = self.problem.psat.year
+        ex = self.problem.psat.exam.abbr[0]
+        sub = self.problem.psat.subject.abbr[0]
+        num = f'{self.problem.number:02}'
+        return f'{year}{ex}{sub}{num}-Comment#{self.id}(User#{self.user_id})'

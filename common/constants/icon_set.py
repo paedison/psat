@@ -68,6 +68,13 @@ class ConstantIconSet:
         'white': '<i class="fa-solid fa-tag fa-fw text-white"></i>',
     }
 
+    ICON_QUESTION = {
+        'true': '<i class="fa-solid fa-circle-question text-success"></i>',
+        'false': '<i class="fa-solid fa-circle-question text-gray-300"></i>',
+        'filter': '<i class="fa-regular fa-circle-question"></i>',
+        'white': '<i class="fa-regular fa-circle-question fa-fw text-white"></i>',
+    }
+
     @staticmethod
     def get_star_icons():
         solid_star = '<i class="fa-solid fa-star m-0"></i>'

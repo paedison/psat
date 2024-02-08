@@ -1,6 +1,6 @@
 from django.urls import path
 
-from psat.views.v3 import problem_views, update_views, memo_views, tag_views
+from psat.views.v3 import problem_views, update_views, memo_views, tag_views, comment_views
 
 app_name = 'psat'
 
@@ -27,4 +27,11 @@ urlpatterns = [
     path('tag/add/tag<int:tag_id>/', tag_views.add_view, name='tag_add'),
     path('tag/delete/tag<int:tag_id>/<str:tag_name>/', tag_views.delete_view, name='tag_delete'),
     path('tag/cloud/', tag_views.cloud_view, name='tag_cloud'),
+
+    # comment_views
+    path('comment/problem<int:problem_id>/', comment_views.list_view, name='comment_list'),
+    path('comment/problem<int:problem_id>/create/', comment_views.create_view, name='comment_create'),
+    path('comment/detail/comment<int:comment_id>/', comment_views.detail_view, name='comment_detail'),
+    path('comment/update/comment<int:comment_id>/', comment_views.update_view, name='comment_update'),
+    path('comment/delete/comment<int:comment_id>/', comment_views.delete_view, name='comment_delete'),
 ]

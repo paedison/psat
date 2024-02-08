@@ -1,7 +1,7 @@
 from crispy_forms.helper import FormHelper
 from django import forms
 
-from .models import ProblemMemo, ProblemTag, Memo, Tag
+from . import models as custom_models
 
 
 class ProblemMemoForm(forms.ModelForm):
@@ -11,13 +11,13 @@ class ProblemMemoForm(forms.ModelForm):
         self.helper = FormHelper(self)
 
     class Meta:
-        model = ProblemMemo
+        model = custom_models.ProblemMemo
         fields = ['user', 'problem', 'content']
 
 
 class ProblemTagForm(forms.ModelForm):
     class Meta:
-        model = ProblemTag
+        model = custom_models.ProblemTag
         fields = ['user', 'problem']
 
 
@@ -28,11 +28,17 @@ class MemoForm(forms.ModelForm):
         self.helper = FormHelper(self)
 
     class Meta:
-        model = Memo
+        model = custom_models.Memo
         fields = ['user_id', 'problem', 'content']
 
 
 class TagForm(forms.ModelForm):
     class Meta:
-        model = Tag
+        model = custom_models.Tag
         fields = ['user_id', 'problem']
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = custom_models.Comment
+        fields = ['content', 'parent']
