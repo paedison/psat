@@ -25,11 +25,11 @@
 
     <div class="search-bar">
         <form class="search-form d-flex align-items-center">
-            <input id="id_data" type="text" name="data"
+            <input id="id_data" type="text" name="keyword"
                    placeholder="{% trans 'Enter search keyword' %}"
                    title="{% trans 'Enter search keyword' %}">
             <button type="submit" title="Search" hx-swap="innerHtml swap:0.5s"
-                    hx-post="{% url 'psat:list' 'search' %}" hx-target="#main">
+                    hx-post="{% url 'psat:search' %}" hx-target="#main">
                 {{ search_icon|safe }}
             </button>
         </form>
@@ -42,12 +42,25 @@
             </li>
             {% if user.is_authenticated %}
                 {% if user.is_admin %}
-                    {% header_icon_link type='admin' %}
+                    <a class="nav-link px-1" href="{% url 'admin:index' %}" target="#admin">
+                        <i class="fa-solid fa-crown fa-fw"></i>
+                    </a>
                 {% endif %}
-                {% header_icon_link type='problem' %}
-                {% header_icon_link type='like' %}
-                {% header_icon_link type='rate' %}
-                {% header_icon_link type='solve' %}
+                    <div class="d-flex" hx-boost="true" hx-push-url="{% url 'psat:base' %}"
+                         hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        <a class="nav-link px-1" href="{% url 'psat:base' %}">
+                            <i class="fa-solid fa-file-lines fa-fw"></i>
+                        </a>
+                        <a class="nav-link px-1" href="{% url 'psat:base' %}?likes=true">
+                            <i class="fa-solid fa-heart fa-fw"></i>
+                        </a>
+                        <a class="nav-link px-1" href="{% url 'psat:base' %}?rates=all">
+                            <i class="fa-solid fa-star fa-fw"></i>
+                        </a>
+                        <a class="nav-link px-1" href="{% url 'psat:base' %}?solves=all">
+                            <i class="fa-solid fa-circle-check fa-fw"></i>
+                        </a>
+                    </div>
                 <div class="topbar-divider"></div>
             {% endif %}
 

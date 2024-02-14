@@ -1,4 +1,6 @@
+from ckeditor.fields import RichTextField
 from django.db import models
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 
@@ -42,7 +44,7 @@ class Solve(Base):
 
 
 class Memo(Base):
-    content = models.TextField("내용")
+    memo = RichTextField(config_name='minimal')
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -64,8 +66,8 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_comments')
     problem = models.ForeignKey(PsatProblem, on_delete=models.CASCADE, related_name='comments')
-    content = models.TextField()
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    comment = RichTextField(config_name='minimal')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='reply_comments')
     hit = models.IntegerField(default=1, verbose_name='조회수')
     is_deleted = models.BooleanField(default=False)
 
@@ -75,3 +77,6 @@ class Comment(models.Model):
         sub = self.problem.psat.subject.abbr[0]
         num = f'{self.problem.number:02}'
         return f'{year}{ex}{sub}{num}-Comment#{self.id}(User#{self.user_id})'
+
+    def get_absolute_url(self):
+        return reverse_lazy('psat:comment_container', args=[self.problem_id])

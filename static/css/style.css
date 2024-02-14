@@ -180,9 +180,18 @@ div.td-div-lg {
     text-align: center;
 }
 div.td-div-xl {
+    width: 6rem;
+    display: inline-block;
+    text-align: center;
+}
+div.td-div-xxl {
     width: 7.5rem;
     display: inline-block;
     text-align: center;
+}
+
+div.django-ckeditor-widget {
+    width: 100%;
 }
 
 

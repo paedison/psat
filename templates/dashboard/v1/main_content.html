@@ -10,10 +10,10 @@
                 {% for log in page_obj %}
                     <tr class="text-start">
                         <td class="text-nowrap">
-                            <div class="td-div-xl text-start" aria-label="Reference">
+                            <div class="td-div-xxl text-start" aria-label="Reference">
                                 <a class="text-decoration-none fw-bold" hx-push-url="true"
-                                   href="{% url 'psat:detail' 'problem' log.problem.id %}"
-                                   hx-get="{% url 'psat:detail' 'problem' log.problem.id %}">
+                                   href="{% url 'psat:detail' log.problem.id %}"
+                                   hx-get="{% url 'psat:detail' log.problem.id %}">
                                     {% with psat=log.problem.psat %}
                                         {{ psat.year }}-{{ psat.exam.abbr }}-{{ psat.subject.abbr }}
                                         {{ log.problem.number|add_0 }}
@@ -67,8 +67,8 @@
                             </div>
                             <h3 class="fs-6 small m-0 py-2 d-block text-nowrap">
                                 <a class="text-decoration-none text-black" hx-push-url="true"
-                                   href="{% url 'psat:detail' 'problem' log.problem.id %}"
-                                   hx-get="{% url 'psat:detail' 'problem' log.problem.id %}">
+                                   href="{% url 'psat:detail' log.problem.id %}"
+                                   hx-get="{% url 'psat:detail' log.problem.id %}">
                                     {{ log.problem.question|truncatechars:30 }}
                                 </a>
                             </h3>

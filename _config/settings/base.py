@@ -292,6 +292,15 @@ CKEDITOR_CONFIGS = {
         'width': 'auto',
         "removePlugins": "stylesheetparser",
     },
+    'minimal': {
+        'toolbar': [
+            ['Bold', 'Italic', 'Underline', 'Strike'],
+            ['NumberedList', 'BulletedList', 'Outdent', 'Indent'],
+        ],
+        'width': 'auto',
+        'height': 100,
+        "removePlugins": "stylesheetparser",
+    },
 }
 
 

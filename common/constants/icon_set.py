@@ -32,8 +32,8 @@ class ConstantIconSet:
         'is_hidden': '<i class="fa-solid fa-lock fa-fw"></i>',
         'list': '<i class="fa-solid fa-list fa-fw"></i>',
         'reply': '<i class="fa-solid fa-reply fa-fw"></i>',
-        'update': '<i class="fa-solid fa-pen"></i>',
-        'delete': '<i class="fa-solid fa-trash"></i>',
+        'update': '<i class="fa-solid fa-pen fa-fw"></i>',
+        'delete': '<i class="fa-solid fa-trash fa-fw"></i>',
         'prev': '<i class="fa-solid fa-arrow-down fa-fw"></i>',
         'next': '<i class="fa-solid fa-arrow-up fa-fw"></i>',
         'category0': '<i class="fa-solid fa-bars fa-fw"></i>',
@@ -45,6 +45,7 @@ class ConstantIconSet:
         'true': '<i class="fa-solid fa-heart"></i>',
         'false': '<i class="fa-solid fa-heart text-gray-300"></i>',
         'filter': '<i class="fa-regular fa-heart"></i>',
+        'white': '<i class="fa-solid fa-heart text-white"></i>',
     }
 
     ICON_SOLVE = {
@@ -52,13 +53,14 @@ class ConstantIconSet:
         'false': '<i class="fa-solid fa-circle-xmark"></i>',
         'none': '<i class="fa-solid fa-circle-check text-gray-300"></i>',
         'filter': '<i class="fa-regular fa-circle-check"></i>',
+        'white': '<i class="fa-solid fa-circle-check text-white"></i>',
     }
 
     ICON_MEMO = {
         'true': '<i class="fa-solid fa-note-sticky"></i>',
         'false': '<i class="fa-solid fa-note-sticky text-gray-300"></i>',
         'filter': '<i class="fa-regular fa-note-sticky"></i>',
-        'white': '<i class="fa-regular fa-note-sticky fa-fw text-white"></i>',
+        'white': '<i class="fa-solid fa-note-sticky fa-fw text-white"></i>',
     }
 
     ICON_TAG = {
@@ -89,6 +91,7 @@ class ConstantIconSet:
             'star4': "".join([solid_star for _ in range(0, 4)] + [empty_star for _ in range(0, 1)]),
             'star5': "".join([solid_star for _ in range(0, 5)]),
             'filter': '<i class="fa-regular fa-star"></i>',
+            'white': '<i class="fa-solid fa-star text-white"></i>',
         }
     ICON_RATE = get_star_icons()
 

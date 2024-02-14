@@ -22,23 +22,18 @@ class ProblemTagForm(forms.ModelForm):
 
 
 class MemoForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-
     class Meta:
         model = custom_models.Memo
-        fields = ['user_id', 'problem', 'content']
+        fields = ['memo']
 
 
 class TagForm(forms.ModelForm):
     class Meta:
         model = custom_models.Tag
-        fields = ['user_id', 'problem']
+        fields = ['problem']
 
 
 class CommentForm(forms.ModelForm):
     class Meta:
         model = custom_models.Comment
-        fields = ['content', 'parent']
+        fields = ['comment', 'parent']

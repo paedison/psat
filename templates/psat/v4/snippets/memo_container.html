@@ -1,0 +1,81 @@
+{% extends 'list.html' %}
+{% load i18n %}
+{% load static %}
+{% load partials %}
+
+{% block main %}
+{% partialdef memo_main inline=True %}
+<div class="card-body" hx-target="#containerMemo">
+    <div id="accordionMemo" class="accordion accordion-flush">
+        <div class="accordion-item">
+            <h2 id="headingMemo" class="accordion-header">
+                <button class="accordion-button" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collapseMemo"
+                        aria-expanded="true" aria-controls="collapseMemo">
+                    <span class="badge bg-warning">{{ icon_memo.white|safe }} 메모</span>
+                </button>
+            </h2>
+            <div id="collapseMemo" class="accordion-collapse collapse show"
+                 aria-labelledby="headingMemo" data-bs-parent="#accordionMemo">
+                {% if update %}
+                    <form hx-post="{% url 'psat:memo_update' my_memo.id %}">
+                        {{ form.media }}
+                        {{ form.memo }}
+                        <div class="d-flex justify-content-end mt-2">
+                            <div class="btn-group">
+                                <button hx-get="{% url 'psat:memo_container' problem.id %}"
+                                        class="btn btn-sm btn-outline-primary">
+                                    {% trans 'Cancel' %}
+                                </button>
+                                <textarea name="memo" id="content_memo" hidden></textarea>
+                                <button type="submit" class="btn btn-sm btn-outline-primary ckeditor-submit">
+                                    {% trans 'Update' %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                {% elif my_memo %}
+                    <ul class="list-group list-group-flush">
+                        <li id="myMemoContent" class="list-group-item justify-content-between align-items-start p-0">
+                            <div class="row">
+                                <span class="text-gray-900 text-break">{{ my_memo.memo|safe }}</span>
+                            </div>
+                            <div class="row">
+                                <div class="d-flex justify-content-end">
+                                    <div class="btn-group" role="group" aria-label="Memo buttons">
+                                        <button class="btn btn-sm btn-outline-success"
+                                                hx-get="{% url 'psat:memo_update' my_memo.id %}"
+                                                title="{% trans 'Update' %}">
+                                            {{ icon_board.update|safe }}
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                hx-post="{% url 'psat:memo_delete' my_memo.id %}"
+                                                hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
+                                                title="{% trans 'Delete' %}">
+                                            {{ icon_board.delete|safe }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                {% else %}
+                    <form hx-post="{% url 'psat:memo_create' problem.id %}">
+                        {{ form.media }}
+                        {{ form.memo }}
+                        <div class="d-flex justify-content-end mt-2">
+                            <div class="btn-group">
+                                <textarea name="memo" id="content_memo" hidden></textarea>
+                                <button type="submit" class="btn btn-sm btn-outline-primary ckeditor-submit">
+                                    {% trans 'Create' %}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endpartialdef memo_main %}
+{% endblock main %}
