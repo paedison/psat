@@ -12,7 +12,10 @@
                 <button class="accordion-button" type="button"
                         data-bs-toggle="collapse" data-bs-target="#collapseMemo"
                         aria-expanded="true" aria-controls="collapseMemo">
-                    <span class="badge bg-warning">{{ icon_memo.white|safe }} 메모</span>
+                    <span class="badge bg-warning me-2">{{ icon_memo.white|safe }} 메모</span>
+                    <div class="small text-warning fw-bold">
+                        나만 볼 수 있는 메모를 남겨보세요.
+                    </div>
                 </button>
             </h2>
             <div id="collapseMemo" class="accordion-collapse collapse show"
@@ -21,15 +24,15 @@
                     <form hx-post="{% url 'psat:memo_update' my_memo.id %}">
                         {{ form.media }}
                         {{ form.memo }}
+                        <textarea id="content_memo" name="memo" class="ckeditor-content" hidden></textarea>
                         <div class="d-flex justify-content-end mt-2">
                             <div class="btn-group">
-                                <button hx-get="{% url 'psat:memo_container' problem.id %}"
-                                        class="btn btn-sm btn-outline-primary">
-                                    {% trans 'Cancel' %}
-                                </button>
-                                <textarea name="memo" id="content_memo" hidden></textarea>
                                 <button type="submit" class="btn btn-sm btn-outline-primary ckeditor-submit">
                                     {% trans 'Update' %}
+                                </button>
+                                <button hx-get="{% url 'psat:memo_container' problem.id %}"
+                                        class="btn btn-sm btn-danger">
+                                    {% trans 'Cancel' %}
                                 </button>
                             </div>
                         </div>
@@ -63,9 +66,9 @@
                     <form hx-post="{% url 'psat:memo_create' problem.id %}">
                         {{ form.media }}
                         {{ form.memo }}
+                        <textarea id="content_memo" name="memo" class="ckeditor-content" hidden></textarea>
                         <div class="d-flex justify-content-end mt-2">
                             <div class="btn-group">
-                                <textarea name="memo" id="content_memo" hidden></textarea>
                                 <button type="submit" class="btn btn-sm btn-outline-primary ckeditor-submit">
                                     {% trans 'Create' %}
                                 </button>

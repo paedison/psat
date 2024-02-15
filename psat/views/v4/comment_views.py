@@ -6,12 +6,44 @@ from django.urls import reverse_lazy
 from .viewmixins import comment_view_mixins
 
 
-class CommentContainerView(
-    comment_view_mixins.BaseMixIn,
-    vanilla.ListView
+class CommentListView(
+    comment_view_mixins.CommentListViewMixin,
+    vanilla.TemplateView
 ):
     """View for loading comment container."""
-    paginate_by = 10
+    template_name = 'psat/v4/snippets/comment_list.html'
+
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#list_main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
+
+    def get(self, request, *args, **kwargs):
+        self.get_properties()
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = self.form_class()
+        context.update({
+            # page objectives
+            'page_obj': self.page_obj,
+            'page_range': self.page_range,
+
+            'form': form,
+            'icon_board': self.ICON_BOARD,
+            'icon_question': self.ICON_QUESTION,
+        })
+        return context
+
+
+class CommentContainerView(
+    comment_view_mixins.CommentContainerViewMixin,
+    vanilla.TemplateView
+):
+    """View for loading comment container."""
 
     def get_template_names(self):
         htmx_template = {
@@ -24,34 +56,25 @@ class CommentContainerView(
         self.get_properties()
         return super().get(request, *args, **kwargs)
 
-    def get_queryset(self):
-        qs = self.model.objects.filter(problem_id=self.problem_id)
-        parent_comments = qs.filter(parent__isnull=True).order_by('-timestamp')
-        child_comments = qs.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
-
-        all_comments = []
-        for comment in parent_comments:
-            all_comments.append(comment)
-            all_comments.extend(child_comments.filter(parent=comment))
-
-        return all_comments
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         form = self.form_class()
         context.update({
-            'icon_question': self.ICON_QUESTION,
+            # page objectives
+            'page_obj': self.page_obj,
+            'page_range': self.page_range,
+            'num_pages': self.num_pages,
+
             'problem_id': self.problem_id,
             'form': form,
             'icon_board': self.ICON_BOARD,
-            'icon_memo': self.ICON_MEMO,
+            'icon_question': self.ICON_QUESTION,
         })
-        print(context)
         return context
 
 
 class CommentCreateView(
-    comment_view_mixins.BaseMixIn,
+    comment_view_mixins.CommentCreateViewMixin,
     vanilla.CreateView,
 ):
 
@@ -60,8 +83,6 @@ class CommentCreateView(
             'False': self.template_name,
             'True': f'{self.template_name}#create',
         }
-        # if self.parent_id:
-        #     return f'{self.template_name}#create'
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get(self, request, *args, **kwargs):
@@ -75,22 +96,25 @@ class CommentCreateView(
     def form_valid(self, form):
         form = form.save(commit=False)
         with transaction.atomic():
-            problem_id = self.kwargs.get('problem_id')
             form.user = self.request.user
-            form.problem_id = problem_id
+            form.problem_id = self.problem_id
+            form.title = self.comment_title
             self.object = form.save()
-            success_url = reverse_lazy('psat:comment_container', args=[problem_id])
+            success_url = reverse_lazy('psat:comment_container', args=[self.problem_id])
         return HttpResponseRedirect(success_url)
 
     def get_context_data(self, **kwargs):
-        self.get_properties()
-
         context = super().get_context_data(**kwargs)
+        header = '질문 작성'
+        if self.parent_id:
+            header = '댓글 작성'
         context.update({
+            'header': header,
+            'parent_comment': self.parent_comment,
             'parent_id': self.parent_id,
             'problem_id': self.problem_id,
             'icon_board': self.ICON_BOARD,
-            'icon_memo': self.ICON_MEMO,
+            'icon_question': self.ICON_QUESTION,
         })
         return context
 
@@ -104,24 +128,44 @@ class CommentDetailView(
         context.update({
             'problem_id': self.problem_id,
             'icon_board': self.ICON_BOARD,
-            'icon_memo': self.ICON_MEMO,
+            'icon_question': self.ICON_QUESTION,
         })
         return context
 
 
 class CommentUpdateView(
-    comment_view_mixins.BaseMixIn,
+    comment_view_mixins.CommentCreateViewMixin,
     vanilla.UpdateView,
 ):
     template_name = 'psat/v4/snippets/comment_container.html#update'
 
-    def get_context_data(self, **kwargs):
+    def get(self, request, *args, **kwargs):
         self.get_properties()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.get_properties()
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form = form.save(commit=False)
+        with transaction.atomic():
+            form.title = self.comment_title
+            form.save()
+            success_url = reverse_lazy('psat:comment_container', args=[self.object.problem_id])
+        return HttpResponseRedirect(f'{success_url}?page={self.page_number}')
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        header = '질문 수정'
+        if self.parent_id:
+            header = '댓글 수정'
         context.update({
+            'page_number': self.page_number,
+            'header': header,
             'comment': self.comment,
             'icon_board': self.ICON_BOARD,
-            'icon_memo': self.ICON_MEMO,
+            'icon_question': self.ICON_QUESTION,
         })
         return context
 
@@ -137,6 +181,7 @@ class CommentDeleteView(
         return HttpResponseRedirect(success_url)
 
 
+list_view = CommentListView.as_view()
 container_view = CommentContainerView.as_view()
 create_view = CommentCreateView.as_view()
 detail_view = CommentDetailView.as_view()

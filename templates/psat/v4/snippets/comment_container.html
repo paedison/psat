@@ -2,6 +2,7 @@
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
+{% load slippers %}
 {% load partials %}
 
 {% block main %}
@@ -13,54 +14,92 @@
                 <button class="accordion-button" type="button"
                         data-bs-toggle="collapse" data-bs-target="#collapseComment"
                         aria-expanded="true" aria-controls="collapseComment">
-                    <span class="badge bg-success">{{ icon_question.white|safe }} 질문</span>
+                    <span class="badge bg-success me-2">{{ icon_question.white|safe }} 질문</span>
+                    <div class="small text-success fw-bold">
+                        문제에 관한 질문 또는 댓글을 남겨보세요.
+                    </div>
                 </button>
             </h2>
             <div id="collapseComment" class="accordion-collapse collapse show"
                  aria-labelledby="headingComment" data-bs-parent="#accordionComment">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end mb-3">
                     <div class="btn-group">
                         <button class="btn btn-sm btn-outline-success"
                                 hx-get="{% url 'psat:comment_container' problem_id %}">
                             <i class="fa-solid fa-rotate-right"></i>
                             새로고침
                         </button>
+{#                        <button class="btn btn-sm btn-outline-success"#}
+{#                                hx-get="{% url 'psat:comment_container' problem_id %}">#}
+{#                            <i class="fa-regular fa-window-maximize"></i>#}
+{#                            새 창#}
+{#                        </button>#}
                         <button class="btn btn-sm btn-outline-success"
-                                hx-get="{% url 'psat:comment_container' problem_id %}">
-                            <i class="fa-regular fa-window-maximize"></i>
-                            새 창
+                                hx-get="{% url 'psat:comment_create' problem_id %}"
+                                title="{% trans 'Reply' %}"
+                                hx-target="#modalContainer"
+                                data-bs-toggle="modal" data-bs-target="#modalContainer">
+                            {{ icon_question.filter|safe }}
+                            질문하기
                         </button>
                     </div>
                 </div>
-                {% if comments %}
+                {% if page_obj %}
                     {% for comment in page_obj %}
-                        {% partial comment_line %}
-                        {% if not comment.reply_comments.exists %}
+                        {% partial comment_box %}
+                        {% if not comment.reply_comments.exists and not forloop.last %}
                             <hr class="border-secondary">
                         {% endif %}
                     {% endfor %}
                 {% endif %}
 
-                {% partialdef create inline=True %}
-                    <div class="htmx-fade-in htmx-fade-out text-gray-900">
-                        <form hx-post="{% url 'psat:comment_create' problem_id %}"
-                              hx-include="">
-                            <input name="parent" type="text" value="{{ parent_id }}"
-                                   aria-label="Parent" hidden/>
-                            {{ form.media }}
-                            {{ form.comment }}
-                            {{ form.errors }}
-                            <div class="d-flex justify-content-end mt-2">
-                                <div class="btn-group">
-                                    <textarea name="comment" id="content_comment" hidden></textarea>
-                                    <button type="submit" class="btn btn-sm btn-outline-primary ckeditor-submit">
-                                        {% trans 'Create' %}
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                {% endpartialdef create %}
+                {% if num_pages > 1 %}
+                    {% #pagination_nav %}
+                        {% if page_obj.has_previous %}
+                            {% with page_num=page_obj.number|add:-1 chevron='left' %}
+                                {% partialdef pagination_link inline=True %}
+                                    <li class="page-item {{ status }}"
+                                        {% if status == 'active' %}aria-current="page"{% endif %}>
+                                        <a class="page-link" href=""
+                                            {% if status == 'disabled' %}
+                                                tabindex="-1" aria-disabled="true"
+                                            {% else %}
+                                                hx-get="{% url 'psat:comment_container' problem_id %}?page={{ page_num }}"
+                                            {% endif %}>
+                                            {% if chevron %}
+                                                <i class="fa-solid fa-chevron-{{ chevron }}"></i>
+                                            {% else %}
+                                                {{ anchor_text }}
+                                            {% endif %}
+                                        </a>
+                                    </li>
+                                {% endpartialdef pagination_link %}
+                            {% endwith %}
+                        {% endif %}
+
+                        {% for number in page_range %}
+                            {% with page_num=number anchor_text=number %}
+                                {% if number == page_obj.number %}
+                                    {% with status='active' %}
+                                        {% partial pagination_link %}
+                                    {% endwith %}
+                                {% elif number == page_obj.paginator.ELLIPSIS %}
+                                    {% with status='disabled' %}
+                                        {% partial pagination_link %}
+                                    {% endwith %}
+                                {% else %}
+                                    {% partial pagination_link %}
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            {% with page_num=page_obj.number|add:1 chevron='right' %}
+                                {% partial pagination_link %}
+                            {% endwith %}
+                        {% endif %}
+                    {% /pagination_nav %}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -68,15 +107,18 @@
 {% endpartialdef comment_main %}
 {% endblock main %}
 
-{% partialdef comment_line %}
+{% partialdef comment_box %}
     <div class="row">
         <div class="d-flex{% if comment.parent %} ps-4{% endif %}">
             <div class="me-auto">
-                <span class="fw-bold">
-                    {{ comment.user.username }}
-                </span>
-                <span class="small text-secondary">
-                    {{ comment.timestamp|date:'m/d' }}
+                {% if comment.parent %}
+                    <span class="text-primary">{{ icon_board.reply|safe }}</span>
+                {% endif %}
+                    {% with username=comment.username target_user=comment.user %}
+                        {% include 'psat/v4/snippets/username.html' %}
+                    {% endwith %}
+                <span class="small text-secondary ms-1">
+                    {{ comment.timestamp|date:'n/j(D) G:i' }}
                 </span>
             </div>
             <div class="btn-group" role="group" aria-label="Comment buttons">
@@ -85,12 +127,14 @@
                         <button class="btn btn-sm btn-outline-primary"
                                 hx-get="{% url 'psat:comment_create' problem_id %}?parent_id={{ comment.id }}"
                                 title="{% trans 'Reply' %}"
-                                hx-target="#commentReply{{ comment.id }}">
+                                hx-target="#modalContainer"
+                                data-bs-toggle="modal" data-bs-target="#modalContainer">
                             {{ icon_board.reply|safe }}
                         </button>
                     {% else %}
                         <button class="btn btn-sm btn-outline-primary"
                                 hx-get="{% url 'account_login_modal' %}"
+                                title="{% trans 'Reply' %}"
                                 hx-target="#modalContainer"
                                 data-bs-toggle="modal" data-bs-target="#modalContainer">
                             {{ icon_board.reply|safe }}
@@ -100,9 +144,10 @@
 
                 {% if comment.user == user %}
                     <button class="btn btn-sm btn-outline-success"
-                            hx-get="{% url 'psat:comment_update' comment.id %}"
+                            hx-get="{% url 'psat:comment_update' comment.id %}?parent_id={{ comment.parent_id|default:'' }}&page={{ page_obj.number }}"
                             title="{% trans 'Update' %}"
-                            hx-target="#commentContent{{ comment.id }}">
+                            hx-target="#modalContainer"
+                            data-bs-toggle="modal" data-bs-target="#modalContainer">
                         {{ icon_board.update|safe }}
                     </button>
                     <button class="btn btn-sm btn-outline-danger"
@@ -120,29 +165,74 @@
              class="htmx-fade-in htmx-fade-out text-gray-900 pt-2{% if comment.parent %} ps-4{% endif %}">
             {{ comment.comment|safe }}
         </div>
-        <div id="commentReply{{ comment.id }}"
-             class="htmx-fade-in htmx-fade-out text-gray-900 pt-2 ps-4">
-        </div>
     </div>
-{% endpartialdef comment_line %}
+{% endpartialdef comment_box %}
+
+{% partialdef create %}
+    {% #modal header=header size="modal-xl" %}
+        {% if parent_comment %}
+            <div class="d-flex mb-2">
+                <div class="me-auto">
+                    <span class="fw-bold">
+                        {{ parent_comment.username }}
+                    </span>
+                    <span class="small text-secondary ms-1">
+                        {{ parent_comment.timestamp|date:'n/j(D) G:i' }}
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex">
+                <div class="text-gray-900">
+                    {{ parent_comment.comment|safe }}
+                </div>
+            </div>
+        {% endif %}
+        <form hx-post="{% url 'psat:comment_create' problem_id %}"
+              hx-swap="innerHTML swap:0.25s" hx-target="#containerComment">
+            <input name="parent" type="text" value="{{ parent_id|default:'' }}" aria-label="Parent" hidden/>
+            {{ form.media }}
+            {{ form.comment }}
+            {{ form.errors }}
+            <div class="d-flex justify-content-end mt-2">
+                <textarea id="content_reply" name="comment" class="ckeditor-content" hidden></textarea>
+                <div class="btn-group">
+                    <button type="submit" data-bs-dismiss="modal"
+                            class="btn btn-sm btn-outline-primary ckeditor-submit">
+                        {% trans 'Create' %}
+                    </button>
+                    <button hx-get="{% url 'psat:comment_container' problem_id %}?page={{ page_obj.number }}"
+                            class="btn btn-sm btn-danger" data-bs-dismiss="modal">
+                        {% trans 'Cancel' %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    {% /modal %}
+{% endpartialdef create %}
 
 {% partialdef update %}
-<form hx-post="{% url 'psat:comment_update' comment.id %}" hx-target="#containerComment">
-    <input name="parent_id" type="text" value="{{ comment.parent_id }}"
-           aria-label="User" hidden/>
-        {{ form.media }}
-        {{ form.comment }}
-    <div class="d-flex justify-content-end mt-2">
-        <div class="btn-group">
-            <button hx-get="{% url 'psat:comment_container' comment.problem_id %}"
-                    class="btn btn-sm btn-outline-primary">
-                {% trans 'Cancel' %}
-            </button>
-            <textarea name="comment" id="content_comment" hidden></textarea>
-            <button type="submit" class="btn btn-sm btn-outline-primary ckeditor-submit">
-                {% trans 'Update' %}
-            </button>
-        </div>
-    </div>
-</form>
+    {% #modal header=header size="modal-xl" %}
+        <form hx-post="{% url 'psat:comment_update' comment.id %}"
+              hx-swap="innerHTML swap:0.25s" hx-target="#containerComment">
+            <input name="page" type="text" value="{{ page_number }}" aria-label="Page Number" hidden/>
+            <input name="parent" type="text" value="{{ comment.parent_id|default:'' }}" aria-label="Parent" hidden/>
+                {{ form.media }}
+                {{ form.comment }}
+                {{ form.errors }}
+            <textarea id="content_comment" name="comment" class="ckeditor-content" hidden></textarea>
+            <div class="d-flex justify-content-end mt-2">
+                <div class="btn-group">
+                    <button type="submit" data-bs-dismiss="modal"
+                            class="btn btn-sm btn-outline-primary ckeditor-submit">
+                        {% trans 'Update' %}
+                    </button>
+                    <button hx-get="{% url 'psat:comment_container' comment.problem_id %}?page={{ page_number }}"
+                            class="btn btn-sm btn-danger" data-bs-dismiss="modal">
+                        {% trans 'Cancel' %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    {% /modal %}
 {% endpartialdef update %}
+

@@ -142,21 +142,21 @@
     <input type="text" name="number" value="{{ problem.number }}" aria-label="Number" hidden/>
     <input type="text" name="student_id" value="{{ student.id }}" aria-label="Student ID" hidden/>
     <div class="d-flex justify-content-center py-2">
-        <div class="d-inline-block fw-bold text-secondary pe-2">{{ problem.number|add_0 }}.</div>
-        <div id="p{{ problem.number|add_0 }}_answer"
+        <div class="d-inline-block fw-bold text-secondary pe-2">{{ problem.number|stringformat:'02d' }}.</div>
+        <div id="p{{ problem.number|stringformat:'02d' }}_answer"
              hx-post="{% url 'predict:answer_submit' sub %}"
-             hx-include="#p{{ problem.number|add_0 }}_answer>input[name='answer']:checked"
+             hx-include="#p{{ problem.number|stringformat:'02d' }}_answer>input[name='answer']:checked"
              hx-target="this" hx-trigger="change" hx-swap="innerHTML" hx-push-url="false">
             {% with target_answer=problem.answer_student target_problem=problem %}
                 {% if subject == 'heonbeob' or sub == '헌법' %}
                     {% for i in '1234' %}
                         {% partialdef answer_buttons inline=True %} {# answer_buttons partial #}
-                            <input id="{{ id_prefix }}_p{{ target_problem.number|add_0 }}_answer{{ i }}"
+                            <input id="{{ id_prefix }}_p{{ target_problem.number|stringformat:'02d' }}_answer{{ i }}"
                                    type="radio" class="btn-check" name="answer" value="{{ i }}"/>
                             <label class="btn btn-circle btn-sm fs-6
                                    {% if i|add:0 == target_answer %}btn-secondary
                                    {% else %} btn-outline-secondary{% endif %}"
-                                   for="{{ id_prefix }}_p{{ target_problem.number|add_0 }}_answer{{ i }}">
+                                   for="{{ id_prefix }}_p{{ target_problem.number|stringformat:'02d' }}_answer{{ i }}">
                                 {{ i }}</label>
                         {% endpartialdef answer_buttons %}
                     {% endfor %}
@@ -188,8 +188,8 @@
 {% partialdef no_student %} {# no_student partial #}
     <div class="d-flex justify-content-center align-content-center">
         <p class="fw-bold text-secondary text-nowrap my-2 ms-3 me-2">
-            <a href="" hx-get="{% url 'psat:detail' 'problem' problem.id %}" hx-push-url="true">
-                {{ problem.number|add_0 }}.
+            <a href="" hx-get="{% url 'psat:detail' problem.id %}" hx-push-url="true">
+                {{ problem.number|stringformat:'02d' }}.
             </a>
         </p>
         <div class="d-flex justify-content-center align-content-center me-3">

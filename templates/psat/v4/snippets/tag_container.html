@@ -13,7 +13,10 @@
                 <button class="accordion-button" type="button"
                         data-bs-toggle="collapse" data-bs-target="#collapseTag"
                         aria-expanded="true" aria-controls="collapseTag">
-                    <span class="badge bg-primary">{{ icon_tag.white|safe }} 태그</span>
+                    <span class="badge bg-primary me-2">{{ icon_tag.white|safe }} 태그</span>
+                    <div class="small text-primary fw-bold">
+                        나만 볼 수 있는 태그를 남겨보세요.
+                    </div>
                 </button>
             </h2>
             <div id="collapseTag" class="accordion-collapse collapse show"
@@ -34,6 +37,7 @@
                             </button>
                         </div>
                     </form>
+
                     <div class="d-flex align-items-start">
                         <div class="border-start border-secondary-subtle ps-2">
                             {% get_sorted_tags_for_object my_tag as "tags" %}

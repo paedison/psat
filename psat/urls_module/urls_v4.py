@@ -34,6 +34,7 @@ urlpatterns = [
     path('tag/cloud/', tag_views.cloud_view, name='tag_cloud'),
 
     # comment_views
+    path('comment/list/', comment_views.list_view, name='comment_list'),
     path('comment/container/<int:problem_id>/', comment_views.container_view, name='comment_container'),
     path('comment/create/<int:problem_id>/', comment_views.create_view, name='comment_create'),
     path('comment/detail/<int:comment_id>/', comment_views.detail_view, name='comment_detail'),

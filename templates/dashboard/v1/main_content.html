@@ -16,7 +16,7 @@
                                    hx-get="{% url 'psat:detail' log.problem.id %}">
                                     {% with psat=log.problem.psat %}
                                         {{ psat.year }}-{{ psat.exam.abbr }}-{{ psat.subject.abbr }}
-                                        {{ log.problem.number|add_0 }}
+                                        {{ log.problem.number|stringformat:'02d' }}
                                     {% endwith %}
                                 </a>
                             </div>

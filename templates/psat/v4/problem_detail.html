@@ -23,7 +23,7 @@
                 </li>
                 <li class="breadcrumb-item">{{ info.view_type|title }}</li>
                 <li class="breadcrumb-item active">
-                    {{ p.year }}{{ p.ex|first }}{{ p.sub|first }}{{ p.number|add_0 }}</li>
+                    {{ p.year }}{{ p.ex|first }}{{ p.sub|first }}-{{ p.number|stringformat:'02d' }}</li>
             </ol>
         </nav>
     </div><!-- Page Title End -->
@@ -162,18 +162,16 @@
 <div id="modalContainerPsat" class="modal fade htmx-fade-in htmx-fade-out" style="display: none"
      aria-hidden="true" tabindex="-1" aria-labelledby="modalContainerLabel">
     {% #modal header=sub_title size="modal-xl" %}
-        <div class="htmx-fade-in htmx-fade-out">
-            <div class="d-flex flex-wrap align-items-start justify-content-start">
-                {% with image=problem.get_image_file %}
-                    <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag1 }}" src="{{ image.name1 }}"/>
-                    {% if image.name2 %}
-                        <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag2 }}" src="{{ image.name2 }}"/>
-                    {% endif %}
-                {% endwith %}
-            </div>
+        <div class="d-flex flex-wrap align-items-start justify-content-start">
+            {% with image=problem.get_image_file %}
+                <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag1 }}" src="{{ image.name1 }}"/>
+                {% if image.name2 %}
+                    <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag2 }}" src="{{ image.name2 }}"/>
+                {% endif %}
+            {% endwith %}
         </div>
     {% /modal %}
-</div><!-- Modal Container -->
+</div><!-- Modal Container: Problem Image -->
 {% endpartialdef detail_main %}
 {% endblock main %}
 
@@ -191,13 +189,11 @@
 
 {% block page_script %}
     <script>
-        document.addEventListener('click', function(event) {
-            if (event.target.matches('.ckeditor-submit')) {
-                let button = event.target;
-                let ckeditorId = button.parentElement.parentElement.previousElementSibling.getAttribute('data-field-id');
-                let content = CKEDITOR.instances[ckeditorId].getData();
-                button.previousElementSibling.innerText = content;
-            }
+        $(document).on('click', '.ckeditor-submit', function() {
+            let button = $(this);
+            let ckeditorId = button.closest('form').find('div.django-ckeditor-widget').attr('data-field-id');
+            let content = CKEDITOR.instances[ckeditorId].getData();
+            button.closest('form').find('textarea.ckeditor-content').text(content);
         });
     </script>
 {% endblock %}

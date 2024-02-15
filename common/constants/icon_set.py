@@ -31,7 +31,7 @@ class ConstantIconSet:
         'top_fixed': '<i class="fa-solid fa-bullhorn fa-fw"></i>',
         'is_hidden': '<i class="fa-solid fa-lock fa-fw"></i>',
         'list': '<i class="fa-solid fa-list fa-fw"></i>',
-        'reply': '<i class="fa-solid fa-reply fa-fw"></i>',
+        'reply': '<i class="fa-solid fa-reply fa-fw rotate-180"></i>',
         'update': '<i class="fa-solid fa-pen fa-fw"></i>',
         'delete': '<i class="fa-solid fa-trash fa-fw"></i>',
         'prev': '<i class="fa-solid fa-arrow-down fa-fw"></i>',

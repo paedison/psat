@@ -66,6 +66,7 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_comments')
     problem = models.ForeignKey(PsatProblem, on_delete=models.CASCADE, related_name='comments')
+    title = models.TextField(max_length=100)
     comment = RichTextField(config_name='minimal')
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='reply_comments')
     hit = models.IntegerField(default=1, verbose_name='조회수')
