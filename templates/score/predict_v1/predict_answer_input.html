@@ -120,8 +120,13 @@
                             {% endfor %}
                         </div>
                     </div>
-
-                    <form class="text-center">
+                    <div class="d-flex align-items-start justify-content-center mb-3">
+                        <div class="badge bg-danger me-2"><i class="fa-regular fa-circle-check"></i> 참고</div>
+                        <div class="text-danger small fw-bold m-0">
+                            최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.
+                        </div>
+                    </div>
+                    <form class="text-center mb-3">
                         <input type="text" name="answer_id" value="{{ answer_student.id }}" aria-label="Answer ID" hidden/>
                         <button class="btn btn-primary" hx-target="#modalContainer" type="submit" hx-push-url="false"
                                 hx-post="{% url 'predict:answer_confirm' sub %}" hx-swap="innerHTML"
@@ -129,6 +134,12 @@
                             답안 제출
                         </button>
                     </form>
+                    <div class="text-center">
+                        <a class="btn btn-outline-primary" hx-boost="true"
+                           href="{% url 'predict:index' %}">
+                            성적 예측 페이지로 이동
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

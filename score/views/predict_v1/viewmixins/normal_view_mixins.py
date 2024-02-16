@@ -36,7 +36,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         self.data_answer = self.get_data_answer()
         self.info_answer_student = self.get_info_answer_student()
 
-        if self.answer_uploaded and self.student:
+        if self.current_time > self.answer_opened_at and self.student:
             statistics_student = self.calculate_score(self.answer_correct_dict, 'real')
             self.all_score_stat = get_all_score_stat_sub_dict(self.get_statistics_qs, self.student)
             self.score_student = self.get_score_student(statistics_student)
@@ -70,6 +70,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         )
         for prob in answer_count_list:
             sub = prob['sub']
+            prob['rate_None'] = 0
             answer_count_dict[sub].append(prob)
         return answer_count_dict
 
@@ -224,7 +225,7 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
                 ans_number_student = dataset_answer[f'prob{number}']
 
                 result = 'O'
-                if self.answer_uploaded:
+                if self.current_time > self.answer_opened_at:
                     ans_number_correct = data_answer_correct[sub][i]['ans_number']
                     ans_number_list_correct = data_answer_correct[sub][i]['ans_number_list']
                     if ans_number_correct in range(1, 6):

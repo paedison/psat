@@ -26,14 +26,15 @@ class BaseMixin:
     category = 'Prime'
     year = '2024'
     ex = '프모'
-    round = 4
-    predict_opened_at = datetime(2024, 2, 3, 9)
+    round = 5
+    current_time = datetime.now()
+    predict_opened_at = datetime(2024, 2, 17, 0, 0)
+    answer_opened_at = datetime(2024, 2, 17, 17, 0)
 
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
     answer_file = f'{data_dir}answers.csv'
     answer_empty_file = f'{data_dir}answers_empty.csv'
-    answer_uploaded = True
     min_participants = 100
 
     exam_list = [
@@ -66,6 +67,26 @@ class BaseMixin:
             'round': 4,
             'date': datetime(2024, 2, 3),
             'answer_file': f'{data_dir}answer_file_prime_2024-4.csv',
+        },
+        {
+            'code': '2024프모-5',
+            'category': 'Prime',
+            'year': 2024,
+            'ex': '프모',
+            'exam': '프라임 모의고사',
+            'round': 5,
+            'date': datetime(2024, 2, 17),
+            'answer_file': f'{data_dir}answer_file_prime_2024-5.csv',
+        },
+        {
+            'code': '2024프모-6',
+            'category': 'Prime',
+            'year': 2024,
+            'ex': '프모',
+            'exam': '프라임 모의고사',
+            'round': 6,
+            'date': datetime(2024, 2, 24),
+            'answer_file': f'{data_dir}answer_file_prime_2024-6.csv',
         },
         {
             'code': '2024행시',

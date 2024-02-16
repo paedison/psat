@@ -63,7 +63,7 @@
                             </tr>
 
                             {# answer_correct #}
-                            {% if not answer_uploaded %}
+                            {% if current_time < answer_opened_at %}
                                 <tr class="text-center">
                                     <th class="text-nowrap text-bg-success td-no-border" scope="row">정답</th>
                                     <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-success">
@@ -124,7 +124,7 @@
                                 {% for answer in answer_student %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td class="td-no-border">
-                                            {% if not answer_uploaded %}
+                                            {% if current_time < answer_opened_at %}
                                                 <button data-number="{{ answer.number }}"
                                                         class="btn btn-circle btn-sm btn-outline-secondary fs-6 mx-1 my-2">
                                                     {{ answer.ans_number }}
@@ -151,7 +151,7 @@
                                 {% for answer in answer_student %}
                                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                                         <td>
-                                            {% if not answer_uploaded %}
+                                            {% if current_time < answer_opened_at %}
                                                 <div data-number="{{ answer.number }}" class="fw-bold text-secondary">
                                                     <div id="{{ sub }}selection_{{ answer.number }}_after"
                                                          class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
@@ -235,7 +235,7 @@
                                     </tr>
                                 {% endpartialdef answer_predict_line %}
                             {% else %}
-                                {% if not answer_uploaded %}
+                                {% if current_time < answer_opened_at %}
                                     {% if info_answer.participants < min_participants %}
                                         <tr class="text-center">
                                             <th class="text-nowrap text-bg-warning td-no-border" scope="row">예상 정답</th>
@@ -278,12 +278,12 @@
             <div>
                 <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
                 <ol class="text-success small fw-bold m-0">
-                    {% if not answer_uploaded %}
+                    {% if current_time < answer_opened_at %}
                         <li>정답은 공식적으로 정답이 공개된 이후에 확인 가능합니다.</li>
                     {% endif %}
                     <li>정답률은 과목별 전체 참여자 중 정답을 맞힌 학생의 비율을 의미합니다.</li>
                     <li>선택률은 과목별 전체 참여자 중 본인과 같은 정답을 선택한 학생의 비율을 의미합니다.</li>
-                    {% if not answer_uploaded %}
+                    {% if current_time < answer_opened_at %}
                         <li>정확도는 과목별 전체 참여자 중 예상 정답을 선택한 학생의 비율을 의미합니다.</li>
                         <li>예상 정답 및 정확도는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
                     {% endif %}

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 from django.db import transaction
@@ -25,8 +23,7 @@ class IndexView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get(self, request, *args, **kwargs):
-        now = datetime.now()
-        if now > self.predict_opened_at:
+        if self.current_time > self.predict_opened_at:
             context = self.get_context_data()
             return self.render_to_response(context)
         else:
@@ -44,7 +41,8 @@ class IndexView(
         return {
             # base info
             'info': self.info,
-            'answer_uploaded': self.answer_uploaded,
+            'current_time': self.current_time,
+            'answer_opened_at': self.answer_opened_at,
             'min_participants': self.min_participants,
             'category': self.category,
             'year': self.year,
@@ -118,8 +116,7 @@ class StudentCreateView(
         return self.student_form
 
     def get(self, request, *args, **kwargs):
-        now = datetime.now()
-        if now > self.predict_opened_at:
+        if self.current_time > self.predict_opened_at:
             self.get_properties()
             context = self.get_context_data()
             return self.render_to_response(context)

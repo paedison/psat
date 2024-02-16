@@ -71,7 +71,7 @@
         </div>
 
         {% if student %}
-            {% if answer_uploaded %}
+            {% if current_time > answer_opened_at %}
                 <div class="col-12">
                     <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                         {% include 'score/predict_v1/snippets/index_sheet_score.html' %}

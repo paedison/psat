@@ -27,7 +27,8 @@ class TestView(
         return {
             # base info
             'info': self.info,
-            'answer_uploaded': self.answer_uploaded,
+            'current_time': self.current_time,
+            'answer_opened_at': self.answer_opened_at,
             'category': self.category,
             'year': self.year,
             'ex': self.ex,
