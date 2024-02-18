@@ -1,11 +1,12 @@
 from django.urls import path
 
-from score.views.predict_v1 import normal_views
+from score.views.predict_v1 import normal_views, test_views
 
 app_name = 'predict'
 
 urlpatterns = [
     path('', normal_views.index_view, name='index'),
+    path('test/', test_views.TestView.as_view(), name='test'),
 
     path('student/', normal_views.student_create_view, name='student_create'),
     path('student/department/',
