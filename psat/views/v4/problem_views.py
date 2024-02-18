@@ -149,6 +149,43 @@ class DetailView(
         }
 
 
+class DetailImageView(
+    problem_view_mixins.DetailViewMixin,
+    vanilla.TemplateView,
+):
+    template_name = 'psat/v4/problem_detail.html#modal_image'
+
+    def get_context_data(self, **kwargs):
+        self.get_properties()
+
+        return {
+            # base info
+            'info': self.info,
+            'sub_title': self.sub_title,
+            'problem': self.problem,
+            'problem_id': self.problem_id,
+
+            # icons
+            'icon_menu': self.ICON_MENU['psat'],
+            'icon_like': self.ICON_LIKE,
+            'icon_rate': self.ICON_RATE,
+            'icon_solve': self.ICON_SOLVE,
+            'icon_memo': self.ICON_MEMO,
+            'icon_tag': self.ICON_TAG,
+            'icon_question': self.ICON_QUESTION,
+            'icon_nav': self.ICON_NAV,
+            'icon_board': self.ICON_BOARD,
+
+            # custom data
+            'like_data': self.custom_data['like'],
+            'rate_data': self.custom_data['rate'],
+            'solve_data': self.custom_data['solve'],
+            'memo_data': self.custom_data['memo'],
+            'tag_data': self.custom_data['tag'],
+            'comment_data': self.custom_data['comment'],
+        }
+
+
 class DetailNavigationView(
     problem_view_mixins.DetailNavigationViewMixin,
     vanilla.TemplateView,
@@ -173,4 +210,5 @@ class DetailNavigationView(
 list_view = ListView.as_view()
 search_view = SearchView.as_view()
 detail_view = DetailView.as_view()
+detail_img_view = DetailImageView.as_view()
 detail_nav_view = DetailNavigationView.as_view()

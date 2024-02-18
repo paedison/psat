@@ -24,9 +24,11 @@ class BaseMixIn(ConstantIconSet):
     problem_id: int
     comment_id: str
     parent_id: str
+
     problem: reference_models.PsatProblem.objects
-    comment: reference_models.PsatProblem.objects
-    parent_comment: reference_models.PsatProblem.objects
+    comment_qs: custom_models.Comment.objects
+    comment: custom_models.Comment.objects
+    parent_comment: custom_models.Comment.objects
 
     page_number: str
 
@@ -34,22 +36,30 @@ class BaseMixIn(ConstantIconSet):
         self.comment_id = self.kwargs.get('comment_id')
         self.problem_id = self.kwargs.get('problem_id')
         self.parent_id = self.request.GET.get('parent_id')
-        self.comment = custom_models.Comment.objects.none()
+
         self.problem = reference_models.PsatProblem.objects.none()
-        self.parent_comment = custom_models.Comment.objects.none()
+        self.comment_qs = self.get_comment_qs()
+        self.comment = self.comment_qs.none()
+        self.parent_comment = self.comment_qs.none()
 
         if self.problem_id:
             self.problem = reference_models.PsatProblem.objects.get(id=self.problem_id)
-        elif self.comment_id:
-            self.comment = (
-                custom_models.Comment.objects.select_related('user')
-                .annotate(username=F('user__username')).get(id=self.comment_id)
-            )
+        if self.comment_id:
+            self.comment = self.comment_qs.get(id=self.comment_id)
         if self.parent_id:
-            self.parent_comment = (
-                custom_models.Comment.objects.select_related('user')
-                .annotate(username=F('user__username')).get(id=self.parent_id)
-            )
+            self.parent_comment = self.comment_qs.get(id=self.parent_id)
+
+    @staticmethod
+    def get_comment_qs():
+        return (
+            custom_models.Comment.objects
+            .select_related('user', 'problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
+            .annotate(
+                username=F('user__username'),
+                year=F('problem__psat__year'), number=F('problem__number'),
+                ex=F('problem__psat__exam__abbr'), exam=F('problem__psat__exam__name'),
+                sub=F('problem__psat__subject__abbr'), subject=F('problem__psat__subject__name'))
+        )
 
 
 class CommentListViewMixin(BaseMixIn):
@@ -76,18 +86,8 @@ class CommentListViewMixin(BaseMixIn):
         return page_obj, page_range, num_pages
 
     def get_queryset(self):
-        qs = (
-            self.model.objects
-            .select_related(
-                'user', 'problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
-            .annotate(
-                username=F('user__username'),
-                year=F('problem__psat__year'), number=F('problem__number'),
-                ex=F('problem__psat__exam__abbr'), exam=F('problem__psat__exam__name'),
-                sub=F('problem__psat__subject__abbr'), subject=F('problem__psat__subject__name'))
-        )
-        parent_comments = qs.filter(parent__isnull=True).order_by('-timestamp')
-        child_comments = qs.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
+        parent_comments = self.comment_qs.filter(parent__isnull=True).order_by('-timestamp')
+        child_comments = self.comment_qs.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
 
         all_comments = []
         for comment in parent_comments:
@@ -114,6 +114,26 @@ class CommentContainerViewMixin(CommentListViewMixin):
             all_comments.extend(child_comments.filter(parent=comment))
 
         return all_comments
+
+
+class CommentDetailViewMixin(BaseMixIn):
+    sub_title: str
+    replies: custom_models.Comment.objects
+
+    def get_properties(self):
+        super().get_properties()
+
+        self.sub_title = self.get_sub_title()
+        self.problem_id = self.comment.problem_id
+        self.problem = reference_models.PsatProblem.objects.get(id=self.problem_id)
+        self.replies = custom_models.Comment.objects.filter(parent=self.comment)
+
+    def get_sub_title(self):
+        year = self.comment.year
+        exam = self.comment.exam
+        subject = self.comment.subject
+        number = self.comment.number
+        return f'{year}년 {exam} {subject} {number}번'
 
 
 class CommentCreateViewMixin(BaseMixIn):

@@ -8,7 +8,7 @@ from .viewmixins import comment_view_mixins
 
 class CommentListView(
     comment_view_mixins.CommentListViewMixin,
-    vanilla.TemplateView
+    vanilla.TemplateView,
 ):
     """View for loading comment container."""
     template_name = 'psat/v4/snippets/comment_list.html'
@@ -41,7 +41,7 @@ class CommentListView(
 
 class CommentContainerView(
     comment_view_mixins.CommentContainerViewMixin,
-    vanilla.TemplateView
+    vanilla.TemplateView,
 ):
     """View for loading comment container."""
 
@@ -120,13 +120,36 @@ class CommentCreateView(
 
 
 class CommentDetailView(
-    comment_view_mixins.BaseMixIn,
-    vanilla.DetailView
+    comment_view_mixins.CommentDetailViewMixin,
+    vanilla.DetailView,
 ):
+    template_name = 'psat/v4/snippets/comment_detail.html'
+
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#detail_main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
+
+    def get(self, request, *args, **kwargs):
+        self.get_properties()
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
+            # base info
+            'info': {'menu': 'psat'},
+            'sub_title': self.sub_title,
+            'problem': self.problem,
             'problem_id': self.problem_id,
+
+            'comment': self.comment,
+            'replies': self.replies,
+
+            # icons
+            'icon_menu': self.ICON_MENU['psat'],
             'icon_board': self.ICON_BOARD,
             'icon_question': self.ICON_QUESTION,
         })

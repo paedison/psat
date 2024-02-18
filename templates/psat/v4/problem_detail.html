@@ -161,16 +161,21 @@
 
 <div id="modalContainerPsat" class="modal fade htmx-fade-in htmx-fade-out" style="display: none"
      aria-hidden="true" tabindex="-1" aria-labelledby="modalContainerLabel">
-    {% #modal header=sub_title size="modal-xl" %}
-        <div class="d-flex flex-wrap align-items-start justify-content-start">
-            {% with image=problem.get_image_file %}
-                <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag1 }}" src="{{ image.name1 }}"/>
-                {% if image.name2 %}
-                    <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag2 }}" src="{{ image.name2 }}"/>
-                {% endif %}
-            {% endwith %}
-        </div>
-    {% /modal %}
+    {% partialdef modal_image inline=True %}
+        {% #modal header=sub_title size="modal-xl" %}
+            <div class="d-flex justify-content-end fs-6 mb-2">
+                    {% include 'psat/v4/snippets/icon_container.html' %}
+            </div>
+            <div class="d-flex flex-wrap align-items-start justify-content-start">
+                {% with image=problem.get_image_file %}
+                    <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag1 }}" src="{{ image.name1 }}"/>
+                    {% if image.name2 %}
+                        <img class="mw-100 col-12 col-lg-6" alt="{{ image.tag2 }}" src="{{ image.name2 }}"/>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        {% /modal %}
+    {% endpartialdef %}
 </div><!-- Modal Container: Problem Image -->
 {% endpartialdef detail_main %}
 {% endblock main %}

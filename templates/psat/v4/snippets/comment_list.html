@@ -14,18 +14,22 @@
             {% for comment in page_obj %}
                 <tr>
                     <td class="text-nowrap p-2 col-1">
-                        <a class="text-decoration-none fw-bold" hx-boost="true" hx-target="#main"
-                           hx-swap="innerHTML swap:0.25s"
-                           href="{% url 'psat:detail' comment.problem_id %}"
-                           hx-push-url="{% url 'psat:detail' comment.problem_id %}">
+                        <a class="text-decoration-none fw-bold" hx-target="#modalContainer"
+                           hx-swap="innerHTML swap:0.25s" href=""
+                           hx-get="{% url 'psat:detail_image' comment.problem_id %}"
+                           data-bs-toggle="modal" data-bs-target="#modalContainer">
                             {{ comment.year }}{{ comment.ex|first }}{{ comment.sub|first }}-{{ comment.number|stringformat:'02d' }}
                         </a>
                     </td>
                     <td class="text-nowrap p-2">
-                        {% if comment.parent %}
-                            <span class="text-primary">{{ icon_board.reply|safe }}</span>
-                        {% endif %}
-                        {{ comment.title }}
+                        <a class="text-decoration-none fw-bold text-secondary" hx-boost="true"
+                           hx-swap="innerHTML swap:0.25s" hx-target="#main" hx-push-url="true"
+                           href="{% url 'psat:comment_detail' comment.id %}">
+                            {% if comment.parent %}
+                                <span class="text-primary">{{ icon_board.reply|safe }}</span>
+                            {% endif %}
+                            {{ comment.title }}
+                        </a>
                     </td>
                     <td class="text-nowrap text-end p-2">
                         {% with username=comment.username target_user=comment.user %}

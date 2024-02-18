@@ -37,9 +37,6 @@ class ListViewMixin(base_mixins.BaseMixin):
 
 
 class DetailViewMixin(base_mixins.BaseMixin):
-    problem_id: str
-    problem: reference_models.PsatProblem.objects
-
     memo: custom_models.Memo
     my_tag: custom_models.Tag
     comments: custom_models.Comment

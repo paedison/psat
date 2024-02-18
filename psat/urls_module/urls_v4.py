@@ -12,6 +12,7 @@ urlpatterns = [
     path('search/', problem_views.search_view, name='search'),
 
     path('detail/<int:problem_id>/', problem_views.detail_view, name='detail'),
+    path('detail/<int:problem_id>/img/', problem_views.detail_img_view, name='detail_image'),
     path('detail/list/<str:view_type>/', problem_views.detail_nav_view, name='detail_list'),
 
     # update_views [view_type: like, rate, solve]
@@ -35,9 +36,9 @@ urlpatterns = [
 
     # comment_views
     path('comment/list/', comment_views.list_view, name='comment_list'),
+    path('comment/detail/<int:comment_id>/', comment_views.detail_view, name='comment_detail'),
     path('comment/container/<int:problem_id>/', comment_views.container_view, name='comment_container'),
     path('comment/create/<int:problem_id>/', comment_views.create_view, name='comment_create'),
-    path('comment/detail/<int:comment_id>/', comment_views.detail_view, name='comment_detail'),
     path('comment/update/<int:comment_id>/', comment_views.update_view, name='comment_update'),
     path('comment/delete/<int:comment_id>/', comment_views.delete_view, name='comment_delete'),
 ]

@@ -88,13 +88,16 @@ class BaseMixin(ConstantIconSet):
 
     def get_sub_title(self) -> str:
         title_parts = []
-        if self.year:  # year
-            title_parts.append(f'{self.psat.year}년')
-        if self.ex:  # ex
-            title_parts.append(self.psat.exam.name)
-        if self.sub:  # sub
-            title_parts.append(self.psat.subject.name)
-        if not self.year and not self.ex and not self.sub:  # all
+        if self.psat:
+            if self.year:  # year
+                title_parts.append(f'{self.psat.year}년')
+            if self.ex:  # ex
+                title_parts.append(self.psat.exam.name)
+            if self.sub:  # sub
+                title_parts.append(self.psat.subject.name)
+            if not self.year and not self.ex and not self.sub:  # all
+                title_parts.append('전체')
+        else:
             title_parts.append('전체')
         sub_title = f'{" ".join(title_parts)} 기출문제'
         return sub_title
