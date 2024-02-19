@@ -1,0 +1,282 @@
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+<div class="card-header">
+    답안 확인
+    <a class="text-decoration-none ms-2" href="" hx-swap="none"
+       hx-get="{% url 'predict_test:update_sheet_answer' %}">
+        <span class="badge rounded-pill text-bg-warning">업데이트</span>
+    </a>
+</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
+            {% for id in '0123' %}
+                {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
+                {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
+                {% #nav_tab prefix=sub id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreAnswersContent">
+        {% for id in '0123' %}
+            {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
+            {% cycle data_answer_correct.헌법 data_answer_correct.언어 data_answer_correct.자료 data_answer_correct.상황 as answer_correct silent %}
+            {% cycle data_answer_predict.헌법 data_answer_predict.언어 data_answer_predict.자료 data_answer_predict.상황 as answer_predict silent %}
+            {% cycle data_answer_student.헌법 data_answer_student.언어 data_answer_student.자료 data_answer_student.상황 as answer_student silent %}
+            {% cycle info_answer_student.헌법 info_answer_student.언어 info_answer_student.자료 info_answer_student.상황 as info_answer silent %}
+            {% #nav_content prefix=sub id=id %}{% partial answer_table %}{% /nav_content %}
+        {% endfor %}
+    </div>
+</div>
+
+{% partialdef answer_table %} {# answer_table partial #}
+    <article class="table-responsive">
+        <table class="table small align-middle">
+            <tbody>
+                {% if not info_answer.is_confirmed %}
+                    <tr class="text-center">
+                        <th>
+                            <a class="btn btn-outline-danger my-4"
+                               href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
+                                답안을 제출해주세요.
+                            </a>
+                        </th>
+                    </tr>
+                {% else %}
+                    {% if ex == '칠급' or answer_student|length == 25  %}
+                        {% for _ in '012' %}
+                            {% cycle 10 10 5 as loop_counter silent %}
+                            {% cycle 0 10 20 as loop_min silent %}
+                            {% partial answer_table_tr %}
+                        {% endfor %}
+                    {% else %}
+                        {% for _ in '0123' %}
+                            {% cycle 10 10 10 10 as loop_counter silent %}
+                            {% cycle 0 10 20 30 as loop_min silent %}
+                            {% partial answer_table_tr %}
+                        {% endfor %}
+                    {% endif %}
+                {% endif %}
+            </tbody>
+        </table>
+        {% if info_answer.is_confirmed %}
+            <div>
+                <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                <ol class="text-success small fw-bold m-0">
+                    {% if current_time < answer_opened_at %}
+                        <li>정답은 공식적으로 정답이 공개된 이후에 확인 가능합니다.</li>
+                    {% endif %}
+                    <li>정답률은 과목별 전체 참여자 중 정답을 맞힌 학생의 비율을 의미합니다.</li>
+                    <li>선택률은 과목별 전체 참여자 중 본인과 같은 정답을 선택한 학생의 비율을 의미합니다.</li>
+                    {% if current_time < answer_opened_at %}
+                        <li>정확도는 과목별 전체 참여자 중 예상 정답을 선택한 학생의 비율을 의미합니다.</li>
+                        <li>예상 정답 및 정확도는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
+                    {% endif %}
+                </ol>
+            </div>
+        {% endif %}
+    </article>
+{% endpartialdef answer_table %}
+
+{% partialdef answer_table_tr %}
+    <tr class="text-center table-warning">
+        <th class="text-nowrap" scope="row">문제 번호</th>
+        {% for _ in 'x'|ljust:loop_counter %}
+            <th>{{ forloop.counter|add:loop_min }}</th>
+        {% endfor %}
+    </tr>
+
+    {# answer_correct #}
+    {% if current_time < answer_opened_at %}
+        <tr class="text-center">
+            <th class="text-nowrap text-bg-success td-no-border" scope="row">정답</th>
+            <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-success">
+                답안 공개전입니다.
+            </td>
+        </tr>
+        <tr class="text-center">
+            <th class="text-nowrap text-bg-success" scope="row">정답률(%)</th>
+        </tr>
+    {% else %}
+        <tr class="text-center">
+            <th class="text-nowrap td-no-border" scope="row">정답</th>
+            {% for answer in answer_correct %}
+                {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                    <td class="td-no-border">
+                        {% if answer.ans_number <= 5 %}
+                            <button data-number="{{ answer.number }}"
+                                    class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                                {{ answer.ans_number }}
+                            </button>
+                        {% elif answer.ans_number == 12345 %}
+                            <span data-number="{{ answer.number }}"
+                                  class="badge rounded-pill text-bg-secondary">
+                                전체 정답
+                            </span>
+                        {% else %}
+                            {% for ans in answer.ans_number_list %}
+                                <button data-number="{{ answer.number }}"
+                                        class="btn btn-circle btn-sm fs-6 my-2 btn-success">
+                                    {{ ans }}
+                                </button>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+        <tr class="text-center">
+            <th class="text-nowrap" scope="row">정답률(%)</th>
+            {% for answer in answer_correct %}
+                {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                    <td>
+                        <div data-number="{{ answer.number }}" class="fw-bold text-success">
+                            <div id="{{ sub }}correct_{{ answer.number }}"
+                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                {{ answer.rate_correct|floatformat:0 }}
+                            </div>
+                        </div>
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endif %}
+
+    {# answer_student #}
+    <tr class="text-center">
+        <th class="text-nowrap td-no-border" scope="row">선택 답안</th>
+        {% for answer in answer_student %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                <td class="td-no-border">
+                    {% if current_time < answer_opened_at %}
+                        <button data-number="{{ answer.number }}"
+                                class="btn btn-circle btn-sm btn-outline-secondary fs-6 mx-1 my-2">
+                            {{ answer.ans_number }}
+                        </button>
+                    {% else %}
+                        {% if answer.result == 'O' %}
+                            <button data-number="{{ answer.number }}"
+                                    class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                                {{ answer.ans_number }}
+                            </button>
+                        {% else %}
+                            <button data-number="{{ answer.number }}"
+                                    class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-danger">
+                                {{ answer.ans_number }}
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <th class="text-nowrap" scope="row">선택률(%)</th>
+        {% for answer in answer_student %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                <td>
+                    {% if current_time < answer_opened_at %}
+                        <div data-number="{{ answer.number }}" class="fw-bold text-secondary">
+                            <div id="{{ sub }}selection_{{ answer.number }}_after"
+                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                {{ answer.rate_selection|floatformat:0 }}
+                            </div>
+                        </div>
+                    {% else %}
+                        {% if answer.result == 'O' %}
+                            <div data-number="{{ answer.number }}" class="fw-bold text-success">
+                                <div id="{{ sub }}selection_{{ answer.number }}_before"
+                                     class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                    {{ answer.rate_selection|floatformat:0 }}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div data-number="{{ answer.number }}" class="fw-bold text-danger">
+                                <div id="{{ sub }}selection_{{ answer.number }}_before"
+                                     class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                    {{ answer.rate_selection|floatformat:0 }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+
+    {# answer_predict #}
+    {% if user.is_staff %}
+        {% partialdef answer_predict_line inline=True %}
+            <tr class="text-center">
+                <th class="text-nowrap td-no-border" scope="row">예상 정답</th>
+                {% for answer in answer_predict %}
+                    {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                        <td class="td-no-border">
+                            {% if answer.result == 'O' %}
+                                <button data-number="{{ answer.number }}"
+                                        class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-warning">
+                                    <div id="{{ sub }}ans_{{ answer.number }}"
+                                         class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                        {{ answer.ans_number }}
+                                    </div>
+                                </button>
+                            {% else %}
+                                <button data-number="{{ answer.number }}"
+                                        class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-danger">
+                                    <div id="{{ sub }}ans_{{ answer.number }}"
+                                         class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                        {{ answer.ans_number }}
+                                    </div>
+                                </button>
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
+                <th class="text-nowrap" scope="row">정확도(%)</th>
+                {% for answer in answer_predict %}
+                    {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                        <td>
+                            {% if answer.result == 'O' %}
+                                <div data-number="{{ answer.number }}" class="fw-bold text-warning">
+                                    <div id="{{ sub }}accracy_{{ answer.number }}"
+                                         class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                        {{ answer.rate_accuracy|floatformat:0 }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div data-number="{{ answer.number }}" class="fw-bold text-danger">
+                                    <div id="{{ sub }}accracy_{{ answer.number }}"
+                                         class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                        {{ answer.rate_accuracy|floatformat:0 }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endpartialdef answer_predict_line %}
+    {% else %}
+        {% if current_time < answer_opened_at %}
+            {% if info_answer.participants < min_participants %}
+                <tr class="text-center">
+                    <th class="text-nowrap text-bg-warning td-no-border" scope="row">예상 정답</th>
+                    <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
+                        답안 수집중입니다. (현재 {{ info_answer.participants }}명 제출 완료)
+                    </td>
+                </tr>
+                <tr class="text-center">
+                    <th class="text-nowrap text-bg-warning" scope="row">정확도(%)</th>
+                </tr>
+            {% else %}
+                {% partial answer_predict_line %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endpartialdef answer_table_tr %}

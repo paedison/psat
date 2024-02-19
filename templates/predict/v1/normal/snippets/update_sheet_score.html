@@ -1,0 +1,172 @@
+{% load psat_filter %}
+{% load partials %}
+
+{% with prefix='my' %}{% partial score_student %}{% endwith %}
+{% with prefix='all' %}{% partial score_student %}{% endwith %}
+{% with prefix='department' %}{% partial score_student %}{% endwith %}
+
+{% partialdef score_student %}
+    <div id="{{ prefix }}_score_heonbeob" class="htmx-fade-up-in delay-0"
+         hx-swap-oob="outerHTML:#{{ prefix }}_score_heonbeob">
+        {{ score_student.헌법.score|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_score_eoneo" class="htmx-fade-up-in delay-0"
+         hx-swap-oob="outerHTML:#{{ prefix }}_score_eoneo">
+        {{ score_student.언어.score|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_score_jaryo" class="htmx-fade-up-in delay-0"
+         hx-swap-oob="outerHTML:#{{ prefix }}_score_jaryo">
+        {{ score_student.자료.score|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_score_sanghwang" class="htmx-fade-up-in delay-0"
+         hx-swap-oob="outerHTML:#{{ prefix }}_score_sanghwang">
+        {{ score_student.상황.score|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_score_psat" class="htmx-fade-up-in delay-0"
+         hx-swap-oob="outerHTML:#{{ prefix }}_score_psat">
+        {{ score_student.피셋.score|floatformat:1 }}
+    </div>
+{% endpartialdef score_student %}
+
+{% with score_data=score_student.헌법 %}{% partial sub_score_line %}{% endwith %}
+{% with score_data=score_student.언어 %}{% partial sub_score_line %}{% endwith %}
+{% with score_data=score_student.자료 %}{% partial sub_score_line %}{% endwith %}
+{% with score_data=score_student.상황 %}{% partial sub_score_line %}{% endwith %}
+{% with score_data=score_student.피셋 %}{% partial sub_score_line %}{% endwith %}
+
+{% partialdef sub_score_line %}
+    <div id="rank_total_{{ score_data.sub_eng }}" class="htmx-fade-up-in delay-1"
+         hx-swap-oob="outerHTML:#rank_total_{{ score_data.sub_eng }}">
+        {{ score_data.rank_total }}
+    </div>
+    <div id="rank_ratio_total_{{ score_data.sub_eng }}" class="htmx-fade-up-in delay-2"
+         hx-swap-oob="outerHTML:#rank_ratio_total_{{ score_data.sub_eng }}">
+        {{ score_data.rank_ratio_total|percentage|floatformat:1 }}
+    </div>
+    <div id="rank_department_{{ score_data.sub_eng }}" class="htmx-fade-up-in delay-3"
+         hx-swap-oob="outerHTML:#rank_department_{{ score_data.sub_eng }}">
+        {{ score_data.rank_department }}
+    </div>
+    <div id="rank_ratio_department_{{ score_data.sub_eng }}" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#rank_ratio_department_{{ score_data.sub_eng }}">
+        {{ score_data.rank_ratio_department|percentage|floatformat:1 }}
+    </div>
+{% endpartialdef %}
+
+{% with prefix='all' stat=all_score_stat.전체 %}{% partial score_statistics %}{% endwith %}
+{% with prefix='department' stat=all_score_stat.직렬 %}{% partial score_statistics %}{% endwith %}
+
+{% partialdef score_statistics %}
+    <div id="{{ prefix }}_num_students_heonbeob" class="htmx-fade-up-in delay-1"
+         hx-swap-oob="outerHTML:#{{ prefix }}_num_students_heonbeob">
+        {{ stat.헌법.num_students }}
+    </div>
+    <div id="{{ prefix }}_num_students_eoneo" class="htmx-fade-up-in delay-1"
+         hx-swap-oob="outerHTML:#{{ prefix }}_num_students_eoneo">
+        {{ stat.언어.num_students }}
+    </div>
+    <div id="{{ prefix }}_num_students_jaryo" class="htmx-fade-up-in delay-1"
+         hx-swap-oob="outerHTML:#{{ prefix }}_num_students_jaryo">
+        {{ stat.자료.num_students }}
+    </div>
+    <div id="{{ prefix }}_num_students_sanghwang" class="htmx-fade-up-in delay-1"
+         hx-swap-oob="outerHTML:#{{ prefix }}_num_students_sanghwang">
+        {{ stat.상황.num_students }}
+    </div>
+    <div id="{{ prefix }}_num_students_psat" class="htmx-fade-up-in delay-1"
+         hx-swap-oob="outerHTML:#{{ prefix }}_num_students_psat">
+        {{ stat.피셋.num_students }}
+    </div>
+
+
+    <div id="{{ prefix }}_max_score_heonbeob" class="htmx-fade-up-in delay-2"
+         hx-swap-oob="outerHTML:#{{ prefix }}_max_score_heonbeob">
+        {{ stat.헌법.max_score }}
+    </div>
+    <div id="{{ prefix }}_max_score_eoneo" class="htmx-fade-up-in delay-2"
+         hx-swap-oob="outerHTML:#{{ prefix }}_max_score_eoneo">
+        {{ stat.언어.max_score }}
+    </div>
+    <div id="{{ prefix }}_max_score_jaryo" class="htmx-fade-up-in delay-2"
+         hx-swap-oob="outerHTML:#{{ prefix }}_max_score_jaryo">
+        {{ stat.자료.max_score }}
+    </div>
+    <div id="{{ prefix }}_max_score_sanghwang" class="htmx-fade-up-in delay-2"
+         hx-swap-oob="outerHTML:#{{ prefix }}_max_score_sanghwang">
+        {{ stat.상황.max_score }}
+    </div>
+    <div id="{{ prefix }}_max_score_psat" class="htmx-fade-up-in delay-2"
+         hx-swap-oob="outerHTML:#{{ prefix }}_max_score_psat">
+        {{ stat.피셋.max_score|floatformat:1 }}
+    </div>
+
+
+    <div id="{{ prefix }}_top_score_10_heonbeob" class="htmx-fade-up-in delay-3"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_10_heonbeob">
+        {{ stat.헌법.top_score_10|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_10_eoneo" class="htmx-fade-up-in delay-3"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_10_eoneo">
+        {{ stat.언어.top_score_10|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_10_jaryo" class="htmx-fade-up-in delay-3"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_10_jaryo">
+        {{ stat.자료.top_score_10|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_10_sanghwang" class="htmx-fade-up-in delay-3"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_10_sanghwang">
+        {{ stat.상황.top_score_10|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_10_psat" class="htmx-fade-up-in delay-3"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_10_psat">
+        {{ stat.피셋.top_score_10|floatformat:1 }}
+    </div>
+
+
+    <div id="{{ prefix }}_top_score_20_heonbeob" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_20_heonbeob">
+        {{ stat.헌법.top_score_20|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_20_eoneo" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_20_eoneo">
+        {{ stat.언어.top_score_20|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_20_jaryo" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_20_jaryo">
+        {{ stat.자료.top_score_20|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_20_sanghwang" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_20_sanghwang">
+        {{ stat.상황.top_score_20|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_20_psat" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_top_score_20_psat">
+        {{ stat.피셋.top_score_20|floatformat:1 }}
+    </div>
+
+
+    <div id="{{ prefix }}_avg_score_heonbeob" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_avg_score_heonbeob">
+        {{ stat.헌법.avg_score|floatformat:1 }}
+    </div>
+
+    <div id="{{ prefix }}_avg_score_eoneo" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_avg_score_eoneo">
+        {{ stat.언어.avg_score|floatformat:1 }}
+    </div>
+
+    <div id="{{ prefix }}_avg_score_jaryo" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_avg_score_jaryo">
+        {{ stat.자료.avg_score|floatformat:1 }}
+    </div>
+
+    <div id="{{ prefix }}_avg_score_sanghwang" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_avg_score_sanghwang">
+        {{ stat.상황.avg_score|floatformat:1 }}
+    </div>
+
+    <div id="{{ prefix }}_avg_score_psat" class="htmx-fade-up-in delay-4"
+         hx-swap-oob="outerHTML:#{{ prefix }}_avg_score_psat">
+        {{ stat.피셋.avg_score|floatformat:1 }}
+    </div>
+{% endpartialdef score_statistics %}

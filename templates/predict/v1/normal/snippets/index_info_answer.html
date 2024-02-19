@@ -1,0 +1,143 @@
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+<div class="card-header">
+    답안 제출 현황
+    <a class="text-decoration-none ms-2" href="" hx-swap="none"
+       hx-get="{% url 'predict_test:update_info_answer' %}">
+        <span class="badge rounded-pill text-bg-warning">업데이트</span>
+    </a>
+</div>
+
+<div class="card-body">
+    <article class="table-responsive">
+        <table class="table small align-middle">
+            <thead>
+                <tr class="text-center align-middle table-warning">
+                    <th rowspan="2" aria-label="과목">과목</th>
+                    {% if user.is_staff %}
+                        {% with title='실제 점수' unit='(점)' %}
+                            {% partialdef title_line inline=True %}
+                                <th class="text-nowrap" aria-label="{{ title }}">
+                                    <span class="d-sm-none">{{ title }}<br/>{{ unit }}</span>
+                                    <span class="d-none d-sm-inline">{{ title }}{{ unit }}</span>
+                                </th>
+                            {% endpartialdef title_line %}
+                        {% endwith %}
+                        {% with title='예상 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
+                    {% else %}
+                        {% if current_time > answer_opened_at %}
+                            {% with title='내 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
+                        {% else %}
+                            {% with title='예상 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
+                        {% endif %}
+                    {% endif %}
+                    {% with title='선택 답안수' unit='(문제)' %}{% partial title_line %}{% endwith %}
+                    {% with title='총 참여자수' unit='(명)' %}{% partial title_line %}{% endwith %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% with info_answer=info_answer_student.헌법 %}{% partial sub_answer_line %}{% endwith %}
+                {% with info_answer=info_answer_student.언어 %}{% partial sub_answer_line %}{% endwith %}
+                {% with info_answer=info_answer_student.자료 %}{% partial sub_answer_line %}{% endwith %}
+                {% with info_answer=info_answer_student.상황 %}{% partial sub_answer_line %}{% endwith %}
+                {% with info_answer=info_answer_student.피셋 %}{% partial sub_answer_line %}{% endwith %}
+            </tbody>
+        </table>
+        <div>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+            <ol class="text-success small fw-bold m-0">
+                <li>총 참여자수는 과목별로 답안 제출을 완료한 응시생수입니다.</li>
+                <li>선택 답안수는 과목별로 답안을 선택한 문제수 및 총 문제수입니다.</li>
+                <li>최종 제출한 답안만 통계에 포함되니 답안 제출을 완료해주세요.</li>
+                <li>최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
+                {% if current_time < answer_opened_at %}
+                    <li>예상 점수는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
+                {% endif %}
+            </ol>
+        </div>
+    </article>
+</div>
+
+{% partialdef sub_answer_line %}
+    <tr class="text-center">
+        {% if info_answer.is_confirmed %}
+            <th class="text-nowrap" aria-label="과목">
+                {{ info_answer.icon|safe }} {{ info_answer.subject }}
+            </th>
+            {% if user.is_staff %}
+                <td aria-label="실제 점수">
+                    <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-0">
+                        {{ info_answer.score_real|default:'' }}
+                    </div>
+                </td>
+                <td aria-label="예상 점수">
+                    <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-0">
+                        {{ info_answer.score_virtual|default:'' }}
+                    </div>
+                </td>
+            {% else %}
+                {% if current_time < answer_opened_at %}
+                    <td aria-label="내 점수">
+                        <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-1">
+                            {{ info_answer.score_real|default:'' }}
+                        </div>
+                    </td>
+                {% else %}
+                    <td aria-label="예상 점수">
+                        {% if info_answer.participants < min_participants %}
+                            <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
+                        {% else %}
+                            <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-1">
+                                {{ info_answer.score_virtual|default:'' }}
+                            </div>
+                        {% endif %}
+                    </td>
+                {% endif %}
+            {% endif %}
+            <td class="text-nowrap" aria-label="선택 답안수">
+                {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
+                <span class="badge rounded-pill text-bg-success">제출 완료</span>
+            </td>
+        {% else %}
+            <th class="text-nowrap" aria-label="과목">
+                {% if score_data.sub == '피셋' %}
+                    {{ info_answer.icon|safe }} {{ info_answer.subject }}
+                {% else %}
+                    <a class="text-decoration-none"
+                       href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
+                        {{ info_answer.icon|safe }} {{ info_answer.subject }}
+                    </a>
+                {% endif %}
+            </th>
+            <td colspan="{% if user.is_staff %}2{% else %}1{% endif %}" aria-label="점수">
+                {% if info_answer.sub == '피셋' %}
+                    <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                {% else %}
+                    <a href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
+                        <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                    </a>
+                {% endif %}
+            </td>
+            <td class="text-nowrap" aria-label="선택 답안수">
+                {% if info_answer.sub == '피셋' %}
+                    {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
+                    <span class="badge rounded-pill text-bg-danger">미제출</span>
+                {% else %}
+                    <a class="text-decoration-none"
+                       href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
+                        {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
+                        <span class="badge rounded-pill text-bg-danger">미제출</span>
+                    </a>
+                {% endif %}
+            </td>
+        {% endif %}
+        <td aria-label="총 참여자수">
+            <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in delay-2">
+                {{ info_answer.participants|default:0 }}
+            </div>
+        </td>
+    </tr>
+{% endpartialdef sub_answer_line %}

@@ -1,0 +1,23 @@
+{% load psat_filter %}
+{% load partials %}
+
+{% with info_answer=info_answer_student.헌법 delay_num=1 %}
+    {% partialdef participants inline=True %}
+        <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-{{ delay_num }}"
+              hx-swap-oob="outerHTML:#{{ info_answer.sub }}_score_real">
+            {{ info_answer.score_real|default:'' }}
+        </div>
+        <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-{{ delay_num }}"
+              hx-swap-oob="outerHTML:#{{ info_answer.sub }}_score_virtual">
+            {{ info_answer.score_virtual|default:'' }}
+        </div>
+        <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in delay-{{ delay_num|add:1 }}"
+              hx-swap-oob="outerHTML:#{{ info_answer.sub }}_participants">
+            {{ info_answer.participants|default:'' }}
+        </div>
+    {% endpartialdef participants %}
+{% endwith %}
+{% with info_answer=info_answer_student.언어 delay_num=3 %}{% partial participants %}{% endwith %}
+{% with info_answer=info_answer_student.자료 delay_num=5 %}{% partial participants %}{% endwith %}
+{% with info_answer=info_answer_student.상황 delay_num=7 %}{% partial participants %}{% endwith %}
+{% with info_answer=info_answer_student.피셋 delay_num=9 %}{% partial participants %}{% endwith %}

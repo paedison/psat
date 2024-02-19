@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     'reference',
     'dashboard',
     'community',
+    'predict',
 ]
 
 MIDDLEWARE = [

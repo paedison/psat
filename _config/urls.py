@@ -16,6 +16,7 @@ urlpatterns = [
     path('community/', include('community.urls')),  # Community
     path('score/', include('score.urls')),  # Score
     path('schedule/', include('schedule.urls')),  # Schedule
+    path('predict/', include('predict.urls')),  # Schedule
 
     # path('quiz/', include('quiz.urls')),  # Quiz
     path('log/', include('log.urls')),  # Log

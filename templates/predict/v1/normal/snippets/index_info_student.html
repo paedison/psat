@@ -1,0 +1,127 @@
+{% load static %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+<div class="card-header">수험정보</div>
+
+<div class="card-body">
+    {% if student %}
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="px-0" scope="row">수험번호</th>
+                    <td>{{ student.serial }}</td>
+                </tr>
+                {% if category == 'PSAT' %}
+                    <tr>
+                        <th class="px-0" scope="row">모집단위</th>
+                        <td>{{ student.unit_name }}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <th class="px-0" scope="row">직렬</th>
+                    <td>{{ student.department_name }}</td>
+                </tr>
+                <tr>
+                    <th class="px-0" scope="row">이름</th>
+                    <td>{{ student.name }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+            <i class="fa-solid fa-circle-exclamation"></i>
+                수험정보를 입력해주세요.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <form>
+            {# 수험번호 #}
+            <div class="form-floating">
+                <input id="id_serial" class="form-control form-control-sm mt-3"
+                       type="text" placeholder="수험번호" name="serial" value="{{ form.serial.value|default:'' }}"/>
+                <label for="id_serial">수험번호</label>
+            </div>
+            {% if form.errors.serial %}
+                <div class="text-danger text-start fw-bold">수험번호를 입력해주세요.</div>
+            {% endif %}
+
+            {# 모집 단위 및 직렬 #}
+            {% if departments %}
+                {% partialdef student_create_department inline=True %} {# student_create_department partial #}
+                    <select id="id_department" class="form-select mt-3"
+                            name="department_id" aria-label="Select department">
+                        <option selected>직렬</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}">
+                                {{ department.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.errors.department_id %}
+                        <div class="text-danger text-start fw-bold">직렬을 선택해주세요.</div>
+                    {% endif %}
+                {% endpartialdef student_create_department %}
+            {% else %}
+                <select id="id_unit" class="form-select" name="unit_id" aria-label="Select unit"
+                        hx-post="{% url 'predict_test:student_create_department' %}" hx-push-url="false"
+                        hx-trigger="change" hx-target="#student_create_department">
+                    <option selected>모집 단위를 선택해주세요.</option>
+                    {% for unit in units %}
+                        <option value="{{ unit.id }}">{{ unit.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <div id="student_create_department" class="input-group">
+                    {% partial student_create_department %}
+                </div>
+                {% if form.errors.department_id %}
+                    <div class="text-danger text-start fw-bold">모집 단위 및 직렬을 선택해주세요.</div>
+                {% endif %}
+            {% endif %}
+
+            {# 이름 #}
+            <div class="input-group mt-3">
+                <div class="form-floating">
+                    <input id="id_name" class="form-control form-control-sm"
+                           type="text" placeholder="이름" name="name" value="{{ form.name.value|default:'' }}"/>
+                    <label for="id_name">이름</label>
+                </div>
+                {% if category == 'PSAT' %}
+                    {% partialdef form_submit inline=True %} {# form_submit partial #}
+                        <button class="btn btn-outline-secondary" type="submit" hx-target="#main"
+                                hx-post="{% url 'predict_test:student_create' %}">
+                            입력
+                        </button>
+                    {% endpartialdef form_submit %}
+                {% endif %}
+            </div>
+                {% if form.errors.name %}
+                    <div class="text-danger text-start fw-bold">
+                        이름을 입력해주세요.
+                    </div>
+                {% endif %}
+
+            {# 비밀번호 #}
+            {% if category == 'Prime' %}
+                <div class="input-group mt-3">
+                    <div class="form-floating">
+                        <input id="id_password" class="form-control form-control-sm"
+                               type="text" placeholder="비밀번호"
+                               name="password" value="{{ form.password.value|default:'' }}"/>
+                        <label for="id_password">비밀번호</label>
+                    </div>
+                    {% partial form_submit %}
+                </div>
+                {% if form.errors.password %}
+                    <div class="text-danger text-start fw-bold">
+                         비밀번호를 입력해주세요.
+                    </div>
+                {% endif %}
+            {% elif category == 'PSAT' %}
+                <input id="id_password" class="form-control form-control-sm" aria-label="password"
+                       type="password" placeholder="비밀번호" name="password" value="0" hidden/>
+            {% endif %}
+        </form>
+    {% endif %}
+</div>
