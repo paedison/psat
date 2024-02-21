@@ -84,6 +84,7 @@
                         <li>
                             <a class="dropdown-item d-flex align-items-center" href=""
                                hx-get="{% url 'account_logout_modal' %}"
+                               hx-vals="js:{next: RedirectUrl()}"
                                hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
                                data-bs-toggle="modal" data-bs-target="#modalContainer">
                                 {{ logout_icon|safe }} <span>{% trans 'Logout' %}</span>
@@ -91,22 +92,15 @@
                         </li>
                     {% else %}
                         <li>
-                            <a class="dropdown-item d-flex align-items-center" href="javascript:Login()">
+                            <a class="dropdown-item d-flex align-items-center"
+                               href="javascript:RedirectUrl('{% url 'account_login' %}')">
                                 {{ login_icon|safe }} <span>{% trans 'Login' %}</span>
                             </a>
                         </li>
-                        <script>
-                            function Login() {
-                                let link = window.location.href;
-                                let list = link.split('/');
-                                list.splice(0,3);
-                                let redirect = '/'.concat(list.join('/'));
-                                location.href = "{% url 'account_login' %}?next="+redirect;
-                            }
-                        </script>
                         {{ divider }}
                         <li>
-                            <a class="dropdown-item d-flex align-items-center" href="{% url 'account_signup' %}">
+                            <a class="dropdown-item d-flex align-items-center"
+                               href="javascript:RedirectUrl('{% url 'account_signup' %}')">
                                 {{ signup_icon|safe }} <span>{% trans 'Signup' %}</span>
                             </a>
                         </li>

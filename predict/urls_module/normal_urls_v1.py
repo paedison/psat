@@ -6,6 +6,7 @@ app_name = 'predict_test'  # predict
 
 urlpatterns = [
     path('', normal_views.index_view, name='index'),
+    path('anonymous/', normal_views.anonymous_index_view, name='anonymous_index'),
 
     path('student/', normal_views.student_create_view, name='student_create'),
     path('student/department/',

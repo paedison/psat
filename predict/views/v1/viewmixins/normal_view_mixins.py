@@ -18,10 +18,14 @@ class CachedProperty:
 
 
 class PredictExamInfo:
-    category = 'Prime'
+    # category = 'Prime'
+    # year = '2024'
+    # ex = '프모'
+    # round = 6
+    category = 'PSAT'
     year = '2024'
-    ex = '프모'
-    round = 5
+    ex = '행시'
+    round = 0
 
 
 class IndexViewMixIn(

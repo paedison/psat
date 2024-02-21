@@ -9,6 +9,7 @@
 {% block body_title %}{% trans "Welcome!" %}{% endblock body_title %}
 
 {% block content %}
+<script id="info" type="application/json">{"menu": "account", "view_type": "login"}</script>
 {% get_providers as socialaccount_providers %}
     <form method="post" action="{% url 'account_login' %}" class="row g-3">
         {% csrf_token %}

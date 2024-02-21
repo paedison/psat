@@ -44,7 +44,6 @@ class BaseMixin:
         '민경': '민간경력',
         '프모': '프라임 모의고사',
     }
-
     sub_eng_dict = {
         '헌법': 'heonbeob',
         '언어': 'eoneo',

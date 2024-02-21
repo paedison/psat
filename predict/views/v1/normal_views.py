@@ -7,12 +7,10 @@ from django.urls import reverse_lazy
 from .viewmixins import base_mixins, normal_view_mixins
 
 
-class IndexView(
-    auth_mixins.LoginRequiredMixin,
+class AnonymousIndexView(
     normal_view_mixins.IndexViewMixIn,
     vanilla.TemplateView,
 ):
-    """ Represent information related TemporaryAnswer and ConfirmedAnswer models. """
     template_name = 'predict/v1/normal/predict_index.html'
 
     def get_template_names(self):
@@ -24,57 +22,105 @@ class IndexView(
 
     def get(self, request, *args, **kwargs):
         self.exam = self.get_exam()
-        if self.current_time > self.exam.exam_date:
-            context = self.get_context_data()
-            return self.render_to_response(context)
-        else:
-            if self.request.user.is_admin or self.request.user.is_staff:
-                context = self.get_context_data()
-                return self.render_to_response(context)
-        return HttpResponseRedirect(reverse_lazy('prime:list'))
+        self.get_properties()
+        context = self.get_context_data()
+        return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                # base info
+                'info': self.info,
+                'current_time': self.current_time,
+                'answer_opened_at': self.get_answer_opened_at(),
+                'min_participants': self.min_participants,
+                'category': self.exam.category,
+                'year': self.exam.year,
+                'ex': self.exam.ex,
+                'exam': self.exam.exam,
+                'round': self.round,
+                'title': 'Score',
+                'sub_title': self.sub_title,
 
-        return {
-            # base info
-            'info': self.info,
-            'current_time': self.current_time,
-            'answer_opened_at': self.get_answer_opened_at(),
-            'min_participants': self.min_participants,
-            'category': self.exam.category,
-            'year': self.exam.year,
-            'ex': self.exam.ex,
-            'exam': self.exam.exam,
-            'round': self.round,
-            'title': 'Score',
-            'sub_title': self.sub_title,
+                # icons
+                'icon_menu': self.ICON_MENU['score'],
+                'icon_subject': self.ICON_SUBJECT,
+                'icon_nav': self.ICON_NAV,
+            }
+        )
+        return context
 
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
 
-            # index_info_student: 수험 정보
-            'units': self.units,
-            'departments': self.departments,
-            'student': self.student,
+class IndexView(
+    normal_view_mixins.IndexViewMixIn,
+    vanilla.TemplateView,
+):
+    template_name = 'predict/v1/normal/predict_index.html'
 
-            # index_info_answer: 답안 제출 현황
-            'info_answer_student': self.info_answer_student,
-
-            # index_sheet_answer: 답안 확인
-            'data_answer_correct': self.data_answer['answer_correct'],
-            'data_answer_predict': self.data_answer['answer_predict'],
-            'data_answer_student': self.data_answer['answer_student'],
-
-            # index_sheet_score: 성적 예측
-            'score_student': self.score_student,
-            'all_score_stat': self.all_score_stat,
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#index_main',
         }
+        return htmx_template[f'{bool(self.request.htmx)}']
+
+    def get(self, request, *args, **kwargs):
+        if not self.request.user.is_authenticated:
+            return HttpResponseRedirect(reverse_lazy('predict_test:anonymous_index'))
+
+        self.exam = self.get_exam()
+        self.get_properties()
+        context = self.get_context_data()
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                # base info
+                'info': self.info,
+                'current_time': self.current_time,
+                'answer_opened_at': self.get_answer_opened_at(),
+                'min_participants': self.min_participants,
+                'category': self.exam.category,
+                'year': self.exam.year,
+                'ex': self.exam.ex,
+                'exam': self.exam.exam,
+                'round': self.round,
+                'title': 'Score',
+                'sub_title': self.sub_title,
+
+                # icons
+                'icon_menu': self.ICON_MENU['score'],
+                'icon_subject': self.ICON_SUBJECT,
+                'icon_nav': self.ICON_NAV,
+
+                # index_info_student: 수험 정보
+                'units': self.units,
+                'departments': self.departments,
+                'student': self.student,
+
+                # index_info_answer: 답안 제출 현황
+                'info_answer_student': self.info_answer_student,
+
+                # index_sheet_answer: 답안 확인
+                'data_answer_correct': self.data_answer['answer_correct'],
+                'data_answer_predict': self.data_answer['answer_predict'],
+                'data_answer_student': self.data_answer['answer_student'],
+
+                # index_sheet_score: 성적 예측
+                'score_student': self.score_student,
+                'all_score_stat': self.all_score_stat,
+            }
+        )
+        return context
 
 
 class UpdateInfoAnswer(IndexView):
@@ -117,7 +163,8 @@ class StudentCreateView(
         return self.student_form
 
     def get(self, request, *args, **kwargs):
-        if self.current_time > self.predict_opened_at:
+        self.exam = self.get_exam()
+        if self.current_time > self.exam.exam_date:
             self.get_properties()
             context = self.get_context_data()
             return self.render_to_response(context)
@@ -129,6 +176,7 @@ class StudentCreateView(
         return HttpResponseRedirect(reverse_lazy('prime:list'))
 
     def post(self, request, *args, **kwargs):
+        self.exam = self.get_exam()
         self.get_properties()
         return super().post(request, *args, **kwargs)
 
@@ -154,6 +202,7 @@ class StudentCreateView(
                 'ex': self.exam.ex,
                 'exam': self.exam.exam,
                 'round': self.round,
+                'unit_id': self.request.POST.get('unit_id'),
                 'units': self.units,
                 'title': 'Score',
                 'sub_title': self.sub_title,
@@ -301,6 +350,7 @@ class AnswerConfirmView(
 
 
 index_view = IndexView.as_view()
+anonymous_index_view = AnonymousIndexView.as_view()
 
 student_create_view = StudentCreateView.as_view()
 student_create_department = StudentCreateDepartment.as_view()

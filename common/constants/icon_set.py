@@ -14,6 +14,7 @@ class ConstantIconSet:
         'tag': '<i class="fa-solid fa-tag fa-fw"></i>',
         'search': '<i class="fa-solid fa-magnifying-glass fa-fw"></i>',
         'community': '<i class="fa-solid fa-users-line fa-fw"></i>',
+        'predict': '<i class="fa-solid fa-arrows-up-to-line"></i>',
         'score': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
         'prime': '<i class="fa-solid fa-file fa-fw"></i>',
         'schedule': '<i class="fa-regular fa-calendar-days fa-fw"></i>',

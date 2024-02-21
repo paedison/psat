@@ -4,6 +4,20 @@ const view_type = info['view_type'];  // problem, like, rate, solve, search, psa
 const parent_menu = ['score']  // menu with child branches
 
 
+// Redirect Url
+function RedirectUrl(url) {
+    let link = window.location.href;
+    let list = link.split('/');
+    list.splice(0,3);
+    let redirect = '/'.concat(list.join('/'));
+    if (url) {
+        location.href = `${url}?next=${redirect}`;
+    } else {
+        return redirect
+    }
+}
+
+
 // Toggle the side navigation
 $("#sidebarToggle").on('click', function() {
     $("body").toggleClass("toggle-sidebar");

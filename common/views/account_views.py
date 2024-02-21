@@ -10,6 +10,16 @@ class LoginModalView(vanilla.TemplateView):
 class LogoutModalView(vanilla.TemplateView):
     template_name = 'snippets/modal.html#logout'
 
+    def post(self, request, *args, **kwargs):
+        return self.get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {'next': self.request.GET.get('next')}
+        )
+        return context
+
 
 class ProfileView(
     ConstantIconSet,

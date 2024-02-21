@@ -51,6 +51,7 @@ class Student(
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='students')
     serial = models.CharField(max_length=10)
     password = models.IntegerField()
+    unit_id = models.IntegerField()
     department_id = models.IntegerField()
 
     class Meta:

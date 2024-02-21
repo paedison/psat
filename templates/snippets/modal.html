@@ -6,7 +6,7 @@
 {% partialdef login %}
     {% #modal header='로그인이 필요합니다.' %}
         {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
-        <a class="btn btn-primary" href="javascript:Login()">로그인</a>
+        <a class="btn btn-primary" href="javascript:RedirectUrl('{% url 'account_login' %}')">로그인</a>
     {% /modal %}
 {% endpartialdef %}
 
@@ -16,6 +16,7 @@
         <form action="{% url 'account_logout' %}" method="POST">
             {% csrf_token %}
             {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
+            <input name="next" value="{{ next }}" aria-label="Next Url" hidden/>
             <button class="btn btn-primary" type="submit">로그아웃</button>
         </form>
     {% /modal %}

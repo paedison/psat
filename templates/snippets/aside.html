@@ -3,6 +3,7 @@
 {% fragment as notice_icon %}<i class="fa-solid fa-bullhorn fa-fw"></i>{% endfragment %}
 {% fragment as dashboard_icon %}<i class="fa-solid fa-list fa-fw"></i>{% endfragment %}
 {% fragment as psat_icon %}<i class="fa-solid fa-layer-group fa-fw"></i>{% endfragment %}
+{% fragment as predict_icon %}<i class="fa-solid fa-arrows-up-to-line"></i>{% endfragment %}
 {% fragment as problem_icon %}<i class="fa-file-lines fa-fw fa-regular"></i>{% endfragment %}
 {% fragment as like_icon %}<i class="fa-heart fa-fw fa-regular"></i>{% endfragment %}
 {% fragment as rate_icon %}<i class="fa-star fa-fw fa-regular"></i>{% endfragment %}
@@ -39,6 +40,15 @@
             </a>
         </li><!-- PSAT Nav End -->
 
+        {% if user.is_staff %}
+            <li class="nav-item">
+                <a id="predictList" class="nav-link collapsed"
+                   href="{% url 'predict_test:index' %}" hx-post="{% url 'predict_test:index' %}">
+                    {{ predict_icon|safe }}<span>Predict</span>
+                </a>
+            </li><!-- Predict Nav End -->
+        {% endif %}
+
 {#            <li class="nav-item">#}
 {#                <a id="communityList" class="nav-link collapsed"#}
 {#                   href="{% url 'community:base' %}" hx-post="{% url 'community:base' %}">#}
@@ -54,13 +64,6 @@
             </a>
             <ul id="score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
                 <li>
-{#                    {% if user.is_staff %}#}
-{#                        <a id="psatScoreList" class="aside-nav-icon"#}
-{#                           href="{% url 'score:predict' 2023 '행시' %}"#}
-{#                           hx-post="{% url 'score:predict' 2023 '행시' %}">#}
-{#                            {{ problem_icon|safe }}<span>2023 합격 예측</span>#}
-{#                        </a>#}
-{#                    {% endif %}#}
                     {% if user.is_admin %}
                         <a id="psatScoreList" class="aside-nav-icon"
                            href="{% url 'score:list' %}"
