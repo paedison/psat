@@ -37,25 +37,25 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body text-center p-4">
-                        {% if category == 'Prime' %}
-                            <img src="{% static 'image/predict/cover_prime.jpg' %}" class="mw-100" alt="Title"/>
-                            <div class="fs-1 fw-bolder">제 {{ round }} 회 성적 예측</div>
-                        {% else %}
-                            <img src="{% static 'image/predict/cover_psat.jpg' %}" class="mw-100" alt="Title"/>
-                        {% endif %}
-                        {% if not student %}
-                            <div class="container p-0">
-                                <div class="container">
-                                    <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
-                                    <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
-                                </div>
+                    {% if category == 'Prime' %}
+                        <img src="{% static 'image/predict/cover_prime.jpg' %}" class="mw-100" alt="Title"/>
+                        <div class="fs-1 fw-bolder">제 {{ round }} 회 성적 예측</div>
+                    {% else %}
+                        <img src="{% static 'image/predict/cover_psat.jpg' %}" class="mw-100" alt="Title"/>
+                    {% endif %}
+                    {% if not student %}
+                        <div class="container p-0">
+                            <div class="container">
+                                <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
+                                <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
                             </div>
-                        {% endif %}
-                        {% if not user.is_authenticated %}
-                            <a class="btn btn-outline-danger mt-4" href="javascript:RedirectUrl('{% url 'account_login' %}')">
-                                로그인이 필요합니다.
-                            </a>
-                        {% endif %}
+                        </div>
+                    {% endif %}
+                    {% if not user.is_authenticated %}
+                        <a class="btn btn-outline-danger mt-4" href="javascript:RedirectUrl('{% url 'account_login' %}')">
+                            로그인이 필요합니다.
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

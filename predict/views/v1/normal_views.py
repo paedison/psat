@@ -50,6 +50,9 @@ class AnonymousIndexView(
                 'icon_menu': self.ICON_MENU['score'],
                 'icon_subject': self.ICON_SUBJECT,
                 'icon_nav': self.ICON_NAV,
+
+                # index_info_student: 수험 정보
+                'units': self.units,
             }
         )
         return context
