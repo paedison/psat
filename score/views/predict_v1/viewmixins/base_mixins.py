@@ -85,7 +85,7 @@ class BaseMixin:
             'ex': '프모',
             'exam': '프라임 모의고사',
             'round': 6,
-            'date': datetime(2024, 2, 24),
+            'date': datetime(2024, 2, 25),
             'answer_file': f'{data_dir}answer_file_prime_2024-6.csv',
         },
         {
