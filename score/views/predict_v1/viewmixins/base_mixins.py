@@ -28,8 +28,10 @@ class BaseMixin:
     ex = '프모'
     round = 5
     current_time = datetime.now()
-    predict_opened_at = datetime(2024, 2, 17, 0, 0)
+    predict_opened_at = datetime(2024, 2, 17, 9, 0)
     answer_opened_at = datetime(2024, 2, 17, 17, 0)
+    # predict_opened_at = datetime(2024, 2, 25, 9, 0)
+    # answer_opened_at = datetime(2024, 2, 25, 17, 0)
 
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
@@ -245,12 +247,16 @@ class BaseMixin:
         answer_correct = {}
         csv_data = csv.reader(file)
         sub_keys = next(csv_data)  # 헌법, 언어, 자료, 상황
-        for sub in sub_keys[1:]:
-            answer_correct[sub] = []
+
+        for i, sub in enumerate(sub_keys):
+            sub = sub[:2]
+            sub_keys[i] = sub
+            if i > 0:
+                answer_correct[sub] = []
+
         for row in csv_data:
-            for i in range(1, len(sub_keys)):
-                if row[i]:
-                    sub = sub_keys[i]  # 헌법, 언어, 자료, 상황
+            for i, sub in enumerate(sub_keys):
+                if i > 0 and row[i]:
                     answer_correct[sub].append(
                         {
                             'number': row[0],
