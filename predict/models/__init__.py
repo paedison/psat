@@ -1,1 +1,3 @@
-from .predict_models import Exam, Student, Answer, AnswerCount, Statistics, StatisticsVirtual
+from .predict_models import (
+    Exam, Student, Answer, AnswerCount, Statistics, StatisticsVirtual, Location,
+)

@@ -40,14 +40,12 @@
             </a>
         </li><!-- PSAT Nav End -->
 
-        {% if user.is_staff %}
-            <li class="nav-item">
-                <a id="predictList" class="nav-link collapsed"
-                   href="{% url 'predict_test:index' %}" hx-post="{% url 'predict_test:index' %}">
-                    {{ predict_icon|safe }}<span>Predict</span>
-                </a>
-            </li><!-- Predict Nav End -->
-        {% endif %}
+        <li class="nav-item">
+            <a id="predictList" class="nav-link collapsed"
+               href="{% url 'predict_test:index' %}" hx-post="{% url 'predict_test:index' %}">
+                {{ predict_icon|safe }}<span>Predict</span>
+            </a>
+        </li><!-- Predict Nav End -->
 
 {#            <li class="nav-item">#}
 {#                <a id="communityList" class="nav-link collapsed"#}

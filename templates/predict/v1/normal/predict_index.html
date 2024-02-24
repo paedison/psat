@@ -44,6 +44,14 @@
                         <img src="{% static 'image/predict/cover_psat.jpg' %}" class="mw-100" alt="Title"/>
                     {% endif %}
                     {% if not student %}
+                        <div class="container my-4">
+                            <p>수험생 여러분, 그 동안 수고 많으셨습니다.</p>
+                            <p>여러분의 합격을 기원하는 마음과 함께</p>
+                            <p>아래와 같이 합격예측시스템을 제공해드리고 있습니다.</p>
+                            <p>모집단위와 직렬 및 응시번호, 이름을 입력하신 뒤,</p>
+                            <p>과목별 시험 답안을 제출해주시면 집계 후</p>
+                            <p>여러분의 합격 여부를 예측해드립니다.</p>
+                        </div>
                         <div class="container p-0">
                             <div class="container">
                                 <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
@@ -87,6 +95,18 @@
                 </div>
             {% endif %}
         {% endif %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body p-4">
+                    <div class="iframe_container">
+                        <iframe class="iframe_content" title="YouTube video player"
+                                src="https://www.youtube.com/embed/Fal8-8NRabY?si=4765xVgFBlV_l_Kh"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 {% endpartialdef index_main %}

@@ -37,6 +37,7 @@ class AnonymousIndexView(
                 'info': self.info,
                 'current_time': self.current_time,
                 'answer_opened_at': self.get_answer_opened_at(),
+                'predict_opened_at': self.predict_opened_at,
                 'min_participants': self.min_participants,
                 'category': self.exam.category,
                 'year': self.exam.year,
@@ -91,6 +92,7 @@ class IndexView(
                 'info': self.info,
                 'current_time': self.current_time,
                 'answer_opened_at': self.get_answer_opened_at(),
+                'predict_opened_at': self.predict_opened_at,
                 'min_participants': self.min_participants,
                 'category': self.exam.category,
                 'year': self.exam.year,
@@ -109,6 +111,7 @@ class IndexView(
                 'units': self.units,
                 'departments': self.departments,
                 'student': self.student,
+                'location': self.location,
 
                 # index_info_answer: 답안 제출 현황
                 'info_answer_student': self.info_answer_student,

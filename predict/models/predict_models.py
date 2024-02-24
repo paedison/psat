@@ -153,3 +153,14 @@ class Statistics(base_models.StatisticsBase):
 
 class StatisticsVirtual(base_models.StatisticsBase):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='statistics_virtual')
+
+
+class Location(base_models.TimeRecordField):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='locations')
+    serial_start = models.IntegerField()
+    serial_end = models.IntegerField()
+    region = models.CharField(max_length=10)
+    department = models.CharField(max_length=100)
+    school = models.CharField(max_length=30)
+    address = models.CharField(max_length=50)
+    contact = models.CharField(max_length=20, blank=True, null=True)

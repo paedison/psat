@@ -6,22 +6,7 @@ from . import base_mixins
 from ..utils import get_all_ranks_dict, get_all_score_stat_sub_dict
 
 
-class CachedProperty:
-    def __init__(self, func):
-        self.func = func
-        self.value = None
-
-    def __get__(self, instance, owner):
-        if self.value is None:
-            self.value = self.func(owner)
-        return self.value
-
-
 class PredictExamInfo:
-    # category = 'Prime'
-    # year = '2024'
-    # ex = '프모'
-    # round = 6
     category = 'PSAT'
     year = '2024'
     ex = '행시'
@@ -33,7 +18,7 @@ class IndexViewMixIn(
     PredictExamInfo,
     base_mixins.NormalBaseMixin,
 ):
-    min_participants = 100
+    min_participants = 1000
 
     all_answer_count: dict  # PredictAnswerCount data
     dataset_answer_student: list  # PredictAnswer data
@@ -50,6 +35,7 @@ class IndexViewMixIn(
         self.departments = self.department_model.objects.filter(unit__exam__abbr=self.ex).values()
 
         self.student = self.get_student()
+        self.location = self.get_location()
 
         self.sub_title = self.get_sub_title()
         self.problem_count_dict = self.get_problem_count_dict()
@@ -71,6 +57,18 @@ class IndexViewMixIn(
         else:
             self.all_score_stat = {'전체': '', '직렬': ''}
             self.score_student = {}
+
+    def get_location(self):
+        if self.student:
+            serial = int(self.student.serial)
+            try:
+                return self.location_model.objects.get(
+                    exam=self.student.exam,
+                    serial_start__lte=serial,
+                    serial_end__gte=serial,
+                )
+            except self.location_model.DoesNotExist:
+                return self.location_model.objects.none()
 
     def get_all_answer_count(self) -> dict:
         answer_count_dict = {'헌법': [], '언어': [], '자료': [], '상황': []}

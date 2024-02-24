@@ -15,8 +15,7 @@
 <header id="header" class="header fixed-top d-flex align-items-center">
     <div class="d-flex align-items-center justify-content-between"
          hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-        <a class="logo d-flex align-items-center" role="banner"
-           hx-post="{% url 'psat:base' %}" href="" data-target="#psatList">
+        <a class="logo d-flex align-items-center" role="banner" href="{% url 'index' %}" hx-boost="true">
             <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
             <span class="d-none d-sm-block">Paedison</span>
         </a>

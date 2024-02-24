@@ -25,12 +25,13 @@ class BaseMixin:
     answer_count_model = predict_models.AnswerCount
     statistics_model = predict_models.Statistics
     statistics_virtual_model = predict_models.StatisticsVirtual
+    location_model = predict_models.Location
 
     student_form = predict_forms.StudentForm
 
     current_time = current_time_utc.replace(tzinfo=pytz.utc).astimezone(seoul_timezone)
-    predict_opened_at = datetime(2024, 2, 17, 0, 0)
-    answer_opened_at = datetime(2024, 2, 17, 17, 0)
+    predict_opened_at_utc = datetime(2024, 2, 27, 0, 0)
+    predict_opened_at = predict_opened_at_utc.replace(tzinfo=pytz.utc).astimezone(seoul_timezone)
 
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
@@ -82,6 +83,7 @@ class BaseMixin:
     units: unit_model.objects  # 모집 단위
     departments: department_model.objects  # 직렬
     student: student_model.objects  # 수험 정보
+    location: location_model.objects  # 시험장
     all_answer_count: dict  # AnswerCount data
 
     exam_name: str | None
@@ -94,8 +96,8 @@ class BaseMixin:
     @property
     def info(self):
         return {
-            'menu': 'score',
-            'view_type': 'primeScore',
+            'menu': 'predict',
+            'view_type': 'predict',
         }
 
     def get_exam(self):
