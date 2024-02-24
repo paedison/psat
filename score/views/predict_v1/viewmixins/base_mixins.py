@@ -26,12 +26,10 @@ class BaseMixin:
     category = 'Prime'
     year = '2024'
     ex = '프모'
-    round = 5
+    round = 6
     current_time = datetime.now()
-    predict_opened_at = datetime(2024, 2, 17, 9, 0)
-    answer_opened_at = datetime(2024, 2, 17, 17, 0)
-    # predict_opened_at = datetime(2024, 2, 25, 9, 0)
-    # answer_opened_at = datetime(2024, 2, 25, 17, 0)
+    predict_opened_at = datetime(2024, 2, 25, 9, 0)
+    answer_opened_at = datetime(2024, 2, 25, 17, 0)
 
     base_dir = settings.BASE_DIR
     data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
