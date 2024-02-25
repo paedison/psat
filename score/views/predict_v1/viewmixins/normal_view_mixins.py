@@ -268,7 +268,10 @@ class IndexViewMixIn(ConstantIconSet, BaseMixin):
         for sub, data in self.data_answer['answer_student'].items():
             correct_count = 0
             for index, problem in enumerate(data):
-                answer_correct = target_answers[sub][index]['ans_number']
+                try:
+                    answer_correct = target_answers[sub][index]['ans_number']
+                except IndexError:
+                    answer_correct = 0
                 answer_student = problem['ans_number']
 
                 if answer_correct <= 5 and answer_correct == answer_student:
