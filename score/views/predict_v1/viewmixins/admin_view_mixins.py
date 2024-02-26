@@ -406,7 +406,7 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
         answer_correct_dict = self.get_answer_correct_dict(filename)
         for sub in score_dict:
             try:
-                answer_student_sub = self.answer_model.objects.get(sub=sub, student=student)
+                answer_student_sub = self.answer_model.objects.get(sub=sub, student=student, is_confirmed=True)
                 answer_correct_list = answer_correct_dict[sub]
 
                 correct_count = 0

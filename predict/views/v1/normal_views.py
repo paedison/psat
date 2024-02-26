@@ -7,58 +7,6 @@ from django.urls import reverse_lazy
 from .viewmixins import base_mixins, normal_view_mixins
 
 
-class AnonymousIndexView(
-    normal_view_mixins.IndexViewMixIn,
-    vanilla.TemplateView,
-):
-    template_name = 'predict/v1/normal/predict_index.html'
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#index_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
-
-    def get(self, request, *args, **kwargs):
-        self.exam = self.get_exam()
-        self.get_properties()
-        context = self.get_context_data()
-        return self.render_to_response(context)
-
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs) -> dict:
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {
-                # base info
-                'info': self.info,
-                'current_time': self.current_time,
-                'answer_opened_at': self.get_answer_opened_at(),
-                'predict_opened_at': self.predict_opened_at,
-                'min_participants': self.min_participants,
-                'category': self.exam.category,
-                'year': self.exam.year,
-                'ex': self.exam.ex,
-                'exam': self.exam.exam,
-                'round': self.round,
-                'title': 'Score',
-                'sub_title': self.sub_title,
-
-                # icons
-                'icon_menu': self.ICON_MENU['score'],
-                'icon_subject': self.ICON_SUBJECT,
-                'icon_nav': self.ICON_NAV,
-
-                # index_info_student: 수험 정보
-                'units': self.units,
-            }
-        )
-        return context
-
-
 class IndexView(
     normal_view_mixins.IndexViewMixIn,
     vanilla.TemplateView,
@@ -73,13 +21,8 @@ class IndexView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get(self, request, *args, **kwargs):
-        if not self.request.user.is_authenticated:
-            return HttpResponseRedirect(reverse_lazy('predict_test:anonymous_index'))
-
-        self.exam = self.get_exam()
         self.get_properties()
-        context = self.get_context_data()
-        return self.render_to_response(context)
+        return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
@@ -90,20 +33,14 @@ class IndexView(
             {
                 # base info
                 'info': self.info,
+                'exam': self.exam,
                 'current_time': self.current_time,
-                'answer_opened_at': self.get_answer_opened_at(),
-                'predict_opened_at': self.predict_opened_at,
                 'min_participants': self.min_participants,
-                'category': self.exam.category,
-                'year': self.exam.year,
-                'ex': self.exam.ex,
-                'exam': self.exam.exam,
-                'round': self.round,
-                'title': 'Score',
+                'title': 'Predict',
                 'sub_title': self.sub_title,
 
                 # icons
-                'icon_menu': self.ICON_MENU['score'],
+                'icon_menu': self.ICON_MENU['predict'],
                 'icon_subject': self.ICON_SUBJECT,
                 'icon_nav': self.ICON_NAV,
 
@@ -124,6 +61,8 @@ class IndexView(
                 # index_sheet_score: 성적 예측
                 'score_student': self.score_student,
                 'all_score_stat': self.all_score_stat,
+                'filtered_score_student': self.filtered_score_student,
+                'filtered_all_score_stat': self.filtered_all_score_stat,
             }
         )
         return context
@@ -169,20 +108,9 @@ class StudentCreateView(
         return self.student_form
 
     def get(self, request, *args, **kwargs):
-        self.exam = self.get_exam()
-        if self.current_time > self.exam.exam_date:
-            self.get_properties()
-            context = self.get_context_data()
-            return self.render_to_response(context)
-        else:
-            if self.request.user.is_admin or self.request.user.is_staff:
-                self.get_properties()
-                context = self.get_context_data()
-                return self.render_to_response(context)
-        return HttpResponseRedirect(reverse_lazy('prime:list'))
+        return HttpResponseRedirect(reverse_lazy('predict_test:index'))
 
     def post(self, request, *args, **kwargs):
-        self.exam = self.get_exam()
         self.get_properties()
         return super().post(request, *args, **kwargs)
 
@@ -311,22 +239,27 @@ class AnswerSubmitView(
         return self.get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
+        context = super().get_context_data(**kwargs)
         number = self.request.POST.get('number')
         answer = self.request.POST.get('answer')
         student_id = self.request.POST.get('student_id')
+        id_prefix = self.request.POST.get('id_prefix')
 
         scored, _ = self.answer_model.objects.get_or_create(student_id=student_id, sub=self.sub)
         setattr(scored, f'prob{number}', answer)
         scored.save()
         scored_problem = {
-            'problem': {'number': number, 'answer_student': int(answer)},
+            'problem': {'number': int(number), 'answer_student': int(answer)},
             'answer': int(answer),
         }
-
-        return {
-            'sub': self.sub,
-            'scored': scored_problem,
-        }
+        context.update(
+            {
+                'sub': self.sub,
+                'scored': scored_problem,
+                'id_prefix': id_prefix,
+            }
+        )
+        return context
 
 
 class AnswerConfirmView(
@@ -356,7 +289,6 @@ class AnswerConfirmView(
 
 
 index_view = IndexView.as_view()
-anonymous_index_view = AnonymousIndexView.as_view()
 
 student_create_view = StudentCreateView.as_view()
 student_create_department = StudentCreateDepartment.as_view()

@@ -23,6 +23,8 @@ def get_rank_qs(queryset):
         return Window(expression=PercentRank(), order_by=F(field_name).desc())
 
     return queryset.annotate(
+        user_id=F('student__user_id'),
+
         rank_heonbeob=rank_func('score_heonbeob'),
         rank_eoneo=rank_func('score_eoneo'),
         rank_jaryo=rank_func('score_jaryo'),
@@ -41,15 +43,15 @@ def get_all_ranks_dict(get_students_qs, user_id) -> dict:
     rank_total = rank_department = None
 
     students_qs_total = get_students_qs('전체')
-    rank_qs_total = get_rank_qs(students_qs_total)
+    rank_qs_total = get_rank_qs(students_qs_total).values()
     for qs in rank_qs_total:
-        if qs.student.user_id == user_id:
+        if qs['user_id'] == user_id:
             rank_total = qs
 
     students_qs_department = get_students_qs('직렬')
-    rank_qs_department = get_rank_qs(students_qs_department)
+    rank_qs_department = get_rank_qs(students_qs_department).values()
     for qs in rank_qs_department:
-        if qs.student.user_id == user_id:
+        if qs['user_id'] == user_id:
             rank_department = qs
 
     return {

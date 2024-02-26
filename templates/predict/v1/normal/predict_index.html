@@ -24,7 +24,6 @@
             <li class="breadcrumb-item">
                 <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
             </li>
-            <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
                 <a class="active" href="{% url 'predict_test:index' %}" hx-boost="true">Predict</a>
             </li>
@@ -37,9 +36,9 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body text-center p-4">
-                    {% if category == 'Prime' %}
+                    {% if exam.category == 'Prime' %}
                         <img src="{% static 'image/predict/cover_prime.jpg' %}" class="mw-100" alt="Title"/>
-                        <div class="fs-1 fw-bolder">제 {{ round }} 회 성적 예측</div>
+                        <div class="fs-1 fw-bolder">제 {{ exam.round }} 회 성적 예측</div>
                     {% else %}
                         <img src="{% static 'image/predict/cover_psat.jpg' %}" class="mw-100" alt="Title"/>
                     {% endif %}
@@ -76,10 +75,15 @@
             </div>
 
             {% if student %}
-                {% if current_time > answer_opened_at %}
+                {% if current_time > exam.answer_open_date %}
                     <div class="col-12">
                         <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                             {% include 'predict/v1/normal/snippets/index_sheet_score.html' %}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
+                            {% include 'predict/v1/normal/snippets/index_sheet_score_filtered.html' %}
                         </div>
                     </div>
                 {% endif %}

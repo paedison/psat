@@ -332,7 +332,10 @@ class AdminBaseMixin(BaseMixin):
                 if d['id'] == student['department_id']:
                     department_name = d['name']
                     unit_name = d['unit_name']
-            student['username'] = User.objects.get(id=user_id).username
+            try:
+                student['username'] = User.objects.get(id=user_id).username
+            except User.DoesNotExist:
+                student['username'] = ''
             student['department_name'] = department_name
             student['unit_name'] = unit_name
             student['exam'] = self.exam_name_dict[student['ex']]

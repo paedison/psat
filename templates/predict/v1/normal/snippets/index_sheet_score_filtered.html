@@ -4,8 +4,8 @@
 {% load slippers %}
 
 <div class="card-header">
-    성적 예측 I
-    <span class="text-danger small">[전체 데이터]</span>
+    성적 예측 II
+    <span class="text-danger small">[정답 공개 전 데이터]</span>
     <a class="text-decoration-none ms-2" href="" hx-swap="none"
        hx-get="{% url 'predict_test:update_sheet_score' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
@@ -15,14 +15,14 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTab" role="tablist">
-            {% #nav_tab prefix='my' id='0' class='' %}내 성적{% /nav_tab %}
-            {% #nav_tab prefix='all' id='1' class='' %}전체 기준{% /nav_tab %}
-            {% #nav_tab prefix='department' id='2' class='' %}직렬 기준{% /nav_tab %}
+            {% #nav_tab prefix='filtered_my' id='0' class='' %}내 성적{% /nav_tab %}
+            {% #nav_tab prefix='filtered_all' id='1' class='' %}전체 기준{% /nav_tab %}
+            {% #nav_tab prefix='filtered_department' id='2' class='' %}직렬 기준{% /nav_tab %}
         </div>
     </nav>
 
     <div class="tab-content" id="scoreSheetContent">
-        {% #nav_content prefix='my' id='0' %}
+        {% #nav_content prefix='filtered_my' id='0' %}
             <article class="table-responsive">
                 <table class="table small align-middle">
                     <thead>
@@ -49,11 +49,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% with score_data=score_student.헌법 %}{% partial sub_score_line %}{% endwith %}
-                        {% with score_data=score_student.언어 %}{% partial sub_score_line %}{% endwith %}
-                        {% with score_data=score_student.자료 %}{% partial sub_score_line %}{% endwith %}
-                        {% with score_data=score_student.상황 %}{% partial sub_score_line %}{% endwith %}
-                        {% with score_data=score_student.피셋 %}{% partial sub_score_line %}{% endwith %}
+                        {% with score_data=filtered_score_student.헌법 %}{% partial sub_score_line %}{% endwith %}
+                        {% with score_data=filtered_score_student.언어 %}{% partial sub_score_line %}{% endwith %}
+                        {% with score_data=filtered_score_student.자료 %}{% partial sub_score_line %}{% endwith %}
+                        {% with score_data=filtered_score_student.상황 %}{% partial sub_score_line %}{% endwith %}
+                        {% with score_data=filtered_score_student.피셋 %}{% partial sub_score_line %}{% endwith %}
                     </tbody>
                 </table>
 
@@ -61,7 +61,7 @@
                     <div>
                         <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
                         <ol class="text-success small fw-bold m-0">
-                            <li>답안 제출을 완료한 응시생들의 <span class="text-danger">전체 답안</span>을 대상으로 분석한 자료입니다.</li>
+                            <li><span class="text-danger">정답 공개 전</span>에 답안 제출을 완료한 응시생들의 답안만을 대상으로 분석한 자료입니다.</li>
                             <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
                         </ol>
                     </div>
@@ -125,8 +125,8 @@
         {% endpartialdef sub_score_line %}
 
 
-        {% #nav_content prefix='all' id='1' %}
-        {% with prefix='all' score_stat=all_score_stat.전체 %}
+        {% #nav_content prefix='filtered_all' id='1' %}
+        {% with prefix='filtered_all' score_stat=filtered_all_score_stat.전체 %}
             {% partialdef statistics inline=True %}
                 <article class="table-responsive">
                     <table class="table small align-middle">
@@ -153,19 +153,19 @@
                         </thead>
 
                         <tbody>
-                            {% with score_data=score_student.헌법 stat_data=score_stat.헌법 %}
+                            {% with score_data=filtered_score_student.헌법 stat_data=score_stat.헌법 %}
                                 {% partial sub_stat_line %}
                             {% endwith %}
-                            {% with score_data=score_student.언어 stat_data=score_stat.언어 %}
+                            {% with score_data=filtered_score_student.언어 stat_data=score_stat.언어 %}
                                 {% partial sub_stat_line %}
                             {% endwith %}
-                            {% with score_data=score_student.자료 stat_data=score_stat.자료 %}
+                            {% with score_data=filtered_score_student.자료 stat_data=score_stat.자료 %}
                                 {% partial sub_stat_line %}
                             {% endwith %}
-                            {% with score_data=score_student.상황 stat_data=score_stat.상황 %}
+                            {% with score_data=filtered_score_student.상황 stat_data=score_stat.상황 %}
                                 {% partial sub_stat_line %}
                             {% endwith %}
-                            {% with score_data=score_student.피셋 stat_data=score_stat.피셋 %}
+                            {% with score_data=filtered_score_student.피셋 stat_data=score_stat.피셋 %}
                                 {% partial sub_stat_line %}
                             {% endwith %}
                         </tbody>
@@ -177,8 +177,8 @@
         {% endwith %}
         {% /nav_content %}
 
-        {% #nav_content prefix='department' id='2' %}
-            {% with prefix='department' score_stat=all_score_stat.직렬 %}
+        {% #nav_content prefix='filtered_department' id='2' %}
+            {% with prefix='filtered_department' score_stat=filtered_all_score_stat.직렬 %}
                 {% partial statistics %}
             {% endwith %}
         {% /nav_content %}

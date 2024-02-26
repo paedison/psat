@@ -1,6 +1,7 @@
 {% load psat_filter %}
 {% load partials %}
 {% load slippers %}
+{% load humanize %}
 
 <div class="card-header">
     답안 제출 현황
@@ -27,7 +28,7 @@
                         {% endwith %}
                         {% with title='예상 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
                     {% else %}
-                        {% if current_time > answer_opened_at %}
+                        {% if current_time > exam.answer_open_date %}
                             {% with title='내 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
                         {% else %}
                             {% with title='예상 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
@@ -53,8 +54,8 @@
                 <li>선택 답안수는 과목별로 답안을 선택한 문제수 및 총 문제수입니다.</li>
                 <li>최종 제출한 답안만 통계에 포함되니 답안 제출을 완료해주세요.</li>
                 <li>최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
-                {% if current_time < answer_opened_at %}
-                    <li>예상 점수는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
+                {% if current_time < exam.answer_open_date %}
+                    <li>예상 점수는 과목별로 총 참여자수가 {{ min_participants|intcomma }}명 이상일 때 공개됩니다.</li>
                 {% endif %}
             </ol>
         </div>
@@ -79,7 +80,7 @@
                     </div>
                 </td>
             {% else %}
-                {% if current_time < answer_opened_at %}
+                {% if current_time > exam.answer_open_date %}
                     <td aria-label="내 점수">
                         <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-1">
                             {{ info_answer.score_real|default:'' }}

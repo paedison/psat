@@ -1,9 +1,9 @@
 import csv
-from datetime import datetime
+import os
 
-import pytz
 from django.conf import settings
 from django.db.models import F
+from django.utils import timezone
 
 from common.models import User
 from predict import forms as predict_forms
@@ -11,11 +11,22 @@ from predict import models as predict_models
 from reference import models as reference_models
 from ..utils import get_score_stat
 
-current_time_utc = datetime.utcnow()
-seoul_timezone = pytz.timezone('Asia/Seoul')
+
+class PredictExamInfo:
+    category = 'PSAT'
+    year = '2024'
+    ex = '행시'
+    round = 0
+    min_participants = 1000
+    # category = 'Prime'
+    # year = '2024'
+    # ex = '프모'
+    # round = 5
+    # min_participants = 1000
 
 
 class BaseMixin:
+    # models & forms
     unit_model = reference_models.Unit
     department_model = reference_models.UnitDepartment
 
@@ -29,15 +40,15 @@ class BaseMixin:
 
     student_form = predict_forms.StudentForm
 
-    current_time = current_time_utc.replace(tzinfo=pytz.utc).astimezone(seoul_timezone)
-    predict_opened_at_utc = datetime(2024, 2, 27, 0, 0)
-    predict_opened_at = predict_opened_at_utc.replace(tzinfo=pytz.utc).astimezone(seoul_timezone)
+    # current_time
+    current_time = timezone.now()
 
-    base_dir = settings.BASE_DIR
-    data_dir = f'{base_dir}/score/views/predict_v1/viewmixins/data/'
-    answer_file = f'{data_dir}answers.csv'
-    answer_empty_file = f'{data_dir}answers_empty.csv'
+    # answer_file
+    data_dir = os.path.join(settings.BASE_DIR, 'predict', 'views', 'v1', 'data')
+    answer_file = os.path.join(data_dir, 'answers.csv')
+    answer_empty_file = os.path.join(data_dir, 'answers_empty.csv')
 
+    # reference dictionary
     exam_name_dict = {
         '행시': '5급공채',
         '입시': '입법고시',
@@ -68,6 +79,7 @@ class BaseMixin:
         'psat_avg': 'score_psat_avg',
     }
 
+    # properties
     request: any
     kwargs: dict
 
@@ -221,9 +233,6 @@ class NormalBaseMixin(BaseMixin):
             count_problem_dict.pop('헌법')
         return count_problem_dict
 
-    def get_answer_opened_at(self):
-        return self.exam.answer_open_date.replace(tzinfo=pytz.utc).astimezone(seoul_timezone)
-
 
 class AdminBaseMixin(BaseMixin):
     department_list: dict
@@ -234,16 +243,11 @@ class AdminBaseMixin(BaseMixin):
         self.student_list = self.get_student_list()
 
     def get_department_list(self):
-        return self.department_model.objects.select_related('unit').values(
-            'id',
-            'name',
-            unit_name=F('unit__name'),
-            ex=F('unit__exam__abbr'),
-            exam=F('unit__exam__name'),
-        )
+        return self.department_model.objects.select_related('unit', 'unit__exam').annotate(
+            unit_name=F('unit__name'), ex=F('unit__exam__abbr'), exam=F('unit__exam__name'))
 
     def get_student_list(self):
-        return (
+        student_list = (
             self.student_model.objects.select_related('exam')
             .annotate(
                 category=F('exam__category'),
@@ -252,6 +256,21 @@ class AdminBaseMixin(BaseMixin):
                 round=F('exam__round'),
             )
         )
+        for student in student_list:
+            user_id = student.user_id
+            department_name = ''
+            unit_name = ''
+            for d in self.department_list:
+                if d.id == student.department_id:
+                    department_name = d.name
+                    unit_name = d.unit_name
+            try:
+                student.username = User.objects.get(id=user_id).username
+            except User.DoesNotExist:
+                student.username = ''
+            student.department_name = department_name
+            student.unit_name = unit_name
+        return student_list
 
     def get_statistics_qs_list(self) -> list:
         filter_expr = {'student__exam': self.exam}

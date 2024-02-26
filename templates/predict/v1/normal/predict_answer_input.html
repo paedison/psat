@@ -152,6 +152,7 @@
 <form>
     <input type="text" name="number" value="{{ problem.number }}" aria-label="Number" hidden/>
     <input type="text" name="student_id" value="{{ student.id }}" aria-label="Student ID" hidden/>
+    <input type="text" name="id_prefix" value="{{ id_prefix }}" aria-label="Prefix" hidden/>
     <div class="d-flex justify-content-center py-2">
         <div class="d-inline-block fw-bold text-secondary pe-2">{{ problem.number|stringformat:'02d' }}.</div>
         <div id="p{{ problem.number|stringformat:'02d' }}_answer"

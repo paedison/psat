@@ -2,7 +2,7 @@ import os
 
 from django.conf import settings
 from django.db import models
-from django.db.models import F, Value
+from django.utils import timezone
 
 from . import base_models
 
@@ -31,6 +31,7 @@ class Exam(base_models.TimeRecordField):
     year = models.IntegerField()
     ex = models.CharField(max_length=2, choices=EX_CHOICES)
     round = models.IntegerField()  # 0 for PSAT, round number for Prime
+    predict_open_date = models.DateTimeField(default=timezone.now)
     exam_date = models.DateTimeField()
     answer_open_date = models.DateTimeField()
 

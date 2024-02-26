@@ -67,12 +67,12 @@
             <div>
                 <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
                 <ol class="text-success small fw-bold m-0">
-                    {% if current_time < answer_opened_at %}
+                    {% if current_time < exam.answer_open_date %}
                         <li>정답은 공식적으로 정답이 공개된 이후에 확인 가능합니다.</li>
                     {% endif %}
                     <li>정답률은 과목별 전체 참여자 중 정답을 맞힌 학생의 비율을 의미합니다.</li>
                     <li>선택률은 과목별 전체 참여자 중 본인과 같은 정답을 선택한 학생의 비율을 의미합니다.</li>
-                    {% if current_time < answer_opened_at %}
+                    {% if current_time < exam.answer_open_date %}
                         <li>정확도는 과목별 전체 참여자 중 예상 정답을 선택한 학생의 비율을 의미합니다.</li>
                         <li>예상 정답 및 정확도는 과목별로 총 참여자수가 {{ min_participants }}명 이상일 때 공개됩니다.</li>
                     {% endif %}
