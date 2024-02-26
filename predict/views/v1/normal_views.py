@@ -58,9 +58,11 @@ class IndexView(
                 'data_answer_predict': self.data_answer['answer_predict'],
                 'data_answer_student': self.data_answer['answer_student'],
 
-                # index_sheet_score: 성적 예측
+                # index_sheet_score: 성적 예측 I [전체 데이터]
                 'score_student': self.score_student,
                 'all_score_stat': self.all_score_stat,
+
+                # index_sheet_score_filtered: 성적 예측 II [정답 공개 전 데이터]
                 'filtered_score_student': self.filtered_score_student,
                 'filtered_all_score_stat': self.filtered_all_score_stat,
             }

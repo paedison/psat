@@ -284,7 +284,7 @@ CKEDITOR_CONFIGS = {
             ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript'],
             ['NumberedList', 'BulletedList', 'Blockquote', 'Code'],
             ['Link', 'Unlink', 'Anchor'],
-            ['Image', 'Table', 'HorizontalRule', 'SpecialChar'],
+            ['Image', 'Embed', 'Table', 'HorizontalRule', 'SpecialChar'],
             ['Styles', 'Format', 'Font', 'FontSize'],
             ['TextColor', 'BGColor'],
             ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
@@ -292,6 +292,7 @@ CKEDITOR_CONFIGS = {
         ],
         'width': 'auto',
         "removePlugins": "stylesheetparser",
+        'extraPlugins': 'embed',
     },
     'minimal': {
         'toolbar': [

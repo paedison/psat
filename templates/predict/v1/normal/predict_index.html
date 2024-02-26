@@ -81,11 +81,13 @@
                             {% include 'predict/v1/normal/snippets/index_sheet_score.html' %}
                         </div>
                     </div>
-                    <div class="col-12">
-                        <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                            {% include 'predict/v1/normal/snippets/index_sheet_score_filtered.html' %}
+                    {% if filtered_score_student %}
+                        <div class="col-12">
+                            <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
+                                {% include 'predict/v1/normal/snippets/index_sheet_score_filtered.html' %}
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                 {% endif %}
                 <div class="col-12">
                     <div id="info_answer" class="card htmx-fade-in htmx-fade-out">

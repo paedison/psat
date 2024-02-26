@@ -45,18 +45,18 @@ class IndexViewMixIn(
         self.data_answer = self.get_data_answer()
         self.info_answer_student = self.get_info_answer_student()
 
+        self.all_score_stat = {'전체': '', '직렬': ''}
+        self.score_student = {}
+        self.filtered_all_score_stat = {'전체': '', '직렬': ''}
+        self.filtered_score_student = {}
         if self.current_time > self.exam.answer_open_date and self.student:
             statistics_student = self.calculate_score(self.answer_correct_dict, 'real')
             self.all_score_stat = get_all_score_stat_sub_dict(self.get_statistics_qs, self.student)
             self.score_student = self.get_score_student(statistics_student)
             self.update_info_answer_student()
-            self.filtered_all_score_stat = get_all_score_stat_sub_dict(self.get_filtered_statistics_qs, self.student)
-            self.filtered_score_student = self.get_filtered_score_student(statistics_student)
-        else:
-            self.all_score_stat = {'전체': '', '직렬': ''}
-            self.score_student = {}
-            self.filtered_all_score_stat = {'전체': '', '직렬': ''}
-            self.filtered_score_student = {}
+            if statistics_student.timestamp < self.exam.answer_open_date:
+                self.filtered_all_score_stat = get_all_score_stat_sub_dict(self.get_filtered_statistics_qs, self.student)
+                self.filtered_score_student = self.get_filtered_score_student(statistics_student)
 
     def get_location(self):
         if self.student:
@@ -319,7 +319,7 @@ class IndexViewMixIn(
     def get_filtered_statistics_qs(self, rank_type='전체'):
         filter_expr = {
             'student__exam': self.exam,
-            'student__updated_at__lte': self.exam.answer_open_date + datetime.timedelta(hours=1),
+            'timestamp__lte': self.exam.answer_open_date + datetime.timedelta(hours=1),
             'score_heonbeob__gt': 0,
             'score_eoneo__gt': 0,
             'score_jaryo__gt': 0,
@@ -374,10 +374,16 @@ class IndexViewMixIn(
 
         sub_list = ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat']
         for sub in sub_list:
-            setattr(statistics_student, f'rank_total_{sub}', rank_total[f'rank_{sub}'])
-            setattr(statistics_student, f'rank_ratio_total_{sub}', rank_total[f'rank_ratio_{sub}'])
-            setattr(statistics_student, f'rank_department_{sub}', rank_department[f'rank_{sub}'])
-            setattr(statistics_student, f'rank_ratio_department_{sub}', rank_department[f'rank_ratio_{sub}'])
+            if rank_total and rank_department:
+                setattr(statistics_student, f'rank_total_{sub}', rank_total[f'rank_{sub}'])
+                setattr(statistics_student, f'rank_ratio_total_{sub}', rank_total[f'rank_ratio_{sub}'])
+                setattr(statistics_student, f'rank_department_{sub}', rank_department[f'rank_{sub}'])
+                setattr(statistics_student, f'rank_ratio_department_{sub}', rank_department[f'rank_ratio_{sub}'])
+            else:
+                setattr(statistics_student, f'rank_total_{sub}', '-')
+                setattr(statistics_student, f'rank_ratio_total_{sub}', '-')
+                setattr(statistics_student, f'rank_department_{sub}', '-')
+                setattr(statistics_student, f'rank_ratio_department_{sub}', '-')
 
         score_student = {'헌법': {}, '언어': {}, '자료': {}, '상황': {}, '피셋': {}}
         if self.ex == '칠급':

@@ -17,12 +17,11 @@ class PredictExamInfo:
     year = '2024'
     ex = '행시'
     round = 0
-    min_participants = 1000
     # category = 'Prime'
     # year = '2024'
     # ex = '프모'
     # round = 5
-    # min_participants = 1000
+    min_participants = 1000
 
 
 class BaseMixin:

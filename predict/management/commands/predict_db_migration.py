@@ -30,6 +30,7 @@ class Command(BaseCommand):
                     name=old_student.name,
                     serial=old_student.serial,
                     password=old_student.password,
+                    unit_id=11,
                     department_id=old_student.department_id,
                 )
 
@@ -44,6 +45,7 @@ class Command(BaseCommand):
                     name=old_answer.student.name,
                     serial=old_answer.student.serial,
                     password=old_answer.student.password,
+                    unit_id=11,
                     department_id=old_answer.student.department_id,
                 )
                 new_answer, created = new_models.Answer.objects.get_or_create(
@@ -87,6 +89,7 @@ class Command(BaseCommand):
                     name=old_statistic.student.name,
                     serial=old_statistic.student.serial,
                     password=old_statistic.student.password,
+                    unit_id=11,
                     department_id=old_statistic.student.department_id,
                 )
                 new_statistic, created = new_models.Statistics.objects.get_or_create(student=new_student)
@@ -135,6 +138,7 @@ class Command(BaseCommand):
                     name=old_statistic_virtual.student.name,
                     serial=old_statistic_virtual.student.serial,
                     password=old_statistic_virtual.student.password,
+                    unit_id=11,
                     department_id=old_statistic_virtual.student.department_id,
                 )
                 new_statistic_virtual, created = new_models.StatisticsVirtual.objects.get_or_create(student=new_student)

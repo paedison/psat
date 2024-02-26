@@ -63,6 +63,9 @@
                         <ol class="text-success small fw-bold m-0">
                             <li>답안 제출을 완료한 응시생들의 <span class="text-danger">전체 답안</span>을 대상으로 분석한 자료입니다.</li>
                             <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
+                            {% if not filtered_score_student %}
+                                <li>정답 공개 전 제출 답안을 대상으로 분석한 자료는 <span class="text-danger">해당 응시자에게만 공개</span>됩니다.</li>
+                            {% endif %}
                         </ol>
                     </div>
                 {% endpartialdef %}
