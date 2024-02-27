@@ -292,7 +292,12 @@ CKEDITOR_CONFIGS = {
         ],
         'width': 'auto',
         "removePlugins": "stylesheetparser",
-        'extraPlugins': 'embed',
+        'extraPlugins': ','.join([
+            'autolink',
+            'autoembed',
+            'embed',
+        ]),
+        'embed_provider': 'ckeditor.iframe.ly/api/oembed?url={url}&callback={callback}',
     },
     'minimal': {
         'toolbar': [
