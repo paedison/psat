@@ -166,7 +166,7 @@
                             <input id="{{ id_prefix }}_p{{ target_problem.number|stringformat:'02d' }}_answer{{ i }}"
                                    type="radio" class="btn-check" name="answer" value="{{ i }}"/>
                             <label class="btn btn-circle btn-sm fs-6
-                                   {% if i|add:0 == target_answer %}btn-secondary
+                                   {% if i|add:0 == target_answer %}btn-primary
                                    {% else %} btn-outline-secondary{% endif %}"
                                    for="{{ id_prefix }}_p{{ target_problem.number|stringformat:'02d' }}_answer{{ i }}">
                                 {{ i }}</label>

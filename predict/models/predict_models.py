@@ -54,6 +54,7 @@ class Student(
     password = models.IntegerField()
     unit_id = models.IntegerField()
     department_id = models.IntegerField()
+    prime_id = models.CharField(max_length=15, blank=True, null=True)
 
     class Meta:
         verbose_name = "성적 예측 수험 정보"
