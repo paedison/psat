@@ -70,6 +70,10 @@ class IndexView(
         return context
 
 
+class IndexTestView(IndexView):
+    template_name = 'predict/v1/normal/predict_index_test.html'
+
+
 class UpdateInfoAnswer(IndexView):
     template_name = 'predict/v1/normal/snippets/update_info_answer.html'
 
@@ -291,6 +295,7 @@ class AnswerConfirmView(
 
 
 index_view = IndexView.as_view()
+index_test_view = IndexTestView.as_view()
 
 student_create_view = StudentCreateView.as_view()
 student_create_department = StudentCreateDepartment.as_view()
