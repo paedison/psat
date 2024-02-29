@@ -43,7 +43,15 @@
                         <img src="{% static 'image/predict/cover_psat.jpg' %}" class="mw-100" alt="Title"/>
                     {% endif %}
                     {% if not student %}
-                        <div class="container my-4">
+                        <div class="container d-sm-none my-4">
+                            <p>수험생 여러분,<br/>그 동안 수고 많으셨습니다.</p>
+                            <p>여러분의 합격을<br/>기원하는 마음과 함께<br/>
+                                아래와 같이 합격예측시스템을<br/>제공해드리고 있습니다.</p>
+                            <p>모집단위와 직렬 및 응시번호,<br/>이름을 입력하신 뒤,<br/>
+                                과목별 시험 답안을 제출해주시면<br/>집계 후 여러분의<br/>
+                                합격 여부를 예측해드립니다.</p>
+                        </div>
+                        <div class="container d-none d-sm-block my-4">
                             <p>수험생 여러분, 그 동안 수고 많으셨습니다.</p>
                             <p>여러분의 합격을 기원하는 마음과 함께</p>
                             <p>아래와 같이 합격예측시스템을 제공해드리고 있습니다.</p>
