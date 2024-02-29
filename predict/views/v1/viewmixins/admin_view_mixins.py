@@ -122,17 +122,11 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
 
     def get_properties(self):
         super().get_properties()
-        self.category = self.kwargs.get('category')
-        self.year = self.kwargs.get('year')
-        self.ex = self.kwargs.get('ex')
-        self.round = self.kwargs.get('round')
-
-        self.exam = self.get_exam()
         # self.student_list = self.get_student_list(self.exam)
 
         self.sub_title = self.get_sub_title()
 
-        self.statistics = self.get_statistics()
+        self.statistics = self.get_detail_statistics()
         self.answer_count_analysis = self.get_answer_count_analysis()
 
         self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
@@ -220,13 +214,13 @@ class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
     def get_properties(self):
         super().get_properties()
 
-        self.sub_title = f'제{self.round}회 프라임 모의고사'
+        self.sub_title = f'제{self.exam.round}회 프라임 모의고사'
 
         self.current_category = self.get_variable('category') or '전체'
         self.category_list = self.get_category_list()
         self.search_student_name = self.get_variable('student_name')
 
-        self.statistics = self.get_statistics()
+        self.statistics = self.get_detail_statistics()
 
         self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
         self.base_url = reverse_lazy(
@@ -500,10 +494,10 @@ class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):
         return message
 
 
-class ExportStatisticsToExcelMixin(IndexViewMixin):
+class ExportStatisticsToExcelMixin(AdminBaseMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
-        statistics = self.get_statistics()
+        statistics = self.get_excel_statistics()
 
         df = pd.DataFrame.from_records(statistics)
         excel_data = io.BytesIO()
@@ -573,7 +567,7 @@ class ExportAnalysisToExcelMixin(DetailViewMixin):
         return response
 
 
-class ExportScoresToExcelMixin(IndexViewMixin):
+class ExportScoresToExcelMixin(AdminBaseMixin):
     def get(self, request, *args, **kwargs):
         self.get_properties()
 
@@ -586,10 +580,10 @@ class ExportScoresToExcelMixin(IndexViewMixin):
 
         queryset = (
             self.statistics_model.objects.filter(
-                student__category=self.category,
-                student__year=self.year,
-                student__ex=self.ex,
-                student__round=self.round
+                student__exam__category=self.category,
+                student__exam__year=self.year,
+                student__exam__ex=self.ex,
+                student__exam__round=self.round
             )
             .annotate(
                 이름=F('student__name'), 수험번호=F('student__serial'), department_id=F('student__department_id'),

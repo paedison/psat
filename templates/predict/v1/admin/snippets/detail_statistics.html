@@ -1,4 +1,5 @@
 {% load humanize %}
+{% load partials %}
 
 <div class="card-header">
     <div class="d-flex align-items-center">
@@ -37,10 +38,6 @@
 {#               href="{% url 'prime_admin:print' year round %}" target="_blank">#}
 {#                인쇄하기#}
 {#            </a>#}
-{#            <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"#}
-{#               href="{% url 'prime_admin:export_statistics' year round %}">#}
-{#                Excel로 내보내기#}
-{#            </a>#}
         </div>
     </div>
 </div>
@@ -73,32 +70,11 @@
                     {% for obj in statistics %}
                         <tr class="text-center">
                             <td class="text-nowrap p-2">{{ obj.department }}</td>
-                            <td class="text-nowrap p-2">{{ obj.num_students|intcomma }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_psat_avg|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_psat_avg|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_psat_avg|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_psat_avg|floatformat:1 }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_heonbeob|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_heonbeob|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_heonbeob|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_heonbeob|floatformat:1 }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_eoneo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_eoneo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_eoneo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_eoneo|floatformat:1 }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_jaryo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_jaryo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_jaryo|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_jaryo|floatformat:1 }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.max_score_sanghwang|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_10_sanghwang|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.top_score_20_sanghwang|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.avg_score_sanghwang|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2">{{ obj.헌법.num_students|intcomma }}</td>
+                            {% for _ in '01234' %}
+                                {% cycle obj.피셋 obj.헌법 obj.언어 obj.자료 obj.상황 as stat silent %}
+                                {% partial td_statistics %}
+                            {% endfor %}
                         </tr>
                     {% endfor %}
                 {% endif %}
@@ -106,3 +82,10 @@
         </table>
     </article>
 </div>
+
+{% partialdef td_statistics %}
+    <td class="text-nowrap p-2 td-right-no-border">{{ stat.max_score|floatformat:1 }}</td>
+    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ stat.top_score_10|floatformat:1 }}</td>
+    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ stat.top_score_20|floatformat:1 }}</td>
+    <td class="text-nowrap p-2 td-left-no-border">{{ stat.avg_score|floatformat:1 }}</td>
+{% endpartialdef %}

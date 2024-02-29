@@ -5,7 +5,7 @@ from django.db.models.functions import Rank, PercentRank
 
 
 def get_dict_by_sub(target_list: list[dict]) -> dict:
-    result_dict = {'언어': [], '자료': [], '상황': [], '헌법': []}
+    result_dict = {'헌법': [], '언어': [], '자료': [], '상황': []}
     for key in result_dict.keys():
         result_list = []
         for t in target_list:
@@ -254,47 +254,18 @@ def get_all_score_stat_dict(get_statistics_qs, student) -> dict:
 
 def get_score_stat_sub(queryset) -> dict:
     score_stat_sub = {
-        '헌법': {
-            'sub': 'heonbeob',
-            'num_students': None,
-            'max_score': None,
-            'avg_score': None,
-            'top_score_10': None,
-            'top_score_20': None,
-        },
-        '언어': {
-            'sub': 'eoneo',
-            'num_students': None,
-            'max_score': None,
-            'avg_score': None,
-            'top_score_10': None,
-            'top_score_20': None,
-        },
-        '자료': {
-            'sub': 'jaryo',
-            'num_students': None,
-            'max_score': None,
-            'avg_score': None,
-            'top_score_10': None,
-            'top_score_20': None,
-        },
-        '상황': {
-            'sub': 'sanghwang',
-            'num_students': None,
-            'max_score': None,
-            'avg_score': None,
-            'top_score_10': None,
-            'top_score_20': None,
-        },
-        '피셋': {
-            'sub': 'psat',
-            'num_students': None,
-            'max_score': None,
-            'avg_score': None,
-            'top_score_10': None,
-            'top_score_20': None,
-        },
+        '헌법': {'sub': 'heonbeob'},
+        '언어': {'sub': 'eoneo'},
+        '자료': {'sub': 'jaryo'},
+        '상황': {'sub': 'sanghwang'},
+        '피셋': {'sub': 'psat'},
     }
+    for key, item in score_stat_sub.items():
+        item['num_students'] = None
+        item['max_score'] = None
+        item['avg_score'] = None
+        item['top_score_10'] = None
+        item['top_score_20'] = None
     stat_queryset = queryset.aggregate(
         num_students=Count('id'),
 
@@ -363,24 +334,4 @@ def get_all_score_stat_sub_dict(get_statistics_qs, student) -> dict:
     return {
         '전체': stat_total,
         '직렬': stat_department,
-    }
-
-
-def get_all_answer_rates_dict(all_raw_answer_rates) -> dict:
-    def get_answer_rates(sub: str) -> list:
-        answer_rates = []
-        for rates in all_raw_answer_rates:
-            if rates['sub'] == sub:
-                answer_rates_dict = {
-                    'number': rates['number'],
-                    'correct': rates['correct'],
-                }
-                answer_rates.append(answer_rates_dict)
-        return answer_rates
-
-    return {
-        '헌법': get_answer_rates('헌법'),
-        '언어': get_answer_rates('언어'),
-        '자료': get_answer_rates('자료'),
-        '상황': get_answer_rates('상황'),
     }

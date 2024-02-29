@@ -186,14 +186,15 @@ class IndividualIndexView(
         self.ex = self.kwargs.get('ex')
         self.round = self.kwargs.get('round')
 
+        self.exam = self.get_exam()
+        self.sub_title = self.get_sub_title()
         self.units = self.unit_model.objects.filter(exam__abbr=self.ex)
         self.departments = self.department_model.objects.filter(unit__exam__abbr=self.ex).values()
 
-        self.exam = self.get_exam()
         user_id = self.kwargs.get('user_id')
         self.student = self.get_student(user_id)  # Check
+        self.location = self.get_location()
 
-        self.sub_title = self.get_sub_title()
         self.problem_count_dict = self.get_problem_count_dict()
         self.answer_correct_dict = self.get_answer_correct_dict()
 
@@ -205,14 +206,19 @@ class IndividualIndexView(
         self.data_answer = self.get_data_answer()
         self.info_answer_student = self.get_info_answer_student()
 
-        if self.current_time > self.exam.answer_open_date and self.student:
-            statistics_student = self.calculate_score(self.answer_correct_dict, 'real')
+        self.all_score_stat = {'전체': '', '직렬': ''}
+        self.score_student = {}
+        self.filtered_all_score_stat = {'전체': '', '직렬': ''}
+        self.filtered_score_student = {}
+
+        if self.current_time > self.exam.answer_open_datetime and self.student:
+            statistics_student = self.calculate_score()
             self.all_score_stat = get_all_score_stat_sub_dict(self.get_statistics_qs, self.student)
             self.score_student = self.get_score_student(statistics_student)
             self.update_info_answer_student()
-        else:
-            self.all_score_stat = {'전체': '', '직렬': ''}
-            self.score_student = {}
+            if statistics_student.student.statistics_virtual.updated_at < self.exam.answer_open_datetime:
+                self.filtered_all_score_stat = get_all_score_stat_sub_dict(self.get_filtered_statistics_qs, self.student)
+                self.filtered_score_student = self.get_filtered_score_student(statistics_student)
 
 
 class PrintView(

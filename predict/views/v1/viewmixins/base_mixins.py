@@ -9,19 +9,18 @@ from common.models import User
 from predict import forms as predict_forms
 from predict import models as predict_models
 from reference import models as reference_models
-from ..utils import get_score_stat
+from predict.views.v1.utils import get_score_stat_sub, get_score_stat_korean
 
 
 class PredictExamInfo:
-    category = 'PSAT'
-    year = '2024'
-    ex = '행시'
-    round = 0
-    # category = 'Prime'
+    # category = 'PSAT'
     # year = '2024'
-    # ex = '프모'
-    # round = 5
-    min_participants = 1000
+    # ex = '행시'
+    # round = 0
+    category = 'Prime'
+    year = '2024'
+    ex = '프모'
+    round = 5
 
 
 class BaseMixin:
@@ -82,27 +81,28 @@ class BaseMixin:
     request: any
     kwargs: dict
 
-    user_id: int | None
-    info: dict
+    user_id: int | None  # User ID
+    info: dict  # Information dict
 
-    category: str
-    year: str
-    ex: str
-    round: int
+    category: str  # PSAT, Prime
+    year: str  # 2024
+    ex: str  # 행시, 프모
+    round: int  # 0 for PSAT, 1~6 Prime
+
     exam: exam_model.objects  # 시험 종류
     sub_title: str  # 페이지 제목
     units: unit_model.objects  # 모집 단위
     departments: department_model.objects  # 직렬
     student: student_model.objects  # 수험 정보
     location: location_model.objects  # 시험장
-    all_answer_count: dict  # AnswerCount data
 
-    exam_name: str | None
-    problem_count_dict: dict
-    answer_correct_dict: dict
+    all_answer_count: dict  # AnswerCount data by sub
+    dataset_answer_student: answer_model  # Answer data
+    problem_count_dict: dict  # 과목별 문제 개수
+    answer_correct_dict: dict  # 정답 자료
 
-    sub: str
-    subject: str
+    sub: str  # 헌법, 언어, 자료, 상황
+    subject: str  # 헌법, 언어논리, 자료해석, 상황판단
 
     @property
     def info(self):
@@ -203,6 +203,12 @@ class BaseMixin:
 
 class NormalBaseMixin(BaseMixin):
 
+    def get_sub_title(self):
+        if self.category == 'PSAT':
+            return f'{self.exam.year}년 {self.exam.exam} 합격 예측'
+        elif self.category == 'Prime':
+            return f'제{self.exam.round}회 {self.exam.exam} 성적 예측'
+
     def get_student(self, user_id=None):
         if user_id is None:
             user_id = self.request.user.id
@@ -214,12 +220,6 @@ class NormalBaseMixin(BaseMixin):
             return student
         except self.student_model.DoesNotExist:
             return self.student_model.objects.none()
-
-    def get_sub_title(self):
-        if self.category == 'PSAT':
-            return f'{self.exam.year}년 {self.exam.exam} 합격 예측'
-        elif self.category == 'Prime':
-            return f'제{self.exam.round}회 {self.exam.exam} 성적 예측'
 
     def get_problem_count_dict(self) -> dict:
         count_problem_dict = {
@@ -238,6 +238,12 @@ class AdminBaseMixin(BaseMixin):
     student_list: list
 
     def get_properties(self):
+        self.category = self.kwargs.get('category')
+        self.year = self.kwargs.get('year')
+        self.ex = self.kwargs.get('ex')
+        self.round = self.kwargs.get('round')
+
+        self.exam = self.get_exam()
         self.department_list = self.get_department_list()
         self.student_list = self.get_student_list()
 
@@ -289,12 +295,22 @@ class AdminBaseMixin(BaseMixin):
                 )
             return statistics_qs_list
 
-    def get_statistics(self) -> list:
+    def get_detail_statistics(self) -> list:
         score_statistics_list = []
         statistics_qs_list = self.get_statistics_qs_list()
         if statistics_qs_list:
             for qs_list in statistics_qs_list:
                 statistics_dict = {'department': qs_list['department']}
-                statistics_dict.update(get_score_stat(qs_list['queryset']))
+                statistics_dict.update(get_score_stat_sub(qs_list['queryset']))
+                score_statistics_list.append(statistics_dict)
+            return score_statistics_list
+
+    def get_excel_statistics(self) -> list:
+        score_statistics_list = []
+        statistics_qs_list = self.get_statistics_qs_list()
+        if statistics_qs_list:
+            for qs_list in statistics_qs_list:
+                statistics_dict = {'department': qs_list['department']}
+                statistics_dict.update(get_score_stat_korean(qs_list['queryset']))
                 score_statistics_list.append(statistics_dict)
             return score_statistics_list

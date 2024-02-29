@@ -28,7 +28,7 @@
                         {% endwith %}
                         {% with title='예상 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
                     {% else %}
-                        {% if current_time > exam.answer_open_date %}
+                        {% if current_time > exam.answer_open_datetime %}
                             {% with title='내 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
                         {% else %}
                             {% with title='예상 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
@@ -50,13 +50,13 @@
         <div>
             <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
             <ol class="text-success small fw-bold m-0">
-                <li>총 참여자수는 과목별로 답안 제출을 완료한 응시생수입니다.</li>
+                {% if current_time < exam.end_datetime %}
+                    <li>예상 점수는 시험 종료 이후에 공개됩니다.</li>
+                {% endif %}
                 <li>선택 답안수는 과목별로 답안을 선택한 문제수 및 총 문제수입니다.</li>
+                <li>총 참여자수는 과목별로 답안 제출을 완료한 응시생수입니다.</li>
                 <li>최종 제출한 답안만 통계에 포함되니 답안 제출을 완료해주세요.</li>
                 <li>최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
-                {% if current_time < exam.answer_open_date %}
-                    <li>예상 점수는 과목별로 총 참여자수가 {{ min_participants|intcomma }}명 이상일 때 공개됩니다.</li>
-                {% endif %}
             </ol>
         </div>
     </article>
@@ -80,7 +80,7 @@
                     </div>
                 </td>
             {% else %}
-                {% if current_time > exam.answer_open_date %}
+                {% if current_time > exam.answer_open_datetime %}
                     <td aria-label="내 점수">
                         <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-1">
                             {{ info_answer.score_real|default:'' }}
@@ -88,8 +88,8 @@
                     </td>
                 {% else %}
                     <td aria-label="예상 점수">
-                        {% if info_answer.participants < min_participants %}
-                            <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
+                        {% if current_time < exam.end_datetime %}
+                            <span class="badge rounded-pill text-bg-warning">시험 종료전입니다.</span>
                         {% else %}
                             <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-1">
                                 {{ info_answer.score_virtual|default:'' }}

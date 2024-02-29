@@ -35,7 +35,6 @@ class IndexView(
                 'info': self.info,
                 'exam': self.exam,
                 'current_time': self.current_time,
-                'min_participants': self.min_participants,
                 'title': 'Predict',
                 'sub_title': self.sub_title,
 

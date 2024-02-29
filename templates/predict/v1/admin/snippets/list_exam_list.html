@@ -31,7 +31,7 @@
                     {% for obj in exam_page_obj %}
                         <tr class="text-center">
                             <td class="text-nowrap p-2">
-                                {{ obj.exam_date|date:'Y.n.j(D)' }}
+                                {{ obj.start_datetime|date:'Y.n.j(D)' }}
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
                                    href="{% url 'predict_test_admin:detail' obj.category obj.year obj.ex obj.round %}">
                                     클릭

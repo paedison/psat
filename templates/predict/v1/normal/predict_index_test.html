@@ -35,19 +35,6 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="row g-0">
-                    <div class="col-md-6">
-                        <div class="container-fluid bg-primary py-5"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="container-fluid bg-warning py-5"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card">
                 <div class="card-body text-center p-4">
                     {% if exam.category == 'Prime' %}
                         <img src="{% static 'image/predict/cover_prime.jpg' %}" class="mw-100" alt="Title"/>
@@ -82,13 +69,139 @@
 
         <div class="col-12">
             <div class="card">
-                <div class="row g-0">
-                    <div class="col-md-6">
-                        <div class="container-fluid bg-primary py-5"></div>
+                <div id="carouselBanner1" class="carousel slide banner d-md-none" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#carouselBanner1" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                        <button type="button" data-bs-target="#carouselBanner1" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                        <button type="button" data-bs-target="#carouselBanner1" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                        <button type="button" data-bs-target="#carouselBanner1" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                        <button type="button" data-bs-target="#carouselBanner1" data-bs-slide-to="4" aria-label="Slide 5"></button>
                     </div>
-                    <div class="col-md-6">
-                        <div class="container-fluid bg-warning py-5"></div>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <a href="https://renew.primeedunet.com/diplomatic" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_1.png' %}"
+                                     class="d-block ms-auto me-auto" alt="...">
+                            </a>
+                        </div>
+                        <div class="carousel-item">
+                            <a href="https://renew.primeedunet.com/grade5" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_2.png' %}"
+                                     class="d-block ms-auto me-auto" alt="...">
+                            </a>
+                        </div>
+                        <div class="carousel-item">
+                            <a href="https://renew.primeedunet.com/grade5/product/landing/134" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_3.png' %}"
+                                     class="d-block ms-auto me-auto" alt="...">
+                            </a>
+                        </div>
+                        <div class="carousel-item">
+                            <a href="https://renew.primeedunet.com/diplomatic" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_4.png' %}"
+                                     class="d-block ms-auto me-auto" alt="...">
+                            </a>
+                        </div>
+                        <div class="carousel-item">
+                            <a href="https://renew.primeedunet.com/diplomatic/product/landing/108" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_5.png' %}"
+                                     class="d-block ms-auto me-auto" alt="...">
+                            </a>
+                        </div>
                     </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselBanner1" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselBanner1" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+
+                <div id="carouselBanner2" class="carousel slide banner d-none d-md-block d-lg-none" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#carouselBanner2" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                        <button type="button" data-bs-target="#carouselBanner2" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                        <button type="button" data-bs-target="#carouselBanner2" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                    </div>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active text-center">
+                            <a href="https://renew.primeedunet.com/diplomatic" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_1.png' %}"
+                                     class="d-inline pe-4" alt="...">
+                            </a>
+                            <a href="https://renew.primeedunet.com/grade5" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_2.png' %}"
+                                     class="d-inline" alt="...">
+                            </a>
+                        </div>
+                        <div class="carousel-item text-center">
+                            <a href="https://renew.primeedunet.com/grade5/product/landing/134" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_3.png' %}"
+                                     class="d-inline pe-4" alt="...">
+                            </a>
+                            <a href="https://renew.primeedunet.com/diplomatic" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_4.png' %}"
+                                     class="d-inline" alt="...">
+                            </a>
+                        </div>
+                        <div class="carousel-item text-center">
+                            <a href="https://renew.primeedunet.com/diplomatic/product/landing/108" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_5.png' %}"
+                                     class="d-inline" alt="...">
+                            </a>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselBanner2" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselBanner2" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+
+                <div id="carouselBanner3" class="carousel slide banner d-none d-lg-block" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#carouselBanner3" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                        <button type="button" data-bs-target="#carouselBanner3" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    </div>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active text-center">
+                            <a href="https://renew.primeedunet.com/diplomatic" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_1.png' %}"
+                                     class="d-inline pe-4" alt="...">
+                            </a>
+                            <a href="https://renew.primeedunet.com/grade5" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_2.png' %}"
+                                     class="d-inline pe-4" alt="...">
+                            </a>
+                            <a href="https://renew.primeedunet.com/grade5/product/landing/134" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_3.png' %}"
+                                     class="d-inline" alt="...">
+                            </a>
+                        </div>
+                        <div class="carousel-item text-center">
+                            <a href="https://renew.primeedunet.com/diplomatic" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_4.png' %}"
+                                     class="d-inline pe-4" alt="...">
+                            </a>
+                            <a href="https://renew.primeedunet.com/diplomatic/product/landing/108" target="_blank">
+                                <img src="{% static 'image/prime/banner/20240229/banner_5.png' %}"
+                                     class="d-inline" alt="...">
+                            </a>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselBanner3" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselBanner3" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -101,7 +214,7 @@
             </div>
 
             {% if student %}
-                {% if current_time > exam.answer_open_date %}
+                {% if current_time > exam.answer_open_datetime %}
                     <div class="col-12">
                         <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                             {% include 'predict/v1/normal/snippets/index_sheet_score.html' %}
@@ -127,14 +240,6 @@
                 </div>
             {% endif %}
         {% endif %}
-
-        <div class="col-12">
-            <div class="card">
-                <div class="row g-0">
-                    <div class="container bg-primary py-5"></div>
-                </div>
-            </div>
-        </div>
 
         <div class="col-12">
             <div class="card">

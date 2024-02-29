@@ -13,27 +13,26 @@ class IndexViewMixIn(
     base_mixins.PredictExamInfo,
     base_mixins.NormalBaseMixin,
 ):
-    all_answer_count: dict  # PredictAnswerCount data
-    dataset_answer_student: list  # PredictAnswer data
     answer_student_status: dict  # 과목별 답안 제출 완료 여부
     participant_count: dict  # 과목별 총 참여자 수
 
     data_answer: dict  # data_answer_correct, data_answer_predict, data_answer_student
     info_answer_student: dict  # index_info_answer data
-    all_score_stat: dict  # PredictStatistics data: 전체 및 직렬별 전체 통계 자료 [전체 데이터]
-    score_student: dict  # PredictStatistics data: 전체 및 직렬별 개인 통계 자료 [전체 데이터]
-    filtered_all_score_stat: dict  # PredictStatistics data: 전체 및 직렬별 전체 통계 자료 [정답 공개 전 데이터]
-    filtered_score_student: dict  # PredictStatistics data: 전체 및 직렬별 개인 통계 자료 [정답 공개 전 데이터]
+
+    all_score_stat: dict  # Statistics data: 전체 통계 자료 [전체 데이터]
+    score_student: dict  # Statistics data: 개인 통계 자료 [전체 데이터]
+    filtered_all_score_stat: dict  # Statistics data: 전체 통계 자료 [정답 공개 전 데이터]
+    filtered_score_student: dict  # Statistics data: 개인 통계 자료 [정답 공개 전 데이터]
 
     def get_properties(self):
         self.exam = self.get_exam()
+        self.sub_title = self.get_sub_title()
         self.units = self.unit_model.objects.filter(exam__abbr=self.ex)
-        self.departments = self.department_model.objects.filter(unit__exam__abbr=self.ex).values()
+        self.departments = self.department_model.objects.filter(unit__exam__abbr=self.ex)
 
         self.student = self.get_student()
         self.location = self.get_location()
 
-        self.sub_title = self.get_sub_title()
         self.problem_count_dict = self.get_problem_count_dict()
         self.answer_correct_dict = self.get_answer_correct_dict()
 
@@ -49,12 +48,13 @@ class IndexViewMixIn(
         self.score_student = {}
         self.filtered_all_score_stat = {'전체': '', '직렬': ''}
         self.filtered_score_student = {}
-        if self.current_time > self.exam.answer_open_date and self.student:
-            statistics_student = self.calculate_score(self.answer_correct_dict, 'real')
+
+        if self.current_time > self.exam.answer_open_datetime and self.student:
+            statistics_student = self.calculate_score()
             self.all_score_stat = get_all_score_stat_sub_dict(self.get_statistics_qs, self.student)
             self.score_student = self.get_score_student(statistics_student)
             self.update_info_answer_student()
-            if statistics_student.timestamp < self.exam.answer_open_date:
+            if statistics_student.student.statistics_virtual.updated_at < self.exam.answer_open_datetime:
                 self.filtered_all_score_stat = get_all_score_stat_sub_dict(self.get_filtered_statistics_qs, self.student)
                 self.filtered_score_student = self.get_filtered_score_student(statistics_student)
 
@@ -86,7 +86,7 @@ class IndexViewMixIn(
             answer_count_dict[sub].append(prob)
         return answer_count_dict
 
-    def get_dataset_answer_student(self, student=None) -> list:
+    def get_dataset_answer_student(self, student=None):
         if student is None:
             student = self.student
         if student:
@@ -102,9 +102,35 @@ class IndexViewMixIn(
             status['피셋'] = True
         return status
 
+    def get_score_by_sub(self, target_answers: dict):
+        score = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
+        if self.ex == '칠급':
+            score.pop('헌법')
+
+        for sub, data in self.data_answer['answer_student'].items():
+            correct_count = 0
+            for index, problem in enumerate(data):
+                answer_correct = 0
+                if target_answers[sub]:
+                    answer_correct = target_answers[sub][index]['ans_number']
+                answer_student = problem['ans_number']
+
+                if answer_correct <= 5 and answer_correct == answer_student:
+                    correct_count += 1
+                if answer_correct > 5:
+                    answer_correct_list = [int(digit) for digit in str(answer_correct)]
+                    if answer_student in answer_correct_list:
+                        correct_count += 1
+            if data:
+                score[sub] = correct_count * 100 / len(data)
+
+        score['psat'] = sum([score['언어'], score['자료'], score['상황']])
+        score['psat_avg'] = score['psat'] / 3
+        return score
+
     def get_info_answer_student(self) -> dict:
         target_answers = self.data_answer['answer_predict']
-        score_virtual = self.calculate_score(target_answers, 'virtual')
+        score_virtual = self.get_score_by_sub(target_answers)
         info_answer_student = {}
         for sub, problem_count in self.problem_count_dict.items():
             is_confirmed = False
@@ -236,7 +262,7 @@ class IndexViewMixIn(
                 ans_number_student = dataset_answer[f'prob{number}']
 
                 result = 'O'
-                if self.current_time > self.exam.exam_date:
+                if self.current_time > self.exam.end_datetime:
                     ans_number_correct = data_answer_correct[sub][i]['ans_number']
                     ans_number_list_correct = data_answer_correct[sub][i]['ans_number_list']
                     if ans_number_correct in range(1, 6):
@@ -265,49 +291,17 @@ class IndexViewMixIn(
             'answer_student': data_answer_student,
         }
 
-    def calculate_score(self, target_answers, score_type):
-        model_dict = {
-            'virtual': self.statistics_virtual_model,
-            'real': self.statistics_model,
-        }
-        model = model_dict[score_type]
-
-        score_dict = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0}
-        if self.ex == '칠급':
-            score_dict.pop('헌법')
-
-        for sub, data in self.data_answer['answer_student'].items():
-            correct_count = 0
-            for index, problem in enumerate(data):
-                answer_correct = 0
-                if target_answers[sub]:
-                    answer_correct = target_answers[sub][index]['ans_number']
-                answer_student = problem['ans_number']
-
-                if answer_correct <= 5 and answer_correct == answer_student:
-                    correct_count += 1
-                if answer_correct > 5:
-                    answer_correct_list = [int(digit) for digit in str(answer_correct)]
-                    if answer_student in answer_correct_list:
-                        correct_count += 1
-            if data:
-                score_dict[sub] = correct_count * 100 / len(data)
-
-        score_dict['psat'] = sum([score_dict['언어'], score_dict['자료'], score_dict['상황']])
-        score_dict['psat_avg'] = score_dict['psat'] / 3
-
+    def calculate_score(self):
+        """ Calculate score and return statistics. """
+        score_by_sub = self.get_score_by_sub(self.answer_correct_dict)
         if self.student:
             with transaction.atomic():
-                score_student, _ = model.objects.get_or_create(student=self.student)
-                for sub, score in score_dict.items():
+                statistics, _ = self.statistics_model.objects.get_or_create(student=self.student)
+                for sub, score in score_by_sub.items():
                     field = self.sub_field[sub]
-                    setattr(score_student, field, score_dict[sub])
-                score_student.save()
-
-        if score_type == 'virtual':
-            return score_dict
-        elif score_type == 'real':
-            return score_student
+                    setattr(statistics, field, score)
+                statistics.save()
+        return statistics
 
     def get_statistics_qs(self, rank_type='전체'):
         filter_expr = {'student__exam': self.exam}
@@ -319,7 +313,7 @@ class IndexViewMixIn(
     def get_filtered_statistics_qs(self, rank_type='전체'):
         filter_expr = {
             'student__exam': self.exam,
-            'timestamp__lte': self.exam.answer_open_date + datetime.timedelta(hours=1),
+            'timestamp__lte': self.exam.answer_open_datetime + datetime.timedelta(hours=1),
             'score_heonbeob__gt': 0,
             'score_eoneo__gt': 0,
             'score_jaryo__gt': 0,
@@ -333,42 +327,17 @@ class IndexViewMixIn(
 
     def get_score_student(self, statistics_student):
         all_ranks = get_all_ranks_dict(self.get_statistics_qs, self.student.user_id)
-        rank_total = all_ranks['전체']
-        rank_department = all_ranks['직렬']
-
-        sub_list = ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat']
-        for sub in sub_list:
-            setattr(statistics_student, f'rank_total_{sub}', rank_total[f'rank_{sub}'])
-            setattr(statistics_student, f'rank_ratio_total_{sub}', rank_total[f'rank_ratio_{sub}'])
-            setattr(statistics_student, f'rank_department_{sub}', rank_department[f'rank_{sub}'])
-            setattr(statistics_student, f'rank_ratio_department_{sub}', rank_department[f'rank_ratio_{sub}'])
+        statistics_student = self.update_statistics_student(statistics_student, all_ranks)
         statistics_student.save()
-
-        score_student = {'헌법': {}, '언어': {}, '자료': {}, '상황': {}, '피셋': {}}
-        if self.ex == '칠급':
-            score_student.pop('헌법')
-
-        for sub, data in score_student.items():
-            data['sub'] = sub
-            data['sub_eng'] = self.sub_eng_dict[sub]
-            data['subject'] = self.subject_dict[sub]
-            data['is_confirmed'] = self.answer_student_status[sub]
-            data['icon'] = self.ICON_SUBJECT[sub]
-
-            sub_eng = data['sub_eng']
-            if sub_eng == 'psat':
-                data['score'] = getattr(statistics_student, f'score_psat_avg')
-            else:
-                data['score'] = getattr(statistics_student, f'score_{sub_eng}')
-            data['rank_total'] = getattr(statistics_student, f'rank_total_{sub_eng}')
-            data['rank_ratio_total'] = getattr(statistics_student, f'rank_ratio_total_{sub_eng}')
-            data['rank_department'] = getattr(statistics_student, f'rank_department_{sub_eng}')
-            data['rank_ratio_department'] = getattr(statistics_student, f'rank_ratio_department_{sub_eng}')
-
-        return score_student
+        return self.get_score_student_dict(statistics_student)
 
     def get_filtered_score_student(self, statistics_student):
         all_ranks = get_all_ranks_dict(self.get_filtered_statistics_qs, self.student.user_id)
+        statistics_student = self.update_statistics_student(statistics_student, all_ranks)
+        return self.get_score_student_dict(statistics_student)
+
+    @staticmethod
+    def update_statistics_student(statistics_student, all_ranks):
         rank_total = all_ranks['전체']
         rank_department = all_ranks['직렬']
 
@@ -384,7 +353,9 @@ class IndexViewMixIn(
                 setattr(statistics_student, f'rank_ratio_total_{sub}', '-')
                 setattr(statistics_student, f'rank_department_{sub}', '-')
                 setattr(statistics_student, f'rank_ratio_department_{sub}', '-')
+        return statistics_student
 
+    def get_score_student_dict(self, statistics_student):
         score_student = {'헌법': {}, '언어': {}, '자료': {}, '상황': {}, '피셋': {}}
         if self.ex == '칠급':
             score_student.pop('헌법')
@@ -407,6 +378,7 @@ class IndexViewMixIn(
             data['rank_ratio_department'] = getattr(statistics_student, f'rank_ratio_department_{sub_eng}')
 
         return score_student
+
 
     def update_info_answer_student(self):
         sub_field = {

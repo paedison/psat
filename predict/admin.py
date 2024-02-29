@@ -7,7 +7,10 @@ from .models import (
 
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
-    list_display = ('category', 'year', 'ex', 'round', 'exam_date', 'answer_open_date')
+    list_display = (
+        'category', 'year', 'ex', 'round',
+        'predict_open_datetime', 'start_datetime', 'end_datetime', 'answer_open_datetime',
+    )
     list_per_page = 20
 
 

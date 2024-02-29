@@ -47,10 +47,10 @@
             </tbody>
         </table>
     {% else %}
-        {% if current_time < exam.predict_open_date %}
+        {% if current_time < exam.predict_open_datetime %}
             <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
                 <i class="fa-solid fa-circle-exclamation"></i>
-                    수험정보는 {{ exam.predict_open_date|date:'n/d(D) H:i' }}부터 입력 가능합니다.
+                    수험정보는 {{ exam.predict_open_datetime|date:'n/d(D) H:i' }}부터 입력 가능합니다.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% else %}

@@ -31,9 +31,10 @@ class Exam(base_models.TimeRecordField):
     year = models.IntegerField()
     ex = models.CharField(max_length=2, choices=EX_CHOICES)
     round = models.IntegerField()  # 0 for PSAT, round number for Prime
-    predict_open_date = models.DateTimeField(default=timezone.now)
-    exam_date = models.DateTimeField()
-    answer_open_date = models.DateTimeField()
+    predict_open_datetime = models.DateTimeField(default=timezone.now)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+    answer_open_datetime = models.DateTimeField()
 
     @property
     def exam(self):
