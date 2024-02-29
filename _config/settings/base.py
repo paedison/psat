@@ -226,7 +226,7 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'VERIFIED_EMAIL': env('VERIFIED_EMAIL'),
+        # 'VERIFIED_EMAIL': env('VERIFIED_EMAIL'),
         'APP': {
             'client_id': env('APP_client_id'),
             'secret': env('APP_secret'),
