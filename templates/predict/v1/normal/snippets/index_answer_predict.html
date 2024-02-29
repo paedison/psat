@@ -11,39 +11,44 @@
 </div>
 
 <div class="card-body">
-    <article class="table-responsive">
-        <table class="table small align-middle">
-            <thead>
-                <tr class="text-center table-warning">
-                   <th class="text-nowrap text-primary">번호</th>
-                   <th class="text-nowrap text-primary">헌법</th>
-                   <th class="text-nowrap text-primary">언어</th>
-                   <th class="text-nowrap text-primary">자료</th>
-                   <th class="text-nowrap text-primary">상황</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for i in 'x'|ljust:40 %}
-                    <tr class="text-center">
-                        <th>{{ forloop.counter }}번</th>
-                        <td>aa</td>
-                        <td>aa</td>
-                        <td>aa</td>
-                        <td>aa</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </article>
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
+            {% for id in '0123' %}
+                {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
+                {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
+                {% #nav_tab prefix=sub id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
 
-    {% for id in '0123' %}
-        {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
-        {% cycle data_answer_correct.헌법 data_answer_correct.언어 data_answer_correct.자료 data_answer_correct.상황 as answer_correct silent %}
-        {% cycle data_answer_predict.헌법 data_answer_predict.언어 data_answer_predict.자료 data_answer_predict.상황 as answer_predict silent %}
-        {% cycle data_answer_student.헌법 data_answer_student.언어 data_answer_student.자료 data_answer_student.상황 as answer_student silent %}
-        {% cycle info_answer_student.헌법 info_answer_student.언어 info_answer_student.자료 info_answer_student.상황 as info_answer silent %}
-        {% partial answer_table %}
-    {% endfor %}
+    <div class="tab-content" id="scoreAnswersContent">
+        {% for id in '0123' %}
+            {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
+            {% cycle data_answer_correct.헌법 data_answer_correct.언어 data_answer_correct.자료 data_answer_correct.상황 as answer_correct silent %}
+            {% cycle data_answer_predict.헌법 data_answer_predict.언어 data_answer_predict.자료 data_answer_predict.상황 as answer_predict silent %}
+            {% cycle data_answer_student.헌법 data_answer_student.언어 data_answer_student.자료 data_answer_student.상황 as answer_student silent %}
+            {% cycle info_answer_student.헌법 info_answer_student.언어 info_answer_student.자료 info_answer_student.상황 as info_answer silent %}
+            {% #nav_content prefix=sub id=id %}{% partial answer_table %}{% /nav_content %}
+        {% endfor %}
+    </div>
+    <div>
+        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+        <ol class="text-success small fw-bold m-0">
+            {% if current_time < exam.end_datetime %}
+                <li>예상 정답 및 정확도는 시험이 종료된 이후에 확인 가능합니다.</li>
+            {% endif %}
+
+            {% if current_time < exam.answer_open_datetime %}
+                <li>정답 및 정답률은 공식적으로 정답이 공개된 이후에 확인 가능합니다.</li>
+            {% endif %}
+
+            {% if current_time > exam.answer_open_datetime %}
+                <li>정답률 = 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
+            {% endif %}
+
+            <li>선택률 = 본인과 같은 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
+        </ol>
+    </div>
 </div>
 
 {% partialdef answer_table %} {# answer_table partial #}
@@ -76,30 +81,6 @@
                 {% endif %}
             </tbody>
         </table>
-        {% if info_answer.is_confirmed %}
-            <div>
-                <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
-                <ol class="text-success small fw-bold m-0">
-                    {% if current_time < exam.end_datetime %}
-                        <li>예상 정답 및 정확도는 시험이 종료된 이후에 확인 가능합니다.</li>
-                    {% endif %}
-
-                    {% if current_time < exam.answer_open_datetime %}
-                        <li>정답 및 정답률은 공식적으로 정답이 공개된 이후에 확인 가능합니다.</li>
-                    {% endif %}
-
-                    {% if current_time > exam.answer_open_datetime %}
-                        <li>정답률 = 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
-                    {% endif %}
-
-                    <li>선택률 = 본인과 같은 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
-
-                    {% if current_time > exam.end_datetime and current_time < exam.answer_open_datetime %}
-                        <li>정확도 = 예상 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
-                    {% endif %}
-                </ol>
-            </div>
-        {% endif %}
     </article>
 {% endpartialdef answer_table %}
 

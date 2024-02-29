@@ -67,6 +67,12 @@
             </div>
         </div>
 
+        <div class="col-12">
+            <div class="card">
+                {% include 'predict/v1/normal/snippets/index_banner.html' %}
+            </div>
+        </div>
+
         {% if user.is_authenticated %}
             <div class="col-12">
                 <div id="info_student" class="card htmx-fade-in htmx-fade-out">
@@ -74,14 +80,13 @@
                 </div>
             </div>
 
-{#            <div class="col-12">#}
-{#                <div id="info_student" class="card htmx-fade-in htmx-fade-out">#}
-{#                    {% include 'predict/v1/normal/snippets/index_answer_predict.html' %}#}
-{#                </div>#}
-{#            </div>#}
-
             {% if student %}
                 {% if current_time > exam.answer_open_datetime %}
+                    <div class="col-12">
+                        <div id="info_student" class="card htmx-fade-in htmx-fade-out">
+                            {% include 'predict/v1/normal/snippets/index_answer_predict.html' %}
+                        </div>
+                    </div>
                     <div class="col-12">
                         <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                             {% include 'predict/v1/normal/snippets/index_sheet_score.html' %}
