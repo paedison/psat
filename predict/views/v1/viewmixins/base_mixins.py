@@ -13,14 +13,14 @@ from predict.views.v1.utils import get_score_stat_sub, get_score_stat_korean
 
 
 class PredictExamInfo:
-    # category = 'PSAT'
-    # year = '2024'
-    # ex = '행시'
-    # round = 0
-    category = 'Prime'
+    category = 'PSAT'
     year = '2024'
-    ex = '프모'
-    round = 5
+    ex = '행시'
+    round = 0
+    # category = 'Prime'
+    # year = '2024'
+    # ex = '프모'
+    # round = 5
 
 
 class BaseMixin:
