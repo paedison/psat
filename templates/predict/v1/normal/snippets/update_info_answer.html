@@ -16,7 +16,7 @@
         <div id="{{ info_answer.sub }}_participants"
              class="htmx-fade-up-in delay-{{ delay_num|add:1 }}"
               hx-swap-oob="outerHTML:#{{ info_answer.sub }}_participants">
-            {{ info_answer.participants|default:'' }}
+            {{ info_answer.participants|default:0 }}
         </div>
     {% endpartialdef participants %}
 {% endwith %}
