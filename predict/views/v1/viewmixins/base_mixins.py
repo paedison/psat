@@ -3,13 +3,12 @@ import os
 
 from django.conf import settings
 from django.db.models import F
-from django.utils import timezone
 
 from common.models import User
 from predict import forms as predict_forms
 from predict import models as predict_models
-from reference import models as reference_models
 from predict.views.v1.utils import get_score_stat_sub, get_score_stat_korean
+from reference import models as reference_models
 
 
 class PredictExamInfo:
@@ -35,11 +34,7 @@ class BaseMixin:
     statistics_model = predict_models.Statistics
     statistics_virtual_model = predict_models.StatisticsVirtual
     location_model = predict_models.Location
-
     student_form = predict_forms.StudentForm
-
-    # current_time
-    current_time = timezone.now()
 
     # answer_file
     data_dir = os.path.join(settings.BASE_DIR, 'predict', 'views', 'v1', 'data')

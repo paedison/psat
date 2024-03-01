@@ -1,0 +1,147 @@
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+<div class="card-header">
+    예상 정답
+    <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#answer_predict_spinner"
+       hx-get="{% url 'predict_test:update_sheet_answer_predict' %}">
+        <span class="badge rounded-pill text-bg-warning">업데이트</span>
+    </a>
+    <div id="answer_predict_spinner" role="status"
+         class="htmx-indicator spinner-border text-warning spinner-border-sm">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
+            {% for id in '0123' %}
+                {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
+                {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
+                {% #nav_tab prefix=sub id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreAnswersContent">
+        {% for id in '0123' %}
+            {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
+            {% cycle data_answer_correct.헌법 data_answer_correct.언어 data_answer_correct.자료 data_answer_correct.상황 as answer_correct silent %}
+            {% cycle data_answer_predict.헌법 data_answer_predict.언어 data_answer_predict.자료 data_answer_predict.상황 as answer_predict silent %}
+            {% cycle data_answer_student.헌법 data_answer_student.언어 data_answer_student.자료 data_answer_student.상황 as answer_student silent %}
+            {% cycle info_answer_student.헌법 info_answer_student.언어 info_answer_student.자료 info_answer_student.상황 as info_answer silent %}
+            {% #nav_content prefix=sub id=id %}{% partial answer_table %}{% /nav_content %}
+        {% endfor %}
+    </div>
+    <div>
+        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+        <ol class="text-success small fw-bold m-0">
+            {% if current_time < exam.answer_predict_open_datetime %}
+                <li>예상 정답은 답안 수집 후 {{ exam.answer_predict_open_datetime|date:'G시 i분' }}부터
+                    {{ exam.answer_open_datetime|date:'G시 i분' }}까지만 공개됩니다.</li>
+            {% endif %}
+            <li>전체 참여자 중 가장 많은 분들이 선택한 답안을 예상 정답으로 선정합니다.</li>
+            <li>정확도 = 예상 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
+        </ol>
+    </div>
+</div>
+
+{% partialdef answer_table %}
+    <article class="table-responsive">
+        <table class="table small align-middle">
+            <tbody>
+                {% if current_time < exam.answer_predict_open_datetime %}
+                    <tr class="text-center">
+                        {% if info_answer.is_confirmed %}
+                            <th class="fw-bold text-bg-warning">
+                                <div class="fs-5 my-4">답안 수집중입니다.</div>
+                            </th>
+                        {% else %}
+                            <th>
+                                <a class="btn btn-outline-danger my-4"
+                                   href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
+                                    답안을 제출해주세요.
+                                </a>
+                            </th>
+                        {% endif %}
+                    </tr>
+                {% else %}
+                    {% if ex == '칠급' or answer_student|length == 25  %}
+                        {% for _ in '012' %}
+                            {% cycle 10 10 5 as loop_counter silent %}
+                            {% cycle 0 10 20 as loop_min silent %}
+                            {% partial answer_table_tr %}
+                        {% endfor %}
+                    {% else %}
+                        {% for _ in '0123' %}
+                            {% cycle 10 10 10 10 as loop_counter silent %}
+                            {% cycle 0 10 20 30 as loop_min silent %}
+                            {% partial answer_table_tr %}
+                        {% endfor %}
+                    {% endif %}
+                {% endif %}
+            </tbody>
+        </table>
+    </article>
+{% endpartialdef answer_table %}
+
+{% partialdef answer_table_tr %}
+    <tr class="text-center table-warning">
+        <th class="text-nowrap" scope="row">문제 번호</th>
+        {% for _ in 'x'|ljust:loop_counter %}
+            <th>{{ forloop.counter|add:loop_min }}</th>
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <th class="text-nowrap td-no-border" scope="row">예상 정답</th>
+        {% for answer in answer_predict %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                <td class="td-no-border">
+                    {% if answer.result == 'O' %}
+                        <button data-number="{{ answer.number }}"
+                                class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                            <div id="{{ sub }}ans_{{ answer.number }}"
+                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                {{ answer.ans_number }}
+                            </div>
+                        </button>
+                    {% else %}
+                        <button data-number="{{ answer.number }}"
+                                class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-danger">
+                            <div id="{{ sub }}ans_{{ answer.number }}"
+                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                {{ answer.ans_number }}
+                            </div>
+                        </button>
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center">
+        <th class="text-nowrap" scope="row">정확도(%)</th>
+        {% for answer in answer_predict %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                <td>
+                    {% if answer.result == 'O' %}
+                        <div data-number="{{ answer.number }}" class="fw-bold text-success">
+                            <div id="{{ sub }}accracy_{{ answer.number }}" aria-label="정확도"
+                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                {{ answer.rate_accuracy|floatformat:0 }}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div data-number="{{ answer.number }}" class="fw-bold text-danger">
+                            <div id="{{ sub }}accracy_{{ answer.number }}" aria-label="정확도"
+                                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
+                                {{ answer.rate_accuracy|floatformat:0 }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{% endpartialdef answer_table_tr %}

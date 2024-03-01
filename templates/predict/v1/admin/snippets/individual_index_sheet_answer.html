@@ -3,15 +3,11 @@
 {% load slippers %}
 
 <div class="card-header">
-    정답 확인
-    <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
+    답안 확인
+    <a class="text-decoration-none ms-2" href="" hx-swap="none"
        hx-get="{% url 'predict_test:update_sheet_answer' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
-    <div id="sheet_answer_spinner" role="status"
-         class="htmx-indicator spinner-border text-warning spinner-border-sm">
-        <span class="visually-hidden">Loading...</span>
-    </div>
 </div>
 
 <div class="card-body">
@@ -29,24 +25,15 @@
         {% for id in '0123' %}
             {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
             {% cycle data_answer_correct.헌법 data_answer_correct.언어 data_answer_correct.자료 data_answer_correct.상황 as answer_correct silent %}
+            {% cycle data_answer_predict.헌법 data_answer_predict.언어 data_answer_predict.자료 data_answer_predict.상황 as answer_predict silent %}
             {% cycle data_answer_student.헌법 data_answer_student.언어 data_answer_student.자료 data_answer_student.상황 as answer_student silent %}
             {% cycle info_answer_student.헌법 info_answer_student.언어 info_answer_student.자료 info_answer_student.상황 as info_answer silent %}
             {% #nav_content prefix=sub id=id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
     </div>
-    <div>
-        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
-        <ol class="text-success small fw-bold m-0">
-            {% if current_time < exam.answer_open_datetime %}
-                <li>정답 및 정답률은 공식 정답 공개 후 {{ exam.answer_open_datetime|date:'G시 i분' }}에 확인 가능합니다.</li>
-            {% endif %}
-            <li>정답률 = 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
-            <li>선택률 = 본인과 같은 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
-        </ol>
-    </div>
 </div>
 
-{% partialdef answer_table %}
+{% partialdef answer_table %} {# answer_table partial #}
     <article class="table-responsive">
         <table class="table small align-middle">
             <tbody>
@@ -76,6 +63,26 @@
                 {% endif %}
             </tbody>
         </table>
+        {% if info_answer.is_confirmed %}
+            <div>
+                <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                <ol class="text-success small fw-bold m-0">
+                    {% if current_time < exam.end_datetime %}
+                        <li>예상 정답 및 정확도는 시험이 종료된 이후에 확인 가능합니다.</li>
+                    {% endif %}
+
+                    {% if current_time < exam.answer_open_datetime %}
+                        <li>정답 및 정답률은 공식적으로 정답이 공개된 이후에 확인 가능합니다.</li>
+                    {% endif %}
+
+                    {% if current_time > exam.answer_open_datetime %}
+                        <li>정답률 = 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
+                    {% endif %}
+
+                    <li>선택률 = 본인과 같은 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
+                </ol>
+            </div>
+        {% endif %}
     </article>
 {% endpartialdef answer_table %}
 
@@ -92,7 +99,7 @@
         <tr class="text-center">
             <th class="text-nowrap text-bg-success td-no-border" scope="row">정답</th>
             <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-success">
-                정답 공개전입니다.
+                답안 공개전입니다.
             </td>
         </tr>
         <tr class="text-center">
@@ -149,9 +156,9 @@
         {% for answer in answer_student %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td class="td-no-border">
-                    {% if current_time < exam.answer_open_datetime %}
+                    {% if current_time < answer_opened_at %}
                         <button data-number="{{ answer.number }}"
-                                class="btn btn-circle btn-sm btn-primary fs-6 mx-1 my-2">
+                                class="btn btn-circle btn-sm btn-outline-secondary fs-6 mx-1 my-2">
                             {{ answer.ans_number }}
                         </button>
                     {% else %}
@@ -176,8 +183,8 @@
         {% for answer in answer_student %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td>
-                    {% if current_time < exam.answer_open_datetime %}
-                        <div data-number="{{ answer.number }}" class="fw-bold text-primary">
+                    {% if current_time < answer_opened_at %}
+                        <div data-number="{{ answer.number }}" class="fw-bold text-secondary">
                             <div id="{{ sub }}selection_{{ answer.number }}_after"
                                  class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                 {{ answer.rate_selection|floatformat:0 }}

@@ -5,10 +5,14 @@
 
 <div class="card-header">
     답안 제출 현황
-    <a class="text-decoration-none ms-2" href="" hx-swap="none"
+    <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#info_answer_spinner"
        hx-get="{% url 'predict_test:update_info_answer' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
+    <div id="info_answer_spinner" role="status"
+         class="htmx-indicator spinner-border text-warning spinner-border-sm">
+        <span class="visually-hidden">Loading...</span>
+    </div>
 </div>
 
 <div class="card-body">
@@ -17,25 +21,23 @@
             <thead>
                 <tr class="text-center align-middle table-warning">
                     <th rowspan="2" aria-label="과목">과목</th>
-                    {% if user.is_staff %}
-                        {% with title='실제 점수' unit='(점)' %}
-                            {% partialdef title_line inline=True %}
-                                <th class="text-nowrap" aria-label="{{ title }}">
-                                    <span class="d-sm-none">{{ title }}<br/>{{ unit }}</span>
-                                    <span class="d-none d-sm-inline">{{ title }}{{ unit }}</span>
-                                </th>
-                            {% endpartialdef title_line %}
-                        {% endwith %}
-                        {% with title='예상 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
-                    {% else %}
+                    <th class="text-nowrap" aria-label="점수">
                         {% if current_time > exam.answer_open_datetime %}
-                            {% with title='내 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
+                            <span class="d-sm-none">내 점수<br/>(점)</span>
+                            <span class="d-none d-sm-inline">내 점수(점)</span>
                         {% else %}
-                            {% with title='예상 점수' unit='(점)' %}{% partial title_line %}{% endwith %}
+                            <span class="d-sm-none">예상 점수<br/>(점)</span>
+                            <span class="d-none d-sm-inline">예상 점수(점)</span>
                         {% endif %}
-                    {% endif %}
-                    {% with title='선택 답안수' unit='(문제)' %}{% partial title_line %}{% endwith %}
-                    {% with title='총 참여자수' unit='(명)' %}{% partial title_line %}{% endwith %}
+                    </th>
+                    <th class="text-nowrap" aria-label="총 참여자수">
+                        <span class="d-sm-none">총 참여자수<br/>(명)</span>
+                        <span class="d-none d-sm-inline">총 참여자수(명)</span>
+                    </th>
+                    <th class="text-nowrap" aria-label="선택 답안수">
+                        <span class="d-sm-none">선택 답안수<br/>(문제)</span>
+                        <span class="d-none d-sm-inline">선택 답안수(문제)</span>
+                    </th>
                 </tr>
             </thead>
 
@@ -63,57 +65,20 @@
 </div>
 
 {% partialdef sub_answer_line %}
-    <tr class="text-center">
-        {% if info_answer.is_confirmed %}
-            <th class="text-nowrap" aria-label="과목">
+    <tr class="text-center {% if info_answer.sub == '피셋' %}table-warning{% endif %}">
+        <th class="text-nowrap" aria-label="과목">
+            {% if info_answer.is_confirmed or info_answer.sub == '피셋' %}
                 {{ info_answer.icon|safe }} {{ info_answer.subject }}
-            </th>
-            {% if user.is_staff %}
-                <td aria-label="실제 점수">
-                    <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-0">
-                        {{ info_answer.score_real|default:'' }}
-                    </div>
-                </td>
-                <td aria-label="예상 점수">
-                    <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-0">
-                        {{ info_answer.score_virtual|default:'' }}
-                    </div>
-                </td>
             {% else %}
-                {% if current_time > exam.answer_open_datetime %}
-                    <td aria-label="내 점수">
-                        <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-1">
-                            {{ info_answer.score_real|default:'' }}
-                        </div>
-                    </td>
-                {% else %}
-                    <td aria-label="예상 점수">
-                        {% if current_time < exam.end_datetime %}
-                            <span class="badge rounded-pill text-bg-warning">시험 종료전입니다.</span>
-                        {% else %}
-                            <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-1">
-                                {{ info_answer.score_virtual|default:'' }}
-                            </div>
-                        {% endif %}
-                    </td>
-                {% endif %}
-            {% endif %}
-            <td class="text-nowrap" aria-label="선택 답안수">
-                {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
-                <span class="badge rounded-pill text-bg-success">제출 완료</span>
-            </td>
-        {% else %}
-            <th class="text-nowrap" aria-label="과목">
-                {% if score_data.sub == '피셋' %}
+                <a class="text-decoration-none"
+                   href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
                     {{ info_answer.icon|safe }} {{ info_answer.subject }}
-                {% else %}
-                    <a class="text-decoration-none"
-                       href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
-                        {{ info_answer.icon|safe }} {{ info_answer.subject }}
-                    </a>
-                {% endif %}
-            </th>
-            <td colspan="{% if user.is_staff %}2{% else %}1{% endif %}" aria-label="점수">
+                </a>
+            {% endif %}
+        </th>
+
+        <td aria-label="점수">
+            {% if not info_answer.is_confirmed %}
                 {% if info_answer.sub == '피셋' %}
                     <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                 {% else %}
@@ -121,8 +86,34 @@
                         <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                     </a>
                 {% endif %}
-            </td>
-            <td class="text-nowrap" aria-label="선택 답안수">
+            {% else %}
+                {% if current_time < exam.end_datetime %} {# 시험 종료 이전 #}
+                    <span class="badge rounded-pill text-bg-danger">시험 종료전입니다.</span>
+                {% elif current_time < exam.answer_predict_open_datetime %} {# 시험 종료 이후 ~ 예상 정답 공개 이전 #}
+                    <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
+                {% elif current_time < exam.answer_open_datetime %} {# 예상 정답 공개 이후 ~ 공식 정답 공개 이전 #}
+                    <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-1 text-primary fw-bold">
+                        {{ info_answer.score_virtual|default:'' }}
+                    </div>
+                {% else %} {# 공식 정답 공개 이후 #}
+                    <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-1 text-success fw-bold">
+                        {{ info_answer.score_real|default:'' }}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </td>
+
+        <td aria-label="총 참여자수">
+            <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in delay-2">
+                {{ info_answer.participants|default:0 }}
+            </div>
+        </td>
+
+        <td class="text-nowrap" aria-label="선택 답안수">
+            {% if info_answer.is_confirmed %}
+                {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
+                <span class="badge rounded-pill text-bg-success">제출 완료</span>
+            {% else %}
                 {% if info_answer.sub == '피셋' %}
                     {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                     <span class="badge rounded-pill text-bg-danger">미제출</span>
@@ -133,12 +124,7 @@
                         <span class="badge rounded-pill text-bg-danger">미제출</span>
                     </a>
                 {% endif %}
-            </td>
-        {% endif %}
-        <td aria-label="총 참여자수">
-            <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in delay-2">
-                {{ info_answer.participants|default:0 }}
-            </div>
+            {% endif %}
         </td>
     </tr>
 {% endpartialdef sub_answer_line %}

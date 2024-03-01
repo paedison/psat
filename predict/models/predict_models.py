@@ -27,14 +27,15 @@ data_dir = os.path.join(settings.BASE_DIR, 'predict', 'models', 'data')
 
 
 class Exam(base_models.TimeRecordField):
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)  # PSAT, prime
-    year = models.IntegerField()
-    ex = models.CharField(max_length=2, choices=EX_CHOICES)
-    round = models.IntegerField()  # 0 for PSAT, round number for Prime
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='PSAT')  # PSAT, prime
+    year = models.IntegerField(default=2024)
+    ex = models.CharField(max_length=2, choices=EX_CHOICES, default='행시')
+    round = models.IntegerField(default=0)  # 0 for PSAT, round number for Prime
     predict_open_datetime = models.DateTimeField(default=timezone.now)
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
-    answer_open_datetime = models.DateTimeField()
+    start_datetime = models.DateTimeField(default=timezone.now)
+    end_datetime = models.DateTimeField(default=timezone.now)
+    answer_predict_open_datetime = models.DateTimeField(default=timezone.now)
+    answer_open_datetime = models.DateTimeField(default=timezone.now)
 
     @property
     def exam(self):

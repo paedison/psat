@@ -39,14 +39,9 @@
             {% endif %}
 
             {% if current_time < exam.answer_open_datetime %}
-                <li>정답 및 정답률은 공식적으로 정답이 공개된 이후에 확인 가능합니다.</li>
+                <li>예상 정답은 전체 참여자 중 가장 많은 분들이 선택한 답안으로 제시됩니다.</li>
+                <li>정확도 = 예상 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
             {% endif %}
-
-            {% if current_time > exam.answer_open_datetime %}
-                <li>정답률 = 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
-            {% endif %}
-
-            <li>선택률 = 본인과 같은 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
         </ol>
     </div>
 </div>
@@ -102,7 +97,7 @@
                         <td class="td-no-border">
                             {% if answer.result == 'O' %}
                                 <button data-number="{{ answer.number }}"
-                                        class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-warning">
+                                        class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
                                     <div id="{{ sub }}ans_{{ answer.number }}"
                                          class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                         {{ answer.ans_number }}
@@ -127,7 +122,7 @@
                     {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                         <td>
                             {% if answer.result == 'O' %}
-                                <div data-number="{{ answer.number }}" class="fw-bold text-warning">
+                                <div data-number="{{ answer.number }}" class="fw-bold text-success">
                                     <div id="{{ sub }}accracy_{{ answer.number }}"
                                          class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                         {{ answer.rate_accuracy|floatformat:0 }}
@@ -148,15 +143,21 @@
         {% endpartialdef answer_predict_line %}
     {% else %}
         {% if current_time < exam.end_datetime %}
-            <tr class="text-center">
-                <th class="text-nowrap text-bg-warning td-no-border" scope="row">예상 정답</th>
-                <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
-                    시험 종료전입니다.
-                </td>
-            </tr>
-            <tr class="text-center">
-                <th class="text-nowrap text-bg-warning" scope="row">정확도(%)</th>
-            </tr>
+            {% with message='시험 종료전입니다.' %}
+                {% partialdef error_message inline=True %}
+                    <tr class="text-center">
+                        <th class="text-nowrap text-bg-warning td-no-border" scope="row">예상 정답</th>
+                        <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-warning">
+                            {{ message }}
+                        </td>
+                    </tr>
+                    <tr class="text-center">
+                        <th class="text-nowrap text-bg-warning" scope="row">정확도(%)</th>
+                    </tr>
+                {% endpartialdef %}
+            {% endwith %}
+        {% elif current_time < exam.answer_predict_open_datetime %}
+            {% with message='답안 수집중입니다.' %}{% partial error_message %}{% endwith %}
         {% elif current_time < exam.answer_open_datetime %}
             {% partial answer_predict_line %}
         {% endif %}

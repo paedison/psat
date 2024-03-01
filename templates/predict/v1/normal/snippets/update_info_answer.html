@@ -3,15 +3,18 @@
 
 {% with info_answer=info_answer_student.헌법 delay_num=1 %}
     {% partialdef participants inline=True %}
-        <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-{{ delay_num }}"
+        <div id="{{ info_answer.sub }}_score_real"
+             class="htmx-fade-up-in delay-{{ delay_num }} text-success fw-bold"
               hx-swap-oob="outerHTML:#{{ info_answer.sub }}_score_real">
             {{ info_answer.score_real|default:'' }}
         </div>
-        <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-{{ delay_num }}"
+        <div id="{{ info_answer.sub }}_score_virtual"
+             class="htmx-fade-up-in delay-{{ delay_num }} text-primary fw-bold"
               hx-swap-oob="outerHTML:#{{ info_answer.sub }}_score_virtual">
             {{ info_answer.score_virtual|default:'' }}
         </div>
-        <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in delay-{{ delay_num|add:1 }}"
+        <div id="{{ info_answer.sub }}_participants"
+             class="htmx-fade-up-in delay-{{ delay_num|add:1 }}"
               hx-swap-oob="outerHTML:#{{ info_answer.sub }}_participants">
             {{ info_answer.participants|default:'' }}
         </div>

@@ -3,6 +3,7 @@ import vanilla
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 
 from .viewmixins import base_mixins, normal_view_mixins
 
@@ -34,7 +35,7 @@ class IndexView(
                 # base info
                 'info': self.info,
                 'exam': self.exam,
-                'current_time': self.current_time,
+                'current_time': timezone.now(),
                 'title': 'Predict',
                 'sub_title': self.sub_title,
 
@@ -74,24 +75,53 @@ class IndexTestView(IndexView):
 
 
 class UpdateInfoAnswer(IndexView):
+    """답안 제출 현황 업데이트"""
     template_name = 'predict/v1/normal/snippets/update_info_answer.html'
 
     def get_template_names(self):
         return self.template_name
 
+    def get_context_data(self, **kwargs) -> dict:
+        return {'info_answer_student': self.info_answer_student}
+
+
+class UpdateSheetScore(IndexView):
+    """성적 예측 I [전체 데이터] 업데이트"""
+    template_name = 'predict/v1/normal/snippets/update_sheet_score.html'
+
+    def get_template_names(self):
+        return self.template_name
+
+    def get_context_data(self, **kwargs) -> dict:
+        return {
+            'score_student': self.score_student,
+            'all_score_stat': self.all_score_stat,
+        }
+
+
+class UpdateSheetAnswerPredict(IndexView):
+    """예상 정답 업데이트"""
+    template_name = 'predict/v1/normal/snippets/update_sheet_answer_predict.html'
+
+    def get_template_names(self):
+        return self.template_name
+
+    def get_context_data(self, **kwargs) -> dict:
+        return {'data_answer_predict': self.data_answer['answer_predict']}
+
 
 class UpdateSheetAnswer(IndexView):
+    """정답 확인 업데이트"""
     template_name = 'predict/v1/normal/snippets/update_sheet_answer.html'
 
     def get_template_names(self):
         return self.template_name
 
-
-class UpdateSheetScore(IndexView):
-    template_name = 'predict/v1/normal/snippets/update_sheet_score.html'
-
-    def get_template_names(self):
-        return self.template_name
+    def get_context_data(self, **kwargs) -> dict:
+        return {
+            'data_answer_correct': self.data_answer['answer_correct'],
+            'data_answer_student': self.data_answer['answer_student'],
+        }
 
 
 class StudentCreateView(
@@ -304,5 +334,6 @@ answer_submit_view = AnswerSubmitView.as_view()
 answer_confirm_view = AnswerConfirmView.as_view()
 
 update_info_answer = UpdateInfoAnswer.as_view()
+update_sheet_answer_predict = UpdateSheetAnswerPredict.as_view()
 update_sheet_answer = UpdateSheetAnswer.as_view()
 update_sheet_score = UpdateSheetScore.as_view()

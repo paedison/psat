@@ -1,4 +1,5 @@
 import vanilla
+from django.utils import timezone
 
 from .normal_views import IndexView
 from .utils import get_all_score_stat_sub_dict
@@ -177,8 +178,9 @@ class CatalogView(
 
 class IndividualIndexView(
     admin_view_mixins.OnlyStaffAllowedMixin,
-    IndexView
+    IndexView,
 ):
+    template_name = 'predict/v1/admin/predict_individual_index.html'
 
     def get_properties(self):
         self.category = self.kwargs.get('category')
@@ -211,7 +213,7 @@ class IndividualIndexView(
         self.filtered_all_score_stat = {'전체': '', '직렬': ''}
         self.filtered_score_student = {}
 
-        if self.current_time > self.exam.answer_open_datetime and self.student:
+        if timezone.now() > self.exam.answer_open_datetime and self.student:
             statistics_student = self.calculate_score()
             self.all_score_stat = get_all_score_stat_sub_dict(self.get_statistics_qs, self.student)
             self.score_student = self.get_score_student(statistics_student)

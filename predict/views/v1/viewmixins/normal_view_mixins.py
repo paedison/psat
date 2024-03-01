@@ -2,6 +2,7 @@ import datetime
 
 from django.db import transaction
 from django.urls import reverse_lazy
+from django.utils import timezone
 
 from common.constants.icon_set import ConstantIconSet
 from . import base_mixins
@@ -49,7 +50,7 @@ class IndexViewMixIn(
         self.filtered_all_score_stat = {'전체': '', '직렬': ''}
         self.filtered_score_student = {}
 
-        if self.current_time > self.exam.answer_open_datetime and self.student:
+        if timezone.now() > self.exam.answer_open_datetime and self.student:
             statistics_student = self.calculate_score()
             self.all_score_stat = get_all_score_stat_sub_dict(self.get_statistics_qs, self.student)
             self.score_student = self.get_score_student(statistics_student)
@@ -262,7 +263,7 @@ class IndexViewMixIn(
                 ans_number_student = dataset_answer[f'prob{number}']
 
                 result = 'O'
-                if self.current_time > self.exam.end_datetime:
+                if timezone.now() > self.exam.end_datetime:
                     ans_number_correct = data_answer_correct[sub][i]['ans_number']
                     ans_number_list_correct = data_answer_correct[sub][i]['ans_number_list']
                     if ans_number_correct in range(1, 6):

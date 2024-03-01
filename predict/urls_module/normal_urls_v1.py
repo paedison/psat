@@ -16,6 +16,7 @@ urlpatterns = [
     path('answer/<str:sub>/confirm/', normal_views.answer_confirm_view, name='answer_confirm'),
 
     path('update/info_answer/', normal_views.update_info_answer, name='update_info_answer'),
+    path('update/sheet_answer_predict/', normal_views.update_sheet_answer_predict, name='update_sheet_answer_predict'),
     path('update/sheet_answer/', normal_views.update_sheet_answer, name='update_sheet_answer'),
     path('update/sheet_score/', normal_views.update_sheet_score, name='update_sheet_score'),
 ]
