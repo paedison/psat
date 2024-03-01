@@ -315,7 +315,7 @@ class IndexViewMixIn(
     def get_filtered_statistics_qs(self, rank_type='전체'):
         filter_expr = {
             'student__exam': self.exam,
-            'timestamp__lte': self.exam.answer_open_datetime + datetime.timedelta(hours=1),
+            'student__statistics_virtual__updated_at__lte': self.exam.answer_open_datetime,
             'score_heonbeob__gt': 0,
             'score_eoneo__gt': 0,
             'score_jaryo__gt': 0,

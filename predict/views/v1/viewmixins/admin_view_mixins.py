@@ -271,34 +271,58 @@ class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
 
 class UpdateAnswerMixin(ConstantIconSet, AdminBaseMixin):
     def update_answer(self):
+        update_list = []
+        create_list = []
+        update_count = 0
+        create_count = 0
+        update_keys = ['answer']
+        message = '기존에 입력된 정답 데이터와 일치합니다.'
+
         answer_correct_dict = self.get_answer_correct_dict()
         for sub, problems in answer_correct_dict.items():
             for problem in problems:
                 number = problem['number']
-                answer = problem['ans_number']
-                with transaction.atomic():
-                    try:
-                        answer_count = self.answer_count_model.objects.get(
-                            category=self.category,
-                            year=self.year,
-                            ex=self.ex,
-                            round=self.round,
-                            sub=sub,
-                            number=number,
-                        )
-                    except self.answer_count_model.DoesNotExist:
-                        answer_count = self.answer_count_model.objects.create(
-                            category=self.category,
-                            year=self.year,
-                            ex=self.ex,
-                            round=self.round,
-                            sub=sub,
-                            number=number,
-                            count_total=0
-                        )
-                    answer_count.answer = answer
-                    answer_count.save()
-        return '정답 업데이트를 완료했습니다.'
+                ans_number = problem['ans_number']
+                try:
+                    answer_count = self.answer_count_model.objects.get(
+                        exam__category=self.category,
+                        exam__year=self.year,
+                        exam__ex=self.ex,
+                        exam__round=self.round,
+                        sub=sub,
+                        number=number,
+                    )
+                    if answer_count.answer != ans_number:
+                        answer_count.answer = ans_number
+                        update_list.append(answer_count)
+                        update_count += 1
+                except self.answer_count_model.DoesNotExist:
+                    answer_count = self.answer_count_model.objects.create(
+                        exam__category=self.category,
+                        exam__year=self.year,
+                        exam__ex=self.ex,
+                        exam__round=self.round,
+                        sub=sub,
+                        number=number,
+                        count_total=0
+                    )
+                    answer_count.answer = ans_number
+                    create_list.append(answer_count)
+                    create_count += 1
+        try:
+            with transaction.atomic():
+                if create_list:
+                    self.answer_count_model.objects.bulk_create(create_list)
+                    message = f'{create_count}개의 문제 정답을 새로 기록했습니다.'
+                elif update_list:
+                    self.answer_count_model.objects.bulk_update(update_list, update_keys)
+                    message = f'{update_count}개의 문제 정답을 업데이트했습니다.'
+        except django.db.utils.IntegrityError:
+            traceback_message = traceback.format_exc()
+            print(traceback_message)
+            message = f'업데이트 과정에서 에러가 발생했습니다.'
+
+        return message
 
 
 class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
@@ -307,22 +331,23 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
         create_list = []
         update_count = 0
         create_count = 0
-        score_keys = [
+        update_keys = [
             'score_heonbeob', 'score_eoneo', 'score_jaryo', 'score_sanghwang', 'score_psat', 'score_psat_avg',
         ]
+        message = '기존에 입력된 성적 데이터와 일치합니다.'
 
         students = self.student_model.objects.filter(
-            category=self.category,
-            year=self.year,
-            ex=self.ex,
-            round=self.round,
+            exam__category=self.category,
+            exam__year=self.year,
+            exam__ex=self.ex,
+            exam__round=self.round,
         )
         for student in students:
             score = self.calculate_score(student)
             try:
                 stat = self.statistics_model.objects.get(student=student)
                 fields_not_match = any(
-                    getattr(stat, key) != score[key] for key in score_keys
+                    getattr(stat, key) != score[key] for key in update_keys
                 )
                 if fields_not_match:
                     for field, value in score.items():
@@ -338,12 +363,10 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
             with transaction.atomic():
                 if create_list:
                     self.statistics_model.objects.bulk_create(create_list)
-                    message = f'총 {create_count}명의 성적 자료가 입력되었습니다.'
+                    message = f'총 {create_count}명의 성적 데이터가 입력되었습니다.'
                 elif update_list:
-                    self.statistics_model.objects.bulk_update(update_list, score_keys)
-                    message = f'총 {update_count}명의 성적 자료가 업데이트되었습니다.'
-                else:
-                    message = f'기존에 입력된 성적 자료와 일치합니다.'
+                    self.statistics_model.objects.bulk_update(update_list, update_keys)
+                    message = f'총 {update_count}명의 성적 데이터가 업데이트되었습니다.'
         except django.db.utils.IntegrityError:
             traceback_message = traceback.format_exc()
             print(traceback_message)
@@ -385,7 +408,7 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
 
 
 class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):
-    rank_annotation_keys = [
+    annotation_keys = [
         'total_eoneo',
         'total_jaryo',
         'total_sanghwang',
@@ -411,8 +434,8 @@ class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):
         'ratio_department_heonbeob',
     ]
 
-    rank_update_keys = [
-        f'rank_{key}' for key in rank_annotation_keys
+    update_keys = [
+        f'rank_{key}' for key in annotation_keys
     ]
 
     def get_next_url(self):
@@ -448,12 +471,13 @@ class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):
     def update_statistics(self):
         update_list = []
         update_count = 0
+        message = f'기존에 입력된 통계 데이터와 일치합니다.'
 
         statistics_qs_total = self.statistics_model.objects.filter(
-            student__category=self.category,
-            student__year=self.year,
-            student__ex=self.ex,
-            student__round=self.round,
+            student__exam__category=self.category,
+            student__exam__year=self.year,
+            student__exam__ex=self.ex,
+            student__exam__round=self.round,
         )
         rank_list_total = self.get_rank_list(statistics_qs_total, 'total')
 
@@ -471,7 +495,7 @@ class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):
                     rank_data_dict.update(row)
 
             fields_not_match = any(
-                getattr(stat, f'rank_{key}') != rank_data_dict[key] for key in self.rank_annotation_keys
+                getattr(stat, f'rank_{key}') != rank_data_dict[key] for key in self.annotation_keys
             )
             if fields_not_match:
                 for field, value in rank_data_dict.items():
@@ -482,10 +506,8 @@ class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):
         try:
             with transaction.atomic():
                 if update_list:
-                    self.statistics_model.objects.bulk_update(update_list, self.rank_update_keys)
-                    message = f'총 {update_count}명의 통계 자료가 업데이트되었습니다.'
-                else:
-                    message = f'기존에 입력된 통계 자료와 일치합니다.'
+                    self.statistics_model.objects.bulk_update(update_list, self.update_keys)
+                    message = f'총 {update_count}명의 통계 데이터가 업데이트되었습니다.'
         except django.db.utils.IntegrityError:
             traceback_message = traceback.format_exc()
             print(traceback_message)
