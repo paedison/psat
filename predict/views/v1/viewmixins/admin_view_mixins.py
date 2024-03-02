@@ -208,9 +208,12 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)
         paginator = Paginator(page_data, 20)
-        page_obj = paginator.get_page(page_number)
-        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-        return page_obj, page_range
+        try:
+            page_obj = paginator.get_page(page_number)
+            page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+            return page_obj, page_range
+        except TypeError:
+            return None, None
 
 
 class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
