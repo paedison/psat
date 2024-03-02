@@ -65,6 +65,8 @@ def get_top_score(score_list: list):
         return np.percentile(score_list, [90, 80], interpolation='nearest')
     except IndexError:
         return [0, 0]
+    except TypeError:
+        return [0, 0]
 
 
 def get_stat(queryset) -> dict:
