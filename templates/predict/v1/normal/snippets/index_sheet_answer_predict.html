@@ -88,13 +88,13 @@
 {% endpartialdef answer_table %}
 
 {% partialdef answer_table_tr %}
-    <tr class="text-center table-warning">
+    <tr class="text-center table-warning" aria-label="문제 번호">
         <th class="text-nowrap" scope="row">문제 번호</th>
         {% for _ in 'x'|ljust:loop_counter %}
             <th>{{ forloop.counter|add:loop_min }}</th>
         {% endfor %}
     </tr>
-    <tr class="text-center">
+    <tr class="text-center" aria-label="예상 정답">
         <th class="text-nowrap td-no-border" scope="row">예상 정답</th>
         {% for answer in answer_predict %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
@@ -120,7 +120,7 @@
             {% endif %}
         {% endfor %}
     </tr>
-    <tr class="text-center">
+    <tr class="text-center" aria-label="정확도">
         <th class="text-nowrap" scope="row">정확도(%)</th>
         {% for answer in answer_predict %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}

@@ -82,12 +82,13 @@
         </div>
 
         {% if user.is_authenticated %}
-            <div class="col-12">
+            <div class="col-12" aria-label="수험 정보">
                 <div id="info_student" class="card htmx-fade-in htmx-fade-out">
                     {% include 'predict/v1/normal/snippets/index_info_student.html' %}
                 </div>
             </div>
 {#            student_id: {{ student.id }}<br/>#}
+{#            exam_id: {{ exam.id }}<br/>#}
 {#            현재 시각: {{ current_time }}<br/>#}
 {#            시험 시작 시각: {{ exam.start_datetime }}<br/>#}
 {#            시험 종료 시각: {{ exam.end_datetime }}<br/>#}

@@ -80,7 +80,7 @@
 {% endpartialdef answer_table %}
 
 {% partialdef answer_table_tr %}
-    <tr class="text-center table-warning">
+    <tr class="text-center table-warning" aria-label="문제 번호">
         <th class="text-nowrap" scope="row">문제 번호</th>
         {% for _ in 'x'|ljust:loop_counter %}
             <th>{{ forloop.counter|add:loop_min }}</th>
@@ -89,17 +89,17 @@
 
     {# answer_correct #}
     {% if current_time < exam.answer_open_datetime %}
-        <tr class="text-center">
+        <tr class="text-center" aria-label="정답">
             <th class="text-nowrap text-bg-success td-no-border" scope="row">정답</th>
             <td rowspan="2" colspan="{{ loop_counter }}" class="fw-bold text-bg-success">
                 정답 공개전입니다.
             </td>
         </tr>
-        <tr class="text-center">
+        <tr class="text-center" aria-label="정답률">
             <th class="text-nowrap text-bg-success" scope="row">정답률(%)</th>
         </tr>
     {% else %}
-        <tr class="text-center">
+        <tr class="text-center" aria-label="정답">
             <th class="text-nowrap td-no-border" scope="row">정답</th>
             {% for answer in answer_correct %}
                 {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
@@ -126,7 +126,7 @@
                 {% endif %}
             {% endfor %}
         </tr>
-        <tr class="text-center">
+        <tr class="text-center" aria-label="정답률">
             <th class="text-nowrap" scope="row">정답률(%)</th>
             {% for answer in answer_correct %}
                 {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
@@ -144,7 +144,7 @@
     {% endif %}
 
     {# answer_student #}
-    <tr class="text-center">
+    <tr class="text-center" aria-label="선택 답안">
         <th class="text-nowrap td-no-border" scope="row">선택 답안</th>
         {% for answer in answer_student %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
@@ -171,7 +171,7 @@
             {% endif %}
         {% endfor %}
     </tr>
-    <tr class="text-center">
+    <tr class="text-center" aria-label="선택률">
         <th class="text-nowrap" scope="row">선택률(%)</th>
         {% for answer in answer_student %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}

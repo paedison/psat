@@ -11,6 +11,11 @@
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
         <span class="fs-6 text-secondary">{{ sub_title }} [관리자용]</span>
+        <a class="btn btn-sm btn-outline-primary ms-2"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
+           href="{% url 'predict_test:index' %}">
+            일반 페이지
+        </a>
     </h1>
     <nav>
         <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
@@ -18,7 +23,10 @@
                 <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict_test:index' %}" hx-boost="true">Predict</a>
+                <a href="{% url 'predict_test:index' %}" hx-boost="true">Predict</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a class="active" href="{% url 'predict_test_admin:list' %}" hx-boost="true">Admin</a>
             </li>
         </ol>
     </nav>
@@ -39,34 +47,29 @@
             </div>
         </div>
 
-        <div class="col-12">
+        <div class="col-12" aria-label="수험 정보">
             <div id="info_student" class="card htmx-fade-in htmx-fade-out">
                 {% include 'predict/v1/admin/snippets/individual_index_info_student.html' %}
             </div>
         </div>
-        <div class="col-12">
+        <div class="col-12" aria-label="답안 제출 현황">
             <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
                 {% include 'predict/v1/admin/snippets/individual_index_info_answer.html' %}
             </div>
         </div>
-        <div class="col-12">
+        <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
             <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                 {% include 'predict/v1/admin/snippets/individual_index_sheet_score.html' %}
             </div>
         </div>
         {% if filtered_score_student %}
-            <div class="col-12">
+            <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
                 <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                     {% include 'predict/v1/admin/snippets/individual_index_sheet_score_filtered.html' %}
                 </div>
             </div>
         {% endif %}
-        <div class="col-12">
-            <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                {% include 'predict/v1/admin/snippets/individual_index_answer_predict.html' %}
-            </div>
-        </div>
-        <div class="col-12">
+        <div class="col-12" aria-label="정답 확인">
             <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
                 {% include 'predict/v1/admin/snippets/individual_index_sheet_answer.html' %}
             </div>
