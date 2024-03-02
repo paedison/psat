@@ -56,14 +56,14 @@
     <div class="tab-content" id="statisticsContent">
         {% #nav_content prefix='Statistics' id='0' %}
             {% partialdef real inline=True %}
-                {% with page_obj=statistics_page_obj page_range=statistics_page_range pagination_url=statistics_pagination_url target_id='navContentStat0' %}
+                {% with page_obj=statistics_page_obj page_range=statistics_page_range pagination_url=statistics_pagination_url target_id='navContentStatistics0' %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef real %}
         {% /nav_content %}
         {% #nav_content prefix='StatisticsVirtual' id='1' %}
             {% partialdef virtual inline=True %}
-                {% with page_obj=statistics_virtual_page_obj page_range=statistics_virtual_page_range pagination_url=statistics_virtual_pagination_url target_id='navContentStatVirtual1' %}
+                {% with page_obj=statistics_virtual_page_obj page_range=statistics_virtual_page_range pagination_url=statistics_virtual_pagination_url target_id='navContentStatisticsVirtual1' %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef virtual %}
