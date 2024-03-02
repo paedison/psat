@@ -229,9 +229,9 @@ class NormalBaseMixin(BaseMixin):
 
 
 class AdminBaseMixin(BaseMixin):
+    user_list: list
     department_list: dict
     student_list: list
-    user_list: list
 
     def get_properties(self):
         self.category = self.kwargs.get('category')
@@ -240,9 +240,9 @@ class AdminBaseMixin(BaseMixin):
         self.round = self.kwargs.get('round')
 
         self.exam = self.get_exam()
+        self.user_list = User.objects.values()
         self.department_list = self.get_department_list()
         self.student_list = self.get_student_list()
-        self.user_list = User.objects.values()
 
     def get_department_list(self):
         return (
