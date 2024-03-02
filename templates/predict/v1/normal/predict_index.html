@@ -5,6 +5,10 @@
 {% load partials %}
 {% load slippers %}
 
+{% block page_image %}
+<meta property="og:image" content="{% static 'image/predict/cover_psat.jpg' %}"/>
+{% endblock page_image %}
+
 {% block main %}
 {% partialdef index_main inline=True %} {# index_main partial #}
 {{ info|json_script:'info' }}
