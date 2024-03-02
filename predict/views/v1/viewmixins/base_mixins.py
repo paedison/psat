@@ -231,6 +231,7 @@ class NormalBaseMixin(BaseMixin):
 class AdminBaseMixin(BaseMixin):
     department_list: dict
     student_list: list
+    user_list: list
 
     def get_properties(self):
         self.category = self.kwargs.get('category')
@@ -241,10 +242,18 @@ class AdminBaseMixin(BaseMixin):
         self.exam = self.get_exam()
         self.department_list = self.get_department_list()
         self.student_list = self.get_student_list()
+        self.user_list = User.objects.values()
 
     def get_department_list(self):
-        return self.department_model.objects.select_related('unit', 'unit__exam').annotate(
-            unit_name=F('unit__name'), ex=F('unit__exam__abbr'), exam=F('unit__exam__name'))
+        return (
+            self.department_model.objects.select_related('unit', 'unit__exam')
+            .annotate(
+                unit_name=F('unit__name'),
+                department_name=F('name'),
+                ex=F('unit__exam__abbr'),
+                exam=F('unit__exam__name'),
+            ).values()
+        )
 
     def get_student_list(self):
         student_list = (
@@ -257,45 +266,60 @@ class AdminBaseMixin(BaseMixin):
             )
         )
         for student in student_list:
-            user_id = student.user_id
-            department_name = ''
             unit_name = ''
+            department_name = ''
+            username = ''
             for d in self.department_list:
-                if d.id == student.department_id:
-                    department_name = d.name
-                    unit_name = d.unit_name
-            try:
-                student.username = User.objects.get(id=user_id).username
-            except User.DoesNotExist:
-                student.username = ''
-            student.department_name = department_name
+                if d['id'] == student.department_id:
+                    unit_name = d['unit_name']
+                    department_name = d['name']
+            for u in self.user_list:
+                if u['id'] == student.user_id:
+                    username = u['username']
             student.unit_name = unit_name
+            student.department_name = department_name
+            student.username = username
         return student_list
 
-    def get_statistics_qs_list(self) -> list:
+    def get_statistics_qs_list(self, model_type=None) -> list:
+        model = self.statistics_model
+        if model_type == 'virtual':
+            model = self.statistics_virtual_model
+
         filter_expr = {'student__exam': self.exam}
-        statistics_qs = (
-            self.statistics_model.objects.defer('timestamp').select_related('student').filter(**filter_expr)
-        )
+        statistics_qs = model.objects.select_related('student').filter(**filter_expr)
         if statistics_qs:
             statistics_qs_list = [
-                {'department': '전체', 'queryset': statistics_qs}
+                {
+                    'unit': '',
+                    'department': '전체',
+                    'queryset': statistics_qs,
+                }
             ]
-
-            department_list = self.department_model.objects.filter(unit__exam__abbr=self.ex).values('id', 'name')
-            for department in department_list:
-                filter_expr['student__department_id'] = department['id']
+            department_list = (
+                self.department_model.objects.filter(unit__exam__abbr=self.ex)
+                .values('id', unit_name=F('unit__name'), department_name=F('name'))
+            )
+            for d in department_list:
+                filter_expr['student__department_id'] = d['id']
                 statistics_qs_list.append(
-                    {'department': department['name'], 'queryset': statistics_qs.filter(**filter_expr)}
+                    {
+                        'unit': d['unit_name'],
+                        'department': d['department_name'],
+                        'queryset': statistics_qs.filter(**filter_expr),
+                    }
                 )
             return statistics_qs_list
 
-    def get_detail_statistics(self) -> list:
+    def get_detail_statistics(self, model_type=None) -> list:
         score_statistics_list = []
-        statistics_qs_list = self.get_statistics_qs_list()
+        statistics_qs_list = self.get_statistics_qs_list(model_type)
         if statistics_qs_list:
             for qs_list in statistics_qs_list:
-                statistics_dict = {'department': qs_list['department']}
+                statistics_dict = {
+                    'unit': qs_list['unit'],
+                    'department': qs_list['department'],
+                }
                 statistics_dict.update(get_score_stat_sub(qs_list['queryset']))
                 score_statistics_list.append(statistics_dict)
             return score_statistics_list

@@ -7,9 +7,18 @@ app_name = 'predict_test_admin'  # predict/admin/
 urlpatterns = [
     path('', admin_views.list_view, name='list'),
     path('student/', admin_views.list_student_view, name='list_student'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/',
+         admin_views.detail_view, name='detail'),
 
-    path('<str:category>/<int:year>/<str:ex>/<int:round>/', admin_views.detail_view, name='detail'),
-    path('<str:category>/<int:year>/<str:ex>/<int:round>/catalog/', admin_views.catalog_view, name='catalog'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/statistics/',
+         admin_views.statistics_view, name='statistics'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/statistics_virtual/',
+         admin_views.statistics_virtual_view, name='statistics_virtual'),
+
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/catalog/',
+         admin_views.catalog_view, name='catalog'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/catalog_virtual/',
+         admin_views.catalog_virtual_view, name='catalog_virtual'),
 
     path('<str:category>/<int:year>/<str:ex>/<int:round>/user<int:user_id>/',
          admin_views.individual_index_view, name='individual'),

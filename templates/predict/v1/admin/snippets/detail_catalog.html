@@ -5,7 +5,7 @@
 
 <div class="card-header">
     <div class="d-flex align-items-center">
-        제{{ round }}회 | 성적 일람표
+        성적 일람표
         <form method="POST" action="{% url 'prime_admin:export_transcript' year round %}"
               class="ms-auto">
             {% csrf_token %}
@@ -26,6 +26,34 @@
 </div>
 
 <div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="catalogTab" role="tablist">
+            {% for id in '01' %}
+                {% cycle 'Catalog' 'CatalogVirtual' as prefix silent %}
+                {% cycle '실제 성적' '예상 성적' as title silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+    <div class="tab-content" id="catalogContent">
+        {% #nav_content prefix='Catalog' id='0' %}
+            {% partialdef real inline=True %}
+                {% with page_obj=catalog_page_obj page_range=catalog_page_range pagination_url=catalog_pagination_url target_id='navContentCatalog0' %}
+                    {% partial table_data_1 %}
+                {% endwith %}
+            {% endpartialdef real %}
+        {% /nav_content %}
+        {% #nav_content prefix='CatalogVirtual' id='1' %}
+            {% partialdef virtual inline=True %}
+                {% with page_obj=catalog_virtual_page_obj page_range=catalog_virtual_page_range pagination_url=catalog_virtual_pagination_url target_id='navContentCatalogVirtual1' %}
+                    {% partial table_data_2 %}
+                {% endwith %}
+            {% endpartialdef virtual %}
+        {% /nav_content %}
+    </div>
+</div>
+
+{% partialdef table_data_1 %}
     <article class="table-responsive" hx-target="#main">
         <table class="table table-bordered table-striped small align-middle m-0">
             <thead>
@@ -145,54 +173,83 @@
             </tbody>
         </table>
     </article>
+    {% include 'predict/v1/admin/snippets/detail_pagination.html' %}
+{% endpartialdef table_data_1 %}
 
-    <nav class="pt-3 me-auto ms-auto" aria-label="pagination" hx-target="#catalog">
-        <ul class="pagination pagination-sm justify-content-center m-0">
-            {% if page_obj.has_previous %}
-                {% with page_num=page_obj.number|add:-1 chevron='left' %}
-
-                    {% partialdef pagination_link inline=True %} {# pagination_link partial #}
-                        <li class="page-item {{ status }}"
-                            {% if status == 'active' %}aria-current="page"{% endif %}>
-                            <a class="page-link" href=""
-                                {% if status == 'disabled' %}
-                                    tabindex="-1" aria-disabled="true"
-                                {% else %}
-                                    hx-get="{{ pagination_url }}&page={{ page_num }}"
-                                {% endif %}>
-                                {% if chevron %}
-                                    <i class="fa-solid fa-chevron-{{ chevron }}"></i>
-                                {% else %}
-                                    {{ anchor_text }}
+{% partialdef table_data_2 %}
+    <article class="table-responsive" hx-target="#main">
+        <table class="table table-bordered table-striped small align-middle m-0">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2" rowspan="2">ID</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">구분</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">이름</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">수험번호</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
+                    <th class="text-primary text-nowrap p-2" colspan="2">PSAT</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">헌법</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">언어논리</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">자료해석</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">상황판단</th>
+                </tr>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2 td-right-no-border">총점</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">평균</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">{{ obj.student.id }}</td>
+                            <td class="text-nowrap p-2">
+                                {% if obj.student.category is not None %}
+                                    {{ obj.student.category }}
                                 {% endif %}
-                            </a>
-                        </li>
-                    {% endpartialdef pagination_link %}
-
-                {% endwith %}
-            {% endif %}
-
-            {% for number in page_range %}
-                {% with page_num=number anchor_text=number %}
-                    {% if number == page_obj.number %}
-                        {% with status='active' %}
-                            {% partial pagination_link %}
-                        {% endwith %}
-                    {% elif number == page_obj.paginator.ELLIPSIS %}
-                        {% with status='disabled' %}
-                            {% partial pagination_link %}
-                        {% endwith %}
-                    {% else %}
-                        {% partial pagination_link %}
-                    {% endif %}
-                {% endwith %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-                {% with page_num=page_obj.number|add:1 chevron='right' %}
-                    {% partial pagination_link %}
-                {% endwith %}
-            {% endif %}
-        </ul>
-    </nav><!-- Pagination End -->
-</div>
+                            </td>
+                            <td class="text-nowrap p-2">
+                                <a href="{% url 'predict_test_admin:individual' category year ex round obj.student.user_id %}"
+                                   hx-boost="true" hx-push-url="true">
+                                    {{ obj.student.name }}
+                                </a>
+                            </td>
+                            <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
+                            <td class="text-nowrap p-2">{{ obj.student.department_id|get_department }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_psat|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">
+                                {% if obj.score_heonbeob %}
+                                    {{ obj.score_heonbeob|floatformat:1 }}
+                                {% else %}
+                                    <span class="text-danger fw-bold">{{ obj.score_heonbeob|floatformat:1 }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2 td-right-no-border">
+                                {% if obj.score_eoneo %}
+                                    {{ obj.score_eoneo|floatformat:1 }}
+                                {% else %}
+                                    <span class="text-danger fw-bold">{{ obj.score_eoneo|floatformat:1 }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2 td-right-no-border">
+                                {% if obj.score_jaryo %}
+                                    {{ obj.score_jaryo|floatformat:1 }}
+                                {% else %}
+                                    <span class="text-danger fw-bold">{{ obj.score_jaryo|floatformat:1 }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2 td-right-no-border">
+                                {% if obj.score_sanghwang %}
+                                    {{ obj.score_sanghwang|floatformat:1 }}
+                                {% else %}
+                                    <span class="text-danger fw-bold">{{ obj.score_sanghwang|floatformat:1 }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </article>
+    {% include 'predict/v1/admin/snippets/detail_pagination.html' %}
+{% endpartialdef table_data_2 %}

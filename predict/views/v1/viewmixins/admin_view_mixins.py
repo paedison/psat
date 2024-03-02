@@ -55,7 +55,6 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
 
         self.sub_title = f'관리자 페이지'
         self.exam_list = self.exam_model.objects.all()
-        # self.student_list = self.get_student_list()
         self.exam_page_obj, self.exam_page_range = self.get_paginator_info(self.exam_list)
 
         self.student_page_obj, self.student_page_range = self.get_paginator_info(self.student_list)
@@ -70,22 +69,8 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
         page_number = self.request.GET.get('page', 1)
         paginator = Paginator(data, 10)
         page_obj = paginator.get_page(page_number)
-        for obj in page_obj:
-            if isinstance(obj, self.student_model):
-                obj = self.get_detail_info(obj)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
         return page_obj, page_range
-
-    def get_detail_info(self, obj):
-        department = self.department_model.objects.select_related('unit').get(id=obj.department_id)
-        obj.department_name = department.name
-        obj.unit_name = department.unit.name
-
-        try:
-            obj.username = User.objects.get(id=obj.user_id).username
-        except User.DoesNotExist:
-            obj.username = 'Blank'
-        return obj
 
     def get_participant_list(self):
         all_user_ids = self.student_model.objects.values('user_id').distinct()
@@ -112,27 +97,55 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
 
 class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
     sub_title: str
-    statistics: list
+
+    statistics_page_obj: any
+    statistics_page_range: any
+    statistics_pagination_url: str
+
+    statistics_virtual_page_obj: any
+    statistics_virtual_page_range: any
+    statistics_virtual_pagination_url: str
+
+    catalog_page_obj: any
+    catalog_page_range: any
+    catalog_pagination_url: str
+
+    catalog_virtual_page_obj: any
+    catalog_virtual_page_range: any
+    catalog_virtual_pagination_url: str
+
     answer_count_analysis: dict
-    page_obj: any
-    page_range: any
-    student_ids: list
-    base_url: str
-    pagination_url: str
 
     def get_properties(self):
         super().get_properties()
-        # self.student_list = self.get_student_list(self.exam)
 
         self.sub_title = self.get_sub_title()
 
-        self.statistics = self.get_detail_statistics()
-        self.answer_count_analysis = self.get_answer_count_analysis()
+        statistics = self.get_detail_statistics()
+        statistics_virtual = self.get_detail_statistics('virtual')
+        all_stat = self.get_all_stat()
+        all_virtual_stat = self.get_all_virtual_stat()
 
-        self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
-        self.base_url = reverse_lazy(
+        self.statistics_page_obj, self.statistics_page_range = self.get_paginator_info(statistics)
+        self.statistics_virtual_page_obj, self.statistics_virtual_page_range = self.get_paginator_info(statistics_virtual)
+        self.catalog_page_obj, self.catalog_page_range = self.get_paginator_info(all_stat)
+        self.catalog_virtual_page_obj, self.catalog_virtual_page_range = self.get_paginator_info(all_virtual_stat)
+
+        stat_base_url = reverse_lazy(
+            'predict_test_admin:statistics', args=[self.category, self.year, self.ex, self.round])
+        stat_virtual_base_url = reverse_lazy(
+            'predict_test_admin:statistics_virtual', args=[self.category, self.year, self.ex, self.round])
+        catalog_base_url = reverse_lazy(
             'predict_test_admin:catalog', args=[self.category, self.year, self.ex, self.round])
-        self.pagination_url = f'{self.base_url}?'
+        catalog_virtual_base_url = reverse_lazy(
+            'predict_test_admin:catalog_virtual', args=[self.category, self.year, self.ex, self.round])
+
+        self.statistics_pagination_url = f'{stat_base_url}?'
+        self.statistics_virtual_pagination_url = f'{stat_virtual_base_url}?'
+        self.catalog_pagination_url = f'{catalog_base_url}?'
+        self.catalog_virtual_pagination_url = f'{catalog_virtual_base_url}?'
+
+        self.answer_count_analysis = self.get_answer_count_analysis()
 
     def get_sub_title(self):
         if self.category == 'Prime':
@@ -184,19 +197,20 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
         )
         return qs
 
-    def get_paginator_info(self) -> tuple:
+    def get_all_virtual_stat(self):
+        qs = (
+            self.statistics_virtual_model.objects.filter(student__exam=self.exam)
+            .select_related('student').order_by(F('score_psat').desc(nulls_last=True))
+        )
+        return qs
+
+    def get_paginator_info(self, page_data) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)
-        all_stat = self.get_all_stat()
-        paginator = Paginator(all_stat, 20)
+        paginator = Paginator(page_data, 20)
         page_obj = paginator.get_page(page_number)
         page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-
-        student_ids = []
-        for obj in page_obj:
-            student_ids.append(obj.student.id)
-
-        return page_obj, page_range, student_ids
+        return page_obj, page_range
 
 
 class IndexViewMixin(ConstantIconSet, AdminBaseMixin):

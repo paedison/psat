@@ -1,9 +1,10 @@
 {% load humanize %}
 {% load partials %}
+{% load slippers %}
 
 <div class="card-header">
     <div class="d-flex align-items-center">
-        <span>제{{ round }}회 | 성적 통계</span>
+        <span>성적 통계</span>
         <div class="btn-group ms-auto">
             <a class="btn btn-sm btn-outline-secondary" title="목록" hx-push-url="true"
                href="{% url 'prime_admin:list' %}" hx-post="{% url 'predict_test_admin:list' %}">
@@ -43,10 +44,41 @@
 </div>
 
 <div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="statisticsTab" role="tablist">
+            {% for id in '01' %}
+                {% cycle 'Statistics' 'StatisticsVirtual' as prefix silent %}
+                {% cycle '실제 성적' '예상 성적' as title silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+    <div class="tab-content" id="statisticsContent">
+        {% #nav_content prefix='Statistics' id='0' %}
+            {% partialdef real inline=True %}
+                {% with page_obj=statistics_page_obj page_range=statistics_page_range pagination_url=statistics_pagination_url target_id='navContentStat0' %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef real %}
+        {% /nav_content %}
+        {% #nav_content prefix='StatisticsVirtual' id='1' %}
+            {% partialdef virtual inline=True %}
+                {% with page_obj=statistics_virtual_page_obj page_range=statistics_virtual_page_range pagination_url=statistics_virtual_pagination_url target_id='navContentStatVirtual1' %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef virtual %}
+        {% /nav_content %}
+    </div>
+</div>
+
+{% partialdef table_data %}
     <article class="table-responsive">
         <table class="table table-bordered table-striped small align-middle m-0">
             <thead>
                 <tr class="text-center table-warning align-middle">
+                    {% if category == 'PSAT' %}
+                        <th class="text-primary text-nowrap p-2" rowspan="2">모집단위</th>
+                    {% endif %}
                     <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">응시 인원</th>
                     <th class="text-primary text-nowrap p-2" colspan="4">PSAT</th>
@@ -66,14 +98,28 @@
                 </tr>
             </thead>
             <tbody>
-                {% if statistics %}
-                    {% for obj in statistics %}
+                {% if page_obj %}
+                    {% for obj in page_obj %}
                         <tr class="text-center">
+                            {% if category == 'PSAT' %}
+                                <td class="text-nowrap p-2">{{ obj.unit }}</td>
+                            {% endif %}
                             <td class="text-nowrap p-2">{{ obj.department }}</td>
                             <td class="text-nowrap p-2">{{ obj.헌법.num_students|intcomma }}</td>
                             {% for _ in '01234' %}
                                 {% cycle obj.피셋 obj.헌법 obj.언어 obj.자료 obj.상황 as stat silent %}
-                                {% partial td_statistics %}
+                                <td class="text-nowrap p-2 td-right-no-border">
+                                    {{ stat.max_score|floatformat:1 }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {{ stat.top_score_10|floatformat:1 }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {{ stat.top_score_20|floatformat:1 }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border">
+                                    {{ stat.avg_score|floatformat:1 }}
+                                </td>
                             {% endfor %}
                         </tr>
                     {% endfor %}
@@ -81,11 +127,5 @@
             </tbody>
         </table>
     </article>
-</div>
-
-{% partialdef td_statistics %}
-    <td class="text-nowrap p-2 td-right-no-border">{{ stat.max_score|floatformat:1 }}</td>
-    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ stat.top_score_10|floatformat:1 }}</td>
-    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ stat.top_score_20|floatformat:1 }}</td>
-    <td class="text-nowrap p-2 td-left-no-border">{{ stat.avg_score|floatformat:1 }}</td>
-{% endpartialdef %}
+    {% include 'predict/v1/admin/snippets/detail_pagination.html' %}
+{% endpartialdef table_data %}

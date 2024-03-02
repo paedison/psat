@@ -122,29 +122,35 @@ class DetailView(
             'icon_nav': self.ICON_NAV,
             'icon_search': self.ICON_SEARCH,
 
-            # score statistics
-            'statistics': self.statistics,
+            # statistics
+            'statistics_page_obj': self.statistics_page_obj,
+            'statistics_page_range': self.statistics_page_range,
+            'statistics_pagination_url': self.statistics_pagination_url,
 
-            # answer analysis
+            'statistics_virtual_page_obj': self.statistics_virtual_page_obj,
+            'statistics_virtual_page_range': self.statistics_virtual_page_range,
+            'statistics_virtual_pagination_url': self.statistics_virtual_pagination_url,
+
+            # answer count analysis
             'answer_count_analysis': self.answer_count_analysis,
 
-            # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-            'student_ids': self.student_ids,
+            # catalog
+            'catalog_page_obj': self.catalog_page_obj,
+            'catalog_page_range': self.catalog_page_range,
+            'catalog_pagination_url': self.catalog_pagination_url,
 
-            # urls
-            'base_url': self.base_url,
-            'pagination_url': self.pagination_url,
+            'catalog_virtual_page_obj': self.catalog_virtual_page_obj,
+            'catalog_virtual_page_range': self.catalog_virtual_page_range,
+            'catalog_virtual_pagination_url': self.catalog_virtual_pagination_url,
         }
 
 
-class CatalogView(
+class StatisticsView(
     admin_view_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
-    template_name = 'predict/v1/admin/snippets/detail_catalog.html'
+    template_name = 'predict/v1/admin/snippets/detail_statistics.html#real'
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
@@ -160,13 +166,108 @@ class CatalogView(
             'round': self.round,
 
             # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-            'student_ids': self.student_ids,
+            'statistics_page_obj': self.statistics_page_obj,
+            'statistics_page_range': self.statistics_page_range,
+            'statistics_pagination_url': self.statistics_pagination_url,
 
-            # urls
-            'base_url': self.base_url,
-            'pagination_url': self.pagination_url,
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+            'icon_search': self.ICON_SEARCH,
+        }
+
+
+class StatisticsVirtualView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.DetailViewMixin,
+    vanilla.TemplateView
+):
+    template_name = 'predict/v1/admin/snippets/detail_statistics.html#virtual'
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            # base info
+            'category': self.category,
+            'year': self.year,
+            'ex': self.ex,
+            'round': self.round,
+
+            # page objectives
+            'statistics_virtual_page_obj': self.statistics_virtual_page_obj,
+            'statistics_virtual_page_range': self.statistics_virtual_page_range,
+            'statistics_virtual_pagination_url': self.statistics_virtual_pagination_url,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+            'icon_search': self.ICON_SEARCH,
+        }
+
+
+class CatalogView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.DetailViewMixin,
+    vanilla.TemplateView
+):
+    template_name = 'predict/v1/admin/snippets/detail_catalog.html#real'
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            # base info
+            'category': self.category,
+            'year': self.year,
+            'ex': self.ex,
+            'round': self.round,
+
+            # page objectives
+            'catalog_page_obj': self.catalog_page_obj,
+            'catalog_page_range': self.catalog_page_range,
+            'catalog_pagination_url': self.catalog_pagination_url,
+
+            # icons
+            'icon_menu': self.ICON_MENU['score'],
+            'icon_subject': self.ICON_SUBJECT,
+            'icon_nav': self.ICON_NAV,
+            'icon_search': self.ICON_SEARCH,
+        }
+
+
+class CatalogVirtualView(
+    admin_view_mixins.OnlyStaffAllowedMixin,
+    admin_view_mixins.DetailViewMixin,
+    vanilla.TemplateView
+):
+    template_name = 'predict/v1/admin/snippets/detail_catalog.html#virtual'
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+
+        return {
+            # base info
+            'category': self.category,
+            'year': self.year,
+            'ex': self.ex,
+            'round': self.round,
+
+            # page objectives
+            'catalog_virtual_page_obj': self.catalog_virtual_page_obj,
+            'catalog_virtual_page_range': self.catalog_virtual_page_range,
+            'catalog_virtual_pagination_url': self.catalog_virtual_pagination_url,
 
             # icons
             'icon_menu': self.ICON_MENU['score'],
@@ -378,7 +479,10 @@ update_answer = UpdateAnswer.as_view()
 update_score = UpdateScore.as_view()
 update_statistics = UpdateStatistics.as_view()
 
+statistics_view = StatisticsView.as_view()
+statistics_virtual_view = StatisticsVirtualView.as_view()
 catalog_view = CatalogView.as_view()
+catalog_virtual_view = CatalogVirtualView.as_view()
 
 print_view = PrintView.as_view()
 # individual_student_print_view = IndividualStudentPrintView.as_view()
