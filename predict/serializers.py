@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    Student, Answer, AnswerCount, Statistics
+    Student, Answer, AnswerCount, Statistics, StatisticsVirtual
 )
 
 
@@ -80,5 +80,5 @@ class PredictStatisticsSerializer(serializers.ModelSerializer):
 
 class PredictStatisticsVirtualSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Statistics
+        model = StatisticsVirtual
         fields = '__all__'
