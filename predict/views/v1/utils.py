@@ -286,11 +286,27 @@ def get_score_stat_sub(queryset) -> dict:
 
     score_list_all = list(queryset.values(
         'score_eoneo', 'score_jaryo', 'score_sanghwang', 'score_psat_avg', 'score_heonbeob'))
-    score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
-    score_list_eoneo = [s['score_eoneo'] for s in score_list_all]
-    score_list_jaryo = [s['score_jaryo'] for s in score_list_all]
-    score_list_sanghwang = [s['score_sanghwang'] for s in score_list_all]
-    score_psat_avg = [s['score_psat_avg'] for s in score_list_all]
+    score_list_heonbeob = []
+    score_list_eoneo = []
+    score_list_jaryo = []
+    score_list_sanghwang = []
+    score_psat_avg = []
+    for s in score_list_all:
+        if s['score_heonbeob']:
+            score_list_heonbeob.append(s)
+        if s['score_eoneo']:
+            score_list_eoneo.append(s)
+        if s['score_jaryo']:
+            score_list_jaryo.append(s)
+        if s['score_sanghwang']:
+            score_list_sanghwang.append(s)
+        if s['score_psat_avg']:
+            score_psat_avg.append(s)
+    # score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
+    # score_list_eoneo = [s['score_eoneo'] for s in score_list_all]
+    # score_list_jaryo = [s['score_jaryo'] for s in score_list_all]
+    # score_list_sanghwang = [s['score_sanghwang'] for s in score_list_all]
+    # score_psat_avg = [s['score_psat_avg'] for s in score_list_all]
 
     top_score_heonbeob = get_top_score(score_list_heonbeob)
     top_score_eoneo = get_top_score(score_list_eoneo)

@@ -113,7 +113,9 @@
                             <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
                             <td class="text-nowrap p-2">{{ obj.student.department_id|get_department }}</td>
 
-                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_psat|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">
+                                {{ obj.score_psat|floatformat:1 }}
+                            </td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score_psat_avg|floatformat:1 }}</td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_psat|default:'' }}</td>
                             <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_psat|percentage|floatformat:1 }}</td>
@@ -215,8 +217,12 @@
                             </td>
                             <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
                             <td class="text-nowrap p-2">{{ obj.student.department_id|get_department }}</td>
-                            <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_psat|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score_psat_avg|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-right-no-border">
+                                {{ obj.score_psat|floatformat:1 }}
+                            </td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                {{ obj.score_psat_avg|floatformat:1 }}
+                            </td>
                             <td class="text-nowrap p-2 td-right-no-border">
                                 {% if obj.score_heonbeob %}
                                     {{ obj.score_heonbeob|floatformat:1 }}

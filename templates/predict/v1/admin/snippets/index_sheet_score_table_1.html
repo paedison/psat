@@ -48,26 +48,12 @@
 {% partialdef sub_score_line %}
     <tr class="text-center {% if score_data.sub == '피셋' %}table-warning{% endif %}">
         <th class="text-nowrap" aria-label="과목">
-            {% if score_data.is_confirmed or score_data.sub == '피셋' %}
-                {{ score_data.icon|safe }} {{ score_data.subject }}
-            {% else %}
-                <a class="text-decoration-none"
-                   href="{% url 'predict_test:answer_input' score_data.sub %}" hx-boost="true">
-                    {{ score_data.icon|safe }} {{ score_data.subject }}
-                </a>
-            {% endif %}
+            {{ score_data.icon|safe }} {{ score_data.subject }}
         </th>
 
         {% if not score_data.is_confirmed %}
             <td colspan="5">
-                {% if score_data.sub == '피셋' %}
-                    <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
-                {% else %}
-                    <a hx-boost="true"
-                       href="{% url 'predict_test:answer_input' score_data.sub %}">
-                        <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
-                    </a>
-                {% endif %}
+                <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
             </td>
         {% else %}
             <td>

@@ -41,29 +41,18 @@
     <article class="table-responsive">
         <table class="table small align-middle">
             <tbody>
-                {% if not info_answer.is_confirmed %}
-                    <tr class="text-center">
-                        <th>
-                            <a class="btn btn-outline-danger my-4"
-                               href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
-                                답안을 제출해주세요.
-                            </a>
-                        </th>
-                    </tr>
+                {% if ex == '칠급' or answer_student|length == 25  %}
+                    {% for _ in '012' %}
+                        {% cycle 10 10 5 as loop_counter silent %}
+                        {% cycle 0 10 20 as loop_min silent %}
+                        {% partial answer_table_tr %}
+                    {% endfor %}
                 {% else %}
-                    {% if ex == '칠급' or answer_student|length == 25  %}
-                        {% for _ in '012' %}
-                            {% cycle 10 10 5 as loop_counter silent %}
-                            {% cycle 0 10 20 as loop_min silent %}
-                            {% partial answer_table_tr %}
-                        {% endfor %}
-                    {% else %}
-                        {% for _ in '0123' %}
-                            {% cycle 10 10 10 10 as loop_counter silent %}
-                            {% cycle 0 10 20 30 as loop_min silent %}
-                            {% partial answer_table_tr %}
-                        {% endfor %}
-                    {% endif %}
+                    {% for _ in '0123' %}
+                        {% cycle 10 10 10 10 as loop_counter silent %}
+                        {% cycle 0 10 20 30 as loop_min silent %}
+                        {% partial answer_table_tr %}
+                    {% endfor %}
                 {% endif %}
             </tbody>
         </table>

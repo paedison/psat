@@ -76,3 +76,9 @@ class PredictStatisticsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Statistics
         fields = '__all__'
+
+
+class PredictStatisticsVirtualSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Statistics
+        fields = '__all__'

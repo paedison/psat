@@ -109,16 +109,24 @@
                             {% for _ in '01234' %}
                                 {% cycle obj.피셋 obj.헌법 obj.언어 obj.자료 obj.상황 as stat silent %}
                                 <td class="text-nowrap p-2 td-right-no-border">
-                                    {{ stat.max_score|floatformat:1 }}
+                                    {% if stat.max_score %}
+                                        {{ stat.max_score|floatformat:1 }}
+                                    {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {{ stat.top_score_10|floatformat:1 }}
+                                    {% if stat.max_score %}
+                                        {{ stat.top_score_10|floatformat:1 }}
+                                    {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {{ stat.top_score_20|floatformat:1 }}
+                                    {% if stat.max_score %}
+                                        {{ stat.top_score_20|floatformat:1 }}
+                                    {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border">
-                                    {{ stat.avg_score|floatformat:1 }}
+                                    {% if stat.max_score %}
+                                        {{ stat.avg_score|floatformat:1 }}
+                                    {% endif %}
                                 </td>
                             {% endfor %}
                         </tr>
