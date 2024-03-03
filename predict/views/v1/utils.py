@@ -293,15 +293,15 @@ def get_score_stat_sub(queryset) -> dict:
     score_psat_avg = []
     for s in score_list_all:
         if s['score_heonbeob']:
-            score_list_heonbeob.append(s)
+            score_list_heonbeob.append(s['score_heonbeob'])
         if s['score_eoneo']:
-            score_list_eoneo.append(s)
+            score_list_eoneo.append(s['score_eoneo'])
         if s['score_jaryo']:
-            score_list_jaryo.append(s)
+            score_list_jaryo.append(s['score_jaryo'])
         if s['score_sanghwang']:
-            score_list_sanghwang.append(s)
+            score_list_sanghwang.append(s['score_sanghwang'])
         if s['score_psat_avg']:
-            score_psat_avg.append(s)
+            score_psat_avg.append(s['score_psat_avg'])
     # score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
     # score_list_eoneo = [s['score_eoneo'] for s in score_list_all]
     # score_list_jaryo = [s['score_jaryo'] for s in score_list_all]
