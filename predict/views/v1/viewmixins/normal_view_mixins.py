@@ -55,9 +55,12 @@ class IndexViewMixIn(
             self.all_score_stat = get_all_score_stat_sub_dict(self.get_statistics_qs, self.student)
             self.score_student = self.get_score_student(statistics_student)
             self.update_info_answer_student()
-            if statistics_student.student.statistics_virtual.updated_at < self.exam.answer_open_datetime:
-                self.filtered_all_score_stat = get_all_score_stat_sub_dict(self.get_filtered_statistics_qs, self.student)
-                self.filtered_score_student = self.get_filtered_score_student(statistics_student)
+            if statistics_student.student.statistics_virtual:
+                final_update_datetime = statistics_student.student.statistics_virtual.updated_at
+                if final_update_datetime < self.exam.answer_open_datetime:
+                    self.filtered_all_score_stat = get_all_score_stat_sub_dict(
+                        self.get_filtered_statistics_qs, self.student)
+                    self.filtered_score_student = self.get_filtered_score_student(statistics_student)
 
     def get_location(self):
         if self.student:
