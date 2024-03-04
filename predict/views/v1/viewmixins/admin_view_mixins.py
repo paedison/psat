@@ -747,20 +747,16 @@ class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
             self.answer_count_model.objects.all(), many=True)
         statistics_serializer = serializers.PredictStatisticsSerializer(
             self.statistics_model.objects.all(), many=True)
-        statistics_virtual_serializer = serializers.PredictStatisticsVirtualSerializer(
-            self.statistics_virtual_model.objects.all(), many=True)
 
         data_student = student_serializer.data
         data_answer = answer_serializer.data
         data_answer_count = answer_count_serializer.data
         data_statistics = statistics_serializer.data
-        data_statistics_virtual = statistics_virtual_serializer.data
 
         df_student = pd.DataFrame(data_student)
         df_answer = pd.DataFrame(data_answer)
         df_answer_count = pd.DataFrame(data_answer_count)
         df_statistics = pd.DataFrame(data_statistics)
-        df_statistics_virtual = pd.DataFrame(data_statistics_virtual)
 
         sheet_key_predict = config["sheet_key_predict"]
         workbook = gc.open_by_key(sheet_key_predict)
@@ -769,13 +765,11 @@ class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
         worksheet_answer = workbook.worksheet('answer')
         worksheet_answer_count = workbook.worksheet('answer_count')
         worksheet_statistics = workbook.worksheet('statistics')
-        worksheet_statistics_virtual = workbook.worksheet('statistics_virtual')
 
         worksheet_student.clear()
         worksheet_answer.clear()
         worksheet_answer_count.clear()
         worksheet_statistics.clear()
-        worksheet_statistics_virtual.clear()
 
         worksheet_student.update(
             [df_student.columns.values.tolist()] + df_student.values.tolist()
@@ -788,7 +782,4 @@ class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
         )
         worksheet_statistics.update(
             [df_statistics.columns.values.tolist()] + df_statistics.values.tolist()
-        )
-        worksheet_statistics_virtual.update(
-            [df_statistics_virtual.columns.values.tolist()] + df_statistics_virtual.values.tolist()
         )
