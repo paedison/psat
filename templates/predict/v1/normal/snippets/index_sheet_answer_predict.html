@@ -41,6 +41,8 @@
             {% if current_time < exam.answer_predict_open_datetime %}
                 <li>예상 정답은 답안 수집 후 {{ exam.answer_predict_open_datetime|date:'G시 i분' }}부터
                     {{ exam.answer_open_datetime|date:'G시 i분' }}까지만 공개됩니다.</li>
+            {% else %}
+                <li>{{ current_time|date:'Y년 n월 j일 G:i' }} 기준 예상 정답입니다.</li>
             {% endif %}
             <li>전체 참여자 중 가장 많은 분들이 선택한 답안을 예상 정답으로 선정합니다.</li>
             <li>정확도 = 예상 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>

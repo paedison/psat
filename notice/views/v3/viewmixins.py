@@ -137,7 +137,7 @@ class PostViewMixin(BaseMixin):
         """ Get filtered queryset for list view. """
         fq = self.model.objects.filter(top_fixed=top_fixed)
         fq = fq.filter(category=self.category) if self.category != '0' else fq
-        if not self.request.user.is_authenticated or not self.request.user.is_admin:
+        if not self.request.user.is_authenticated or not self.request.user.is_staff:
             fq = fq.filter(is_hidden=False)
         return fq
 
