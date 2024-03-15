@@ -1,13 +1,9 @@
-{% extends 'predict/v1/normal/predict_base.html' %}
+{% extends 'predict/v1/predict_base.html' %}
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
 {% load partials %}
 {% load slippers %}
-
-{% block page_image %}
-<meta property="og:image" content="{% static 'image/predict/cover_psat_og.jpg' %}"/>
-{% endblock page_image %}
 
 {% block main %}
 {% partialdef index_main inline=True %} {# index_main partial #}

@@ -1,4 +1,4 @@
-{% extends 'predict/v1/predict_base.html' %}
+{% extends 'score/predict_v1/predict_base.html' %}
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
@@ -37,15 +37,9 @@
          hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <div class="row">
         <div class="col-12">
-            <div id="exam_list" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-                {% include 'predict/v1/admin/snippets/list_exam_list.html' %}
-            </div>
-        </div>
-
-        <div class="col-12">
             <div id="student_list" class="card htmx-fade-in htmx-fade-out"
                  hx-target="#student_list" hx-swap="innerHTML swap:0.25s">
-                {% include 'predict/v1/admin/snippets/list_student_list.html' %}
+                {% include 'predict/v1/analysis/snippets/list_student_list.html' %}
             </div>
         </div>
     </div>

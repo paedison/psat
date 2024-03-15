@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from .models import (
-    Student, Answer, AnswerCount, Statistics, StatisticsVirtual
-)
+
+from . import models
 
 
 class CustomStringField(serializers.CharField):
@@ -13,7 +12,7 @@ class CustomStringField(serializers.CharField):
 
 class PredictStudentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Student
+        model = models.Student
         fields = '__all__'
 
 
@@ -60,7 +59,7 @@ class PredictAnswerSerializer(serializers.ModelSerializer):
     prob40 = CustomStringField()
 
     class Meta:
-        model = Answer
+        model = models.Answer
         fields = '__all__'
 
 
@@ -68,17 +67,25 @@ class PredictAnswerCountSerializer(serializers.ModelSerializer):
     answer = CustomStringField()
 
     class Meta:
-        model = AnswerCount
+        model = models.AnswerCount
+        fields = '__all__'
+
+
+class PredictAnswerCountTopRankSerializer(serializers.ModelSerializer):
+    answer = CustomStringField()
+
+    class Meta:
+        model = models.AnswerCountTopRank
         fields = '__all__'
 
 
 class PredictStatisticsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Statistics
+        model = models.Statistics
         fields = '__all__'
 
 
 class PredictStatisticsVirtualSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StatisticsVirtual
+        model = models.StatisticsVirtual
         fields = '__all__'

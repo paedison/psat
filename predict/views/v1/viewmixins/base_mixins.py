@@ -2,7 +2,10 @@ import csv
 import os
 
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import F
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 
 from common.models import User
 from predict import forms as predict_forms
@@ -31,6 +34,7 @@ class BaseMixin:
     student_model = predict_models.Student
     answer_model = predict_models.Answer
     answer_count_model = predict_models.AnswerCount
+    answer_count_top_rank_model = predict_models.AnswerCountTopRank
     statistics_model = predict_models.Statistics
     statistics_virtual_model = predict_models.StatisticsVirtual
     location_model = predict_models.Location
@@ -333,3 +337,15 @@ class AdminBaseMixin(BaseMixin):
                 statistics_dict.update(get_score_stat_korean(qs_list['queryset']))
                 score_statistics_list.append(statistics_dict)
             return score_statistics_list
+
+
+class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):
+    request: any
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def handle_no_permission(self):
+        return HttpResponseRedirect(reverse_lazy('predict_test:index'))
+
+

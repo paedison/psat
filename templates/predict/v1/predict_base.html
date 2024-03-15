@@ -2,6 +2,9 @@
 {% load static %}
 
 {% block head_title %}{{ sub_title }}{% endblock %}
+{% block page_image %}
+<meta property="og:image" content="{% static 'image/predict/cover_psat_og.jpg' %}"/>
+{% endblock page_image %}
 
 {% block main %}
 {% endblock main %}

@@ -1,3 +1,3 @@
 from .predict_models import (
-    Exam, Student, Answer, AnswerCount, Statistics, StatisticsVirtual, Location,
+    Exam, Student, Answer, AnswerCount, AnswerCountTopRank, Statistics, StatisticsVirtual, Location,
 )

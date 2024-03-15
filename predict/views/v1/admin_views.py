@@ -3,11 +3,11 @@ from django.utils import timezone
 
 from .normal_views import IndexView
 from .utils import get_all_score_stat_sub_dict
-from .viewmixins import admin_view_mixins
+from .viewmixins import admin_view_mixins, base_mixins
 
 
 class ListView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
@@ -55,7 +55,7 @@ class ListView(
 
 
 class ListStudentView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
@@ -87,7 +87,7 @@ class ListStudentView(
 
 
 class DetailView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
@@ -146,7 +146,7 @@ class DetailView(
 
 
 class StatisticsView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
@@ -179,7 +179,7 @@ class StatisticsView(
 
 
 class StatisticsVirtualView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
@@ -212,7 +212,7 @@ class StatisticsVirtualView(
 
 
 class CatalogView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
@@ -245,7 +245,7 @@ class CatalogView(
 
 
 class CatalogVirtualView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
@@ -278,7 +278,7 @@ class CatalogVirtualView(
 
 
 class IndividualIndexView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     IndexView,
 ):
     template_name = 'predict/v1/admin/predict_individual_index.html'
@@ -347,7 +347,7 @@ class PrintView(
 
 
 class UpdateAnswer(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.UpdateAnswerMixin,
     vanilla.TemplateView,
 ):
@@ -366,7 +366,7 @@ class UpdateAnswer(
 
 
 class UpdateScore(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.UpdateScoreMixin,
     vanilla.TemplateView,
 ):
@@ -387,7 +387,7 @@ class UpdateScore(
 
 
 class UpdateStatistics(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.UpdateStatisticsMixin,
     vanilla.TemplateView,
 ):
@@ -411,7 +411,7 @@ class UpdateStatistics(
 
 
 class ExportStatisticsToExcelView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ExportStatisticsToExcelMixin,
     vanilla.View,
 ):
@@ -422,7 +422,7 @@ class ExportStatisticsToExcelView(
 
 
 class ExportAnalysisToExcelView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ExportAnalysisToExcelMixin,
     vanilla.View,
 ):
@@ -433,7 +433,7 @@ class ExportAnalysisToExcelView(
 
 
 class ExportScoresToExcelView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ExportScoresToExcelMixin,
     vanilla.View,
 ):
@@ -444,7 +444,7 @@ class ExportScoresToExcelView(
 
 
 class ExportTranscriptToPdfView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ExportTranscriptToPdfViewMixin,
     vanilla.View,
 ):
@@ -452,7 +452,7 @@ class ExportTranscriptToPdfView(
 
 
 class ExportPredictDataToGoogleSheetView(
-    admin_view_mixins.OnlyStaffAllowedMixin,
+    base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.ExportPredictDataToGoogleSheetMixin,
     vanilla.TemplateView,
 ):

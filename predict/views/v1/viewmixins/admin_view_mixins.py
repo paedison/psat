@@ -9,12 +9,11 @@ import gspread
 import pandas as pd
 import pdfkit
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, Window
 from django.db.models.functions import Rank, PercentRank
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -23,16 +22,6 @@ from common.models import User
 from predict import serializers
 from .base_mixins import AdminBaseMixin
 from ..utils import get_dict_by_sub
-
-
-class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):
-    request: any
-
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def handle_no_permission(self):
-        return HttpResponseRedirect(reverse_lazy('prime:list'))
 
 
 class ListViewMixin(ConstantIconSet, AdminBaseMixin):
@@ -745,17 +734,21 @@ class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
             self.answer_model.objects.all(), many=True)
         answer_count_serializer = serializers.PredictAnswerCountSerializer(
             self.answer_count_model.objects.all(), many=True)
+        answer_count_top_rank_serializer = serializers.PredictAnswerCountTopRankSerializer(
+            self.answer_count_top_rank_model.objects.all(), many=True)
         statistics_serializer = serializers.PredictStatisticsSerializer(
             self.statistics_model.objects.all(), many=True)
 
         data_student = student_serializer.data
         data_answer = answer_serializer.data
         data_answer_count = answer_count_serializer.data
+        data_answer_count_top_rank = answer_count_top_rank_serializer.data
         data_statistics = statistics_serializer.data
 
         df_student = pd.DataFrame(data_student)
         df_answer = pd.DataFrame(data_answer)
         df_answer_count = pd.DataFrame(data_answer_count)
+        df_answer_count_top_rank = pd.DataFrame(data_answer_count_top_rank)
         df_statistics = pd.DataFrame(data_statistics)
 
         sheet_key_predict = config["sheet_key_predict"]
@@ -764,11 +757,13 @@ class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
         worksheet_student = workbook.worksheet('student')
         worksheet_answer = workbook.worksheet('answer')
         worksheet_answer_count = workbook.worksheet('answer_count')
+        worksheet_answer_count_top_rank = workbook.worksheet('answer_count_top_rank')
         worksheet_statistics = workbook.worksheet('statistics')
 
         worksheet_student.clear()
         worksheet_answer.clear()
         worksheet_answer_count.clear()
+        worksheet_answer_count_top_rank.clear()
         worksheet_statistics.clear()
 
         worksheet_student.update(
@@ -779,6 +774,9 @@ class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
         )
         worksheet_answer_count.update(
             [df_answer_count.columns.values.tolist()] + df_answer_count.values.tolist()
+        )
+        worksheet_answer_count_top_rank.update(
+            [df_answer_count_top_rank.columns.values.tolist()] + df_answer_count_top_rank.values.tolist()
         )
         worksheet_statistics.update(
             [df_statistics.columns.values.tolist()] + df_statistics.values.tolist()
