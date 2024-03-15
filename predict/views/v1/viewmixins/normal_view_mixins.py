@@ -10,9 +10,9 @@ from ..utils import get_all_ranks_dict, get_all_score_stat_sub_dict
 
 
 class IndexViewMixIn(
-    ConstantIconSet,
-    base_mixins.PredictExamInfo,
     base_mixins.NormalBaseMixin,
+    base_mixins.PredictExamInfo,
+    ConstantIconSet,
 ):
     answer_student_status: dict  # 과목별 답안 제출 완료 여부
     participant_count: dict  # 과목별 총 참여자 수

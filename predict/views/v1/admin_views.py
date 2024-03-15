@@ -1,4 +1,5 @@
 import vanilla
+from django.urls import reverse_lazy
 from django.utils import timezone
 
 from .normal_views import IndexView
@@ -156,7 +157,13 @@ class StatisticsView(
         return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
+        super(admin_view_mixins.DetailViewMixin, self).get_properties()
+
+        statistics = self.get_detail_statistics()
+        self.statistics_page_obj, self.statistics_page_range = self.get_paginator_info(statistics)
+        stat_base_url = reverse_lazy(
+            'predict_test_admin:statistics', args=[self.category, self.year, self.ex, self.round])
+        self.statistics_pagination_url = f'{stat_base_url}?'
 
         return {
             # base info
@@ -189,7 +196,13 @@ class StatisticsVirtualView(
         return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
+        super(admin_view_mixins.DetailViewMixin, self).get_properties()
+
+        statistics_virtual = self.get_detail_statistics('virtual')
+        self.statistics_virtual_page_obj, self.statistics_virtual_page_range = self.get_paginator_info(statistics_virtual)
+        stat_virtual_base_url = reverse_lazy(
+            'predict_test_admin:statistics_virtual', args=[self.category, self.year, self.ex, self.round])
+        self.statistics_virtual_pagination_url = f'{stat_virtual_base_url}?'
 
         return {
             # base info
@@ -222,7 +235,13 @@ class CatalogView(
         return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
+        super(admin_view_mixins.DetailViewMixin, self).get_properties()
+
+        all_stat = self.get_all_stat()
+        self.catalog_page_obj, self.catalog_page_range = self.get_paginator_info(all_stat)
+        catalog_base_url = reverse_lazy(
+            'predict_test_admin:catalog', args=[self.category, self.year, self.ex, self.round])
+        self.catalog_pagination_url = f'{catalog_base_url}?'
 
         return {
             # base info
@@ -255,7 +274,13 @@ class CatalogVirtualView(
         return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
+        super(admin_view_mixins.DetailViewMixin, self).get_properties()
+
+        all_virtual_stat = self.get_all_virtual_stat()
+        self.catalog_virtual_page_obj, self.catalog_virtual_page_range = self.get_paginator_info(all_virtual_stat)
+        catalog_virtual_base_url = reverse_lazy(
+            'predict_test_admin:catalog_virtual', args=[self.category, self.year, self.ex, self.round])
+        self.catalog_virtual_pagination_url = f'{catalog_virtual_base_url}?'
 
         return {
             # base info

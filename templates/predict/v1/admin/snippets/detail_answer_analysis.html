@@ -42,20 +42,24 @@
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap p-2" rowspan="2">문제<br/>번호</th>
-                    <th class="text-primary text-nowrap p-2" rowspan="2">정답</th>
-                    <th class="text-primary text-nowrap p-2" rowspan="2">전체<br/>정답률(%)</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">공식<br/>정답</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">예상<br/>정답</th>
-                    <th class="text-primary text-nowrap p-2" rowspan="2">정확도<br/>(%)</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">전체<br/>정답률(%)</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">상위권<br/>정답률(%)</th>
                     {% if sub == '헌법' %}
-                        <th class="text-primary text-nowrap p-2" colspan="4">답안 선택수(명)</th>
-                        <th class="text-primary text-nowrap p-2" colspan="4">답안 선택률(%)</th>
+                        <th class="text-primary text-nowrap p-2" colspan="4">답안 선택수(명)-전체</th>
+                        <th class="text-primary text-nowrap p-2" colspan="4">답안 선택률(%)-전체</th>
+                        <th class="text-primary text-nowrap p-2" colspan="4">답안 선택수(명)-상위권</th>
+                        <th class="text-primary text-nowrap p-2" colspan="4">답안 선택률(%)-상위권</th>
                     {% else %}
-                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)</th>
-                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)</th>
+                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)-전체</th>
+                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)-전체</th>
+                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)-상위권</th>
+                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)-상위권</th>
                     {% endif %}
                 </tr>
                 <tr class="text-center table-warning align-middle">
-                    {% for _ in '12' %}
+                    {% for _ in '1234' %}
                         <th class="text-primary text-nowrap p-2 td-right-no-border">①</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">②</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">③</th>
@@ -77,7 +81,6 @@
                                 {{ problem.answer_correct }}
                             </button>
                         </td>
-                        <td>{{ problem.rate_correct|floatformat:1 }}</td>
                         <td>
                             {% if problem.answer_predict == problem.answer_correct %}
                                 <button class="btn btn-circle btn-sm fs-6 btn-success">
@@ -89,7 +92,8 @@
                                 </button>
                             {% endif %}
                         </td>
-                        <td>{{ problem.rate_accuracy|floatformat:1 }}</td>
+                        <td>{{ problem.rate_correct|floatformat:1 }}</td>
+                        <td>{{ problem.top_rank_rate_correct|floatformat:1 }}</td>
 
                         <td class="td-right-no-border">{{ problem.count_1 }}</td>
                         <td class="td-left-no-border td-right-no-border">{{ problem.count_2 }}</td>
@@ -109,6 +113,26 @@
                         {% else %}
                             <td class="td-left-no-border td-right-no-border">{{ problem.rate_4|floatformat:1 }}</td>
                             <td class="td-left-no-border">{{ problem.rate_5|floatformat:1 }}</td>
+                        {% endif %}
+
+                        <td class="td-right-no-border">{{ problem.top_rank_count_1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_count_2 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_count_3 }}</td>
+                        {% if sub == '헌법' %}
+                            <td class="td-left-no-border">{{ problem.top_rank_count_4 }}</td>
+                        {% else %}
+                            <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_count_4 }}</td>
+                            <td class="td-left-no-border">{{ problem.top_rank_count_5 }}</td>
+                        {% endif %}
+
+                        <td class="td-right-no-border">{{ problem.top_rank_rate_1|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_rate_2|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_rate_3|floatformat:1 }}</td>
+                        {% if sub == '헌법' %}
+                            <td class="td-left-no-border">{{ problem.top_rank_rate_4|floatformat:1 }}</td>
+                        {% else %}
+                            <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_rate_4|floatformat:1 }}</td>
+                            <td class="td-left-no-border">{{ problem.top_rank_rate_5|floatformat:1 }}</td>
                         {% endif %}
                     </tr>
                 {% endfor %}

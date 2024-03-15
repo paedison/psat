@@ -24,7 +24,7 @@ from .base_mixins import AdminBaseMixin
 from ..utils import get_dict_by_sub
 
 
-class ListViewMixin(ConstantIconSet, AdminBaseMixin):
+class ListViewMixin(AdminBaseMixin, ConstantIconSet):
     sub_title: str
     exam_page_obj: any
     exam_page_range: any
@@ -84,7 +84,7 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
         return participant_list
 
 
-class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
+class DetailViewMixin(AdminBaseMixin, ConstantIconSet):
     sub_title: str
 
     statistics_page_obj: any
@@ -142,31 +142,42 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
         return f'{self.year}년 {self.exam.exam} 성적 예측'
 
     def get_answer_count_analysis(self):
+        field_keys = [
+            'sub', 'number',
+            'count_total', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0',
+            'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5', 'rate_0', 'rate_None'
+        ]
         answer_count = (
             self.answer_count_model.objects
-            .filter(exam=self.exam).order_by('sub', 'number')
-            .values(
-                'sub', 'number',
-                'count_total', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0',
-                'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5', 'rate_0', 'rate_None')
+            .filter(exam=self.exam).order_by('sub', 'number').values(*field_keys)
+        )
+        answer_count_top_rank = (
+            self.answer_count_top_rank_model.objects
+            .filter(exam=self.exam).order_by('sub', 'number').values(*field_keys)
         )
         answer_correct_dict = self.get_answer_correct_dict()
 
-        for problem in answer_count:
+        for index, problem in enumerate(answer_count):
             sub = problem['sub']  # 과목
             number = problem['number']  # 문제 번호
             ans_number_correct = answer_correct_dict[sub][number - 1]['ans_number']
 
+            top_rank_problem = answer_count_top_rank[index]
+
             if ans_number_correct in range(1, 6):
                 rate_correct = problem[f'rate_{ans_number_correct}']
+                top_rank_rate_correct = top_rank_problem[f'rate_{ans_number_correct}']
             else:
                 answer_correct_list = [int(digit) for digit in str(ans_number_correct)]
                 try:
                     rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
+                    top_rank_rate_correct = sum(top_rank_problem[f'rate_{ans}'] for ans in answer_correct_list)
                 except TypeError:
                     rate_correct = 0
+                    top_rank_rate_correct = 0
             problem['answer_correct'] = ans_number_correct
             problem['rate_correct'] = rate_correct
+            problem['top_rank_rate_correct'] = top_rank_rate_correct
 
             answer_count_list = []  # list for counting answers
             for i in range(5):
@@ -176,6 +187,11 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
             rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
             problem['answer_predict'] = ans_number_predict
             problem['rate_accuracy'] = rate_accuracy
+
+            for field in field_keys:
+                if field != 'sub' and field != 'number':
+                    top_rank_field = f'top_rank_{field}'
+                    problem[top_rank_field] = top_rank_problem[field]
 
         return get_dict_by_sub(answer_count)
 
@@ -205,7 +221,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
             return None, None
 
 
-class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
+class IndexViewMixin(AdminBaseMixin, ConstantIconSet):
     sub_title: str
     current_category: str
     category_list: list
@@ -275,7 +291,7 @@ class IndexViewMixin(ConstantIconSet, AdminBaseMixin):
         return page_obj, page_range, student_ids
 
 
-class UpdateAnswerMixin(ConstantIconSet, AdminBaseMixin):
+class UpdateAnswerMixin(AdminBaseMixin, ConstantIconSet):
     def update_answer(self):
         update_list = []
         create_list = []
@@ -331,7 +347,7 @@ class UpdateAnswerMixin(ConstantIconSet, AdminBaseMixin):
         return message
 
 
-class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
+class UpdateScoreMixin(AdminBaseMixin, ConstantIconSet):
     def update_score(self):
         update_list = []
         create_list = []
@@ -413,7 +429,7 @@ class UpdateScoreMixin(ConstantIconSet, AdminBaseMixin):
         return score_field_dict
 
 
-class UpdateStatisticsMixin(ConstantIconSet, AdminBaseMixin):
+class UpdateStatisticsMixin(AdminBaseMixin, ConstantIconSet):
     annotation_keys = [
         'total_eoneo',
         'total_jaryo',
@@ -715,7 +731,7 @@ class ExportTranscriptToPdfViewMixin(IndexViewMixin):
         return response
 
 
-class ExportPredictDataToGoogleSheetMixin(ConstantIconSet, AdminBaseMixin):
+class ExportPredictDataToGoogleSheetMixin(AdminBaseMixin, ConstantIconSet):
     def export_data(self):
         # Load credentials from JSON file
         base_dir = settings.BASE_DIR
