@@ -276,7 +276,7 @@ class CatalogVirtualView(
     def get_context_data(self, **kwargs) -> dict:
         super(admin_view_mixins.DetailViewMixin, self).get_properties()
 
-        all_virtual_stat = self.get_all_virtual_stat()
+        all_virtual_stat = self.get_all_stat('virtual')
         self.catalog_virtual_page_obj, self.catalog_virtual_page_range = self.get_paginator_info(all_virtual_stat)
         catalog_virtual_base_url = reverse_lazy(
             'predict_test_admin:catalog_virtual', args=[self.category, self.year, self.ex, self.round])

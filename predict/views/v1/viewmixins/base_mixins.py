@@ -33,8 +33,12 @@ class BaseMixin:
     exam_model = predict_models.Exam
     student_model = predict_models.Student
     answer_model = predict_models.Answer
+
     answer_count_model = predict_models.AnswerCount
     answer_count_top_rank_model = predict_models.AnswerCountTopRank
+    answer_count_middle_rank_model = predict_models.AnswerCountMiddleRank
+    answer_count_low_rank_model = predict_models.AnswerCountLowRank
+
     statistics_model = predict_models.Statistics
     statistics_virtual_model = predict_models.StatisticsVirtual
     location_model = predict_models.Location

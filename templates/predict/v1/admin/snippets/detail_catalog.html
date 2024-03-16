@@ -59,7 +59,6 @@
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap p-2" rowspan="3">ID</th>
-                    <th class="text-primary text-nowrap p-2" rowspan="3">구분</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">등수</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">이름</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
@@ -97,21 +96,16 @@
                 {% if page_obj %}
                     {% for obj in page_obj %}
                         <tr class="text-center">
-                            <td class="text-nowrap p-2">{{ obj.student.id }}</td>
-                            <td class="text-nowrap p-2">
-                                {% if obj.student.category is not None %}
-                                    {{ obj.student.category }}
-                                {% endif %}
-                            </td>
+                            <td class="text-nowrap p-2">{{ obj.student_id }}</td>
                             <td class="text-nowrap p-2">{{ obj.rank_total_psat|default:'' }}</td>
                             <td class="text-nowrap p-2">
-                                <a href="{% url 'predict_test_admin:individual' category year ex round obj.student.user_id %}"
+                                <a href="{% url 'predict_test_admin:individual' category year ex round obj.user_id %}"
                                    hx-boost="true" hx-push-url="true">
-                                    {{ obj.student.name }}
+                                    {{ obj.name }}
                                 </a>
                             </td>
-                            <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
-                            <td class="text-nowrap p-2">{{ obj.student.department_id|get_department }}</td>
+                            <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                            <td class="text-nowrap p-2">{{ obj.department_name }}</td>
 
                             <td class="text-nowrap p-2 td-right-no-border">
                                 {{ obj.score_psat|floatformat:1 }}
@@ -184,7 +178,6 @@
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap p-2" rowspan="2">ID</th>
-                    <th class="text-primary text-nowrap p-2" rowspan="2">구분</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">이름</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">수험번호</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
@@ -203,20 +196,15 @@
                 {% if page_obj %}
                     {% for obj in page_obj %}
                         <tr class="text-center">
-                            <td class="text-nowrap p-2">{{ obj.student.id }}</td>
+                            <td class="text-nowrap p-2">{{ obj.student_id }}</td>
                             <td class="text-nowrap p-2">
-                                {% if obj.student.category is not None %}
-                                    {{ obj.student.category }}
-                                {% endif %}
-                            </td>
-                            <td class="text-nowrap p-2">
-                                <a href="{% url 'predict_test_admin:individual' category year ex round obj.student.user_id %}"
+                                <a href="{% url 'predict_test_admin:individual' category year ex round obj.user_id %}"
                                    hx-boost="true" hx-push-url="true">
-                                    {{ obj.student.name }}
+                                    {{ obj.name }}
                                 </a>
                             </td>
-                            <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
-                            <td class="text-nowrap p-2">{{ obj.student.department_id|get_department }}</td>
+                            <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                            <td class="text-nowrap p-2">{{ obj.department_name }}</td>
                             <td class="text-nowrap p-2 td-right-no-border">
                                 {{ obj.score_psat|floatformat:1 }}
                             </td>

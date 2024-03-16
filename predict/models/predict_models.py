@@ -165,6 +165,44 @@ class AnswerCountTopRank(base_models.AnswerCountBase):
         return SUB_CHOICES[self.sub]
 
 
+class AnswerCountMiddleRank(base_models.AnswerCountBase):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='answer_counts_middle_rank')
+    sub = models.CharField(max_length=2, choices=SUB_CHOICES)
+    number = models.IntegerField()
+    answer = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "중위권 성적 예측 답안 개수"
+        verbose_name_plural = "중위권 성적 예측 답안 개수"
+
+    def __str__(self):
+        return (f'[AnswerCountTopRank#{self.id}]{self.exam.category}'
+                f'-{self.exam.year}{self.exam.ex}{self.exam.round}{self.sub}-{self.number}')
+
+    @property
+    def subject(self):
+        return SUB_CHOICES[self.sub]
+
+
+class AnswerCountLowRank(base_models.AnswerCountBase):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='answer_counts_low_rank')
+    sub = models.CharField(max_length=2, choices=SUB_CHOICES)
+    number = models.IntegerField()
+    answer = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "하위권 성적 예측 답안 개수"
+        verbose_name_plural = "하위권 성적 예측 답안 개수"
+
+    def __str__(self):
+        return (f'[AnswerCountTopRank#{self.id}]{self.exam.category}'
+                f'-{self.exam.year}{self.exam.ex}{self.exam.round}{self.sub}-{self.number}')
+
+    @property
+    def subject(self):
+        return SUB_CHOICES[self.sub]
+
+
 class Statistics(base_models.StatisticsBase):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='statistics')
 
