@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.paginator import Paginator
 from django.db.models import F
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -240,6 +241,7 @@ class AdminBaseMixin(BaseMixin):
     user_list: list
     department_list: dict
     student_list: list
+    exam_list: list
 
     def get_properties(self):
         self.category = self.kwargs.get('category')
@@ -251,6 +253,7 @@ class AdminBaseMixin(BaseMixin):
         self.user_list = User.objects.values()
         self.department_list = self.get_department_list()
         self.student_list = self.get_student_list()
+        self.exam_list = self.exam_model.objects.all()
 
     def get_department_list(self):
         return (
@@ -319,18 +322,13 @@ class AdminBaseMixin(BaseMixin):
                 )
             return statistics_qs_list
 
-    def get_detail_statistics(self, model_type=None) -> list:
-        score_statistics_list = []
+    def get_detail_statistics(self, model_type=None) -> tuple:
         statistics_qs_list = self.get_statistics_qs_list(model_type)
-        if statistics_qs_list:
-            for qs_list in statistics_qs_list:
-                statistics_dict = {
-                    'unit': qs_list['unit'],
-                    'department': qs_list['department'],
-                }
-                statistics_dict.update(get_score_stat_sub(qs_list['queryset']))
-                score_statistics_list.append(statistics_dict)
-            return score_statistics_list
+        page_obj, page_range = self.get_paginator_info(statistics_qs_list)
+        if page_obj:
+            for qs_list in page_obj:
+                qs_list.update(get_score_stat_sub(qs_list['queryset']))
+        return page_obj, page_range
 
     def get_excel_statistics(self) -> list:
         score_statistics_list = []
@@ -341,6 +339,17 @@ class AdminBaseMixin(BaseMixin):
                 statistics_dict.update(get_score_stat_korean(qs_list['queryset']))
                 score_statistics_list.append(statistics_dict)
             return score_statistics_list
+
+    def get_paginator_info(self, page_data, per_page=10) -> tuple:
+        """ Get paginator, elided page range, and collect the evaluation info. """
+        page_number = self.request.GET.get('page', 1)
+        paginator = Paginator(page_data, per_page)
+        try:
+            page_obj = paginator.get_page(page_number)
+            page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+            return page_obj, page_range
+        except TypeError:
+            return None, None
 
 
 class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):

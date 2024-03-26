@@ -1,5 +1,4 @@
 import vanilla
-from django.urls import reverse_lazy
 from django.utils import timezone
 
 from .normal_views import IndexView
@@ -26,32 +25,28 @@ class ListView(
 
     def get_context_data(self, **kwargs) -> dict:
         self.get_properties()
+        exam_list = self.exam_model.objects.all()
+        exam_page_obj, exam_page_range = self.get_paginator_info(exam_list)
+        student_page_obj, student_page_range = self.get_paginator_info(self.student_list)
 
         return {
             # base info
             'info': self.info,
             'title': 'Score',
-            'sub_title': self.sub_title,
+            'sub_title': '성적 예측 [관리자 페이지]',
             'exam_list': self.exam_list,
 
             # icons
             'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
 
             # exam_list
-            'exam_page_obj': self.exam_page_obj,
-            'exam_page_range': self.exam_page_range,
+            'exam_page_obj': exam_page_obj,
+            'exam_page_range': exam_page_range,
 
             # student_list
-            'student_page_obj': self.student_page_obj,
-            'student_page_range': self.student_page_range,
-            'student_base_url': self.student_base_url,
-            'student_pagination_url': self.student_pagination_url,
-
-            #
-            # # participant_list
-            # 'participant_page_obj': self.participant_page_obj,
-            # 'participant_page_range': self.participant_page_range,
+            'student_page_obj': student_page_obj,
+            'student_page_range': student_page_range,
+            'student_pagination_url': self.get_url('list_student'),
         }
 
 
@@ -67,23 +62,11 @@ class ListStudentView(
 
     def get_context_data(self, **kwargs) -> dict:
         self.get_properties()
-
+        student_page_obj, student_page_range = self.get_paginator_info(self.student_list)
         return {
-            # base info
-            'info': self.info,
-            'title': 'Score',
-            'sub_title': self.sub_title,
-            'exam_list': self.exam_list,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-
-            # student_list
-            'student_page_obj': self.student_page_obj,
-            'student_page_range': self.student_page_range,
-            'student_base_url': self.student_base_url,
-            'student_pagination_url': self.student_pagination_url,
+            'student_page_obj': student_page_obj,
+            'student_page_range': student_page_range,
+            'student_pagination_url': self.get_url('list_student'),
         }
 
 
@@ -106,6 +89,10 @@ class DetailView(
 
     def get_context_data(self, **kwargs) -> dict:
         self.get_properties()
+        statistics_page_obj, statistics_page_range = self.get_detail_statistics()
+        heonbeob_page_obj, heonbeob_page_range = self.get_sub_answer_count('헌법')
+        all_stat = self.get_all_stat()
+        catalog_page_obj, catalog_page_range = self.get_paginator_info(all_stat)
 
         return {
             # base info
@@ -115,7 +102,7 @@ class DetailView(
             'ex': self.ex,
             'round': self.round,
             'title': 'Score',
-            'sub_title': self.sub_title,
+            'sub_title': self.get_sub_title(),
 
             # icons
             'icon_menu': self.ICON_MENU['score'],
@@ -124,125 +111,117 @@ class DetailView(
             'icon_search': self.ICON_SEARCH,
 
             # statistics
-            'statistics_page_obj': self.statistics_page_obj,
-            'statistics_page_range': self.statistics_page_range,
-            'statistics_pagination_url': self.statistics_pagination_url,
-
-            'statistics_virtual_page_obj': self.statistics_virtual_page_obj,
-            'statistics_virtual_page_range': self.statistics_virtual_page_range,
-            'statistics_virtual_pagination_url': self.statistics_virtual_pagination_url,
+            'statistics_page_obj': statistics_page_obj,
+            'statistics_page_range': statistics_page_range,
+            'statistics_pagination_url': self.get_url('statistics'),
 
             # answer count analysis
-            'answer_count_analysis': self.answer_count_analysis,
+            'heonbeob_page_obj': heonbeob_page_obj,
+            'heonbeob_page_range': heonbeob_page_range,
+            'heonbeob_pagination_url': self.get_url('answer_count_heonbeob'),
 
             # catalog
-            'catalog_page_obj': self.catalog_page_obj,
-            'catalog_page_range': self.catalog_page_range,
-            'catalog_pagination_url': self.catalog_pagination_url,
-
-            'catalog_virtual_page_obj': self.catalog_virtual_page_obj,
-            'catalog_virtual_page_range': self.catalog_virtual_page_range,
-            'catalog_virtual_pagination_url': self.catalog_virtual_pagination_url,
+            'catalog_page_obj': catalog_page_obj,
+            'catalog_page_range': catalog_page_range,
+            'catalog_pagination_url': self.get_url('catalog'),
         }
 
 
-class StatisticsView(
+class DetailPartialView(
     base_mixins.OnlyStaffAllowedMixin,
     admin_view_mixins.DetailViewMixin,
     vanilla.TemplateView
 ):
+
+    def post(self, request, *args, **kwargs):
+        return self.get(self, request, *args, **kwargs)
+
+
+class StatisticsView(DetailPartialView):
     template_name = 'predict/v1/admin/snippets/detail_statistics.html#real'
 
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
     def get_context_data(self, **kwargs) -> dict:
-        super(admin_view_mixins.DetailViewMixin, self).get_properties()
-
-        statistics = self.get_detail_statistics()
-        self.statistics_page_obj, self.statistics_page_range = self.get_paginator_info(statistics)
-        stat_base_url = reverse_lazy(
-            'predict_test_admin:statistics', args=[self.category, self.year, self.ex, self.round])
-        self.statistics_pagination_url = f'{stat_base_url}?'
-
+        self.get_properties()
+        statistics_page_obj, statistics_page_range = self.get_detail_statistics()
         return {
-            # base info
-            'category': self.category,
-            'year': self.year,
-            'ex': self.ex,
-            'round': self.round,
-
-            # page objectives
-            'statistics_page_obj': self.statistics_page_obj,
-            'statistics_page_range': self.statistics_page_range,
-            'statistics_pagination_url': self.statistics_pagination_url,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-            'icon_search': self.ICON_SEARCH,
+            'statistics_page_obj': statistics_page_obj,
+            'statistics_page_range': statistics_page_range,
+            'statistics_pagination_url': self.get_url('statistics'),
         }
 
 
-class StatisticsVirtualView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.DetailViewMixin,
-    vanilla.TemplateView
-):
+class StatisticsVirtualView(DetailPartialView):
     template_name = 'predict/v1/admin/snippets/detail_statistics.html#virtual'
 
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
     def get_context_data(self, **kwargs) -> dict:
-        super(admin_view_mixins.DetailViewMixin, self).get_properties()
-
-        statistics_virtual = self.get_detail_statistics('virtual')
-        self.statistics_virtual_page_obj, self.statistics_virtual_page_range = self.get_paginator_info(statistics_virtual)
-        stat_virtual_base_url = reverse_lazy(
-            'predict_test_admin:statistics_virtual', args=[self.category, self.year, self.ex, self.round])
-        self.statistics_virtual_pagination_url = f'{stat_virtual_base_url}?'
-
+        self.get_properties()
+        statistics_virtual_page_obj, statistics_virtual_page_range = self.get_detail_statistics('virtual')
         return {
-            # base info
-            'category': self.category,
-            'year': self.year,
-            'ex': self.ex,
-            'round': self.round,
-
-            # page objectives
-            'statistics_virtual_page_obj': self.statistics_virtual_page_obj,
-            'statistics_virtual_page_range': self.statistics_virtual_page_range,
-            'statistics_virtual_pagination_url': self.statistics_virtual_pagination_url,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-            'icon_search': self.ICON_SEARCH,
+            'statistics_virtual_page_obj': statistics_virtual_page_obj,
+            'statistics_virtual_page_range': statistics_virtual_page_range,
+            'statistics_virtual_pagination_url': self.get_url('statistics_virtual'),
         }
 
 
-class CatalogView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.DetailViewMixin,
-    vanilla.TemplateView
-):
+class AnswerCountHeonbeobView(DetailPartialView):
+    template_name = 'predict/v1/admin/snippets/detail_answer_analysis.html#heonbeob'
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+        heonbeob_page_obj, heonbeob_page_range = self.get_sub_answer_count('헌법')
+        return {
+            'heonbeob_page_obj': heonbeob_page_obj,
+            'heonbeob_page_range': heonbeob_page_range,
+            'heonbeob_pagination_url': self.get_url('answer_count_heonbeob'),
+        }
+
+
+class AnswerCountEoneoView(DetailPartialView):
+    template_name = 'predict/v1/admin/snippets/detail_answer_analysis.html#eoneo'
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+        eoneo_page_obj, eoneo_page_range = self.get_sub_answer_count('언어')
+        return {
+            'eoneo_page_obj': eoneo_page_obj,
+            'eoneo_page_range': eoneo_page_range,
+            'eoneo_pagination_url': self.get_url('answer_count_eoneo'),
+        }
+
+
+class AnswerCountJaryoView(DetailPartialView):
+    template_name = 'predict/v1/admin/snippets/detail_answer_analysis.html#jaryo'
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+        jaryo_page_obj, jaryo_page_range = self.get_sub_answer_count('자료')
+        return {
+            'jaryo_page_obj': jaryo_page_obj,
+            'jaryo_page_range': jaryo_page_range,
+            'jaryo_pagination_url': self.get_url('answer_count_jaryo'),
+        }
+
+
+class AnswerCountSanghwangView(DetailPartialView):
+    template_name = 'predict/v1/admin/snippets/detail_answer_analysis.html#sanghwang'
+
+    def get_context_data(self, **kwargs) -> dict:
+        self.get_properties()
+        sanghwang_page_obj, sanghwang_page_range = self.get_sub_answer_count('상황')
+        return {
+            'sanghwang_page_obj': sanghwang_page_obj,
+            'sanghwang_page_range': sanghwang_page_range,
+            'sanghwang_pagination_url': self.get_url('answer_count_sanghwang'),
+        }
+
+
+class CatalogView(DetailPartialView):
     template_name = 'predict/v1/admin/snippets/detail_catalog.html#real'
 
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
     def get_context_data(self, **kwargs) -> dict:
-        super(admin_view_mixins.DetailViewMixin, self).get_properties()
-
+        self.get_properties()
         all_stat = self.get_all_stat()
-        self.catalog_page_obj, self.catalog_page_range = self.get_paginator_info(all_stat)
-        catalog_base_url = reverse_lazy(
-            'predict_test_admin:catalog', args=[self.category, self.year, self.ex, self.round])
-        self.catalog_pagination_url = f'{catalog_base_url}?'
-
+        catalog_page_obj, catalog_page_range = self.get_paginator_info(all_stat)
         return {
             # base info
             'category': self.category,
@@ -251,37 +230,19 @@ class CatalogView(
             'round': self.round,
 
             # page objectives
-            'catalog_page_obj': self.catalog_page_obj,
-            'catalog_page_range': self.catalog_page_range,
-            'catalog_pagination_url': self.catalog_pagination_url,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-            'icon_search': self.ICON_SEARCH,
+            'catalog_page_obj': catalog_page_obj,
+            'catalog_page_range': catalog_page_range,
+            'catalog_pagination_url': self.get_url('catalog'),
         }
 
 
-class CatalogVirtualView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.DetailViewMixin,
-    vanilla.TemplateView
-):
+class CatalogVirtualView(DetailPartialView):
     template_name = 'predict/v1/admin/snippets/detail_catalog.html#virtual'
 
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
     def get_context_data(self, **kwargs) -> dict:
-        super(admin_view_mixins.DetailViewMixin, self).get_properties()
-
+        self.get_properties()
         all_virtual_stat = self.get_all_stat('virtual')
-        self.catalog_virtual_page_obj, self.catalog_virtual_page_range = self.get_paginator_info(all_virtual_stat)
-        catalog_virtual_base_url = reverse_lazy(
-            'predict_test_admin:catalog_virtual', args=[self.category, self.year, self.ex, self.round])
-        self.catalog_virtual_pagination_url = f'{catalog_virtual_base_url}?'
-
+        catalog_virtual_page_obj, catalog_virtual_page_range = self.get_paginator_info(all_virtual_stat)
         return {
             # base info
             'category': self.category,
@@ -290,15 +251,9 @@ class CatalogVirtualView(
             'round': self.round,
 
             # page objectives
-            'catalog_virtual_page_obj': self.catalog_virtual_page_obj,
-            'catalog_virtual_page_range': self.catalog_virtual_page_range,
-            'catalog_virtual_pagination_url': self.catalog_virtual_pagination_url,
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-            'icon_search': self.ICON_SEARCH,
+            'catalog_virtual_page_obj': catalog_virtual_page_obj,
+            'catalog_virtual_page_range': catalog_virtual_page_range,
+            'catalog_virtual_pagination_url': self.get_url('catalog_virtual'),
         }
 
 
@@ -506,6 +461,12 @@ update_statistics = UpdateStatistics.as_view()
 
 statistics_view = StatisticsView.as_view()
 statistics_virtual_view = StatisticsVirtualView.as_view()
+
+answer_count_heonbeob_view = AnswerCountHeonbeobView.as_view()
+answer_count_eoneo_view = AnswerCountEoneoView.as_view()
+answer_count_jaryo_view = AnswerCountJaryoView.as_view()
+answer_count_sanghwang_view = AnswerCountSanghwangView.as_view()
+
 catalog_view = CatalogView.as_view()
 catalog_virtual_view = CatalogVirtualView.as_view()
 

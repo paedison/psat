@@ -15,6 +15,15 @@ urlpatterns = [
     path('<str:category>/<int:year>/<str:ex>/<int:round>/statistics_virtual/',
          admin_views.statistics_virtual_view, name='statistics_virtual'),
 
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/answer_count/헌법/',
+         admin_views.answer_count_heonbeob_view, name='answer_count_heonbeob'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/answer_count/언어/',
+         admin_views.answer_count_eoneo_view, name='answer_count_eoneo'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/answer_count/자료/',
+         admin_views.answer_count_jaryo_view, name='answer_count_jaryo'),
+    path('<str:category>/<int:year>/<str:ex>/<int:round>/answer_count/상황/',
+         admin_views.answer_count_sanghwang_view, name='answer_count_sanghwang'),
+
     path('<str:category>/<int:year>/<str:ex>/<int:round>/catalog/',
          admin_views.catalog_view, name='catalog'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/catalog_virtual/',

@@ -19,24 +19,72 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-            {% for id in '0123' %}
-                {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
-                {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
-                {% #nav_tab prefix=sub id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
-            {% endfor %}
+            <button id="navTabHeonbeob" class="nav-link p-2 active"
+                    type="button" role="tab" data-bs-toggle="tab" aria-selected="true"
+                    data-bs-target="#navContentHeonbeob" aria-controls="navContentHeonbeob">
+                <span class="fw-bold">{{ icon_subject.헌법|safe }} 헌법</span>
+            </button>
+            <button id="navTabEoneo" class="nav-link p-2"
+                    hx-get="{% url 'predict_test_admin:answer_count_eoneo' category year ex round %}"
+                    hx-trigger="load" hx-target="#navContentEoneo"
+                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
+                    data-bs-target="#navContentEoneo" aria-controls="navContentEoneo">
+                <span class="fw-bold">{{ icon_subject.언어|safe }} 언어</span>
+            </button>
+            <button id="navTabJaryo" class="nav-link p-2"
+                    hx-get="{% url 'predict_test_admin:answer_count_jaryo' category year ex round %}"
+                    hx-trigger="load" hx-target="#navContentJaryo"
+                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
+                    data-bs-target="#navContentJaryo" aria-controls="navContentJaryo">
+                <span class="fw-bold">{{ icon_subject.자료|safe }} 자료</span>
+            </button>
+            <button id="navTabSanghwang" class="nav-link p-2"
+                    hx-get="{% url 'predict_test_admin:answer_count_sanghwang' category year ex round %}"
+                    hx-trigger="load" hx-target="#navContentSanghwang"
+                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
+                    data-bs-target="#navContentSanghwang" aria-controls="navContentSanghwang">
+                <span class="fw-bold">{{ icon_subject.상황|safe }} 상황</span>
+            </button>
         </div>
     </nav>
 
     <div class="tab-content" id="answerAnalysisContent">
-        {% for id in '0123' %}
-            {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
-            {% cycle answer_count_analysis.헌법 answer_count_analysis.언어 answer_count_analysis.자료 answer_count_analysis.상황 as answer_count silent %}
-            {% #nav_content prefix=sub id=id %}{% partial answer_analysis_table %}{% /nav_content %}
-        {% endfor %}
+        <div id="navContentHeonbeob" class="tab-pane fade show active htmx-fade-out"
+             role="tabpanel" aria-labelledby="navTabHeonbeob">
+            {% partialdef heonbeob inline=True %}
+                {% with page_obj=heonbeob_page_obj page_range=heonbeob_page_range pagination_url=heonbeob_pagination_url target_id='navContentHeonbeob' %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef heonbeob %}
+        </div>
+        <div id="navContentEoneo" class="tab-pane fade htmx-fade-out"
+             role="tabpanel" aria-labelledby="navTabEoneo">
+            {% partialdef eoneo inline=True %}
+                {% with page_obj=eoneo_page_obj page_range=eoneo_page_range pagination_url=eoneo_pagination_url target_id='navContentEoneo' %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef eoneo %}
+        </div>
+        <div id="navContentJaryo" class="tab-pane fade htmx-fade-out"
+             role="tabpanel" aria-labelledby="navTabJaryo">
+            {% partialdef jaryo inline=True %}
+                {% with page_obj=jaryo_page_obj page_range=jaryo_page_range pagination_url=jaryo_pagination_url target_id='navContentJaryo' %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef jaryo %}
+        </div>
+        <div id="navContentSanghwang" class="tab-pane fade htmx-fade-out"
+             role="tabpanel" aria-labelledby="navTabSanghwang">
+            {% partialdef sanghwang inline=True %}
+                {% with page_obj=sanghwang_page_obj page_range=sanghwang_page_range pagination_url=sanghwang_pagination_url target_id='navContentSanghwang' %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef sanghwang %}
+        </div>
     </div>
 </div>
 
-{% partialdef answer_analysis_table %}
+{% partialdef table_data %}
     <article class="table-responsive">
         <table class="table table-bordered table-striped small align-middle m-0">
             <thead>
@@ -84,7 +132,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for problem in answer_count %}
+                {% for problem in page_obj %}
                     <tr class="text-center">
                         <td>{{ problem.number }}</td>
                         <td>
@@ -193,4 +241,5 @@
             </tbody>
         </table>
     </article>
-{% endpartialdef answer_analysis_table %}
+    {% include 'predict/v1/admin/snippets/detail_pagination.html' %}
+{% endpartialdef table_data %}

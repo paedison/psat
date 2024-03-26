@@ -9,7 +9,6 @@ import gspread
 import pandas as pd
 import pdfkit
 from django.conf import settings
-from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, Window
 from django.db.models.functions import Rank, PercentRank
@@ -20,46 +19,16 @@ from oauth2client.service_account import ServiceAccountCredentials
 from common.constants.icon_set import ConstantIconSet
 from common.models import User
 from predict import serializers
+from predict.views.v1.utils import get_dict_by_sub
 from .base_mixins import AdminBaseMixin
-from ..utils import get_dict_by_sub
 
 
 class ListViewMixin(AdminBaseMixin, ConstantIconSet):
-    sub_title: str
-    exam_page_obj: any
-    exam_page_range: any
 
-    student_page_obj: any
-    student_page_range: any
-    student_base_url: str
-    student_pagination_url: str
-
-    exam_list: list
-    participant_list: dict
-    participant_page_obj: any
-    participant_page_range: any
-
-    def get_properties(self):
-        super().get_properties()
-
-        self.sub_title = f'관리자 페이지'
-        self.exam_list = self.exam_model.objects.all()
-        self.exam_page_obj, self.exam_page_range = self.get_paginator_info(self.exam_list)
-
-        self.student_page_obj, self.student_page_range = self.get_paginator_info(self.student_list)
-        self.student_base_url = reverse_lazy('predict_test_admin:list_student')
-        self.student_pagination_url = f'{self.student_base_url}?'
-
-        # self.participant_list = self.get_participant_list()
-        # self.participant_page_obj, self.participant_page_range = self.get_paginator_info(self.participant_list)
-
-    def get_paginator_info(self, data, per_page=10) -> tuple:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        paginator = Paginator(data, per_page)
-        page_obj = paginator.get_page(page_number)
-        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-        return page_obj, page_range
+    @staticmethod
+    def get_url(name):
+        base_url = reverse_lazy(f'predict_test_admin:{name}')
+        return f'{base_url}?'
 
     def get_participant_list(self):
         all_user_ids = self.student_model.objects.values('user_id').distinct()
@@ -85,94 +54,45 @@ class ListViewMixin(AdminBaseMixin, ConstantIconSet):
 
 
 class DetailViewMixin(AdminBaseMixin, ConstantIconSet):
-    sub_title: str
 
-    statistics_page_obj: any
-    statistics_page_range: any
-    statistics_pagination_url: str
-
-    statistics_virtual_page_obj: any
-    statistics_virtual_page_range: any
-    statistics_virtual_pagination_url: str
-
-    catalog_page_obj: any
-    catalog_page_range: any
-    catalog_pagination_url: str
-
-    catalog_virtual_page_obj: any
-    catalog_virtual_page_range: any
-    catalog_virtual_pagination_url: str
-
-    answer_count_analysis: dict
-
-    def get_properties(self):
-        super().get_properties()
-
-        self.sub_title = self.get_sub_title()
-
-        statistics = self.get_detail_statistics()
-        statistics_virtual = self.get_detail_statistics('virtual')
-        all_stat = self.get_all_stat()
-        all_virtual_stat = self.get_all_stat('virtual')
-
-        self.statistics_page_obj, self.statistics_page_range = self.get_paginator_info(statistics)
-        self.statistics_virtual_page_obj, self.statistics_virtual_page_range = self.get_paginator_info(statistics_virtual)
-        self.catalog_page_obj, self.catalog_page_range = self.get_paginator_info(all_stat)
-        self.catalog_virtual_page_obj, self.catalog_virtual_page_range = self.get_paginator_info(all_virtual_stat)
-
-        stat_base_url = reverse_lazy(
-            'predict_test_admin:statistics', args=[self.category, self.year, self.ex, self.round])
-        stat_virtual_base_url = reverse_lazy(
-            'predict_test_admin:statistics_virtual', args=[self.category, self.year, self.ex, self.round])
-        catalog_base_url = reverse_lazy(
-            'predict_test_admin:catalog', args=[self.category, self.year, self.ex, self.round])
-        catalog_virtual_base_url = reverse_lazy(
-            'predict_test_admin:catalog_virtual', args=[self.category, self.year, self.ex, self.round])
-
-        self.statistics_pagination_url = f'{stat_base_url}?'
-        self.statistics_virtual_pagination_url = f'{stat_virtual_base_url}?'
-        self.catalog_pagination_url = f'{catalog_base_url}?'
-        self.catalog_virtual_pagination_url = f'{catalog_virtual_base_url}?'
-
-        self.answer_count_analysis = self.get_answer_count_analysis()
+    def get_url(self, name):
+        base_url = reverse_lazy(
+            f'predict_test_admin:{name}', args=[self.category, self.year, self.ex, self.round])
+        return f'{base_url}?'
 
     def get_sub_title(self):
         if self.category == 'Prime':
             return f'제{self.round}회 {self.exam.exam} 성적 예측'
         return f'{self.year}년 {self.exam.exam} 성적 예측'
 
-    def get_answer_count_analysis(self):
+    def get_sub_answer_count(self, sub: str):
         field_keys = [
-            'sub', 'number',
+            'number',
             'count_total', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0',
             'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5', 'rate_0', 'rate_None'
         ]
-        answer_count = (
-            self.answer_count_model.objects
-            .filter(exam=self.exam).order_by('sub', 'number').values(*field_keys)
-        )
-        answer_count_top_rank = (
-            self.answer_count_top_rank_model.objects
-            .filter(exam=self.exam).order_by('sub', 'number').values(*field_keys)
-        )
-        answer_count_middle_rank = (
-            self.answer_count_middle_rank_model.objects
-            .filter(exam=self.exam).order_by('sub', 'number').values(*field_keys)
-        )
-        answer_count_low_rank = (
-            self.answer_count_low_rank_model.objects
-            .filter(exam=self.exam).order_by('sub', 'number').values(*field_keys)
-        )
+
+        def get_answer_count(model):
+            return model.objects.filter(exam=self.exam, sub=sub).order_by('number').values(*field_keys)
+
+        answer_count = list(get_answer_count(self.answer_count_model))
+        answer_count_top_rank = list(get_answer_count(self.answer_count_top_rank_model))
+        answer_count_middle_rank = list(get_answer_count(self.answer_count_middle_rank_model))
+        answer_count_low_rank = list(get_answer_count(self.answer_count_low_rank_model))
         answer_correct_dict = self.get_answer_correct_dict()
 
-        for index, problem in enumerate(answer_count):
-            sub = problem['sub']  # 과목
+        page_obj_total, page_range_total = self.get_paginator_info(answer_count)
+        page_obj_top, page_range_top = self.get_paginator_info(answer_count_top_rank)
+        page_obj_middle, page_range_middle = self.get_paginator_info(answer_count_middle_rank)
+        page_obj_low, page_range_low = self.get_paginator_info(answer_count_low_rank)
+
+        for index, problem in enumerate(page_obj_total):
             number = problem['number']  # 문제 번호
             ans_number_correct = answer_correct_dict[sub][number - 1]['ans_number']
 
-            problem_top_rank = answer_count_top_rank[index]
-            problem_middle_rank = answer_count_middle_rank[index]
-            problem_low_rank = answer_count_low_rank[index]
+            problem_top_rank = page_obj_top[index]
+            problem_middle_rank = page_obj_middle[index]
+            problem_low_rank = page_obj_low[index]
 
             if ans_number_correct in range(1, 6):
                 rate_correct = problem[f'rate_{ans_number_correct}']
@@ -192,6 +112,7 @@ class DetailViewMixin(AdminBaseMixin, ConstantIconSet):
                     rate_correct_middle_rank = 0
                     rate_correct_low_rank = 0
             problem['answer_correct'] = ans_number_correct
+
             problem['rate_correct'] = rate_correct
             problem['rate_correct_top_rank'] = rate_correct_top_rank
             problem['rate_correct_middle_rank'] = rate_correct_middle_rank
@@ -212,7 +133,7 @@ class DetailViewMixin(AdminBaseMixin, ConstantIconSet):
                     problem[f'middle_rank_{field}'] = problem_middle_rank[field]
                     problem[f'low_rank_{field}'] = problem_low_rank[field]
 
-        return get_dict_by_sub(answer_count)
+        return page_obj_total, page_range_total
 
     def get_all_stat(self, model_type=None):
         field_keys_score = [
@@ -270,17 +191,6 @@ class DetailViewMixin(AdminBaseMixin, ConstantIconSet):
             stat['username'] = username
         return stat_list
 
-    def get_paginator_info(self, page_data, per_page=20) -> tuple:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        paginator = Paginator(page_data, per_page)
-        try:
-            page_obj = paginator.get_page(page_number)
-            page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-            return page_obj, page_range
-        except TypeError:
-            return None, None
-
 
 class IndexViewMixin(AdminBaseMixin, ConstantIconSet):
     sub_title: str
@@ -336,20 +246,6 @@ class IndexViewMixin(AdminBaseMixin, ConstantIconSet):
         if self.current_category and self.current_category != '전체':
             return qs.filter(student__category=self.current_category)
         return qs
-
-    def get_paginator_info(self) -> tuple:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        all_stat = self.get_all_stat()
-        paginator = Paginator(all_stat, 20)
-        page_obj = paginator.get_page(page_number)
-        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-
-        student_ids = []
-        for obj in page_obj:
-            student_ids.append(obj.student.id)
-
-        return page_obj, page_range, student_ids
 
 
 class UpdateAnswerMixin(AdminBaseMixin, ConstantIconSet):
@@ -624,6 +520,73 @@ class ExportStatisticsToExcelMixin(AdminBaseMixin):
 
 
 class ExportAnalysisToExcelMixin(DetailViewMixin):
+    def get_answer_count_analysis(self):
+        field_keys = [
+            'sub', 'number',
+            'count_total', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0',
+            'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5', 'rate_0', 'rate_None'
+        ]
+
+        def get_answer_count(model):
+            return model.objects.filter(exam=self.exam).order_by('sub', 'number').values(*field_keys)
+
+        answer_count = list(get_answer_count(self.answer_count_model))
+        answer_count_top_rank = list(get_answer_count(self.answer_count_top_rank_model))
+        answer_count_middle_rank = list(get_answer_count(self.answer_count_middle_rank_model))
+        answer_count_low_rank = list(get_answer_count(self.answer_count_low_rank_model))
+
+        answer_correct_dict = self.get_answer_correct_dict()
+
+        for index, problem in enumerate(answer_count):
+            sub = problem['sub']  # 과목
+            number = problem['number']  # 문제 번호
+            ans_number_correct = answer_correct_dict[sub][number - 1]['ans_number']
+
+            problem_top_rank = answer_count_top_rank[index]
+            problem_middle_rank = answer_count_middle_rank[index]
+            problem_low_rank = answer_count_low_rank[index]
+
+            if ans_number_correct in range(1, 6):
+                rate_correct = problem[f'rate_{ans_number_correct}']
+                rate_correct_top_rank = problem_top_rank[f'rate_{ans_number_correct}']
+                rate_correct_middle_rank = problem_middle_rank[f'rate_{ans_number_correct}']
+                rate_correct_low_rank = problem_low_rank[f'rate_{ans_number_correct}']
+            else:
+                answer_correct_list = [int(digit) for digit in str(ans_number_correct)]
+                try:
+                    rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
+                    rate_correct_top_rank = sum(problem_top_rank[f'rate_{ans}'] for ans in answer_correct_list)
+                    rate_correct_middle_rank = sum(problem_middle_rank[f'rate_{ans}'] for ans in answer_correct_list)
+                    rate_correct_low_rank = sum(problem_low_rank[f'rate_{ans}'] for ans in answer_correct_list)
+                except TypeError:
+                    rate_correct = 0
+                    rate_correct_top_rank = 0
+                    rate_correct_middle_rank = 0
+                    rate_correct_low_rank = 0
+            problem['answer_correct'] = ans_number_correct
+
+            problem['rate_correct'] = rate_correct
+            problem['rate_correct_top_rank'] = rate_correct_top_rank
+            problem['rate_correct_middle_rank'] = rate_correct_middle_rank
+            problem['rate_correct_low_rank'] = rate_correct_low_rank
+
+            answer_count_list = []  # list for counting answers
+            for i in range(5):
+                ans_number = i + 1
+                answer_count_list.append(problem[f'count_{ans_number}'])
+            ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
+            rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
+            problem['answer_predict'] = ans_number_predict
+            problem['rate_accuracy'] = rate_accuracy
+
+            for field in field_keys:
+                if field != 'sub' and field != 'number':
+                    problem[f'top_rank_{field}'] = problem_top_rank[field]
+                    problem[f'middle_rank_{field}'] = problem_middle_rank[field]
+                    problem[f'low_rank_{field}'] = problem_low_rank[field]
+
+        return get_dict_by_sub(answer_count)
+
     def get(self, request, *args, **kwargs):
         self.get_properties()
 
@@ -644,10 +607,11 @@ class ExportAnalysisToExcelMixin(DetailViewMixin):
 
             return df
 
-        df_heonbeob = get_df(self.answer_count_analysis['헌법'])
-        df_eoneo = get_df(self.answer_count_analysis['언어'])
-        df_jaryo = get_df(self.answer_count_analysis['자료'])
-        df_sanghwang = get_df(self.answer_count_analysis['상황'])
+        answer_count_analysis = self.get_answer_count_analysis()
+        df_heonbeob = get_df(answer_count_analysis['헌법'])
+        df_eoneo = get_df(answer_count_analysis['언어'])
+        df_jaryo = get_df(answer_count_analysis['자료'])
+        df_sanghwang = get_df(answer_count_analysis['상황'])
 
         excel_data = io.BytesIO()
         with pd.ExcelWriter(excel_data, engine='xlsxwriter') as writer:

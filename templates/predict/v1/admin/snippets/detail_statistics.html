@@ -46,28 +46,37 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="statisticsTab" role="tablist">
-            {% for id in '01' %}
-                {% cycle 'Statistics' 'StatisticsVirtual' as prefix silent %}
-                {% cycle '실제 성적' '예상 성적' as title silent %}
-                {% #nav_tab prefix=prefix id=id %}{{ title }}{% /nav_tab %}
-            {% endfor %}
+            <button id="navTabStatistics" class="nav-link p-2 active"
+                    type="button" role="tab" data-bs-toggle="tab" aria-selected="true"
+                    data-bs-target="#navContentStatistics" aria-controls="navContentStatistics">
+                <span class="fw-bold">실제 성적</span>
+            </button>
+            <button id="navTabStatisticsVirtual" class="nav-link p-2"
+                    hx-get="{% url 'predict_test_admin:statistics_virtual' category year ex round %}"
+                    hx-trigger="load" hx-target="#navContentStatisticsVirtual"
+                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
+                    data-bs-target="#navContentStatisticsVirtual" aria-controls="navContentStatisticsVirtual">
+                <span class="fw-bold">예상 성적</span>
+            </button>
         </div>
     </nav>
     <div class="tab-content" id="statisticsContent">
-        {% #nav_content prefix='Statistics' id='0' %}
+        <div id="navContentStatistics" class="tab-pane fade show active htmx-fade-out"
+             role="tabpanel" aria-labelledby="navTabStatistics">
             {% partialdef real inline=True %}
-                {% with page_obj=statistics_page_obj page_range=statistics_page_range pagination_url=statistics_pagination_url target_id='navContentStatistics0' %}
+                {% with page_obj=statistics_page_obj page_range=statistics_page_range pagination_url=statistics_pagination_url target_id='navContentStatistics' %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef real %}
-        {% /nav_content %}
-        {% #nav_content prefix='StatisticsVirtual' id='1' %}
+        </div>
+        <div id="navContentStatisticsVirtual" class="tab-pane fade htmx-fade-out"
+             role="tabpanel" aria-labelledby="navTabStatisticsVirtual">
             {% partialdef virtual inline=True %}
-                {% with page_obj=statistics_virtual_page_obj page_range=statistics_virtual_page_range pagination_url=statistics_virtual_pagination_url target_id='navContentStatisticsVirtual1' %}
+                {% with page_obj=statistics_virtual_page_obj page_range=statistics_virtual_page_range pagination_url=statistics_virtual_pagination_url target_id='navContentStatisticsVirtual' %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef virtual %}
-        {% /nav_content %}
+        </div>
     </div>
 </div>
 

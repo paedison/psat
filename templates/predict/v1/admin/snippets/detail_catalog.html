@@ -28,28 +28,37 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="catalogTab" role="tablist">
-            {% for id in '01' %}
-                {% cycle 'Catalog' 'CatalogVirtual' as prefix silent %}
-                {% cycle '실제 성적' '예상 성적' as title silent %}
-                {% #nav_tab prefix=prefix id=id %}{{ title }}{% /nav_tab %}
-            {% endfor %}
+            <button id="navTabCatalog" class="nav-link p-2 active"
+                    type="button" role="tab" data-bs-toggle="tab" aria-selected="true"
+                    data-bs-target="#navContentCatalog" aria-controls="navContentCatalog">
+                <span class="fw-bold">실제 성적</span>
+            </button>
+            <button id="navTabCatalogVirtual" class="nav-link p-2"
+                    hx-get="{% url 'predict_test_admin:catalog_virtual' category year ex round %}"
+                    hx-trigger="load" hx-target="#navContentCatalogVirtual"
+                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
+                    data-bs-target="#navContentCatalogVirtual" aria-controls="navContentCatalogVirtual">
+                <span class="fw-bold">예상 성적</span>
+            </button>
         </div>
     </nav>
     <div class="tab-content" id="catalogContent">
-        {% #nav_content prefix='Catalog' id='0' %}
+        <div id="navContentCatalog" class="tab-pane fade show active htmx-fade-out"
+             role="tabpanel" aria-labelledby="navTabCatalog">
             {% partialdef real inline=True %}
-                {% with page_obj=catalog_page_obj page_range=catalog_page_range pagination_url=catalog_pagination_url target_id='navContentCatalog0' %}
+                {% with page_obj=catalog_page_obj page_range=catalog_page_range pagination_url=catalog_pagination_url target_id='navContentCatalog' %}
                     {% partial table_data_1 %}
                 {% endwith %}
             {% endpartialdef real %}
-        {% /nav_content %}
-        {% #nav_content prefix='CatalogVirtual' id='1' %}
+        </div>
+        <div id="navContentCatalogVirtual" class="tab-pane fade htmx-fade-out"
+             role="tabpanel" aria-labelledby="navTabCatalogVirtual">
             {% partialdef virtual inline=True %}
-                {% with page_obj=catalog_virtual_page_obj page_range=catalog_virtual_page_range pagination_url=catalog_virtual_pagination_url target_id='navContentCatalogVirtual1' %}
+                {% with page_obj=catalog_virtual_page_obj page_range=catalog_virtual_page_range pagination_url=catalog_virtual_pagination_url target_id='navContentCatalogVirtual' %}
                     {% partial table_data_2 %}
                 {% endwith %}
             {% endpartialdef virtual %}
-        {% /nav_content %}
+        </div>
     </div>
 </div>
 
@@ -62,6 +71,7 @@
                     <th class="text-primary text-nowrap p-2" rowspan="3">등수</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">이름</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="3">모집단위</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">직렬</th>
 
                     <th class="text-primary text-nowrap p-2" colspan="6">PSAT</th>
@@ -105,6 +115,7 @@
                                 </a>
                             </td>
                             <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                            <td class="text-nowrap p-2">{{ obj.unit_name }}</td>
                             <td class="text-nowrap p-2">{{ obj.department_name }}</td>
 
                             <td class="text-nowrap p-2 td-right-no-border">
