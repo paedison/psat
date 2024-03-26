@@ -1,13 +1,11 @@
 import io
 import json
 import traceback
-import zipfile
 from urllib.parse import quote
 
 import django.db.utils
 import gspread
 import pandas as pd
-import pdfkit
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F, Window
@@ -190,62 +188,6 @@ class DetailViewMixin(AdminBaseMixin, ConstantIconSet):
             stat['department_name'] = department_name
             stat['username'] = username
         return stat_list
-
-
-class IndexViewMixin(AdminBaseMixin, ConstantIconSet):
-    sub_title: str
-    current_category: str
-    category_list: list
-    search_student_name: str
-    statistics: list
-    page_obj: any
-    page_range: any
-    student_ids: list
-    base_url: str
-    pagination_url: str
-
-    def get_properties(self):
-        super().get_properties()
-
-        self.sub_title = f'제{self.exam.round}회 프라임 모의고사'
-
-        self.current_category = self.get_variable('category') or '전체'
-        self.category_list = self.get_category_list()
-        self.search_student_name = self.get_variable('student_name')
-
-        self.statistics = self.get_detail_statistics()
-
-        self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
-        self.base_url = reverse_lazy(
-            'prime_admin:catalog_year_round', args=[self.year, self.round])
-        self.pagination_url = f'{self.base_url}?category={self.current_category}'
-
-    def get_variable(self, variable: str) -> str:
-        variable_get = self.request.GET.get(variable, '')
-        variable_post = self.request.POST.get(variable, '')
-        if variable_get:
-            return variable_get
-        return variable_post
-
-    def get_category_list(self):
-        category_list = ['전체']
-        all_category = list(
-            self.student_model.objects.filter(year=self.year, round=self.round)
-            .order_by('category').values_list('category', flat=True).distinct()
-        )
-        category_list.extend(all_category)
-        return category_list
-
-    def get_all_stat(self):
-        qs = (
-            self.statistics_model.objects.filter(student__year=self.year, student__round=self.round)
-            .order_by('rank_total_psat')
-        )
-        if self.search_student_name:
-            return qs.filter(student__name=self.search_student_name)
-        if self.current_category and self.current_category != '전체':
-            return qs.filter(student__category=self.current_category)
-        return qs
 
 
 class UpdateAnswerMixin(AdminBaseMixin, ConstantIconSet):
@@ -706,51 +648,6 @@ class ExportScoresToExcelMixin(AdminBaseMixin):
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-
-        return response
-
-
-class ExportTranscriptToPdfViewMixin(IndexViewMixin):
-    page_number: int | str
-
-    def post(self, request, *args, **kwargs):
-        from score.views.prime_v2.admin_views import IndividualStudentPrintView
-        self.get_properties()
-
-        page_number = request.GET.get('page', 1)
-        exam_round = self.round
-
-        # Extract parameters from URL
-        student_ids = [int(student_id) for student_id in request.POST.get('student_ids').split(',')]
-
-        # Create a zip file to store the individual PDFs
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-            for student_id in student_ids:
-                student = self.student_model.objects.get(id=student_id)
-                student_name = student.name
-                student_serial = student.serial
-
-                html_content = IndividualStudentPrintView.as_view()(
-                    request, student_id=student_id, *args, **kwargs).rendered_content
-
-                # Convert HTML to PDF using pdfkit
-                options = {
-                    '--page-width': '297mm',
-                    '--page-height': '210mm',
-                }
-                pdf_file_path = f"제{exam_round}회_전국모의고사_{student_id}_{student_serial}_{student_name}.pdf"
-                pdf_content = pdfkit.from_string(html_content, False, options=options)
-
-                # Add the PDF to the zip file
-                zip_file.writestr(pdf_file_path, pdf_content)
-
-        filename = f'제{exam_round}회_전국모의고사_성적표_모음_{page_number}.zip'
-        filename = quote(filename)
-
-        # Create a response with the zipped content
-        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename={filename}'
 
         return response
 

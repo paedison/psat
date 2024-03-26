@@ -360,5 +360,3 @@ class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):
 
     def handle_no_permission(self):
         return HttpResponseRedirect(reverse_lazy('predict_test:index'))
-
-

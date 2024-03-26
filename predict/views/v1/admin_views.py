@@ -315,7 +315,6 @@ class PrintView(
         return self.get(self, request, *args, **kwargs)
 
     def get_context_data(self, **kwargs) -> dict:
-        self.answer_uploaded = True
         self.category = self.kwargs.get('category')
         self.year = self.kwargs.get('year')
         self.ex = self.kwargs.get('ex')
@@ -334,7 +333,6 @@ class UpdateAnswer(
     template_name = 'predict/v1/admin/snippets/predict_admin_modal.html#update'
 
     def get_context_data(self, **kwargs):
-        self.answer_uploaded = True
         self.category = self.kwargs.get('category')
         self.year = self.kwargs.get('year')
         self.ex = self.kwargs.get('ex')
@@ -353,17 +351,13 @@ class UpdateScore(
     template_name = 'predict/v1/admin/snippets/predict_admin_modal.html#update'
 
     def get_context_data(self, **kwargs):
-        self.answer_uploaded = True
         self.category = self.kwargs.get('category')
         self.year = self.kwargs.get('year')
         self.ex = self.kwargs.get('ex')
         self.round = self.kwargs.get('round')
 
         self.get_properties()
-
-        if self.answer_uploaded:
-            return {'message': self.update_score()}
-        return {'message': '답안이 공개되지 않았습니다.'}
+        return {'message': self.update_score()}
 
 
 class UpdateStatistics(
@@ -374,7 +368,6 @@ class UpdateStatistics(
     template_name = 'predict/v1/admin/snippets/predict_admin_modal.html#update'
 
     def get_context_data(self, **kwargs):
-        self.answer_uploaded = True
         self.category = self.kwargs.get('category')
         self.year = self.kwargs.get('year')
         self.ex = self.kwargs.get('ex')
@@ -382,12 +375,10 @@ class UpdateStatistics(
 
         self.get_properties()
 
-        if self.answer_uploaded:
-            return {
-                'message': self.update_statistics(),
-                'next_url': self.get_next_url()
-            }
-        return {'message': '답안이 공개되지 않았습니다.'}
+        return {
+            'message': self.update_statistics(),
+            'next_url': self.get_next_url()
+        }
 
 
 class ExportStatisticsToExcelView(
@@ -421,14 +412,6 @@ class ExportScoresToExcelView(
 
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-
-
-class ExportTranscriptToPdfView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.ExportTranscriptToPdfViewMixin,
-    vanilla.View,
-):
-    view_type = 'export'
 
 
 class ExportPredictDataToGoogleSheetView(
@@ -471,10 +454,7 @@ catalog_view = CatalogView.as_view()
 catalog_virtual_view = CatalogVirtualView.as_view()
 
 print_view = PrintView.as_view()
-# individual_student_print_view = IndividualStudentPrintView.as_view()
-
 export_statistics_to_excel_view = ExportStatisticsToExcelView.as_view()
 export_analysis_to_excel_view = ExportAnalysisToExcelView.as_view()
 export_scores_to_excel_view = ExportScoresToExcelView.as_view()
-export_transcript_to_pdf_view = ExportTranscriptToPdfView.as_view()
 export_predict_data_to_google_sheet_view = ExportPredictDataToGoogleSheetView.as_view()

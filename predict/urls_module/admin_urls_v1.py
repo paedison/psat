@@ -40,11 +40,6 @@ urlpatterns = [
          admin_views.update_statistics, name='update_statistics'),
 
     path('<str:category>/<int:year>/<str:ex>/<int:round>/print/', admin_views.print_view, name='print'),
-    # path('print/<int:year>/<int:round>/<int:student_id>',
-    #      admin_views.individual_student_print_view, name='individual_student_print'),
-
-    path('<str:category>/<int:year>/<str:ex>/<int:round>/export/transcript',
-         admin_views.export_transcript_to_pdf_view, name='export_transcript'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/statistics/',
          admin_views.export_statistics_to_excel_view, name='export_statistics'),
     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/analysis/',

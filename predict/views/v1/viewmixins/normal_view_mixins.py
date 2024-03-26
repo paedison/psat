@@ -1,5 +1,3 @@
-import datetime
-
 from django.db import transaction
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -385,7 +383,6 @@ class IndexViewMixIn(
             data['rank_ratio_department'] = getattr(statistics_student, f'rank_ratio_department_{sub_eng}')
 
         return score_student
-
 
     def update_info_answer_student(self):
         sub_field = {
