@@ -16,7 +16,7 @@ class Command(BaseCommand):
         parser.add_argument('year', type=str, help='Year: ex) 2024')
         parser.add_argument('ex', type=str, help='Ex: ex) 행시, 프모')
         parser.add_argument('round', type=str, help='Round: ex) 0, 1')
-        parser.add_argument('rank', type=str, help='Rank: ex) top, middle, low')
+        parser.add_argument('rank', type=str, help='Rank: ex) top, mid, low')
 
     def handle(self, *args, **kwargs):
         exam_category = kwargs['category']
@@ -38,9 +38,9 @@ class Command(BaseCommand):
             answer_count_rank_model_name = 'AnswerCountTopRank'
             rank_ratio_min = 0
             rank_ratio_max = 0.27
-        elif rank == 'middle':
-            answer_count_rank_model = predict_models.AnswerCountMiddleRank
-            answer_count_rank_model_name = 'AnswerCountMiddleRank'
+        elif rank == 'mid':
+            answer_count_rank_model = predict_models.AnswerCountMidRank
+            answer_count_rank_model_name = 'AnswerCountMidRank'
             rank_ratio_min = 0.27
             rank_ratio_max = 0.73
         elif rank == 'low':
@@ -127,7 +127,7 @@ class Command(BaseCommand):
                 message = f'Error occurred in {sub}.'
             self.stdout.write(self.style.SUCCESS(message))
 
+        update_answer_count('헌법')
         update_answer_count('언어')
         update_answer_count('자료')
         update_answer_count('상황')
-        update_answer_count('헌법')

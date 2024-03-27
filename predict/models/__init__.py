@@ -1,6 +1,6 @@
 from .predict_models import (
     Location,
     Exam, Student, Answer,
-    AnswerCount, AnswerCountTopRank, AnswerCountMiddleRank, AnswerCountLowRank,
+    AnswerCount, AnswerCountTopRank, AnswerCountMidRank, AnswerCountLowRank,
     Statistics, StatisticsVirtual,
 )

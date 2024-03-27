@@ -36,9 +36,9 @@ class BaseMixin:
     answer_model = predict_models.Answer
 
     answer_count_model = predict_models.AnswerCount
-    answer_count_top_rank_model = predict_models.AnswerCountTopRank
-    answer_count_middle_rank_model = predict_models.AnswerCountMiddleRank
-    answer_count_low_rank_model = predict_models.AnswerCountLowRank
+    answer_count_top_model = predict_models.AnswerCountTopRank
+    answer_count_mid_model = predict_models.AnswerCountMidRank
+    answer_count_low_model = predict_models.AnswerCountLowRank
 
     statistics_model = predict_models.Statistics
     statistics_virtual_model = predict_models.StatisticsVirtual
@@ -238,6 +238,12 @@ class NormalBaseMixin(BaseMixin):
 
 
 class AdminBaseMixin(BaseMixin):
+    answer_count_field_keys = [
+        'sub', 'number',
+        'count_total', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0',
+        'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5', 'rate_0', 'rate_None',
+    ]
+
     user_list: list
     department_list: dict
     student_list: list

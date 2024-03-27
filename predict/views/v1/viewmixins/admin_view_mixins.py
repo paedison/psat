@@ -63,75 +63,91 @@ class DetailViewMixin(AdminBaseMixin, ConstantIconSet):
             return f'제{self.round}회 {self.exam.exam} 성적 예측'
         return f'{self.year}년 {self.exam.exam} 성적 예측'
 
+    def get_answer_count_dict(self, sub=None):
+        def get_answer_count(model) -> list:
+            if sub:
+                queryset = model.objects.filter(exam=self.exam, sub=sub).order_by('sub', 'number')
+            else:
+                queryset = model.objects.filter(exam=self.exam).order_by('number')
+            return list(queryset.values(*self.answer_count_field_keys))
+
+        return {
+            'all': get_answer_count(self.answer_count_model),
+            'top': get_answer_count(self.answer_count_top_model),
+            'mid': get_answer_count(self.answer_count_mid_model),
+            'low': get_answer_count(self.answer_count_low_model),
+        }
+
+    def update_problem_rate(self, problem, obj_top, obj_mid, obj_low, ans_number_correct, index):
+        def get_problem(obj, obj_index):
+            return obj[obj_index] if len(obj) else None
+
+        def sum_rate_correct(prob, answer_list):
+            return sum(prob[f'rate_{ans}'] for ans in answer_list)
+
+        problem_top = get_problem(obj_top, index)
+        problem_mid = get_problem(obj_mid, index)
+        problem_low = get_problem(obj_low, index)
+        rate_correct_top = rate_correct_mid = rate_correct_low = 0
+
+        if ans_number_correct in range(1, 6):
+            rate_correct = problem[f'rate_{ans_number_correct}']
+            if problem_top and problem_mid and problem_low:
+                rate_correct_top = problem_top[f'rate_{ans_number_correct}']
+                rate_correct_mid = problem_mid[f'rate_{ans_number_correct}']
+                rate_correct_low = problem_low[f'rate_{ans_number_correct}']
+        else:
+            answer_correct_list = [int(digit) for digit in str(ans_number_correct)]
+            rate_correct = sum_rate_correct(problem, answer_correct_list)
+            if problem_top and problem_mid and problem_low:
+                rate_correct_top = sum_rate_correct(problem_top, answer_correct_list)
+                rate_correct_mid = sum_rate_correct(problem_mid, answer_correct_list)
+                rate_correct_low = sum_rate_correct(problem_low, answer_correct_list)
+
+        problem['rate_correct'] = rate_correct
+        problem['rate_correct_top'] = rate_correct_top
+        problem['rate_correct_mid'] = rate_correct_mid
+        problem['rate_correct_low'] = rate_correct_low
+        problem['rate_correct_gap'] = rate_correct_top - rate_correct_low
+
+        answer_count_list = []  # list for counting answers
+        for i in range(5):
+            answer_count_list.append(problem[f'count_{i + 1}'])
+
+        ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
+        rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
+
+        problem['answer_predict'] = ans_number_predict
+        problem['rate_accuracy'] = rate_accuracy
+
+        for field in self.answer_count_field_keys:
+            if field != 'sub' and field != 'number' and problem_top and problem_mid and problem_low:
+                problem[f'{field}_top'] = problem_top[field]
+                problem[f'{field}_mid'] = problem_mid[field]
+                problem[f'{field}_low'] = problem_low[field]
+
     def get_sub_answer_count(self, sub: str):
-        field_keys = [
-            'number',
-            'count_total', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0',
-            'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5', 'rate_0', 'rate_None'
-        ]
+        answer_count_dict = self.get_answer_count_dict(sub)
+        answer_count = answer_count_dict['all']
+        answer_count_top = answer_count_dict['top']
+        answer_count_mid = answer_count_dict['mid']
+        answer_count_low = answer_count_dict['low']
 
-        def get_answer_count(model):
-            return model.objects.filter(exam=self.exam, sub=sub).order_by('number').values(*field_keys)
-
-        answer_count = list(get_answer_count(self.answer_count_model))
-        answer_count_top_rank = list(get_answer_count(self.answer_count_top_rank_model))
-        answer_count_middle_rank = list(get_answer_count(self.answer_count_middle_rank_model))
-        answer_count_low_rank = list(get_answer_count(self.answer_count_low_rank_model))
         answer_correct_dict = self.get_answer_correct_dict()
 
-        page_obj_total, page_range_total = self.get_paginator_info(answer_count)
-        page_obj_top, page_range_top = self.get_paginator_info(answer_count_top_rank)
-        page_obj_middle, page_range_middle = self.get_paginator_info(answer_count_middle_rank)
-        page_obj_low, page_range_low = self.get_paginator_info(answer_count_low_rank)
+        page_obj, page_range = self.get_paginator_info(answer_count)
+        page_obj_top, page_range_top = self.get_paginator_info(answer_count_top)
+        page_obj_mid, page_range_mid = self.get_paginator_info(answer_count_mid)
+        page_obj_low, page_range_low = self.get_paginator_info(answer_count_low)
 
-        for index, problem in enumerate(page_obj_total):
+        for index, problem in enumerate(page_obj):
             number = problem['number']  # 문제 번호
             ans_number_correct = answer_correct_dict[sub][number - 1]['ans_number']
-
-            problem_top_rank = page_obj_top[index]
-            problem_middle_rank = page_obj_middle[index]
-            problem_low_rank = page_obj_low[index]
-
-            if ans_number_correct in range(1, 6):
-                rate_correct = problem[f'rate_{ans_number_correct}']
-                rate_correct_top_rank = problem_top_rank[f'rate_{ans_number_correct}']
-                rate_correct_middle_rank = problem_middle_rank[f'rate_{ans_number_correct}']
-                rate_correct_low_rank = problem_low_rank[f'rate_{ans_number_correct}']
-            else:
-                answer_correct_list = [int(digit) for digit in str(ans_number_correct)]
-                try:
-                    rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
-                    rate_correct_top_rank = sum(problem_top_rank[f'rate_{ans}'] for ans in answer_correct_list)
-                    rate_correct_middle_rank = sum(problem_middle_rank[f'rate_{ans}'] for ans in answer_correct_list)
-                    rate_correct_low_rank = sum(problem_low_rank[f'rate_{ans}'] for ans in answer_correct_list)
-                except TypeError:
-                    rate_correct = 0
-                    rate_correct_top_rank = 0
-                    rate_correct_middle_rank = 0
-                    rate_correct_low_rank = 0
             problem['answer_correct'] = ans_number_correct
+            self.update_problem_rate(
+                problem, page_obj_top, page_obj_mid, page_obj_low, ans_number_correct, index)
 
-            problem['rate_correct'] = rate_correct
-            problem['rate_correct_top_rank'] = rate_correct_top_rank
-            problem['rate_correct_middle_rank'] = rate_correct_middle_rank
-            problem['rate_correct_low_rank'] = rate_correct_low_rank
-
-            answer_count_list = []  # list for counting answers
-            for i in range(5):
-                ans_number = i + 1
-                answer_count_list.append(problem[f'count_{ans_number}'])
-            ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
-            rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
-            problem['answer_predict'] = ans_number_predict
-            problem['rate_accuracy'] = rate_accuracy
-
-            for field in field_keys:
-                if field != 'sub' and field != 'number':
-                    problem[f'top_rank_{field}'] = problem_top_rank[field]
-                    problem[f'middle_rank_{field}'] = problem_middle_rank[field]
-                    problem[f'low_rank_{field}'] = problem_low_rank[field]
-
-        return page_obj_total, page_range_total
+        return page_obj, page_range
 
     def get_all_stat(self, model_type=None):
         field_keys_score = [
@@ -463,19 +479,11 @@ class ExportStatisticsToExcelMixin(AdminBaseMixin):
 
 class ExportAnalysisToExcelMixin(DetailViewMixin):
     def get_answer_count_analysis(self):
-        field_keys = [
-            'sub', 'number',
-            'count_total', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0',
-            'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5', 'rate_0', 'rate_None'
-        ]
-
-        def get_answer_count(model):
-            return model.objects.filter(exam=self.exam).order_by('sub', 'number').values(*field_keys)
-
-        answer_count = list(get_answer_count(self.answer_count_model))
-        answer_count_top_rank = list(get_answer_count(self.answer_count_top_rank_model))
-        answer_count_middle_rank = list(get_answer_count(self.answer_count_middle_rank_model))
-        answer_count_low_rank = list(get_answer_count(self.answer_count_low_rank_model))
+        answer_count_dict = self.get_answer_count_dict()
+        answer_count = answer_count_dict['all']
+        answer_count_top = answer_count_dict['top']
+        answer_count_mid = answer_count_dict['mid']
+        answer_count_low = answer_count_dict['low']
 
         answer_correct_dict = self.get_answer_correct_dict()
 
@@ -483,49 +491,9 @@ class ExportAnalysisToExcelMixin(DetailViewMixin):
             sub = problem['sub']  # 과목
             number = problem['number']  # 문제 번호
             ans_number_correct = answer_correct_dict[sub][number - 1]['ans_number']
-
-            problem_top_rank = answer_count_top_rank[index]
-            problem_middle_rank = answer_count_middle_rank[index]
-            problem_low_rank = answer_count_low_rank[index]
-
-            if ans_number_correct in range(1, 6):
-                rate_correct = problem[f'rate_{ans_number_correct}']
-                rate_correct_top_rank = problem_top_rank[f'rate_{ans_number_correct}']
-                rate_correct_middle_rank = problem_middle_rank[f'rate_{ans_number_correct}']
-                rate_correct_low_rank = problem_low_rank[f'rate_{ans_number_correct}']
-            else:
-                answer_correct_list = [int(digit) for digit in str(ans_number_correct)]
-                try:
-                    rate_correct = sum(problem[f'rate_{ans}'] for ans in answer_correct_list)
-                    rate_correct_top_rank = sum(problem_top_rank[f'rate_{ans}'] for ans in answer_correct_list)
-                    rate_correct_middle_rank = sum(problem_middle_rank[f'rate_{ans}'] for ans in answer_correct_list)
-                    rate_correct_low_rank = sum(problem_low_rank[f'rate_{ans}'] for ans in answer_correct_list)
-                except TypeError:
-                    rate_correct = 0
-                    rate_correct_top_rank = 0
-                    rate_correct_middle_rank = 0
-                    rate_correct_low_rank = 0
             problem['answer_correct'] = ans_number_correct
-
-            problem['rate_correct'] = rate_correct
-            problem['rate_correct_top_rank'] = rate_correct_top_rank
-            problem['rate_correct_middle_rank'] = rate_correct_middle_rank
-            problem['rate_correct_low_rank'] = rate_correct_low_rank
-
-            answer_count_list = []  # list for counting answers
-            for i in range(5):
-                ans_number = i + 1
-                answer_count_list.append(problem[f'count_{ans_number}'])
-            ans_number_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
-            rate_accuracy = problem[f'rate_{ans_number_predict}']  # 정확도
-            problem['answer_predict'] = ans_number_predict
-            problem['rate_accuracy'] = rate_accuracy
-
-            for field in field_keys:
-                if field != 'sub' and field != 'number':
-                    problem[f'top_rank_{field}'] = problem_top_rank[field]
-                    problem[f'middle_rank_{field}'] = problem_middle_rank[field]
-                    problem[f'low_rank_{field}'] = problem_low_rank[field]
+            self.update_problem_rate(
+                problem, answer_count_top, answer_count_mid, answer_count_low, ans_number_correct, index)
 
         return get_dict_by_sub(answer_count)
 
@@ -672,7 +640,7 @@ class ExportPredictDataToGoogleSheetMixin(AdminBaseMixin, ConstantIconSet):
         answer_count_serializer = serializers.PredictAnswerCountSerializer(
             self.answer_count_model.objects.all(), many=True)
         answer_count_top_rank_serializer = serializers.PredictAnswerCountTopRankSerializer(
-            self.answer_count_top_rank_model.objects.all(), many=True)
+            self.answer_count_top_model.objects.all(), many=True)
         statistics_serializer = serializers.PredictStatisticsSerializer(
             self.statistics_model.objects.all(), many=True)
 

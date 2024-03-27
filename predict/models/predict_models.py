@@ -165,7 +165,7 @@ class AnswerCountTopRank(base_models.AnswerCountBase):
         return SUB_CHOICES[self.sub]
 
 
-class AnswerCountMiddleRank(base_models.AnswerCountBase):
+class AnswerCountMidRank(base_models.AnswerCountBase):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='answer_counts_middle_rank')
     sub = models.CharField(max_length=2, choices=SUB_CHOICES)
     number = models.IntegerField()

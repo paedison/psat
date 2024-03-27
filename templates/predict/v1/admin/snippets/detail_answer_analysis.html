@@ -52,7 +52,7 @@
         <div id="navContentHeonbeob" class="tab-pane fade show active htmx-fade-out"
              role="tabpanel" aria-labelledby="navTabHeonbeob">
             {% partialdef heonbeob inline=True %}
-                {% with page_obj=heonbeob_page_obj page_range=heonbeob_page_range pagination_url=heonbeob_pagination_url target_id='navContentHeonbeob' %}
+                {% with sub='헌법' page_obj=heonbeob_page_obj page_range=heonbeob_page_range pagination_url=heonbeob_pagination_url target_id='navContentHeonbeob' %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef heonbeob %}
@@ -60,7 +60,7 @@
         <div id="navContentEoneo" class="tab-pane fade htmx-fade-out"
              role="tabpanel" aria-labelledby="navTabEoneo">
             {% partialdef eoneo inline=True %}
-                {% with page_obj=eoneo_page_obj page_range=eoneo_page_range pagination_url=eoneo_pagination_url target_id='navContentEoneo' %}
+                {% with sub='언어' page_obj=eoneo_page_obj page_range=eoneo_page_range pagination_url=eoneo_pagination_url target_id='navContentEoneo' %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef eoneo %}
@@ -68,7 +68,7 @@
         <div id="navContentJaryo" class="tab-pane fade htmx-fade-out"
              role="tabpanel" aria-labelledby="navTabJaryo">
             {% partialdef jaryo inline=True %}
-                {% with page_obj=jaryo_page_obj page_range=jaryo_page_range pagination_url=jaryo_pagination_url target_id='navContentJaryo' %}
+                {% with sub='자료' page_obj=jaryo_page_obj page_range=jaryo_page_range pagination_url=jaryo_pagination_url target_id='navContentJaryo' %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef jaryo %}
@@ -76,7 +76,7 @@
         <div id="navContentSanghwang" class="tab-pane fade htmx-fade-out"
              role="tabpanel" aria-labelledby="navTabSanghwang">
             {% partialdef sanghwang inline=True %}
-                {% with page_obj=sanghwang_page_obj page_range=sanghwang_page_range pagination_url=sanghwang_pagination_url target_id='navContentSanghwang' %}
+                {% with sub='상황' page_obj=sanghwang_page_obj page_range=sanghwang_page_range pagination_url=sanghwang_pagination_url target_id='navContentSanghwang' %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef sanghwang %}
@@ -151,91 +151,47 @@
                                 </button>
                             {% endif %}
                         </td>
-                        <td>{{ problem.rate_correct|floatformat:1 }}</td>
-                        <td>{{ problem.rate_correct_top_rank|floatformat:1 }}</td>
-                        <td>{{ problem.rate_correct_middle_rank|floatformat:1 }}</td>
-                        <td>{{ problem.rate_correct_low_rank|floatformat:1 }}</td>
-                        <td>{{ problem.rate_correct_low_rank|subtract:problem.rate_correct_top_rank|floatformat:1 }}</td>
+                        {% for _ in '12345' %}
+                            {% cycle problem.rate_correct problem.rate_correct_top problem.rate_correct_mid problem.rate_correct_low problem.rate_correct_gap as rate_correct silent %}
+                            <td>
+                                {% if rate_correct %}
+                                    {{ rate_correct|floatformat:1 }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
 
-                        <td class="td-right-no-border">{{ problem.count_1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.count_2 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.count_3 }}</td>
-                        {% if sub == '헌법' %}
-                            <td class="td-left-no-border">{{ problem.count_4 }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ problem.count_4 }}</td>
-                            <td class="td-left-no-border">{{ problem.count_5 }}</td>
-                        {% endif %}
+                        {% for _ in '1234' %}
+                            {% cycle problem.count_1 problem.count_1_top problem.count_1_mid problem.count_1_low as count_1 silent %}
+                            {% cycle problem.count_2 problem.count_2_top problem.count_2_mid problem.count_2_low as count_2 silent %}
+                            {% cycle problem.count_3 problem.count_3_top problem.count_3_mid problem.count_3_low as count_3 silent %}
+                            {% cycle problem.count_4 problem.count_4_top problem.count_4_mid problem.count_4_low as count_4 silent %}
+                            {% cycle problem.count_5 problem.count_5_top problem.count_5_mid problem.count_5_low as count_5 silent %}
+                            {% cycle problem.rate_1 problem.rate_1_top problem.rate_1_mid problem.rate_1_low as rate_1 silent %}
+                            {% cycle problem.rate_2 problem.rate_2_top problem.rate_2_mid problem.rate_2_low as rate_2 silent %}
+                            {% cycle problem.rate_3 problem.rate_3_top problem.rate_3_mid problem.rate_3_low as rate_3 silent %}
+                            {% cycle problem.rate_4 problem.rate_4_top problem.rate_4_mid problem.rate_4_low as rate_4 silent %}
+                            {% cycle problem.rate_5 problem.rate_5_top problem.rate_5_mid problem.rate_5_low as rate_5 silent %}
 
-                        <td class="td-right-no-border">{{ problem.rate_1|floatformat:1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.rate_2|floatformat:1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.rate_3|floatformat:1 }}</td>
-                        {% if sub == '헌법' %}
-                            <td class="td-left-no-border">{{ problem.rate_4|floatformat:1 }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ problem.rate_4|floatformat:1 }}</td>
-                            <td class="td-left-no-border">{{ problem.rate_5|floatformat:1 }}</td>
-                        {% endif %}
+                            <td class="td-right-no-border">{{ count_1 }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_2 }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_3 }}</td>
+                            {% if sub == '헌법' %}
+                                <td class="td-left-no-border">{{ count_4 }}</td>
+                            {% else %}
+                                <td class="td-left-no-border td-right-no-border">{{ count_4 }}</td>
+                                <td class="td-left-no-border">{{ count_5 }}</td>
+                            {% endif %}
 
-                        <td class="td-right-no-border">{{ problem.top_rank_count_1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_count_2 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_count_3 }}</td>
-                        {% if sub == '헌법' %}
-                            <td class="td-left-no-border">{{ problem.top_rank_count_4 }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_count_4 }}</td>
-                            <td class="td-left-no-border">{{ problem.top_rank_count_5 }}</td>
-                        {% endif %}
-
-                        <td class="td-right-no-border">{{ problem.top_rank_rate_1|floatformat:1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_rate_2|floatformat:1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_rate_3|floatformat:1 }}</td>
-                        {% if sub == '헌법' %}
-                            <td class="td-left-no-border">{{ problem.top_rank_rate_4|floatformat:1 }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ problem.top_rank_rate_4|floatformat:1 }}</td>
-                            <td class="td-left-no-border">{{ problem.top_rank_rate_5|floatformat:1 }}</td>
-                        {% endif %}
-
-                        <td class="td-right-no-border">{{ problem.middle_rank_count_1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.middle_rank_count_2 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.middle_rank_count_3 }}</td>
-                        {% if sub == '헌법' %}
-                            <td class="td-left-no-border">{{ problem.middle_rank_count_4 }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ problem.middle_rank_count_4 }}</td>
-                            <td class="td-left-no-border">{{ problem.middle_rank_count_5 }}</td>
-                        {% endif %}
-
-                        <td class="td-right-no-border">{{ problem.middle_rank_rate_1|floatformat:1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.middle_rank_rate_2|floatformat:1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.middle_rank_rate_3|floatformat:1 }}</td>
-                        {% if sub == '헌법' %}
-                            <td class="td-left-no-border">{{ problem.middle_rank_rate_4|floatformat:1 }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ problem.middle_rank_rate_4|floatformat:1 }}</td>
-                            <td class="td-left-no-border">{{ problem.middle_rank_rate_5|floatformat:1 }}</td>
-                        {% endif %}
-
-                        <td class="td-right-no-border">{{ problem.low_rank_count_1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.low_rank_count_2 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.low_rank_count_3 }}</td>
-                        {% if sub == '헌법' %}
-                            <td class="td-left-no-border">{{ problem.low_rank_count_4 }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ problem.low_rank_count_4 }}</td>
-                            <td class="td-left-no-border">{{ problem.low_rank_count_5 }}</td>
-                        {% endif %}
-
-                        <td class="td-right-no-border">{{ problem.low_rank_rate_1|floatformat:1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.low_rank_rate_2|floatformat:1 }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ problem.low_rank_rate_3|floatformat:1 }}</td>
-                        {% if sub == '헌법' %}
-                            <td class="td-left-no-border">{{ problem.low_rank_rate_4|floatformat:1 }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ problem.low_rank_rate_4|floatformat:1 }}</td>
-                            <td class="td-left-no-border">{{ problem.low_rank_rate_5|floatformat:1 }}</td>
-                        {% endif %}
+                            <td class="td-right-no-border">{{ rate_1|floatformat:1 }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ rate_2|floatformat:1 }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ rate_3|floatformat:1 }}</td>
+                            {% if sub == '헌법' %}
+                                <td class="td-left-no-border">{{ rate_4|floatformat:1 }}</td>
+                            {% else %}
+                                <td class="td-left-no-border td-right-no-border">{{ rate_4|floatformat:1 }}</td>
+                                <td class="td-left-no-border">{{ rate_5|floatformat:1 }}</td>
+                            {% endif %}
+                        {% endfor %}
                     </tr>
                 {% endfor %}
             </tbody>
