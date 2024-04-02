@@ -1,5 +1,7 @@
+from allauth.account import forms as allauth_forms
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.utils.translation import gettext_lazy as _
 
 from .models import User
 
@@ -36,6 +38,34 @@ class UserChangeForm(forms.ModelForm):
 
     def clean_password(self):
         return self.initial["password"]
+
+
+class LoginForm(allauth_forms.LoginForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.label_suffix = ''
+
+
+class ChangeUsernameForm(forms.ModelForm):
+    username = forms.CharField(
+        label=_('Enter New Username'),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": _('Enter New Username'),
+            }
+        )
+    )
+
+    class Meta:
+        model = User
+        fields = ('username',)
+
+
+class ChangePasswordForm(allauth_forms.ChangePasswordForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.label_suffix = ''
 
 
 class PostForm:

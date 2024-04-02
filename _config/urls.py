@@ -4,12 +4,12 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('common.urls')),  # Common [index, base, account, ads, privacy_policy]
     path('admin/', admin.site.urls, name='admin'),  # Admin
     path('account/', include('allauth.urls')),  # Django All-auth
     path('ckeditor/', include('ckeditor_uploader.urls')),  # CKEditor URLs
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
 
-    path('', include('common.urls')),  # Common [index, base, account, ads, privacy_policy]
     path('notice/', include('notice.urls')),  # Notice
     path('dashboard/', include('dashboard.urls')),  # Dashboard
     path('psat/', include('psat.urls')),  # PSAT

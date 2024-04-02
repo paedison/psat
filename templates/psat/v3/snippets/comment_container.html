@@ -67,7 +67,7 @@
                aria-label="Problem" hidden/>
         <input name="content" type="text" aria-label="Content" required
                class="form-control form-control-sm" value="{{ comment.content }}"
-               placeholder="{% trans 'Leave comment' %}"/>
+               placeholder="{% trans 'Leave comments' %}"/>
         <button class="btn btn-sm btn-outline-primary" hx-target="#detailComments"
                 hx-post="{% url 'psat:comment_update' comment.id %}" hx-swap="innerHTML">
             {% trans 'Update' %}

@@ -39,18 +39,30 @@
             </div>
 
             <div class="col-md-8">
+                {% if messages %}
+                    <div class="row">
+                        {% for message in messages %}
+                            {% include 'account/snippets/alert_message.html' %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
                 <h5 class="card-title">프로필 정보</h5>
                 <div class="row mb-4">
+                    <div class="col-lg-3 col-md-4 fw-bold text-secondary">이메일</div>
+                    <div class="col-lg-9 col-md-8">{{ user.email }}</div>
+                </div>
+                <div class="row mb-4">
                     <div class="col-lg-3 col-md-4 fw-bold text-secondary">아이디</div>
-                    <div class="col-lg-9 col-md-8">{{ user.username }}</div>
+                    <div class="col-lg-9 col-md-8">{{ user.username }}
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'account_change_username' %}">
+                            수정
+                        </a>
+                    </div>
                 </div>
                 <div class="row mb-4">
                     <div class="col-lg-3 col-md-4 fw-bold text-secondary">비밀번호</div>
                     <div class="col-lg-9 col-md-8">*********
-                        <a class="btn btn-sm btn-outline-primary"
-                           hx-get="{% url 'change_password_modal' %}" href=""
-                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                           data-bs-toggle="modal" data-bs-target="#modalContainer">
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'account_change_password' %}">
                             수정
                         </a>
                     </div>

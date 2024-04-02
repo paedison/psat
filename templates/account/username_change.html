@@ -1,0 +1,41 @@
+{% extends "account/base.html" %}
+{% load widget_tweaks %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Change Username" %}{% endblock %}
+{% block body_title %}{% trans "Change Username" %}{% endblock body_title %}
+
+{% block content %}
+<script id="info" type="application/json">{"menu": "account", "view_type": "password"}</script>
+<form method="POST" action="{% url 'account_change_username' %}" class="row g-3">
+    {% csrf_token %}
+    {% if form.errors.password %}
+        {% for error in form.errors.password %}
+            {% include 'account/snippets/alert_message.html' %}
+        {% endfor %}
+    {% endif %}
+    <div class="col-12">
+        <div class="form-floating">
+           {% render_field form.username class="form-control form-control-sm" %}
+            <label for="{{ form.username.auto_id }}">
+                {% trans 'Enter New Username' %}
+            </label>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="input-group">
+            <div class="form-floating">
+                <input type="password" name="password" placeholder="현재 비밀번호" autocomplete="current-password"
+                       class="form-control form-control-sm" required="" id="id_password">
+                <label for="id_oldpassword">
+                    현재 비밀번호
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary" name="action">
+                {% trans "Submit" %}
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}

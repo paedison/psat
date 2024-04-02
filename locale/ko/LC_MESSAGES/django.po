@@ -2,13 +2,11 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-14 14:01+0900\n"
+"POT-Creation-Date: 2024-04-02 17:59+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,9 +16,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: .\_config\settings\base.py:193
+#: .\_config\settings\base.py:198
 msgid "Korean"
 msgstr ""
+
+#: .\common\forms.py:51 .\common\forms.py:54
+#: .\templates\account\username_change.html:22
+msgid "Enter New Username"
+msgstr "새로운 아이디를 입력해주세요."
+
+#: .\common\views\account_views.py:58
+msgid "Same as current username."
+msgstr "현재 ID와 동일합니다."
+
+#: .\common\views\account_views.py:61
+msgid "Incorrect password."
+msgstr "비밀번호가 일치하지 않습니다."
+
+#: .\common\views\account_views.py:63
+msgid "Username successfully updated."
+msgstr "아이디가 성공적으로 변경되었습니다."
 
 #: .\psat\models\data_models.py:59 .\psat\models\old_psat_models.py:367
 msgid "Tagged problem"
@@ -74,20 +89,11 @@ msgstr "계정 비활성"
 msgid "This account is inactive."
 msgstr "해당 계정은 비활성화된 상태입니다."
 
-#: .\templates\account\base.html:77
-msgid "Change E-mail"
-msgstr "이메일 변경"
-
-#: .\templates\account\base.html:82 .\templates\account\logout.html:5
-#: .\templates\account\logout.html:8 .\templates\account\logout.html:17
-msgid "Sign Out"
-msgstr "로그아웃"
-
-#: .\templates\account\base.html:89 .\templates\account\password_change.html:14
+#: .\templates\account\base.html:78 .\templates\account\password_change.html:47
 msgid "Forgot Password?"
 msgstr "비밀번호를 잊으셨나요?"
 
-#: .\templates\account\base.html:94 .\templates\account\signup.html:9
+#: .\templates\account\base.html:83 .\templates\account\signup.html:9
 #: .\templates\account\signup.html:48 .\templates\socialaccount\signup.html:8
 #: .\templates\socialaccount\signup.html:19
 msgid "Sign Up"
@@ -272,15 +278,15 @@ msgstr ""
 msgid "Welcome!"
 msgstr "환영합니다!"
 
-#: .\templates\account\login.html:22 .\templates\account\signup.html:17
+#: .\templates\account\login.html:20 .\templates\account\signup.html:17
 msgid "E-mail"
 msgstr "이메일"
 
-#: .\templates\account\login.html:31 .\templates\account\signup.html:31
+#: .\templates\account\login.html:29 .\templates\account\signup.html:31
 msgid "Password"
 msgstr "비밀번호"
 
-#: .\templates\account\login.html:44
+#: .\templates\account\login.html:43
 msgid "Remember Me"
 msgstr "아이디 저장"
 
@@ -291,6 +297,11 @@ msgstr "로그인"
 #: .\templates\account\login.html:59 .\templates\account\signup.html:57
 msgid "Continue with Google"
 msgstr "구글 계정으로 로그인"
+
+#: .\templates\account\logout.html:5 .\templates\account\logout.html:8
+#: .\templates\account\logout.html:17
+msgid "Sign Out"
+msgstr "로그아웃"
 
 #: .\templates\account\logout.html:10
 msgid "Are you sure you want to sign out?"
@@ -326,6 +337,7 @@ msgid "You have signed out."
 msgstr "로그아웃 되었습니다."
 
 #: .\templates\account\messages\password_changed.txt:2
+#: .\templates\account\password_reset_from_key_done.html:10
 msgid "Password successfully changed."
 msgstr "비밀번호가 성공적으로 변경되었습니다."
 
@@ -342,66 +354,82 @@ msgid "Your primary e-mail address must be verified."
 msgstr "주 이메일은 인증이 필요합니다."
 
 #: .\templates\account\password_change.html:5
-#: .\templates\account\password_change.html:8
-#: .\templates\account\password_change.html:13
-#: .\templates\account\password_reset_from_key.html:4
+#: .\templates\account\password_change.html:6
+#: .\templates\account\password_reset_from_key.html:5
 #: .\templates\account\password_reset_from_key.html:7
 #: .\templates\account\password_reset_from_key_done.html:4
-#: .\templates\account\password_reset_from_key_done.html:7
+#: .\templates\account\password_reset_from_key_done.html:5
 msgid "Change Password"
 msgstr "비밀번호 변경"
 
+#: .\templates\account\password_change.html:17
+msgid "Current Password"
+msgstr "현재 비밀번호"
+
+#: .\templates\account\password_change.html:25
+#: .\templates\account\password_reset_from_key.html:25
+msgid "New Password"
+msgstr "새 비밀번호"
+
+#: .\templates\account\password_change.html:34
+#: .\templates\account\password_reset_from_key.html:34
+msgid "New Password (again)"
+msgstr "새 비밀번호 (확인)"
+
+#: .\templates\account\password_change.html:38
+#: .\templates\account\password_reset.html:28
+#: .\templates\account\password_reset_from_key.html:38
+#: .\templates\account\username_change.html:36
+msgid "Submit"
+msgstr "제출"
+
+#: .\templates\account\password_reset.html:6
 #: .\templates\account\password_reset.html:7
-#: .\templates\account\password_reset.html:12
+#: .\templates\account\password_reset_done.html:5
 #: .\templates\account\password_reset_done.html:6
-#: .\templates\account\password_reset_done.html:9
 msgid "Password Reset"
 msgstr "비밀번호 초기화"
 
-#: .\templates\account\password_reset.html:19
+#: .\templates\account\password_reset.html:14
 msgid ""
 "Forgotten your password? Enter your e-mail address below, and we'll send you "
 "an e-mail allowing you to reset it."
 msgstr ""
-"비밀번호를 잊으셨나요? 아래에 당신의 이메일을 입력하시면,비밀번호 초기화 이메"
-"일을 전송해 드리겠습니다."
+"회원가입시 이메일 주소를 입력하시면<br/>비밀번호 초기화 이메일을 전송해드립니"
+"다."
 
-#: .\templates\account\password_reset.html:26
-msgid "Reset My Password"
-msgstr "비밀번호 초기화"
+#: .\templates\account\password_reset.html:24
+msgid "Input E-mail address"
+msgstr "이메일 주소 추가"
 
-#: .\templates\account\password_reset.html:30
+#: .\templates\account\password_reset.html:34
 msgid "Please contact us if you have any trouble resetting your password."
-msgstr "비밀번호 초기화에 문제가 있으시면 저희에게 연락주세요."
+msgstr ""
+"비밀번호 초기화에 문제가 있으시면<br/><a href=\"mailto:paedison.com@gmail.com"
+"\">여기</a>로 메일을 보내주세요."
 
-#: .\templates\account\password_reset_done.html:15
+#: .\templates\account\password_reset_done.html:14
 msgid ""
 "We have sent you an e-mail. If you have not received it please check your "
 "spam folder. Otherwise contact us if you do not receive it in a few minutes."
 msgstr ""
-"인증메일을 전송하였습니다.\n"
-"이메일의 링크를 클릭하시고,\n"
-"몇 분 후에도 메일이 전송되지 않으면 연락주세요."
+"인증 메일을 전송하였습니다.<br/>받으신 메일의 링크를 클릭해주세요.<br/>메일"
+"을 못 받으셨다면 <a href=\"mailto:paedison.com@gmail.com\">여기</a>로 연락 부"
+"탁드립니다."
 
 #: .\templates\account\password_reset_from_key.html:7
 msgid "Bad Token"
-msgstr "올비르지 않은 토큰"
+msgstr "올바르지 않은 토큰"
 
-#: .\templates\account\password_reset_from_key.html:11
+#: .\templates\account\password_reset_from_key.html:15
 #, python-format
 msgid ""
 "The password reset link was invalid, possibly because it has already been "
 "used.  Please request a <a href=\"%(passwd_reset_url)s\">new password reset</"
 "a>."
 msgstr ""
-
-#: .\templates\account\password_reset_from_key.html:16
-msgid "change password"
-msgstr "비밀번호 변경"
-
-#: .\templates\account\password_reset_from_key_done.html:8
-msgid "Your password is now changed."
-msgstr "비밀번호가 변경되었습니다."
+"비밀번호 초기화 링크가 올바르지 않습니다.<br/>비밀번호를 다시 <a href="
+"\"%(passwd_reset_url)s\">초기화</a>하세요."
 
 #: .\templates\account\password_set.html:5
 #: .\templates\account\password_set.html:8
@@ -433,14 +461,15 @@ msgstr "회원가입 종료"
 msgid "We are sorry, but the sign up is currently closed."
 msgstr "죄송합니다. 회원가입은 현재 종료되었습니다."
 
-#: .\templates\account\snippets\already_logged_in.html:5
-msgid "Note"
-msgstr "메모"
-
-#: .\templates\account\snippets\already_logged_in.html:5
+#: .\templates\account\snippets\already_logged_in.html:6
 #, python-format
 msgid "you are already logged in as %(user_display)s."
-msgstr "%(user_display)s 로 이미 로그인 되어있습니다."
+msgstr "%(user_display)s(으)로 이미 로그인되어 있습니다."
+
+#: .\templates\account\username_change.html:6
+#: .\templates\account\username_change.html:7
+msgid "Change Username"
+msgstr "아이디 변경"
 
 #: .\templates\account\verification_sent.html:5
 #: .\templates\account\verification_sent.html:8
@@ -529,10 +558,11 @@ msgstr "댓글을 입력해주세요"
 #: .\templates\psat\v3\snippets\comment_container.html:73
 #: .\templates\psat\v3\snippets\memo_container.html:9
 #: .\templates\psat\v3\snippets\memo_container.html:53
-#: .\templates\psat\v4\snippets\comment_container.html:147
-#: .\templates\psat\v4\snippets\comment_container.html:224
-#: .\templates\psat\v4\snippets\memo_container.html:32
-#: .\templates\psat\v4\snippets\memo_container.html:48
+#: .\templates\psat\v4\snippets\comment_box.html:40
+#: .\templates\psat\v4\snippets\comment_container.html:148
+#: .\templates\psat\v4\snippets\comment_container.html:227
+#: .\templates\psat\v4\snippets\memo_container.html:31
+#: .\templates\psat\v4\snippets\memo_container.html:51
 msgid "Update"
 msgstr "수정"
 
@@ -552,9 +582,9 @@ msgstr "수정"
 #: .\templates\psat\v3\snippets\comment_container.html:56
 #: .\templates\psat\v3\snippets\memo_container.html:34
 #: .\templates\psat\v3\snippets\tag_container.html:62
-#: .\templates\psat\v4\snippets\comment_container.html:200
-#: .\templates\psat\v4\snippets\memo_container.html:70
-#: .\templates\psat\v4\snippets\tag_container.html:76
+#: .\templates\psat\v4\snippets\comment_container.html:201
+#: .\templates\psat\v4\snippets\memo_container.html:73
+#: .\templates\psat\v4\snippets\tag_container.html:80
 msgid "Create"
 msgstr "입력"
 
@@ -580,8 +610,9 @@ msgstr "댓글 입력을 위해 로그인해주세요"
 #: .\templates\psat\v2\snippets\memo_container.html:18
 #: .\templates\psat\v3\snippets\comment_container.html:30
 #: .\templates\psat\v3\snippets\memo_container.html:14
-#: .\templates\psat\v4\snippets\comment_container.html:154
-#: .\templates\psat\v4\snippets\memo_container.html:54
+#: .\templates\psat\v4\snippets\comment_box.html:47
+#: .\templates\psat\v4\snippets\comment_container.html:155
+#: .\templates\psat\v4\snippets\memo_container.html:57
 #: .\venv\Lib\site-packages\django\forms\formsets.py:499
 msgid "Delete"
 msgstr "삭제"
@@ -602,6 +633,7 @@ msgid "Are you sure you wish to delete your post?"
 msgstr "글을 삭제하시겠습니까?"
 
 #: .\templates\board\old\comment_update.html:9
+#: .\templates\psat\v3\snippets\comment_container.html:70
 msgid "Leave comments"
 msgstr "댓글을 입력해주세요"
 
@@ -617,7 +649,7 @@ msgstr "메모를 입력해주세요"
 #: .\templates\psat\v1\snippets\detail_memo_container.html:38
 #: .\templates\psat\v2\snippets\memo_container.html:20
 #: .\templates\psat\v3\snippets\memo_container.html:16
-#: .\templates\psat\v4\snippets\memo_container.html:53
+#: .\templates\psat\v4\snippets\memo_container.html:56
 msgid "Are you sure you wish to delete your memo?"
 msgstr "메모를 삭제하시겠습니까?"
 
@@ -627,15 +659,15 @@ msgstr "메모를 삭제하시겠습니까?"
 #: .\templates\psat\v2\snippets\tag_container.html:62
 #: .\templates\psat\v3\snippets\tag_container.html:14
 #: .\templates\psat\v3\snippets\tag_container.html:58
-#: .\templates\psat\v4\snippets\tag_container.html:29
-#: .\templates\psat\v4\snippets\tag_container.html:74
+#: .\templates\psat\v4\snippets\tag_container.html:32
+#: .\templates\psat\v4\snippets\tag_container.html:78
 msgid "Leave tags"
 msgstr "태그를 입력해주세요"
 
 #: .\templates\psat\v1\snippets\detail_tag_container.html:24
 #: .\templates\psat\v2\snippets\tag_container.html:22
 #: .\templates\psat\v3\snippets\tag_container.html:18
-#: .\templates\psat\v4\snippets\tag_container.html:33
+#: .\templates\psat\v4\snippets\tag_container.html:36
 msgid "Add"
 msgstr "추가"
 
@@ -653,10 +685,10 @@ msgstr "추가"
 #: .\templates\psat\v3\snippets\tag_container.html:33
 #: .\templates\psat\v3\snippets\tag_container.html:82
 #: .\templates\psat\v3\snippets\tag_container.html:84
-#: .\templates\psat\v4\snippets\tag_container.html:46
-#: .\templates\psat\v4\snippets\tag_container.html:48
-#: .\templates\psat\v4\snippets\tag_container.html:96
-#: .\templates\psat\v4\snippets\tag_container.html:98
+#: .\templates\psat\v4\snippets\tag_container.html:50
+#: .\templates\psat\v4\snippets\tag_container.html:52
+#: .\templates\psat\v4\snippets\tag_container.html:100
+#: .\templates\psat\v4\snippets\tag_container.html:102
 msgid "Tag Cloud"
 msgstr "태그 클라우드"
 
@@ -666,15 +698,15 @@ msgstr "태그 클라우드"
 #: .\templates\psat\v2\snippets\tag_container.html:46
 #: .\templates\psat\v3\snippets\tag_container.html:37
 #: .\templates\psat\v3\snippets\tag_container.html:42
-#: .\templates\psat\v4\snippets\tag_container.html:52
-#: .\templates\psat\v4\snippets\tag_container.html:57
+#: .\templates\psat\v4\snippets\tag_container.html:56
+#: .\templates\psat\v4\snippets\tag_container.html:61
 msgid "Delete Tag"
 msgstr "태그 삭제"
 
 #: .\templates\psat\v1\snippets\detail_tag_container.html:46
 #: .\templates\psat\v2\snippets\tag_container.html:43
 #: .\templates\psat\v3\snippets\tag_container.html:39
-#: .\templates\psat\v4\snippets\tag_container.html:54
+#: .\templates\psat\v4\snippets\tag_container.html:58
 msgid "Are you sure you wish to delete your tag?"
 msgstr "태그를 삭제하시겠습니까?"
 
@@ -682,49 +714,42 @@ msgstr "태그를 삭제하시겠습니까?"
 #: .\templates\psat\v1\snippets\detail_tag_create.html:51
 #: .\templates\psat\v2\snippets\tag_container.html:101
 #: .\templates\psat\v3\snippets\tag_container.html:96
-#: .\templates\psat\v4\snippets\tag_container.html:110
+#: .\templates\psat\v4\snippets\tag_container.html:114
 msgid "Add to my tags"
 msgstr "내 태그에 추가"
 
 #: .\templates\psat\v3\problem_detail.html:62
-#: .\templates\psat\v4\problem_detail.html:184
+#: .\templates\psat\v4\problem_detail.html:189
 msgid "Please login first."
 msgstr "로그인이 필요합니다."
 
 #: .\templates\psat\v3\snippets\comment_container.html:33
-#: .\templates\psat\v4\snippets\comment_container.html:155
-#, fuzzy
-#| msgid "Are you sure you wish to delete your comment?"
+#: .\templates\psat\v4\snippets\comment_box.html:48
+#: .\templates\psat\v4\snippets\comment_container.html:156
 msgid "Are you sure you wish to delete your question or comment?"
-msgstr "댓글을 삭제하시겠습니까?"
+msgstr "질문 또는 댓글을 삭제하시겠습니까?"
 
 #: .\templates\psat\v3\snippets\comment_container.html:53
-#, fuzzy
-#| msgid "Leave comments"
 msgid "Leave question or comment"
-msgstr "댓글을 입력해주세요"
+msgstr "질문 또는 댓글을 입력해주세요"
 
-#: .\templates\psat\v3\snippets\comment_container.html:70
-#, fuzzy
-#| msgid "Leave comments"
-msgid "Leave comment"
-msgstr "댓글을 입력해주세요"
-
-#: .\templates\psat\v4\problem_list.html:61
-#: .\templates\psat\v4\problem_list.html:62 .\templates\snippets\header.html:29
-#: .\templates\snippets\header.html:30
+#: .\templates\psat\v4\problem_list.html:59
+#: .\templates\psat\v4\problem_list.html:60 .\templates\snippets\header.html:28
+#: .\templates\snippets\header.html:29
 msgid "Enter search keyword"
 msgstr "검색어를 입력해주세요"
 
-#: .\templates\psat\v4\snippets\comment_container.html:36
-#: .\templates\psat\v4\snippets\comment_container.html:128
-#: .\templates\psat\v4\snippets\comment_container.html:136
+#: .\templates\psat\v4\snippets\comment_box.html:21
+#: .\templates\psat\v4\snippets\comment_box.html:29
+#: .\templates\psat\v4\snippets\comment_container.html:39
+#: .\templates\psat\v4\snippets\comment_container.html:129
+#: .\templates\psat\v4\snippets\comment_container.html:137
 msgid "Reply"
 msgstr "댓글"
 
-#: .\templates\psat\v4\snippets\comment_container.html:204
-#: .\templates\psat\v4\snippets\comment_container.html:228
-#: .\templates\psat\v4\snippets\memo_container.html:29
+#: .\templates\psat\v4\snippets\comment_container.html:205
+#: .\templates\psat\v4\snippets\comment_container.html:231
+#: .\templates\psat\v4\snippets\memo_container.html:35
 msgid "Cancel"
 msgstr "취소"
 
@@ -744,11 +769,11 @@ msgstr "인쇄"
 msgid "Logout"
 msgstr "로그아웃"
 
-#: .\templates\snippets\header.html:95
+#: .\templates\snippets\header.html:96
 msgid "Login"
 msgstr "로그인"
 
-#: .\templates\snippets\header.html:110 .\templates\socialaccount\signup.html:5
+#: .\templates\snippets\header.html:103 .\templates\socialaccount\signup.html:5
 msgid "Signup"
 msgstr "회원가입"
 
@@ -1067,7 +1092,7 @@ msgid "Null characters are not allowed."
 msgstr ""
 
 #: .\venv\Lib\site-packages\django\db\models\base.py:1473
-#: .\venv\Lib\site-packages\django\forms\models.py:902
+#: .\venv\Lib\site-packages\django\forms\models.py:906
 msgid "and"
 msgstr ""
 
@@ -1112,195 +1137,195 @@ msgstr ""
 msgid "Field of type: %(field_type)s"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1150
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1155
 #, python-format
 msgid "“%(value)s” value must be either True or False."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1151
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1156
 #, python-format
 msgid "“%(value)s” value must be either True, False, or None."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1153
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1158
 msgid "Boolean (Either True or False)"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1203
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1208
 #, python-format
 msgid "String (up to %(max_length)s)"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1205
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1210
 msgid "String (unlimited)"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1309
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1314
 msgid "Comma-separated integers"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1410
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1415
 #, python-format
 msgid ""
 "“%(value)s” value has an invalid date format. It must be in YYYY-MM-DD "
 "format."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1414
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1549
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1419
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1554
 #, python-format
 msgid ""
 "“%(value)s” value has the correct format (YYYY-MM-DD) but it is an invalid "
 "date."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1418
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1423
 msgid "Date (without time)"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1545
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1550
 #, python-format
 msgid ""
 "“%(value)s” value has an invalid format. It must be in YYYY-MM-DD HH:MM[:ss[."
 "uuuuuu]][TZ] format."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1553
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1558
 #, python-format
 msgid ""
 "“%(value)s” value has the correct format (YYYY-MM-DD HH:MM[:ss[.uuuuuu]]"
 "[TZ]) but it is an invalid date/time."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1558
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1563
 msgid "Date (with time)"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1685
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1690
 #, python-format
 msgid "“%(value)s” value must be a decimal number."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1687
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1692
 msgid "Decimal number"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1848
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1853
 #, python-format
 msgid ""
 "“%(value)s” value has an invalid format. It must be in [DD] [[HH:]MM:]ss[."
 "uuuuuu] format."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1852
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1857
 msgid "Duration"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1904
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1909
 msgid "Email address"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1929
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:1934
 msgid "File path"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2007
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2012
 #, python-format
 msgid "“%(value)s” value must be a float."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2009
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2014
 msgid "Floating point number"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2049
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2054
 #, python-format
 msgid "“%(value)s” value must be an integer."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2051
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2056
 msgid "Integer"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2147
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2152
 msgid "Big (8 byte) integer"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2164
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2169
 msgid "Small integer"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2172
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2177
 msgid "IPv4 address"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2203
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2208
 msgid "IP address"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2296
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2297
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2301
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2302
 #, python-format
 msgid "“%(value)s” value must be either None, True or False."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2299
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2304
 msgid "Boolean (Either True, False or None)"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2350
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2355
 msgid "Positive big integer"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2365
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2370
 msgid "Positive integer"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2380
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2385
 msgid "Positive small integer"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2396
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2401
 #, python-format
 msgid "Slug (up to %(max_length)s)"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2432
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2437
 msgid "Text"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2507
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2512
 #, python-format
 msgid ""
 "“%(value)s” value has an invalid format. It must be in HH:MM[:ss[.uuuuuu]] "
 "format."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2511
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2516
 #, python-format
 msgid ""
 "“%(value)s” value has the correct format (HH:MM[:ss[.uuuuuu]]) but it is an "
 "invalid time."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2515
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2520
 msgid "Time"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2623
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2628
 msgid "URL"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2647
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2652
 msgid "Raw binary data"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2712
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2717
 #, python-format
 msgid "“%(value)s” is not a valid UUID."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2714
+#: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2719
 msgid "Universally unique identifier"
 msgstr ""
 
@@ -1416,14 +1441,14 @@ msgstr ""
 
 #: .\venv\Lib\site-packages\django\forms\fields.py:874
 #: .\venv\Lib\site-packages\django\forms\fields.py:960
-#: .\venv\Lib\site-packages\django\forms\models.py:1581
+#: .\venv\Lib\site-packages\django\forms\models.py:1585
 #, python-format
 msgid "Select a valid choice. %(value)s is not one of the available choices."
 msgstr ""
 
 #: .\venv\Lib\site-packages\django\forms\fields.py:962
 #: .\venv\Lib\site-packages\django\forms\fields.py:1081
-#: .\venv\Lib\site-packages\django\forms\models.py:1579
+#: .\venv\Lib\site-packages\django\forms\models.py:1583
 msgid "Enter a list of values."
 msgstr ""
 
@@ -1473,36 +1498,36 @@ msgstr[0] ""
 msgid "Order"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\models.py:895
+#: .\venv\Lib\site-packages\django\forms\models.py:899
 #, python-format
 msgid "Please correct the duplicate data for %(field)s."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\models.py:900
+#: .\venv\Lib\site-packages\django\forms\models.py:904
 #, python-format
 msgid "Please correct the duplicate data for %(field)s, which must be unique."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\models.py:907
+#: .\venv\Lib\site-packages\django\forms\models.py:911
 #, python-format
 msgid ""
 "Please correct the duplicate data for %(field_name)s which must be unique "
 "for the %(lookup)s in %(date_field)s."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\models.py:916
+#: .\venv\Lib\site-packages\django\forms\models.py:920
 msgid "Please correct the duplicate values below."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\models.py:1353
+#: .\venv\Lib\site-packages\django\forms\models.py:1357
 msgid "The inline value did not match the parent instance."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\models.py:1444
+#: .\venv\Lib\site-packages\django\forms\models.py:1448
 msgid "Select a valid choice. That choice is not one of the available choices."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\models.py:1583
+#: .\venv\Lib\site-packages\django\forms\models.py:1587
 #, python-format
 msgid "“%(pk)s” is not a valid value."
 msgstr ""
@@ -1514,89 +1539,89 @@ msgid ""
 "may be ambiguous or it may not exist."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\widgets.py:457
+#: .\venv\Lib\site-packages\django\forms\widgets.py:461
 msgid "Clear"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\widgets.py:458
+#: .\venv\Lib\site-packages\django\forms\widgets.py:462
 msgid "Currently"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\widgets.py:459
+#: .\venv\Lib\site-packages\django\forms\widgets.py:463
 msgid "Change"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\widgets.py:796
+#: .\venv\Lib\site-packages\django\forms\widgets.py:800
 msgid "Unknown"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\widgets.py:797
+#: .\venv\Lib\site-packages\django\forms\widgets.py:801
 msgid "Yes"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\forms\widgets.py:798
+#: .\venv\Lib\site-packages\django\forms\widgets.py:802
 msgid "No"
 msgstr ""
 
 #. Translators: Please do not add spaces around commas.
-#: .\venv\Lib\site-packages\django\template\defaultfilters.py:875
+#: .\venv\Lib\site-packages\django\template\defaultfilters.py:876
 msgid "yes,no,maybe"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\template\defaultfilters.py:905
-#: .\venv\Lib\site-packages\django\template\defaultfilters.py:922
+#: .\venv\Lib\site-packages\django\template\defaultfilters.py:906
+#: .\venv\Lib\site-packages\django\template\defaultfilters.py:923
 #, python-format
 msgid "%(size)d byte"
 msgid_plural "%(size)d bytes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: .\venv\Lib\site-packages\django\template\defaultfilters.py:924
+#: .\venv\Lib\site-packages\django\template\defaultfilters.py:925
 #, python-format
 msgid "%s KB"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\template\defaultfilters.py:926
+#: .\venv\Lib\site-packages\django\template\defaultfilters.py:927
 #, python-format
 msgid "%s MB"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\template\defaultfilters.py:928
+#: .\venv\Lib\site-packages\django\template\defaultfilters.py:929
 #, python-format
 msgid "%s GB"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\template\defaultfilters.py:930
+#: .\venv\Lib\site-packages\django\template\defaultfilters.py:931
 #, python-format
 msgid "%s TB"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\template\defaultfilters.py:932
+#: .\venv\Lib\site-packages\django\template\defaultfilters.py:933
 #, python-format
 msgid "%s PB"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\utils\dateformat.py:73
+#: .\venv\Lib\site-packages\django\utils\dateformat.py:74
 msgid "p.m."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\utils\dateformat.py:74
+#: .\venv\Lib\site-packages\django\utils\dateformat.py:75
 msgid "a.m."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\utils\dateformat.py:79
+#: .\venv\Lib\site-packages\django\utils\dateformat.py:80
 msgid "PM"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\utils\dateformat.py:80
+#: .\venv\Lib\site-packages\django\utils\dateformat.py:81
 msgid "AM"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\utils\dateformat.py:152
+#: .\venv\Lib\site-packages\django\utils\dateformat.py:153
 msgid "midnight"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\utils\dateformat.py:154
+#: .\venv\Lib\site-packages\django\utils\dateformat.py:155
 msgid "noon"
 msgstr ""
 
@@ -1848,18 +1873,18 @@ msgstr ""
 msgid "This is not a valid IPv6 address."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\utils\text.py:70
+#: .\venv\Lib\site-packages\django\utils\text.py:123
 #, python-format
 msgctxt "String to return when truncating text"
 msgid "%(truncated_text)s…"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\utils\text.py:270
+#: .\venv\Lib\site-packages\django\utils\text.py:323
 msgid "or"
 msgstr ""
 
 #. Translators: This string is used as a separator between list elements
-#: .\venv\Lib\site-packages\django\utils\text.py:289
+#: .\venv\Lib\site-packages\django\utils\text.py:342
 #: .\venv\Lib\site-packages\django\utils\timesince.py:135
 msgid ", "
 msgstr ""
@@ -2008,16 +2033,16 @@ msgstr ""
 msgid "Empty list and “%(class_name)s.allow_empty” is False."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\views\static.py:48
+#: .\venv\Lib\site-packages\django\views\static.py:49
 msgid "Directory indexes are not allowed here."
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\views\static.py:50
+#: .\venv\Lib\site-packages\django\views\static.py:51
 #, python-format
 msgid "“%(path)s” does not exist"
 msgstr ""
 
-#: .\venv\Lib\site-packages\django\views\static.py:67
+#: .\venv\Lib\site-packages\django\views\static.py:68
 #: .\venv\Lib\site-packages\django\views\templates\directory_index.html:8
 #: .\venv\Lib\site-packages\django\views\templates\directory_index.html:11
 #, python-format
@@ -2097,6 +2122,24 @@ msgstr ""
 #: .\venv\Lib\site-packages\httplib2\__init__.py:1468
 msgid "Redirected but the response is missing a Location: header."
 msgstr ""
+
+#~ msgid "Username has been updated successfully."
+#~ msgstr "ID가 성공적으로 수정되었습니다."
+
+#~ msgid "Your password is now changed."
+#~ msgstr "비밀번호가 변경되었습니다."
+
+#~ msgid "Note"
+#~ msgstr "메모"
+
+#~ msgid "Reset My Password"
+#~ msgstr "비밀번호 초기화"
+
+#~ msgid "change password"
+#~ msgstr "비밀번호 변경"
+
+#~ msgid "Change E-mail"
+#~ msgstr "이메일 변경"
 
 #~ msgid "Search Result"
 #~ msgstr "검색 결과"

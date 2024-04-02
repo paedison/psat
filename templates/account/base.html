@@ -26,8 +26,8 @@
                                 {% block body %}
                                     {% if messages %}
                                         <div class="row">
-                                            {% for error in messages %}
-                                                {% include 'account/snippets/account_error_alert.html' %}
+                                            {% for message in messages %}
+                                                {% include 'account/snippets/alert_message.html' %}
                                             {% endfor %}
                                         </div>
                                     {% endif %}
@@ -35,7 +35,7 @@
                                     {% if form.non_field_errors %}
                                         <div class="row">
                                             {% for error in form.non_field_errors %}
-                                                {% include 'account/snippets/account_error_alert.html' %}
+                                                {% include 'account/snippets/alert_message.html' %}
                                             {% endfor %}
                                         </div>
                                     {% endif %}
@@ -44,25 +44,25 @@
                                         <div class="row">
                                             {% if form.errors.email %}
                                                 {% for error in form.errors.email %}
-                                                    {% include 'account/snippets/account_error_alert.html' %}
+                                                    {% include 'account/snippets/alert_message.html' %}
                                                 {% endfor %}
                                             {% endif %}
 
                                             {% if form.errors.username %}
                                                 {% for error in form.errors.username %}
-                                                    {% include 'account/snippets/account_error_alert.html' %}
+                                                    {% include 'account/snippets/alert_message.html' %}
                                                 {% endfor %}
                                             {% endif %}
 
                                             {% if form.errors.password1 %}
                                                 {% for error in form.errors.password1 %}
-                                                    {% include 'account/snippets/account_error_alert.html' %}
+                                                    {% include 'account/snippets/alert_message.html' %}
                                                 {% endfor %}
                                             {% endif %}
 
                                             {% if form.errors.password2 %}
                                                 {% for error in form.errors.password2 %}
-                                                    {% include 'account/snippets/account_error_alert.html' %}
+                                                    {% include 'account/snippets/alert_message.html' %}
                                                 {% endfor %}
                                             {% endif %}
                                         </div>
@@ -71,29 +71,18 @@
                                     {% block content %}{% endblock content %}
 
                                     {% block footer %}
-                                        {% if user.is_authenticated %}
-                                        <div class="text-center">
-                                            <a class="small" href="{% url 'account_email' %}">
-                                                {% trans "Change E-mail" %}
-                                            </a>
-                                        </div>
-                                        <div class="text-center">
-                                            <a class="small" href="{% url 'account_logout' %}">
-                                                {% trans "Sign Out" %}
-                                            </a>
-                                        </div>
-                                        {% else %}
-                                        <div class="text-center">
-                                            <a class="button secondaryAction small"
-                                               href="{% url 'account_reset_password' %}">
-                                                {% trans "Forgot Password?" %}
-                                            </a>
-                                        </div>
-                                        <div class="text-center">
-                                            <a class="small" href="{% url 'account_signup' %}">
-                                                {% trans "Sign Up" %}
-                                            </a>
-                                        </div>
+                                        {% if not user.is_authenticated %}
+                                            <div class="text-center">
+                                                <a class="button secondaryAction small"
+                                                   href="{% url 'account_reset_password' %}">
+                                                    {% trans "Forgot Password?" %}
+                                                </a>
+                                            </div>
+                                            <div class="text-center">
+                                                <a class="small" href="{% url 'account_signup' %}">
+                                                    {% trans "Sign Up" %}
+                                                </a>
+                                            </div>
                                         {% endif %}
                                     {% endblock footer %}
 
@@ -109,6 +98,12 @@
       </section>
     </div>
 </main><!-- End main -->
+<div id="modalContainer" class="modal fade htmx-fade-in htmx-fade-out" style="display: none"
+     aria-hidden="true" tabindex="-1" aria-labelledby="modalContainerLabel">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div><!-- Modal Container -->
 
 <a href="#" class="back-to-top d-flex align-items-center justify-content-center">
     <i class="fas fa-angle-up"></i>

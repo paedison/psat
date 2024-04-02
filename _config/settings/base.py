@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     # Additionally Installed  //  Django Apps
     'django.contrib.sites',
     'django.contrib.humanize',
+    'django.forms',
 
     # Third Party Apps
     'allauth',
@@ -148,6 +149,8 @@ TEMPLATES = [
         },
     },
 ]
+
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 WSGI_APPLICATION = '_config.wsgi.application'
 
@@ -245,6 +248,11 @@ ACCOUNT_EMAIL_VERIFICATION = 'None'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '이메일 인증'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_FORMS = {
+    'login': 'common.forms.LoginForm',
+    'change_password': 'common.forms.ChangePasswordForm'
+}
+ACCOUNT_SESSION_REMEMBER = True
 
 EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')
