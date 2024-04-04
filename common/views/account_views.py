@@ -33,6 +33,15 @@ class ProfileView(
 ):
     template_name = 'profile/v1/profile.html'
 
+    request: any
+
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         additional = {

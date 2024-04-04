@@ -6,6 +6,7 @@
 {% fragment as search_icon %}<i class="fa-solid fa-magnifying-glass fa-fw"></i>{% endfragment %}
 {% fragment as divider %}<li><hr class="dropdown-divider"></li>{% endfragment %}
 
+{% fragment as profile_icon %}<i class="fa-solid fa-user fa-fw"></i>{% endfragment %}
 {% fragment as dashboard_icon %}<i class="fa-solid fa-list fa-fw"></i>{% endfragment %}
 {% fragment as logout_icon %}<i class="fa-solid fa-sign-out-alt fa-fw"></i>{% endfragment %}
 {% fragment as login_icon %}<i class="fa-solid fa-sign-in-alt fa-fw"></i>{% endfragment %}
@@ -72,6 +73,14 @@
                 </a><!-- Profile Image Icon End -->
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
                     {% if user.is_authenticated %}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center"
+                               hx-get="{% url 'account_profile' %}" href="{% url 'account_profile' %}"
+                               hx-push-url="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                                {{ profile_icon|safe }} <span>Profile</span>
+                            </a>
+                        </li>
+                        {{ divider }}
                         <li>
                             <a class="dropdown-item d-flex align-items-center"
                                hx-post="{% url 'dashboard:base' %}" href="{% url 'dashboard:base' %}"
