@@ -31,7 +31,7 @@ class ProfileView(
     ConstantIconSet,
     vanilla.TemplateView,
 ):
-    template_name = 'profile/v1/profile.html'
+    template_name = 'account/profile.html'
 
     request: any
 
@@ -63,11 +63,11 @@ class UsernameChangeView(vanilla.UpdateView):
         user = User.objects.get(id=self.request.user.id)
         username = self.request.POST.get('username')
         password = self.request.POST.get('password')
-        if username == user.username:
-            messages.error(self.request, _('Same as current username.'))
-            return self.form_invalid(form)
         if not user.check_password(password):
             messages.error(self.request, _('Incorrect password.'))
+            return self.form_invalid(form)
+        if username == user.username:
+            messages.error(self.request, _('Same as current username.'))
             return self.form_invalid(form)
         messages.success(self.request, _('Username successfully updated.'))
         return super().form_valid(form)
@@ -77,13 +77,8 @@ class PasswordChangeView(allauth_views.PasswordChangeView):
     success_url = reverse_lazy('account_profile')
 
 
-class ChangePasswordModalView(vanilla.TemplateView):
-    template_name = 'profile/v1/modal.html#change_password'
-
-
 login_modal = LoginModalView.as_view()
 logout_modal = LogoutModalView.as_view()
 profile_view = ProfileView.as_view()
 username_change = UsernameChangeView.as_view()
 password_change = PasswordChangeView.as_view()
-change_password_modal = ChangePasswordModalView.as_view()

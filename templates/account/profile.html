@@ -1,35 +1,134 @@
-{% extends 'psat/old/problem_list.html' %}
+{% extends 'list.html' %}
 {% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
 {% load psat_filter %}
 
 {% block main %}
-<section>
-    {{ info|json_script:'info' }}
-    <section class="container col-12 p-0 mb-4">
-        <div class="row d-flex align-items-center justify-content-between">
-            <h6 class="d-inline-block font-weight-bold text-primary col-12 col-sm-6 py-2 m-0">
-                {{ info.icon|safe }} {{ info.title }}
-            </h6>
-        </div>
-    </section>
-    <article class="mx-0 main-article">
-    <!-- Content Row Start -->
+{% partialdef main inline=True %}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon_menu|safe }} Profile
+        <span class="fs-6 text-secondary">{{ title }}</span>
+    </h1>
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">Account</li>
+            <li class="breadcrumb-item active">Profile</li>
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
+
+<section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <div class="row">
-        <div class="col-lg-6">
-            <div class="card border-left-primary shadow mb-4">
+        <div class="col-lg-8 col-xl-7 col-xxl-6">
+            <div class="card">
+                <div class="card-header">프로필</div>
                 <div class="card-body">
-                    <h6 class="m-0 font-weight-bold text-primary">회원 정보</h6>
-                    <table class="table small">
-                        <tr class="align-middle text-center text-nowrap">
-                            <th class="col-6 px-1">Email</th>
-                            <th class="col-6 px-1">ID</th>
-                            <th class="col-6 px-1">가입일</th>
-                        </tr>
-                    </table>
+                    <div class="d-flex d-md-none flex-column align-items-center">
+                        <div class="text-center">
+                            <img src="{% static 'image/undraw_profile.jpg' %}" alt="Profile"
+                                 class="rounded-circle" style="max-width: 50%">
+                            <h2>{{ user.username }}</h2>
+                        </div>
+                        <div>
+                            {% if messages %}
+                                <div class="row">
+                                    {% for message in messages %}
+                                        {% include 'account/snippets/alert_message.html' %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <table class="table">
+                                <tr>
+                                    <th>이메일</th>
+                                    <td colspan="2">{{ user.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="align-middle">아이디</th>
+                                    <td class="align-middle">{{ user.username }}</td>
+                                    <td class="align-middle text-end">
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'account_change_username' %}">
+                                            수정
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="align-middle">비밀번호</th>
+                                    <td class="align-middle">*********</td>
+                                    <td class="align-middle text-end">
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'account_change_password' %}">
+                                            수정
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>가입일</th>
+                                    <td colspan="2">{{ user.joined_at|date:'Y.m.d' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>최근 접속일</th>
+                                    <td colspan="2">{{ user.last_login|date:'Y.m.d' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="d-none d-md-flex flex-row align-items-center">
+                        <div class="col-md-4 d-flex flex-column align-items-center">
+                            <img src="{% static 'image/undraw_profile.jpg' %}" alt="Profile"
+                                 class="rounded-circle" style="max-width: 50%">
+                            <h2>{{ user.username }}</h2>
+                        </div>
+                        <div class="col-md-8">
+                            {% if messages %}
+                                <div class="row">
+                                    {% for message in messages %}
+                                        {% include 'account/snippets/alert_message.html' %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <table class="table">
+                                <tr>
+                                    <th>이메일</th>
+                                    <td colspan="2">{{ user.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="align-middle">아이디</th>
+                                    <td class="align-middle">{{ user.username }}</td>
+                                    <td class="align-middle text-end">
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'account_change_username' %}">
+                                            수정
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="align-middle">비밀번호</th>
+                                    <td class="align-middle">*********</td>
+                                    <td class="align-middle text-end">
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'account_change_password' %}">
+                                            수정
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>가입일</th>
+                                    <td colspan="2">{{ user.joined_at|date:'Y.m.d' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>최근 접속일</th>
+                                    <td colspan="2">{{ user.last_login|date:'Y.m.d' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div><!-- Content Row End -->
-    </article>
+    </div>
 </section>
-{% endblock %}
+{% endpartialdef main %}
+{% endblock main %}

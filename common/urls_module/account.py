@@ -9,7 +9,6 @@ urlpatterns = [
     path('profile/', account_views.profile_view, name='account_profile'),
     path("username/change/", account_views.username_change, name="account_change_username"),
     path("password/change/", account_views.password_change, name="account_change_password"),
-    path('password/modal/', account_views.change_password_modal, name='account_change_password_modal'),
 ]
 
 """

@@ -27,7 +27,7 @@ msgstr "새로운 아이디를 입력해주세요."
 
 #: .\common\views\account_views.py:58
 msgid "Same as current username."
-msgstr "현재 ID와 동일합니다."
+msgstr "현재 아이디와 동일합니다."
 
 #: .\common\views\account_views.py:61
 msgid "Incorrect password."

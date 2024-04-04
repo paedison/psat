@@ -42,29 +42,11 @@
 
                                     {% if form.errors %}
                                         <div class="row">
-                                            {% if form.errors.email %}
-                                                {% for error in form.errors.email %}
+                                            {% for field in form %}
+                                                {% for error in field.errors %}
                                                     {% include 'account/snippets/alert_message.html' %}
                                                 {% endfor %}
-                                            {% endif %}
-
-                                            {% if form.errors.username %}
-                                                {% for error in form.errors.username %}
-                                                    {% include 'account/snippets/alert_message.html' %}
-                                                {% endfor %}
-                                            {% endif %}
-
-                                            {% if form.errors.password1 %}
-                                                {% for error in form.errors.password1 %}
-                                                    {% include 'account/snippets/alert_message.html' %}
-                                                {% endfor %}
-                                            {% endif %}
-
-                                            {% if form.errors.password2 %}
-                                                {% for error in form.errors.password2 %}
-                                                    {% include 'account/snippets/alert_message.html' %}
-                                                {% endfor %}
-                                            {% endif %}
+                                            {% endfor %}
                                         </div>
                                     {% endif %}
 
@@ -85,11 +67,8 @@
                                             </div>
                                         {% endif %}
                                     {% endblock footer %}
-
                                 {% endblock body %}
-
                                 {% block extra_body %}{% endblock extra_body %}
-
                             </div>
                         </div>
                     </div>
