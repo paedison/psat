@@ -2,68 +2,149 @@
 {% load slippers %}
 {% load psat_filter %}
 
-<article id="icon_container" class="d-inline-block">
-    <div class="td-div-xl" aria-label="Rate">
-        {% if user.is_authenticated %}
-            <a id="psatRate{{ problem.id }}" href="" class="htmx-fade-in htmx-fade-out"
-               hx-get="{% url 'psat:rate_modal' %}?problem_id={{ problem.id }}&icon_id=psatRate{{ problem.id }}"
-               hx-target="#modalContainer" hx-swap="innerHTML"
-               data-bs-toggle="modal" data-bs-target="#modalContainer">
-                {% partial rate %}
+{% partialdef login_modal %}
+    <a hx-get="{% url 'account_login_modal' %}" href=""
+       hx-target="#modalContainer" hx-swap="innerHTML"
+       data-bs-toggle="modal" data-bs-target="#modalContainer">
+        {{ icon }}
+    </a>
+{% endpartialdef login_modal %}
+
+
+{% partialdef container_rate %}
+    {% if user.is_authenticated %}
+        <a id="psatRate{{ problem.id }}" href="" class="htmx-fade-in htmx-fade-out"
+           hx-get="{% url 'psat:rate_modal' %}?problem_id={{ problem.id }}&icon_id=psatRate{{ problem.id }}"
+           hx-target="#modalContainer" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
+            {% partial rate %}
+        </a>
+    {% else %}
+        {% with icon=icon_rate.star0|safe %}{% partial login_modal %}{% endwith %}
+    {% endif %}
+{% endpartialdef container_rate %}
+
+{% partialdef rate %}
+    {% if problem.rating == 1 or problem|get_status:rate_data == 1 %}
+        {{ icon_rate.star1|safe }}
+    {% elif problem.rating == 2 or problem|get_status:rate_data == 2 %}
+        {{ icon_rate.star2|safe }}
+    {% elif problem.rating == 3 or problem|get_status:rate_data == 3 %}
+        {{ icon_rate.star3|safe }}
+    {% elif problem.rating == 4 or problem|get_status:rate_data == 4 %}
+        {{ icon_rate.star4|safe }}
+    {% elif problem.rating == 5 or problem|get_status:rate_data == 5 %}
+        {{ icon_rate.star5|safe }}
+    {% else %}
+        {{ icon_rate.star0|safe }}
+    {% endif %}
+{% endpartialdef rate %}
+
+
+{% partialdef container_like %}
+    {% if user.is_authenticated %}
+        <form id="likeButton{{ problem.id }}">
+            <a hx-post="{% url 'psat:custom' 'like' problem.id %}" href=""
+               class="htmx-fade-in htmx-fade-out" hx-target="this"
+               hx-swap="innerHTML swap:0.25s">
+                {% partial like %}
             </a>
-        {% else %}
-            {% with icon=icon_rate.star0|safe %}{% partial login_modal %}{% endwith %}
-        {% endif %}
+        </form>
+    {% else %}
+        {% with icon=icon_like.false|safe %}{% partial login_modal %}{% endwith %}
+    {% endif %}
+{% endpartialdef container_like %}
+
+{% partialdef like %}
+    <input type="text" name="is_liked" value="{{ problem|get_status:like_data }}" hidden
+           aria-label="Like Icon">
+    {% if problem|get_status:like_data %}
+        {{ icon_like.true|safe }}
+    {% else %}
+        {{ icon_like.false|safe }}
+    {% endif %}
+{% endpartialdef like %}
+
+
+{% partialdef container_solve %}
+    {% if user.is_authenticated %}
+        <span id="psatSolve{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+            {% partial solve %}
+        </span>
+    {% else %}
+        {% with icon=icon_solve.none|safe %}{% partial login_modal %}{% endwith %}
+    {% endif %}
+{% endpartialdef container_solve %}
+
+{% partialdef solve %}
+    {% if problem|get_status:solve_data is True %}
+        {{ icon_solve.true|safe }}
+    {% elif problem|get_status:solve_data is False %}
+        {{ icon_solve.false|safe }}
+    {% else %}
+        {{ icon_solve.none|safe }}
+    {% endif %}
+{% endpartialdef solve %}
+
+
+{% partialdef container_memo %}
+    {% if user.is_authenticated %}
+        <span id="psatMemo{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+            {% partial memo %}
+        </span>
+    {% else %}
+        {% with icon=icon_memo.false|safe %}{% partial login_modal %}{% endwith %}
+    {% endif %}
+{% endpartialdef container_memo %}
+
+{% partialdef memo %}
+    {% if problem|get_status:memo_data is True %}
+        {{ icon_memo.true|safe }}
+    {% else %}
+        {{ icon_memo.false|safe }}
+    {% endif %}
+{% endpartialdef memo %}
+
+
+{% partialdef container_tag %}
+    {% if user.is_authenticated %}
+        <span id="psatTag{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+            {% partial tag %}
+        </span>
+    {% else %}
+        {% with icon=icon_tag.false|safe %}{% partial login_modal %}{% endwith %}
+    {% endif %}
+{% endpartialdef container_tag %}
+
+{% partialdef tag %}
+    {% if problem|get_status:tag_data is True %}
+        {{ icon_tag.true|safe }}
+    {% else %}
+        {{ icon_tag.false|safe }}
+    {% endif %}
+{% endpartialdef tag %}
+
+
+<article id="icon_container" class="d-inline-block">
+    <div class="d-block d-md-inline-block" aria-label="Rate">
+        {% partial container_rate %}
     </div>
-    <div class="d-inline-block pe-1" aria-label="Like">
-        {% if user.is_authenticated %}
-            <form id="likeButton{{ problem.id }}">
-                <a hx-post="{% url 'psat:custom' 'like' problem.id %}" href=""
-                   class="htmx-fade-in htmx-fade-out" hx-target="this"
-                   hx-swap="innerHTML swap:0.25s">
-                    {% partial like %}
-                </a>
-            </form>
-        {% else %}
-            {% with icon=icon_like.false|safe %}
-                {% partialdef login_modal inline=True %}
-                    <a hx-get="{% url 'account_login_modal' %}" href=""
-                       hx-target="#modalContainer" hx-swap="innerHTML"
-                       data-bs-toggle="modal" data-bs-target="#modalContainer">
-                        {{ icon }}
-                    </a>
-                {% endpartialdef %}
-            {% endwith %}
-        {% endif %}
-    </div>
-    <div class="d-inline-block pe-1" aria-label="Answer">
-        {% if user.is_authenticated %}
-            <span id="psatSolve{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
-                {% partial solve %}
-            </span>
-        {% else %}
-            {% with icon=icon_solve.none|safe %}{% partial login_modal %}{% endwith %}
-        {% endif %}
-    </div>
-    <div class="d-inline-block pe-1" aria-label="Memo">
-        {% if user.is_authenticated %}
-            <span id="psatMemo{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
-                {% partial memo %}
-            </span>
-        {% else %}
-            {% with icon=icon_memo.false|safe %}{% partial login_modal %}{% endwith %}
-        {% endif %}
-    </div>
-    <div class="d-inline-block pe-1" aria-label="Tag">
-        {% if user.is_authenticated %}
-            <span id="psatTag{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
-                {% partial tag %}
-            </span>
-        {% else %}
-            {% with icon=icon_tag.false|safe %}{% partial login_modal %}{% endwith %}
-        {% endif %}
+    <div class="d-block d-md-inline-block text-center">
+        <div class="d-inline-block pe-1" aria-label="Like">
+            {% partial container_like %}
+        </div>
+        <div class="d-inline-block pe-1" aria-label="Solve">
+            {% partial container_solve %}
+        </div>
+        <div class="d-inline-block pe-1" aria-label="Memo">
+            {% partial container_memo %}
+        </div>
+        <div class="d-inline-block" aria-label="Tag">
+            {% partial container_tag %}
+        </div>
     </div>
 </article>
+
 
 {% partialdef rate_modal %} {# rate_modal partial #}
 {% #modal header='문제 난이도를 선택해주세요.' %}
@@ -85,54 +166,3 @@
 {% /modal %}
 {% endpartialdef rate_modal %}
 
-{% partialdef like %} {# like partial #}
-    <input type="text" name="is_liked" value="{{ problem|get_status:like_data }}" hidden
-           aria-label="Like Icon">
-    {% if problem|get_status:like_data %}
-        {{ icon_like.true|safe }}
-    {% else %}
-        {{ icon_like.false|safe }}
-    {% endif %}
-{% endpartialdef like %}
-
-{% partialdef rate %} {# rate partial #}
-    {% if problem.rating == 1 or problem|get_status:rate_data == 1 %}
-        {{ icon_rate.star1|safe }}
-    {% elif problem.rating == 2 or problem|get_status:rate_data == 2 %}
-        {{ icon_rate.star2|safe }}
-    {% elif problem.rating == 3 or problem|get_status:rate_data == 3 %}
-        {{ icon_rate.star3|safe }}
-    {% elif problem.rating == 4 or problem|get_status:rate_data == 4 %}
-        {{ icon_rate.star4|safe }}
-    {% elif problem.rating == 5 or problem|get_status:rate_data == 5 %}
-        {{ icon_rate.star5|safe }}
-    {% else %}
-        {{ icon_rate.star0|safe }}
-    {% endif %}
-{% endpartialdef rate %}
-
-{% partialdef solve %} {# solve partial #}
-    {% if problem|get_status:solve_data is True %}
-        {{ icon_solve.true|safe }}
-    {% elif problem|get_status:solve_data is False %}
-        {{ icon_solve.false|safe }}
-    {% else %}
-        {{ icon_solve.none|safe }}
-    {% endif %}
-{% endpartialdef solve %}
-
-{% partialdef memo %} {# memo partial #}
-    {% if problem|get_status:memo_data is True %}
-        {{ icon_memo.true|safe }}
-    {% else %}
-        {{ icon_memo.false|safe }}
-    {% endif %}
-{% endpartialdef memo %}
-
-{% partialdef tag %} {# tag partial #}
-    {% if problem|get_status:tag_data is True %}
-        {{ icon_tag.true|safe }}
-    {% else %}
-        {{ icon_tag.false|safe }}
-    {% endif %}
-{% endpartialdef tag %}
