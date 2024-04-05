@@ -57,7 +57,7 @@
                                         <input id="id_data" type="text" name="keyword"
                                                value="{{ keyword }}" hidden
                                                placeholder="{% trans 'Enter search keyword' %}"
-                                               title="{% trans 'Enter search keyword' %}">
+                                               title="{% trans 'Enter search keyword' %}"/>
                                     </form>
                                 </div>
                             </div>
@@ -70,39 +70,27 @@
                                 {% for problem in page_obj %}
                                     {% ifchanged %}
                                         <tr class="table-warning">
-                                            <td class="text-center text-nowrap text-primary p-2">
-                                                <h2 class="fs-6 fw-bold m-0">
-                                                    {% if info.view_type == 'problem' %}
-                                                        <a href="" hx-boost="true" hx-push-url="false"
-                                                           hx-get="{{ base_url }}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
-                                                            {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                                        </a>
-                                                    {% else %}
-                                                        {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                                    {% endif %}
-                                                </h2>
+                                            <td class="text-center text-nowrap p-2">
+                                                {% partial list_divider %}
                                             </td>
                                         </tr>
                                     {% endifchanged %}
                                     <tr>
                                         <td class="text-nowrap py-2 px-0">
-                                            <div class="align-middle d-inline-block fs-6 pe-1">
+                                            <div class="align-middle d-inline-block pe-1">
                                                 {% include 'psat/v4/snippets/icon_container.html' %}
                                             </div>
-                                            <div class="align-middle d-inline-block fs-6" hx-push-url="true">
-                                                <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1">
-                                                    {% partial reference %}
-                                                </div>
-                                                <div class="d-block d-md-inline-block">
-                                                    {% partial question %}
-                                                </div>
+                                            <div class="align-middle d-inline-block" hx-push-url="true">
+                                                {% partial question %}
                                             </div>
                                         </td>
                                     </tr>
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+                                    <td class="text-center text-nowrap p-4 text-danger fs-6 fw-bold">
+                                        자료가 없습니다.
+                                    </td>
                                 </tr>
                             {% endif %}
                         </tbody>
@@ -174,33 +162,40 @@
 {% endpartialdef list_main %}
 {% endblock main %}
 
-{% partialdef reference %}
-    {% with p=problem %}
-        <a class="text-decoration-none fw-bold"
-           href="{% url 'psat:detail' p.id %}"
-           hx-get="{% url 'psat:detail' p.id %}{{ url_options }}"
-           hx-push-url="{% url 'psat:detail' p.id %}">
-            {{ p.year }}{{ p.ex|first }}{{ p.sub|first }}-{{ p.number|stringformat:'02d' }}
-        </a>
-    {% endwith %}
-{% endpartialdef reference %}
+{% partialdef list_divider %}
+    <h2 class="fs-6 fw-bold text-primary m-0">
+        {% if info.view_type == 'problem' %}
+            <a href="" hx-boost="true" hx-push-url="false"
+               hx-get="{{ base_url }}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
+                {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+            </a>
+        {% else %}
+            {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+        {% endif %}
+    </h2>
+{% endpartialdef list_divider %}
 
 {% partialdef question %}
-    {% with class='d-md-none' chars=30 %}
-        {% partialdef link_snippet inline=True %}
-            <a class="text-decoration-none {{ class }}"
-               href="{% url 'psat:detail' problem.id %}"
-               hx-get="{% url 'psat:detail' problem.id %}{{ url_options }}"
-               hx-push-url="{% url 'psat:detail' problem.id %}">
-                <h3 class="d-inline-block fs-6 small m-0">
+    <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1">
+        <a class="text-decoration-none fs-6 fw-bold"
+           href="{% url 'psat:detail' problem.id %}"
+           hx-get="{% url 'psat:detail' problem.id %}{{ url_options }}"
+           hx-push-url="{% url 'psat:detail' problem.id %}">
+            {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|stringformat:'02d' }}
+        </a>
+    </div>
+    <div class="d-block d-md-inline-block">
+        <a class="text-decoration-none"
+           href="{% url 'psat:detail' problem.id %}"
+           hx-get="{% url 'psat:detail' problem.id %}{{ url_options }}"
+           hx-push-url="{% url 'psat:detail' problem.id %}">
+            {% for _ in '1234' %}
+                {% cycle 'd-sm-none' 'd-none d-sm-inline d-lg-none' 'd-none d-lg-inline d-xl-none' 'd-none d-xl-inline' as class silent %}
+                {% cycle 30 40 50 60 as chars silent %}
+                <h3 class="{{ class }} fs-6 m-0">
                     {{ problem.question|truncatechars:chars }}
                 </h3>
-            </a>
-        {% endpartialdef link_snippet %}
-    {% endwith %}
-    {% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
+            {% endfor %}
+        </a>
+    </div>
 {% endpartialdef question %}
-
-

@@ -58,17 +58,19 @@
 {% partialdef like %}
     <input type="text" name="is_liked" value="{{ problem|get_status:like_data }}" hidden
            aria-label="Like Icon">
-    {% if problem|get_status:like_data %}
-        {{ icon_like.true|safe }}
-    {% else %}
-        {{ icon_like.false|safe }}
-    {% endif %}
+    <span class="fs-6">
+        {% if problem|get_status:like_data %}
+            {{ icon_like.true|safe }}
+        {% else %}
+            {{ icon_like.false|safe }}
+        {% endif %}
+    </span>
 {% endpartialdef like %}
 
 
 {% partialdef container_solve %}
     {% if user.is_authenticated %}
-        <span id="psatSolve{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+        <span id="psatSolve{{ problem.id }}" class="fs-6 htmx-fade-in htmx-fade-out">
             {% partial solve %}
         </span>
     {% else %}
@@ -89,7 +91,7 @@
 
 {% partialdef container_memo %}
     {% if user.is_authenticated %}
-        <span id="psatMemo{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+        <span id="psatMemo{{ problem.id }}" class="fs-6 htmx-fade-in htmx-fade-out">
             {% partial memo %}
         </span>
     {% else %}
@@ -108,7 +110,7 @@
 
 {% partialdef container_tag %}
     {% if user.is_authenticated %}
-        <span id="psatTag{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+        <span id="psatTag{{ problem.id }}" class="fs-6 htmx-fade-in htmx-fade-out">
             {% partial tag %}
         </span>
     {% else %}
@@ -126,17 +128,17 @@
 
 
 <article id="icon_container" class="d-inline-block">
-    <div class="d-block d-md-inline-block" aria-label="Rate">
+    <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1" aria-label="Rate">
         {% partial container_rate %}
     </div>
     <div class="d-block d-md-inline-block text-center">
-        <div class="d-inline-block pe-1" aria-label="Like">
+        <div class="d-inline-block" aria-label="Like">
             {% partial container_like %}
         </div>
-        <div class="d-inline-block pe-1" aria-label="Solve">
+        <div class="d-inline-block" aria-label="Solve">
             {% partial container_solve %}
         </div>
-        <div class="d-inline-block pe-1" aria-label="Memo">
+        <div class="d-inline-block" aria-label="Memo">
             {% partial container_memo %}
         </div>
         <div class="d-inline-block" aria-label="Tag">
