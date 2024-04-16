@@ -1,21 +1,36 @@
 from django.contrib import admin
 
-from psat.models import Exam, Problem, Evaluation, ProblemMemo, ProblemTag
+from psat import models
 
 
-class ExamAdmin(admin.ModelAdmin):
-    list_display = ('year', 'ex', 'sub', 'exam1', 'exam2', 'subject', 'year_ex_sub')
-    # list_filter = ('year', 'ex', 'sub')
-    # search_fields = ('year', 'ex', 'sub')
-    list_per_page = 20
+@admin.register(models.Open)
+class OpenAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'user_id', 'ip_address', 'problem')
 
 
-class ProblemAdmin(admin.ModelAdmin):
-    # list_display = ('exam', 'number', 'question')
-    list_display = ('exam', 'number', 'question', 'tag_list')
-    # list_filter = ('exam', 'number', 'question')
-    search_fields = ('exam', 'number', 'question')
-    list_per_page = 20
+@admin.register(models.Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'user_id', 'problem', 'is_liked')
+
+
+@admin.register(models.Rate)
+class RateAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'user_id', 'problem', 'rating')
+
+
+@admin.register(models.Solve)
+class SolveAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'user_id', 'problem', 'answer', 'is_correct')
+
+
+@admin.register(models.Memo)
+class MemoAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'updated_at', 'user_id', 'problem', 'memo')
+
+
+@admin.register(models.Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'updated_at', 'user_id', 'problem', 'tag_list')
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
@@ -24,31 +39,11 @@ class ProblemAdmin(admin.ModelAdmin):
         return ', '.join(o.name for o in obj.tags.all())
 
 
-class EvaluationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'problem', 'user', 'opened_at', 'liked_at', 'rated_at',)
-    # list_filter = ('problem', 'user', 'is_favorite')
-    # search_fields = ('problem', 'user', 'is_favorite')
-    list_per_page = 20
+@admin.register(models.Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'user_id', 'title', 'is_active')
 
 
-class ProblemMemoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'problem', 'user', 'content', 'created_at', 'updated_at',)
-    list_per_page = 20
-
-
-class ProblemTagAdmin(admin.ModelAdmin):
-    list_display = ('id', 'problem', 'user', 'tag_list', 'created_at', 'updated_at',)
-    list_per_page = 20
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('tags')
-
-    def tag_list(self, obj):
-        return u', '.join(o.name for o in obj.tags.all())
-
-
-admin.site.register(Exam, ExamAdmin)
-admin.site.register(Problem, ProblemAdmin)
-admin.site.register(Evaluation, EvaluationAdmin)
-admin.site.register(ProblemMemo, ProblemMemoAdmin)
-admin.site.register(ProblemTag, ProblemTagAdmin)
+@admin.register(models.CollectionItem)
+class CollectionItemAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'collection', 'problem', 'is_active')

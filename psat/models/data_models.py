@@ -81,3 +81,54 @@ class Comment(models.Model):
 
     def get_absolute_url(self):
         return reverse_lazy('psat:comment_container', args=[self.problem_id])
+
+
+class Collection(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user_id = models.IntegerField()
+    title = models.CharField(max_length=20)
+    order = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['user_id', 'order']
+        unique_together = [["user_id", "title"]]
+
+    def __str__(self):
+        if self.is_active:
+            title = f'[User{self.user_id}_Col{self.id}] {self.title}'
+        else:
+            title = f'[User{self.user_id}_Col{self.id}_Inactive] {self.title}'
+        return title
+
+    def set_active(self):
+        self.is_active = True
+        self.save()
+
+    def set_inactive(self):
+        self.is_active = False
+        self.save()
+
+
+class CollectionItem(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name='collection_items')
+    problem = models.ForeignKey(PsatProblem, on_delete=models.CASCADE, related_name='collection_items')
+    order = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['collection__user_id', 'collection', 'order']
+
+    def __str__(self):
+        return f'{self.collection} - {self.problem}'
+
+    def set_active(self):
+        self.is_active = True
+        self.save()
+
+    def set_inactive(self):
+        self.is_active = False
+        self.save()

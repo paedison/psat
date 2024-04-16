@@ -37,3 +37,9 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = custom_models.Comment
         fields = ['comment', 'parent']
+
+
+class CollectionForm(forms.ModelForm):
+    class Meta:
+        model = custom_models.Collection
+        fields = ['title']

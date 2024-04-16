@@ -1,0 +1,53 @@
+{% load partials %}
+
+{% partialdef add_item %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    문제 저장
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                {% for collection in collections %}
+                    <form class="{% if forloop.first %}mb-2{% elif forloop.last %}mt-2{% else %}my-2{% endif %}">
+                        <input type="text" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID" hidden/>
+                        <div class="form-check text-start">
+                            <input class="form-check-input" type="checkbox" name="is_checked" id="collection{{ collection.id }}"
+                                   hx-post="{% url 'psat:collection_item_add' collection.id %}"
+                                   hx-trigger="click" hx-target="#{{ icon_id }}" hx-swap="innerHTML swap:0.25s"
+                                   {% if collection.item_exists %}checked{% endif %}/>
+                            <label class="form-check-label" for="collection{{ collection.id }}">{{ collection.title }}</label>
+                        </div>
+                    </form>
+                {% endfor %}
+            </div>
+            <div class="modal-footer justify-content-center htmx-fade-out htmx-fade-in"
+                 hx-target="this" hx-swap="innerHTML swap:0.25s" hx-push-url="false">
+                <a type="button" class="text-secondary" href=""
+                   hx-get="{% url 'psat:collection_create_in_modal' %}?problem_id={{ problem_id }}">
+                    <i class="fa-solid fa-plus"></i> 새 컬렉션 만들기
+                </a>
+            </div>
+        </div>
+    </div>
+{% endpartialdef add_item %}
+
+
+{% partialdef create_collection %}
+<form class="row">
+    <input type="text" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID" hidden/>
+    <div class="input-group col-12 px-0">
+        <input type="text" class="form-control" id="collection_title" name="title"
+               aria-label="Collection Title"
+               placeholder="컬렉션 이름을 입력하세요">
+        <button class="btn btn-outline-secondary" type="button"
+                hx-post="{% url 'psat:collection_create_in_modal' %}"
+                hx-target="#modalContainer"
+                hx-swap="innerHTML swap:0.25s">
+            입력
+        </button>
+    </div>
+</form>
+{% endpartialdef create %}

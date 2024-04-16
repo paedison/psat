@@ -1,7 +1,7 @@
 from django.urls import path
 
 from psat.views.v4 import (
-    problem_views, update_views, memo_views, tag_views, comment_views
+    problem_views, update_views, memo_views, tag_views, comment_views, collection_views
 )
 
 app_name = 'psat'
@@ -9,6 +9,8 @@ app_name = 'psat'
 urlpatterns = [
     # problem_views [view_type: problem, like, rate, solve, search]
     path('', problem_views.list_view, name='base'),
+
+    path('list/', problem_views.problem_list_view, name='list'),
     path('search/', problem_views.search_view, name='search'),
 
     path('detail/<int:problem_id>/', problem_views.detail_view, name='detail'),
@@ -34,11 +36,46 @@ urlpatterns = [
     path('tag/delete/<int:tag_id>/<str:tag_name>/', tag_views.delete_view, name='tag_delete'),
     path('tag/cloud/', tag_views.cloud_view, name='tag_cloud'),
 
+    # collection_views
+    path('collection/card/',
+         collection_views.card_view, name='collection_card'),
+    path('collection/card/list/<int:collection_id>/',
+         collection_views.card_item_view, name='collection_item'),
+
+    path('collection/card/update/',
+         collection_views.card_update_view, name='collection_card_update'),
+
+    path('collection/sort/list/',
+         collection_views.list_sort_view, name='collection_list_sort'),
+    path('collection/sort/item/',
+         collection_views.item_sort_view, name='collection_item_sort'),
+
+    path('collection/modal/',
+         collection_views.item_add_modal_view, name='collection_item_add_modal'),
+    path('collection/modal/create/',
+         collection_views.collection_create_in_modal_view, name='collection_create_in_modal'),
+
+    path('collection/create/',
+         collection_views.collection_create_view, name='collection_create'),
+
+    path('collection/update/<int:collection_id>/',
+         collection_views.collection_update_view, name='collection_update'),
+    path('collection/delete/<int:collection_id>/',
+         collection_views.collection_delete_view, name='collection_delete'),
+    path('collection/<int:collection_id>/add/',
+         collection_views.item_add_view, name='collection_item_add'),
+
     # comment_views
-    path('comment/list/', comment_views.list_view, name='comment_list'),
-    path('comment/detail/<int:comment_id>/', comment_views.detail_view, name='comment_detail'),
-    path('comment/container/<int:problem_id>/', comment_views.container_view, name='comment_container'),
-    path('comment/create/<int:problem_id>/', comment_views.create_view, name='comment_create'),
-    path('comment/update/<int:comment_id>/', comment_views.update_view, name='comment_update'),
-    path('comment/delete/<int:comment_id>/', comment_views.delete_view, name='comment_delete'),
+    path('comment/list/',
+         comment_views.comment_view, name='comment'),
+    path('comment/detail/<int:comment_id>/',
+         comment_views.comment_detail_view, name='comment_detail'),
+    path('comment/container/<int:problem_id>/',
+         comment_views.comment_container_view, name='comment_container'),
+    path('comment/create/<int:problem_id>/',
+         comment_views.comment_create_view, name='comment_create'),
+    path('comment/update/<int:comment_id>/',
+         comment_views.comment_update_view, name='comment_update'),
+    path('comment/delete/<int:comment_id>/',
+         comment_views.comment_delete_view, name='comment_delete'),
 ]

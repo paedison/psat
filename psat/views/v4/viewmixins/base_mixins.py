@@ -66,7 +66,7 @@ class BaseMixin(ConstantIconSet):
         self.keyword = self.request.GET.get('keyword', '') or self.request.POST.get('keyword', '')
 
         self.ip_address = self.request.META.get('REMOTE_ADDR')
-        self.base_url = reverse_lazy('psat:base')
+        self.base_url = reverse_lazy('psat:list')
         self.url_options = (
             f'?year={self.year}&ex={self.ex}&sub={self.sub}&page={self.page_number}'
             f'&likes={self.likes}&rates={self.rates}&solves={self.solves}'
@@ -170,11 +170,18 @@ class BaseMixin(ConstantIconSet):
             tag_data = (
                 queryset.filter(tags__isnull=False, tags__user_id=self.user_id)
                 .values(*values_list_keys))
+            collection_data = (
+                queryset.filter(
+                    collection_items__isnull=False,
+                    collection_items__collection__user_id=self.user_id,
+                    collection_items__is_active=True,
+                )
+                .values(*values_list_keys))
             comment_data = (
                 queryset.filter(comments__isnull=False, comments__user_id=self.user_id)
                 .values(*values_list_keys))
         else:
-            like_data = rate_data = solve_data = memo_data = tag_data = comment_data = queryset.none()
+            like_data = rate_data = solve_data = memo_data = tag_data = collection_data = comment_data = queryset.none()
 
         return {
             'problem': problem_data,
@@ -184,5 +191,6 @@ class BaseMixin(ConstantIconSet):
             'solve': solve_data,
             'memo': memo_data,
             'tag': tag_data,
+            'collection': collection_data,
             'comment': comment_data,
         }

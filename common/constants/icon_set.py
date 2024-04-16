@@ -71,11 +71,21 @@ class ConstantIconSet:
         'white': '<i class="fa-solid fa-tag fa-fw text-white"></i>',
     }
 
+    ICON_COLLECTION = {
+        'true': '<i class="fa-solid fa-folder-plus text-primary"></i>',
+        'false': '<i class="fa-solid fa-folder-plus text-gray-300"></i>',
+    }
+
     ICON_QUESTION = {
         'true': '<i class="fa-solid fa-circle-question text-success"></i>',
         'false': '<i class="fa-solid fa-circle-question text-gray-300"></i>',
         'filter': '<i class="fa-regular fa-circle-question"></i>',
         'white': '<i class="fa-regular fa-circle-question fa-fw text-white"></i>',
+    }
+
+    ICON_IMAGE = {
+        'true': '<i class="fa-solid fa-image text-danger"></i>',
+        'false': '<i class="fa-solid fa-image text-gray-300"></i>',
     }
 
     @staticmethod

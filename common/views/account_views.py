@@ -1,12 +1,24 @@
 import vanilla
 from allauth.account import views as allauth_views
 from django.contrib import messages
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from common import forms as common_forms
 from common.constants.icon_set import ConstantIconSet
 from common.models import User
+
+
+class OnlyLoggedInAllowedMixin(UserPassesTestMixin):
+    request: any
+
+    def test_func(self):
+        return self.request.user.is_authenticated
+
+    def handle_no_permission(self):
+        return redirect('index')
 
 
 class LoginModalView(vanilla.TemplateView):
@@ -28,6 +40,7 @@ class LogoutModalView(vanilla.TemplateView):
 
 
 class ProfileView(
+    OnlyLoggedInAllowedMixin,
     ConstantIconSet,
     vanilla.TemplateView,
 ):
@@ -51,7 +64,10 @@ class ProfileView(
         return context
 
 
-class UsernameChangeView(vanilla.UpdateView):
+class UsernameChangeView(
+    OnlyLoggedInAllowedMixin,
+    vanilla.UpdateView
+):
     template_name = 'account/username_change.html'
     form_class = common_forms.ChangeUsernameForm
     success_url = reverse_lazy('account_profile')
@@ -73,7 +89,10 @@ class UsernameChangeView(vanilla.UpdateView):
         return super().form_valid(form)
 
 
-class PasswordChangeView(allauth_views.PasswordChangeView):
+class PasswordChangeView(
+    OnlyLoggedInAllowedMixin,
+    allauth_views.PasswordChangeView
+):
     success_url = reverse_lazy('account_profile')
 
 

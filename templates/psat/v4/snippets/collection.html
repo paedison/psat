@@ -1,0 +1,193 @@
+{% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+{% load crispy_forms_tags %}
+
+<div class="row">
+    <div class="accordion col-sm-6 col-md-4 col-lg-3" id="collectionListAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button fw-bold" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collectionListAccordionBody"
+                        aria-expanded="true" aria-controls="collectionListAccordionBody">
+                    컬렉션 리스트
+                </button>
+            </h2>
+            <div id="collectionListAccordionBody" class="accordion-collapse collapse show"
+                 data-bs-parent="#collectionListAccordion">
+                <div class="accordion-body p-0">
+                    <div id="collectionList">
+                        <form id="collectionListForm" class="sortable list-group htmx-fade-out htmx-fade-in"
+                              hx-post="{% url 'psat:collection_list_sort' %}" hx-push-url="false"
+                              hx-swap="none" hx-trigger="end">
+                            {% partial card_list %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-md-8 col-lg-9 mt-3 mt-sm-0 htmx-fade-out htmx-fade-in" hx-target="#main">
+        {% partial card_item_title %}
+        <hr/>
+        <form id="collectionItemForm" class="sortable htmx-fade-out htmx-fade-in"
+              hx-post="{% url 'psat:collection_item_sort' %}"
+              hx-swap="none" hx-trigger="end">
+            {% partial item_contents %}
+        </form>
+    </div>
+
+    <script>
+        htmx.onLoad(function(content) {
+            let sortables = content.querySelectorAll(".sortable");
+            for (let i = 0; i < sortables.length; i++) {
+                let sortable = sortables[i];
+                let sortableInstance = new Sortable(sortable, {
+                    animation: 150,
+                    ghostClass: 'blue-background-class',
+                });
+            }
+        })
+    </script>
+</div>
+
+{% partialdef update_card_list %} {# from ListSortView or list_sort_view #}
+    <div hx-swap-oob="innerHTML:#collectionListForm">
+        {% partialdef card_list inline=True %}
+            {% if collections %}
+                <div class="list-group-item list-group-item-action p-0"></div>
+                {% for collection in collections %}
+                    <div class="list-group-item list-group-item-action p-0">
+                        <input type="hidden" name="collection" value="{{ collection.id }}"/>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if forloop.last %}
+                                    <div class="collection_order bottom_left_curve">{{ collection.order }}</div>
+                                {% else %}
+                                    <div class="collection_order">{{ collection.order }}</div>
+                                {% endif %}
+                                <a class="text-black ms-1" href="" hx-swap="none"
+                                   hx-get="{% url 'psat:collection_item' collection.id %}">
+                                    {{ collection.title }}
+                                </a>
+                            </div>
+                            <a class="me-3" href="" hx-swap="none"
+                               hx-confirm="{% trans 'Are you sure you wish to delete the collection?' %}"
+                               hx-post="{% url 'psat:collection_delete' collection.id %}">
+                                <i class="fa-solid fa-square-xmark text-danger fs-5"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <div class="list-group-item list-group-item-action p-2"
+                 hx-target="this" hx-swap="innerHTML swap:0.25s" hx-push-url="false">
+                <a type="button" class="text-secondary" href=""
+                   hx-get="{% url 'psat:collection_create' %}?problem_id={{ problem_id }}">
+                    <i class="fa-solid fa-plus"></i> 새 컬렉션 만들기
+                </a>
+            </div>
+        {% endpartialdef card_list %}
+    </div>
+{% endpartialdef update_card_list %}
+
+{% partialdef update_card_item_title %}
+    <div hx-swap-oob="innerHTML:#collectionTitle">
+        {% partialdef card_item_title inline=True %}
+            <h4 id="collectionTitle" class="fw-bold htmx-fade-out htmx-fade-in">
+                {{ target_collection.title }}
+            </h4>
+        {% endpartialdef card_item_title %}
+    </div>
+{% endpartialdef update_card_item_title %}
+
+{% partialdef update_item_contents %}
+    <div hx-swap-oob="innerHTML:#collectionItemForm">
+        {% partialdef item_contents inline=True %}
+            {% if items %}
+                <input type="hidden" name="collection" value="{{ items.0.collection_id }}"/>
+                {% for item in items %}
+                    <div class="fs-6 mb-2" hx-target="#main" hx-push-url="true">
+                        <input type="hidden" name="item" value="{{ item.id }}"/>
+                        <div class="d-inline-block pe-1">
+                            <span class="fw-bold">{{ item.order }}.</span>
+                            {% partial reference %}
+                        </div>
+                        <div class="d-inline-block">
+                            {% partial question %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-nowrap fs-6 py-2">자료가 없습니다.</div>
+            {% endif %}
+        {% endpartialdef item_contents %}
+    </div>
+{% endpartialdef update_item_contents %}
+
+{% partialdef update_card_item %} {# from CardItemView or card_item_view / ItemSortView or item_sort_view #}
+    {% partial update_card_item_title %}
+    {% partial update_item_contents %}
+{% endpartialdef update_card_item %}
+
+{% partialdef update_card %} {# from CardUpdateView or card_update_view #}
+    {% partial update_card_list %}
+    {% partial update_card_item_title %}
+    {% partial update_item_contents %}
+{% endpartialdef update_card %}
+
+{% partialdef reference %}
+    <a class="text-decoration-none fw-bold"
+       href="{% url 'psat:detail' item.problem_id %}"
+       hx-get="{% url 'psat:detail' item.problem_id %}{{ url_options }}"
+       hx-push-url="{% url 'psat:detail' item.problem_id %}">
+        {{ item.year }}{{ item.ex|first }}{{ item.sub|first }}-{{ item.number|stringformat:'02d' }}
+    </a>
+    {% with image=item.problem.get_image_file %}
+        {% if image.tag1 == 'Preparing Image' %}
+            {{ icon_image.false|safe }}
+        {% else %}
+            <a class="text-decoration-none" hx-target="#modalContainer"
+               hx-swap="innerHTML swap:0.25s" href="" hx-push-url="false"
+               hx-get="{% url 'psat:detail_image' item.problem_id %}"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                {{ icon_image.true|safe }}
+            </a>
+        {% endif %}
+    {% endwith %}
+{% endpartialdef reference %}
+
+{% partialdef question %}
+    {% with class='d-md-none' chars=30 %}
+        {% partialdef link_snippet inline=True %}
+            <a class="text-decoration-none {{ class }}"
+               href="{% url 'psat:detail' item.problem_id %}"
+               hx-get="{% url 'psat:detail' item.problem_id %}{{ url_options }}"
+               hx-push-url="{% url 'psat:detail' item.problem_id %}">
+                <h3 class="d-inline-block fs-6 small m-0">
+                    {{ item.question|truncatechars:chars }}
+                </h3>
+            </a>
+        {% endpartialdef link_snippet %}
+    {% endwith %}
+    {% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
+{% endpartialdef question %}
+
+{% partialdef create_collection %}
+<form class="row" hx-post="{% url 'psat:collection_create' %}" hx-swap="none">
+    <input type="text" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID" hidden/>
+    <div class="input-group">
+        <input type="text" class="form-control" id="collection_title" name="title"
+               aria-label="Collection Title"
+               placeholder="컬렉션 이름을 입력하세요">
+        <button class="btn btn-outline-secondary" type="submit">
+            입력
+        </button>
+    </div>
+</form>
+{% endpartialdef create_collection %}

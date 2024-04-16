@@ -1,0 +1,70 @@
+{% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+{% load crispy_forms_tags %}
+
+{% #responsive_table %}
+    <tbody>
+        {% if page_obj %}
+            {% for comment in page_obj %}
+                <tr>
+                    <td class="text-nowrap p-2 col-1 fs-6">
+                        {% partial reference %}
+                    </td>
+                    <td class="text-nowrap p-2 fs-6">
+                        {% partial title %}
+                    </td>
+                    <td class="text-nowrap text-end p-2 fs-6">
+                        {% with username=comment.username target_user=comment.user %}
+                            {% include 'psat/v4/snippets/username.html' %}
+                        {% endwith %}
+                        <span class="small text-secondary ms-1">
+                            {{ comment.timestamp|date:'n/j(D) G:i' }}
+                        </span>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+            </tr>
+        {% endif %}
+    </tbody>
+{% /responsive_table %}
+
+{% if page_obj.has_next or page_obj.has_previous %}
+    {% include 'psat/v4/snippets/pagination.html' %}
+{% endif %}
+
+{% partialdef reference %}
+    <a class="text-decoration-none fw-bold" hx-boost="true"
+       hx-swap="innerHTML swap:0.25s" hx-target="#main" hx-push-url="true"
+       href="{% url 'psat:comment_detail' comment.id %}">
+        {{ comment.year }}{{ comment.ex|first }}{{ comment.sub|first }}-{{ comment.number|stringformat:'02d' }}
+    </a>
+    {% with image=comment.problem.get_image_file %}
+        {% if image.tag1 == 'Preparing Image' %}
+            {{ icon_image.false|safe }}
+        {% else %}
+            <a class="text-decoration-none" hx-target="#modalContainer"
+               hx-swap="innerHTML swap:0.25s" href="" hx-push-url="false"
+               hx-get="{% url 'psat:detail_image' comment.problem_id %}"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                {{ icon_image.true|safe }}
+            </a>
+        {% endif %}
+    {% endwith %}
+{% endpartialdef reference %}
+
+{% partialdef title %}
+    <a class="text-decoration-none text-secondary" hx-boost="true"
+       hx-swap="innerHTML swap:0.25s" hx-target="#main" hx-push-url="true"
+       href="{% url 'psat:comment_detail' comment.id %}">
+        {% if comment.parent %}
+            <span class="text-primary">{{ icon_board.reply|safe }}</span>
+        {% endif %}
+        {{ comment.title }}
+    </a>
+{% endpartialdef title %}

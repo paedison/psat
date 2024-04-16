@@ -41,7 +41,9 @@ class ListView(
             'icon_filter': self.ICON_FILTER,
             'icon_memo': self.ICON_MEMO,
             'icon_tag': self.ICON_TAG,
+            'icon_collection': self.ICON_COLLECTION,
             'icon_question': self.ICON_QUESTION,
+            'icon_image': self.ICON_IMAGE,
 
             # variables
             'year': self.year,
@@ -65,8 +67,17 @@ class ListView(
             'solve_data': self.custom_data['solve'],
             'memo_data': self.custom_data['memo'],
             'tag_data': self.custom_data['tag'],
+            'collection_data': self.custom_data['collection'],
             'comment_data': self.custom_data['comment'],
         }
+
+
+class ProblemListView(ListView):
+    """ Represent PSAT base list view. """
+    template_name = 'psat/v4/snippets/problem_container.html'
+
+    def get_template_names(self):
+        return self.template_name
 
 
 class SearchView(ListView):
@@ -208,6 +219,7 @@ class DetailNavigationView(
 
 
 list_view = ListView.as_view()
+problem_list_view = ProblemListView.as_view()
 search_view = SearchView.as_view()
 detail_view = DetailView.as_view()
 detail_img_view = DetailImageView.as_view()

@@ -20,6 +20,16 @@
             </h2>
             <div id="collapseMemo" class="accordion-collapse collapse show"
                  aria-labelledby="headingMemo" data-bs-parent="#accordionMemo">
+{#                {% if form.errors %}#}
+{#                    {% for field in form %}#}
+{#                        {% for error in field.errors %}#}
+{#                            <div class="alert alert-danger alert-dismissible fade show text-center fw-bold small" role="alert">#}
+{#                                {{ error }}#}
+{#                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>#}
+{#                            </div>#}
+{#                        {% endfor %}#}
+{#                    {% endfor %}#}
+{#                {% endif %}#}
                 {% if update %}
                     <form hx-post="{% url 'psat:memo_update' my_memo.id %}">
                         {{ form.media }}
@@ -49,13 +59,13 @@
                                         <button class="btn btn-sm btn-outline-success"
                                                 hx-get="{% url 'psat:memo_update' my_memo.id %}"
                                                 title="{% trans 'Update' %}">
-                                            {{ icon_board.update|safe }}
+                                            {{ icon_board.update|safe }} {% trans 'Update' %}
                                         </button>
                                         <button class="btn btn-sm btn-outline-danger"
                                                 hx-post="{% url 'psat:memo_delete' my_memo.id %}"
                                                 hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
                                                 title="{% trans 'Delete' %}">
-                                            {{ icon_board.delete|safe }}
+                                            {{ icon_board.delete|safe }} {% trans 'Delete' %}
                                         </button>
                                     </div>
                                 </div>

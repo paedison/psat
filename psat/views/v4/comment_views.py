@@ -6,37 +6,27 @@ from django.urls import reverse_lazy
 from .viewmixins import comment_view_mixins
 
 
-class CommentListView(
+class CommentView(
     comment_view_mixins.CommentListViewMixin,
     vanilla.TemplateView,
 ):
     """View for loading comment container."""
-    template_name = 'psat/v4/snippets/comment_list.html'
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#list_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
+    template_name = 'psat/v4/snippets/comment.html'
 
     def get(self, request, *args, **kwargs):
         self.get_properties()
-        return super().get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        page_obj, page_range = self.get_paginator_info(self.get_queryset())
         form = self.form_class()
-        context.update({
-            # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
-
-            'form': form,
-            'icon_board': self.ICON_BOARD,
-            'icon_question': self.ICON_QUESTION,
-        })
-        return context
+        context = self.get_context_data(
+            page_obj=page_obj,
+            page_range=page_range,
+            pagination_url=self.get_url('comment'),
+            form=form,
+            icon_board=self.ICON_BOARD,
+            icon_question=self.ICON_QUESTION,
+            icon_image=self.ICON_IMAGE,
+        )
+        return self.render_to_response(context)
 
 
 class CommentContainerView(
@@ -204,9 +194,9 @@ class CommentDeleteView(
         return HttpResponseRedirect(success_url)
 
 
-list_view = CommentListView.as_view()
-container_view = CommentContainerView.as_view()
-create_view = CommentCreateView.as_view()
-detail_view = CommentDetailView.as_view()
-update_view = CommentUpdateView.as_view()
-delete_view = CommentDeleteView.as_view()
+comment_view = CommentView.as_view()
+comment_container_view = CommentContainerView.as_view()
+comment_create_view = CommentCreateView.as_view()
+comment_detail_view = CommentDetailView.as_view()
+comment_update_view = CommentUpdateView.as_view()
+comment_delete_view = CommentDeleteView.as_view()

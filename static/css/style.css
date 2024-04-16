@@ -366,3 +366,20 @@ div.django-ckeditor-widget {
 .banner img {
     height: 300px !important;
 }
+
+.collection_order {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    font-weight: 700;
+    --bs-text-opacity: 1;
+    background-color: #fff3cd;
+    color: black;
+}
+
+.top_left_curve {
+    border-top-left-radius: 0.3rem;
+}
+
+.bottom_left_curve {
+    border-bottom-left-radius: 0.3rem;
+}

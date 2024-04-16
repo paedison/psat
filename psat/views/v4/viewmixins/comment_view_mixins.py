@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup as bs
 from django.core.paginator import Paginator
 from django.db.models import F
+from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
 from psat import forms as custom_forms
@@ -61,29 +62,28 @@ class BaseMixIn(ConstantIconSet):
                 sub=F('problem__psat__subject__abbr'), subject=F('problem__psat__subject__name'))
         )
 
+    def get_paginator_info(self, page_data, per_page=10) -> tuple:
+        """ Get paginator, elided page range, and collect the evaluation info. """
+        page_number = self.request.GET.get('page', 1)
+        paginator = Paginator(page_data, per_page)
+        try:
+            page_obj = paginator.get_page(page_number)
+            page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+            return page_obj, page_range
+        except TypeError:
+            return None, None
+
+    @staticmethod
+    def get_url(name, *args):
+        if args:
+            base_url = reverse_lazy(f'psat:{name}', args=[*args])
+            return f'{base_url}?'
+        base_url = reverse_lazy(f'psat:{name}')
+        return f'{base_url}?'
+
 
 class CommentListViewMixin(BaseMixIn):
     paginate_by = 10
-
-    page_obj: any
-    page_range: any
-    num_pages: any
-
-    def get_properties(self):
-        super().get_properties()
-
-        self.page_number = self.request.GET.get('page', '1')
-        self.page_obj, self.page_range, self.num_pages = self.get_paginator_info()
-
-    def get_paginator_info(self) -> tuple[object, object, object]:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        queryset = self.get_queryset()
-
-        paginator = Paginator(queryset, self.paginate_by)
-        page_obj = paginator.get_page(self.page_number)
-        page_range = paginator.get_elided_page_range(number=self.page_number, on_each_side=3, on_ends=1)
-        num_pages = paginator.num_pages
-        return page_obj, page_range, num_pages
 
     def get_queryset(self):
         parent_comments = self.comment_qs.filter(parent__isnull=True).order_by('-timestamp')

@@ -7,200 +7,87 @@
 {% load crispy_forms_tags %}
 
 {% block main %}
-{% partialdef list_main inline=True %} {# list_main partial #}
-{{ info|json_script:'info' }}
-<div class="pagetitle">
-    <h1>{{ icon_menu|safe }} PSAT
-        <span class="fs-6 text-secondary">{{ title }}</span>
-    </h1>
-    <nav>
-        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-            <li class="breadcrumb-item">
-                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
-            </li>
-            {% if info.view_type %}
-                <li class="breadcrumb-item">PSAT</li>
-                <li class="breadcrumb-item active">{{ info.view_type|title }}</li>
-            {% else %}
-                <li class="breadcrumb-item active">PSAT</li>
-            {% endif %}
-        </ol>
-    </nav>
-</div><!-- Page Title End -->
+    {% partialdef list_main inline=True %}
+        {{ info|json_script:'info' }}
+        <div class="pagetitle">
+            <h1>{{ icon_menu|safe }} PSAT
+                <span class="fs-6 text-secondary">{{ title }}</span>
+            </h1>
+            <nav>
+                <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                    </li>
+                    {% if info.view_type %}
+                        <li class="breadcrumb-item">PSAT</li>
+                        <li class="breadcrumb-item active">{{ info.view_type|title }}</li>
+                    {% else %}
+                        <li class="breadcrumb-item active">PSAT</li>
+                    {% endif %}
+                </ol>
+            </nav>
+        </div><!-- Page Title End -->
 
-<section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">{{ sub_title|safe }}</div>
+        <section class="section">
+            <div class="row">
+                <div class="col-12" aria-label="문제 목록">
+                    <div id="problem_container" class="card htmx-fade-in htmx-fade-out"
+                         hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
+                        {% include 'psat/v4/snippets/problem_container.html' %}
+                    </div>
+                </div>
 
-                <div class="card-body">
-                    <div class="accordion" id="problemFilter">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button fw-bold" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#collapseOne"
-                                        aria-expanded="true" aria-controls="collapseOne">
-                                    문제 필터
-                                </button>
-                            </h2>
-                            <div id="collapseOne" class="accordion-collapse collapse show"
-                                 data-bs-parent="#problemFilter">
-                                <div class="accordion-body pb-2">
-                                    <form class="row row-cols-auto g-2 align-items-center justify-content-center"
-                                          method="get" hx-trigger="change"
-                                          hx-get="{{ base_url }}" hx-push-url="false">
-                                        <a type="button" class="btn btn-outline-primary m-0"
-                                           href="{% url 'psat:base' %}"
-                                           hx-boost="true">전체 문제</a>
-                                        {{ form|crispy }}
-                                        <input id="id_data" type="text" name="keyword"
-                                               value="{{ keyword }}" hidden
-                                               placeholder="{% trans 'Enter search keyword' %}"
-                                               title="{% trans 'Enter search keyword' %}">
-                                    </form>
+                {% if user.is_admin %}
+                    <div class="col-xl-6" aria-label="문제 컬렉션">
+                        <div id="collectionCard" hx-swap="innerHTML swap:0.25s"
+                             class="card htmx-fade-in htmx-fade-out">
+                            <div id="collectionCardHeader" class="card-header">
+                                문제 컬렉션
+                                <a class="text-decoration-none ms-2" href=""
+                                   hx-indicator="#collectionCardIndicator"
+                                   hx-target="#collectionCardBody"
+                                   hx-swap="none"
+                                   hx-get="{% url 'psat:collection_card_update' %}">
+                                    <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                                </a>
+                                <div id="collectionCardIndicator" role="status"
+                                     class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
+                            </div>
+                            <div id="collectionCardBody"
+                                 class="card-body htmx-fade-in htmx-fade-out"
+                                 hx-target="this" hx-trigger="load"
+                                 hx-get="{% url 'psat:collection_card' %}">
                             </div>
                         </div>
                     </div>
 
-                    {% #responsive_table %}
-                        <tbody>
-                            {% if page_obj %}
-                                {% for problem in page_obj %}
-                                    {% ifchanged %}
-                                        <tr class="table-warning">
-                                            <td class="text-center text-nowrap text-primary p-2">
-                                                <h2 class="fs-6 fw-bold m-0">
-                                                    {% if info.view_type == 'problem' %}
-                                                        <a href="" hx-boost="true" hx-push-url="false"
-                                                           hx-get="{{ base_url }}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
-                                                            {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                                        </a>
-                                                    {% else %}
-                                                        {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                                    {% endif %}
-                                                </h2>
-                                            </td>
-                                        </tr>
-                                    {% endifchanged %}
-                                    <tr>
-                                        <td class="text-nowrap py-2 px-0">
-                                            <div class="align-middle d-inline-block fs-6 pe-1">
-                                                {% include 'psat/v4/snippets/icon_container.html' %}
-                                            </div>
-                                            <div class="align-middle d-inline-block fs-6" hx-push-url="true">
-                                                <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1">
-                                                    {% partial reference %}
-                                                </div>
-                                                <div class="d-block d-md-inline-block">
-                                                    {% partial question %}
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
-                                </tr>
-                            {% endif %}
-                        </tbody>
-                    {% /responsive_table %}
+                    <div class="col-xl-6" aria-label="질문 리스트">
+                        <div id="commentCard" class="card htmx-fade-in htmx-fade-out"
+                             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                            <div id="commentCardHeader" class="card-header">
+                                질문 리스트
+                                <a class="text-decoration-none ms-2" href=""
+                                   hx-indicator="#commentCardIndicator" hx-target="#commentCardBody"
+                                   hx-get="{% url 'psat:comment' %}">
+                                    <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                                </a>
+                                <div id="commentCardIndicator" role="status"
+                                     class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
 
-                    {% #pagination_nav %}
-                        {% if page_obj.has_previous %}
-                            {% with page_num=page_obj.number|add:-1 chevron='left' %}
-                                {% partialdef pagination_link inline=True %}
-                                    <li class="page-item {{ status }}"
-                                        {% if status == 'active' %}aria-current="page"{% endif %}>
-                                        <a class="page-link" href=""
-                                            {% if status == 'disabled' %}
-                                                tabindex="-1" aria-disabled="true"
-                                            {% else %}
-                                                hx-get="{{ pagination_url }}&page={{ page_num }}"
-                                            {% endif %}>
-                                            {% if chevron %}
-                                                <i class="fa-solid fa-chevron-{{ chevron }}"></i>
-                                            {% else %}
-                                                {{ anchor_text }}
-                                            {% endif %}
-                                        </a>
-                                    </li>
-                                {% endpartialdef pagination_link %}
-                            {% endwith %}
-                        {% endif %}
-
-                        {% for number in page_range %}
-                            {% with page_num=number anchor_text=number %}
-                                {% if number == page_obj.number %}
-                                    {% with status='active' %}
-                                        {% partial pagination_link %}
-                                    {% endwith %}
-                                {% elif number == page_obj.paginator.ELLIPSIS %}
-                                    {% with status='disabled' %}
-                                        {% partial pagination_link %}
-                                    {% endwith %}
-                                {% else %}
-                                    {% partial pagination_link %}
-                                {% endif %}
-                            {% endwith %}
-                        {% endfor %}
-
-                        {% if page_obj.has_next %}
-                            {% with page_num=page_obj.number|add:1 chevron='right' %}
-                                {% partial pagination_link %}
-                            {% endwith %}
-                        {% endif %}
-                    {% /pagination_nav %}
-                </div>
-            </div>
-        </div>
-
-        {% if user.is_admin %}
-            <div class="col-xl-6">
-                <div id="problem_comment" class="card htmx-fade-in htmx-fade-out">
-                    <div class="card-header">질문 리스트</div>
-
-                    <div class="card-body htmx-fade-in htmx-fade-out" hx-target="this"
-                         hx-swap="innerHTML swap:0.25s" hx-trigger="load"
-                         hx-get="{% url 'psat:comment_list' %}">
+                            <div id="commentCardBody"
+                                 class="card-body htmx-fade-in htmx-fade-out"
+                                 hx-target="this" hx-trigger="load"
+                                 hx-get="{% url 'psat:comment' %}">
+                            </div>
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             </div>
-        {% endif %}
-    </div>
-</section>
-{% endpartialdef list_main %}
+        </section>
+    {% endpartialdef list_main %}
 {% endblock main %}
-
-{% partialdef reference %}
-    {% with p=problem %}
-        <a class="text-decoration-none fw-bold"
-           href="{% url 'psat:detail' p.id %}"
-           hx-get="{% url 'psat:detail' p.id %}{{ url_options }}"
-           hx-push-url="{% url 'psat:detail' p.id %}">
-            {{ p.year }}{{ p.ex|first }}{{ p.sub|first }}-{{ p.number|stringformat:'02d' }}
-        </a>
-    {% endwith %}
-{% endpartialdef reference %}
-
-{% partialdef question %}
-    {% with class='d-md-none' chars=30 %}
-        {% partialdef link_snippet inline=True %}
-            <a class="text-decoration-none {{ class }}"
-               href="{% url 'psat:detail' problem.id %}"
-               hx-get="{% url 'psat:detail' problem.id %}{{ url_options }}"
-               hx-push-url="{% url 'psat:detail' problem.id %}">
-                <h3 class="d-inline-block fs-6 small m-0">
-                    {{ problem.question|truncatechars:chars }}
-                </h3>
-            </a>
-        {% endpartialdef link_snippet %}
-    {% endwith %}
-    {% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
-{% endpartialdef question %}
-
-
