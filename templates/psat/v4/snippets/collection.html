@@ -54,13 +54,13 @@
     </script>
 </div>
 
-{% partialdef update_card_list %} {# from ListSortView or list_sort_view #}
+{% partialdef reload_card_list %} {# SortListView #}
     <div hx-swap-oob="innerHTML:#collectionListForm">
         {% partialdef card_list inline=True %}
             {% if collections %}
                 <div class="list-group-item list-group-item-action p-0"></div>
                 {% for collection in collections %}
-                    <div class="list-group-item list-group-item-action p-0">
+                    <div id="collectionList{{ collection.id }}" class="list-group-item list-group-item-action p-0">
                         <input type="hidden" name="collection" value="{{ collection.id }}"/>
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
@@ -74,11 +74,19 @@
                                     {{ collection.title }}
                                 </a>
                             </div>
-                            <a class="me-3" href="" hx-swap="none"
-                               hx-confirm="{% trans 'Are you sure you wish to delete the collection?' %}"
-                               hx-post="{% url 'psat:collection_delete' collection.id %}">
-                                <i class="fa-solid fa-square-xmark text-danger fs-5"></i>
-                            </a>
+                            <div>
+                                <a class="me-1 htmx-fade-in htmx-fade-out" href=""
+                                   hx-get="{% url 'psat:collection_modal_update' %}?collection={{ collection.id }}"
+                                   hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s"
+                                   data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                    <i class="fa-solid fa-pen text-success"></i>
+                                </a>
+                                <a class="me-3" href="" hx-swap="none"
+                                   hx-confirm="{% trans 'Are you sure you wish to delete the collection?' %}"
+                                   hx-post="{% url 'psat:collection_delete' collection.id %}">
+                                    <i class="fa-solid fa-square-xmark text-danger fs-5"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
@@ -92,9 +100,9 @@
             </div>
         {% endpartialdef card_list %}
     </div>
-{% endpartialdef update_card_list %}
+{% endpartialdef reload_card_list %}
 
-{% partialdef update_card_item_title %}
+{% partialdef reload_card_item_title %}
     <div hx-swap-oob="innerHTML:#collectionTitle">
         {% partialdef card_item_title inline=True %}
             <h4 id="collectionTitle" class="fw-bold htmx-fade-out htmx-fade-in">
@@ -102,9 +110,9 @@
             </h4>
         {% endpartialdef card_item_title %}
     </div>
-{% endpartialdef update_card_item_title %}
+{% endpartialdef reload_card_item_title %}
 
-{% partialdef update_item_contents %}
+{% partialdef reload_item_contents %}
     <div hx-swap-oob="innerHTML:#collectionItemForm">
         {% partialdef item_contents inline=True %}
             {% if items %}
@@ -126,18 +134,18 @@
             {% endif %}
         {% endpartialdef item_contents %}
     </div>
-{% endpartialdef update_item_contents %}
+{% endpartialdef reload_item_contents %}
 
-{% partialdef update_card_item %} {# from CardItemView or card_item_view / ItemSortView or item_sort_view #}
-    {% partial update_card_item_title %}
-    {% partial update_item_contents %}
-{% endpartialdef update_card_item %}
+{% partialdef reload_card_item %} {# ItemView / SortItemView #}
+    {% partial reload_card_item_title %}
+    {% partial reload_item_contents %}
+{% endpartialdef reload_card_item %}
 
-{% partialdef update_card %} {# from CardUpdateView or card_update_view #}
-    {% partial update_card_list %}
-    {% partial update_card_item_title %}
-    {% partial update_item_contents %}
-{% endpartialdef update_card %}
+{% partialdef reload_card %} {# ReloadView #}
+    {% partial reload_card_list %}
+    {% partial reload_card_item_title %}
+    {% partial reload_item_contents %}
+{% endpartialdef reload_card %}
 
 {% partialdef reference %}
     <a class="text-decoration-none fw-bold"
@@ -179,15 +187,14 @@
 {% endpartialdef question %}
 
 {% partialdef create_collection %}
-<form class="row" hx-post="{% url 'psat:collection_create' %}" hx-swap="none">
-    <input type="text" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID" hidden/>
-    <div class="input-group">
-        <input type="text" class="form-control" id="collection_title" name="title"
-               aria-label="Collection Title"
-               placeholder="컬렉션 이름을 입력하세요">
-        <button class="btn btn-outline-secondary" type="submit">
-            입력
-        </button>
-    </div>
-</form>
+    <form class="row" hx-post="{% url 'psat:collection_create' %}" hx-swap="none">
+        <div class="input-group">
+            <input type="text" class="form-control" id="id_title" name="title"
+                   aria-label="Collection Title"
+                   placeholder="컬렉션 이름을 입력하세요">
+            <button class="btn btn-outline-secondary" type="submit">
+                입력
+            </button>
+        </div>
+    </form>
 {% endpartialdef create_collection %}

@@ -34,20 +34,44 @@
     </div>
 {% endpartialdef add_item %}
 
+{% partialdef update_collection %}
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                    컬렉션 이름 수정
+                </h6>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <form class="row" hx-post="{% url 'psat:collection_update' collection.id %}" hx-swap="none">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="id_title" name="title"
+                               aria-label="Collection Title" value="{{ collection.title }}"
+                               placeholder="컬렉션 이름을 입력하세요">
+                        <button class="btn btn-outline-secondary" type="submit" data-bs-dismiss="modal">
+                            입력
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef update_collection %}
 
 {% partialdef create_collection %}
-<form class="row">
-    <input type="text" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID" hidden/>
-    <div class="input-group col-12 px-0">
-        <input type="text" class="form-control" id="collection_title" name="title"
-               aria-label="Collection Title"
-               placeholder="컬렉션 이름을 입력하세요">
-        <button class="btn btn-outline-secondary" type="button"
-                hx-post="{% url 'psat:collection_create_in_modal' %}"
-                hx-target="#modalContainer"
-                hx-swap="innerHTML swap:0.25s">
-            입력
-        </button>
-    </div>
-</form>
-{% endpartialdef create %}
+    <form class="row">
+        <input type="text" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID" hidden/>
+        <div class="input-group col-12 px-0">
+            <input type="text" class="form-control" id="id_title" name="title"
+                   aria-label="Collection Title"
+                   placeholder="컬렉션 이름을 입력하세요">
+            <button class="btn btn-outline-secondary" type="submit"
+                    hx-post="{% url 'psat:collection_create_in_modal' %}"
+                    hx-target="#modalContainer"
+                    hx-swap="innerHTML swap:0.25s">
+                입력
+            </button>
+        </div>
+    </form>
+{% endpartialdef create_collection %}

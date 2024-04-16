@@ -10,7 +10,7 @@ from psat.utils import get_max_order, get_new_ordering
 from .viewmixins import collection_view_mixins
 
 
-class CardView(
+class IndexView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
@@ -22,8 +22,9 @@ class CardView(
         self.get_properties()
 
         collections = self.get_collection_qs()
-        target_collection = collections[0]
-        items = self.get_collection_items_qs(collection_id=target_collection.id)
+        target_collection = collections[0] if collections else None
+        items = self.get_collection_items_qs(
+            collection_id=target_collection.id) if target_collection else None
         context = self.get_context_data(
             icon_image=self.ICON_IMAGE,
             collections=collections,
@@ -33,12 +34,12 @@ class CardView(
         return self.render_to_response(context)
 
 
-class CardItemView(
+class ItemView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
-    template_name = 'psat/v4/snippets/collection.html#update_card_item'
+    template_name = 'psat/v4/snippets/collection.html#reload_card_item'
 
     def get(self, request, *args, **kwargs):
         self.get_properties()
@@ -51,12 +52,12 @@ class CardItemView(
         return self.render_to_response(context)
 
 
-class CardUpdateView(
+class ReloadView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
-    template_name = 'psat/v4/snippets/collection.html#update_card'
+    template_name = 'psat/v4/snippets/collection.html#reload_card'
 
     def get(self, request, *args, **kwargs):
         self.get_properties()
@@ -71,13 +72,13 @@ class CardUpdateView(
         return self.render_to_response(context)
 
 
-class ListSortView(
+class SortListView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for sorting collection list."""
-    template_name = 'psat/v4/snippets/collection.html#update_card_list'
+    template_name = 'psat/v4/snippets/collection.html#reload_card_list'
 
     def post(self, request, *args, **kwargs):
         self.get_properties()
@@ -94,13 +95,13 @@ class ListSortView(
         return self.render_to_response(context)
 
 
-class ItemSortView(
+class SortItemView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for sorting collection list."""
-    template_name = 'psat/v4/snippets/collection.html#update_card_item'
+    template_name = 'psat/v4/snippets/collection.html#reload_card_item'
 
     def post(self, request, *args, **kwargs):
         self.get_properties()
@@ -121,7 +122,7 @@ class ItemSortView(
         return self.render_to_response(context)
 
 
-class ItemAddModalView(
+class ModalItemAddView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
@@ -154,7 +155,47 @@ class ItemAddModalView(
         return self.render_to_response(context)
 
 
-class CollectionCreateInModalView(
+class ModalUpdateView(
+    auth_mixins.LoginRequiredMixin,
+    collection_view_mixins.BaseMixIn,
+    vanilla.TemplateView,
+):
+    template_name = 'psat/v4/snippets/collection_modal.html#update_collection'
+
+    def get(self, request, *args, **kwargs):
+        self.get_properties()
+
+        collection_id = self.request.GET.get('collection')
+        collection = self.collection_model.objects.get(id=collection_id)
+        context = self.get_context_data(
+            collection=collection,
+        )
+        return self.render_to_response(context)
+
+
+class CreateView(
+    auth_mixins.LoginRequiredMixin,
+    collection_view_mixins.BaseMixIn,
+    vanilla.CreateView,
+):
+    success_url = reverse_lazy('psat:collection_reload')
+    template_name = 'psat/v4/snippets/collection.html#create_collection'
+
+    def form_valid(self, form):
+        self.get_properties()
+
+        form = form.save(commit=False)
+        existing_collections = self.get_collection_qs()
+        max_order = get_max_order(existing_collections)
+
+        with transaction.atomic():
+            form.user_id = self.user_id
+            form.order = max_order
+            self.object = form.save()
+        return HttpResponseRedirect(self.success_url)
+
+
+class CreateInModalView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.CreateView,
@@ -173,7 +214,7 @@ class CollectionCreateInModalView(
             form.user_id = self.user_id
             form.order = max_order
             self.object = form.save()
-            collection_modal_url = reverse_lazy('psat:collection_item_add_modal')
+            collection_modal_url = reverse_lazy('psat:collection_modal_item_add')
             success_url = f'{collection_modal_url}?problem_id={ problem_id }&icon_id=psatCollection{ problem_id }"'
         return HttpResponseRedirect(success_url)
 
@@ -182,65 +223,19 @@ class CollectionCreateInModalView(
         return super().get_context_data(problem_id=problem_id, **kwargs)
 
 
-class CollectionCreateView(
+class UpdateView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
-    vanilla.CreateView,
-):
-    success_url = reverse_lazy('psat:collection_card_update')
-    template_name = 'psat/v4/snippets/collection.html#create_collection'
-
-    def form_valid(self, form):
-        self.get_properties()
-
-        form = form.save(commit=False)
-        existing_collections = self.get_collection_qs()
-        max_order = get_max_order(existing_collections)
-
-        with transaction.atomic():
-            form.user_id = self.user_id
-            form.order = max_order
-            self.object = form.save()
-        return HttpResponseRedirect(self.success_url)
-
-
-class CollectionUpdateView(
-    auth_mixins.LoginRequiredMixin,
-    collection_view_mixins.CollectionCreateViewMixin,
     vanilla.UpdateView,
 ):
-    template_name = 'psat/v4/snippets/collection_container.html#update'
-
-    def get(self, request, *args, **kwargs):
-        self.get_properties()
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.get_properties()
-        return super().post(request, *args, **kwargs)
-
-    # def form_valid(self, form):
-    #     form = form.save(commit=False)
-    #     with transaction.atomic():
-    #         form.title = self.comment_title
-    #         form.save()
-    #         success_url = reverse_lazy('psat:comment_container', args=[self.object.problem_id])
-    #     return HttpResponseRedirect(f'{success_url}?page={self.page_number}')
+    success_url = reverse_lazy('psat:collection_reload')
+    template_name = 'psat/v4/snippets/collection.html#update_collection'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        header = '질문 수정'
-        context.update({
-            'page_number': self.page_number,
-            'header': header,
-            'comment': self.collection,
-            'icon_board': self.ICON_BOARD,
-            'icon_question': self.ICON_QUESTION,
-        })
-        return context
+        return super().get_context_data(collection_id=self.object.id, **kwargs)
 
 
-class CollectionDeleteView(
+class DeleteView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.DeleteView,
@@ -256,7 +251,7 @@ class CollectionDeleteView(
             collection.order = order
             collection.save()
 
-        success_url = reverse_lazy('psat:collection_card_update')
+        success_url = reverse_lazy('psat:collection_reload')
         return HttpResponseRedirect(success_url)
 
 
@@ -303,21 +298,3 @@ class ItemAddView(
             icon_collection=self.ICON_COLLECTION,
         )
         return self.render_to_response(context)
-
-
-card_view = CardView.as_view()
-card_item_view = CardItemView.as_view()
-
-card_update_view = CardUpdateView.as_view()
-
-list_sort_view = ListSortView.as_view()
-item_sort_view = ItemSortView.as_view()
-
-item_add_modal_view = ItemAddModalView.as_view()
-item_add_view = ItemAddView.as_view()
-
-collection_create_in_modal_view = CollectionCreateInModalView.as_view()
-collection_create_view = CollectionCreateView.as_view()
-
-collection_update_view = CollectionUpdateView.as_view()
-collection_delete_view = CollectionDeleteView.as_view()
