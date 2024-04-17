@@ -15,7 +15,8 @@ class CommentView(
     template_name = 'psat/v4/snippets/comment.html'
 
     def get_context_data(self, **kwargs):
-        page_obj, page_range = self.get_paginator_info(self.get_all_comments())
+        all_comments = self.get_all_comments()
+        page_obj, page_range = self.get_paginator_info(all_comments)
         pagination_url = get_url('comment')
         return super().get_context_data(
             page_obj=page_obj,
@@ -44,9 +45,9 @@ class ContainerView(
 
     def get_context_data(self, **kwargs):
         problem_id = self.kwargs.get('problem_id')
-        page_obj, page_range = self.get_paginator_info(self.get_all_comments(problem_id), per_page=5)
+        all_comments = self.get_all_comments(problem_id)
+        page_obj, page_range = self.get_paginator_info(all_comments, per_page=5)
         pagination_url = get_url('comment_container', problem_id)
-
         return super().get_context_data(
             page_obj=page_obj,
             page_range=page_range,
@@ -72,21 +73,19 @@ class CreateView(
         }
         return htmx_template[f'{bool(self.request.htmx)}']
 
+    def get_success_url(self):
+        problem_id = self.kwargs.get('problem_id')
+        return get_url('comment_container', problem_id)
+
     def form_valid(self, form):
         form = form.save(commit=False)
-        problem_id = self.kwargs.get('problem_id')
-        with transaction.atomic():
-            form.user = self.request.user
-            form.problem_id = problem_id
-            form.title = self.get_comment_title()
-            self.object = form.save()
-            success_url = get_url('comment_container', problem_id)
-        return HttpResponseRedirect(success_url)
+        form = self.get_additional_data_for_form(form)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         parent_id = self.request.GET.get('parent_id')
         problem_id = self.kwargs.get('problem_id')
-        parent_comment = self.get_comment_qs().get(id=parent_id) if parent_id else None
+        parent_comment = self.get_single_comment(parent_id)
         header = '댓글 작성' if parent_id else '질문 작성'
 
         return super().get_context_data(
@@ -115,7 +114,7 @@ class DetailView(
 
     def get_context_data(self, **kwargs):
         comment_id = self.kwargs.get('comment_id')
-        comment = self.get_comment_qs().get(id=comment_id)
+        comment = self.get_single_comment(comment_id)
         return super().get_context_data(
             # base info
             info={'menu': 'psat'},
@@ -154,7 +153,7 @@ class UpdateView(
         header = '댓글 수정' if parent_id else '질문 수정'
 
         comment_id = self.kwargs.get('comment_id')
-        comment = self.get_comment_qs().get(id=comment_id)
+        comment = self.get_single_comment(comment_id)
 
         return super().get_context_data(
             page_number=page_number,

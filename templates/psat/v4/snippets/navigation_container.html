@@ -8,7 +8,7 @@
          hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
     <a id="problem_list" class="btn btn-{{ info.color }}"
        href="{% url 'psat:base' %}"
-       hx-get="{% url 'psat:base' %}{{ url_options }}"
+       hx-get="{% url 'psat:base' %}?{{ url_options }}"
        hx-push-url="{% url 'psat:base' %}">
         {{ icon_nav.left_arrow|safe }}
     </a>
@@ -16,7 +16,7 @@
     {% if prev_prob %}
         <a class="btn btn-{{ info.color }}" href="{% url 'psat:detail' prev_prob.id %}"
            hx-push-url="{% url 'psat:detail' prev_prob.id %}"
-           hx-get="{% url 'psat:detail' prev_prob.id %}{{ url_options }}">
+           hx-get="{% url 'psat:detail' prev_prob.id %}?{{ url_options }}">
             {{ icon_nav.prev_prob|safe }}
         </a>
     {% else %}
@@ -26,7 +26,7 @@
     {% if next_prob %}
         <a class="btn btn-{{ info.color }}" href="{% url 'psat:detail' next_prob.id %}"
            hx-push-url="{% url 'psat:detail' next_prob.id %}"
-           hx-get="{% url 'psat:detail' next_prob.id %}{{ url_options }}">
+           hx-get="{% url 'psat:detail' next_prob.id %}?{{ url_options }}">
             {{ icon_nav.next_prob|safe }}
         </a>
     {% else %}

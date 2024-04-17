@@ -33,10 +33,9 @@ class BaseMixIn(ConstantIconSet):
                 sub=F('problem__psat__subject__abbr'), subject=F('problem__psat__subject__name'))
         )
 
-    def get_paginator_info(self, page_data, per_page=10) -> tuple:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        return get_page_obj_and_range(page_number, page_data, per_page)
+    def get_single_comment(self, comment_id):
+        if comment_id:
+            return self.get_comment_qs().get(id=comment_id)
 
     def get_all_comments(self, problem_id=None):
         qs = self.get_comment_qs()
@@ -61,6 +60,13 @@ class BaseMixIn(ConstantIconSet):
             comment_title = text_comment[:20]
             return comment_title
 
+    def get_additional_data_for_form(self, form):
+        problem_id = self.kwargs.get('problem_id')
+        form.user = self.request.user
+        form.problem_id = problem_id
+        form.title = self.get_comment_title()
+        return form
+
     @staticmethod
     def get_sub_title_from_comment(comment):
         return f'{comment.year}년 {comment.exam} {comment.subject} {comment.number}번'
@@ -73,3 +79,8 @@ class BaseMixIn(ConstantIconSet):
         if problem_id is None:
             problem_id = self.kwargs.get('problem_id')
         return reference_models.PsatProblem.objects.get(id=problem_id)
+
+    def get_paginator_info(self, page_data, per_page=10) -> tuple:
+        """ Get paginator, elided page range, and collect the evaluation info. """
+        page_number = self.request.GET.get('page', 1)
+        return get_page_obj_and_range(page_number, page_data, per_page)
