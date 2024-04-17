@@ -1,12 +1,7 @@
-from bs4 import BeautifulSoup as bs
-from django.core.paginator import Paginator
-from django.db.models import F
-from django.urls import reverse_lazy
+from django.db.models import Case, When, BooleanField, F
 
 from common.constants.icon_set import ConstantIconSet
-from psat import forms as custom_forms
-from psat import models as custom_models
-from reference.models import psat_models as reference_models
+from psat import forms, models, utils
 
 
 class BaseMixIn(ConstantIconSet):
@@ -15,130 +10,113 @@ class BaseMixIn(ConstantIconSet):
     kwargs: dict
     object: any
 
-    model = custom_models.Collection
-    lookup_field = 'id'
-    lookup_url_kwarg = 'collection_id'
-    form_class = custom_forms.CollectionForm
-    context_object_name = 'collections'
-    template_name = 'psat/v4/snippets/collection.html'
+    model = models.Collection
+    form_class = forms.CollectionForm
 
-    collection_model = custom_models.Collection
-    item_model = custom_models.CollectionItem
-
-    user_id: int | None
-    problem_id: int
-    collection_id: str
-
-    problem: reference_models.PsatProblem.objects
-    collection: custom_models.Collection.objects
-    collection_items: custom_models.CollectionItem.objects
-
-    def get_properties(self):
-        self.user_id = self.request.user.id if self.request.user.is_authenticated else None
-        self.collection_id = self.kwargs.get('collection_id')
-        self.problem_id = self.kwargs.get('problem_id')
-
-        self.problem = reference_models.PsatProblem.objects.none()
-        self.collection = self.collection_model.objects.none()
-        self.collection_items = self.item_model.objects.none()
-
-        if self.problem_id:
-            self.problem = reference_models.PsatProblem.objects.get(id=self.problem_id)
-        if self.collection_id:
-            self.collection = self.collection_model.objects.get(id=self.collection_id)
-            self.collection_items = self.get_collection_items_qs()
-
-    def get_collection_qs(self):
-        return (
-            self.collection_model.objects
-            .filter(user_id=self.user_id, is_active=True)
-        )
-
-    def get_collection_items_qs(self, collection_id=None):
-        collection_id = collection_id or self.collection_id
-        return (
-            self.item_model.objects
-            .filter(collection_id=collection_id, is_active=True)
-            .select_related('problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
-            .annotate(
-                year=F('problem__psat__year'),
-                ex=F('problem__psat__exam__abbr'),
-                sub=F('problem__psat__subject__abbr'),
-                number=F('problem__number'),
-                question=F('problem__question'),
-            )
-        )
-
-    def get_collection_item_qs(self, item_id):
-        return (
-            self.item_model.objects
-            .select_related('problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
-            .annotate(
-                year=F('problem__psat__year'),
-                ex=F('problem__psat__exam__abbr'),
-                sub=F('problem__psat__subject__abbr'),
-                number=F('problem__number'),
-                question=F('problem__question'),
-            ).get(id=item_id)
-        )
+    collection_model = models.Collection
+    item_model = models.CollectionItem
 
     @staticmethod
     def get_url(name, *args):
-        if args:
-            base_url = reverse_lazy(f'psat:{name}', args=[*args])
-            return f'{base_url}?'
-        base_url = reverse_lazy(f'psat:{name}')
-        return f'{base_url}?'
+        return utils.get_url(name, *args)
 
-    def get_paginator_info(self, page_data, per_page=10) -> tuple:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        paginator = Paginator(page_data, per_page)
-        try:
-            page_obj = paginator.get_page(page_number)
-            page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-            return page_obj, page_range
-        except TypeError:
-            return None, None
-
-
-class CommentContainerViewMixin(BaseMixIn):
-    paginate_by = 5
-
-    def get_queryset(self):
-        qs = (
-            self.model.objects.filter(problem_id=self.problem_id)
-            .select_related('user').annotate(username=F('user__username'))
+    def get_all_collections(self):
+        return (
+            self.collection_model.objects
+            .filter(user_id=self.request.user.id, is_active=True)
         )
-        parent_comments = qs.filter(parent__isnull=True).order_by('-timestamp')
-        child_comments = qs.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
 
-        all_comments = []
-        for comment in parent_comments:
-            all_comments.append(comment)
-            all_comments.extend(child_comments.filter(parent=comment))
+    def get_all_items_for_collection(self, collection):
+        if collection:
+            return (
+                self.item_model.objects
+                .filter(collection=collection, is_active=True)
+                .select_related('problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
+                .annotate(
+                    year=F('problem__psat__year'),
+                    ex=F('problem__psat__exam__abbr'),
+                    sub=F('problem__psat__subject__abbr'),
+                    number=F('problem__number'),
+                    question=F('problem__question'),
+                )
+            )
 
-        return all_comments
+    def get_collections_for_sort_list(self, collection_ids_order):
+        collections = []
+        for idx, pk in enumerate(collection_ids_order, start=1):
+            collection = self.collection_model.objects.get(pk=pk)
+            collection.order = idx
+            collection.save()
+            collections.append(collection)
+        return collections
 
+    def get_collections_for_sort_item(self, item_ids_order, target_collection):
+        items = []
+        for idx, pk in enumerate(item_ids_order, start=1):
+            item = self.get_all_items_for_collection(target_collection).get(pk=pk)
+            item.order = idx
+            item.save()
+            items.append(item)
+        return items
 
-class CollectionCreateViewMixin(BaseMixIn):
-    comment_title: str
+    def set_collection_order_for_create(self, form):
+        existing_collections = self.get_all_collections()
+        max_order = utils.get_max_order(existing_collections)
+        form.user_id = self.request.user.id
+        form.order = max_order
+        return form
 
-    def get_properties(self):
-        super().get_properties()
+    def update_collection_ordering_after_delete(self):
+        collections = self.get_all_collections()
+        new_ordering = utils.get_new_ordering(collections)
+        for order, collection in zip(new_ordering, collections):
+            collection.order = order
+            collection.save()
 
-        if self.request.method == 'GET':
-            self.page_number = self.request.GET.get('page', '1')
+    def get_collections_for_modal_item_add(self, problem_id):
+        collection_ids = (
+            self.item_model.objects
+            .filter(
+                collection__user_id=self.request.user.id,
+                problem_id=problem_id, is_active=True)
+            .values_list('collection_id', flat=True).distinct()
+        )
+        item_exists_case = Case(
+            When(id__in=collection_ids, then=1),
+            default=0,
+            output_field=BooleanField()
+        )
+        return self.get_all_collections().annotate(item_exists=item_exists_case)
+
+    def update_item_add_status(self, target_collection, problem_id, is_checked):
+        existing_items = self.get_all_items_for_collection(target_collection)
+        max_order = utils.get_max_order(existing_items)
+
+        def get_item_for_add():
+            return self.item_model.objects.get(
+                collection=target_collection, problem_id=problem_id)
+
+        def get_active_collections_for_problem_id():
+            return self.collection_model.objects.filter(
+                collection_items__problem_id=problem_id,
+                collection_items__is_active=True,
+            )
+
+        if is_checked:
+            try:
+                item = get_item_for_add()
+                item.is_active = True
+                item.save()
+            except self.item_model.DoesNotExist:
+                self.item_model.objects.create(
+                    collection=target_collection, problem_id=problem_id, order=max_order)
         else:
-            self.page_number = self.request.POST.get('page', '1')
-        print(self.page_number)
-
-        self.comment_title = self.get_comment_title()
-
-    def get_comment_title(self):
-        comment = self.request.POST.get('comment')
-        if comment:
-            soup = bs(comment, 'html.parser')
-            text_comment = soup.get_text()
-            comment_title = text_comment[:20]
-            return comment_title
+            try:
+                item = get_item_for_add()
+                item.is_active = False
+                item.save()
+            except self.item_model.DoesNotExist:
+                pass
+        collections = get_active_collections_for_problem_id()
+        is_active = True if collections else False
+        return collections, is_active

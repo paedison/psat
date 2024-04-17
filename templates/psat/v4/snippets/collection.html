@@ -70,7 +70,7 @@
                                     </div>
                                 </div>
                                 <div class="col-9 col-sm-8 col-md-9 px-1">
-                                    <div class="d-flex h-100 align-items-center justify-content-center">
+                                    <div class="d-flex h-100 align-items-center justify-content-start">
                                         <a class="text-black" href="" hx-swap="none"
                                            hx-get="{% url 'psat:collection_item' collection.id %}">
                                             {{ collection.title }}
@@ -96,6 +96,10 @@
                         </div>
                     </div>
                 {% endfor %}
+            {% else %}
+                <div class="list-group-item list-group-item-action">
+                    추가된 컬렉션이 없습니다.
+                </div>
             {% endif %}
             <div class="list-group-item list-group-item-action p-2"
                  hx-target="this" hx-swap="innerHTML swap:0.25s" hx-push-url="false">
