@@ -75,7 +75,9 @@
                 <div class="card-body" hx-target="#main">
                     <div id="collapseComment" class="accordion-collapse collapse show"
                          aria-labelledby="headingComment" data-bs-parent="#accordionComment">
-                        {% include 'psat/v4/snippets/comment_box.html' %}
+                        {% with problem_id=problem.id %}
+                            {% include 'psat/v4/snippets/comment_box.html' %}
+                        {% endwith %}
                     </div>
                 </div>
             </div>

@@ -3,12 +3,12 @@ import vanilla
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
-from .viewmixins import custom_view_mixins
+from .viewmixins import custom_view_mixins as mixins
 
 
-class MemoContainerView(
+class ContainerView(
     auth_mixins.LoginRequiredMixin,
-    custom_view_mixins.MemoViewMixIn,
+    mixins.MemoViewMixIn,
     vanilla.TemplateView,
 ):
     """View for loading memo container."""
@@ -22,21 +22,19 @@ class MemoContainerView(
 
     def get_context_data(self, **kwargs):
         self.get_properties()
-        context = super().get_context_data(**kwargs)
-        form = self.form_class()
-        context.update({
-            'form': form,
-            'problem': self.problem,
-            'my_memo': self.my_memo,
-            'icon_memo': self.ICON_MEMO,
-            'icon_board': self.ICON_BOARD,
-        })
-        return context
+        return super().get_context_data(
+            form=self.form_class,
+            problem=self.problem,
+            my_memo=self.my_memo,
+            icon_memo=self.ICON_MEMO,
+            icon_board=self.ICON_BOARD,
+            **kwargs,
+        )
 
 
-class MemoCreateView(
+class CreateView(
     auth_mixins.LoginRequiredMixin,
-    custom_view_mixins.MemoViewMixIn,
+    mixins.MemoViewMixIn,
     vanilla.CreateView,
 ):
     """View for creating memo."""
@@ -48,36 +46,29 @@ class MemoCreateView(
         }
         return htmx_template[f'{bool(self.request.htmx)}']
 
-    def get(self, request, *args, **kwargs):
-        self.get_properties()
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.get_properties()
-        return super().post(request, *args, **kwargs)
-
     def form_valid(self, form):
         form = form.save(commit=False)
-        form.user_id = self.user_id
-        form.problem_id = self.problem_id
+        problem_id = self.kwargs.get('problem_id')
+        form.user_id = self.request.user.id
+        form.problem_id = problem_id
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('psat:memo_container', args=[self.problem_id])
+        problem_id = self.kwargs.get('problem_id')
+        return reverse_lazy('psat:memo_container', args=[problem_id])
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'problem': self.problem,
-            'icon_board': self.ICON_BOARD,
-            'icon_memo': self.ICON_MEMO,
-        })
-        return context
+        return super().get_context_data(
+            problem=self.problem,
+            icon_board=self.ICON_BOARD,
+            icon_memo=self.ICON_MEMO,
+            **kwargs,
+        )
 
 
-class MemoUpdateView(
+class UpdateView(
     auth_mixins.LoginRequiredMixin,
-    custom_view_mixins.MemoViewMixIn,
+    mixins.MemoViewMixIn,
     vanilla.UpdateView,
 ):
     """View for updating memo."""
@@ -94,19 +85,18 @@ class MemoUpdateView(
 
     def get_context_data(self, **kwargs):
         self.get_properties()
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'problem': self.problem,
-            'update': True,
-            'icon_board': self.ICON_BOARD,
-            'icon_memo': self.ICON_MEMO,
-        })
-        return context
+        return super().get_context_data(
+            problem=self.problem,
+            update=True,
+            icon_board=self.ICON_BOARD,
+            icon_memo=self.ICON_MEMO,
+            **kwargs,
+        )
 
 
-class MemoDeleteView(
+class DeleteView(
     auth_mixins.LoginRequiredMixin,
-    custom_view_mixins.MemoViewMixIn,
+    mixins.MemoViewMixIn,
     vanilla.DeleteView,
 ):
     """View for deleting memo."""
@@ -116,9 +106,3 @@ class MemoDeleteView(
         success_url = reverse_lazy('psat:memo_container', args=[self.object.problem_id])
         self.object.delete()
         return HttpResponseRedirect(success_url)
-
-
-container_view = MemoContainerView.as_view()
-create_view = MemoCreateView.as_view()
-update_view = MemoUpdateView.as_view()
-delete_view = MemoDeleteView.as_view()

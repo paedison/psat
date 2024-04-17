@@ -1,11 +1,11 @@
 import vanilla
-from django.urls import reverse_lazy
 
-from .viewmixins import problem_view_mixins
+from psat.utils import get_url, get_list_data
+from .viewmixins import problem_view_mixins as mixins
 
 
 class ListView(
-    problem_view_mixins.ListViewMixin,
+    mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
     """ Represent PSAT base list view. """
@@ -18,58 +18,65 @@ class ListView(
         }
         return htmx_template[f'{bool(self.request.htmx)}']
 
-    def get(self, request, *args, **kwargs):
-        self.get_properties()
-        return super().get(request, *args, **kwargs)
-
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        return {
+        view_type = self.get_view_type()
+        year, ex, sub = self.get_year_ex_sub()
+        psat = self.get_psat_from_year_ex_sub(year, ex, sub)
+
+        base_url = get_url('list')
+        url_options = self.get_url_options()
+        page_obj, page_range = self.get_paginator_info(self.get_filterset().qs)
+
+        custom_data = self.get_custom_data()
+
+        return super().get_context_data(
             # base info
-            'info': self.info,
-            'title': '기출문제',
-            'sub_title': self.sub_title,
-            'form': self.get_filterset().form,
+            info=self.get_info(view_type),
+            title='기출문제',
+            sub_title=self.get_sub_title_from_psat(psat, year, ex, sub),
+            form=self.get_filterset().form,
 
             # icons
-            'icon_menu': self.ICON_MENU['psat'],
-            'icon_like': self.ICON_LIKE,
-            'icon_rate': self.ICON_RATE,
-            'icon_solve': self.ICON_SOLVE,
-            'icon_filter': self.ICON_FILTER,
-            'icon_memo': self.ICON_MEMO,
-            'icon_tag': self.ICON_TAG,
-            'icon_collection': self.ICON_COLLECTION,
-            'icon_question': self.ICON_QUESTION,
-            'icon_image': self.ICON_IMAGE,
+            icon_menu=self.ICON_MENU['psat'],
+            icon_like=self.ICON_LIKE,
+            icon_rate=self.ICON_RATE,
+            icon_solve=self.ICON_SOLVE,
+            icon_filter=self.ICON_FILTER,
+            icon_memo=self.ICON_MEMO,
+            icon_tag=self.ICON_TAG,
+            icon_collection=self.ICON_COLLECTION,
+            icon_question=self.ICON_QUESTION,
+            icon_image=self.ICON_IMAGE,
 
             # variables
-            'year': self.year,
-            'ex': self.ex,
-            'sub': self.sub,
-            'page_number': self.page_number,
-            'keyword': self.keyword,
+            year=year,
+            ex=ex,
+            sub=sub,
+            page_number=self.get_page_number(),
+            keyword=self.get_keyword(),
 
             # urls
-            'base_url': self.base_url,
-            'pagination_url': self.pagination_url,
-            'url_options': self.url_options,
+            base_url=base_url,
+            url_options=url_options,
+            pagination_url=f'{base_url}{url_options}',
 
             # page objectives
-            'page_obj': self.page_obj,
-            'page_range': self.page_range,
+            page_obj=page_obj,
+            page_range=page_range,
 
             # custom data
-            'like_data': self.custom_data['like'],
-            'rate_data': self.custom_data['rate'],
-            'solve_data': self.custom_data['solve'],
-            'memo_data': self.custom_data['memo'],
-            'tag_data': self.custom_data['tag'],
-            'collection_data': self.custom_data['collection'],
-            'comment_data': self.custom_data['comment'],
-        }
+            like_data=custom_data['like'],
+            rate_data=custom_data['rate'],
+            solve_data=custom_data['solve'],
+            memo_data=custom_data['memo'],
+            tag_data=custom_data['tag'],
+            collection_data=custom_data['collection'],
+            comment_data=custom_data['comment'],
+            **kwargs,
+        )
 
 
 class ProblemListView(ListView):
@@ -81,28 +88,15 @@ class ProblemListView(ListView):
 
 
 class SearchView(ListView):
-    def get_sub_title(self) -> str:
-        title_parts = []
-        if self.year:  # year
-            title_parts.append(f'{self.psat.year}년')
-        if self.ex:  # ex
-            title_parts.append(self.psat.exam.name)
-        if self.sub:  # sub
-            title_parts.append(self.psat.subject.name)
-        if not self.year and not self.ex and not self.sub:  # all
-            title_parts.append('전체')
-        sub_title = f'{" ".join(title_parts)} 검색 결과'
-        return sub_title
+    def get_sub_title_from_psat(self, psat=None, year=None, ex=None, sub=None, end_string='기출문제') -> str:
+        return super().get_sub_title_from_psat(psat, year, ex, sub, end_string='검색 결과')
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['search'] = True
-        context['base_url'] = reverse_lazy('psat:search')
-        return context
+        return super().get_context_data(search=True, **kwargs)
 
 
 class DetailView(
-    problem_view_mixins.DetailViewMixin,
+    mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
     """Represent PSAT base detail view."""
@@ -116,111 +110,128 @@ class DetailView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
-        self.get_properties()
-        self.get_open_instance()
+        problem_id = self.get_problem_id()
+        problem = self.get_problem_from_problem_id(problem_id)
+        sub_title = self.get_sub_title_from_problem(problem)
+        self.get_open_instance(problem_id)
 
-        return {
+        view_type = self.get_view_type()
+        custom_data = self.get_custom_data()
+        view_custom_data = custom_data[view_type]
+        prev_prob, next_prob = self.get_prev_next_prob(problem_id, view_custom_data)
+        list_data = get_list_data(view_custom_data)
+
+        return super().get_context_data(
             # base info
-            'info': self.info,
-            'sub_title': self.sub_title,
-            'problem': self.problem,
-            'problem_id': self.problem_id,
+            info=self.get_info(view_type),
+            sub_title=sub_title,
+            problem_id=problem_id,
+            problem=problem,
 
             # icons
-            'icon_menu': self.ICON_MENU['psat'],
-            'icon_like': self.ICON_LIKE,
-            'icon_rate': self.ICON_RATE,
-            'icon_solve': self.ICON_SOLVE,
-            'icon_memo': self.ICON_MEMO,
-            'icon_tag': self.ICON_TAG,
-            'icon_question': self.ICON_QUESTION,
-            'icon_nav': self.ICON_NAV,
-            'icon_board': self.ICON_BOARD,
+            icon_menu=self.ICON_MENU['psat'],
+            icon_like=self.ICON_LIKE,
+            icon_rate=self.ICON_RATE,
+            icon_solve=self.ICON_SOLVE,
+            icon_memo=self.ICON_MEMO,
+            icon_tag=self.ICON_TAG,
+            icon_collection=self.ICON_COLLECTION,
+            icon_question=self.ICON_QUESTION,
+            icon_nav=self.ICON_NAV,
+            icon_board=self.ICON_BOARD,
 
             # urls
-            'url_options': self.url_options,
+            url_options=self.get_url_options(),
 
             # navigation data
-            'prev_prob': self.prev_prob,
-            'next_prob': self.next_prob,
-            'list_data': self.list_data,
+            prev_prob=prev_prob,
+            next_prob=next_prob,
+            list_data=list_data,
 
             # custom data
-            'like_data': self.custom_data['like'],
-            'rate_data': self.custom_data['rate'],
-            'solve_data': self.custom_data['solve'],
-            'memo_data': self.custom_data['memo'],
-            'tag_data': self.custom_data['tag'],
-            'comment_data': self.custom_data['comment'],
+            like_data=custom_data['like'],
+            rate_data=custom_data['rate'],
+            solve_data=custom_data['solve'],
+            memo_data=custom_data['memo'],
+            tag_data=custom_data['tag'],
+            collection_data=custom_data['collection'],
+            comment_data=custom_data['comment'],
 
             # memo & tag
-            'memo': self.memo,
-            'my_tag': self.my_tag,
-            'comments': self.comments,
-        }
+            memo=self.get_memo(problem_id),
+            my_tag=self.get_my_tag(problem_id),
+            comments=self.get_comments(problem_id),
+            **kwargs,
+        )
 
 
 class DetailImageView(
-    problem_view_mixins.DetailViewMixin,
+    mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/problem_detail.html#modal_image'
 
     def get_context_data(self, **kwargs):
-        self.get_properties()
+        view_type = self.get_view_type()
+        problem_id = self.get_problem_id()
+        problem = self.get_problem_from_problem_id(problem_id)
+        sub_title = self.get_sub_title_from_problem(problem)
+        custom_data = self.get_custom_data()
 
-        return {
+        return super().get_context_data(
             # base info
-            'info': self.info,
-            'sub_title': self.sub_title,
-            'problem': self.problem,
-            'problem_id': self.problem_id,
+            info=self.get_info(view_type),
+            sub_title=sub_title,
+            problem_id=problem_id,
+            problem=problem,
 
             # icons
-            'icon_menu': self.ICON_MENU['psat'],
-            'icon_like': self.ICON_LIKE,
-            'icon_rate': self.ICON_RATE,
-            'icon_solve': self.ICON_SOLVE,
-            'icon_memo': self.ICON_MEMO,
-            'icon_tag': self.ICON_TAG,
-            'icon_question': self.ICON_QUESTION,
-            'icon_nav': self.ICON_NAV,
-            'icon_board': self.ICON_BOARD,
+            icon_menu=self.ICON_MENU['psat'],
+            icon_like=self.ICON_LIKE,
+            icon_rate=self.ICON_RATE,
+            icon_solve=self.ICON_SOLVE,
+            icon_memo=self.ICON_MEMO,
+            icon_tag=self.ICON_TAG,
+            icon_collection=self.ICON_COLLECTION,
+            icon_question=self.ICON_QUESTION,
+            icon_nav=self.ICON_NAV,
+            icon_board=self.ICON_BOARD,
 
             # custom data
-            'like_data': self.custom_data['like'],
-            'rate_data': self.custom_data['rate'],
-            'solve_data': self.custom_data['solve'],
-            'memo_data': self.custom_data['memo'],
-            'tag_data': self.custom_data['tag'],
-            'comment_data': self.custom_data['comment'],
-        }
+            like_data=custom_data['like'],
+            rate_data=custom_data['rate'],
+            solve_data=custom_data['solve'],
+            memo_data=custom_data['memo'],
+            tag_data=custom_data['tag'],
+            collection_data=custom_data['collection'],
+            comment_data=custom_data['comment'],
+            **kwargs,
+        )
 
 
 class DetailNavigationView(
-    problem_view_mixins.DetailNavigationViewMixin,
+    mixins.DetailNavigationViewMixin,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/navigation_container.html'
 
     def get_template_names(self):
-        if self.view_type == 'problem':
+        view_type = self.get_view_type()
+        if view_type == 'problem':
             return f'{self.template_name}#nav_problem_list'
         return f'{self.template_name}#nav_other_list'
 
     def get_context_data(self, **kwargs):
-        self.get_properties()
-        return {
-            'info': self.info,
-            'problem': self.problem,
-            'list_title': self.list_title,
-            'list_data': self.list_data,
-        }
+        problem_id = self.get_problem_id()
+        problem = self.get_problem_from_problem_id(problem_id)
 
+        view_type = self.get_view_type()
+        view_custom_data = self.get_custom_data()[view_type]
+        list_data = get_list_data(view_custom_data)
 
-list_view = ListView.as_view()
-problem_list_view = ProblemListView.as_view()
-search_view = SearchView.as_view()
-detail_view = DetailView.as_view()
-detail_img_view = DetailImageView.as_view()
-detail_nav_view = DetailNavigationView.as_view()
+        return super().get_context_data(
+            info=self.get_info(view_type),
+            problem=problem,
+            list_title=self.get_list_title(view_type),
+            list_data=list_data,
+        )

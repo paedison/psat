@@ -1,11 +1,10 @@
 from bs4 import BeautifulSoup as bs
-from django.core.paginator import Paginator
 from django.db.models import F
-from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
 from psat import forms as custom_forms
 from psat import models as custom_models
+from psat.utils import get_page_obj_and_range
 from reference.models import psat_models as reference_models
 
 
@@ -22,34 +21,6 @@ class BaseMixIn(ConstantIconSet):
     context_object_name = 'comments'
     template_name = 'psat/v4/snippets/comment_container.html'
 
-    problem_id: int
-    comment_id: str
-    parent_id: str
-
-    problem: reference_models.PsatProblem.objects
-    comment_qs: custom_models.Comment.objects
-    comment: custom_models.Comment.objects
-    parent_comment: custom_models.Comment.objects
-
-    page_number: str
-
-    def get_properties(self):
-        self.comment_id = self.kwargs.get('comment_id')
-        self.problem_id = self.kwargs.get('problem_id')
-        self.parent_id = self.request.GET.get('parent_id')
-
-        self.problem = reference_models.PsatProblem.objects.none()
-        self.comment_qs = self.get_comment_qs()
-        self.comment = self.comment_qs.none()
-        self.parent_comment = self.comment_qs.none()
-
-        if self.problem_id:
-            self.problem = reference_models.PsatProblem.objects.get(id=self.problem_id)
-        if self.comment_id:
-            self.comment = self.comment_qs.get(id=self.comment_id)
-        if self.parent_id:
-            self.parent_comment = self.comment_qs.get(id=self.parent_id)
-
     @staticmethod
     def get_comment_qs():
         return (
@@ -65,46 +36,13 @@ class BaseMixIn(ConstantIconSet):
     def get_paginator_info(self, page_data, per_page=10) -> tuple:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.request.GET.get('page', 1)
-        paginator = Paginator(page_data, per_page)
-        try:
-            page_obj = paginator.get_page(page_number)
-            page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-            return page_obj, page_range
-        except TypeError:
-            return None, None
+        return get_page_obj_and_range(page_number, page_data, per_page)
 
-    @staticmethod
-    def get_url(name, *args):
-        if args:
-            base_url = reverse_lazy(f'psat:{name}', args=[*args])
-            return f'{base_url}?'
-        base_url = reverse_lazy(f'psat:{name}')
-        return f'{base_url}?'
+    def get_all_comments(self, problem_id=None):
+        qs = self.get_comment_qs()
+        if problem_id:
+            qs = qs.filter(problem_id=problem_id)
 
-
-class CommentListViewMixin(BaseMixIn):
-    paginate_by = 10
-
-    def get_queryset(self):
-        parent_comments = self.comment_qs.filter(parent__isnull=True).order_by('-timestamp')
-        child_comments = self.comment_qs.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
-
-        all_comments = []
-        for comment in parent_comments:
-            all_comments.append(comment)
-            all_comments.extend(child_comments.filter(parent=comment))
-
-        return all_comments
-
-
-class CommentContainerViewMixin(CommentListViewMixin):
-    paginate_by = 5
-
-    def get_queryset(self):
-        qs = (
-            self.model.objects.filter(problem_id=self.problem_id)
-            .select_related('user').annotate(username=F('user__username'))
-        )
         parent_comments = qs.filter(parent__isnull=True).order_by('-timestamp')
         child_comments = qs.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
 
@@ -115,41 +53,6 @@ class CommentContainerViewMixin(CommentListViewMixin):
 
         return all_comments
 
-
-class CommentDetailViewMixin(BaseMixIn):
-    sub_title: str
-    replies: custom_models.Comment.objects
-
-    def get_properties(self):
-        super().get_properties()
-
-        self.sub_title = self.get_sub_title()
-        self.problem_id = self.comment.problem_id
-        self.problem = reference_models.PsatProblem.objects.get(id=self.problem_id)
-        self.replies = custom_models.Comment.objects.filter(parent=self.comment)
-
-    def get_sub_title(self):
-        year = self.comment.year
-        exam = self.comment.exam
-        subject = self.comment.subject
-        number = self.comment.number
-        return f'{year}년 {exam} {subject} {number}번'
-
-
-class CommentCreateViewMixin(BaseMixIn):
-    comment_title: str
-
-    def get_properties(self):
-        super().get_properties()
-
-        if self.request.method == 'GET':
-            self.page_number = self.request.GET.get('page', '1')
-        else:
-            self.page_number = self.request.POST.get('page', '1')
-        print(self.page_number)
-
-        self.comment_title = self.get_comment_title()
-
     def get_comment_title(self):
         comment = self.request.POST.get('comment')
         if comment:
@@ -157,3 +60,16 @@ class CommentCreateViewMixin(BaseMixIn):
             text_comment = soup.get_text()
             comment_title = text_comment[:20]
             return comment_title
+
+    @staticmethod
+    def get_sub_title_from_comment(comment):
+        return f'{comment.year}년 {comment.exam} {comment.subject} {comment.number}번'
+
+    @staticmethod
+    def get_replies_from_comment(comment):
+        return custom_models.Comment.objects.filter(parent=comment)
+
+    def get_problem_from_problem_id(self, problem_id=None):
+        if problem_id is None:
+            problem_id = self.kwargs.get('problem_id')
+        return reference_models.PsatProblem.objects.get(id=problem_id)

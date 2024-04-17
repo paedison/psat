@@ -6,7 +6,7 @@
 {% load crispy_forms_tags %}
 
 <div class="row">
-    <div class="accordion col-sm-6 col-md-4 col-lg-3" id="collectionListAccordion">
+    <div class="accordion col-sm-6 col-lg-4" id="collectionListAccordion">
         <div class="accordion-item">
             <h2 class="accordion-header">
                 <button class="accordion-button fw-bold" type="button"
@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <div class="col-sm-6 col-md-8 col-lg-9 mt-3 mt-sm-0 htmx-fade-out htmx-fade-in" hx-target="#main">
+    <div class="col-sm-6 col-lg-8 mt-3 mt-sm-0 htmx-fade-out htmx-fade-in" hx-target="#main">
         {% partial card_item_title %}
         <hr/>
         <form id="collectionItemForm" class="sortable htmx-fade-out htmx-fade-in"
@@ -62,30 +62,36 @@
                 {% for collection in collections %}
                     <div id="collectionList{{ collection.id }}" class="list-group-item list-group-item-action p-0">
                         <input type="hidden" name="collection" value="{{ collection.id }}"/>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                {% if forloop.last %}
-                                    <div class="collection_order bottom_left_curve">{{ collection.order }}</div>
-                                {% else %}
-                                    <div class="collection_order">{{ collection.order }}</div>
-                                {% endif %}
-                                <a class="text-black ms-1" href="" hx-swap="none"
-                                   hx-get="{% url 'psat:collection_item' collection.id %}">
-                                    {{ collection.title }}
-                                </a>
-                            </div>
-                            <div>
-                                <a class="me-1 htmx-fade-in htmx-fade-out" href=""
-                                   hx-get="{% url 'psat:collection_modal_update' %}?collection={{ collection.id }}"
-                                   hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s"
-                                   data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                    <i class="fa-solid fa-pen text-success"></i>
-                                </a>
-                                <a class="me-3" href="" hx-swap="none"
-                                   hx-confirm="{% trans 'Are you sure you wish to delete the collection?' %}"
-                                   hx-post="{% url 'psat:collection_delete' collection.id %}">
-                                    <i class="fa-solid fa-square-xmark text-danger fs-5"></i>
-                                </a>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-1 col-sm-2 col-md-1 p-0">
+                                    <div class="d-flex h-100 align-items-center justify-content-center bg-warning-subtle">
+                                        <div class="fw-bold py-2">{{ collection.order }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-9 col-sm-8 col-md-9 px-1">
+                                    <div class="d-flex h-100 align-items-center justify-content-center">
+                                        <a class="text-black" href="" hx-swap="none"
+                                           hx-get="{% url 'psat:collection_item' collection.id %}">
+                                            {{ collection.title }}
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-2 text-nowrap">
+                                    <div class="d-flex h-100 align-items-center justify-content-end">
+                                        <a class="me-1 htmx-fade-in htmx-fade-out" href=""
+                                           hx-get="{% url 'psat:collection_modal_update' %}?collection={{ collection.id }}"
+                                           hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s"
+                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            <i class="fa-solid fa-pen text-success"></i>
+                                        </a>
+                                        <a href="" hx-swap="none"
+                                           hx-confirm="{% trans 'Are you sure you wish to delete the collection?' %}"
+                                           hx-post="{% url 'psat:collection_delete' collection.id %}">
+                                            <i class="fa-solid fa-square-xmark text-danger fs-5"></i>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -118,14 +124,16 @@
             {% if items %}
                 <input type="hidden" name="collection" value="{{ items.0.collection_id }}"/>
                 {% for item in items %}
-                    <div class="fs-6 mb-2" hx-target="#main" hx-push-url="true">
+                    <div class="d-flex fs-6 mb-2" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
                         <input type="hidden" name="item" value="{{ item.id }}"/>
-                        <div class="d-inline-block pe-1">
-                            <span class="fw-bold">{{ item.order }}.</span>
-                            {% partial reference %}
-                        </div>
-                        <div class="d-inline-block">
-                            {% partial question %}
+                        <div class="fw-bold me-2">{{ item.order }}.</div>
+                        <div>
+                            <div class="d-inline-block pe-1">
+                                {% partial reference %}
+                            </div>
+                            <div class="d-inline-block">
+                                {% partial question %}
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
@@ -159,7 +167,7 @@
             {{ icon_image.false|safe }}
         {% else %}
             <a class="text-decoration-none" hx-target="#modalContainer"
-               hx-swap="innerHTML swap:0.25s" href="" hx-push-url="false"
+               href="" hx-push-url="false"
                hx-get="{% url 'psat:detail_image' item.problem_id %}"
                data-bs-toggle="modal" data-bs-target="#modalContainer">
                 {{ icon_image.true|safe }}

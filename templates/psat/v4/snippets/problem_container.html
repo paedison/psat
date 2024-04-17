@@ -21,7 +21,7 @@
                  data-bs-parent="#problemFilter">
                 <div class="accordion-body pb-2">
                     <form class="row row-cols-auto g-2 align-items-center justify-content-center"
-                          method="get" hx-trigger="change" hx-target="#problem_container"
+                          method="get" hx-trigger="change" hx-target="#problemCard"
                           hx-get="{{ base_url }}" hx-push-url="false">
                         <a type="button" class="btn btn-outline-primary m-1"
                            href="{{ base_url }}" hx-boost="true">
@@ -47,8 +47,8 @@
                             <td class="text-center text-nowrap text-primary p-2">
                                 <h2 class="fs-6 fw-bold m-0">
                                     {% if info.view_type == 'problem' %}
-                                        <a href="" hx-boost="true" hx-push-url="false"
-                                           hx-get="{{ base_url }}?year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
+                                        <a href="" hx-boost="true" hx-push-url="false" hx-target="#problemCard"
+                                           hx-get="{{ base_url }}year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
                                             {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
                                         </a>
                                     {% else %}
@@ -82,7 +82,7 @@
         </tbody>
     {% /responsive_table %}
 
-    {% with target_id='problem_container' %}
+    {% with target_id='problemCard' %}
         {% if page_obj.has_next or page_obj.has_previous %}
             {% include 'psat/v4/snippets/pagination.html' %}
         {% endif %}
@@ -92,7 +92,7 @@
 {% partialdef reference %}
     <a class="text-decoration-none fw-bold"
        href="{% url 'psat:detail' problem.id %}"
-       hx-get="{% url 'psat:detail' problem.id %}{{ url_options }}"
+       hx-get="{% url 'psat:detail' problem.id %}?{{ url_options }}"
        hx-push-url="{% url 'psat:detail' problem.id %}">
         {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|stringformat:'02d' }}
     </a>
@@ -115,7 +115,7 @@
         {% partialdef link_snippet inline=True %}
             <a class="text-decoration-none {{ class }}"
                href="{% url 'psat:detail' problem.id %}"
-               hx-get="{% url 'psat:detail' problem.id %}{{ url_options }}"
+               hx-get="{% url 'psat:detail' problem.id %}?{{ url_options }}"
                hx-push-url="{% url 'psat:detail' problem.id %}">
                 <h3 class="d-inline-block fs-6 small m-0">
                     {{ problem.question|truncatechars:chars }}
