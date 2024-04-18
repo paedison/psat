@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load partials %}
 
 <div class="row">
     <div class="d-flex{% if comment.parent %} ps-4{% endif %}">
@@ -13,43 +14,23 @@
                 {{ comment.timestamp|date:'n/j(D) G:i' }}
             </span>
         </div>
-        <div class="btn-group" role="group" aria-label="Comment buttons">
-            {% if not comment.parent %}
-                {% if user.is_authenticated %}
-                    <button class="btn btn-sm btn-outline-primary"
-                            hx-get="{% url 'psat:comment_create' problem_id %}?parent_id={{ comment.id }}"
-                            title="{% trans 'Reply' %}"
-                            hx-target="#modalContainer"
-                            data-bs-toggle="modal" data-bs-target="#modalContainer">
-                        {{ icon_board.reply|safe }}
-                    </button>
-                {% else %}
-                    <button class="btn btn-sm btn-outline-primary"
-                            hx-get="{% url 'account_login_modal' %}"
-                            title="{% trans 'Reply' %}"
-                            hx-target="#modalContainer"
-                            data-bs-toggle="modal" data-bs-target="#modalContainer">
-                        {{ icon_board.reply|safe }}
-                    </button>
+        <form>
+            <input name="problem_id" type="hidden" value="{{ problem_id }}" aria-label="Problem ID"/>
+            <div class="btn-group" role="group" aria-label="Comment buttons">
+                {% if not comment.parent %}
+                    {% if user.is_authenticated %}
+                        {% partial modal_reply_create %}
+                    {% else %}
+                        {% partial modal_login %}
+                    {% endif %}
                 {% endif %}
-            {% endif %}
 
-            {% if comment.user == user %}
-                <button class="btn btn-sm btn-outline-success"
-                        hx-get="{% url 'psat:comment_update' comment.id %}?parent_id={{ comment.parent_id|default:'' }}&page={{ page_obj.number }}"
-                        title="{% trans 'Update' %}"
-                        hx-target="#modalContainer"
-                        data-bs-toggle="modal" data-bs-target="#modalContainer">
-                    {{ icon_board.update|safe }}
-                </button>
-                <button class="btn btn-sm btn-outline-danger"
-                        hx-post="{% url 'psat:comment_delete' comment.id %}"
-                        title="{% trans 'Delete' %}"
-                        hx-confirm="{% trans 'Are you sure you wish to delete your question or comment?' %}">
-                    {{ icon_board.delete|safe }}
-                </button>
-            {% endif %}
-        </div>
+                {% if comment.user == user %}
+                    {% partial modal_comment_update %}
+                    {% partial modal_comment_delete %}
+                {% endif %}
+            </div>
+        </form>
     </div>
 </div>
 <div class="row">
@@ -58,3 +39,35 @@
         {{ comment.comment|safe }}
     </div>
 </div>
+
+{% partialdef modal_reply_create %}
+    <button class="btn btn-sm btn-outline-primary" title="{% trans 'Reply' %}"
+            hx-get="{% url 'psat:comment_create' problem_id %}?parent_id={{ comment.id }}"
+            hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer">
+        {{ icon_board.reply|safe }}
+    </button>
+{% endpartialdef modal_reply_create %}
+
+{% partialdef modal_login %}
+    <button class="btn btn-sm btn-outline-primary" title="{% trans 'Reply' %}"
+            hx-get="{% url 'account_login_modal' %}"
+            hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer">
+        {{ icon_board.reply|safe }}
+    </button>
+{% endpartialdef modal_login %}
+
+{% partialdef modal_comment_update %}
+    <button class="btn btn-sm btn-outline-success" title="{% trans 'Update' %}"
+            hx-get="{% url 'psat:comment_update' comment.id %}?parent_id={{ comment.parent_id|default:'' }}&page={{ page_obj.number }}"
+            hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer">
+        {{ icon_board.update|safe }}
+    </button>
+{% endpartialdef modal_comment_update %}
+
+{% partialdef modal_comment_delete %}
+    <button class="btn btn-sm btn-outline-danger" title="{% trans 'Delete' %}"
+            hx-post="{% url 'psat:comment_delete' comment.id %}"
+            hx-confirm="{% trans 'Are you sure you wish to delete your question or comment?' %}">
+        {{ icon_board.delete|safe }}
+    </button>
+{% endpartialdef modal_comment_delete %}

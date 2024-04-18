@@ -31,15 +31,12 @@ class BaseMixIn(ConstantIconSet):
             return (
                 self.item_model.objects
                 .filter(collection=collection, is_active=True)
-                .select_related('problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
+                .select_related(
+                    'problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
                 .annotate(
-                    year=F('problem__psat__year'),
-                    ex=F('problem__psat__exam__abbr'),
-                    sub=F('problem__psat__subject__abbr'),
-                    number=F('problem__number'),
-                    question=F('problem__question'),
-                )
-            )
+                    year=F('problem__psat__year'), ex=F('problem__psat__exam__abbr'),
+                    sub=F('problem__psat__subject__abbr'), number=F('problem__number'),
+                    question=F('problem__question')))
 
     def get_collections_for_sort_list(self, collection_ids_order):
         collections = []
