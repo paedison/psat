@@ -5,25 +5,19 @@
 
 <div role="button" aria-label="answer-button">
     <form class="m-1 answer-group" aria-label="Answer Button">
-        <input type="radio" class="btn-check" name="answer" id="answer1" value="1">
-        <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer1">1</label>
+        <input type="hidden" name="icon_id" value="#psatAnswer{{ problem.id }}" aria-label="Input ID"/>
+        <input type="hidden" name="problem_id" value="{{ problem.id }}" aria-label="Problem ID"/>
 
-        <input type="radio" class="btn-check" name="answer" id="answer2" value="2">
-        <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer2">2</label>
+        {% for i in '12345' %}
+            <input type="radio" class="btn-check" name="answer" id="answer{{ i }}" value="{{ i }}">
+            <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer{{ i }}">
+                {{ i }}
+            </label>
+        {% endfor %}
 
-        <input type="radio" class="btn-check" name="answer" id="answer3" value="3">
-        <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer3">3</label>
-
-        <input type="radio" class="btn-check" name="answer" id="answer4" value="4">
-        <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer4">4</label>
-
-        <input type="radio" class="btn-check" name="answer" id="answer5" value="5">
-        <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer5">5</label>
     {% if user.is_authenticated %}
-        <input type="text" name="icon_id" value="#psatAnswer{{ problem.id }}" aria-label="Input ID" hidden/>
-        <input type="text" name="problem_id" value="{{ problem.id }}" aria-label="Problem ID" hidden/>
         <a class="btn btn-circle btn-success btn-sm fs-6"
-           hx-post="{% url 'psat:solve_modal' %}?problem_id={{ problem.id }}"
+           hx-post="{% url 'psat:solve_modal' %}"
            hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
            data-bs-toggle="modal" data-bs-target="#modalContainer">
             <i class="fa-solid fa-check"></i>

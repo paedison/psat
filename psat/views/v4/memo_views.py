@@ -1,7 +1,5 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
-from django.http import HttpResponseRedirect
-from django.urls import reverse_lazy
 
 from .viewmixins import custom_view_mixins as mixins
 
@@ -21,11 +19,13 @@ class ContainerView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
-        self.get_properties()
+        problem_id = self.kwargs.get('problem_id')
+        problem = self.get_problem_by_problem_id(problem_id)
+        my_memo = self.get_my_memo_by_problem(problem)
         return super().get_context_data(
             form=self.form_class,
-            problem=self.problem,
-            my_memo=self.my_memo,
+            problem=problem,
+            my_memo=my_memo,
             icon_memo=self.ICON_MEMO,
             icon_board=self.ICON_BOARD,
             **kwargs,
@@ -55,11 +55,13 @@ class CreateView(
 
     def get_success_url(self):
         problem_id = self.kwargs.get('problem_id')
-        return reverse_lazy('psat:memo_container', args=[problem_id])
+        return self.get_url('memo_container', problem_id)
 
     def get_context_data(self, **kwargs):
+        problem_id = self.kwargs.get('problem_id')
+        problem = self.get_problem_by_problem_id(problem_id)
         return super().get_context_data(
-            problem=self.problem,
+            problem=problem,
             icon_board=self.ICON_BOARD,
             icon_memo=self.ICON_MEMO,
             **kwargs,
@@ -81,12 +83,13 @@ class UpdateView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_success_url(self):
-        return reverse_lazy('psat:memo_container', args=[self.object.problem_id])
+        return self.get_url('memo_container', self.object.problem_id)
 
     def get_context_data(self, **kwargs):
-        self.get_properties()
+        problem_id = self.request.GET.get('problem_id')
+        problem = self.get_problem_by_problem_id(problem_id)
         return super().get_context_data(
-            problem=self.problem,
+            problem=problem,
             update=True,
             icon_board=self.ICON_BOARD,
             icon_memo=self.ICON_MEMO,
@@ -100,9 +103,6 @@ class DeleteView(
     vanilla.DeleteView,
 ):
     """View for deleting memo."""
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        success_url = reverse_lazy('psat:memo_container', args=[self.object.problem_id])
-        self.object.delete()
-        return HttpResponseRedirect(success_url)
+    def get_success_url(self):
+        problem_id = self.request.POST.get('problem_id')
+        return self.get_url('memo_container', problem_id)

@@ -21,6 +21,7 @@ class IndexView(
             collections=collections,
             target_collection=target_collection,
             items=items,
+            **kwargs,
         )
 
 
@@ -39,6 +40,7 @@ class ItemView(
             icon_image=self.ICON_IMAGE,
             target_collection=target_collection,
             items=items,
+            **kwargs,
         )
 
 
@@ -58,6 +60,7 @@ class ReloadView(
             collections=collections,
             target_collection=target_collection,
             items=items,
+            **kwargs,
         )
 
 
@@ -72,7 +75,7 @@ class SortListView(
     def post(self, request, *args, **kwargs):
         collection_ids_order = self.request.POST.getlist('collection')
         collections = self.get_collections_for_sort_list(collection_ids_order)
-        context = self.get_context_data(collections=collections)
+        context = self.get_context_data(collections=collections, **kwargs)
         return self.render_to_response(context)
 
 
@@ -93,6 +96,7 @@ class SortItemView(
             icon_image=self.ICON_IMAGE,
             target_collection=target_collection,
             items=items,
+            **kwargs,
         )
         return self.render_to_response(context)
 
@@ -112,6 +116,7 @@ class ModalItemAddView(
             problem_id=problem_id,
             icon_id=icon_id,
             collections=collections,
+            **kwargs,
         )
 
 
@@ -125,7 +130,7 @@ class ModalUpdateView(
     def get_context_data(self, **kwargs):
         pk = self.request.GET.get('collection')
         collection = self.get_all_collections().get(pk=pk)
-        return super().get_context_data(collection=collection)
+        return super().get_context_data(collection=collection, **kwargs)
 
 
 class CreateView(
@@ -212,5 +217,6 @@ class ItemAddView(
         context = self.get_context_data(
             is_active=is_active,
             icon_collection=self.ICON_COLLECTION,
+            **kwargs,
         )
         return self.render_to_response(context)

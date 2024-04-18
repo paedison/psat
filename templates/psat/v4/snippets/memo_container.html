@@ -55,19 +55,22 @@
                             </div>
                             <div class="row">
                                 <div class="d-flex justify-content-end">
-                                    <div class="btn-group" role="group" aria-label="Memo buttons">
-                                        <button class="btn btn-sm btn-outline-success"
-                                                hx-get="{% url 'psat:memo_update' my_memo.id %}"
-                                                title="{% trans 'Update' %}">
-                                            {{ icon_board.update|safe }} {% trans 'Update' %}
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger"
-                                                hx-post="{% url 'psat:memo_delete' my_memo.id %}"
-                                                hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
-                                                title="{% trans 'Delete' %}">
-                                            {{ icon_board.delete|safe }} {% trans 'Delete' %}
-                                        </button>
-                                    </div>
+                                    <form>
+                                        <input type="hidden" name="problem_id" value="{{ my_memo.problem_id }}"/>
+                                        <div class="btn-group" role="group" aria-label="Memo buttons">
+                                            <button class="btn btn-sm btn-outline-success"
+                                                    hx-get="{% url 'psat:memo_update' my_memo.id %}?problem_id={{ my_memo.problem_id }}"
+                                                    title="{% trans 'Update' %}">
+                                                {{ icon_board.update|safe }} {% trans 'Update' %}
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    hx-post="{% url 'psat:memo_delete' my_memo.id %}"
+                                                    hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
+                                                    title="{% trans 'Delete' %}">
+                                                {{ icon_board.delete|safe }} {% trans 'Delete' %}
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </li>
