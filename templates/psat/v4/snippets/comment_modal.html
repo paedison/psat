@@ -22,7 +22,7 @@
             </div>
         {% endif %}
         <form hx-post="{% url 'psat:comment_create' problem_id %}"
-              hx-swap="innerHTML swap:0.25s" hx-target="#containerComment">
+              hx-swap="innerHTML swap:0.25s" hx-target="#collapseComment">
             <input name="problem_id" type="hidden" value="{{ problem_id }}" aria-label="Problem ID"/>
             <input name="parent" type="hidden" value="{{ parent_id|default:'' }}" aria-label="Parent"/>
             {{ form.media }}
@@ -48,7 +48,7 @@
 {% partialdef update %}
     {% #modal header=header size="modal-xl" %}
         <form hx-post="{% url 'psat:comment_update' comment.id %}"
-              hx-swap="innerHTML swap:0.25s" hx-target="#containerComment">
+              hx-swap="innerHTML swap:0.25s" hx-target="#collapseComment">
             <input name="problem_id" type="hidden" value="{{ comment.problem_id }}" aria-label="Problem ID"/>
             <input name="page" type="hidden" value="{{ page_number }}" aria-label="Page Number"/>
             <input name="parent" type="hidden" value="{{ comment.parent_id|default:'' }}" aria-label="Parent"/>

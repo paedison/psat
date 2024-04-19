@@ -2,22 +2,16 @@ import django.contrib.auth.mixins as auth_mixins
 import vanilla
 from django.http import HttpResponseRedirect
 
-from .viewmixins import custom_view_mixins as mixins
+from .viewmixins import tag_view_mixins
 
 
 class ContainerView(
     auth_mixins.LoginRequiredMixin,
-    mixins.TagViewMixIn,
+    tag_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for loading tag container."""
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#tag_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
+    template_name = 'psat/v4/snippets/tag_container.html'
 
     def get_context_data(self, **kwargs) -> dict:
         problem_id = self.kwargs.get('problem_id')
@@ -37,17 +31,11 @@ class ContainerView(
 
 class CreateView(
     auth_mixins.LoginRequiredMixin,
-    mixins.TagViewMixIn,
+    tag_view_mixins.BaseMixIn,
     vanilla.CreateView,
 ):
     """View for creating tag."""
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#tag_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
+    template_name = 'psat/v4/snippets/tag_container.html'
 
     def get_success_url(self):
         problem_id = self.kwargs.get('problem_id')
@@ -74,10 +62,12 @@ class CreateView(
 
 class AddView(
     auth_mixins.LoginRequiredMixin,
-    mixins.TagViewMixIn,
+    tag_view_mixins.BaseMixIn,
     vanilla.UpdateView,
 ):
     """View for adding tag."""
+    template_name = 'psat/v4/snippets/tag_container.html'
+
     def get_success_url(self):
         return self.get_url('tag_container', self.object.problem_id)
 
@@ -88,7 +78,7 @@ class AddView(
 
 class DeleteView(
     auth_mixins.LoginRequiredMixin,
-    mixins.TagViewMixIn,
+    tag_view_mixins.BaseMixIn,
     vanilla.DeleteView,
 ):
     """View for deleting tag."""
@@ -98,12 +88,14 @@ class DeleteView(
         success_url = self.get_url('tag_container', obj.problem_id)
         tag_name = self.kwargs.get('tag_name')
         obj.tags.remove(tag_name)
+        if not obj.tags.all():
+            obj.delete()
         return HttpResponseRedirect(success_url)
 
 
 class CloudView(
     auth_mixins.LoginRequiredMixin,
-    mixins.TagViewMixIn,
+    tag_view_mixins.BaseMixIn,
     vanilla.TemplateView
 ):
     """View for loading problem tag cloud."""

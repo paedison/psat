@@ -1,24 +1,18 @@
 from django.db.models import Case, When, BooleanField, F
 
-from common.constants.icon_set import ConstantIconSet
-from psat import forms, models, utils
+from psat import forms, models
+from . import base_mixins
 
 
-class BaseMixIn(ConstantIconSet):
+class BaseMixIn(
+    base_mixins.ConstantIconSet,
+    base_mixins.DefaultModels,
+    base_mixins.DefaultMethods,
+):
     """Setting mixin for Collection views."""
-    request: any
-    kwargs: dict
-    object: any
 
     model = models.Collection
     form_class = forms.CollectionForm
-
-    collection_model = models.Collection
-    item_model = models.CollectionItem
-
-    @staticmethod
-    def get_url(name, *args):
-        return utils.get_url(name, *args)
 
     def get_all_collections(self):
         return (
@@ -58,14 +52,14 @@ class BaseMixIn(ConstantIconSet):
 
     def set_collection_order_for_create(self, form):
         existing_collections = self.get_all_collections()
-        max_order = utils.get_max_order(existing_collections)
+        max_order = self.get_max_order(existing_collections)
         form.user_id = self.request.user.id
         form.order = max_order
         return form
 
     def update_collection_ordering_after_delete(self):
         collections = self.get_all_collections()
-        new_ordering = utils.get_new_ordering(collections)
+        new_ordering = self.get_new_ordering(collections)
         for order, collection in zip(new_ordering, collections):
             collection.order = order
             collection.save()
@@ -87,7 +81,7 @@ class BaseMixIn(ConstantIconSet):
 
     def update_item_add_status(self, target_collection, problem_id, is_checked):
         existing_items = self.get_all_items_for_collection(target_collection)
-        max_order = utils.get_max_order(existing_items)
+        max_order = self.get_max_order(existing_items)
 
         def get_item_for_add():
             return self.item_model.objects.get(

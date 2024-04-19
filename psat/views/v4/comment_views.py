@@ -1,10 +1,10 @@
 import vanilla
 
-from .viewmixins import comment_view_mixins as mixins
+from .viewmixins import comment_view_mixins
 
 
 class CommentView(
-    mixins.BaseMixIn,
+    comment_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for loading comment container."""
@@ -28,18 +28,11 @@ class CommentView(
 
 
 class ContainerView(
-    mixins.BaseMixIn,
+    comment_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for loading comment container."""
     template_name = 'psat/v4/snippets/comment_container.html'
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#comment_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
         problem_id = self.kwargs.get('problem_id')
@@ -60,7 +53,7 @@ class ContainerView(
 
 
 class DetailView(
-    mixins.BaseMixIn,
+    comment_view_mixins.BaseMixIn,
     vanilla.DetailView,
 ):
     template_name = 'psat/v4/snippets/comment_detail.html'
@@ -93,7 +86,7 @@ class DetailView(
 
 
 class CreateView(
-    mixins.BaseMixIn,
+    comment_view_mixins.BaseMixIn,
     vanilla.CreateView,
 ):
     template_name = 'psat/v4/snippets/comment_modal.html#create'
@@ -125,7 +118,7 @@ class CreateView(
 
 
 class UpdateView(
-    mixins.BaseMixIn,
+    comment_view_mixins.BaseMixIn,
     vanilla.UpdateView,
 ):
     template_name = 'psat/v4/snippets/comment_modal.html#update'
@@ -159,7 +152,7 @@ class UpdateView(
 
 
 class DeleteView(
-    mixins.BaseMixIn,
+    comment_view_mixins.BaseMixIn,
     vanilla.DeleteView,
 ):
     def get_success_url(self):

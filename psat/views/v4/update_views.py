@@ -1,12 +1,12 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 
-from .viewmixins import custom_view_mixins as mixins
+from .viewmixins import update_view_mixins
 
 
 class CustomUpdateView(
     auth_mixins.LoginRequiredMixin,
-    mixins.CustomUpdateViewMixIn,
+    update_view_mixins.CustomUpdateViewMixIn,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/icon_container.html'
@@ -19,7 +19,7 @@ class CustomUpdateView(
         view_type = self.kwargs.get('view_type')
         problem_id = self.kwargs.get('problem_id')
 
-        option_name = self.get_option_name(view_type)
+        option_name = self.get_option_name_by_view_type(view_type)
         filter_dict = self.get_filter_dict_by_problem_id(view_type, problem_id)
         data_instance = self.get_data_instance_by_filter_dict(view_type, filter_dict)
         self.make_log_instance_by_filter_dict(view_type, data_instance, filter_dict)
@@ -34,6 +34,7 @@ class CustomUpdateView(
             like_data=None,
             rate_data=None,
             solve_data=None,
+            **kwargs,
         )
         return self.render_to_response(context)
 
@@ -48,12 +49,13 @@ class RateModalView(
         return super().get_context_data(
             problem_id=self.request.GET.get('problem_id'),
             icon_id=self.request.GET.get('icon_id'),
+            **kwargs,
         )
 
 
 class SolveModalView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    update_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/solve_container.html#answer_modal'

@@ -1,11 +1,10 @@
 import vanilla
 
-from psat.utils import get_url, get_list_data
-from .viewmixins import problem_view_mixins as mixins
+from .viewmixins import problem_view_mixins
 
 
 class ListView(
-    mixins.ListViewMixin,
+    problem_view_mixins.ListViewMixin,
     vanilla.TemplateView,
 ):
     """ Represent PSAT base list view. """
@@ -25,8 +24,9 @@ class ListView(
         view_type = self.get_view_type()
         year, ex, sub = self.get_year_ex_sub()
         psat = self.get_psat_from_year_ex_sub(year, ex, sub)
+        keyword = self.request.GET.get('keyword', '') or self.request.POST.get('keyword', '')
 
-        base_url = get_url('list')
+        base_url = self.get_url('list')
         url_options = self.get_url_options()
         page_obj, page_range = self.get_paginator_info(self.get_filterset().qs)
 
@@ -56,7 +56,7 @@ class ListView(
             ex=ex,
             sub=sub,
             page_number=self.get_page_number(),
-            keyword=self.get_keyword(),
+            keyword=keyword,
 
             # urls
             base_url=base_url,
@@ -96,7 +96,7 @@ class SearchView(ListView):
 
 
 class DetailView(
-    mixins.DetailViewMixin,
+    problem_view_mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
     """Represent PSAT base detail view."""
@@ -110,7 +110,7 @@ class DetailView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
-        problem_id = self.get_problem_id()
+        problem_id = self.kwargs.get('problem_id')
         problem = self.get_problem_from_problem_id(problem_id)
         sub_title = self.get_sub_title_from_problem(problem)
         self.get_open_instance(problem_id)
@@ -119,7 +119,7 @@ class DetailView(
         custom_data = self.get_custom_data()
         view_custom_data = custom_data[view_type]
         prev_prob, next_prob = self.get_prev_next_prob(problem_id, view_custom_data)
-        list_data = get_list_data(view_custom_data)
+        list_data = self.get_list_data(view_custom_data)
 
         return super().get_context_data(
             # base info
@@ -166,14 +166,14 @@ class DetailView(
 
 
 class DetailImageView(
-    mixins.DetailViewMixin,
+    problem_view_mixins.DetailViewMixin,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/problem_detail.html#modal_image'
 
     def get_context_data(self, **kwargs):
         view_type = self.get_view_type()
-        problem_id = self.get_problem_id()
+        problem_id = self.kwargs.get('problem_id')
         problem = self.get_problem_from_problem_id(problem_id)
         sub_title = self.get_sub_title_from_problem(problem)
         custom_data = self.get_custom_data()
@@ -210,7 +210,7 @@ class DetailImageView(
 
 
 class DetailNavigationView(
-    mixins.DetailNavigationViewMixin,
+    problem_view_mixins.DetailNavigationViewMixin,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/navigation_container.html'
@@ -222,12 +222,12 @@ class DetailNavigationView(
         return f'{self.template_name}#nav_other_list'
 
     def get_context_data(self, **kwargs):
-        problem_id = self.get_problem_id()
+        problem_id = self.request.GET.get('problem_id')
         problem = self.get_problem_from_problem_id(problem_id)
 
         view_type = self.get_view_type()
         view_custom_data = self.get_custom_data()[view_type]
-        list_data = get_list_data(view_custom_data)
+        list_data = self.get_list_data(view_custom_data)
 
         return super().get_context_data(
             info=self.get_info(view_type),

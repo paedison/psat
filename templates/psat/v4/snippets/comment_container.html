@@ -1,56 +1,33 @@
-{% extends 'list.html' %}
 {% load i18n %}
 {% load slippers %}
 {% load partials %}
 
-{% block main %}
-{% partialdef comment_main inline=True %}
-<div class="card-body">
-    <div id="accordionComment" class="accordion accordion-flush">
-        <div class="accordion-item">
-            <h2 id="headingComment" class="accordion-header">
-                <button class="accordion-button" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#collapseComment"
-                        aria-expanded="true" aria-controls="collapseComment">
-                    <span class="badge bg-success me-2">{{ icon_question.white|safe }} 질문</span>
-                    <div class="small text-success fw-bold">
-                        문제에 관한 질문 또는 댓글을 남겨보세요.
-                    </div>
-                </button>
-            </h2>
-            <div id="collapseComment" class="accordion-collapse collapse show" hx-target="#containerComment"
-                 aria-labelledby="headingComment" data-bs-parent="#accordionComment">
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="btn-group">
-                        {% partial button_reload %}
-                        {% partial modal_comment_create %}
-{#                        <button class="btn btn-sm btn-outline-success"#}
-{#                                hx-get="{% url 'psat:comment_container' problem_id %}">#}
-{#                            <i class="fa-regular fa-window-maximize"></i>#}
-{#                            새 창#}
-{#                        </button>#}
-                    </div>
-                </div>
-                {% if page_obj %}
-                    {% for comment in page_obj %}
-                        {% include 'psat/v4/snippets/comment_box.html' %}
-                        {% if not comment.reply_comments.exists and not forloop.last %}
-                            <hr class="border-secondary">
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-
-                {% with target_id='containerComment' %}
-                    {% if page_obj.has_next or page_obj.has_previous %}
-                        {% include 'psat/v4/snippets/pagination.html' %}
-                    {% endif %}
-                {% endwith %}
-            </div>
-        </div>
+<div class="d-flex justify-content-end mb-3">
+    <div class="btn-group">
+        {% partial button_reload %}
+        {% partial modal_comment_create %}
+{#        <button class="btn btn-sm btn-outline-success"#}
+{#                hx-get="{% url 'psat:comment_container' problem_id %}">#}
+{#            <i class="fa-regular fa-window-maximize"></i>#}
+{#            새 창#}
+{#        </button>#}
     </div>
 </div>
-{% endpartialdef comment_main %}
-{% endblock main %}
+
+{% if page_obj %}
+    {% for comment in page_obj %}
+        {% include 'psat/v4/snippets/comment_box.html' %}
+        {% if not comment.reply_comments.exists and not forloop.last %}
+            <hr class="border-secondary">
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% with target_id='collapseComment' %}
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'psat/v4/snippets/pagination.html' %}
+    {% endif %}
+{% endwith %}
 
 {% partialdef button_reload %}
     <button class="btn btn-sm btn-outline-success" title="{% trans 'Reload' %}"

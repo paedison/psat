@@ -1,12 +1,12 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 
-from .viewmixins import collection_view_mixins as mixins
+from .viewmixins import collection_view_mixins
 
 
 class IndexView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for loading collection card."""
@@ -27,7 +27,7 @@ class IndexView(
 
 class ItemView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/collection.html#reload_card_item'
@@ -46,7 +46,7 @@ class ItemView(
 
 class ReloadView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/collection.html#reload_card'
@@ -66,7 +66,7 @@ class ReloadView(
 
 class SortListView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for sorting collection list."""
@@ -81,7 +81,7 @@ class SortListView(
 
 class SortItemView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for sorting collection list."""
@@ -103,7 +103,7 @@ class SortItemView(
 
 class ModalItemAddView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/collection_modal.html#add_item'
@@ -122,7 +122,7 @@ class ModalItemAddView(
 
 class ModalUpdateView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/collection_modal.html#update_collection'
@@ -135,7 +135,7 @@ class ModalUpdateView(
 
 class CreateView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.CreateView,
 ):
     template_name = 'psat/v4/snippets/collection.html#create_collection'
@@ -151,7 +151,7 @@ class CreateView(
 
 class CreateInModalView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.CreateView,
 ):
     template_name = 'psat/v4/snippets/collection_modal.html#create_collection'
@@ -174,7 +174,7 @@ class CreateInModalView(
 
 class UpdateView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.UpdateView,
 ):
     template_name = 'psat/v4/snippets/collection.html#update_collection'
@@ -188,7 +188,7 @@ class UpdateView(
 
 class DeleteView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.DeleteView,
 ):
     def get_success_url(self):
@@ -202,7 +202,7 @@ class DeleteView(
 
 class ItemAddView(
     auth_mixins.LoginRequiredMixin,
-    mixins.BaseMixIn,
+    collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     template_name = 'psat/v4/snippets/icon_container.html#collection'

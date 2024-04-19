@@ -1,6 +1,8 @@
 from django.core.paginator import Paginator
-from django.db.models import Max
+from django.db.models import Max, F
 from django.urls import reverse_lazy
+
+from reference.models import psat_models
 
 
 def get_max_order(data):
@@ -64,3 +66,28 @@ def get_list_data(custom_data) -> list:
                 organized_list.extend(row)
         return organized_list
     return get_view_list_data()
+
+
+def get_problem_from_problem_id(problem_id):
+    if problem_id:
+        return (
+            psat_models.PsatProblem.objects
+            .only('id', 'psat_id', 'number', 'answer', 'question')
+            .select_related('psat', 'psat__exam', 'psat__subject')
+            .prefetch_related('likes', 'rates', 'solves')
+            .annotate(
+                year=F('psat__year'), ex=F('psat__exam__abbr'), exam=F('psat__exam__name'),
+                sub=F('psat__subject__abbr'), subject=F('psat__subject__name'))
+            .get(id=problem_id)
+        )
+
+
+def get_problem_queryset():
+    return (
+        psat_models.PsatProblem.objects
+        .only('id', 'psat_id', 'number', 'answer', 'question')
+        .annotate(
+            year=F('psat__year'), ex=F('psat__exam__abbr'), exam=F('psat__exam__name'),
+            sub=F('psat__subject__abbr'), subject=F('psat__subject__name'))
+        .order_by('-psat__year', 'id')
+    )

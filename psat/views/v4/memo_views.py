@@ -1,22 +1,16 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 
-from .viewmixins import custom_view_mixins as mixins
+from .viewmixins import memo_view_mixins
 
 
 class ContainerView(
     auth_mixins.LoginRequiredMixin,
-    mixins.MemoViewMixIn,
+    memo_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for loading memo container."""
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#memo_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
+    template_name = 'psat/v4/snippets/memo_container.html'
 
     def get_context_data(self, **kwargs):
         problem_id = self.kwargs.get('problem_id')
@@ -34,17 +28,11 @@ class ContainerView(
 
 class CreateView(
     auth_mixins.LoginRequiredMixin,
-    mixins.MemoViewMixIn,
+    memo_view_mixins.BaseMixIn,
     vanilla.CreateView,
 ):
     """View for creating memo."""
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#memo_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
+    template_name = 'psat/v4/snippets/memo_container.html#create_form'
 
     def form_valid(self, form):
         form = form.save(commit=False)
@@ -70,17 +58,11 @@ class CreateView(
 
 class UpdateView(
     auth_mixins.LoginRequiredMixin,
-    mixins.MemoViewMixIn,
+    memo_view_mixins.BaseMixIn,
     vanilla.UpdateView,
 ):
     """View for updating memo."""
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#memo_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
+    template_name = 'psat/v4/snippets/memo_container.html#update_form'
 
     def get_success_url(self):
         return self.get_url('memo_container', self.object.problem_id)
@@ -90,7 +72,6 @@ class UpdateView(
         problem = self.get_problem_by_problem_id(problem_id)
         return super().get_context_data(
             problem=problem,
-            update=True,
             icon_board=self.ICON_BOARD,
             icon_memo=self.ICON_MEMO,
             **kwargs,
@@ -99,10 +80,12 @@ class UpdateView(
 
 class DeleteView(
     auth_mixins.LoginRequiredMixin,
-    mixins.MemoViewMixIn,
+    memo_view_mixins.BaseMixIn,
     vanilla.DeleteView,
 ):
     """View for deleting memo."""
+    template_name = 'psat/v4/snippets/memo_container.html'
+
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
         return self.get_url('memo_container', problem_id)

@@ -1,26 +1,18 @@
 from bs4 import BeautifulSoup as bs
 from django.db.models import F
 
-from common.constants.icon_set import ConstantIconSet
-from psat import forms, models, utils
-from reference.models import psat_models
+from psat import forms, models
+from . import base_mixins
 
 
-class BaseMixIn(ConstantIconSet):
+class BaseMixIn(
+    base_mixins.ConstantIconSet,
+    base_mixins.DefaultModels,
+    base_mixins.DefaultMethods,
+):
     """Setting mixin for Comment views."""
-    request: any
-    kwargs: dict
-    object: any
-
     model = models.Comment
     form_class = forms.CommentForm
-
-    comment_model = models.Comment
-    problem_model = psat_models.PsatProblem
-
-    @staticmethod
-    def get_url(name, *args):
-        return utils.get_url(name, *args)
 
     def get_comment_qs(self):
         return (
@@ -78,23 +70,3 @@ class BaseMixIn(ConstantIconSet):
 
     def get_replies_from_comment(self, comment):
         return self.comment_model.objects.filter(parent=comment)
-
-    def get_problem(self, problem_id):
-        return self.problem_model.objects.get(id=problem_id)
-
-    def get_problem_from_problem_id(self, problem_id):
-        return (
-            self.problem_model.objects.only('id', 'psat_id', 'number', 'answer', 'question')
-            .select_related('psat', 'psat__exam', 'psat__subject')
-            .prefetch_related('likes', 'rates', 'solves')
-            .annotate(
-                year=F('psat__year'), ex=F('psat__exam__abbr'), exam=F('psat__exam__name'),
-                sub=F('psat__subject__abbr'), subject=F('psat__subject__name'))
-            .get(id=problem_id)
-        )
-
-
-    def get_paginator_info(self, page_data, per_page=10) -> tuple:
-        """ Get paginator, elided page range, and collect the evaluation info. """
-        page_number = self.request.GET.get('page', 1)
-        return utils.get_page_obj_and_range(page_number, page_data, per_page)
