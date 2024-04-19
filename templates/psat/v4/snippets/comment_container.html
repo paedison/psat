@@ -14,13 +14,15 @@
     </div>
 </div>
 
+<hr class="border-secondary">
 {% if page_obj %}
     {% for comment in page_obj %}
         {% include 'psat/v4/snippets/comment_box.html' %}
-        {% if not comment.reply_comments.exists and not forloop.last %}
-            <hr class="border-secondary">
-        {% endif %}
+        <hr class="border-secondary">
     {% endfor %}
+{% else %}
+    <div class="text-center">자료가 없습니다.</div>
+    <hr class="border-secondary">
 {% endif %}
 
 {% with target_id='collapseComment' %}
