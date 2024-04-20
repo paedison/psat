@@ -44,7 +44,7 @@
             </h5>
         {% else %}
             <h5 class="modal-title mx-auto fw-bold"
-                hx-post="{% url 'psat:custom' 'solve' problem_id %}"
+                hx-post="{% url 'psat:custom_update' 'solve' problem_id %}"
                 hx-include="#solve_answer" hx-trigger="load"
                 hx-target="#psatSolve{{ problem_id }}" hx-swap="innerHTML swap:0.25s">
                 {% if is_correct %}

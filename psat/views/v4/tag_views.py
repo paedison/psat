@@ -2,6 +2,7 @@ import django.contrib.auth.mixins as auth_mixins
 import vanilla
 from django.http import HttpResponseRedirect
 
+from psat import utils
 from .viewmixins import tag_view_mixins
 
 
@@ -15,7 +16,7 @@ class ContainerView(
 
     def get_context_data(self, **kwargs) -> dict:
         problem_id = self.kwargs.get('problem_id')
-        problem = self.get_problem_by_problem_id(problem_id)
+        problem = utils.get_problem_by_problem_id(problem_id)
         my_tag = self.get_my_tag_by_problem(problem)
         my_tag_list = self.get_my_tag_list(my_tag)
         all_tags = self.get_all_tag_list_by_problem(problem)
@@ -39,7 +40,7 @@ class CreateView(
 
     def get_success_url(self):
         problem_id = self.kwargs.get('problem_id')
-        return self.get_url('tag_container', problem_id)
+        return utils.get_url('tag_container', problem_id)
 
     def form_valid(self, form):
         obj = form.save(commit=False)
@@ -50,7 +51,7 @@ class CreateView(
 
     def get_context_data(self, **kwargs) -> dict:
         problem_id = self.kwargs.get('problem_id')
-        problem = self.get_problem_by_problem_id(problem_id)
+        problem = utils.get_problem_by_problem_id(problem_id)
         all_tags = self.get_all_tag_list_by_problem(problem)
         return super().get_context_data(
             problem=problem,
@@ -69,7 +70,7 @@ class AddView(
     template_name = 'psat/v4/snippets/tag_container.html'
 
     def get_success_url(self):
-        return self.get_url('tag_container', self.object.problem_id)
+        return utils.get_url('tag_container', self.object.problem_id)
 
     def form_valid(self, form):
         self.add_tags_to_object(self.object)
@@ -85,7 +86,7 @@ class DeleteView(
 
     def post(self, request, *args, **kwargs):
         obj = self.get_object()
-        success_url = self.get_url('tag_container', obj.problem_id)
+        success_url = utils.get_url('tag_container', obj.problem_id)
         tag_name = self.kwargs.get('tag_name')
         obj.tags.remove(tag_name)
         if not obj.tags.all():

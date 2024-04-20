@@ -1,6 +1,7 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 
+from psat import utils
 from .viewmixins import collection_view_mixins
 
 
@@ -73,8 +74,8 @@ class SortListView(
     template_name = 'psat/v4/snippets/collection.html#reload_card_list'
 
     def post(self, request, *args, **kwargs):
-        collection_ids_order = self.request.POST.getlist('collection')
-        collections = self.get_collections_for_sort_list(collection_ids_order)
+        collection_ids = self.get_post_getlist_variable('collection')
+        collections = self.get_collections_for_sort_list(collection_ids)
         context = self.get_context_data(collections=collections, **kwargs)
         return self.render_to_response(context)
 
@@ -88,10 +89,10 @@ class SortItemView(
     template_name = 'psat/v4/snippets/collection.html#reload_card_item'
 
     def post(self, request, *args, **kwargs):
-        item_ids_order = self.request.POST.getlist('item')
         pk = self.request.POST.get('collection')
+        item_ids = self.get_post_getlist_variable('item')
         target_collection = self.get_all_collections().get(pk=pk)
-        items = self.get_collections_for_sort_item(item_ids_order, target_collection)
+        items = self.get_collections_for_sort_item(item_ids, target_collection)
         context = self.get_context_data(
             icon_image=self.ICON_IMAGE,
             target_collection=target_collection,
@@ -111,7 +112,8 @@ class ModalItemAddView(
     def get_context_data(self, **kwargs):
         problem_id = self.request.GET.get('problem_id')
         icon_id = self.request.GET.get('icon_id')
-        collections = self.get_collections_for_modal_item_add(problem_id)
+        collection_ids = self.get_collection_ids_by_problem_id(problem_id)
+        collections = self.get_collections_for_modal_item_add(collection_ids)
         return super().get_context_data(
             problem_id=problem_id,
             icon_id=icon_id,
@@ -141,7 +143,7 @@ class CreateView(
     template_name = 'psat/v4/snippets/collection.html#create_collection'
 
     def get_success_url(self):
-        return self.get_url('collection_reload')
+        return utils.get_url('collection_reload')
 
     def form_valid(self, form):
         form = form.save(commit=False)
@@ -159,7 +161,7 @@ class CreateInModalView(
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
         icon_id = self.request.POST.get('icon_id')
-        base_url = self.get_url('collection_modal_item_add')
+        base_url = utils.get_url('collection_modal_item_add')
         return f'{base_url}problem_id={problem_id}&icon_id={icon_id}'
 
     def form_valid(self, form):
@@ -180,7 +182,7 @@ class UpdateView(
     template_name = 'psat/v4/snippets/collection.html#update_collection'
 
     def get_success_url(self):
-        return self.get_url('collection_reload')
+        return utils.get_url('collection_reload')
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(collection_id=self.object.id, **kwargs)
@@ -192,7 +194,7 @@ class DeleteView(
     vanilla.DeleteView,
 ):
     def get_success_url(self):
-        return self.get_url('collection_reload')
+        return utils.get_url('collection_reload')
 
     def post(self, request, *args, **kwargs):
         res = super().post(request, *args, **kwargs)

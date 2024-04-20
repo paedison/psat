@@ -41,39 +41,9 @@ class DefaultMethods:
     request: any
     kwargs: dict
 
-    @staticmethod
-    def get_url(name, *args):
-        return utils.get_url(name, *args)
-
-    @staticmethod
-    def get_problem_from_problem_id(problem_id):
-        return utils.get_problem_from_problem_id(problem_id)
-
-    @staticmethod
-    def get_problem_queryset():
-        return utils.get_problem_queryset()
-
-    @staticmethod
-    def get_list_data(view_custom_data):
-        return utils.get_list_data(view_custom_data)
-
-    @staticmethod
-    def get_max_order(existing_collections):
-        return utils.get_max_order(existing_collections)
-
-    @staticmethod
-    def get_new_ordering(collections):
-        return utils.get_new_ordering(collections)
-
-    @staticmethod
-    def get_problem_by_problem_id(problem_id: str):
-        if problem_id:
-            return (
-                psat_models.PsatProblem.objects.only('id', 'psat_id', 'number', 'answer', 'question')
-                .select_related('psat', 'psat__exam', 'psat__subject')
-                .prefetch_related('likes', 'rates', 'solves')
-                .get(id=problem_id)
-            )
+    def get_user_id(self):
+        if self.request.user.is_authenticated:
+            return self.request.user.id
 
     def get_page_number(self):
         return self.request.GET.get('page', '1')
@@ -82,3 +52,12 @@ class DefaultMethods:
         """ Get paginator, elided page range, and collect the evaluation info. """
         page_number = self.get_page_number()
         return utils.get_page_obj_and_range(page_number, page_data, per_page)
+
+    def get_find_filter_by_problem_id(self, user_id, problem_id) -> dict:
+        find_filter = {
+            'problem_id': problem_id,
+            'user_id': user_id,
+        }
+        if not user_id:
+            find_filter['ip_address'] = self.request.META.get('REMOTE_ADDR')
+        return find_filter

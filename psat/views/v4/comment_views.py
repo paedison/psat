@@ -1,5 +1,6 @@
 import vanilla
 
+from psat import utils
 from .viewmixins import comment_view_mixins
 
 
@@ -13,7 +14,7 @@ class CommentView(
     def get_context_data(self, **kwargs):
         all_comments = self.get_all_comments()
         page_obj, page_range = self.get_paginator_info(all_comments)
-        pagination_url = self.get_url('comment')
+        pagination_url = utils.get_url('comment')
         return super().get_context_data(
             page_obj=page_obj,
             page_range=page_range,
@@ -38,7 +39,7 @@ class ContainerView(
         problem_id = self.kwargs.get('problem_id')
         all_comments = self.get_all_comments(problem_id)
         page_obj, page_range = self.get_paginator_info(all_comments, per_page=5)
-        pagination_url = self.get_url('comment_container', problem_id)
+        pagination_url = utils.get_url('comment_container', problem_id)
         return super().get_context_data(
             page_obj=page_obj,
             page_range=page_range,
@@ -75,7 +76,7 @@ class DetailView(
         return super().get_context_data(
             info={'menu': 'psat'},
             sub_title=self.get_sub_title_from_comment(parent_comment),
-            problem=self.get_problem_from_problem_id(parent_comment.problem_id),
+            problem=utils.get_problem_by_problem_id(parent_comment.problem_id),
             comments=comments,
 
             icon_menu=self.ICON_MENU['psat'],
@@ -93,7 +94,7 @@ class CreateView(
 
     def get_success_url(self):
         problem_id = self.kwargs.get('problem_id')
-        return self.get_url('comment_container', problem_id)
+        return utils.get_url('comment_container', problem_id)
 
     def form_valid(self, form):
         form = form.save(commit=False)
@@ -126,7 +127,7 @@ class UpdateView(
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
         page_number = self.request.POST.get('page', '1')
-        url = self.get_url('comment_container', problem_id)
+        url = utils.get_url('comment_container', problem_id)
         return f'{url}page={page_number}'
 
     def form_valid(self, form):
@@ -157,4 +158,4 @@ class DeleteView(
 ):
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
-        return self.get_url('comment_container', problem_id)
+        return utils.get_url('comment_container', problem_id)

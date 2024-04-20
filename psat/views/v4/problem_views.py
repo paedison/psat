@@ -1,5 +1,6 @@
 import vanilla
 
+from psat import utils
 from .viewmixins import problem_view_mixins
 
 
@@ -21,23 +22,36 @@ class ListView(
         return self.get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        # direct variables from request
+        user_id = self.get_user_id()
         view_type = self.get_view_type()
-        year, ex, sub = self.get_year_ex_sub()
-        psat = self.get_psat_from_year_ex_sub(year, ex, sub)
-        keyword = self.request.GET.get('keyword', '') or self.request.POST.get('keyword', '')
+        page_number = self.get_page_number()
+        keyword = self.get_keyword()
+        exam_reference = self.get_exam_reference()  # year, ex, sub
+        custom_options = self.get_custom_options()
 
-        base_url = self.get_url('list')
-        url_options = self.get_url_options()
-        page_obj, page_range = self.get_paginator_info(self.get_filterset().qs)
+        # sub_title
+        psat = self.get_psat_by_exam_reference(exam_reference)
+        sub_title = self.get_sub_title_by_psat(psat, exam_reference)
 
-        custom_data = self.get_custom_data()
+        # filterset
+        filterset = self.get_filterset_by_user_id(user_id)
+
+        # urls and page objectives
+        base_url = utils.get_url('list')
+        url_options = utils.get_url_options(
+            page_number, keyword, exam_reference, custom_options)
+        page_obj, page_range = self.get_paginator_info(filterset.qs)
+
+        # custom data: problem, search, like, rate, solve, memo, tag, collection, comment
+        custom_data = self.get_custom_data(user_id)
 
         return super().get_context_data(
             # base info
-            info=self.get_info(view_type),
+            info=self.get_info_by_view_type(view_type),
             title='기출문제',
-            sub_title=self.get_sub_title_from_psat(psat, year, ex, sub),
-            form=self.get_filterset().form,
+            sub_title=sub_title,
+            form=filterset.form,
 
             # icons
             icon_menu=self.ICON_MENU['psat'],
@@ -52,10 +66,10 @@ class ListView(
             icon_image=self.ICON_IMAGE,
 
             # variables
-            year=year,
-            ex=ex,
-            sub=sub,
-            page_number=self.get_page_number(),
+            year=exam_reference['year'],
+            ex=exam_reference['ex'],
+            sub=exam_reference['sub'],
+            page_number=page_number,
             keyword=keyword,
 
             # urls
@@ -88,8 +102,8 @@ class ProblemListView(ListView):
 
 
 class SearchView(ListView):
-    def get_sub_title_from_psat(self, psat=None, year=None, ex=None, sub=None, end_string='기출문제') -> str:
-        return super().get_sub_title_from_psat(psat, year, ex, sub, end_string='검색 결과')
+    def get_sub_title_by_psat(self, psat, exam_reference, end_string='검색 결과') -> str:
+        return super().get_sub_title_by_psat(psat, exam_reference, end_string)
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(search=True, **kwargs)
@@ -110,20 +124,37 @@ class DetailView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
+        # direct variables from request
         problem_id = self.kwargs.get('problem_id')
-        problem = self.get_problem_from_problem_id(problem_id)
-        sub_title = self.get_sub_title_from_problem(problem)
-        self.get_open_instance(problem_id)
-
+        user_id = self.get_user_id()
         view_type = self.get_view_type()
-        custom_data = self.get_custom_data()
+        page_number = self.get_page_number()
+        keyword = self.get_keyword()
+        exam_reference = self.get_exam_reference()
+        custom_options = self.get_custom_options()
+
+        # sub_title
+        problem = utils.get_problem_by_problem_id(problem_id)
+        sub_title = utils.get_sub_title_by_problem(problem)
+
+        # record open_instance
+        self.get_open_instance(user_id, problem_id)
+
+        # custom data: problem, search, like, rate, solve, memo, tag, collection, comment
+        custom_data = self.get_custom_data(user_id, problem_id)
         view_custom_data = custom_data[view_type]
+
+        # navigation data
         prev_prob, next_prob = self.get_prev_next_prob(problem_id, view_custom_data)
-        list_data = self.get_list_data(view_custom_data)
+        list_data = utils.get_list_data(view_custom_data)
+
+        # url_options
+        url_options = utils.get_url_options(
+            page_number, keyword, exam_reference, custom_options)
 
         return super().get_context_data(
             # base info
-            info=self.get_info(view_type),
+            info=self.get_info_by_view_type(view_type),
             sub_title=sub_title,
             problem_id=problem_id,
             problem=problem,
@@ -140,13 +171,13 @@ class DetailView(
             icon_nav=self.ICON_NAV,
             icon_board=self.ICON_BOARD,
 
-            # urls
-            url_options=self.get_url_options(),
-
             # navigation data
             prev_prob=prev_prob,
             next_prob=next_prob,
             list_data=list_data,
+
+            # url_options
+            url_options=url_options,
 
             # custom data
             like_data=custom_data['like'],
@@ -156,11 +187,6 @@ class DetailView(
             tag_data=custom_data['tag'],
             collection_data=custom_data['collection'],
             comment_data=custom_data['comment'],
-
-            # memo & tag
-            memo=self.get_memo(problem_id),
-            my_tag=self.get_my_tag(problem_id),
-            comments=self.get_comments(problem_id),
             **kwargs,
         )
 
@@ -172,15 +198,21 @@ class DetailImageView(
     template_name = 'psat/v4/problem_detail.html#modal_image'
 
     def get_context_data(self, **kwargs):
-        view_type = self.get_view_type()
+        # direct variables from request
         problem_id = self.kwargs.get('problem_id')
-        problem = self.get_problem_from_problem_id(problem_id)
-        sub_title = self.get_sub_title_from_problem(problem)
-        custom_data = self.get_custom_data()
+        user_id = self.get_user_id()
+        view_type = self.get_view_type()
+
+        # sub_title
+        problem = utils.get_problem_by_problem_id(problem_id)
+        sub_title = utils.get_sub_title_by_problem(problem)
+
+        # custom data: problem, search, like, rate, solve, memo, tag, collection, comment
+        custom_data = self.get_custom_data(user_id, problem_id)
 
         return super().get_context_data(
             # base info
-            info=self.get_info(view_type),
+            info=self.get_info_by_view_type(view_type),
             sub_title=sub_title,
             problem_id=problem_id,
             problem=problem,
@@ -222,16 +254,19 @@ class DetailNavigationView(
         return f'{self.template_name}#nav_other_list'
 
     def get_context_data(self, **kwargs):
+        # direct variables from request
         problem_id = self.request.GET.get('problem_id')
-        problem = self.get_problem_from_problem_id(problem_id)
-
+        user_id = self.get_user_id()
         view_type = self.get_view_type()
-        view_custom_data = self.get_custom_data()[view_type]
-        list_data = self.get_list_data(view_custom_data)
+
+        # context variables
+        problem = utils.get_problem_by_problem_id(problem_id)
+        view_custom_data = self.get_custom_data(user_id, problem_id)[view_type]
+        list_data = utils.get_list_data(view_custom_data)
 
         return super().get_context_data(
-            info=self.get_info(view_type),
+            info=self.get_info_by_view_type(view_type),
             problem=problem,
-            list_title=self.get_list_title(view_type),
+            list_title=self.list_title_dict[view_type],
             list_data=list_data,
         )

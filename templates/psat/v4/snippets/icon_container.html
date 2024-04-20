@@ -69,7 +69,7 @@
 {% partialdef container_like %}
     {% if user.is_authenticated %}
         <form id="likeButton{{ problem.id }}">
-            <a hx-post="{% url 'psat:custom' 'like' problem.id %}" href=""
+            <a hx-post="{% url 'psat:custom_update' 'like' problem.id %}" href=""
                class="htmx-fade-in htmx-fade-out" hx-target="this"
                hx-swap="innerHTML swap:0.25s">
                 {% partial like %}
@@ -182,7 +182,7 @@
                 {% endfor %}
             </fieldset>
             <button class="btn btn-primary m-1" data-bs-dismiss="modal"
-                    hx-post="{% url 'psat:custom' 'rate' problem_id %}"
+                    hx-post="{% url 'psat:custom_update' 'rate' problem_id %}"
                     hx-trigger="click" hx-target="#{{ icon_id }}" type="button"
                     hx-swap="innerHTML swap:0.25s">
                 입력

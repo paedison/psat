@@ -1,6 +1,7 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 
+from psat import utils
 from .viewmixins import update_view_mixins
 
 
@@ -16,21 +17,33 @@ class CustomUpdateView(
         return f'{self.template_name}#{view_type}'
 
     def post(self, request, *args, **kwargs):
-        view_type = self.kwargs.get('view_type')
+        # direct variables from request
         problem_id = self.kwargs.get('problem_id')
+        user_id = self.get_user_id()
+        view_type = self.kwargs.get('view_type')
 
-        option_name = self.get_option_name_by_view_type(view_type)
-        filter_dict = self.get_filter_dict_by_problem_id(view_type, problem_id)
-        data_instance = self.get_data_instance_by_filter_dict(view_type, filter_dict)
-        self.make_log_instance_by_filter_dict(view_type, data_instance, filter_dict)
+        # filter_dict
+        _problem = utils.get_problem_by_problem_id(problem_id)
+        find_filter = self.get_find_filter_by_problem_id(user_id, problem_id)
+        update_filter = self.get_update_filter_by_problem(view_type, _problem)
+        filter_dict = utils.get_filter_dict(find_filter, update_filter)
+
+        # context variables
+        option_name = self.option_dict[view_type]
+        data_model = self.data_model_dict[view_type]
+        problem = utils.update_or_create_instance_by_filter_dict(data_model, filter_dict)
+
+        # make log
+        log_model = self.log_model_dict[view_type]
+        utils.make_log_instance_by_filter_dict(log_model, filter_dict, problem)
 
         context = self.get_context_data(
             icon_like=self.ICON_LIKE if view_type == 'like' else '',
             icon_rate=self.ICON_RATE if view_type == 'rate' else '',
             icon_solve=self.ICON_SOLVE if view_type == 'solve' else '',
 
-            option_name=getattr(data_instance, option_name),
-            problem=data_instance,
+            option_name=getattr(problem, option_name),
+            problem=problem,
             like_data=None,
             rate_data=None,
             solve_data=None,
@@ -61,9 +74,11 @@ class SolveModalView(
     template_name = 'psat/v4/snippets/solve_container.html#answer_modal'
 
     def post(self, request, *args, **kwargs):
-        problem_id = self.request.POST.get('problem_id')
-        problem = self.problem_model.objects.get(id=problem_id)
+        # direct variables from request
+        problem_id = self.get_post_variable_by_integer('problem_id')
         answer = self.get_post_variable_by_integer('answer')
+
+        problem = self.problem_model.objects.get(id=problem_id)
         is_correct = None
         if answer:
             is_correct = answer == problem.answer

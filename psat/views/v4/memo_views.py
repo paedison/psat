@@ -1,6 +1,7 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 
+from psat import utils
 from .viewmixins import memo_view_mixins
 
 
@@ -14,7 +15,7 @@ class ContainerView(
 
     def get_context_data(self, **kwargs):
         problem_id = self.kwargs.get('problem_id')
-        problem = self.get_problem_by_problem_id(problem_id)
+        problem = utils.get_problem_by_problem_id(problem_id)
         my_memo = self.get_my_memo_by_problem(problem)
         return super().get_context_data(
             form=self.form_class,
@@ -43,11 +44,11 @@ class CreateView(
 
     def get_success_url(self):
         problem_id = self.kwargs.get('problem_id')
-        return self.get_url('memo_container', problem_id)
+        return utils.get_url('memo_container', problem_id)
 
     def get_context_data(self, **kwargs):
         problem_id = self.kwargs.get('problem_id')
-        problem = self.get_problem_by_problem_id(problem_id)
+        problem = utils.get_problem_by_problem_id(problem_id)
         return super().get_context_data(
             problem=problem,
             icon_board=self.ICON_BOARD,
@@ -65,11 +66,11 @@ class UpdateView(
     template_name = 'psat/v4/snippets/memo_container.html#update_form'
 
     def get_success_url(self):
-        return self.get_url('memo_container', self.object.problem_id)
+        return utils.get_url('memo_container', self.object.problem_id)
 
     def get_context_data(self, **kwargs):
         problem_id = self.request.GET.get('problem_id')
-        problem = self.get_problem_by_problem_id(problem_id)
+        problem = utils.get_problem_by_problem_id(problem_id)
         return super().get_context_data(
             problem=problem,
             icon_board=self.ICON_BOARD,
@@ -88,4 +89,4 @@ class DeleteView(
 
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
-        return self.get_url('memo_container', problem_id)
+        return utils.get_url('memo_container', problem_id)
