@@ -1,4 +1,5 @@
-from psat import forms, models
+from psat import forms as psat_forms
+from psat.models import data_models
 from . import base_mixins
 
 
@@ -8,8 +9,8 @@ class BaseMixIn(
     base_mixins.DefaultMethods,
 ):
     """Setting mixin for Memo views."""
-    model = models.Memo
-    form_class = forms.MemoForm
+    model = data_models.Memo
+    form_class = psat_forms.MemoForm
     context_object_name = 'my_memo'
 
     def get_my_memo_by_problem(self, problem):

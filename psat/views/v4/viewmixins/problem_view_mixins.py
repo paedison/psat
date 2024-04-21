@@ -1,5 +1,4 @@
-from django.db import transaction
-from django.db.models import Q
+from django.db import models, transaction
 
 from psat import utils
 from psat.views.v4 import filters
@@ -45,14 +44,14 @@ class BaseMixin(
         }
 
     def get_psat_by_exam_reference(self, exam_reference):
-        psat_filter = Q()
+        psat_filter = models.Q()
         year, ex, sub = exam_reference['year'], exam_reference['ex'], exam_reference['sub']
         if year:
-            psat_filter &= Q(year=year)
+            psat_filter &= models.Q(year=year)
         if ex:
-            psat_filter &= Q(exam__abbr=ex)
+            psat_filter &= models.Q(exam__abbr=ex)
         if sub:
-            psat_filter &= Q(subject__abbr=sub)
+            psat_filter &= models.Q(subject__abbr=sub)
         return self.psat_model.objects.filter(psat_filter).select_related('exam', 'subject').first()
 
     @staticmethod

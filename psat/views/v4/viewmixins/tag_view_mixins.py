@@ -1,9 +1,10 @@
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count
+from django.db import models
 from taggit.models import Tag
 from taggit_templatetags2.templatetags.taggit_templatetags2_tags import get_weight_fun
 
-from psat import forms, models
+from psat import forms as psat_forms
+from psat.models import data_models
 from . import base_mixins
 
 
@@ -13,8 +14,8 @@ class BaseMixIn(
     base_mixins.DefaultMethods,
 ):
     """Setting mixin for Tag views."""
-    model = models.Tag
-    form_class = forms.TagForm
+    model = data_models.Tag
+    form_class = psat_forms.TagForm
     context_object_name = 'my_tag'
     template_name = 'psat/v4/snippets/tag_container.html'
 
@@ -71,7 +72,7 @@ class BaseMixIn(
         tags = Tag.objects.filter(
             taggit_taggeditem_items__object_id__in=tag_id_list,
             taggit_taggeditem_items__content_type=content_type,
-        ).annotate(num_times=Count('taggit_taggeditem_items')).order_by('name')
+        ).annotate(num_times=models.Count('taggit_taggeditem_items')).order_by('name')
         num_times = tags.values_list('num_times', flat=True)
         for tag in tags:
             weight_fun = get_weight_fun(1, 6, min(num_times), max(num_times))

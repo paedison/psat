@@ -1,9 +1,9 @@
 from django.core.paginator import Paginator
-from django.db.models import Max, F
+from django.db import models
 from django.urls import reverse_lazy
 
+from psat.models import data_models
 from reference.models import psat_models
-from psat import models
 
 
 def get_url(name, *args):
@@ -29,8 +29,12 @@ def get_problem_by_problem_id(problem_id):
             .select_related('psat', 'psat__exam', 'psat__subject')
             .prefetch_related('likes', 'rates', 'solves')
             .annotate(
-                year=F('psat__year'), ex=F('psat__exam__abbr'), exam=F('psat__exam__name'),
-                sub=F('psat__subject__abbr'), subject=F('psat__subject__name'))
+                year=models.F('psat__year'),
+                ex=models.F('psat__exam__abbr'),
+                exam=models.F('psat__exam__name'),
+                sub=models.F('psat__subject__abbr'),
+                subject=models.F('psat__subject__name'),
+            )
             .get(id=problem_id)
         )
 
@@ -88,7 +92,7 @@ def get_max_order(data):
     if not data.exists():
         return 1
     else:
-        current_max = data.aggregate(max_order=Max('order'))['max_order']
+        current_max = data.aggregate(max_order=models.Max('order'))['max_order']
         return current_max + 1
 
 
@@ -115,8 +119,11 @@ def get_problem_queryset():
         psat_models.PsatProblem.objects
         .only('id', 'psat_id', 'number', 'answer', 'question')
         .annotate(
-            year=F('psat__year'), ex=F('psat__exam__abbr'), exam=F('psat__exam__name'),
-            sub=F('psat__subject__abbr'), subject=F('psat__subject__name'))
+            year=models.F('psat__year'),
+            ex=models.F('psat__exam__abbr'),
+            exam=models.F('psat__exam__name'),
+            sub=models.F('psat__subject__abbr'),
+            subject=models.F('psat__subject__name'))
         .order_by('-psat__year', 'id')
     )
 
@@ -124,19 +131,23 @@ def get_problem_queryset():
 def get_custom_data_like(user_id, queryset, values_list_keys):
     return (
         queryset.filter(likes__is_liked=True, likes__user_id=user_id)
-        .annotate(is_liked=F('likes__is_liked')).values(*values_list_keys, 'is_liked'))
+        .annotate(is_liked=models.F('likes__is_liked'))
+        .values(*values_list_keys, 'is_liked'))
 
 
 def get_custom_data_rate(user_id, queryset, values_list_keys):
     return (
         queryset.filter(rates__isnull=False, rates__user_id=user_id)
-        .annotate(rating=F('rates__rating')).values(*values_list_keys, 'rating'))
+        .annotate(rating=models.F('rates__rating'))
+        .values(*values_list_keys, 'rating'))
 
 
 def get_custom_data_solve(user_id, queryset, values_list_keys):
     return (
         queryset.filter(solves__isnull=False, solves__user_id=user_id)
-        .annotate(user_answer=F('solves__answer'), is_correct=F('solves__is_correct'))
+        .annotate(
+            user_answer=models.F('solves__answer'),
+            is_correct=models.F('solves__is_correct'))
         .values(*values_list_keys, 'user_answer', 'is_correct'))
 
 
@@ -176,17 +187,17 @@ def add_data_into_url_options(url_options, data: dict):
 
 def get_memo(user_id, problem_id):
     if user_id:
-        return models.Memo.objects.filter(user_id=user_id, problem_id=problem_id).first()
+        return data_models.Memo.objects.filter(user_id=user_id, problem_id=problem_id).first()
 
 
 def get_my_tag(user_id, problem_id):
     if user_id:
-        return models.Tag.objects.filter(user_id=user_id, problem_id=problem_id).first()
+        return data_models.Tag.objects.filter(user_id=user_id, problem_id=problem_id).first()
 
 
 def get_comments(user_id, problem_id):
     if user_id:
-        return models.Comment.objects.filter(problem_id=problem_id).values()
+        return data_models.Comment.objects.filter(problem_id=problem_id).values()
 
 
 def get_filter_dict(find_filter: dict, update_filter: dict):
@@ -219,3 +230,46 @@ def make_log_instance_by_filter_dict(log_model, filter_dict: dict, data_instance
         {'repetition': repetition, 'data_id': data_instance.id}
     )
     log_model.objects.create(**create_filter)
+
+
+def get_comment_qs():
+    return (
+        data_models.Comment.objects
+        .select_related(
+            'user', 'problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
+        .annotate(
+            username=models.F('user__username'),
+            year=models.F('problem__psat__year'),
+            ex=models.F('problem__psat__exam__abbr'),
+            exam=models.F('problem__psat__exam__name'),
+            sub=models.F('problem__psat__subject__abbr'),
+            subject=models.F('problem__psat__subject__name'),
+            number=models.F('problem__number'),
+        )
+    )
+
+
+def get_all_comments(queryset, problem_id=None):
+    if problem_id:
+        queryset = queryset.filter(problem_id=problem_id)
+    parent_comments = queryset.filter(parent__isnull=True).order_by('-timestamp')
+    child_comments = queryset.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
+    all_comments = []
+    for comment in parent_comments:
+        all_comments.append(comment)
+        all_comments.extend(child_comments.filter(parent=comment))
+    return all_comments
+
+
+def get_all_comments_of_parent_comment(queryset, parent_comment):
+    queryset = queryset.filter(parent=parent_comment)
+    child_comments = queryset.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
+    all_comments = [parent_comment]
+    for comment in child_comments:
+        all_comments.append(comment)
+    return all_comments
+
+
+def get_instance_by_id(queryset, instance_id):
+    if instance_id:
+        return queryset.get(id=instance_id)

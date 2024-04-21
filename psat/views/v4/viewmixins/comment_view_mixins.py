@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup as bs
-from django.db.models import F
+from django.db import models
 
-from psat import forms, models
+from psat import forms as psat_forms
+from psat.models import data_models
 from . import base_mixins
 
 
@@ -11,8 +12,8 @@ class BaseMixIn(
     base_mixins.DefaultMethods,
 ):
     """Setting mixin for Comment views."""
-    model = models.Comment
-    form_class = forms.CommentForm
+    model = data_models.Comment
+    form_class = psat_forms.CommentForm
 
     def get_comment_qs(self):
         return (
@@ -20,34 +21,15 @@ class BaseMixIn(
             .select_related(
                 'user', 'problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
             .annotate(
-                username=F('user__username'),
-                year=F('problem__psat__year'), number=F('problem__number'),
-                ex=F('problem__psat__exam__abbr'), exam=F('problem__psat__exam__name'),
-                sub=F('problem__psat__subject__abbr'), subject=F('problem__psat__subject__name')))
-
-    def get_single_comment(self, comment_id):
-        if comment_id:
-            return self.get_comment_qs().get(id=comment_id)
-
-    def get_all_comments(self, problem_id=None):
-        qs = self.get_comment_qs()
-        if problem_id:
-            qs = qs.filter(problem_id=problem_id)
-        parent_comments = qs.filter(parent__isnull=True).order_by('-timestamp')
-        child_comments = qs.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
-        all_comments = []
-        for comment in parent_comments:
-            all_comments.append(comment)
-            all_comments.extend(child_comments.filter(parent=comment))
-        return all_comments
-
-    def get_all_comments_of_parent_comment(self, parent_comment):
-        qs = self.get_comment_qs().filter(parent=parent_comment)
-        child_comments = qs.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
-        all_comments = [parent_comment]
-        for comment in child_comments:
-            all_comments.append(comment)
-        return all_comments
+                username=models.F('user__username'),
+                year=models.F('problem__psat__year'),
+                ex=models.F('problem__psat__exam__abbr'),
+                exam=models.F('problem__psat__exam__name'),
+                sub=models.F('problem__psat__subject__abbr'),
+                subject=models.F('problem__psat__subject__name'),
+                number=models.F('problem__number'),
+            )
+        )
 
     def get_comment_title(self):
         comment = self.request.POST.get('comment')

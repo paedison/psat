@@ -1,7 +1,8 @@
-from django.db.models import Case, When, BooleanField, F
+from django.db import models
 
-from psat import forms, models
+from psat import forms as psat_forms
 from psat import utils
+from psat.models import data_models
 from . import base_mixins
 
 
@@ -12,8 +13,8 @@ class BaseMixIn(
 ):
     """Setting mixin for Collection views."""
 
-    model = models.Collection
-    form_class = forms.CollectionForm
+    model = data_models.Collection
+    form_class = psat_forms.CollectionForm
 
     def get_all_collections(self):
         return (
@@ -29,9 +30,15 @@ class BaseMixIn(
                 .select_related(
                     'problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
                 .annotate(
-                    year=F('problem__psat__year'), ex=F('problem__psat__exam__abbr'),
-                    sub=F('problem__psat__subject__abbr'), number=F('problem__number'),
-                    question=F('problem__question')))
+                    year=models.F('problem__psat__year'),
+                    ex=models.F('problem__psat__exam__abbr'),
+                    exam=models.F('problem__psat__exam__name'),
+                    sub=models.F('problem__psat__subject__abbr'),
+                    subject=models.F('problem__psat__subject__name'),
+                    number=models.F('problem__number'),
+                    question=models.F('problem__question'),
+                )
+            )
 
     def get_post_getlist_variable(self, variable: str):
         return self.request.POST.getlist(variable)
@@ -64,10 +71,10 @@ class BaseMixIn(
         )
 
     def get_collections_for_modal_item_add(self, collection_ids):
-        item_exists_case = Case(
-            When(id__in=collection_ids, then=1),
+        item_exists_case = models.Case(
+            models.When(id__in=collection_ids, then=1),
             default=0,
-            output_field=BooleanField()
+            output_field=models.BooleanField()
         )
         return self.get_all_collections().annotate(item_exists=item_exists_case)
 
