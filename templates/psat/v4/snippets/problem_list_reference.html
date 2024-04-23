@@ -1,0 +1,18 @@
+<a class="text-decoration-none fw-bold"
+   href="{% url 'psat:detail' problem_id %}"
+   hx-get="{% url 'psat:detail' problem_id %}?{{ url_options }}"
+   hx-push-url="{% url 'psat:detail' problem_id %}">
+    {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|stringformat:'02d' }}
+</a>
+{% with image=problem.problem.get_image_file %}
+    {% if image.tag1 == 'Preparing Image' %}
+        {{ icon_image.false|safe }}
+    {% else %}
+        <a class="text-decoration-none" hx-target="#modalContainer"
+           href="" hx-push-url="false"
+           hx-get="{% url 'psat:detail_image' problem_id %}"
+           data-bs-toggle="modal" data-bs-target="#modalContainer">
+            {{ icon_image.true|safe }}
+        </a>
+    {% endif %}
+{% endwith %}

@@ -3,103 +3,67 @@ import vanilla
 
 from psat import utils
 from .viewmixins import collection_view_mixins
+from . import problem_views
 
 
-class IndexView(
+class ListView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
     vanilla.TemplateView,
 ):
     """View for loading collection card."""
-    template_name = 'psat/v4/snippets/collection.html'
+    template_name = 'psat/v4/snippets/collection_list.html#list_content'
+
+    def post(self, request, *args, **kwargs):
+        return self.get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        collections = self.get_all_collections()
-        target_collection = collections[0] if collections else None
-        items = self.get_all_items_for_collection(target_collection)
-        return super().get_context_data(
-            icon_image=self.ICON_IMAGE,
-            collections=collections,
-            target_collection=target_collection,
-            items=items,
-            **kwargs,
-        )
+        context = super().get_context_data(**kwargs)
+
+        collection_ids = self.get_post_getlist_variable('collection')
+        if collection_ids:
+            collections = self.get_sorted_collections(collection_ids)
+        else:
+            collections = self.get_all_collections()
+        context['collections'] = collections
+        return context
 
 
 class ItemView(
     auth_mixins.LoginRequiredMixin,
     collection_view_mixins.BaseMixIn,
-    vanilla.TemplateView,
+    problem_views.ListView
 ):
-    template_name = 'psat/v4/snippets/collection.html#reload_card_item'
+    template_name = 'psat/v4/snippets/collection_item.html'
+
+    def get_template_names(self):
+        return self.template_name
 
     def get_context_data(self, **kwargs):
-        pk = self.kwargs.get('pk')
-        target_collection = self.get_all_collections().get(pk=pk)
-        items = self.get_all_items_for_collection(target_collection)
-        return super().get_context_data(
-            icon_image=self.ICON_IMAGE,
-            target_collection=target_collection,
-            items=items,
-            **kwargs,
-        )
+        context = super().get_context_data(**kwargs)
 
-
-class ReloadView(
-    auth_mixins.LoginRequiredMixin,
-    collection_view_mixins.BaseMixIn,
-    vanilla.TemplateView,
-):
-    template_name = 'psat/v4/snippets/collection.html#reload_card'
-
-    def get_context_data(self, **kwargs):
-        collections = self.get_all_collections()
-        target_collection = collections[0]
-        items = self.get_all_items_for_collection(target_collection)
-        return super().get_context_data(
-            icon_image=self.ICON_IMAGE,
-            collections=collections,
-            target_collection=target_collection,
-            items=items,
-            **kwargs,
-        )
-
-
-class SortListView(
-    auth_mixins.LoginRequiredMixin,
-    collection_view_mixins.BaseMixIn,
-    vanilla.TemplateView,
-):
-    """View for sorting collection list."""
-    template_name = 'psat/v4/snippets/collection.html#reload_card_list'
-
-    def post(self, request, *args, **kwargs):
-        collection_ids = self.get_post_getlist_variable('collection')
-        collections = self.get_collections_for_sort_list(collection_ids)
-        context = self.get_context_data(collections=collections, **kwargs)
-        return self.render_to_response(context)
-
-
-class SortItemView(
-    auth_mixins.LoginRequiredMixin,
-    collection_view_mixins.BaseMixIn,
-    vanilla.TemplateView,
-):
-    """View for sorting collection list."""
-    template_name = 'psat/v4/snippets/collection.html#reload_card_item'
-
-    def post(self, request, *args, **kwargs):
-        pk = self.request.POST.get('collection')
+        user_id = self.get_user_id()
+        pk = self.get_collection_pk()
         item_ids = self.get_post_getlist_variable('item')
+
         target_collection = self.get_all_collections().get(pk=pk)
-        items = self.get_collections_for_sort_item(item_ids, target_collection)
-        context = self.get_context_data(
-            icon_image=self.ICON_IMAGE,
-            target_collection=target_collection,
-            items=items,
-            **kwargs,
-        )
-        return self.render_to_response(context)
+        if item_ids:
+            items = self.get_sorted_items(item_ids, target_collection)
+        else:
+            items = self.get_all_items_by_collection(target_collection)
+        custom_data = self.get_custom_data(user_id)
+        context.update({
+            'target_collection': target_collection,
+            'items': items,
+            'like_data': custom_data['like'],
+            'rate_data': custom_data['rate'],
+            'solve_data': custom_data['solve'],
+            'memo_data': custom_data['memo'],
+            'tag_data': custom_data['tag'],
+            'collection_data': custom_data['collection'],
+            'comment_data': custom_data['comment'],
+        })
+        return context
 
 
 class ModalItemAddView(
@@ -140,10 +104,10 @@ class CreateView(
     collection_view_mixins.BaseMixIn,
     vanilla.CreateView,
 ):
-    template_name = 'psat/v4/snippets/collection.html#create_collection'
+    template_name = 'psat/v4/snippets/collection_list.html#create_collection'
 
     def get_success_url(self):
-        return utils.get_url('collection_reload')
+        return utils.get_url('collection_list')
 
     def form_valid(self, form):
         form = form.save(commit=False)
@@ -179,10 +143,10 @@ class UpdateView(
     collection_view_mixins.BaseMixIn,
     vanilla.UpdateView,
 ):
-    template_name = 'psat/v4/snippets/collection.html#update_collection'
+    template_name = 'psat/v4/snippets/collection_list.html#update_collection'
 
     def get_success_url(self):
-        return utils.get_url('collection_reload')
+        return utils.get_url('collection_list')
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(collection_id=self.object.id, **kwargs)
@@ -194,7 +158,7 @@ class DeleteView(
     vanilla.DeleteView,
 ):
     def get_success_url(self):
-        return utils.get_url('collection_reload')
+        return utils.get_url('collection_list')
 
     def post(self, request, *args, **kwargs):
         res = super().post(request, *args, **kwargs)

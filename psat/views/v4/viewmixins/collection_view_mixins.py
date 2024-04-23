@@ -16,13 +16,19 @@ class BaseMixIn(
     model = data_models.Collection
     form_class = psat_forms.CollectionForm
 
+    def get_collection_pk(self):
+        if self.request.method == 'POST':
+            return self.request.POST.get('collection')
+        else:
+            return self.request.GET.get('collection')
+
     def get_all_collections(self):
         return (
             self.collection_model.objects
             .filter(user_id=self.request.user.id, is_active=True)
         )
 
-    def get_all_items_for_collection(self, collection):
+    def get_all_items_by_collection(self, collection):
         if collection:
             return (
                 self.item_model.objects
@@ -43,7 +49,7 @@ class BaseMixIn(
     def get_post_getlist_variable(self, variable: str):
         return self.request.POST.getlist(variable)
 
-    def get_collections_for_sort_list(self, collection_ids):
+    def get_sorted_collections(self, collection_ids):
         collections = []
         for idx, pk in enumerate(collection_ids, start=1):
             collection = self.collection_model.objects.get(pk=pk)
@@ -52,10 +58,10 @@ class BaseMixIn(
             collections.append(collection)
         return collections
 
-    def get_collections_for_sort_item(self, item_ids, collection):
+    def get_sorted_items(self, item_ids, collection):
         items = []
         for idx, pk in enumerate(item_ids, start=1):
-            item = self.get_all_items_for_collection(collection).get(pk=pk)
+            item = self.get_all_items_by_collection(collection).get(pk=pk)
             item.order = idx
             item.save()
             items.append(item)
@@ -88,12 +94,13 @@ class BaseMixIn(
     def update_collection_ordering_after_delete(self):
         collections = self.get_all_collections()
         new_ordering = utils.get_new_ordering(collections)
-        for order, collection in zip(new_ordering, collections):
-            collection.order = order
-            collection.save()
+        if collections:
+            for order, collection in zip(new_ordering, collections):
+                collection.order = order
+                collection.save()
 
     def update_item_add_status(self, target_collection, problem_id, is_checked):
-        existing_items = self.get_all_items_for_collection(target_collection)
+        existing_items = self.get_all_items_by_collection(target_collection)
         max_order = utils.get_max_order(existing_items)
 
         def get_item_for_add():

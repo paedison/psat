@@ -1,0 +1,78 @@
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
+{% load crispy_forms_tags %}
+
+<div hx-swap-oob="innerHTML:#problemCardHeader">
+    {{ target_collection.title }}
+    <a class="text-decoration-none ms-2" href=""
+       hx-indicator="#collectionItemIndicator"
+       hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s"
+       hx-get="{% url 'psat:collection_item' %}?collection={{ target_collection.id }}">
+        <span class="badge rounded-pill text-bg-warning">새로고침</span>
+    </a>
+    <div id="collectionItemIndicator" role="status"
+         class="htmx-indicator spinner-border text-warning spinner-border-sm">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<div hx-swap-oob="innerHTML:#problemFilter">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                    aria-expanded="true" aria-controls="collapseOne">
+                문제 필터
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show"
+             data-bs-parent="#problemFilter">
+            <div class="accordion-body pb-2">
+                <form class="row row-cols-auto g-2 align-items-center justify-content-center"
+                      method="get" hx-trigger="change" hx-target="#problemCard"
+                      hx-get="{{ base_url }}" hx-push-url="false">
+                    <a type="button" class="btn btn-outline-primary m-1"
+                       href="{{ base_url }}" hx-boost="true">
+                        전체 문제
+                    </a>
+                        {{ form|crispy }}
+                    <input id="id_data" type="text" name="keyword"
+                           value="{{ keyword }}" hidden
+                           placeholder="{% trans 'Enter search keyword' %}"
+                           title="{% trans 'Enter search keyword' %}">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div hx-swap-oob="innerHTML:#problemContent"></div>
+
+{% if items %}
+    <div hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s" hx-trigger="end"
+         hx-include="#collectionItemForm"
+         hx-post="{% url 'psat:collection_item' %}"></div>
+    <input type="hidden" name="collection" value="{{ items.0.collection_id }}"/>
+    {% for item in items %}
+        <div class="d-flex fs-6 my-3" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            <input type="hidden" name="item" value="{{ item.id }}"/>
+            <div class="fw-bold me-2">{{ item.order }}.</div>
+            <div>
+                {% with problem_id=item.problem_id problem=item %}
+                    <div class="align-middle d-inline-block fs-6 pe-1">
+                        {% include 'psat/v4/snippets/icon_container.html' %}
+                    </div>
+                    <div class="d-inline-block pe-1" hx-push-url="true">
+                        {% include 'psat/v4/snippets/problem_list_reference.html' %}
+                    </div>
+                    <div class="d-inline-block" hx-push-url="true">
+                        {% include 'psat/v4/snippets/problem_list_question.html' %}
+                    </div>
+                {% endwith %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="text-center text-nowrap fs-6 py-2">자료가 없습니다.</div>
+{% endif %}

@@ -78,7 +78,9 @@
                 </div>
                 <div class="d-flex align-items-center fs-6">
                     <div class="text-nowrap me-auto">
-                        {% include 'psat/v4/snippets/icon_container.html' %}
+                        {% with problem_id=problem.id %}
+                            {% include 'psat/v4/snippets/icon_container.html' %}
+                        {% endwith %}
                     </div>
                     <div class="ms-auto justify-content-end">
                         {% include 'psat/v4/snippets/solve_container.html' %}

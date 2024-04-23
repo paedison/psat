@@ -38,8 +38,8 @@
 
 {% partialdef container_rate %}
     {% if user.is_authenticated %}
-        <a id="psatRate{{ problem.id }}" href="" class="htmx-fade-in htmx-fade-out"
-           hx-get="{% url 'psat:rate_modal' %}?problem_id={{ problem.id }}&icon_id=psatRate{{ problem.id }}"
+        <a id="psatRate{{ problem_id }}" href="" class="htmx-fade-in htmx-fade-out"
+           hx-get="{% url 'psat:rate_modal' %}?problem_id={{ problem_id }}&icon_id=psatRate{{ problem_id }}"
            hx-target="#modalContainer" hx-swap="innerHTML"
            data-bs-toggle="modal" data-bs-target="#modalContainer">
             {% partial rate %}
@@ -68,8 +68,8 @@
 
 {% partialdef container_like %}
     {% if user.is_authenticated %}
-        <form id="likeButton{{ problem.id }}">
-            <a hx-post="{% url 'psat:custom_update' 'like' problem.id %}" href=""
+        <form id="likeButton{{ problem_id }}">
+            <a hx-post="{% url 'psat:custom_update' 'like' problem_id %}" href=""
                class="htmx-fade-in htmx-fade-out" hx-target="this"
                hx-swap="innerHTML swap:0.25s">
                 {% partial like %}
@@ -93,7 +93,7 @@
 
 {% partialdef container_solve %}
     {% if user.is_authenticated %}
-        <span id="psatSolve{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+        <span id="psatSolve{{ problem_id }}" class="htmx-fade-in htmx-fade-out">
             {% partial solve %}
         </span>
     {% else %}
@@ -114,7 +114,7 @@
 
 {% partialdef container_memo %}
     {% if user.is_authenticated %}
-        <span id="psatMemo{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+        <span id="psatMemo{{ problem_id }}" class="htmx-fade-in htmx-fade-out">
             {% partial memo %}
         </span>
     {% else %}
@@ -133,7 +133,7 @@
 
 {% partialdef container_tag %}
     {% if user.is_authenticated %}
-        <span id="psatTag{{ problem.id }}" class="htmx-fade-in htmx-fade-out">
+        <span id="psatTag{{ problem_id }}" class="htmx-fade-in htmx-fade-out">
             {% partial tag %}
         </span>
     {% else %}
@@ -152,8 +152,8 @@
 
 {% partialdef container_collection %}
     {% if user.is_authenticated %}
-        <a id="psatCollection{{ problem.id }}" href="" class="htmx-fade-in htmx-fade-out"
-           hx-get="{% url 'psat:collection_modal_item_add' %}?problem_id={{ problem.id }}&icon_id=psatCollection{{ problem.id }}"
+        <a id="psatCollection{{ problem_id }}" href="" class="htmx-fade-in htmx-fade-out"
+           hx-get="{% url 'psat:collection_modal_item_add' %}?problem_id={{ problem_id }}&icon_id=psatCollection{{ problem_id }}"
            hx-target="#modalContainer" hx-swap="innerHTML"
            data-bs-toggle="modal" data-bs-target="#modalContainer">
             {% partial collection %}

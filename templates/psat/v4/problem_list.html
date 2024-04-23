@@ -17,7 +17,7 @@
 
                 {% if user.is_admin %}
                     <div class="col-12" aria-label="문제 컬렉션">
-                        {% partial collection_card %}
+                        {% include 'psat/v4/snippets/collection_list.html' %}
                     </div>
 
                     <div class="col-12" aria-label="질문 리스트">
@@ -49,29 +49,6 @@
         </nav>
     </div><!-- Page Title End -->
 {% endpartialdef page_title %}
-
-{% partialdef collection_card %}
-    <div id="collectionCard" hx-swap="innerHTML swap:0.25s"
-         class="card htmx-fade-in htmx-fade-out">
-        <div id="collectionCardHeader" class="card-header">
-            문제 컬렉션
-            <a class="text-decoration-none ms-2" href=""
-               hx-indicator="#collectionCardIndicator" hx-swap="none"
-               hx-get="{% url 'psat:collection_reload' %}">
-                <span class="badge rounded-pill text-bg-warning">새로고침</span>
-            </a>
-            <div id="collectionCardIndicator" role="status"
-                 class="htmx-indicator spinner-border text-warning spinner-border-sm">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-        <div id="collectionCardBody"
-             class="card-body htmx-fade-in htmx-fade-out"
-             hx-target="this" hx-trigger="load"
-             hx-get="{% url 'psat:collection_index' %}">
-        </div>
-    </div>
-{% endpartialdef collection_card %}
 
 {% partialdef comment_card %}
     <div id="commentCard" class="card htmx-fade-in htmx-fade-out"

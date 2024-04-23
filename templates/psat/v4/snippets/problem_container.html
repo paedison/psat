@@ -4,7 +4,7 @@
 {% load partials %}
 {% load crispy_forms_tags %}
 
-<div class="card-header">{{ sub_title|safe }}</div>
+<div id="problemCardHeader" class="card-header">{{ sub_title|safe }}</div>
 
 <div class="card-body">
     <div class="accordion" id="problemFilter">
@@ -37,92 +37,62 @@
         </div>
     </div>
 
-    {% #responsive_table %}
-        <tbody>
-            {% if page_obj %}
-                {% for problem in page_obj %}
-                    {% ifchanged %}
-                        <tr class="table-warning">
-                            <td class="text-center text-nowrap text-primary p-2">
-                                <h2 class="fs-6 fw-bold m-0">
-                                    {% if info.view_type == 'problem' %}
-                                        <a href="" hx-boost="true" hx-push-url="false" hx-target="#problemCard"
-                                           hx-get="{{ base_url }}year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
+    <div id="problemContent">
+        {% #responsive_table %}
+            <tbody>
+                {% if page_obj %}
+                    {% for problem in page_obj %}
+                        {% ifchanged %}
+                            <tr class="table-warning">
+                                <td class="text-center text-nowrap text-primary p-2">
+                                    <h2 class="fs-6 fw-bold m-0">
+                                        {% if info.view_type == 'problem' %}
+                                            <a href="" hx-boost="true" hx-push-url="false" hx-target="#problemCard"
+                                               hx-get="{{ base_url }}year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
+                                                {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                                            </a>
+                                        {% else %}
                                             {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                        </a>
-                                    {% else %}
-                                        {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
-                                    {% endif %}
-                                </h2>
+                                        {% endif %}
+                                    </h2>
+                                </td>
+                            </tr>
+                        {% endifchanged %}
+                        <tr>
+                            <td class="text-nowrap py-2 px-0">
+                                {% with problem_id=problem.id %}
+                                    <div class="align-middle d-inline-block fs-6 pe-1">
+                                        {% include 'psat/v4/snippets/icon_container.html' %}
+                                    </div>
+                                    <div class="align-middle d-inline-block fs-6" hx-push-url="true">
+                                        <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1">
+                                            {% include 'psat/v4/snippets/problem_list_reference.html' %}
+                                        </div>
+                                        <div class="d-block d-md-inline-block">
+                                            {% include 'psat/v4/snippets/problem_list_question.html' %}
+                                        </div>
+                                    </div>
+                                {% endwith %}
                             </td>
                         </tr>
-                    {% endifchanged %}
+                    {% endfor %}
+                {% else %}
                     <tr>
-                        <td class="text-nowrap py-2 px-0">
-                            <div class="align-middle d-inline-block fs-6 pe-1">
-                                {% include 'psat/v4/snippets/icon_container.html' %}
-                            </div>
-                            <div class="align-middle d-inline-block fs-6" hx-push-url="true">
-                                <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1">
-                                    {% partial reference %}
-                                </div>
-                                <div class="d-block d-md-inline-block">
-                                    {% partial question %}
-                                </div>
-                            </div>
-                        </td>
+                        <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
                     </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
-                </tr>
+                {% endif %}
+            </tbody>
+        {% /responsive_table %}
+
+        {% with target_id='problemCard' %}
+            {% if page_obj.has_next or page_obj.has_previous %}
+                {% include 'psat/v4/snippets/pagination.html' %}
             {% endif %}
-        </tbody>
-    {% /responsive_table %}
+        {% endwith %}
+    </div>
 
-    {% with target_id='problemCard' %}
-        {% if page_obj.has_next or page_obj.has_previous %}
-            {% include 'psat/v4/snippets/pagination.html' %}
-        {% endif %}
-    {% endwith %}
+    <form id="collectionItemForm" class="sortable htmx-fade-out htmx-fade-in mt-3"
+          hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s" hx-trigger="end"
+          hx-post="{% url 'psat:collection_item' %}">
+    </form>
 </div>
-
-{% partialdef reference %}
-    <a class="text-decoration-none fw-bold"
-       href="{% url 'psat:detail' problem.id %}"
-       hx-get="{% url 'psat:detail' problem.id %}?{{ url_options }}"
-       hx-push-url="{% url 'psat:detail' problem.id %}">
-        {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|stringformat:'02d' }}
-    </a>
-    {% with image=problem.get_image_file %}
-        {% if image.tag1 == 'Preparing Image' %}
-            {{ icon_image.false|safe }}
-        {% else %}
-            <a class="text-decoration-none" hx-target="#modalContainer"
-               hx-swap="innerHTML swap:0.25s" href="" hx-push-url="false"
-               hx-get="{% url 'psat:detail_image' problem.id %}"
-               data-bs-toggle="modal" data-bs-target="#modalContainer">
-                {{ icon_image.true|safe }}
-            </a>
-        {% endif %}
-    {% endwith %}
-{% endpartialdef reference %}
-
-{% partialdef question %}
-    {% with class='d-md-none' chars=30 %}
-        {% partialdef link_snippet inline=True %}
-            <a class="text-decoration-none {{ class }}"
-               href="{% url 'psat:detail' problem.id %}"
-               hx-get="{% url 'psat:detail' problem.id %}?{{ url_options }}"
-               hx-push-url="{% url 'psat:detail' problem.id %}">
-                <h3 class="d-inline-block fs-6 small m-0">
-                    {{ problem.question|truncatechars:chars }}
-                </h3>
-            </a>
-        {% endpartialdef link_snippet %}
-    {% endwith %}
-    {% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
-{% endpartialdef question %}

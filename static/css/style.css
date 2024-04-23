@@ -366,3 +366,21 @@ div.django-ckeditor-widget {
 .banner img {
     height: 300px !important;
 }
+
+#toggleCollectionBtn {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+}
+#floatingCollection {
+    position: fixed;
+    top: 80px;
+    right: -400px;
+    width: 350px;
+    transition: right 0.25s ease-in-out;
+    z-index: 999;
+}
+#floatingCollection.show-menu {
+    right: 20px;
+}

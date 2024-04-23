@@ -77,9 +77,13 @@ def round_number(content):
 @register.filter()
 def get_status(problem, data: list[dict]):
     key_list = ['is_liked', 'rating', 'is_correct']
+    try:
+        problem_id = getattr(problem, 'problem_id')
+    except AttributeError:
+        problem_id = getattr(problem, 'id')
     if data:
         for instance in data:
-            if instance['id'] == problem.id:
+            if instance['id'] == problem_id:
                 target_key = None
                 for key in instance.keys():
                     target_key = key if key in key_list else None

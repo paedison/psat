@@ -1,0 +1,17 @@
+{% load partials %}
+
+{% with class='d-md-none' chars=30 %}
+    {% partialdef link_snippet inline=True %}
+        <a class="text-decoration-none {{ class }}"
+           href="{% url 'psat:detail' problem_id %}"
+           hx-get="{% url 'psat:detail' problem_id %}?{{ url_options }}"
+           hx-push-url="{% url 'psat:detail' problem_id %}">
+            <h3 class="d-inline-block fs-6 small m-0">
+                {{ problem.question|truncatechars:chars }}
+            </h3>
+        </a>
+    {% endpartialdef link_snippet %}
+{% endwith %}
+{% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
+{% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
+{% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
