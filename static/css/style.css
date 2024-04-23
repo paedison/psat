@@ -367,15 +367,29 @@ div.django-ckeditor-widget {
     height: 300px !important;
 }
 
-#toggleCollectionBtn {
+#toggleProblemBtn {
+    position: fixed;
+    top: 80px;
+    right: 70px;
+    z-index: 1000;
+}
+
+#toggleCommentBtn {
     position: fixed;
     top: 80px;
     right: 20px;
     z-index: 1000;
 }
+
+#toggleCollectionBtn {
+    position: fixed;
+    top: 130px;
+    right: 20px;
+    z-index: 1000;
+}
 #floatingCollection {
     position: fixed;
-    top: 80px;
+    top: 140px;
     right: -400px;
     width: 350px;
     transition: right 0.25s ease-in-out;

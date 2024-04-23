@@ -1,0 +1,89 @@
+{% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+{% load crispy_forms_tags %}
+
+<a id="toggleCommentBtn" class="btn btn-warning px-2"
+   hx-target="#problemContent" hx-swap="innerHTML swap:0.25s"
+   hx-get="{% url 'psat:comment_list' %}">
+    <i class="fa-solid fa-note-sticky fa-fw text-white"></i>
+</a>
+<script>
+    $(document).ready(function() {
+        $('#toggleCommentBtn').click(function() {
+            $('#floatingCollection').removeClass('show-menu');
+            $('#toggleCollectionBtn').show().animate({right: '20'}, 300);
+        });
+    });
+</script>
+
+{% partialdef comment_content %}
+    <div hx-swap-oob="innerHTML:#problemFilter"></div>
+    <div hx-swap-oob="innerHTML:#collectionItemForm"></div>
+
+    <div hx-swap-oob="innerHTML:#problemCardHeader">
+        질문 리스트
+        <a class="text-decoration-none ms-2" href=""
+           hx-indicator="#commentIndicator" hx-target="#commentCardBody"
+           hx-get="{% url 'psat:comment_list' %}">
+            <span class="badge rounded-pill text-bg-warning">새로고침</span>
+        </a>
+        <div id="commentIndicator" role="status"
+             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    {% #responsive_table %}
+        <tbody hx-target="#main">
+            {% if page_obj %}
+                {% for comment in page_obj %}
+                    <tr>
+                        {% with problem_id=comment.problem_id problem=comment %}
+                            <td class="text-nowrap p-2 col-1 fs-6">
+                                <div class="align-middle d-inline-block fs-6 pe-1">
+                                    {% include 'psat/v4/snippets/icon_container.html' %}
+                                </div>
+                                <div class="align-middle d-inline-block fs-6" hx-push-url="true">
+                                    {% include 'psat/v4/snippets/problem_list_reference.html' %}
+                                </div>
+                            </td>
+                            <td class="text-nowrap p-2 fs-6">
+                                {% partial title %}
+                            </td>
+                            <td class="text-nowrap text-end p-2 fs-6">
+                                {% with username=comment.username target_user=comment.user %}
+                                    {% include 'psat/v4/snippets/username.html' %}
+                                {% endwith %}
+                                <span class="small text-secondary ms-1">
+                                    {{ comment.timestamp|date:'n/j(D) G:i' }}
+                                </span>
+                            </td>
+                        {% endwith %}
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    {% /responsive_table %}
+
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'psat/v4/snippets/pagination.html' %}
+    {% endif %}
+{% endpartialdef comment_content %}
+
+{% partialdef title %}
+    <a class="text-decoration-none text-secondary" hx-boost="true"
+       hx-swap="innerHTML swap:0.25s" hx-target="#main" hx-push-url="true"
+       href="{% url 'psat:comment_detail' comment.id %}">
+        {% if comment.parent %}
+            <span class="text-primary">{{ icon_board.reply|safe }}</span>
+        {% endif %}
+        {{ comment.title }}
+    </a>
+{% endpartialdef title %}

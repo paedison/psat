@@ -2,32 +2,37 @@ import vanilla
 
 from psat import utils
 from .viewmixins import comment_view_mixins
+from . import problem_views
 
 
-class CommentView(
+class ListView(
     comment_view_mixins.BaseMixIn,
-    vanilla.TemplateView,
+    problem_views.ListView,
 ):
     """View for loading comment container."""
-    template_name = 'psat/v4/snippets/comment.html'
+    template_name = 'psat/v4/snippets/comment_list.html#comment_content'
+
+    def get_template_names(self):
+        return self.template_name
 
     def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
         comment_qs = utils.get_comment_qs()
         all_comments = utils.get_all_comments(comment_qs)
         page_obj, page_range = self.get_paginator_info(all_comments)
-        pagination_url = utils.get_url('comment')
+        pagination_url = utils.get_url('comment_list')
 
-        return super().get_context_data(
-            page_obj=page_obj,
-            page_range=page_range,
-            pagination_url=pagination_url,
-            form=self.form_class,
+        context.update({
+            'page_obj': page_obj,
+            'page_range': page_range,
+            'pagination_url': pagination_url,
+            'form': self.form_class,
 
-            icon_board=self.ICON_BOARD,
-            icon_question=self.ICON_QUESTION,
-            icon_image=self.ICON_IMAGE,
-            **kwargs,
-        )
+            'icon_board': self.ICON_BOARD,
+            'icon_question': self.ICON_QUESTION,
+        })
+        return context
 
 
 class ContainerView(
