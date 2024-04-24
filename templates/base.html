@@ -54,6 +54,8 @@
 <script defer src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 <script defer src="{% static 'vendor/nice-admin/js/main.js' %}"></script>
 <script defer src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
+<script defer src="{% static 'vendor/htmx/ext/debug.js' %}"></script>
+<script defer src="{% static 'vendor/htmx/ext/event-header.js' %}"></script>
 <script src="{% static 'vendor/chart.js/chart.umd.js' %}"></script>
 
 <!-- Template Main JS File -->
@@ -63,7 +65,8 @@
 </head>
 
 {% block html_body %}
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+      hx-ext="debug, event-header">
 
 {% block header %}{% endblock header %}
 {% block aside %}{% endblock aside %}

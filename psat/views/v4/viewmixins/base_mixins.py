@@ -1,7 +1,14 @@
+from django.http import HttpRequest
+from django_htmx.middleware import HtmxDetails
+
 from common.constants import icon_set
 from dashboard.models import psat_log_models
 from psat import models, utils
 from reference.models import psat_models
+
+
+class HtmxHttpRequest(HttpRequest):
+    htmx: HtmxDetails
 
 
 class ConstantIconSet(icon_set.ConstantIconSet):
@@ -32,13 +39,13 @@ class DefaultModels:
     rate_log_model = psat_log_models.PsatRateLog
     solve_log_model = psat_log_models.PsatSolveLog
 
-    request: any
+    request: HtmxHttpRequest
     kwargs: dict
     object: any
 
 
 class DefaultMethods:
-    request: any
+    request: HtmxHttpRequest
     kwargs: dict
 
     def get_user_id(self):

@@ -1,9 +1,15 @@
 from django.db.models import F
+from django.http import HttpRequest
+from django_htmx.middleware import HtmxDetails
 
 from common.constants.icon_set import ConstantIconSet
 from dashboard import utils
 from dashboard.models import psat_log_models
 from psat.models import data_models
+
+
+class HtmxHttpRequest(HttpRequest):
+    htmx: HtmxDetails
 
 
 class DefaultModels:
@@ -26,7 +32,7 @@ class DefaultModels:
     rate_log_model = psat_log_models.PsatRateLog
     solve_log_model = psat_log_models.PsatSolveLog
 
-    request: any
+    request: HtmxHttpRequest
     kwargs: dict
 
 
