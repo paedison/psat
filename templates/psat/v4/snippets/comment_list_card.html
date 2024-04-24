@@ -43,7 +43,7 @@
                                 {% include 'psat/v4/snippets/username.html' %}
                             {% endwith %}
                             <span class="small text-secondary ms-1">
-                                {{ comment.timestamp|date:'n/j(D) G:i' }}
+                                {{ comment.timestamp|date:'n/j(D) H:i' }}
                             </span>
                         </td>
                     {% endwith %}
@@ -60,7 +60,7 @@
 {% /responsive_table %}
 
 {% if page_obj.has_next or page_obj.has_previous %}
-    {% include 'psat/v4/snippets/pagination.html' %}
+    {% include 'psat/v4/snippets/pagination.html' with target_id='problemContent' %}
 {% endif %}
 
 {% partialdef title %}

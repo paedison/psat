@@ -46,8 +46,6 @@
     </tbody>
 {% /responsive_table %}
 
-{% with target_id='problemCard' %}
-    {% if page_obj.has_next or page_obj.has_previous %}
-        {% include 'psat/v4/snippets/pagination.html' %}
-    {% endif %}
-{% endwith %}
+{% if page_obj.has_next or page_obj.has_previous %}
+    {% include 'psat/v4/snippets/pagination.html' with target_id='problemContent' %}
+{% endif %}

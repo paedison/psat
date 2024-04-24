@@ -28,19 +28,23 @@ class Answers(models.IntegerChoices):
 class Open(Base):
     user_id = models.IntegerField(blank=True, null=True)
     ip_address = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Like(Base):
     is_liked = models.BooleanField()
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Rate(Base):
     rating = models.IntegerField(choices=Ratings.choices)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Solve(Base):
     answer = models.IntegerField(choices=Answers.choices)
     is_correct = models.BooleanField()
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Memo(Base):

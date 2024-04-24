@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 
 from common.constants.icon_set import ConstantIconSet
-from dashboard.models.psat_data_models import PsatLikeLog, PsatRateLog, PsatSolveLog
+from dashboard.models.psat_log_models import PsatLikeLog, PsatRateLog, PsatSolveLog
 from psat.models import Like, Rate, Solve
 from reference.models.psat_models import PsatProblem
 

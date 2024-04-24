@@ -10,7 +10,6 @@ class BaseMixin(
     base_mixins.DefaultModels,
     base_mixins.DefaultMethods,
 ):
-    menu = 'psat'
     color_dict = {
         'problem': 'primary',
         'like': 'danger',

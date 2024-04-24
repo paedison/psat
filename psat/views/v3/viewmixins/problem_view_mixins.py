@@ -5,7 +5,7 @@ from django.db.models.functions import Concat, Cast
 from django.urls import reverse_lazy
 
 from common.constants.icon_set import ConstantIconSet
-from dashboard.models import psat_data_models
+from dashboard.models import psat_log_models
 from psat import models as custom_models
 from reference.models import psat_models as reference_models
 
@@ -547,7 +547,7 @@ class DetailViewMixIn(BaseMixin):
         find_filter = self.get_find_filter()
         with transaction.atomic():
             instance, is_created = custom_models.Open.objects.get_or_create(**find_filter)
-            recent_log = psat_data_models.PsatOpenLog.objects.filter(**find_filter).last()
+            recent_log = psat_log_models.PsatOpenLog.objects.filter(**find_filter).last()
             if recent_log:
                 repetition = recent_log.repetition + 1
             else:
@@ -558,7 +558,7 @@ class DetailViewMixIn(BaseMixin):
                 'repetition': repetition,
             }
             create_filter.update(extra_filter)
-            psat_data_models.PsatOpenLog.objects.create(**create_filter)
+            psat_log_models.PsatOpenLog.objects.create(**create_filter)
 
     def get_prev_next_prob(self, custom_data: reference_models.PsatProblem.objects) -> tuple:
         if self.request.method == 'GET':

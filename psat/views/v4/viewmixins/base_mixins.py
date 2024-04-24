@@ -1,5 +1,5 @@
 from common.constants import icon_set
-from dashboard.models import psat_data_models
+from dashboard.models import psat_log_models
 from psat import models, utils
 from reference.models import psat_models
 
@@ -27,10 +27,10 @@ class DefaultModels:
     comment_model = models.Comment
 
     # dashboard.models
-    open_log_model = psat_data_models.PsatOpenLog
-    like_log_model = psat_data_models.PsatLikeLog
-    rate_log_model = psat_data_models.PsatRateLog
-    solve_log_model = psat_data_models.PsatSolveLog
+    open_log_model = psat_log_models.PsatOpenLog
+    like_log_model = psat_log_models.PsatLikeLog
+    rate_log_model = psat_log_models.PsatRateLog
+    solve_log_model = psat_log_models.PsatSolveLog
 
     request: any
     kwargs: dict

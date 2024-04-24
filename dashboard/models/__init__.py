@@ -1,1 +1,1 @@
-from .psat_data_models import PsatOpenLog, PsatLikeLog, PsatRateLog, PsatSolveLog
+from .psat_log_models import PsatOpenLog, PsatLikeLog, PsatRateLog, PsatSolveLog

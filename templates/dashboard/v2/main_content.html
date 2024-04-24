@@ -1,0 +1,104 @@
+{% load static %}
+{% load slippers %}
+{% load partials %}
+{% load psat_filter %}
+
+{% #responsive_table %}
+    <tbody>
+        {% if page_obj %}
+            {% for log in page_obj %}
+                <tr class="text-start">
+                    <td class="text-nowrap fs-6">
+                        <div class="d-flex">
+                            {% partial reference %}
+                            {% if view_type == 'like' %}{% partial like %}{% endif %}
+                            {% if view_type == 'rate' %}{% partial rate %}{% endif %}
+                            {% if view_type == 'solve' %}{% partial solve %}{% endif %}
+                            {% partial date %}
+                        </div>
+                        {% partial question %}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td class="text-center text-nowrap px-2" colspan="5">
+                    자료가 없습니다.
+                </td>
+            </tr>
+        {% endif %}
+    </tbody>
+{% /responsive_table %}
+
+{% if page_obj.has_next or page_obj.has_previous %}
+    {% include 'psat/v4/snippets/pagination.html' %}
+{% endif %}
+
+{% partialdef reference %}
+    <div class="me-2" aria-label="Reference">
+        <a class="text-decoration-none fw-bold" hx-push-url="true"
+           href="{% url 'psat:detail' log.problem.id %}"
+           hx-get="{% url 'psat:detail' log.problem.id %}">
+            {{ log.year }}{{ log.ex|first }}{{ log.sub|first }}-{{ log.number|stringformat:'02d' }}
+        </a>
+    </div>
+{% endpartialdef reference %}
+
+{% partialdef like %}
+    <div class="me-4" aria-label="Like">
+        {% if log.is_liked %}
+            {{ icon_like.true|safe }}
+        {% else %}
+            {{ icon_like.false|safe }}
+        {% endif %}
+    </div>
+{% endpartialdef like %}
+
+{% partialdef rate %}
+    <div class="me-4" aria-label="Rate">
+        {% if log.rating == 1 %}
+            {{ icon_rate.star1|safe }}
+        {% elif log.rating == 2 %}
+            {{ icon_rate.star2|safe }}
+        {% elif log.rating == 3 %}
+            {{ icon_rate.star3|safe }}
+        {% elif log.rating == 4 %}
+            {{ icon_rate.star4|safe }}
+        {% elif log.rating == 5 %}
+            {{ icon_rate.star5|safe }}
+        {% else %}
+            {{ icon_rate.star0|safe }}
+        {% endif %}
+    </div>
+{% endpartialdef rate %}
+
+{% partialdef solve %}
+    <div class="me-4" aria-label="Solve">
+        {% if log.is_correct is True %}
+            {{ icon_solve.true|safe }}
+        {% elif log.is_correct is False %}
+            {{ icon_solve.false|safe }}
+        {% else %}
+        {% endif %}
+    </div>
+{% endpartialdef %}
+
+{% partialdef date %}
+    <div class="d-inline-block small text-secondary ms-auto">
+        {% if unique %}
+            {{ log.updated_at|date:'y/m/d(D) H:i' }}
+        {% else %}
+            {{ log.timestamp|date:'y/m/d(D) H:i' }}
+        {% endif %}
+    </div>
+{% endpartialdef date %}
+
+{% partialdef question %}
+    <h3 class="fs-6 m-0 py-2 d-block text-nowrap">
+        <a class="text-decoration-none text-black" hx-push-url="true"
+           href="{% url 'psat:detail' log.problem.id %}"
+           hx-get="{% url 'psat:detail' log.problem.id %}">
+            {{ log.question|truncatechars:30 }}
+        </a>
+    </h3>
+{% endpartialdef question %}

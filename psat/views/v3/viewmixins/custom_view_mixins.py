@@ -5,7 +5,7 @@ from taggit import models as taggit_models
 from taggit_templatetags2.templatetags.taggit_templatetags2_tags import get_weight_fun
 
 from common.constants.icon_set import ConstantIconSet
-from dashboard.models import psat_data_models
+from dashboard.models import psat_log_models
 from psat import forms as custom_forms
 from psat import models as custom_models
 from reference.models import psat_models as reference_models
@@ -129,9 +129,9 @@ class CustomUpdateViewMixIn(ConstantIconSet):
         create_filter = self.get_create_filter(find_filter)
         if data_instance:
             model_dict = {
-                'like': psat_data_models.PsatLikeLog,
-                'rate': psat_data_models.PsatRateLog,
-                'solve': psat_data_models.PsatSolveLog,
+                'like': psat_log_models.PsatLikeLog,
+                'rate': psat_log_models.PsatRateLog,
+                'solve': psat_log_models.PsatSolveLog,
             }
             model = model_dict[self.view_type]
             data_id = data_instance.id

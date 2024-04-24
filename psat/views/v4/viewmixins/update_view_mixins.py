@@ -1,7 +1,7 @@
 from . import base_mixins
 
 from psat.models import data_models
-from dashboard.models import psat_data_models as log_models
+from dashboard.models import psat_log_models as log_models
 
 
 class BaseMixIn(

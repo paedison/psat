@@ -2,7 +2,7 @@ from django.db import transaction
 from django.db.models import F
 from django.urls import reverse_lazy
 
-from dashboard.models.psat_data_models import PsatOpenLog
+from dashboard.models.psat_log_models import PsatOpenLog
 from psat.models import Open, Memo
 from psat.models import Tag as PsatTag
 from reference.models import PsatProblem
