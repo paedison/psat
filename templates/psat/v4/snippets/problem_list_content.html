@@ -1,0 +1,53 @@
+{% load slippers %}
+
+{% #responsive_table %}
+    <tbody>
+        {% if page_obj %}
+            {% for problem in page_obj %}
+                {% ifchanged %}
+                    <tr class="table-warning">
+                        <td class="text-center text-nowrap text-primary p-2">
+                            <h2 class="fs-6 fw-bold m-0">
+                                {% if info.view_type == 'problem' %}
+                                    <a href="" hx-boost="true" hx-push-url="false" hx-target="#problemCard"
+                                       hx-get="{{ base_url }}year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
+                                        {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                                    </a>
+                                {% else %}
+                                    {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                                {% endif %}
+                            </h2>
+                        </td>
+                    </tr>
+                {% endifchanged %}
+                <tr>
+                    <td class="text-nowrap py-2 px-0">
+                        {% with problem_id=problem.id %}
+                            <div class="align-middle d-inline-block fs-6 pe-1">
+                                {% include 'psat/v4/snippets/icon_container.html' %}
+                            </div>
+                            <div class="align-middle d-inline-block fs-6" hx-push-url="true">
+                                <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1">
+                                    {% include 'psat/v4/snippets/problem_list_reference.html' %}
+                                </div>
+                                <div class="d-block d-md-inline-block">
+                                    {% include 'psat/v4/snippets/problem_list_question.html' %}
+                                </div>
+                            </div>
+                        {% endwith %}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+            </tr>
+        {% endif %}
+    </tbody>
+{% /responsive_table %}
+
+{% with target_id='problemCard' %}
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'psat/v4/snippets/pagination.html' %}
+    {% endif %}
+{% endwith %}

@@ -95,7 +95,7 @@ class ListView(
 
 class ProblemListView(ListView):
     """ Represent PSAT base list view. """
-    template_name = 'psat/v4/snippets/problem_container.html'
+    template_name = 'psat/v4/snippets/problem_list_card.html'
 
     def get_template_names(self):
         return self.template_name

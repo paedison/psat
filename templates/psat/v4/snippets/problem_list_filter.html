@@ -1,0 +1,30 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+<div class="accordion-item">
+    <h2 class="accordion-header">
+        <button class="accordion-button fw-bold" type="button"
+                data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                aria-expanded="true" aria-controls="collapseOne">
+            문제 필터
+        </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show"
+         data-bs-parent="#problemFilter">
+        <div class="accordion-body pb-2">
+            <form class="row row-cols-auto g-2 align-items-center justify-content-center"
+                  method="get" hx-trigger="change" hx-target="#problemCard"
+                  hx-get="{{ base_url }}" hx-push-url="false">
+                <a type="button" class="btn btn-outline-primary m-1"
+                   href="{{ base_url }}" hx-boost="true">
+                    전체 문제
+                </a>
+                {{ form|crispy }}
+                <input id="id_data" type="text" name="keyword"
+                       value="{{ keyword }}" hidden
+                       placeholder="{% trans 'Enter search keyword' %}"
+                       title="{% trans 'Enter search keyword' %}">
+            </form>
+        </div>
+    </div>
+</div>

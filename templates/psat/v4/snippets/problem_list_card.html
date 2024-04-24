@@ -1,0 +1,14 @@
+{% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
+{% load crispy_forms_tags %}
+
+<div hx-swap-oob="innerHTML:#collectionItemForm"></div>
+<div hx-swap-oob="innerHTML:#problemCardHeader">{{ sub_title|safe }}</div>
+
+<div hx-swap-oob="innerHTML:#problemFilter">
+    {% include 'psat/v4/snippets/problem_list_filter.html' %}
+</div>
+
+{% include 'psat/v4/snippets/problem_list_content.html' %}

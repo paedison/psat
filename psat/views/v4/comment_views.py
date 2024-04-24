@@ -10,7 +10,7 @@ class ListView(
     problem_views.ListView,
 ):
     """View for loading comment container."""
-    template_name = 'psat/v4/snippets/comment_list.html#comment_content'
+    template_name = 'psat/v4/snippets/comment_list_card.html'
 
     def get_template_names(self):
         return self.template_name

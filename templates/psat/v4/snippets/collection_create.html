@@ -1,0 +1,13 @@
+{% load i18n %}
+
+<form class="row" hx-post="{% url 'psat:collection_create' %}"
+      hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s">
+    <div class="input-group">
+        <input type="text" class="form-control" id="id_title" name="title"
+               aria-label="Collection Title"
+               placeholder="{% trans 'Input new collection name' %}">
+        <button class="btn btn-outline-secondary" type="submit">
+            {% trans 'Submit' %}
+        </button>
+    </div>
+</form>

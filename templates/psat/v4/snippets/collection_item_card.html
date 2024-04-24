@@ -1,7 +1,4 @@
 {% load i18n %}
-{% load slippers %}
-{% load partials %}
-{% load crispy_forms_tags %}
 
 <div hx-swap-oob="innerHTML:#problemFilter"></div>
 <div hx-swap-oob="innerHTML:#problemContent"></div>
@@ -46,5 +43,7 @@
         </div>
     {% endfor %}
 {% else %}
-    <div class="text-center text-nowrap fs-6 py-2">자료가 없습니다.</div>
+    <div class="text-center text-nowrap fs-6 py-2">
+        {% trans 'No collection items available' %}
+    </div>
 {% endif %}

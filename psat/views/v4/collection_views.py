@@ -12,7 +12,7 @@ class ListView(
     vanilla.TemplateView,
 ):
     """View for loading collection card."""
-    template_name = 'psat/v4/snippets/collection_list.html#list_content'
+    template_name = 'psat/v4/snippets/collection_list.html'
 
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
@@ -34,7 +34,7 @@ class ItemView(
     collection_view_mixins.BaseMixIn,
     problem_views.ListView
 ):
-    template_name = 'psat/v4/snippets/collection_item.html'
+    template_name = 'psat/v4/snippets/collection_item_card.html'
 
     def get_template_names(self):
         return self.template_name
@@ -104,7 +104,7 @@ class CreateView(
     collection_view_mixins.BaseMixIn,
     vanilla.CreateView,
 ):
-    template_name = 'psat/v4/snippets/collection_list.html#create_collection'
+    template_name = 'psat/v4/snippets/collection_create.html'
 
     def get_success_url(self):
         return utils.get_url('collection_list')

@@ -1,126 +1,54 @@
-{% load partials %}
 {% load i18n %}
 
-<button id="toggleCollectionBtn" class="btn btn-primary px-2">
-    <i class="fa-solid fa-folder-plus fa-fw"></i>
-</button>
-
-<div id="floatingCollection" hx-swap="innerHTML swap:0.25s" class="card htmx-fade-in htmx-fade-out">
-    <div class="card-body">
-        <div class="row align-items-center">
-            <div class="col-12">
-                <h5 id="floatingCollectionIndicator" class="card-title d-flex" style="cursor: pointer;">
-                    <i class="fa-solid fa-folder-plus me-2"></i>
-                    컬렉션 리스트
-                    <div class="ms-auto">
-                        <i class="fa-solid fa-chevron-right"></i>
+{% if collections %}
+    {% for collection in collections %}
+        <div id="collectionList{{ collection.id }}" class="list-group-item list-group-item-action p-0">
+            <input type="hidden" name="collection" value="{{ collection.id }}"/>
+            <div class="container">
+                <div class="row">
+                    <div class="col-1 p-0">
+                        <div class="d-flex h-100 align-items-center justify-content-center bg-warning-subtle">
+                            <div class="fw-bold py-2">{{ collection.order }}</div>
+                        </div>
                     </div>
-                </h5>
-                <div id="collectionList" class="htmx-fade-in htmx-fade-out"
-                     hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s" hx-trigger="load"
-                     hx-get="{% url 'psat:collection_list' %}">
-                    <form id="collectionListForm" class="sortable list-group htmx-fade-out htmx-fade-in"
-                          hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s"
-                          hx-push-url="false" hx-trigger="end"
-                          hx-post="{% url 'psat:collection_list' %}">
-                    </form>
+                    <div class="col-9 px-1">
+                        <div class="d-flex h-100 align-items-center justify-content-start">
+                            <a class="text-black" href=""
+                               hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s"
+                               hx-get="{% url 'psat:collection_item' %}?collection={{ collection.id }}">
+                                {{ collection.title }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-2 text-nowrap">
+                        <div class="d-flex h-100 align-items-center justify-content-end">
+                            <a class="me-1 htmx-fade-in htmx-fade-out" href=""
+                               hx-get="{% url 'psat:collection_modal_update' %}?collection={{ collection.id }}"
+                               hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s"
+                               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                <i class="fa-solid fa-pen text-success"></i>
+                            </a>
+                            <a href=""
+                               hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s"
+                               hx-confirm="{% trans 'Are you sure you wish to delete the collection?' %}"
+                               hx-post="{% url 'psat:collection_delete' collection.id %}">
+                                <i class="fa-solid fa-square-xmark text-danger fs-5"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    {% endfor %}
+{% else %}
+    <div class="list-group-item list-group-item-action">
+        {% trans 'No collections available' %}
     </div>
+{% endif %}
+<div class="list-group-item list-group-item-action p-2 htmx-fade-in htmx-fade-out"
+     hx-target="this" hx-swap="innerHTML swap:0.25s" hx-push-url="false">
+    <a type="button" class="text-secondary" href=""
+       hx-get="{% url 'psat:collection_create' %}?problem_id={{ problem_id }}">
+        <i class="fa-solid fa-plus"></i> {% trans 'Add new collection' %}
+    </a>
 </div>
-
-<script>
-    window.onload = function() {
-        let sortables = document.querySelectorAll(".sortable");
-        for (let i = 0; i < sortables.length; i++) {
-            let sortable = sortables[i];
-            let sortableInstance = new Sortable(sortable, {
-                animation: 150,
-                ghostClass: 'blue-background-class',
-            });
-        }
-    }
-    $(document).ready(function() {
-        $('#toggleCollectionBtn').click(function() {
-            $(this).animate({right: '-=200'}, 250, function() {
-                $(this).hide();
-                $('#floatingCollection').addClass('show-menu');
-            });
-        });
-        $('#floatingCollectionIndicator').click(function() {
-            $('#floatingCollection').removeClass('show-menu');
-            $('#toggleCollectionBtn').show().animate({right: '+=200'}, 300);
-        });
-    });
-</script>
-
-{% partialdef list_content %}
-    {% if collections %}
-        {% for collection in collections %}
-            <div id="collectionList{{ collection.id }}" class="list-group-item list-group-item-action p-0">
-                <input type="hidden" name="collection" value="{{ collection.id }}"/>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-1 p-0">
-                            <div class="d-flex h-100 align-items-center justify-content-center bg-warning-subtle">
-                                <div class="fw-bold py-2">{{ collection.order }}</div>
-                            </div>
-                        </div>
-                        <div class="col-9 px-1">
-                            <div class="d-flex h-100 align-items-center justify-content-start">
-                                <a class="text-black" href=""
-{#                                       hx-swap="none"#}
-                                   hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s"
-                                   hx-get="{% url 'psat:collection_item' %}?collection={{ collection.id }}">
-                                    {{ collection.title }}
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-2 text-nowrap">
-                            <div class="d-flex h-100 align-items-center justify-content-end">
-                                <a class="me-1 htmx-fade-in htmx-fade-out" href=""
-                                   hx-get="{% url 'psat:collection_modal_update' %}?collection={{ collection.id }}"
-                                   hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s"
-                                   data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                    <i class="fa-solid fa-pen text-success"></i>
-                                </a>
-                                <a href=""
-                                   hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s"
-                                   hx-confirm="{% trans 'Are you sure you wish to delete the collection?' %}"
-                                   hx-post="{% url 'psat:collection_delete' collection.id %}">
-                                    <i class="fa-solid fa-square-xmark text-danger fs-5"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <div class="list-group-item list-group-item-action">
-            추가된 컬렉션이 없습니다.
-        </div>
-    {% endif %}
-    <div class="list-group-item list-group-item-action p-2"
-         hx-target="this" hx-swap="innerHTML swap:0.25s" hx-push-url="false">
-        <a type="button" class="text-secondary" href=""
-           hx-get="{% url 'psat:collection_create' %}?problem_id={{ problem_id }}">
-            <i class="fa-solid fa-plus"></i> 새 컬렉션 만들기
-        </a>
-    </div>
-{% endpartialdef list_content %}
-
-{% partialdef create_collection %}
-    <form class="row" hx-post="{% url 'psat:collection_create' %}"
-          hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s">
-        <div class="input-group">
-            <input type="text" class="form-control" id="id_title" name="title"
-                   aria-label="Collection Title"
-                   placeholder="컬렉션 이름을 입력하세요">
-            <button class="btn btn-outline-secondary" type="submit">
-                입력
-            </button>
-        </div>
-    </form>
-{% endpartialdef create_collection %}

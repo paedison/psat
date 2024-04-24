@@ -10,6 +10,10 @@ body {
     transform: rotate(180deg);
 }
 
+.header-nav .profile {
+  z-index: 1000;
+}
+
 .card-title, .alert-heading {
     font-family: "Poppins", "Noto Sans KR", sans-serif;
 }
@@ -371,29 +375,30 @@ div.django-ckeditor-widget {
     position: fixed;
     top: 80px;
     right: 70px;
-    z-index: 1000;
+    z-index: 10;
 }
 
 #toggleCommentBtn {
     position: fixed;
     top: 80px;
     right: 20px;
-    z-index: 1000;
+    z-index: 10;
 }
 
 #toggleCollectionBtn {
     position: fixed;
     top: 130px;
     right: 20px;
-    z-index: 1000;
+    z-index: 10;
 }
 #floatingCollection {
     position: fixed;
-    top: 140px;
-    right: -400px;
-    width: 350px;
+    top: 130px;
+    right: -300px;
+    width: 300px;
+    padding: 0;
     transition: right 0.25s ease-in-out;
-    z-index: 999;
+    z-index: 11;
 }
 #floatingCollection.show-menu {
     right: 20px;

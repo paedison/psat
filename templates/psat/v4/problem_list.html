@@ -1,4 +1,5 @@
 {% extends 'list.html' %}
+{% load i18n %}
 {% load partials %}
 
 {% block main %}
@@ -26,38 +27,114 @@
         <section class="section">
             <div class="row">
                 <div class="col-12" aria-label="문제 목록">
-                    <div id="problemCard" class="card htmx-fade-in htmx-fade-out"
-                         hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
-                        {% include 'psat/v4/snippets/problem_container.html' %}
-                    </div>
+                    {% partial problem_card %}
                 </div>
-
-                {% if user.is_admin %}
-                    <div class="col-12" aria-label="문제 목록">
-<a id="toggleProblemBtn" class="btn btn-warning px-2"
-   hx-target="#problemCard" hx-swap="innerHTML swap:0.25s"
-   hx-get="{% url 'psat:list' %}">
-    <i class="fa-solid fa-layer-group fa-fw text-white"></i>
-</a>
-<script>
-    $(document).ready(function() {
-        $('#toggleProblemBtn').click(function() {
-            $('#floatingCollection').removeClass('show-menu');
-            $('#toggleCollectionBtn').show().animate({right: '20'}, 300);
-        });
-    });
-</script>
-                    </div>
-
-                    <div class="col-12" aria-label="질문 리스트">
-                        {% include 'psat/v4/snippets/comment_list.html' %}
-                    </div>
-
-                    <div class="col-12" aria-label="문제 컬렉션">
-                        {% include 'psat/v4/snippets/collection_list.html' %}
-                    </div>
-                {% endif %}
+                    {% partial list_buttons %}
             </div>
         </section>
     {% endpartialdef list_main %}
 {% endblock main %}
+
+{% partialdef problem_card %}
+    <div id="problemCard" class="card htmx-fade-in htmx-fade-out"
+         hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
+        <div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
+            {{ sub_title|safe }}
+        </div>
+
+        <div class="card-body">
+            <div id="problemFilter" class="accordion htmx-fade-in htmx-fade-out">
+                {% include 'psat/v4/snippets/problem_list_filter.html' %}
+            </div>
+            <div id="problemContent" class="htmx-fade-in htmx-fade-out">
+                {% include 'psat/v4/snippets/problem_list_content.html' %}
+            </div>
+            <form id="collectionItemForm" class="sortable htmx-fade-out htmx-fade-in mt-3"
+                  hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s" hx-trigger="end"
+                  hx-post="{% url 'psat:collection_item' %}">
+            </form>
+        </div>
+    </div>
+{% endpartialdef problem_card %}
+
+{% partialdef list_buttons %}
+    <div aria-label="버튼 모음">
+        <a id="toggleProblemBtn" class="btn btn-success px-2"
+           data-bs-toggle="tooltip" data-bs-title="{% trans 'Problem List' %}"
+           hx-target="#problemContent" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'psat:list' %}">
+            <i class="fa-solid fa-layer-group fa-fw text-white"></i>
+        </a>
+
+        <a id="toggleCommentBtn" class="btn btn-success px-2"
+           data-bs-toggle="tooltip" data-bs-title="{% trans 'Comment List' %}"
+           hx-target="#problemContent" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'psat:comment_list' %}">
+            <i class="fa-solid fa-note-sticky fa-fw text-white"></i>
+        </a>
+
+        <button id="toggleCollectionBtn" class="btn btn-primary px-2"
+                data-bs-toggle="tooltip" data-bs-title="{% trans 'Collection List' %}">
+            <i class="fa-solid fa-folder-plus fa-fw"></i>
+        </button>
+    </div>
+
+    <div id="floatingCollection" hx-swap="innerHTML swap:0.25s" class="card htmx-fade-in htmx-fade-out">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <h5 id="floatingCollectionIndicator" class="card-title d-flex" style="cursor: pointer;">
+                        <i class="fa-solid fa-folder-plus me-2"></i>
+                        {% trans 'Collection List' %}
+                        <div class="ms-auto">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </h5>
+                    {% if user.is_authenticated %}
+                        <div id="collectionList" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s" hx-trigger="load"
+                             hx-get="{% url 'psat:collection_list' %}">
+                            <form id="collectionListForm" class="sortable list-group htmx-fade-out htmx-fade-in"
+                                  hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s"
+                                  hx-push-url="false" hx-trigger="end"
+                                  hx-post="{% url 'psat:collection_list' %}">
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <a class="btn btn-outline-secondary"
+                               href="javascript:RedirectUrl('{% url 'account_login' %}')">
+                                로그인이 필요합니다.
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#toggleProblemBtn, #toggleCommentBtn, #floatingCollectionIndicator').click(function() {
+                $('#floatingCollection').removeClass('show-menu');
+                $('#toggleCollectionBtn').show().animate({right: '20'}, 300);
+            });
+            $('#toggleCollectionBtn').click(function() {
+                $('#floatingCollection').addClass('show-menu');
+                $(this).hide();
+            });
+        });
+        window.onload = function() {
+            let sortables = document.querySelectorAll(".sortable");
+            for (let i = 0; i < sortables.length; i++) {
+                let sortable = sortables[i];
+                let sortableInstance = new Sortable(sortable, {
+                    animation: 150,
+                    ghostClass: 'blue-background-class',
+                });
+            }
+        }
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        {#const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))#}
+    </script>
+{% endpartialdef list_buttons %}
