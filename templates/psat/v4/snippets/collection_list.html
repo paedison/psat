@@ -14,7 +14,7 @@
                     <div class="col-9 px-1">
                         <div class="d-flex h-100 align-items-center justify-content-start">
                             <a class="text-black" href=""
-                               hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s"
+                               hx-target="#problemCard" hx-swap="innerHTML swap:0.25s"
                                hx-get="{% url 'psat:collection_item' %}?collection={{ collection.id }}">
                                 {{ collection.title }}
                             </a>

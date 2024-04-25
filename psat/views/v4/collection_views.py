@@ -1,9 +1,9 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
+from django.urls import reverse_lazy
 
-from psat import utils
-from .viewmixins import collection_view_mixins
 from . import problem_views
+from .viewmixins import collection_view_mixins
 
 
 class ListView(
@@ -107,7 +107,7 @@ class CreateView(
     template_name = 'psat/v4/snippets/collection_create.html'
 
     def get_success_url(self):
-        return utils.get_url('collection_list')
+        return reverse_lazy('psat:collection_list')
 
     def form_valid(self, form):
         form = form.save(commit=False)
@@ -125,7 +125,7 @@ class CreateInModalView(
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
         icon_id = self.request.POST.get('icon_id')
-        base_url = utils.get_url('collection_modal_item_add')
+        base_url = reverse_lazy('psat:collection_modal_item_add')
         return f'{base_url}problem_id={problem_id}&icon_id={icon_id}'
 
     def form_valid(self, form):
@@ -146,7 +146,7 @@ class UpdateView(
     template_name = 'psat/v4/snippets/collection_list.html#update_collection'
 
     def get_success_url(self):
-        return utils.get_url('collection_list')
+        return reverse_lazy('psat:collection_list')
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(collection_id=self.object.id, **kwargs)
@@ -158,7 +158,7 @@ class DeleteView(
     vanilla.DeleteView,
 ):
     def get_success_url(self):
-        return utils.get_url('collection_list')
+        return reverse_lazy('psat:collection_list')
 
     def post(self, request, *args, **kwargs):
         res = super().post(request, *args, **kwargs)

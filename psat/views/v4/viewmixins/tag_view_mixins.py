@@ -4,7 +4,7 @@ from taggit.models import Tag
 from taggit_templatetags2.templatetags.taggit_templatetags2_tags import get_weight_fun
 
 from psat import forms as psat_forms
-from psat.models import data_models
+from psat.models import psat_data_models
 from . import base_mixins
 
 
@@ -14,7 +14,7 @@ class BaseMixIn(
     base_mixins.DefaultMethods,
 ):
     """Setting mixin for Tag views."""
-    model = data_models.Tag
+    model = psat_data_models.Tag
     form_class = psat_forms.TagForm
     context_object_name = 'my_tag'
     template_name = 'psat/v4/snippets/tag_container.html'

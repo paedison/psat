@@ -3,14 +3,13 @@
 {% load taggit_templatetags2_tags %}
 {% load partials %}
 
-<span id="psatTag{{ problem.id }}" class="htmx-fade-in htmx-fade-out"
-      hx-swap-oob="outerHTML:#psatTag{{ problem.id }}">
+<div hx-swap-oob="innerHTML:#psatTag{{ problem.id }}">
     {% if my_tag %}
         {{ icon_tag.true|safe }}
     {% else %}
         {{ icon_tag.false|safe }}
     {% endif %}
-</span>
+</div>
 
 <hr class="border-secondary mt-0">
 {% if my_tag %}

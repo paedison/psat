@@ -27,7 +27,10 @@
         <section class="section">
             <div class="row">
                 <div class="col-12" aria-label="문제 목록">
-                    {% partial problem_card %}
+                    <div id="problemCard" class="card htmx-fade-in"
+                         hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
+                        {% include 'psat/v4/snippets/problem_list_card.html' %}
+                    </div>
                 </div>
                     {% partial list_buttons %}
             </div>
@@ -35,40 +38,17 @@
     {% endpartialdef list_main %}
 {% endblock main %}
 
-{% partialdef problem_card %}
-    <div id="problemCard" class="card htmx-fade-in htmx-fade-out"
-         hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
-        <div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
-            {{ sub_title|safe }}
-        </div>
-
-        <div class="card-body">
-            <div id="problemFilter" class="accordion htmx-fade-in htmx-fade-out">
-                {% include 'psat/v4/snippets/problem_list_filter.html' %}
-            </div>
-            <div id="problemContent" class="htmx-fade-in htmx-fade-out">
-                {% include 'psat/v4/snippets/problem_list_content.html' %}
-            </div>
-            <form id="collectionItemForm" class="sortable htmx-fade-out htmx-fade-in mt-3"
-                  hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s" hx-trigger="end"
-                  hx-post="{% url 'psat:collection_item' %}">
-            </form>
-        </div>
-    </div>
-{% endpartialdef problem_card %}
-
 {% partialdef list_buttons %}
-    <div aria-label="버튼 모음">
+    <div aria-label="버튼 모음" hx-target="#problemCard"
+         hx-swap="innerHTML swap:0.25s show:window:top">
         <a id="toggleProblemBtn" class="btn btn-success px-2"
            data-bs-toggle="tooltip" data-bs-title="{% trans 'Problem List' %}"
-           hx-target="#problemContent" hx-swap="innerHTML swap:0.25s"
            hx-get="{% url 'psat:list' %}">
             <i class="fa-solid fa-layer-group fa-fw text-white"></i>
         </a>
 
         <a id="toggleCommentBtn" class="btn btn-success px-2"
            data-bs-toggle="tooltip" data-bs-title="{% trans 'Comment List' %}"
-           hx-target="#problemContent" hx-swap="innerHTML swap:0.25s"
            hx-get="{% url 'psat:comment_list' %}">
             <i class="fa-solid fa-note-sticky fa-fw text-white"></i>
         </a>
@@ -79,7 +59,8 @@
         </button>
     </div>
 
-    <div id="floatingCollection" hx-swap="innerHTML swap:0.25s" class="card htmx-fade-in htmx-fade-out">
+    <div id="floatingCollection" class="card htmx-fade-in htmx-fade-out"
+         hx-swap="innerHTML swap:0.25s show:window:top">
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-12">
@@ -112,27 +93,4 @@
             </div>
         </div>
     </div>
-
-    <script>
-        $(document).ready(function() {
-            $('#toggleProblemBtn, #toggleCommentBtn, #floatingCollectionIndicator').click(function() {
-                $('#floatingCollection').removeClass('show-menu');
-                $('#toggleCollectionBtn').show().animate({right: '20'}, 300);
-            });
-            $('#toggleCollectionBtn').click(function() {
-                $('#floatingCollection').addClass('show-menu');
-                $(this).hide();
-            });
-        });
-        window.onload = function() {
-            let sortables = document.querySelectorAll(".sortable");
-            for (let i = 0; i < sortables.length; i++) {
-                let sortable = sortables[i];
-                let sortableInstance = new Sortable(sortable, {
-                    animation: 150,
-                    ghostClass: 'blue-background-class',
-                });
-            }
-        }
-    </script>
 {% endpartialdef list_buttons %}

@@ -3,7 +3,8 @@ from django_htmx.middleware import HtmxDetails
 
 from common.constants import icon_set
 from dashboard.models import psat_log_models
-from psat import models, utils
+from psat import utils
+from psat.models import psat_data_models
 from reference.models import psat_models
 
 
@@ -16,32 +17,31 @@ class ConstantIconSet(icon_set.ConstantIconSet):
 
 
 class DefaultModels:
+    request: HtmxHttpRequest
+    kwargs: dict
+
     menu = 'psat'
 
-    # reference.models
+    # reference.models.psat_models
     psat_model = psat_models.Psat
     problem_model = psat_models.PsatProblem
 
-    # psat.models
-    open_model = models.Open
-    like_model = models.Like
-    rate_model = models.Rate
-    solve_model = models.Solve
-    memo_model = models.Memo
-    tag_model = models.Tag
-    collection_model = models.Collection
-    item_model = models.CollectionItem
-    comment_model = models.Comment
+    # psat.models.psat_data_models
+    open_model = psat_data_models.Open
+    like_model = psat_data_models.Like
+    rate_model = psat_data_models.Rate
+    solve_model = psat_data_models.Solve
+    memo_model = psat_data_models.Memo
+    tag_model = psat_data_models.Tag
+    collection_model = psat_data_models.Collection
+    item_model = psat_data_models.CollectionItem
+    comment_model = psat_data_models.Comment
 
-    # dashboard.models
+    # dashboard.models.psat_log_models
     open_log_model = psat_log_models.PsatOpenLog
     like_log_model = psat_log_models.PsatLikeLog
     rate_log_model = psat_log_models.PsatRateLog
     solve_log_model = psat_log_models.PsatSolveLog
-
-    request: HtmxHttpRequest
-    kwargs: dict
-    object: any
 
 
 class DefaultMethods:

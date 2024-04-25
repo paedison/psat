@@ -48,7 +48,8 @@
                 <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <form class="row" hx-post="{% url 'psat:collection_update' collection.id %}" hx-swap="none">
+                <form class="row" hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s"
+                      hx-post="{% url 'psat:collection_update' collection.id %}">
                     <div class="input-group">
                         <input type="text" class="form-control" id="id_title" name="title"
                                aria-label="Collection Title" value="{{ collection.title }}"
@@ -64,17 +65,15 @@
 {% endpartialdef update_collection %}
 
 {% partialdef create_collection %}
-    <form class="row">
+    <form class="row" hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s"
+          hx-post="{% url 'psat:collection_create_in_modal' %}">
         <input type="hidden" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID"/>
         <input type="hidden" name="icon_id" value="psatCollection{{ problem_id }}" aria-label="Problem ID"/>
         <div class="input-group col-12 px-0">
             <input type="text" class="form-control" id="id_title" name="title"
                    aria-label="Collection Title"
                    placeholder="컬렉션 이름을 입력하세요">
-            <button class="btn btn-outline-secondary" type="submit"
-                    hx-post="{% url 'psat:collection_create_in_modal' %}"
-                    hx-target="#modalContainer"
-                    hx-swap="innerHTML swap:0.25s">
+            <button class="btn btn-outline-secondary" type="submit">
                 입력
             </button>
         </div>

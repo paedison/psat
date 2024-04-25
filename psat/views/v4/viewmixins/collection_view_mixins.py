@@ -2,7 +2,7 @@ from django.db import models
 
 from psat import forms as psat_forms
 from psat import utils
-from psat.models import data_models
+from psat.models import psat_data_models
 from . import base_mixins
 
 
@@ -13,7 +13,7 @@ class BaseMixIn(
 ):
     """Setting mixin for Collection views."""
 
-    model = data_models.Collection
+    model = psat_data_models.Collection
     form_class = psat_forms.CollectionForm
 
     def get_collection_pk(self):

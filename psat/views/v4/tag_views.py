@@ -1,6 +1,7 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
 from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 
 from psat import utils
 from .viewmixins import tag_view_mixins
@@ -40,7 +41,7 @@ class CreateView(
 
     def get_success_url(self):
         problem_id = self.kwargs.get('problem_id')
-        return utils.get_url('tag_container', problem_id)
+        return reverse_lazy('psat:tag_container', args=[problem_id])
 
     def form_valid(self, form):
         obj = form.save(commit=False)
@@ -70,7 +71,7 @@ class AddView(
     template_name = 'psat/v4/snippets/tag_container.html'
 
     def get_success_url(self):
-        return utils.get_url('tag_container', self.object.problem_id)
+        return reverse_lazy('psat:tag_container', args=[self.object.problem_id])
 
     def form_valid(self, form):
         self.add_tags_to_object(self.object)
@@ -86,7 +87,7 @@ class DeleteView(
 
     def post(self, request, *args, **kwargs):
         obj = self.get_object()
-        success_url = utils.get_url('tag_container', obj.problem_id)
+        success_url = reverse_lazy('psat:tag_container', args=[obj.problem_id])
         tag_name = self.kwargs.get('tag_name')
         obj.tags.remove(tag_name)
         if not obj.tags.all():

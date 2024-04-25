@@ -2,14 +2,13 @@
 {% load static %}
 {% load partials %}
 
-<span id="psatMemo{{ problem.id }}" class="htmx-fade-in htmx-fade-out"
-      hx-swap-oob="outerHTML:#psatMemo{{ problem.id }}">
+<div hx-swap-oob="innerHTML:#psatMemo{{ problem.id }}">
     {% if my_memo %}
         {{ icon_memo.true|safe }}
     {% else %}
         {{ icon_memo.false|safe }}
     {% endif %}
-</span>
+</div>
 
 <hr class="border-secondary mt-0">
 {% if my_memo %}

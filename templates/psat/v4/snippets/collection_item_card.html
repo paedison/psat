@@ -1,14 +1,12 @@
 {% load i18n %}
+{% load partials %}
 
-<div hx-swap-oob="innerHTML:#problemFilter"></div>
-<div hx-swap-oob="innerHTML:#problemContent"></div>
-
-<div hx-swap-oob="innerHTML:#problemCardHeader">
+<div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
     컬렉션 #{{ target_collection.order }} -
     {{ target_collection.title }}
     <a class="text-decoration-none ms-2" href=""
        hx-indicator="#collectionItemIndicator"
-       hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s"
+       hx-target="#problemCard" hx-swap="innerHTML swap:0.25s"
        hx-get="{% url 'psat:collection_item' %}?collection={{ target_collection.id }}">
         <span class="badge rounded-pill text-bg-warning">새로고침</span>
     </a>
@@ -18,32 +16,39 @@
     </div>
 </div>
 
-{% if items %}
-    <div hx-target="#collectionItemForm" hx-swap="innerHTML swap:0.25s" hx-trigger="end"
-         hx-include="#collectionItemForm"
-         hx-post="{% url 'psat:collection_item' %}"></div>
-    <input type="hidden" name="collection" value="{{ items.0.collection_id }}"/>
-    {% for item in items %}
-        <div class="d-flex fs-6 my-3" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-            <input type="hidden" name="item" value="{{ item.id }}"/>
-            <div class="fw-bold me-2">{{ item.order }}.</div>
-            <div>
-                {% with problem_id=item.problem_id problem=item %}
-                    <div class="align-middle d-inline-block fs-6 pe-1">
-                        {% include 'psat/v4/snippets/icon_container.html' %}
-                    </div>
-                    <div class="d-inline-block pe-1" hx-push-url="true">
-                        {% include 'psat/v4/snippets/problem_list_reference.html' %}
-                    </div>
-                    <div class="d-inline-block" hx-push-url="true">
-                        {% include 'psat/v4/snippets/problem_list_question.html' %}
-                    </div>
-                {% endwith %}
+<div class="card-body">
+    <form id="collectionItemForm" class="sortable htmx-fade-out htmx-fade-in mt-3"
+          hx-target="#problemCard" hx-swap="innerHTML swap:0.25s" hx-trigger="end"
+          hx-post="{% url 'psat:collection_item' %}">
+        {% partial item_contents %}
+    </form>
+</div>
+
+{% partialdef item_contents %}
+    {% if items %}
+        <input type="hidden" name="collection" value="{{ items.0.collection_id }}"/>
+        {% for item in items %}
+            <div class="d-flex fs-6 my-3" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <input type="hidden" name="item" value="{{ item.id }}"/>
+                <div class="fw-bold me-2">{{ item.order }}.</div>
+                <div>
+                    {% with problem_id=item.problem_id problem=item %}
+                        <div class="align-middle d-inline-block fs-6 pe-1">
+                            {% include 'psat/v4/snippets/icon_container.html' %}
+                        </div>
+                        <div class="d-inline-block pe-1" hx-push-url="true">
+                            {% include 'psat/v4/snippets/problem_list_reference.html' %}
+                        </div>
+                        <div class="d-inline-block" hx-push-url="true">
+                            {% include 'psat/v4/snippets/problem_list_question.html' %}
+                        </div>
+                    {% endwith %}
+                </div>
             </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center text-nowrap fs-6 py-2">
+            {% trans 'No collection items available' %}
         </div>
-    {% endfor %}
-{% else %}
-    <div class="text-center text-nowrap fs-6 py-2">
-        {% trans 'No collection items available' %}
-    </div>
-{% endif %}
+    {% endif %}
+{% endpartialdef item_contents %}

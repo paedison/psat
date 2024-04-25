@@ -1,8 +1,8 @@
-import vanilla
 import django.contrib.auth.mixins as auth_mixins
+import vanilla
+from django.urls import reverse_lazy
 
 from . import viewsmixin
-from dashboard import utils
 
 
 class MainView(
@@ -41,10 +41,10 @@ class MainView(
         rate_page_obj, rate_page_range = self.get_paginator_info(rate_logs)
         solve_page_obj, solve_page_range = self.get_paginator_info(solve_logs)
 
-        open_base_url = utils.get_url('list', 'open')
-        like_base_url = utils.get_url('list', 'like')
-        rate_base_url = utils.get_url('list', 'rate')
-        solve_base_url = utils.get_url('list', 'solve')
+        open_base_url = reverse_lazy('dashboard:list', args=['open'])
+        like_base_url = reverse_lazy('dashboard:list', args=['like'])
+        rate_base_url = reverse_lazy('dashboard:list', args=['rate'])
+        solve_base_url = reverse_lazy('dashboard:list', args=['solve'])
         url_options = self.get_url_options('', unique)
 
         return super().get_context_data(
@@ -70,19 +70,19 @@ class MainView(
             # page objectives
             open_page_obj=open_page_obj,
             open_page_range=open_page_range,
-            open_pagination_url=f'{open_base_url}{url_options}',
+            open_pagination_url=f'{open_base_url}?{url_options}',
 
             like_page_obj=like_page_obj,
             like_page_range=like_page_range,
-            like_pagination_url=f'{like_base_url}{url_options}',
+            like_pagination_url=f'{like_base_url}?{url_options}',
 
             rate_page_obj=rate_page_obj,
             rate_page_range=rate_page_range,
-            rate_pagination_url=f'{rate_base_url}{url_options}',
+            rate_pagination_url=f'{rate_base_url}?{url_options}',
 
             solve_page_obj=solve_page_obj,
             solve_page_range=solve_page_range,
-            solve_pagination_url=f'{solve_base_url}{url_options}',
+            solve_pagination_url=f'{solve_base_url}?{url_options}',
         )
 
 
@@ -103,7 +103,7 @@ class ListView(
         log_dict = self.get_log_dict(user_id, unique)
         target_log = log_dict[view_type]
 
-        base_url = utils.get_url('list', view_type)
+        base_url = reverse_lazy('dashboard:list', args=[view_type])
         url_options = self.get_url_options(page_number, unique)
         page_obj, page_range = self.get_paginator_info(target_log)
         target_id = f'{view_type}Content'
@@ -121,7 +121,7 @@ class ListView(
             # urls
             base_url=base_url,
             url_options=url_options,
-            pagination_url=f'{base_url}{url_options}',
+            pagination_url=f'{base_url}?{url_options}',
 
             # page objectives
             page_obj=page_obj,

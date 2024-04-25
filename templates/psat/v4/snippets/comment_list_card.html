@@ -1,17 +1,11 @@
-{% load static %}
 {% load i18n %}
-{% load slippers %}
 {% load partials %}
-{% load psat_filter %}
-{% load crispy_forms_tags %}
 
-<div hx-swap-oob="innerHTML:#problemFilter"></div>
-<div hx-swap-oob="innerHTML:#collectionItemForm"></div>
-
-<div hx-swap-oob="innerHTML:#problemCardHeader">
+<div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
     질문 리스트
     <a class="text-decoration-none ms-2" href=""
-       hx-indicator="#commentIndicator" hx-target="#commentCardBody"
+       hx-indicator="#commentIndicator"
+       hx-target="#problemCard" hx-swap="innerHTML swap:0.25s"
        hx-get="{% url 'psat:comment_list' %}">
         <span class="badge rounded-pill text-bg-warning">새로고침</span>
     </a>
@@ -21,55 +15,59 @@
     </div>
 </div>
 
-{% #responsive_table %}
-    <tbody hx-target="#main">
-        {% if page_obj %}
-            {% for comment in page_obj %}
-                <tr>
-                    {% with problem_id=comment.problem_id problem=comment %}
-                        <td class="text-nowrap p-2 col-1 fs-6">
-                            <div class="align-middle d-inline-block fs-6 pe-1">
-                                {% include 'psat/v4/snippets/icon_container.html' %}
-                            </div>
-                            <div class="align-middle d-inline-block fs-6" hx-push-url="true">
-                                {% include 'psat/v4/snippets/problem_list_reference.html' %}
-                            </div>
-                        </td>
-                        <td class="text-nowrap p-2 fs-6">
-                            {% partial title %}
-                        </td>
-                        <td class="text-nowrap text-end p-2 fs-6">
-                            {% with username=comment.username target_user=comment.user %}
-                                {% include 'psat/v4/snippets/username.html' %}
-                            {% endwith %}
-                            <span class="small text-secondary ms-1">
-                                {{ comment.timestamp|date:'n/j(D) H:i' }}
-                            </span>
-                        </td>
-                    {% endwith %}
-                </tr>
-            {% endfor %}
-        {% else %}
+<div class="card-body">
+    <article class="table-responsive">
+        <table class="table small align-middle m-0">
+            <tbody hx-target="#main">
+                {% partial comment_contents %}
+            </tbody>
+        </table>
+    </article>
+
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'psat/v4/snippets/pagination.html' with target_id='problemCard' %}
+    {% endif %}
+</div>
+
+{% partialdef comment_contents %}
+    {% if page_obj %}
+        {% for comment in page_obj %}
             <tr>
-                <td class="text-center text-nowrap px-2" colspan="5">
-                    {% trans 'No comments available' %}
-                </td>
+                {% with problem_id=comment.problem_id problem=comment %}
+                    <td class="text-nowrap p-2 col-1 fs-6" aria-label="Reference">
+                        <div class="align-middle d-inline-block fs-6 pe-1">
+                            {% include 'psat/v4/snippets/icon_container.html' %}
+                        </div>
+                        <div class="align-middle d-inline-block fs-6" hx-push-url="true">
+                            {% include 'psat/v4/snippets/problem_list_reference.html' %}
+                        </div>
+                    </td>
+                    <td class="text-nowrap p-2 fs-6" aria-label="Title">
+                        <a class="text-decoration-none text-secondary" hx-boost="true"
+                           hx-swap="innerHTML swap:0.25s" hx-target="#main" hx-push-url="true"
+                           href="{% url 'psat:comment_detail' comment.id %}">
+                            {% if comment.parent %}
+                                <span class="text-primary">{{ icon_board.reply|safe }}</span>
+                            {% endif %}
+                            {{ comment.title }}
+                        </a>
+                    </td>
+                    <td class="text-nowrap text-end p-2 fs-6" aria-label="Username & Timestamp">
+                        {% with username=comment.username target_user=comment.user %}
+                            {% include 'psat/v4/snippets/username.html' %}
+                        {% endwith %}
+                        <span class="small text-secondary ms-1">
+                            {{ comment.timestamp|date:'n/j(D) H:i' }}
+                        </span>
+                    </td>
+                {% endwith %}
             </tr>
-        {% endif %}
-    </tbody>
-{% /responsive_table %}
-
-{% if page_obj.has_next or page_obj.has_previous %}
-    {% include 'psat/v4/snippets/pagination.html' with target_id='problemContent' %}
-{% endif %}
-
-{% partialdef title %}
-    <a class="text-decoration-none text-secondary" hx-boost="true"
-       hx-swap="innerHTML swap:0.25s" hx-target="#main" hx-push-url="true"
-       href="{% url 'psat:comment_detail' comment.id %}">
-        {% if comment.parent %}
-            <span class="text-primary">{{ icon_board.reply|safe }}</span>
-        {% endif %}
-        {{ comment.title }}
-    </a>
-{% endpartialdef title %}
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td class="text-center text-nowrap px-2" colspan="5">
+                {% trans 'No comments available' %}
+            </td>
+        </tr>
+    {% endif %}
+{% endpartialdef comment_contents %}

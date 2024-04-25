@@ -2,16 +2,8 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.urls import reverse_lazy
 
-from psat.models import data_models
+from psat.models import psat_data_models
 from reference.models import psat_models
-
-
-def get_url(name, *args):
-    if args:
-        base_url = reverse_lazy(f'psat:{name}', args=[*args])
-        return f'{base_url}?'
-    base_url = reverse_lazy(f'psat:{name}')
-    return f'{base_url}?'
 
 
 def get_url_options(page_number, keyword, exam_reference, custom_options):
@@ -187,17 +179,17 @@ def add_data_into_url_options(url_options, data: dict):
 
 def get_memo(user_id, problem_id):
     if user_id:
-        return data_models.Memo.objects.filter(user_id=user_id, problem_id=problem_id).first()
+        return psat_data_models.Memo.objects.filter(user_id=user_id, problem_id=problem_id).first()
 
 
 def get_my_tag(user_id, problem_id):
     if user_id:
-        return data_models.Tag.objects.filter(user_id=user_id, problem_id=problem_id).first()
+        return psat_data_models.Tag.objects.filter(user_id=user_id, problem_id=problem_id).first()
 
 
 def get_comments(user_id, problem_id):
     if user_id:
-        return data_models.Comment.objects.filter(problem_id=problem_id).values()
+        return psat_data_models.Comment.objects.filter(problem_id=problem_id).values()
 
 
 def get_filter_dict(find_filter: dict, update_filter: dict):
@@ -234,7 +226,7 @@ def make_log_instance_by_filter_dict(log_model, filter_dict: dict, data_instance
 
 def get_comment_qs():
     return (
-        data_models.Comment.objects
+        psat_data_models.Comment.objects
         .select_related(
             'user', 'problem', 'problem__psat', 'problem__psat__exam', 'problem__psat__subject')
         .annotate(

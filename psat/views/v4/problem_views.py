@@ -1,4 +1,5 @@
 import vanilla
+from django.urls import reverse_lazy
 
 from psat import utils
 from .viewmixins import problem_view_mixins
@@ -38,7 +39,7 @@ class ListView(
         filterset = self.get_filterset_by_user_id(user_id)
 
         # urls and page objectives
-        base_url = utils.get_url('list')
+        base_url = reverse_lazy('psat:list')
         url_options = utils.get_url_options(
             page_number, keyword, exam_reference, custom_options)
         page_obj, page_range = self.get_paginator_info(filterset.qs)
@@ -75,7 +76,7 @@ class ListView(
             # urls
             base_url=base_url,
             url_options=url_options,
-            pagination_url=f'{base_url}{url_options}',
+            pagination_url=f'{base_url}?{url_options}',
 
             # page objectives
             page_obj=page_obj,

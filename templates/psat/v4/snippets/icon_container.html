@@ -3,27 +3,25 @@
 {% load psat_filter %}
 
 <article id="icon_container" class="d-inline-block">
-    <div class="d-block d-md-inline-block text-center" aria-label="Rate">
-        {% partial container_rate %}
+    <div id="psatRate{{ problem_id }}" class="d-block d-md-inline-block text-center htmx-fade-in htmx-fade-out">
+        {% partial rate %}
     </div>
     <div class="d-block d-md-inline-block text-center">
-        <div class="d-inline-block" aria-label="Like">
-            {% partial container_like %}
+        <div id="psatLike{{ problem_id }}" class="d-inline-block htmx-fade-in htmx-fade-out">
+            {% partial like %}
         </div>
-        <div class="d-inline-block" aria-label="Solve">
-            {% partial container_solve %}
+        <div id="psatSolve{{ problem_id }}" class="d-inline-block htmx-fade-in htmx-fade-out">
+            {% partial solve %}
         </div>
-        <div class="d-inline-block" aria-label="Memo">
-            {% partial container_memo %}
+        <div id="psatMemo{{ problem_id }}" class="d-inline-block htmx-fade-in htmx-fade-out">
+            {% partial memo %}
         </div>
-        <div class="d-inline-block" aria-label="Tag">
-            {% partial container_tag %}
+        <div id="psatTag{{ problem_id }}" class="d-inline-block htmx-fade-in htmx-fade-out">
+            {% partial tag %}
         </div>
-        {% if user.is_admin %}
-            <div class="d-inline-block" aria-label="Collection">
-                {% partial container_collection %}
-            </div>
-        {% endif %}
+        <div id="psatCollection{{ problem_id }}" class="d-inline-block htmx-fade-in htmx-fade-out">
+            {% partial collection %}
+        </div>
     </div>
 </article>
 
@@ -35,139 +33,97 @@
     </a>
 {% endpartialdef login_modal %}
 
-
-{% partialdef container_rate %}
+{% partialdef rate %}
     {% if user.is_authenticated %}
-        <a id="psatRate{{ problem_id }}" href="" class="htmx-fade-in htmx-fade-out"
-           hx-get="{% url 'psat:rate_modal' %}?problem_id={{ problem_id }}&icon_id=psatRate{{ problem_id }}"
-           hx-target="#modalContainer" hx-swap="innerHTML"
-           data-bs-toggle="modal" data-bs-target="#modalContainer">
-            {% partial rate %}
+        <a href="" hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s"
+           data-bs-toggle="modal" data-bs-target="#modalContainer"
+           hx-get="{% url 'psat:rate_modal' %}?problem_id={{ problem_id }}&icon_id=psatRate{{ problem_id }}">
+            {% if problem.rating == 1 or problem|get_status:rate_data == 1 %}
+                {{ icon_rate.star1|safe }}
+            {% elif problem.rating == 2 or problem|get_status:rate_data == 2 %}
+                {{ icon_rate.star2|safe }}
+            {% elif problem.rating == 3 or problem|get_status:rate_data == 3 %}
+                {{ icon_rate.star3|safe }}
+            {% elif problem.rating == 4 or problem|get_status:rate_data == 4 %}
+                {{ icon_rate.star4|safe }}
+            {% elif problem.rating == 5 or problem|get_status:rate_data == 5 %}
+                {{ icon_rate.star5|safe }}
+            {% else %}
+                {{ icon_rate.star0|safe }}
+            {% endif %}
         </a>
     {% else %}
         {% with icon=icon_rate.star0|safe %}{% partial login_modal %}{% endwith %}
     {% endif %}
-{% endpartialdef container_rate %}
-
-{% partialdef rate %}
-    {% if problem.rating == 1 or problem|get_status:rate_data == 1 %}
-        {{ icon_rate.star1|safe }}
-    {% elif problem.rating == 2 or problem|get_status:rate_data == 2 %}
-        {{ icon_rate.star2|safe }}
-    {% elif problem.rating == 3 or problem|get_status:rate_data == 3 %}
-        {{ icon_rate.star3|safe }}
-    {% elif problem.rating == 4 or problem|get_status:rate_data == 4 %}
-        {{ icon_rate.star4|safe }}
-    {% elif problem.rating == 5 or problem|get_status:rate_data == 5 %}
-        {{ icon_rate.star5|safe }}
-    {% else %}
-        {{ icon_rate.star0|safe }}
-    {% endif %}
 {% endpartialdef rate %}
 
-
-{% partialdef container_like %}
+{% partialdef like %}
     {% if user.is_authenticated %}
-        <form id="likeButton{{ problem_id }}">
-            <a hx-post="{% url 'psat:custom_update' 'like' problem_id %}" href=""
-               class="htmx-fade-in htmx-fade-out" hx-target="this"
-               hx-swap="innerHTML swap:0.25s">
-                {% partial like %}
-            </a>
-        </form>
+        <a href="" hx-target="#psatLike{{ problem_id }}" hx-swap="innerHTML swap:0.25s"
+           hx-vals='{"is_liked": "{{ problem|get_status:like_data }}"}'
+           hx-post="{% url 'psat:custom_update' 'like' problem_id %}">
+            {% if problem|get_status:like_data %}
+                {{ icon_like.true|safe }}
+            {% else %}
+                {{ icon_like.false|safe }}
+            {% endif %}
+        </a>
     {% else %}
         {% with icon=icon_like.false|safe %}{% partial login_modal %}{% endwith %}
     {% endif %}
-{% endpartialdef container_like %}
-
-{% partialdef like %}
-    <input type="text" name="is_liked" value="{{ problem|get_status:like_data }}" hidden
-           aria-label="Like Icon">
-    {% if problem|get_status:like_data %}
-        {{ icon_like.true|safe }}
-    {% else %}
-        {{ icon_like.false|safe }}
-    {% endif %}
 {% endpartialdef like %}
 
-
-{% partialdef container_solve %}
+{% partialdef solve %}
     {% if user.is_authenticated %}
-        <span id="psatSolve{{ problem_id }}" class="htmx-fade-in htmx-fade-out">
-            {% partial solve %}
-        </span>
+        {% if problem|get_status:solve_data is True %}
+            {{ icon_solve.true|safe }}
+        {% elif problem|get_status:solve_data is False %}
+            {{ icon_solve.false|safe }}
+        {% else %}
+            {{ icon_solve.none|safe }}
+        {% endif %}
     {% else %}
         {% with icon=icon_solve.none|safe %}{% partial login_modal %}{% endwith %}
     {% endif %}
-{% endpartialdef container_solve %}
-
-{% partialdef solve %}
-    {% if problem|get_status:solve_data is True %}
-        {{ icon_solve.true|safe }}
-    {% elif problem|get_status:solve_data is False %}
-        {{ icon_solve.false|safe }}
-    {% else %}
-        {{ icon_solve.none|safe }}
-    {% endif %}
 {% endpartialdef solve %}
 
-
-{% partialdef container_memo %}
+{% partialdef memo %}
     {% if user.is_authenticated %}
-        <span id="psatMemo{{ problem_id }}" class="htmx-fade-in htmx-fade-out">
-            {% partial memo %}
-        </span>
+        {% if problem|get_status:memo_data is True %}
+            {{ icon_memo.true|safe }}
+        {% else %}
+            {{ icon_memo.false|safe }}
+        {% endif %}
     {% else %}
         {% with icon=icon_memo.false|safe %}{% partial login_modal %}{% endwith %}
     {% endif %}
-{% endpartialdef container_memo %}
-
-{% partialdef memo %}
-    {% if problem|get_status:memo_data is True %}
-        {{ icon_memo.true|safe }}
-    {% else %}
-        {{ icon_memo.false|safe }}
-    {% endif %}
 {% endpartialdef memo %}
 
-
-{% partialdef container_tag %}
+{% partialdef tag %}
     {% if user.is_authenticated %}
-        <span id="psatTag{{ problem_id }}" class="htmx-fade-in htmx-fade-out">
-            {% partial tag %}
-        </span>
+        {% if problem|get_status:tag_data is True %}
+            {{ icon_tag.true|safe }}
+        {% else %}
+            {{ icon_tag.false|safe }}
+        {% endif %}
     {% else %}
         {% with icon=icon_tag.false|safe %}{% partial login_modal %}{% endwith %}
     {% endif %}
-{% endpartialdef container_tag %}
-
-{% partialdef tag %}
-    {% if problem|get_status:tag_data is True %}
-        {{ icon_tag.true|safe }}
-    {% else %}
-        {{ icon_tag.false|safe }}
-    {% endif %}
 {% endpartialdef tag %}
 
-
-{% partialdef container_collection %}
+{% partialdef collection %}
     {% if user.is_authenticated %}
-        <a id="psatCollection{{ problem_id }}" href="" class="htmx-fade-in htmx-fade-out"
-           hx-get="{% url 'psat:collection_modal_item_add' %}?problem_id={{ problem_id }}&icon_id=psatCollection{{ problem_id }}"
-           hx-target="#modalContainer" hx-swap="innerHTML"
-           data-bs-toggle="modal" data-bs-target="#modalContainer">
-            {% partial collection %}
+        <a href="" hx-target="#modalContainer" hx-swap="innerHTML"
+           data-bs-toggle="modal" data-bs-target="#modalContainer"
+           hx-get="{% url 'psat:collection_modal_item_add' %}?problem_id={{ problem_id }}&icon_id=psatCollection{{ problem_id }}">
+            {% if problem|get_status:collection_data is True or is_active %}
+                {{ icon_collection.true|safe }}
+            {% else %}
+                {{ icon_collection.false|safe }}
+            {% endif %}
         </a>
     {% else %}
         {% with icon=icon_collection.false|safe %}{% partial login_modal %}{% endwith %}
-    {% endif %}
-{% endpartialdef container_collection %}
-
-{% partialdef collection %}
-    {% if problem|get_status:collection_data is True or is_active %}
-        {{ icon_collection.true|safe }}
-    {% else %}
-        {{ icon_collection.false|safe }}
     {% endif %}
 {% endpartialdef collection %}
 

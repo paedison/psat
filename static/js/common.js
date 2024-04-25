@@ -92,3 +92,41 @@ $(document).on('click', '.aside-nav-icon', function() {
         $('body').removeClass('toggle-sidebar');
     }
 });
+
+
+// Initialize tooltips, Sortables, toggleButtons
+function initializeTooltips() {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+}
+
+function initializeSortables() {
+    $(".sortable").each(function() {
+        new Sortable(this, {
+            animation: 150,
+            ghostClass: 'blue-background-class'
+        });
+    });
+}
+
+function toggleButtons() {
+    $('#floatingCollection').removeClass('show-menu');
+    $('#toggleCollectionBtn').show().animate({right: '20'}, 300);
+}
+
+function initializeListButtons() {
+    initializeTooltips();
+    initializeSortables();
+    $('#toggleProblemBtn, #toggleCommentBtn, #floatingCollectionIndicator').click(toggleButtons);
+    $('#toggleCollectionBtn').click(function() {
+        $('#floatingCollection').addClass('show-menu');
+        $(this).hide();
+    });
+}
+
+$(document).ready(function() {
+    initializeListButtons();
+
+    $('body').on('htmx:afterSwap', function(event) {
+        initializeListButtons();
+    });
+});

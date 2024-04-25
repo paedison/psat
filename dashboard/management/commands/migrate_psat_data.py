@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from dashboard.models import PsatLikeLog, PsatRateLog, PsatSolveLog
-from psat.models.data_models import Like, Rate, Solve
+from psat.models import Like, Rate, Solve
 
 
 class Command(BaseCommand):

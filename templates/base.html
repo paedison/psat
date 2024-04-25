@@ -89,33 +89,7 @@
 
 <!-- Page Javascript File -->
 {% block page_script %}{% endblock page_script %}
-<script>
-    $(document).ready(function () {
-       let tooltipTriggerList = $('[data-bs-toggle="tooltip"]');
 
-       $('body').on('htmx:afterSwap', function(event) {
-           tooltipTriggerList = $('[data-bs-toggle="tooltip"]');
-           tooltipTriggerList.each(function() {
-               $(this).tooltip();
-           });
-       });
-
-       tooltipTriggerList.each(function () {
-           $(this).tooltip();
-       })
-    });
-
-    {% comment %}
-    let tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    {#const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))#}
-    document.body.addEventListener('htmx:afterSwap', function(event) {
-        tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        tooltipTriggerList.forEach(function(element) {
-            new bootstrap.Tooltip(element);
-        });
-    });
-    {% endcomment %}
-</script>
 </body>
 {% endblock html_body %}
 

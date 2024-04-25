@@ -1,5 +1,6 @@
 import django.contrib.auth.mixins as auth_mixins
 import vanilla
+from django.urls import reverse_lazy
 
 from psat import utils
 from .viewmixins import memo_view_mixins
@@ -44,7 +45,7 @@ class CreateView(
 
     def get_success_url(self):
         problem_id = self.kwargs.get('problem_id')
-        return utils.get_url('memo_container', problem_id)
+        return reverse_lazy('psat:memo_container', args=[problem_id])
 
     def get_context_data(self, **kwargs):
         problem_id = self.kwargs.get('problem_id')
@@ -66,7 +67,7 @@ class UpdateView(
     template_name = 'psat/v4/snippets/memo_container.html#update_form'
 
     def get_success_url(self):
-        return utils.get_url('memo_container', self.object.problem_id)
+        return reverse_lazy('psat:memo_container', args=[self.object.problem_id])
 
     def get_context_data(self, **kwargs):
         problem_id = self.request.GET.get('problem_id')
@@ -89,4 +90,4 @@ class DeleteView(
 
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
-        return utils.get_url('memo_container', problem_id)
+        return reverse_lazy('psat:memo_container', args=[problem_id])

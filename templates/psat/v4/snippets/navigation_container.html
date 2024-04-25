@@ -4,9 +4,9 @@
 {% load partials %}
 {% load psat_filter %}
 
-<article id="detail_nav_container" class="flex-nowrap input-group me-2"
+<article id="detailNavContainer" class="flex-nowrap input-group me-2"
          hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-    <a id="problem_list" class="btn btn-{{ info.color }}"
+    <a id="problemListBtn" class="btn btn-{{ info.color }}"
        href="{% url 'psat:base' %}"
        hx-get="{% url 'psat:base' %}?{{ url_options }}"
        hx-push-url="{% url 'psat:base' %}">

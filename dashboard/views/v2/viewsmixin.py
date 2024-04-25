@@ -5,7 +5,7 @@ from django_htmx.middleware import HtmxDetails
 from common.constants.icon_set import ConstantIconSet
 from dashboard import utils
 from dashboard.models import psat_log_models
-from psat.models import data_models
+from psat.models import psat_data_models
 
 
 class HtmxHttpRequest(HttpRequest):
@@ -13,27 +13,27 @@ class HtmxHttpRequest(HttpRequest):
 
 
 class DefaultModels:
+    request: HtmxHttpRequest
+    kwargs: dict
+
     menu = 'dashboard'
 
     # psat.models
-    open_model = data_models.Open
-    like_model = data_models.Like
-    rate_model = data_models.Rate
-    solve_model = data_models.Solve
-    memo_model = data_models.Memo
-    tag_model = data_models.Tag
-    collection_model = data_models.Collection
-    item_model = data_models.CollectionItem
-    comment_model = data_models.Comment
+    open_model = psat_data_models.Open
+    like_model = psat_data_models.Like
+    rate_model = psat_data_models.Rate
+    solve_model = psat_data_models.Solve
+    memo_model = psat_data_models.Memo
+    tag_model = psat_data_models.Tag
+    collection_model = psat_data_models.Collection
+    item_model = psat_data_models.CollectionItem
+    comment_model = psat_data_models.Comment
 
     # dashboard.models
     open_log_model = psat_log_models.PsatOpenLog
     like_log_model = psat_log_models.PsatLikeLog
     rate_log_model = psat_log_models.PsatRateLog
     solve_log_model = psat_log_models.PsatSolveLog
-
-    request: HtmxHttpRequest
-    kwargs: dict
 
 
 class DashboardViewMixin(

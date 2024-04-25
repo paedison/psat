@@ -1,4 +1,6 @@
+import django.contrib.auth.mixins as auth_mixins
 import vanilla
+from django.urls import reverse_lazy
 
 from psat import utils
 from .viewmixins import comment_view_mixins
@@ -21,12 +23,12 @@ class ListView(
         comment_qs = utils.get_comment_qs()
         all_comments = utils.get_all_comments(comment_qs)
         page_obj, page_range = self.get_paginator_info(all_comments)
-        pagination_url = utils.get_url('comment_list')
+        pagination_url = reverse_lazy('psat:comment_list')
 
         context.update({
             'page_obj': page_obj,
             'page_range': page_range,
-            'pagination_url': pagination_url,
+            'pagination_url': f'{pagination_url}?',
             'form': self.form_class,
 
             'icon_board': self.ICON_BOARD,
@@ -47,12 +49,12 @@ class ContainerView(
         comment_qs = utils.get_comment_qs()
         all_comments = utils.get_all_comments(comment_qs, problem_id)
         page_obj, page_range = self.get_paginator_info(all_comments, per_page=5)
-        pagination_url = utils.get_url('comment_container', problem_id)
+        pagination_url = reverse_lazy('psat:comment_container', args=[problem_id])
 
         return super().get_context_data(
             page_obj=page_obj,
             page_range=page_range,
-            pagination_url=pagination_url,
+            pagination_url=f'{pagination_url}?',
             problem_id=problem_id,
             form=self.form_class,
 
@@ -100,6 +102,7 @@ class DetailView(
 
 
 class CreateView(
+    auth_mixins.LoginRequiredMixin,
     comment_view_mixins.BaseMixIn,
     vanilla.CreateView,
 ):
@@ -107,7 +110,7 @@ class CreateView(
 
     def get_success_url(self):
         problem_id = self.kwargs.get('problem_id')
-        return utils.get_url('comment_container', problem_id)
+        return reverse_lazy('psat:comment_container', args=[problem_id])
 
     def form_valid(self, form):
         form = form.save(commit=False)
@@ -136,6 +139,7 @@ class CreateView(
 
 
 class UpdateView(
+    auth_mixins.LoginRequiredMixin,
     comment_view_mixins.BaseMixIn,
     vanilla.UpdateView,
 ):
@@ -144,8 +148,8 @@ class UpdateView(
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
         page_number = self.request.POST.get('page', '1')
-        url = utils.get_url('comment_container', problem_id)
-        return f'{url}page={page_number}'
+        url = reverse_lazy('psat:comment_container', args=[problem_id])
+        return f'{url}?page={page_number}'
 
     def form_valid(self, form):
         form = form.save(commit=False)
@@ -173,9 +177,10 @@ class UpdateView(
 
 
 class DeleteView(
+    auth_mixins.LoginRequiredMixin,
     comment_view_mixins.BaseMixIn,
     vanilla.DeleteView,
 ):
     def get_success_url(self):
         problem_id = self.request.POST.get('problem_id')
-        return utils.get_url('comment_container', problem_id)
+        return reverse_lazy('psat:comment_container', args=[problem_id])
