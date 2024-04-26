@@ -6,7 +6,11 @@
 {% partialdef login %}
     {% #modal header='로그인이 필요합니다.' %}
         {% #button class='btn btn-secondary' data-bs-dismiss="modal" %}취소{% /button %}
-        <a class="btn btn-primary" href="javascript:RedirectUrl('{% url 'account_login' %}')">로그인</a>
+        <a class="btn btn-primary"
+           hx-target="body" hx-swap="innerHTML swap:0.25s"
+           hx-get="{% url 'account_login' %}?next={{ next }}">
+            로그인
+        </a>
     {% /modal %}
 {% endpartialdef %}
 

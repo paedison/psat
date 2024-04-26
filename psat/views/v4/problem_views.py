@@ -146,10 +146,13 @@ class DetailView(
         view_custom_data = custom_data[view_type]
 
         # navigation data
-        prev_prob, next_prob = self.get_prev_next_prob(problem_id, view_custom_data)
+        prob_prev, prob_next = self.get_prev_next_prob(problem_id, view_custom_data)
+        prob_url_prev = utils.get_prob_url(prob_prev)
+        prob_url_next = utils.get_prob_url(prob_next)
         list_data = utils.get_list_data(view_custom_data)
 
-        # url_options
+        # urls
+        urls = utils.get_detail_list_urls(problem_id)
         url_options = utils.get_url_options(
             page_number, keyword, exam_reference, custom_options)
 
@@ -173,11 +176,19 @@ class DetailView(
             icon_board=self.ICON_BOARD,
 
             # navigation data
-            prev_prob=prev_prob,
-            next_prob=next_prob,
+            prob_prev=prob_prev,
+            prob_next=prob_next,
             list_data=list_data,
+            prob_url_prev=prob_url_prev,
+            prob_url_next=prob_url_next,
 
-            # url_options
+            # urls
+            list_url_problem=urls['problem'],
+            list_url_rate=urls['rate'],
+            list_url_like=urls['like'],
+            list_url_solve=urls['solve'],
+            list_url_memo=urls['memo'],
+            list_url_tag=urls['tag'],
             url_options=url_options,
 
             # custom data

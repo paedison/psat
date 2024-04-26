@@ -13,6 +13,29 @@ def get_url_options(page_number, keyword, exam_reference, custom_options):
     return url_options
 
 
+def get_detail_list_urls(problem_id):
+    detail_list_problem = reverse_lazy('psat:detail_list', args=['problem'])
+    detail_list_problem += f'?problem_id={problem_id}'
+    detail_list_rate = reverse_lazy('psat:detail_list', args=['rate'])
+    detail_list_like = reverse_lazy('psat:detail_list', args=['like'])
+    detail_list_solve = reverse_lazy('psat:detail_list', args=['solve'])
+    detail_list_memo = reverse_lazy('psat:detail_list', args=['memo'])
+    detail_list_tag = reverse_lazy('psat:detail_list', args=['tag'])
+    return {
+        'problem': detail_list_problem,
+        'rate': detail_list_rate,
+        'like': detail_list_like,
+        'solve': detail_list_solve,
+        'memo': detail_list_memo,
+        'tag': detail_list_tag,
+    }
+
+
+def get_prob_url(problem):
+    if problem:
+        return reverse_lazy('psat:detail', args=[problem['id']])
+
+
 def get_problem_by_problem_id(problem_id):
     if problem_id:
         return (

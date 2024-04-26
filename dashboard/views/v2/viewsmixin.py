@@ -1,15 +1,10 @@
 from django.db.models import F
-from django.http import HttpRequest
-from django_htmx.middleware import HtmxDetails
 
 from common.constants.icon_set import ConstantIconSet
+from common.views.base_views import HtmxHttpRequest
 from dashboard import utils
 from dashboard.models import psat_log_models
 from psat.models import psat_data_models
-
-
-class HtmxHttpRequest(HttpRequest):
-    htmx: HtmxDetails
 
 
 class DefaultModels:

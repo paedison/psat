@@ -4,22 +4,8 @@ const view_type = info['view_type'];  // problem, like, rate, solve, search, psa
 const parent_menu = ['score']  // menu with child branches
 
 
-// Redirect Url
-function RedirectUrl(url) {
-    let link = window.location.href;
-    let list = link.split('/');
-    list.splice(0,3);
-    let redirect = '/'.concat(list.join('/'));
-    if (url) {
-        location.href = `${url}?next=${redirect}`;
-    } else {
-        return redirect
-    }
-}
-
-
 // Toggle the side navigation
-$("#sidebarToggle").on('click', function() {
+$("#sidebarToggle").click(function() {
     $("body").toggleClass("toggle-sidebar");
 });
 
@@ -53,7 +39,7 @@ function initialMenu() {
 }
 
 // When clicked the logo
-$(document).on('click', '.logo', function() {
+$('.logo').click(function() {
     let target = $(this).data('target');
     initialMenu();
     $(target).removeClass('collapsed').attr('aria-expanded', 'true');
@@ -63,7 +49,7 @@ $(document).on('click', '.logo', function() {
 });
 
 // When clicked the main menu [Notice, Dashboard, PSAT, Schedule, Score]
-$(document).on('click', '#sidebar-nav .nav-link', function() {
+$('#sidebar-nav .nav-link').click(function() {
     const menuTargets = ['#psat-nav', '#score-nav'];
     let bsTarget = $(this).data('bsTarget');
 
@@ -79,8 +65,18 @@ $(document).on('click', '#sidebar-nav .nav-link', function() {
     }
 });
 
+function toggleSidebar() {
+    if ($(window).width() < 1200) {
+        $('body').removeClass('toggle-sidebar');
+    }
+}
+
+$('a').click(function (){
+    toggleSidebar();
+})
+
 // When clicked the PSAT sub-menu [Problem, Like, Rate, Answer]
-$(document).on('click', '.aside-nav-icon', function() {
+jQuery('.aside-nav-icon').click(function() {
     initialMenu();
 
     $(this).closest('ul').prev('a').removeClass('collapsed').attr('aria-expanded', 'true');
@@ -88,9 +84,7 @@ $(document).on('click', '.aside-nav-icon', function() {
     $(this).closest('li').children().find('i').removeClass('fa-solid').addClass('fa-regular');
 
     $(this).addClass('active').find('i').removeClass('fa-regular').addClass('fa-solid');
-    if ($(window).width() < 1200) {
-        $('body').removeClass('toggle-sidebar');
-    }
+    toggleSidebar();
 });
 
 
@@ -100,7 +94,7 @@ function initializeTooltips() {
 }
 
 function initializeSortables() {
-    $(".sortable").each(function() {
+    $('.sortable').each(function() {
         new Sortable(this, {
             animation: 150,
             ghostClass: 'blue-background-class'
@@ -108,25 +102,23 @@ function initializeSortables() {
     });
 }
 
-function toggleButtons() {
-    $('#floatingCollection').removeClass('show-menu');
-    $('#toggleCollectionBtn').show().animate({right: '20'}, 300);
-}
-
-function initializeListButtons() {
-    initializeTooltips();
-    initializeSortables();
-    $('#toggleProblemBtn, #toggleCommentBtn, #floatingCollectionIndicator').click(toggleButtons);
+function initializeToggleButtons() {
+    $('#toggleProblemBtn, #toggleCommentBtn, #floatingCollectionIndicator').click(function () {
+        $('#floatingCollection').removeClass('show-menu');
+        $('#toggleCollectionBtn').show().animate({right: '20'}, 300);
+    });
     $('#toggleCollectionBtn').click(function() {
         $('#floatingCollection').addClass('show-menu');
         $(this).hide();
     });
 }
 
-$(document).ready(function() {
-    initializeListButtons();
+initializeTooltips();
+initializeSortables();
+initializeToggleButtons();
 
-    $('body').on('htmx:afterSwap', function(event) {
-        initializeListButtons();
-    });
+jQuery('body').on('htmx:afterSwap', function() {
+    initializeTooltips();
+    initializeSortables();
+    initializeToggleButtons();
 });

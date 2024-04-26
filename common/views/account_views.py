@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from common import forms as common_forms
 from common.constants.icon_set import ConstantIconSet
 from common.models import User
+from common.views.base_views import HtmxHttpRequest
 
 
 class OnlyLoggedInAllowedMixin(UserPassesTestMixin):
@@ -21,8 +22,20 @@ class OnlyLoggedInAllowedMixin(UserPassesTestMixin):
         return redirect('index')
 
 
+def add_current_url_to_context(
+        context: dict, request: HtmxHttpRequest, redirect_field_value='redirect_field_value'):
+    if request.htmx:
+        current_url = request.htmx.current_url
+        context[redirect_field_value] = current_url
+    return context
+
+
 class LoginModalView(vanilla.TemplateView):
     template_name = 'snippets/modal.html#login'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return add_current_url_to_context(context, self.request, 'next')
 
 
 class LogoutModalView(vanilla.TemplateView):
@@ -37,6 +50,18 @@ class LogoutModalView(vanilla.TemplateView):
             {'next': self.request.GET.get('next', '')}
         )
         return context
+
+
+class LoginView(allauth_views.LoginView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return add_current_url_to_context(context, self.request)
+
+
+class SignupView(allauth_views.SignupView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return add_current_url_to_context(context, self.request)
 
 
 class ProfileView(

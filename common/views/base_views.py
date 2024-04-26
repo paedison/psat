@@ -1,5 +1,10 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
+from django_htmx.middleware import HtmxDetails
 from django.shortcuts import render, redirect
+
+
+class HtmxHttpRequest(HttpRequest):
+    htmx: HtmxDetails
 
 
 def index(request):

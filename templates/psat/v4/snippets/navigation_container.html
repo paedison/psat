@@ -5,161 +5,132 @@
 {% load psat_filter %}
 
 <article id="detailNavContainer" class="flex-nowrap input-group me-2"
-         hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+         hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <a id="problemListBtn" class="btn btn-{{ info.color }}"
-       href="{% url 'psat:base' %}"
-       hx-get="{% url 'psat:base' %}?{{ url_options }}"
-       hx-push-url="{% url 'psat:base' %}">
+       hx-push-url="{% url 'psat:base' %}" href="{% url 'psat:base' %}"
+       hx-get="{% url 'psat:base' %}?{{ url_options }}">
         {{ icon_nav.left_arrow|safe }}
     </a>
+    {% partial adjacent_prob_button %}
 
-    {% if prev_prob %}
-        <a class="btn btn-{{ info.color }}" href="{% url 'psat:detail' prev_prob.id %}"
-           hx-push-url="{% url 'psat:detail' prev_prob.id %}"
-           hx-get="{% url 'psat:detail' prev_prob.id %}?{{ url_options }}">
-            {{ icon_nav.prev_prob|safe }}
-        </a>
-    {% else %}
-        <a class="btn btn-{{ info.color }} text-{{ info.color }}">{{ icon_nav.prev_prob|safe }}</a>
+    {% with list_type='Problem' list_url=list_url_problem icon=icon_nav.list %}
+        {% partial list_buttons_default %}
+    {% endwith %}
+
+    {% if user.is_authenticated %}
+        {% partial list_buttons_for_authenticated_user %}
     {% endif %}
-
-    {% if next_prob %}
-        <a class="btn btn-{{ info.color }}" href="{% url 'psat:detail' next_prob.id %}"
-           hx-push-url="{% url 'psat:detail' next_prob.id %}"
-           hx-get="{% url 'psat:detail' next_prob.id %}?{{ url_options }}">
-            {{ icon_nav.next_prob|safe }}
-        </a>
-    {% else %}
-        <a class="btn btn-{{ info.color }} text-{{ info.color }}">{{ icon_nav.next_prob|safe }}</a>
-    {% endif %}
-
-    <a id="detailListProblem" href="" role="button" class="btn btn-circle btn-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false" hx-push-url="false"
-       hx-get="{% url 'psat:detail_list' 'problem' %}?problem_id={{ problem.id }}" hx-target="#detailListProblemContents">
-        {{ icon_nav.list|safe }}
-    </a>
-    <div class="dropdown-menu" aria-labelledby="detailListProblem">
-        <div id="detailListProblemContents" class="dropdown p-2" role="option">
-        </div>
-    </div>
-
-    <a id="detailListRate" href="" role="button" class="btn btn-circle btn-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false" hx-push-url="false"
-       hx-get="{% url 'psat:detail_list' 'rate' %}" hx-target="#detailListRateContents">
-        {{ icon_rate.white|safe }}
-    </a>
-    <div class="dropdown-menu" aria-labelledby="detailListRate">
-        <div id="detailListRateContents" class="dropdown p-2" role="option">
-        </div>
-    </div>
-
-    <a id="detailListLike" href="" role="button" class="btn btn-circle btn-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false" hx-push-url="false"
-       hx-get="{% url 'psat:detail_list' 'like' %}" hx-target="#detailListLikeContents">
-        {{ icon_like.white|safe }}
-    </a>
-    <div class="dropdown-menu" aria-labelledby="detailListLike">
-        <div id="detailListLikeContents" class="dropdown p-2" role="option">
-        </div>
-    </div>
-
-    <a id="detailListSolve" href="" role="button" class="btn btn-circle btn-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false" hx-push-url="false"
-       hx-get="{% url 'psat:detail_list' 'solve' %}" hx-target="#detailListSolveContents">
-        {{ icon_solve.white|safe }}
-    </a>
-    <div class="dropdown-menu" aria-labelledby="detailListSolve">
-        <div id="detailListSolveContents" class="dropdown p-2" role="option">
-        </div>
-    </div>
-
-    <a id="detailListMemo" href="" role="button" class="btn btn-circle btn-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false" hx-push-url="false"
-       hx-get="{% url 'psat:detail_list' 'memo' %}" hx-target="#detailListMemoContents">
-        {{ icon_memo.white|safe }}
-    </a>
-    <div class="dropdown-menu" aria-labelledby="detailListMemo">
-        <div id="detailListMemoContents" class="dropdown p-2" role="option">
-        </div>
-    </div>
-
-    <a id="detailListTag" href="" role="button" class="btn btn-circle btn-primary dropdown-toggle"
-       data-bs-toggle="dropdown" aria-expanded="false" hx-push-url="false"
-       hx-get="{% url 'psat:detail_list' 'tag' %}" hx-target="#detailListTagContents">
-        {{ icon_tag.white|safe }}
-    </a>
-    <div class="dropdown-menu" aria-labelledby="detailListTag">
-        <div id="detailListTagContents" class="dropdown p-2" role="option">
-        </div>
-    </div>
 </article>
 
-{% partialdef nav_problem_list %} {# nav_problem_list partial #}
-<div class="container" style="min-width: 300px;">
-    <div class="row justify-content-center p-2 text-bg-primary fw-bold">
-        {{ problem.psat.year }}년 {{ problem.psat.exam.name }} {{ problem.psat.subject }}
-    </div>
-    <div class="row justify-content-center">
-        {% if problem.psat.exam.abbr == '칠급' or problem.psat.exam.abbr == '민경' or problem.psat.subject.abbr == '헌법' %}
-            {% with problem_count=25 %}
-                {% partialdef filtered_content inline=True %} {# filtered_content partial #}
-                    {% for _ in '_'|ljust:problem_count %}
-                            <div class="col-2 text-center small p-1">
-                                <a href="{% url 'psat:detail' problem.number|subtract:problem.id|add:forloop.counter %}"
-                                   hx-boost="true"
-                                   class="p-1 dropdown-item text-nowrap text-center
-                                   {% if forloop.counter == problem.number %} active{% endif %}">
-                                    {{ forloop.counter }}번
-                                </a>
-                            </div>
-                            {% if forloop.counter|divisibleby:5 %}
-                        </div>
-                        <div class="row justify-content-center">
-                            {% endif %}
-                    {% endfor %}
-                {% endpartialdef filtered_content %}
-            {% endwith %}
+{% partialdef adjacent_prob_button %}
+    {% for _ in '12' %}
+        {% cycle prob_prev prob_next as target_prob silent %}
+        {% cycle prob_url_prev prob_url_next as prob_url silent %}
+        {% cycle icon_nav.prev_prob icon_nav.next_prob as icon silent %}
+        {% cycle '이전 문제' '다음 문제' as tooltip_title silent %}
+        {% if target_prob %}
+            <a class="btn btn-{{ info.color }}" href="{{ prob_url }}"
+               hx-push-url="{{ prob_url }}"
+               hx-get="{{ prob_url }}?{{ url_options }}">
+                {{ icon|safe }}
+            </a>
         {% else %}
-            {% with problem_count=40 %}{% partial filtered_content %}{% endwith %}
-        {% endif %}
-    </div>
-</div>
-{% endpartialdef nav_problem_list %}
-
-{% partialdef nav_other_list %} {# nav_other_list partial #}
-<div class="container" style="min-width: 300px;">
-    {% if list_title %}
-        <div class="row justify-content-center p-2 text-bg-{{ info.color }} fw-bold">
-            {{ list_title }}
-        </div>
-    {% endif %}
-    {% if not list_data %}
-        <div class="col-12 text-center text-danger p-3">자료가 없습니다.</div>
-    {% endif %}
-    {% for data in list_data %}
-        {% if forloop.counter0|divisibleby:5 %}
-            </div>
-        {% ifchanged %}
-            {% if forloop.counter0 != 0 %}
-            <hr class="m-1">
-            {% endif %}
-            <div class="row justify-content-center p-2 text-{{ info.color }} fw-bold">
-                {{ data.exam_name }}
-            </div>
-        {% endifchanged %}
-            <div class="row justify-content-center p-2">
-        {% endif %}
-        {% if data %}
-            <div class="col-2 text-center p-0">
-                <a href="{{ data.problem_url }}" hx-get="{{ data.problem_url }}"
-                   class="p-1 dropdown-item text-nowrap text-center
-                   {% if data.problem_id == problem.id %} active{% endif %}">
-                    {{ data.problem_number }}번
-                </a>
-            </div>
-        {% else %}
-            <div class="col-2 text-center p-0"> </div>
+            <a class="btn btn-{{ info.color }} text-{{ info.color }}">
+                {{ icon|safe }}
+            </a>
         {% endif %}
     {% endfor %}
-</div>
+{% endpartialdef adjacent_prob_button %}
+
+{% partialdef list_buttons_default %}
+    <a id="detailList{{ list_type }}" href="" role="button" class="btn btn-circle btn-primary dropdown-toggle"
+       data-bs-toggle="dropdown" aria-expanded="false"
+       hx-get="{{ list_url }}" hx-target="#detailList{{ list_type }}Contents">
+        <div class="text-white" data-bs-toggle="tooltip" title="{{ tooltip_title }}">
+            {{ icon|safe }}
+        </div>
+    </a>
+    <div class="dropdown-menu" aria-labelledby="detailList{{ list_type }}">
+        <div id="detailList{{ list_type }}Contents" class="dropdown p-2" role="option">
+        </div>
+    </div>
+{% endpartialdef list_buttons_default %}
+
+{% partialdef list_buttons_for_authenticated_user %}
+    {% for _ in '12345' %}
+        {% cycle 'Rate' 'Like' 'Solve' 'Memo' 'Tag' as list_type silent %}
+        {% cycle list_url_rate list_url_like list_url_solve list_url_memo list_url_tag as list_url silent %}
+        {% cycle icon_rate.white icon_like.white icon_solve.white icon_memo.white icon_tag.white as icon silent %}
+        {% partial list_buttons_default %}
+    {% endfor %}
+{% endpartialdef list_buttons_for_authenticated_user %}
+
+{% partialdef nav_problem_list %}
+    <div class="container" style="min-width: 300px;">
+        <div class="row justify-content-center p-2 text-bg-primary fw-bold">
+            {{ problem.psat.year }}년 {{ problem.psat.exam.name }} {{ problem.psat.subject }}
+        </div>
+        <div class="row justify-content-center">
+            {% if problem.psat.exam.abbr == '칠급' or problem.psat.exam.abbr == '민경' or problem.psat.subject.abbr == '헌법' %}
+                {% with problem_count=25 %}
+                    {% partialdef filtered_content inline=True %}
+                        {% for _ in '_'|ljust:problem_count %}
+                                <div class="col-2 text-center small p-1">
+                                    <a href="{% url 'psat:detail' problem.number|subtract:problem.id|add:forloop.counter %}"
+                                       hx-boost="true"
+                                       class="p-1 dropdown-item text-nowrap text-center
+                                       {% if forloop.counter == problem.number %} active{% endif %}">
+                                        {{ forloop.counter }}번
+                                    </a>
+                                </div>
+                                {% if forloop.counter|divisibleby:5 %}
+                            </div>
+                            <div class="row justify-content-center">
+                                {% endif %}
+                        {% endfor %}
+                    {% endpartialdef filtered_content %}
+                {% endwith %}
+            {% else %}
+                {% with problem_count=40 %}{% partial filtered_content %}{% endwith %}
+            {% endif %}
+        </div>
+    </div>
+{% endpartialdef nav_problem_list %}
+
+{% partialdef nav_other_list %}
+    <div class="container" style="min-width: 300px;">
+        {% if list_title %}
+            <div class="row justify-content-center p-2 text-bg-{{ info.color }} fw-bold">
+                {{ list_title }}
+            </div>
+        {% endif %}
+        {% if not list_data %}
+            <div class="col-12 text-center text-danger p-3">자료가 없습니다.</div>
+        {% endif %}
+        {% for data in list_data %}
+            {% if forloop.counter0|divisibleby:5 %}
+                </div>
+            {% ifchanged %}
+                {% if forloop.counter0 != 0 %}
+                <hr class="m-1">
+                {% endif %}
+                <div class="row justify-content-center p-2 text-{{ info.color }} fw-bold">
+                    {{ data.exam_name }}
+                </div>
+            {% endifchanged %}
+                <div class="row justify-content-center p-2">
+            {% endif %}
+            {% if data %}
+                <div class="col-2 text-center p-0">
+                    <a href="{{ data.problem_url }}" hx-get="{{ data.problem_url }}"
+                       class="p-1 dropdown-item text-nowrap text-center
+                       {% if data.problem_id == problem.id %} active{% endif %}">
+                        {{ data.problem_number }}번
+                    </a>
+                </div>
+            {% else %}
+                <div class="col-2 text-center p-0"> </div>
+            {% endif %}
+        {% endfor %}
+    </div>
 {% endpartialdef nav_other_list %}
