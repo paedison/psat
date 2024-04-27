@@ -403,3 +403,13 @@ div.django-ckeditor-widget {
 #floatingCollection.show-menu {
     right: 20px;
 }
+
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+.option-selected {
+    color: rgb(13, 110, 253);
+    border-color: rgb(13, 110, 253);
+    font-weight: bold;
+}

@@ -2,6 +2,7 @@
 {% load slippers %}
 {% load partials %}
 {% load crispy_forms_tags %}
+{% load crispy_forms_field %}
 
 <div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
     {{ sub_title|safe }}
@@ -42,11 +43,23 @@
                 <form class="row row-cols-auto g-2 align-items-center justify-content-center"
                       method="get" hx-trigger="change" hx-target="#problemCard"
                       hx-get="{{ base_url }}" hx-push-url="false">
-                    <a type="button" class="btn btn-outline-primary m-1"
+                    <a type="button" class="btn btn-primary m-1 fw-bold"
                        href="{{ base_url }}" hx-boost="true">
                         전체 문제
                     </a>
-                    {{ form|crispy }}
+                    {% for field in form %}
+                        <div class="my-1">
+                            {% if field.errors %}
+                                {% crispy_field field 'class' 'form-select is-invalid' %}
+                            {% else %}
+                                {% if field.value == None or field.value == '' %}
+                                    {% crispy_field field 'class' 'form-select' %}
+                                {% else %}
+                                    {% crispy_field field 'class' 'form-select option-selected' %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
                     <input id="id_data" type="text" name="keyword"
                            value="{{ keyword }}" hidden
                            placeholder="{% trans 'Enter search keyword' %}"
