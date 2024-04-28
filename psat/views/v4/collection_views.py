@@ -12,7 +12,7 @@ class ListView(
     vanilla.TemplateView,
 ):
     """View for loading collection card."""
-    template_name = 'psat/v4/snippets/collection_list.html'
+    template_name = 'psat/v4/collection_list.html'
 
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
@@ -143,7 +143,7 @@ class UpdateView(
     collection_view_mixins.BaseMixIn,
     vanilla.UpdateView,
 ):
-    template_name = 'psat/v4/snippets/collection_list.html#update_collection'
+    template_name = 'psat/v4/collection_list.html#update_collection'
 
     def get_success_url(self):
         return reverse_lazy('psat:collection_list')

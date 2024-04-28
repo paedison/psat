@@ -1,6 +1,5 @@
 {% load i18n %}
 {% load static %}
-{% load partials %}
 
 <div hx-swap-oob="innerHTML:#psatMemo{{ problem.id }}">
     {% if my_memo %}
@@ -16,6 +15,9 @@
 {% else %}
     {% partial create_form %}
 {% endif %}
+
+
+{######## partials ########}
 
 {% partialdef memo_content %}
     <ul class="list-group list-group-flush">

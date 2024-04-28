@@ -1,7 +1,6 @@
 {% extends 'list.html' %}
 {% load static %}
 {% load slippers %}
-{% load partials %}
 {% load psat_filter %}
 
 {% block main %}
@@ -43,6 +42,9 @@
         </section>
     {% endpartialdef list_main %}
 {% endblock %}
+
+
+{######## partials ########}
 
 {% partialdef unique_toggle_btn %}
     {% if unique %}

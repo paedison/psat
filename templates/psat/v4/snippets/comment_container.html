@@ -1,6 +1,5 @@
 {% load i18n %}
 {% load slippers %}
-{% load partials %}
 
 <div class="d-flex justify-content-end mb-3">
     <div class="btn-group">
@@ -15,21 +14,20 @@
 </div>
 
 <hr class="border-secondary">
-{% if page_obj %}
-    {% for comment in page_obj %}
-        {% include 'psat/v4/snippets/comment_box.html' %}
-        <hr class="border-secondary">
-    {% endfor %}
-{% else %}
+{% for comment in page_obj %}
+    {% include 'psat/v4/snippets/comment_box.html' %}
+    <hr class="border-secondary">
+{% empty %}
     <div class="text-center">자료가 없습니다.</div>
     <hr class="border-secondary">
+{% endfor %}
+
+{% if page_obj.has_next or page_obj.has_previous %}
+    {% include 'psat/v4/snippets/pagination.html' with target_id='collapseComment' %}
 {% endif %}
 
-{% with target_id='collapseComment' %}
-    {% if page_obj.has_next or page_obj.has_previous %}
-        {% include 'psat/v4/snippets/pagination.html' %}
-    {% endif %}
-{% endwith %}
+
+{######## partials ########}
 
 {% partialdef button_reload %}
     <button class="btn btn-sm btn-outline-success" title="{% trans 'Reload' %}"

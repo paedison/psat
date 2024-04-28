@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load partials %}
 
 <div class="row">
     <div class="d-flex{% if comment.parent %} ps-4{% endif %}">
@@ -39,6 +38,9 @@
         {{ comment.comment|safe }}
     </div>
 </div>
+
+
+{######## partials ########}
 
 {% partialdef modal_reply_create %}
     <button class="btn btn-sm btn-outline-primary" title="{% trans 'Reply' %}"

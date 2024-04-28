@@ -1,0 +1,50 @@
+{% load i18n %}
+
+{% for collection in collections %}
+    <div id="collectionList{{ collection.id }}" class="list-group-item list-group-item-action p-0">
+        <input type="hidden" name="collection" value="{{ collection.id }}"/>
+        <div class="container">
+            <div class="row">
+                <div class="col-2 p-0">
+                    <div class="d-flex h-100 align-items-center justify-content-center bg-warning-subtle cursor-pointer"
+                         hx-target="#problemCard" hx-swap="innerHTML swap:0.25s"
+                         hx-get="{% url 'psat:collection_item' %}?collection={{ collection.id }}">
+                        <div class="fw-bold py-2">{{ collection.order }}</div>
+                    </div>
+                </div>
+                <div class="col-8 px-1">
+                    <div class="d-flex h-100 align-items-center justify-content-start cursor-pointer"
+                         hx-target="#problemCard" hx-swap="innerHTML swap:0.25s"
+                         hx-get="{% url 'psat:collection_item' %}?collection={{ collection.id }}">
+                        {{ collection.title }}
+                    </div>
+                </div>
+                <div class="col-2 text-nowrap">
+                    <div class="d-flex h-100 align-items-center justify-content-end">
+                        <span class="me-1 htmx-fade-in htmx-fade-out cursor-pointer"
+                              data-bs-toggle="modal" data-bs-target="#modalContainer"
+                              hx-target="#modalContainer" hx-swap="innerHTML swap:0.25s"
+                              hx-get="{% url 'psat:collection_modal_update' %}?collection={{ collection.id }}">
+                            <i class="fa-solid fa-pen text-success"></i>
+                        </span>
+                        <span class="htmx-fade-in htmx-fade-out cursor-pointer"
+                              hx-target="#collectionListForm" hx-swap="innerHTML swap:0.25s"
+                              hx-confirm="{% trans 'Are you sure you wish to delete the collection?' %}"
+                              hx-post="{% url 'psat:collection_delete' collection.id %}">
+                            <i class="fa-solid fa-square-xmark text-danger fs-5"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <div class="list-group-item list-group-item-action">
+        {% trans 'No collections available' %}
+    </div>
+{% endfor %}
+<div class="list-group-item list-group-item-action p-2 htmx-fade-in htmx-fade-out cursor-pointer text-secondary"
+     hx-target="this" hx-swap="innerHTML swap:0.25s"
+     hx-get="{% url 'psat:collection_create' %}?problem_id={{ problem_id }}">
+    <i class="fa-solid fa-plus"></i> {% trans 'Add new collection' %}
+</div>

@@ -1,7 +1,6 @@
 {% load i18n %}
 {% load psat_filter %}
 {% load taggit_templatetags2_tags %}
-{% load partials %}
 
 <div hx-swap-oob="innerHTML:#psatTag{{ problem.id }}">
     {% if my_tag %}
@@ -21,6 +20,9 @@
 {% if user.is_admin %}
     {% partial all_tags %}
 {% endif %}
+
+
+{######## partials ########}
 
 {% partialdef tag_content %}
     <form class="mb-2">

@@ -1,6 +1,5 @@
 {% extends 'list.html' %}
 {% load i18n %}
-{% load partials %}
 
 {% block main %}
     {% partialdef list_main inline=True %}
@@ -37,6 +36,9 @@
         </section>
     {% endpartialdef list_main %}
 {% endblock main %}
+
+
+{######## partials ########}
 
 {% partialdef list_buttons %}
     <div aria-label="버튼 모음" hx-target="#problemCard"

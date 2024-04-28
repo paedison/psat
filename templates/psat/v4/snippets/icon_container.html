@@ -1,4 +1,3 @@
-{% load partials %}
 {% load slippers %}
 {% load psat_filter %}
 
@@ -24,6 +23,9 @@
         </div>
     </div>
 </article>
+
+
+{######## partials ########}
 
 {% partialdef login_modal %}
     <a hx-get="{% url 'account_login_modal' %}" href=""

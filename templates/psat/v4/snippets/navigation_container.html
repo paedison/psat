@@ -1,7 +1,6 @@
 {% load static %}
 {% load i18n %}
 {% load slippers %}
-{% load partials %}
 {% load psat_filter %}
 
 <article id="detailNavContainer" class="flex-nowrap input-group me-2"
@@ -21,6 +20,9 @@
         {% partial list_buttons_for_authenticated_user %}
     {% endif %}
 </article>
+
+
+{######## partials ########}
 
 {% partialdef adjacent_prob_button %}
     {% for _ in '12' %}

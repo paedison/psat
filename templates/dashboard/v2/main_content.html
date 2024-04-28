@@ -1,38 +1,38 @@
 {% load static %}
 {% load slippers %}
-{% load partials %}
 {% load psat_filter %}
 
 {% #responsive_table %}
     <tbody>
-        {% if page_obj %}
-            {% for log in page_obj %}
-                <tr class="text-start">
-                    <td class="text-nowrap fs-6">
-                        <div class="d-flex">
-                            {% partial reference %}
-                            {% if view_type == 'like' %}{% partial like %}{% endif %}
-                            {% if view_type == 'rate' %}{% partial rate %}{% endif %}
-                            {% if view_type == 'solve' %}{% partial solve %}{% endif %}
-                            {% partial date %}
-                        </div>
-                        {% partial question %}
-                    </td>
-                </tr>
-            {% endfor %}
-        {% else %}
+        {% for log in page_obj %}
+            <tr class="text-start">
+                <td class="text-nowrap fs-6">
+                    <div class="d-flex">
+                        {% partial reference %}
+                        {% if view_type == 'like' %}{% partial like %}{% endif %}
+                        {% if view_type == 'rate' %}{% partial rate %}{% endif %}
+                        {% if view_type == 'solve' %}{% partial solve %}{% endif %}
+                        {% partial date %}
+                    </div>
+                    {% partial question %}
+                </td>
+            </tr>
+        {% empty %}
             <tr>
                 <td class="text-center text-nowrap px-2" colspan="5">
                     자료가 없습니다.
                 </td>
             </tr>
-        {% endif %}
+        {% endfor %}
     </tbody>
 {% /responsive_table %}
 
 {% if page_obj.has_next or page_obj.has_previous %}
     {% include 'psat/v4/snippets/pagination.html' %}
 {% endif %}
+
+
+{######## partials ########}
 
 {% partialdef reference %}
     <div class="me-2" aria-label="Reference">

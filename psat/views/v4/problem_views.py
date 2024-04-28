@@ -102,14 +102,6 @@ class ProblemListView(ListView):
         return self.template_name
 
 
-class SearchView(ListView):
-    def get_sub_title_by_psat(self, psat, exam_reference, end_string='검색 결과') -> str:
-        return super().get_sub_title_by_psat(psat, exam_reference, end_string)
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(search=True, **kwargs)
-
-
 class DetailView(
     problem_view_mixins.DetailViewMixin,
     vanilla.TemplateView,

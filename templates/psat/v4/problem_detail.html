@@ -2,7 +2,6 @@
 {% load static %}
 {% load i18n %}
 {% load slippers %}
-{% load partials %}
 {% load psat_filter %}
 
 {% block main %}
@@ -45,6 +44,20 @@
         </div><!-- Modal Container: Problem Image -->
     {% endpartialdef detail_main %}
 {% endblock main %}
+
+{% block page_script %}
+    <script>
+        $(document).on('click', '.ckeditor-submit', function() {
+            let button = $(this);
+            let ckeditorId = button.closest('form').find('div.django-ckeditor-widget').attr('data-field-id');
+            let content = CKEDITOR.instances[ckeditorId].getData();
+            button.closest('form').find('textarea.ckeditor-content').text(content);
+        });
+    </script>
+{% endblock %}
+
+
+{######## partials ########}
 
 {% partialdef page_title %}
     <div class="pagetitle">
@@ -237,14 +250,3 @@
         </li>
     </ul>
 {% endpartialdef need_login %}
-
-{% block page_script %}
-    <script>
-        $(document).on('click', '.ckeditor-submit', function() {
-            let button = $(this);
-            let ckeditorId = button.closest('form').find('div.django-ckeditor-widget').attr('data-field-id');
-            let content = CKEDITOR.instances[ckeditorId].getData();
-            button.closest('form').find('textarea.ckeditor-content').text(content);
-        });
-    </script>
-{% endblock %}

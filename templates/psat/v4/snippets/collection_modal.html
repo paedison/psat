@@ -1,4 +1,4 @@
-{% load partials %}
+{######## partials ########}
 
 {% partialdef add_item %}
     <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
@@ -10,22 +10,20 @@
                 <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                {% if collections %}
-                    {% for collection in collections %}
-                        <form class="{% if forloop.first %}mb-2{% elif forloop.last %}mt-2{% else %}my-2{% endif %}">
-                            <input type="text" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID" hidden/>
-                            <div class="form-check text-start">
-                                <input class="form-check-input" type="checkbox" name="is_checked" id="collection{{ collection.id }}"
-                                       hx-post="{% url 'psat:collection_item_add' collection.id %}"
-                                       hx-trigger="click" hx-target="#{{ icon_id }}" hx-swap="innerHTML swap:0.25s"
-                                       {% if collection.item_exists %}checked{% endif %}/>
-                                <label class="form-check-label" for="collection{{ collection.id }}">{{ collection.title }}</label>
-                            </div>
-                        </form>
-                    {% endfor %}
-                {% else %}
+                {% for collection in collections %}
+                    <form class="{% if forloop.first %}mb-2{% elif forloop.last %}mt-2{% else %}my-2{% endif %}">
+                        <input type="text" name="problem_id" value="{{ problem_id }}" aria-label="Problem ID" hidden/>
+                        <div class="form-check text-start">
+                            <input class="form-check-input" type="checkbox" name="is_checked" id="collection{{ collection.id }}"
+                                   hx-post="{% url 'psat:collection_item_add' collection.id %}"
+                                   hx-trigger="click" hx-target="#{{ icon_id }}" hx-swap="innerHTML swap:0.25s"
+                                   {% if collection.item_exists %}checked{% endif %}/>
+                            <label class="form-check-label" for="collection{{ collection.id }}">{{ collection.title }}</label>
+                        </div>
+                    </form>
+                {% empty %}
                     추가된 컬렉션이 없습니다.
-                {% endif %}
+                {% endfor %}
             </div>
             <div class="modal-footer justify-content-center htmx-fade-out htmx-fade-in"
                  hx-target="this" hx-swap="innerHTML swap:0.25s" hx-push-url="false">
