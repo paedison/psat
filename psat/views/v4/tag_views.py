@@ -46,6 +46,7 @@ class CreateView(
     def form_valid(self, form):
         obj = form.save(commit=False)
         obj.user_id = self.request.user.id
+        obj.problem_id = self.kwargs.get('problem_id')
         obj.save()
         self.add_tags_to_object(obj)
         return super().form_valid(obj)

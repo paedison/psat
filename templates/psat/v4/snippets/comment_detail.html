@@ -68,18 +68,9 @@
                 </div>
 
                 <div class="col-12">
-                    <div id="containerComment" class="card htmx-fade-in htmx-fade-out">
-                        <div class="card-header">질문</div>
-
-                        <div class="card-body" hx-target="#main">
-                            <div id="collapseComment" class="accordion-collapse collapse show"
-                                 aria-labelledby="headingComment" data-bs-parent="#accordionComment">
-                                {% for comment in comments %}
-                                    {% include 'psat/v4/snippets/comment_box.html' with problem_id=problem.id %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'psat/v4/problem_detail.html#container_comment' %}
+                    <div hx-target="#collapseComment" hx-swap="innerHTML swap:0.25s"
+                         hx-trigger="load" hx-get="{% url 'psat:comment_detail_content' parent_id %}"></div>
                 </div>
             </div>
         </section>

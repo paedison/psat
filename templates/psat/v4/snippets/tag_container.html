@@ -10,119 +10,95 @@
     {% endif %}
 </div>
 
-<hr class="border-secondary mt-0">
 {% if my_tag %}
-    {% partial tag_content %}
-{% else %}
-    {% partial create_form %}
-{% endif %}
-
-{% if user.is_admin %}
-    {% partial all_tags %}
-{% endif %}
-
-
-{######## partials ########}
-
-{% partialdef tag_content %}
-    <form class="mb-2">
-        <div class="input-group">
-            <input name="problem" type="text" class="tag-info"
-                   value="{{ my_tag.problem.id }}" aria-label="Problem" hidden/>
-            <input name="tags" type="text" aria-label="Tag input" required
-                   class="form-control form-control-sm" placeholder="{% trans 'Leave tags' %}"/>
-            <button class="btn btn-sm btn-outline-primary"
-                    hx-post="{% url 'psat:tag_add' my_tag.id %}"
-                    hx-include=".tag-info" hx-target="#containerTag">
-                {% trans 'Add' %}
-            </button>
-        </div>
+    <form class="mb-2" hx-post="{% url 'psat:tag_add' my_tag.id %}">
+        {% with button_name='Add' %}{% partial tag_form %}{% endwith %}
     </form>
-
     <div class="d-flex align-items-start">
         <div class="border-start border-secondary-subtle ps-2">
             {% get_sorted_tags_for_object my_tag as "tags" %}
-            {% for tag in tags %}
-                <div class="btn-group">
-                    <span class="badge rounded-pill text-bg-light dropdown-toggle" type="button"
-                          data-bs-toggle="dropdown" aria-expanded="false">{{ tag }}</span>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <button class="dropdown-item" title="{% trans 'Tag Cloud' %}" href="#">
-                                {{ PSAT_ICON_SET.tag|safe }}
-                                {% trans 'Tag Cloud' %}
-                            </button>
-                        </li>
-                        <li>
-                            <button class="dropdown-item" title="{% trans 'Delete Tag' %}" href=""
-                                    hx-post="{% url 'psat:tag_delete' my_tag.id tag %}"
-                                    hx-confirm="{% trans 'Are you sure you wish to delete your tag?' %}">
-                                <i class="fa-solid fa-xmark"></i>
-                                {% trans 'Delete Tag' %}
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            {% endfor %}
+            {% for tag in tags %}{% partial my_tag_content %}{% endfor %}
         </div>
     </div>
-{% endpartialdef tag_content %}
-
-{% partialdef create_form %}
-    <form class="mb-2"
-          hx-post="{% url 'psat:tag_create' problem.id %}">
-        <div class="input-group">
-            <input name="user_id" type="text"
-                   value="{{ user.id }}" aria-label="User" hidden/>
-            <input name="problem" type="text"
-                   value="{{ problem.id }}" aria-label="Problem" hidden/>
-            <input name="tags" type="text" aria-label="Tag input" required
-                   class="form-control form-control-sm" placeholder="{% trans 'Leave tags' %}"/>
-            <button type="submit" class="btn btn-sm btn-outline-primary">
-                {% trans 'Create' %}
-            </button>
-        </div>
+{% else %}
+    <form class="mb-2" hx-post="{% url 'psat:tag_create' problem.id %}">
+        {% with button_name='Create' %}{% partial tag_form %}{% endwith %}
     </form>
-{% endpartialdef create_form %}
+{% endif %}
 
-{% partialdef all_tags %}
+{% if user.is_admin %}
     <div id="allTags" class="pt-2 htmx-fade-in htmx-fade-out">
         <div class="badge bg-primary mb-2">
             <i class="fa-solid fa-tag fa-fw text-white"></i> ALL TAGS
         </div>
         <div class="d-flex align-items-start">
-            {% if all_tags %}
-                <div class="border-start border-secondary-subtle ps-2">
-                    {% for tag in all_tags %}
-                    <div class="btn-group">
-                        <span class="badge rounded-pill text-bg-light dropdown-toggle" type="button"
-                              data-bs-toggle="dropdown" aria-expanded="false">{{ tag }}</span>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <button class="dropdown-item" title="{% trans 'Tag Cloud' %}" href="">
-                                    {{ PSAT_ICON_SET.tag|safe }}
-                                    {% trans 'Tag Cloud' %}
-                                </button>
-                            </li>
-                            {% if not my_tag_list or tag not in my_tag_list %}
-                            <li>
-                                <form>
-                                    <input name="tags" type="text" value="{{ tag }}" aria-label="Tag input"
-                                           class="form-control form-control-sm" hidden/>
-                                    <button class="dropdown-item" href="" hx-include=".tag-info"
-                                            hx-post="{% url 'psat:tag_add' my_tag.id %}"
-                                            hx-target="#detailTag" hx-swap="innerHTML">
-                                        <i class="fa-solid fa-plus"></i>
-                                        {% trans 'Add to my tags' %}
-                                    </button>
-                                </form>
-                            </li><!-- Add to My Tags End -->
-                            {% endif %}
-                        </ul>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            <div class="border-start border-secondary-subtle ps-2">
+                {% for tag in all_tags %}{% partial all_tags_content %}{% endfor %}
+            </div>
         </div>
     </div><!-- All Tags End -->
-{% endpartialdef all_tags %}
+{% endif %}
+
+
+{######## partials ########}
+
+{% partialdef tag_form %}
+    <div class="input-group">
+        <div class="form-floating">
+            <input id="id_tags" class="form-control form-control-sm" name="tags" type="text"
+                   placeholder="{% trans 'Leave tags' %}" required/>
+            <label for="id_tags">{% trans 'Leave tags' %}</label>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" type="submit">
+            {% trans button_name %}
+        </button>
+    </div>
+{% endpartialdef tag_form %}
+
+{% partialdef my_tag_content %}
+    <div class="btn-group">
+        <span class="badge rounded-pill text-bg-light dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">{{ tag }}</span>
+        <ul class="dropdown-menu">
+            <li>
+                <button class="dropdown-item" title="{% trans 'Tag Cloud' %}">
+                    {{ PSAT_ICON_SET.tag|safe }} {% trans 'Tag Cloud' %}
+                </button>
+            </li>
+            <li>
+                <button class="dropdown-item" title="{% trans 'Delete Tag' %}"
+                        hx-confirm="{% trans 'Are you sure you wish to delete your tag?' %}"
+                        hx-post="{% url 'psat:tag_delete' my_tag.id tag %}">
+                    <i class="fa-solid fa-xmark"></i> {% trans 'Delete Tag' %}
+                </button>
+            </li>
+        </ul>
+    </div>
+{% endpartialdef my_tag_content %}
+
+{% partialdef all_tags_content %}
+    <div class="btn-group">
+        <span class="badge rounded-pill text-bg-light dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">{{ tag }}</span>
+        <ul class="dropdown-menu">
+            <li>
+                <button class="dropdown-item" title="{% trans 'Tag Cloud' %}" href="">
+                    {{ PSAT_ICON_SET.tag|safe }}
+                    {% trans 'Tag Cloud' %}
+                </button>
+            </li>
+            {% if not my_tag_list or tag not in my_tag_list %}
+            <li>
+                <form hx-post="{% url 'psat:tag_add' my_tag.id %}">
+                    <input class="form-control form-control-sm"
+                           name="tags" type="hidden" value="{{ tag }}"/>
+                    <button class="dropdown-item" type="submit">
+                        <i class="fa-solid fa-plus"></i>
+                        {% trans 'Add to my tags' %}
+                    </button>
+                </form>
+            </li><!-- Add to My Tags End -->
+            {% endif %}
+        </ul>
+    </div>
+{% endpartialdef all_tags_content %}

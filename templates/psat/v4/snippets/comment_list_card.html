@@ -1,6 +1,7 @@
 {% load i18n %}
 
 <div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
+    <i class="fa-solid fa-circle-question fa-fw"></i>
     질문 리스트
     <a class="text-decoration-none ms-2" href=""
        hx-indicator="#commentIndicator"
@@ -45,8 +46,8 @@
                 </td>
                 <td class="text-nowrap p-2 fs-6" aria-label="Title">
                     <a class="text-decoration-none text-secondary" hx-boost="true"
-                       hx-swap="innerHTML swap:0.25s" hx-target="#main" hx-push-url="true"
-                       href="{% url 'psat:comment_detail' comment.id %}">
+                       hx-target="#main" hx-swap="innerHTML swap:0.25s"
+                       href="{% url 'psat:comment_detail' comment.parent_id|default:comment.id %}">
                         {% if comment.parent %}
                             <span class="text-primary">{{ icon_board.reply|safe }}</span>
                         {% endif %}

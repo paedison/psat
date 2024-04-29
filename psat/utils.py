@@ -278,10 +278,9 @@ def get_all_comments(queryset, problem_id=None):
 
 def get_all_comments_of_parent_comment(queryset, parent_comment):
     queryset = queryset.filter(parent=parent_comment)
-    child_comments = queryset.exclude(parent__isnull=True).order_by('parent_id', '-timestamp')
+    child_comments = queryset.filter(parent=parent_comment).order_by('parent_id', '-timestamp')
     all_comments = [parent_comment]
-    for comment in child_comments:
-        all_comments.append(comment)
+    all_comments.extend(child_comments)
     return all_comments
 
 

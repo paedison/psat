@@ -7,33 +7,23 @@
 {% block main %}
     {% partialdef detail_main inline=True %}
         {{ info|json_script:'info' }}
-        {% with p=problem %}
-            {% partial page_title %}
-        {% endwith %}
+        {% with p=problem %}{% partial page_title %}{% endwith %}
 
         <section class="section">
             <div class="row">
-                <div class="col-xxl-8">
-                    {% partial container_problem %}
-                </div>
-
+                <div class="col-xxl-8">{% partial container_problem %}</div>
                 <div class="col-xxl-4">
                     <div class="row">
-                        <div class="col-md-6 col-xxl-12">
-                            {% partial container_memo %}
-                        </div>
-                        <div class="col-md-6 col-xxl-12">
-                            {% partial container_tag %}
-                        </div>
+                        <div class="col-md-6 col-xxl-12">{% partial container_memo %}</div>
+                        <div class="col-md-6 col-xxl-12">{% partial container_tag %}</div>
                     </div>
                 </div>
             </div>
-
             <div class="row">
                 <div class="col-12">
-                    {% if user.is_admin %}
-                        {% partial container_comment %}
-                    {% endif %}
+                    {% if user.is_admin %}{% partial container_comment %}{% endif %}
+                    <div hx-target="#collapseComment" hx-swap="innerHTML swap:0.25s"
+                         hx-trigger="load" hx-get="{% url 'psat:comment_container' problem.id %}"></div>
                 </div>
             </div>
         </section>
@@ -44,17 +34,6 @@
         </div><!-- Modal Container: Problem Image -->
     {% endpartialdef detail_main %}
 {% endblock main %}
-
-{% block page_script %}
-    <script>
-        $(document).on('click', '.ckeditor-submit', function() {
-            let button = $(this);
-            let ckeditorId = button.closest('form').find('div.django-ckeditor-widget').attr('data-field-id');
-            let content = CKEDITOR.instances[ckeditorId].getData();
-            button.closest('form').find('textarea.ckeditor-content').text(content);
-        });
-    </script>
-{% endblock %}
 
 
 {######## partials ########}
@@ -91,9 +70,7 @@
                 </div>
                 <div class="d-flex align-items-center fs-6">
                     <div class="text-nowrap me-auto">
-                        {% with problem_id=problem.id %}
-                            {% include 'psat/v4/snippets/icon_container.html' %}
-                        {% endwith %}
+                        {% include 'psat/v4/snippets/icon_container.html' with problem_id=problem.id %}
                     </div>
                     <div class="ms-auto justify-content-end">
                         {% include 'psat/v4/snippets/solve_container.html' %}
@@ -149,6 +126,7 @@
                             </div>
                         </button>
                     </h2>
+                    <hr class="border-secondary mt-0">
                     <div id="collapseMemo"
                          class="accordion-collapse collapse show htmx-fade-in htmx-fade-out"
                          hx-target="#collapseMemo" hx-swap="innerHTML swap:0.25s"
@@ -180,6 +158,7 @@
                             </div>
                         </button>
                     </h2>
+                    <hr class="border-secondary mt-0">
                     <div id="collapseTag"
                          class="accordion-collapse collapse show htmx-fade-in htmx-fade-out"
                          hx-target="#collapseTag" hx-swap="innerHTML swap:0.25s"
@@ -211,11 +190,30 @@
                             </div>
                         </button>
                     </h2>
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Reload' %}"
+                                    hx-target="#collapseComment" hx-swap="innerHTL swap:0.25s"
+                                    hx-get="{{ reload_url }}">
+                                <i class="fa-solid fa-rotate-right"></i> 새로고침
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Comment' %}"
+                                    hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                    hx-get="{{ create_url }}">
+                                {{ icon_question.filter|safe }} 질문하기
+                            </button>
+                    {#        <button class="btn btn-sm btn-outline-success"#}
+                    {#                hx-get="{% url 'psat:comment_container' problem_id %}">#}
+                    {#            <i class="fa-regular fa-window-maximize"></i>#}
+                    {#            새 창#}
+                    {#        </button>#}
+                        </div>
+                    </div>
+                    <hr class="border-secondary"/>
                     <div id="collapseComment"
                          class="accordion-collapse collapse show htmx-fade-in htmx-fade-out"
                          hx-target="#collapseComment" hx-swap="innerHTML swap:0.25s"
                          aria-labelledby="headingComment" data-bs-parent="#accordionComment">
-                        <div hx-trigger="load" hx-get="{% url 'psat:comment_container' problem.id %}"></div>
                     </div>
                 </div>
             </div>

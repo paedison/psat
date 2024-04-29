@@ -30,7 +30,7 @@ class MemoForm(forms.ModelForm):
 class TagForm(forms.ModelForm):
     class Meta:
         model = custom_models.Tag
-        fields = ['problem']
+        fields = []
 
 
 class CommentForm(forms.ModelForm):

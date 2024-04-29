@@ -50,6 +50,8 @@ class ContainerView(
         all_comments = utils.get_all_comments(comment_qs, problem_id)
         page_obj, page_range = self.get_paginator_info(all_comments, per_page=5)
         pagination_url = reverse_lazy('psat:comment_container', args=[problem_id])
+        reload_url = reverse_lazy('psat:comment_container', args=[problem_id])
+        create_url = reverse_lazy('psat:comment_create', args=[problem_id])
 
         return super().get_context_data(
             page_obj=page_obj,
@@ -57,6 +59,8 @@ class ContainerView(
             pagination_url=f'{pagination_url}?',
             problem_id=problem_id,
             form=self.form_class,
+            reload_url=reload_url,
+            create_url=create_url,
 
             icon_board=self.ICON_BOARD,
             icon_question=self.ICON_QUESTION,
@@ -78,23 +82,48 @@ class DetailView(
         return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
-        comment_id = self.kwargs.get('pk')
+        parent_id = self.kwargs.get('pk')
         comment_qs = utils.get_comment_qs()
-
-        target_comment = utils.get_instance_by_id(comment_qs, comment_id)
-        parent_comment = target_comment
-        parent_id = target_comment.parent_id
-        if parent_id:
-            parent_comment = utils.get_instance_by_id(comment_qs, parent_id)
-        comments = utils.get_all_comments_of_parent_comment(comment_qs, parent_comment)
-
+        parent_comment = utils.get_instance_by_id(comment_qs, parent_id)
+        problem = utils.get_problem_by_problem_id(parent_comment.problem_id)
         return super().get_context_data(
             info={'menu': 'psat'},
             sub_title=self.get_sub_title_from_comment(parent_comment),
-            problem=utils.get_problem_by_problem_id(parent_comment.problem_id),
-            comments=comments,
+            problem=problem,
+            parent_id=parent_id,
 
             icon_menu=self.ICON_MENU['psat'],
+            icon_board=self.ICON_BOARD,
+            icon_question=self.ICON_QUESTION,
+            **kwargs,
+        )
+
+
+class DetailContentView(
+    comment_view_mixins.BaseMixIn,
+    vanilla.DetailView,
+):
+    template_name = 'psat/v4/snippets/comment_container.html'
+
+    def get_context_data(self, **kwargs):
+        parent_id = self.kwargs.get('pk')
+        comment_qs = utils.get_comment_qs()
+        parent_comment = utils.get_instance_by_id(comment_qs, parent_id)
+
+        comments = utils.get_all_comments_of_parent_comment(comment_qs, parent_comment)
+        page_obj, page_range = self.get_paginator_info(comments, per_page=5)
+        pagination_url = reverse_lazy('psat:comment_detail_content', args=[parent_comment.id])
+        create_url = reverse_lazy('psat:comment_create', args=[parent_comment.problem_id])
+
+        return super().get_context_data(
+            problem_id=parent_comment.problem_id,
+            parent_comment=parent_comment,
+            page_obj=page_obj,
+            page_range=page_range,
+            pagination_url=f'{pagination_url}?',
+            reload_url=pagination_url,
+            create_url=create_url,
+
             icon_board=self.ICON_BOARD,
             icon_question=self.ICON_QUESTION,
             **kwargs,
