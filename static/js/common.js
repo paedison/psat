@@ -124,6 +124,10 @@ function attachContentCkeditor() {
     });
 }
 
+function scrollToTop() {
+    $('html, body').animate({ scrollTop: 0 }, 'fast');
+}
+
 initializeTooltips();
 initializeSortables();
 initializeToggleButtons();
@@ -134,4 +138,5 @@ jQuery('body').on('htmx:afterSwap', function() {
     initializeSortables();
     initializeToggleButtons();
     attachContentCkeditor();
+    scrollToTop();
 });
