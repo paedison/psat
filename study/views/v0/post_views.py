@@ -3,8 +3,8 @@ from django.urls import reverse_lazy
 from vanilla import model_views
 
 from common import constants
-from ..forms import PostForm  # Should Change Module
-from ..models import Post  # Should Change Module
+from study.forms import PostForm  # Should Change Module
+from study.models.old_model import Post  # Should Change Module
 
 
 class PostViewMixIn:

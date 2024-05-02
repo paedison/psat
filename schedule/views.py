@@ -8,6 +8,7 @@ from django.utils.safestring import mark_safe
 from vanilla import ListView
 
 from common.constants import icon
+from common.views.base_views import HtmxHttpRequest
 from .forms import EventForm
 from .models import Calendar, Event
 from .utils import Calendar
@@ -18,12 +19,11 @@ def index(request):
 
 
 class CalendarView(ListView):
+    request: HtmxHttpRequest
+
     model = Event
     category = 'schedule'
     template_name = 'schedule/calendar.html'
-    list_template = 'schedule/calendar.html'
-    list_main_template = f'{list_template}#list_main'
-    list_content_template = f'{list_template}#list_content'
 
     @property
     def info(self) -> dict:
@@ -41,11 +41,12 @@ class CalendarView(ListView):
     def post(self, request, *args, **kwargs):
         return self.get(request, *args, **kwargs)
 
-    def get_template_names(self) -> str:
-        if self.request.method == 'GET':
-            return self.list_content_template if self.request.htmx else self.list_template
-        elif self.request.method == 'POST':
-            return self.list_main_template
+    def get_template_names(self):
+        htmx_template = {
+            'False': self.template_name,
+            'True': f'{self.template_name}#list_main',
+        }
+        return htmx_template[f'{bool(self.request.htmx)}']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

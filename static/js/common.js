@@ -3,12 +3,16 @@ const menu = info['menu'];  // notice, dashboard, psat, score, schedule
 const view_type = info['view_type'];  // problem, like, rate, solve, search, psatScore, primeScore
 const parent_menu = ['score']  // menu with child branches
 
-
 // Toggle the side navigation
 $("#sidebarToggle").click(function() {
     $("body").toggleClass("toggle-sidebar");
 });
 
+function hideSidebar() {
+    if ($(window).width() < 1200) {
+        $('body').removeClass('toggle-sidebar');
+    }
+}
 
 // Expand & activate menu
 function expandMenu(target) {
@@ -22,6 +26,12 @@ function expandMenu(target) {
     bulletPoint.removeClass('fa-regular').addClass('fa-solid');
 }
 
+// Initialize the side menu bar
+function initialMenu() {
+    $('.nav-link').addClass('collapsed').attr('aria-expanded', 'false');
+    $('.aside-nav-icon').removeClass('active').find('i').removeClass('fa-solid').addClass('fa-regular');
+}
+
 // When the main menu activated
 $(document).ready(function() {
     if (parent_menu.includes(menu)) {
@@ -32,50 +42,22 @@ $(document).ready(function() {
     }
 });
 
-// Initialize the side menu bar
-function initialMenu() {
-    $('.nav-link').addClass('collapsed').attr('aria-expanded', 'false');
-    $('.aside-nav-icon').removeClass('active').find('i').removeClass('fa-solid').addClass('fa-regular');
-}
-
 // When clicked the logo
 $('.logo').click(function() {
     let target = $(this).data('target');
     initialMenu();
     $(target).removeClass('collapsed').attr('aria-expanded', 'true');
-    if ($(window).width() < 1200) {
-        $('body').removeClass('toggle-sidebar');
-    }
+    hideSidebar()
 });
 
-// When clicked the main menu [Notice, Dashboard, PSAT, Schedule, Score]
-$('#sidebar-nav .nav-link').click(function() {
-    const menuTargets = ['#psat-nav', '#score-nav'];
-    let bsTarget = $(this).data('bsTarget');
-
-    if (!menuTargets.includes(bsTarget)) {
-        initialMenu();
-        menuTargets.forEach(function (menuId) {
-           $(menuId).removeClass('show');
-        });
-        $(this).removeClass('collapsed').attr('aria-expanded', 'true');
-        if ($(window).width() < 1200) {
-            $('body').removeClass('toggle-sidebar');
-        }
-    }
+// When clicked the main menu
+$('#noticeList, #dashboardList, #psatList, #predictList, #scheduleList').click(function() {
+    initialMenu();
+    $(this).removeClass('collapsed').attr('aria-expanded', 'true');
+    hideSidebar()
 });
 
-function toggleSidebar() {
-    if ($(window).width() < 1200) {
-        $('body').removeClass('toggle-sidebar');
-    }
-}
-
-$('a').click(function (){
-    toggleSidebar();
-})
-
-// When clicked the PSAT sub-menu [Problem, Like, Rate, Answer]
+// When clicked the sub-menu
 jQuery('.aside-nav-icon').click(function() {
     initialMenu();
 
@@ -84,9 +66,8 @@ jQuery('.aside-nav-icon').click(function() {
     $(this).closest('li').children().find('i').removeClass('fa-solid').addClass('fa-regular');
 
     $(this).addClass('active').find('i').removeClass('fa-regular').addClass('fa-solid');
-    toggleSidebar();
+    hideSidebar();
 });
-
 
 // Initialize tooltips, Sortables, toggleButtons
 function initializeTooltips() {
@@ -113,7 +94,6 @@ function initializeToggleButtons() {
     });
 }
 
-
 // Attach the content of ckeditor to the form
 function attachContentCkeditor() {
     $('.ckeditor-submit').click( function() {
@@ -128,15 +108,23 @@ function scrollToTop() {
     $('html, body').animate({ scrollTop: 0 }, 'fast');
 }
 
+function mainAnchorClick() {
+    $('#main a').click(function (){
+        hideSidebar();
+    });
+}
+
 initializeTooltips();
 initializeSortables();
 initializeToggleButtons();
 attachContentCkeditor();
+mainAnchorClick();
 
 jQuery('body').on('htmx:afterSwap', function() {
+    scrollToTop();
     initializeTooltips();
     initializeSortables();
     initializeToggleButtons();
     attachContentCkeditor();
-    scrollToTop();
+    mainAnchorClick();
 });

@@ -94,7 +94,7 @@ class StudyViewSetting(ListViewSetting):
             problem_filter &= Q(exam__sub=self.sub)
         return problem_filter
 
-    def get_filtered_queryset(self, field='', value='') -> models.Problem.objects:
+    def get_filtered_queryset(self, field='', value=''):
         """ Get filtered queryset for like, rate, answer views. """
         problem_filter = self.problem_filter
         if self.view_type == 'search':
@@ -197,7 +197,7 @@ def base_view(request, view_type='problem'):
 def list_view(request):
     model = models.Question
     chapter_list = model.chapter.objects.filter(category=2)
-    chapter = request.GET.get('chapter','')
+    chapter = request.GET.get('chapter', '')
     problem_list = models.Question.objects.filter(chapter__category=2)
     if chapter:
         problem_list = problem_list.filter(chapter__chapter=chapter)
@@ -205,5 +205,3 @@ def list_view(request):
         'chapter_list': chapter_list,
         # 'page_obj':
     }
-
-

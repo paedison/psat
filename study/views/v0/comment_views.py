@@ -3,8 +3,8 @@ from django.urls import reverse_lazy
 from vanilla import model_views, views
 
 from common import constants
-from ..forms import CommentForm, PostForm  # Should Change App Name
-from ..models import Comment, Post  # Should Change App Name
+from study.forms import CommentForm, PostForm  # Should Change App Name
+from study.models import Comment, Post  # Should Change App Name
 
 
 class CommentViewMixIn:
