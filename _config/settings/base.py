@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     'dashboard',
     'community',
     'predict',
+    'lecture',
 ]
 
 MIDDLEWARE = [

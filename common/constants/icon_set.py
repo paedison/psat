@@ -1,45 +1,45 @@
 class ConstantIconSet:
     """Represent icon constant."""
     ICON_MENU = {
-        'admin': '<i class="fa-solid fa-crown fa-fw"></i>',
+        'admin': '<i class="fa-solid fa-fw fa-crown"></i>',
 
-        'notice': '<i class="fa-solid fa-bullhorn fa-fw"></i>',
-        'dashboard': '<i class="fa-solid fa-list fa-fw"></i>',
-        'psat': '<i class="fa-solid fa-layer-group fa-fw"></i>',
-        'problem': '<i class="fa-solid fa-file-lines fa-fw"></i>',
-        'like': '<i class="fa-solid fa-heart fa-fw"></i>',
-        'rate': '<i class="fa-solid fa-star fa-fw"></i>',
-        'solve': '<i class="fa-solid fa-circle-check fa-fw"></i>',
-        'memo': '<i class="fa-solid fa-note-sticky fa-fw"></i>',
-        'tag': '<i class="fa-solid fa-tag fa-fw"></i>',
-        'search': '<i class="fa-solid fa-magnifying-glass fa-fw"></i>',
-        'community': '<i class="fa-solid fa-users-line fa-fw"></i>',
-        'predict': '<i class="fa-solid fa-arrows-up-to-line"></i>',
-        'score': '<i class="fa-solid fa-chart-simple fa-fw"></i>',
-        'prime': '<i class="fa-solid fa-file fa-fw"></i>',
-        'schedule': '<i class="fa-regular fa-calendar-days fa-fw"></i>',
+        'notice': '<i class="fa-solid fa-fw fa-bullhorn"></i>',
+        'dashboard': '<i class="fa-solid fa-fw fa-list"></i>',
+        'psat': '<i class="fa-solid fa-fw fa-layer-group"></i>',
+        'problem': '<i class="fa-solid fa-fw fa-file-lines"></i>',
+        'like': '<i class="fa-solid fa-fw fa-heart"></i>',
+        'rate': '<i class="fa-solid fa-fw fa-star"></i>',
+        'solve': '<i class="fa-solid fa-fw fa-circle-check"></i>',
+        'memo': '<i class="fa-solid fa-fw fa-note-sticky"></i>',
+        'tag': '<i class="fa-solid fa-fw fa-tag"></i>',
+        'search': '<i class="fa-solid fa-fw fa-magnifying-glass"></i>',
+        'community': '<i class="fa-solid fa-fw fa-users-line"></i>',
+        'predict': '<i class="fa-solid fa-fw fa-arrows-up-to-line"></i>',
+        'score': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
+        'prime': '<i class="fa-solid fa-fw fa-file"></i>',
+        'schedule': '<i class="fa-regular fa-fw fa-calendar-days"></i>',
 
-        'qna': '<i class="fa-solid fa-clipboard-question fa-fw"></i>',
-        'profile': '<i class="fa-solid fa-user fa-fw"></i>',
-        'account': '<i class="fa-solid fa-user fa-fw"></i>',
-        'signup': '<i class="fa-solid fa-door-open fa-fw"></i>',
-        'login': '<i class="fa-solid fa-sign-in-alt fa-fw"></i>',
-        'logout': '<i class="fa-solid fa-sign-out-alt fa-fw"></i>',
-        'study': '<i class="fa-solid fa-tag fa-fw"></i>',
+        'qna': '<i class="fa-solid fa-fw fa-clipboard-question"></i>',
+        'profile': '<i class="fa-solid fa-fw fa-user"></i>',
+        'account': '<i class="fa-solid fa-fw fa-user"></i>',
+        'signup': '<i class="fa-solid fa-fw fa-door-open"></i>',
+        'login': '<i class="fa-solid fa-fw fa-sign-in-alt"></i>',
+        'logout': '<i class="fa-solid fa-fw fa-sign-out-alt"></i>',
+        'lecture': '<i class="fa-solid fa-fw fa-pen-to-square"></i>',
     }
 
     ICON_BOARD = {
-        'top_fixed': '<i class="fa-solid fa-bullhorn fa-fw"></i>',
-        'is_hidden': '<i class="fa-solid fa-lock fa-fw"></i>',
-        'list': '<i class="fa-solid fa-list fa-fw"></i>',
-        'reply': '<i class="fa-solid fa-reply fa-fw rotate-180"></i>',
-        'update': '<i class="fa-solid fa-pen fa-fw"></i>',
-        'delete': '<i class="fa-solid fa-trash fa-fw"></i>',
-        'prev': '<i class="fa-solid fa-arrow-down fa-fw"></i>',
-        'next': '<i class="fa-solid fa-arrow-up fa-fw"></i>',
-        'category0': '<i class="fa-solid fa-bars fa-fw"></i>',
-        'category1': '<i class="fa-regular fa-bell fa-fw"></i>',
-        'category2': '<i class="fa-regular fa-bookmark fa-fw"></i>',
+        'top_fixed': '<i class="fa-solid fa-fw fa-bullhorn"></i>',
+        'is_hidden': '<i class="fa-solid fa-fw fa-lock"></i>',
+        'list': '<i class="fa-solid fa-fw fa-list"></i>',
+        'reply': '<i class="fa-solid fa-fw fa-reply fa-fw rotate-180"></i>',
+        'update': '<i class="fa-solid fa-fw fa-pen"></i>',
+        'delete': '<i class="fa-solid fa-fw fa-trash"></i>',
+        'prev': '<i class="fa-solid fa-fw fa-arrow-down"></i>',
+        'next': '<i class="fa-solid fa-fw fa-arrow-up"></i>',
+        'category0': '<i class="fa-solid fa-fw fa-bars"></i>',
+        'category1': '<i class="fa-regular fa-fw fa-bell"></i>',
+        'category2': '<i class="fa-regular fa-fw fa-bookmark"></i>',
     }
 
     ICON_LIKE = {
@@ -61,14 +61,14 @@ class ConstantIconSet:
         'true': '<i class="fa-solid fa-note-sticky"></i>',
         'false': '<i class="fa-solid fa-note-sticky text-gray-300"></i>',
         'filter': '<i class="fa-regular fa-note-sticky"></i>',
-        'white': '<i class="fa-solid fa-note-sticky fa-fw text-white"></i>',
+        'white': '<i class="fa-solid fa-note-sticky text-white"></i>',
     }
 
     ICON_TAG = {
         'true': '<i class="fa-solid fa-tag text-primary"></i>',
         'false': '<i class="fa-solid fa-tag text-gray-300"></i>',
         'filter': '<i class="fa-solid fa-tag"></i>',
-        'white': '<i class="fa-solid fa-tag fa-fw text-white"></i>',
+        'white': '<i class="fa-solid fa-tag text-white"></i>',
     }
 
     ICON_COLLECTION = {
@@ -80,7 +80,7 @@ class ConstantIconSet:
         'true': '<i class="fa-solid fa-circle-question text-success"></i>',
         'false': '<i class="fa-solid fa-circle-question text-gray-300"></i>',
         'filter': '<i class="fa-regular fa-circle-question"></i>',
-        'white': '<i class="fa-regular fa-circle-question fa-fw text-white"></i>',
+        'white': '<i class="fa-regular fa-circle-question text-white"></i>',
     }
 
     ICON_IMAGE = {
@@ -117,12 +117,12 @@ class ConstantIconSet:
     ICON_FILTER = '<i class="fa-solid fa-filter"></i>'
 
     ICON_SUBJECT = {
-        '전체': '<i class="fa-solid fa-bars fa-fw"></i>',
-        '언어': '<i class="fa-solid fa-language fa-fw"></i>',
-        '자료': '<i class="fa-solid fa-table-cells-large fa-fw"></i>',
-        '상황': '<i class="fa-solid fa-scale-balanced fa-fw"></i>',
-        '헌법': '<i class="fa-solid fa-gavel"></i>',
+        '전체': '<i class="fa-solid fa-fw fa-bars"></i>',
+        '언어': '<i class="fa-solid fa-fw fa-language"></i>',
+        '자료': '<i class="fa-solid fa-fw fa-table-cells-large"></i>',
+        '상황': '<i class="fa-solid fa-fw fa-scale-balanced"></i>',
+        '헌법': '<i class="fa-solid fa-fw fa-gavel"></i>',
         '피셋': '',
     }
 
-    ICON_SEARCH = '<i class="fa-solid fa-magnifying-glass fa-fw"></i>'
+    ICON_SEARCH = '<i class="fa-solid fa-fw fa-magnifying-glass"></i>'

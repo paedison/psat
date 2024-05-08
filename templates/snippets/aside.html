@@ -9,7 +9,7 @@
         {% partial menu_predict %}
         {% partial menu_score %}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
-        {% if user.is_admin %}{% partial menu_study %}{% endif %}
+        {% if user.is_admin %}{% partial menu_lecture %}{% endif %}
     </ul>
     {% partial sidebar_toggle %}
 </aside><!-- Sidebar End -->
@@ -96,14 +96,14 @@
     </li><!-- Schedule Nav End -->
 {% endpartialdef menu_schedule %}
 
-{% partialdef menu_study %}
+{% partialdef menu_lecture %}
     <li class="nav-item">
-        <a id="studyList" class="nav-link collapsed" hx-boost="true" href="{% url 'study:base' %}">
-            <i class="fa-regular fa-fw fa-pen-to-square"></i>
-            <span>Study</span>
+        <a id="studyList" class="nav-link collapsed" hx-boost="true" href="{% url 'lecture:base' %}">
+            <i class="fa-solid fa-fw fa-pen-to-square"></i>
+            <span>Lecture</span>
         </a>
     </li><!-- Schedule Nav End -->
-{% endpartialdef menu_schedule %}
+{% endpartialdef menu_lecture %}
 
 {% partialdef sidebar_toggle %}
     <div class="d-none d-md-block text-center">

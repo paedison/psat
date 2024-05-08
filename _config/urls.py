@@ -21,7 +21,8 @@ urlpatterns = [
     # path('quiz/', include('quiz.urls')),  # Quiz
     path('log/', include('log.urls')),  # Log
     path('analysis/', include('analysis.urls')),  # Analysis
-    path('study/', include('study.urls')),  # Study
+    # path('study/', include('study.urls')),  # Study
+    path('lecture/', include('lecture.urls')),  # Lecture
 ]
 
 if settings.DEBUG:
