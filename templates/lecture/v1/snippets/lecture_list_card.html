@@ -1,0 +1,174 @@
+{% load i18n %}
+{% load slippers %}
+{% load partials %}
+{% load crispy_forms_tags %}
+{% load crispy_forms_field %}
+
+{% for lecture in lectures %}
+    <div class="col-sm-6 col-md-4 col-lg-3">
+        <div class="card cursor-pointer"
+             hx-target="#main" hx-push-url="true"
+             hx-get="{% url 'lecture:detail' lecture.id %}">
+            <img src="{{ lecture.thumbnail_url }}" class="card-img-top" alt="Thumbnail">
+            <div class="card-body">
+                <h5 class="card-title">
+                    [{{ lecture.subject }}] {{ lecture.title }} - {{ lecture.sub_title }}
+                </h5>
+{#                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>#}
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+{#<div class="card-body">#}
+{#    <div id="lectureFilter" class="accordion htmx-fade-in htmx-fade-out">#}
+{#        {% partial lecture_filter %}#}
+{#    </div>#}
+{##}
+{#    <div id="lectureContent" class="htmx-fade-in htmx-fade-out">#}
+{#        <article class="table-responsive">#}
+{#            <table class="table small align-middle m-0">#}
+{#                <tbody>#}
+{#                    {% partial lecture_contents %}#}
+{#                </tbody>#}
+{#            </table>#}
+{#        </article>#}
+{##}
+{#        {% if page_obj.has_next or page_obj.has_previous %}#}
+{#            {% include 'psat/v4/snippets/pagination.html' with target_id='problemCard' %}#}
+{#        {% endif %}#}
+{#    </div>#}
+{#</div>#}
+
+
+{######## partials ########}
+
+{% partialdef lecture_filter %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                    aria-expanded="true" aria-controls="collapseOne">
+                <i class="fa-solid fa-fw fa-filter me-1"></i>
+                문제 필터
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show"
+             data-bs-parent="#problemFilter">
+            <div class="accordion-body pb-2">
+                <form class="row row-cols-auto g-2 align-items-center justify-content-center"
+                      hx-trigger="change" hx-target="#problemCard" hx-push-url="false"
+                      hx-get="{{ base_url }}">
+                    <a type="button" class="btn btn-success m-1 fw-bold" hx-boost="true"
+                       href="{{ base_url }}">
+                        <i class="fa-solid fa-fw fa-layer-group"></i>
+                        전체 문제
+                    </a>
+                    {% for field in form %}
+                        <div class="my-1">
+                            {% if field.errors %}
+                                {% crispy_field field 'class' 'form-select is-invalid' %}
+                            {% else %}
+                                {% if field.value == None or field.value == '' %}
+                                    {% crispy_field field 'class' 'form-select' %}
+                                {% else %}
+                                    {% crispy_field field 'class' 'form-select option-selected' %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <input id="id_data" type="text" name="keyword"
+                           value="{{ keyword }}" hidden
+                           placeholder="{% trans 'Enter search keyword' %}"
+                           title="{% trans 'Enter search keyword' %}">
+                    <a type="button" class="btn btn-secondary m-1 fw-bold" hx-boost="true"
+                       href="{{ base_url }}?keyword={{ keyword }}">
+                        <i class="fa-solid fa-fw fa-filter-circle-xmark"></i>
+                        필터 제거
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef lecture_filter %}
+
+{% partialdef lecture_contents %}
+    {% for problem in page_obj %}
+        {% ifchanged %}
+            <tr class="table-warning">
+                <td class="text-center text-nowrap text-primary p-2">
+                    <h2 class="fs-6 fw-bold m-0">
+                        {% if info.view_type == 'problem' %}
+                            <a href="" hx-boost="true" hx-push-url="false" hx-target="#problemCard"
+                               hx-get="{{ base_url }}year={{ problem.year }}&ex={{ problem.ex }}&sub={{ problem.sub }}">
+                                {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                            </a>
+                        {% else %}
+                            {{ problem.year }}년 {{ problem.exam }} {{ problem.subject }}
+                        {% endif %}
+                    </h2>
+                </td>
+            </tr>
+        {% endifchanged %}
+        <tr>
+            <td class="text-nowrap py-2 px-0">
+                {% with problem_id=problem.id %}
+                    <div class="align-middle d-inline-block fs-6 pe-1">
+                        {% include 'psat/v4/snippets/icon_container.html' %}
+                    </div>
+                    <div class="align-middle d-inline-block fs-6" hx-push-url="true">
+                        <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1">
+                            {% partial reference %}
+                        </div>
+                        <div class="d-block d-md-inline-block">
+                            {% partial question %}
+                        </div>
+                    </div>
+                {% endwith %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+        </tr>
+    {% endfor %}
+{% endpartialdef lecture_contents %}
+
+{% partialdef reference %}
+    <a class="text-decoration-none fw-bold"
+       href="{% url 'psat:detail' problem_id %}"
+       hx-get="{% url 'psat:detail' problem_id %}?{{ url_options }}"
+       hx-push-url="{% url 'psat:detail' problem_id %}">
+        {{ problem.year }}{{ problem.ex|first }}{{ problem.sub|first }}-{{ problem.number|stringformat:'02d' }}
+    </a>
+    {% with image=problem.problem.get_image_file %}
+        {% if image.tag1 == 'Preparing Image' %}
+            {{ icon_image.false|safe }}
+        {% else %}
+            <a class="text-decoration-none" hx-target="#modalContainer"
+               href="" hx-push-url="false"
+               hx-get="{% url 'psat:detail_image' problem_id %}"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                {{ icon_image.true|safe }}
+            </a>
+        {% endif %}
+    {% endwith %}
+{% endpartialdef reference %}
+
+{% partialdef question %}
+    {% with class='d-md-none' chars=30 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
+
+    {% partialdef link_snippet %}
+        <a class="text-decoration-none {{ class }}"
+           href="{% url 'psat:detail' problem_id %}"
+           hx-get="{% url 'psat:detail' problem_id %}?{{ url_options }}"
+           hx-push-url="{% url 'psat:detail' problem_id %}">
+            <h3 class="d-inline-block fs-6 small m-0">
+                {{ problem.question|truncatechars:chars }}
+            </h3>
+        </a>
+    {% endpartialdef link_snippet %}
+{% endpartialdef question %}
