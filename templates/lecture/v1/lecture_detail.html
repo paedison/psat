@@ -7,25 +7,22 @@
 {% block main %}
     {% partialdef detail_main inline=True %}
         {{ info|json_script:'info' }}
-        {% with p=problem %}{% partial page_title %}{% endwith %}
+        {% partial page_title %}
 
         <section class="section">
             <div class="row">
-                <div class="col-xxl-8">{% partial container_lecture %}</div>
-{#                <div class="col-xxl-4">#}
-{#                    <div class="row">#}
-{#                        <div class="col-md-6 col-xxl-12">{% partial container_memo %}</div>#}
-{#                        <div class="col-md-6 col-xxl-12">{% partial container_tag %}</div>#}
-{#                    </div>#}
-{#                </div>#}
+                <div class="col-xxl-8">{% partial container_video %}</div>
+                <div class="col-xxl-4">
+                    <div class="row">
+                        <div class="col-12">{% partial container_content %}</div>
+                        <div class="col-md-6 col-xxl-12">{% partial container_memo %}</div>
+                        <div class="col-md-6 col-xxl-12">{% partial container_tag %}</div>
+                    </div>
+                </div>
             </div>
-{#            <div class="row">#}
-{#                <div class="col-12">#}
-{#                    {% if user.is_admin %}{% partial container_comment %}{% endif %}#}
-{#                    <div hx-target="#collapseComment" hx-swap="innerHTML swap:0.25s"#}
-{#                         hx-trigger="load" hx-get="{% url 'psat:comment_container' problem.id %}"></div>#}
-{#                </div>#}
-{#            </div>#}
+            <div class="row">
+                <div class="col-12">{% partial container_comment %}</div>
+            </div>
         </section>
     {% endpartialdef detail_main %}
 {% endblock main %}
@@ -35,8 +32,9 @@
 
 {% partialdef page_title %}
     <div class="pagetitle">
-        <h1>{{ icon_menu|safe }} Lecture
-            <span class="fs-6 text-secondary">{{ sub_title }}</span>
+        <h1>
+            {{ icon_menu|safe }} Lecture
+            <span class="fs-6 text-secondary">{{ lecture.title }}</span>
         </h1>
         <nav>
             <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
@@ -54,21 +52,122 @@
     </div><!-- Page Title End -->
 {% endpartialdef page_title %}
 
-{% partialdef container_lecture %}
-    <div id="containerLecture" class="card htmx-fade-in htmx-fade-out">
+{% partialdef container_video %}
+    <div id="containerVideo" class="card htmx-fade-in htmx-fade-out">
         <div class="card-body">
             <div class="card-title mb-0">
-                {{ lecture.title }}
+                {% partial navigation_button %}
             </div>
-            <div id="lectureDetail" class="iframe_container htmx-fade-in htmx-fade-out">
+            <div id="videoSource" class="iframe_container htmx-fade-in htmx-fade-out">
                 <iframe class="iframe_content" title="{{ lecture.title }}"
-                        src="{{ lecture.src }}"
+                        src="{{ lecture.embed_src }}"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
         </div>
     </div>
-{% endpartialdef container_lecture %}
+{% endpartialdef container_video %}
+
+{% partialdef navigation_button %}
+    <article id="detailNavContainer" class="flex-nowrap input-group me-2"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        <a id="lectureListBtn" class="btn btn-primary" title="강의 목록"
+           data-bs-toggle="tooltip" hx-boost="true"
+           href="{% url 'lecture:base' %}">
+            {{ icon_nav.left|safe }}
+        </a>
+
+        {% for _ in '12' %}
+            {% cycle prev_lec next_lec as nav_lec silent %}
+            {% cycle 'prev' 'next' as nav_type silent %}
+            {% cycle '이전 강의' '다음 강의' as nav_title silent %}
+            {% cycle icon_nav.up icon_nav.down as nav_icon silent %}
+            {% if nav_lec %}
+                <a id="{{ nav_type }}Lecture" class="btn btn-primary" data-bs-toggle="tooltip"
+                   title="{{ nav_title }}" hx-boost="true"
+                   href="{% url 'lecture:detail' nav_lec.id %}">
+                    {{ nav_icon|safe }}
+                </a>
+            {% else %}
+                <a id="{{ nav_type }}Lecture" class="btn btn-primary text-primary">
+                    {{ nav_icon|safe }}
+                </a>
+            {%  endif %}
+        {% endfor %}
+
+        <a id="lectureList" href="" role="button" class="btn btn-circle btn-primary dropdown-toggle"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="text-white" data-bs-toggle="tooltip" title="강의 목록">
+                {{ icon_nav.list|safe }}
+            </div>
+        </a>
+        <div class="dropdown-menu" aria-labelledby="lectureList">
+            <div id="lectureListContents" class="dropdown p-2" role="option">
+                <div class="container" style="min-width: 300px;">
+                    {% for item in lecture_list %}
+                        {% ifchanged %}
+                            <div class="row justify-content-center p-2 text-bg-primary fw-bold">
+                                {{ item.subject.name }}
+                            </div>
+                        {% endifchanged %}
+                        <div class="row justify-content-center text-center small p-1">
+                            <a class="p-1 dropdown-item text-nowrap text-center"
+                               hx-boost="true"
+                               href="{% url 'lecture:detail' item.id %}">
+                                {{ item.title }}
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </article>
+{% endpartialdef navigation_button %}
+
+{% partialdef container_content %}
+    <div id="containerContent" class="card htmx-fade-in htmx-fade-out">
+        <div class="card-body pt-4">
+            <div id="accordionCapture" class="accordion accordion-flush">
+                <div class="accordion-item">
+                    <h2 id="headingCapture" class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseCapture"
+                                aria-expanded="true" aria-controls="collapseCapture">
+                            <div class="text-primary fw-bold">
+                                강의 캡처 이미지
+                            </div>
+                        </button>
+                    </h2>
+                    <hr class="border-secondary mt-0">
+                    <div id="collapseCapture" class="accordion-collapse collapse show"
+                         hx-target="#collapseCapture" hx-swap="innerHTML swap:0.25s"
+                         aria-labelledby="headingMemo" data-bs-parent="#accordionCapture">
+                        <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {% for image in lec_images %}
+                                    <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                                        <img src="{{ image }}" class="d-block w-100" alt="...">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon text-secondary" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+            {#            <div id="contentDetail" class="htmx-fade-in htmx-fade-out">#}
+            {#                {{ lecture.content|safe }}#}
+            {#            </div>#}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef container_content %}
 
 {% partialdef container_memo %}
     <div id="containerMemo" class="card htmx-fade-in htmx-fade-out">
@@ -86,15 +185,16 @@
                         </button>
                     </h2>
                     <hr class="border-secondary mt-0">
-                    <div id="collapseMemo"
-                         class="accordion-collapse collapse show htmx-fade-in htmx-fade-out"
-                         hx-target="#collapseMemo" hx-swap="innerHTML swap:0.25s"
+                    <div id="collapseMemo" class="accordion-collapse collapse show"
                          aria-labelledby="headingMemo" data-bs-parent="#accordionMemo">
-                        {% if user.is_authenticated %}
-                            <div hx-trigger="load" hx-get="{% url 'psat:memo_container' problem.id %}"></div>
-                        {% else %}
-                            {% partial need_login %}
-                        {% endif %}
+                        <div id="collapseMemoContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseMemoContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+                                <div hx-trigger="load" hx-get="{% url 'lecture:memo_container' lecture.id %}"></div>
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -118,15 +218,16 @@
                         </button>
                     </h2>
                     <hr class="border-secondary mt-0">
-                    <div id="collapseTag"
-                         class="accordion-collapse collapse show htmx-fade-in htmx-fade-out"
-                         hx-target="#collapseTag" hx-swap="innerHTML swap:0.25s"
+                    <div id="collapseTag" class="accordion-collapse collapse show"
                          aria-labelledby="headingTag" data-bs-parent="#accordionTag">
-                        {% if user.is_authenticated %}
-                            <div hx-trigger="load" hx-get="{% url 'psat:tag_container' problem.id %}"></div>
-                        {% else %}
-                            {% partial need_login %}
-                        {% endif %}
+                        <div id="collapseTagContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseTagContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+                                <div hx-trigger="load" hx-get="{% url 'lecture:tag_container' lecture.id %}"></div>
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -145,20 +246,20 @@
                                 aria-expanded="true" aria-controls="collapseComment">
                             <span class="badge bg-success me-2">{{ icon_question.white|safe }} 질문</span>
                             <div class="small text-success fw-bold">
-                                문제에 관한 질문이나 댓글을 남겨보세요.
+                                강의에 관한 질문이나 댓글을 남겨보세요.
                             </div>
                         </button>
                     </h2>
                     <div class="d-flex justify-content-end mb-3">
                         <div class="btn-group">
                             <button class="btn btn-sm btn-outline-success" title="{% trans 'Reload' %}"
-                                    hx-target="#collapseComment" hx-swap="innerHTL swap:0.25s"
-                                    hx-get="{{ reload_url }}">
+                                    hx-target="#collapseCommentContent" hx-swap="innerHTL swap:0.25s"
+                                    hx-get="{% url 'lecture:comment_container' lecture.id %}">
                                 <i class="fa-solid fa-rotate-right"></i> 새로고침
                             </button>
                             <button class="btn btn-sm btn-outline-success" title="{% trans 'Comment' %}"
                                     hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                    hx-get="{{ create_url }}">
+                                    hx-get="{% url 'lecture:comment_create' lecture.id %}">
                                 {{ icon_question.filter|safe }} 질문하기
                             </button>
                     {#        <button class="btn btn-sm btn-outline-success"#}
@@ -169,10 +270,16 @@
                         </div>
                     </div>
                     <hr class="border-secondary"/>
-                    <div id="collapseComment"
-                         class="accordion-collapse collapse show htmx-fade-in htmx-fade-out"
-                         hx-target="#collapseComment" hx-swap="innerHTML swap:0.25s"
+                    <div id="collapseComment" class="accordion-collapse collapse show"
                          aria-labelledby="headingComment" data-bs-parent="#accordionComment">
+                        <div id="collapseCommentContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseCommentContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+                                <div hx-trigger="load" hx-get="{% url 'lecture:comment_container' lecture.id %}"></div>
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -110,6 +110,9 @@ class ConstantIconSet:
         'left_arrow': '<i class="fa-solid fa-arrow-left"></i>',
         'prev_prob': '<i class="fa-solid fa-arrow-up"></i>',
         'next_prob': '<i class="fa-solid fa-arrow-down"></i>',
+        'left': '<i class="fa-solid fa-arrow-left"></i>',
+        'up': '<i class="fa-solid fa-arrow-up"></i>',
+        'down': '<i class="fa-solid fa-arrow-down"></i>',
         'list': '<i class="fa-solid fa-list"></i>',
         'print': '<i class="fa-solid fa-print"></i>',
     }

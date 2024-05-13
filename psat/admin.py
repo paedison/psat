@@ -47,3 +47,8 @@ class CollectionAdmin(admin.ModelAdmin):
 @admin.register(models.CollectionItem)
 class CollectionItemAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'collection', 'problem', 'is_active')
+
+
+@admin.register(models.Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('timestamp', 'updated_at', 'user', 'problem', 'title', 'hit', 'is_deleted')

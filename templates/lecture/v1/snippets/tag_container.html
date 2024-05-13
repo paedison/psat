@@ -1,0 +1,104 @@
+{% load i18n %}
+{% load psat_filter %}
+{% load taggit_templatetags2_tags %}
+
+<div hx-swap-oob="innerHTML:#lectureTag{{ lecture.id }}">
+    {% if my_tag %}
+        {{ icon_tag.true|safe }}
+    {% else %}
+        {{ icon_tag.false|safe }}
+    {% endif %}
+</div>
+
+{% if my_tag %}
+    <form class="mb-2" hx-post="{% url 'lecture:tag_add' my_tag.id %}">
+        {% with button_name='Add' %}{% partial tag_form %}{% endwith %}
+    </form>
+    <div class="d-flex align-items-start">
+        <div class="border-start border-secondary-subtle ps-2">
+            {% get_sorted_tags_for_object my_tag as "tags" %}
+            {% for tag in tags %}{% partial my_tag_content %}{% endfor %}
+        </div>
+    </div>
+{% else %}
+    <form class="mb-2" hx-post="{% url 'lecture:tag_create' lecture.id %}">
+        {% with button_name='Create' %}{% partial tag_form %}{% endwith %}
+    </form>
+{% endif %}
+
+{% if user.is_admin %}
+    <div id="allTags" class="pt-2 htmx-fade-in htmx-fade-out">
+        <div class="badge bg-primary mb-2">
+            <i class="fa-solid fa-tag fa-fw text-white"></i> ALL TAGS
+        </div>
+        <div class="d-flex align-items-start">
+            <div class="border-start border-secondary-subtle ps-2">
+                {% for tag in all_tags %}{% partial all_tags_content %}{% endfor %}
+            </div>
+        </div>
+    </div><!-- All Tags End -->
+{% endif %}
+
+
+{######## partials ########}
+
+{% partialdef tag_form %}
+    <div class="input-group">
+        <div class="form-floating">
+            <input id="id_tags" class="form-control form-control-sm" name="tags" type="text"
+                   placeholder="{% trans 'Leave tags' %}" required/>
+            <label for="id_tags">{% trans 'Leave tags' %}</label>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" type="submit">
+            {% trans button_name %}
+        </button>
+    </div>
+{% endpartialdef tag_form %}
+
+{% partialdef my_tag_content %}
+    <div class="btn-group">
+        <span class="badge rounded-pill text-bg-light dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">{{ tag }}</span>
+        <ul class="dropdown-menu">
+            <li>
+                <button class="dropdown-item" title="{% trans 'Tag Cloud' %}">
+                    {{ PSAT_ICON_SET.tag|safe }} {% trans 'Tag Cloud' %}
+                </button>
+            </li>
+            <li>
+                <button class="dropdown-item" title="{% trans 'Delete Tag' %}"
+                        hx-confirm="{% trans 'Are you sure you wish to delete your tag?' %}"
+                        hx-post="{% url 'lecture:tag_delete' my_tag.id tag %}">
+                    <i class="fa-solid fa-xmark"></i> {% trans 'Delete Tag' %}
+                </button>
+            </li>
+        </ul>
+    </div>
+{% endpartialdef my_tag_content %}
+
+{% partialdef all_tags_content %}
+    <div class="btn-group">
+        <span class="badge rounded-pill text-bg-light dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">{{ tag }}</span>
+        <ul class="dropdown-menu">
+            <li>
+                <button class="dropdown-item" title="{% trans 'Tag Cloud' %}" href="">
+                    {{ PSAT_ICON_SET.tag|safe }}
+                    {% trans 'Tag Cloud' %}
+                </button>
+            </li>
+            {% if not my_tag_list or tag not in my_tag_list %}
+            <li>
+                <form hx-post="{% url 'lecture:tag_add' my_tag.id %}">
+                    <input class="form-control form-control-sm"
+                           name="tags" type="hidden" value="{{ tag }}"/>
+                    <button class="dropdown-item" type="submit">
+                        <i class="fa-solid fa-plus"></i>
+                        {% trans 'Add to my tags' %}
+                    </button>
+                </form>
+            </li><!-- Add to My Tags End -->
+            {% endif %}
+        </ul>
+    </div>
+{% endpartialdef all_tags_content %}

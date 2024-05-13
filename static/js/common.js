@@ -47,11 +47,11 @@ $('.logo').click(function() {
     let target = $(this).data('target');
     initialMenu();
     $(target).removeClass('collapsed').attr('aria-expanded', 'true');
-    hideSidebar()
+    hideSidebar();
 });
 
 // When clicked the main menu
-$('#noticeList, #dashboardList, #psatList, #predictList, #scheduleList').click(function() {
+$('#noticeList, #dashboardList, #psatList, #predictList, #scheduleList, #lectureList').click(function() {
     initialMenu();
     $(this).removeClass('collapsed').attr('aria-expanded', 'true');
     hideSidebar()
@@ -121,7 +121,7 @@ attachContentCkeditor();
 mainAnchorClick();
 
 jQuery('body').on('htmx:afterSwap', function() {
-    scrollToTop();
+    // scrollToTop();
     initializeTooltips();
     initializeSortables();
     initializeToggleButtons();

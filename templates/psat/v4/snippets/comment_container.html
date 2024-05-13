@@ -39,7 +39,7 @@
 {% endfor %}
 
 {% if page_obj.has_next or page_obj.has_previous %}
-    {% include 'psat/v4/snippets/pagination.html' with target_id='collapseComment' %}
+    {% include 'psat/v4/snippets/pagination.html' with target_id='collapseCommentContent' %}
 {% endif %}
 
 
@@ -48,7 +48,7 @@
 {% partialdef modal_reply_create %}
     <button class="btn btn-sm btn-outline-primary" title="{% trans 'Reply' %}"
             hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer"
-            hx-get="{% url 'psat:comment_create' problem_id %}?parent_id={{ comment.id }}">
+            hx-get="{% url 'psat:comment_create' comment.problem_id %}?parent_id={{ comment.id }}">
         {{ icon_board.reply|safe }}
     </button>
 {% endpartialdef modal_reply_create %}

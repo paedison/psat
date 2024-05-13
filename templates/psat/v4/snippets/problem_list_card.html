@@ -10,22 +10,24 @@
 </div>
 
 <div class="card-body">
-    <div id="problemFilter" class="accordion htmx-fade-in htmx-fade-out">
-        {% partial problem_filter %}
-    </div>
+    <div class="row flex-column flex-md-row-reverse">
+        <div id="problemFilter" class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+            {% partial problem_filter %}
+        </div>
 
-    <div id="problemContent" class="htmx-fade-in htmx-fade-out">
-        <article class="table-responsive">
-            <table class="table small align-middle m-0">
-                <tbody>
-                    {% partial problem_contents %}
-                </tbody>
-            </table>
-        </article>
+        <div id="problemContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+            <article class="table-responsive">
+                <table class="table small align-middle m-0">
+                    <tbody>
+                        {% partial problem_contents %}
+                    </tbody>
+                </table>
+            </article>
 
-        {% if page_obj.has_next or page_obj.has_previous %}
-            {% include 'psat/v4/snippets/pagination.html' with target_id='problemCard' %}
-        {% endif %}
+            {% if page_obj.has_next or page_obj.has_previous %}
+                {% include 'psat/v4/snippets/pagination.html' with target_id='problemCard' %}
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -106,10 +108,10 @@
                         {% include 'psat/v4/snippets/icon_container.html' %}
                     </div>
                     <div class="align-middle d-inline-block fs-6" hx-push-url="true">
-                        <div class="d-block d-md-inline-block pb-1 pb-md-0 pe-md-1">
+                        <div class="d-block d-lg-inline-block pb-1 pb-md-0 pe-md-1">
                             {% partial reference %}
                         </div>
-                        <div class="d-block d-md-inline-block">
+                        <div class="d-block d-lg-inline-block">
                             {% partial question %}
                         </div>
                     </div>

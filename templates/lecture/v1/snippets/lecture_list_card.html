@@ -4,17 +4,17 @@
 {% load crispy_forms_tags %}
 {% load crispy_forms_field %}
 
-{% for lecture in lectures %}
+{% for lecture in lecture_list %}
     <div class="col-sm-6 col-md-4 col-lg-3">
         <div class="card cursor-pointer"
              hx-target="#main" hx-push-url="true"
              hx-get="{% url 'lecture:detail' lecture.id %}">
             <img src="{{ lecture.thumbnail_url }}" class="card-img-top" alt="Thumbnail">
             <div class="card-body">
-                <h5 class="card-title">
-                    [{{ lecture.subject }}] {{ lecture.title }} - {{ lecture.sub_title }}
-                </h5>
-{#                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>#}
+                <h5 class="card-title mb-0">{{ lecture.subject }}</h5>
+                <p class="card-text">
+                    {{ lecture.title }} - {{ lecture.sub_title }}
+                </p>
             </div>
         </div>
     </div>

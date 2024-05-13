@@ -57,7 +57,6 @@ class ContainerView(
             page_obj=page_obj,
             page_range=page_range,
             pagination_url=f'{pagination_url}?',
-            problem_id=problem_id,
             form=self.form_class,
             reload_url=reload_url,
             create_url=create_url,

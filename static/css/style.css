@@ -411,5 +411,22 @@ div.django-ckeditor-widget {
 .option-selected {
     color: rgb(13, 110, 253);
     border-color: rgb(13, 110, 253);
+    border-width: 2px;
     font-weight: bold;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    background-color: #ccc;
+    width: 10%;
+    opacity: 0;
+}
+
+.carousel-control-prev:hover, .carousel-control-prev:focus,
+.carousel-control-next:hover,
+.carousel-control-next:focus {
+  color: #fff;
+  text-decoration: none;
+  outline: 0;
+  opacity: 0.5;
 }
