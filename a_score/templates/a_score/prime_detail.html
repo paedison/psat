@@ -9,7 +9,7 @@
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 
 {% block main %}
-{% partialdef detail_main inline=True %} {# detail_main partial #}
+{% partialdef detail_main inline=True %}
 {{ info|json_script:'info' }}
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
@@ -76,25 +76,25 @@
 
         <div class="col-12">
             <div id="student_info" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_score/snippets/prime_student_info.html' %}
+                {% include 'a_score/snippets/psat_info_student.html' %}
             </div>
         </div>
 
         <div class="col-12">
             <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_score/snippets/prime_score_sheet.html' with is_confirmed=True %}
+                {% include 'a_score/snippets/psat_sheet_score.html' with is_confirmed=True %}
             </div>
         </div>
 
         <div class="col-12">
             <div id="chart" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_score/snippets/prime_chart.html' with is_confirmed=True %}
+                {% include 'a_score/snippets/psat_chart.html' with is_confirmed=True %}
             </div>
         </div>
 
         <div class="col-12">
             <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_score/snippets/prime_answer_student.html' %}
+                {% include 'a_score/snippets/psat_sheet_answer.html' %}
             </div>
         </div>
     </div>

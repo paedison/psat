@@ -1,0 +1,95 @@
+<article class="table-responsive">
+    <table class="table small align-middle">
+        <thead>
+            <tr class="d-table-row d-md-none text-center align-middle table-warning">
+                <th class="text-nowrap">과목</th>
+                <th class="text-nowrap">내 점수</th>
+                <th class="text-nowrap">응시자수</th>
+                <th class="text-nowrap">최고<br/>점수</th>
+                <th class="text-nowrap">상위<br/>10%</th>
+                <th class="text-nowrap">상위<br/>20%</th>
+                <th class="text-nowrap">평균<br/>점수</th>
+            </tr>
+            <tr class="d-none d-md-table-row text-center align-middle table-warning">
+                <th class="col-1">과목</th>
+                <th class="col-1">내 점수(점)</th>
+                <th class="col-1">응시자수</th>
+                <th class="col-1">최고 점수(점)</th>
+                <th class="col-1">상위 10%(점)</th>
+                <th class="col-1">상위 20%(점)</th>
+                <th class="col-1">평균 점수(점)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for _ in '01234' %}
+                {% cycle stat_data.heonbeob stat_data.eoneo stat_data.jaryo stat_data.sanghwang stat_data.psat_avg as stat silent %}
+                {% if stat %}{% partial sub_stat_line %}{% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% partialdef sub_stat_line %}
+    <tr class="text-center {% if stat.field == 'psat_avg' %}table-warning{% endif %}">
+        <th class="text-nowrap" aria-label="과목">
+            {% if stat.is_confirmed or stat.field == 'psat_avg' %}
+                {{ stat.icon|safe }} {{ stat.subject }}
+            {% else %}
+                <a class="text-decoration-none"
+                   href="" hx-boost="true">
+                    {{ stat.icon|safe }} {{ stat.subject }}
+                </a>
+            {% endif %}
+        </th>
+
+        {% if not stat.is_confirmed %}
+            <td colspan="6">
+                {% if stat.field == 'psat_avg' %}
+                    <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
+                {% else %}
+                    <a hx-boost="true"
+                       href="">
+                        <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
+                    </a>
+                {% endif %}
+            </td>
+        {% else %}
+            <td>
+                <div id="{{ prefix }}_score_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-0 text-success fw-bold">
+                    {{ stat.score|floatformat:1 }}
+                </div>
+            </td>
+            <td>
+                <div id="{{ prefix }}_num_students_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-1">
+                    {{ stat.participants }}
+                </div>
+            </td>
+            <td>
+                <div id="{{ prefix }}_max_score_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-2">
+                    {{ stat.max_score|floatformat:1 }}
+                </div>
+            </td>
+            <td>
+                <div id="{{ prefix }}_top_score_10_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-3">
+                    {{ stat.top_score_10|floatformat:1 }}
+                </div>
+            </td>
+            <td>
+                <div id="{{ prefix }}_top_score_20_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-4">
+                    {{ stat.top_score_20|floatformat:1 }}
+                </div>
+            </td>
+            <td>
+                <div id="{{ prefix }}_avg_score_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-5">
+                    {{ stat.avg_score|floatformat:1 }}
+                </div>
+            </td>
+        {% endif %}
+    </tr>
+{% endpartialdef sub_stat_line %}

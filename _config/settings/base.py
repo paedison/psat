@@ -147,7 +147,11 @@ TEMPLATES = [
             ],
             'debug': True,
             # TODO: Add wrap_loaded function to the called from an AppConfig.ready().
-            'builtins': ['template_partials.templatetags.partials'],
+            'builtins': [
+                'template_partials.templatetags.partials',
+                'slippers.templatetags.slippers',
+                'common.templatetags.common_templatetags',
+            ],
         },
     },
 ]

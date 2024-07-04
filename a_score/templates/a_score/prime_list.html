@@ -2,14 +2,12 @@
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
-{% load partials %}
-{% load slippers %}
 
 {% block head_title %}{{ sub_title }}{% endblock %}
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 
 {% block main %}
-{% partialdef list_main inline=True %} {# list_main partial #}
+{% partialdef list_main inline=True %}
 {{ info|json_script:'info' }}
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
@@ -129,7 +127,7 @@
                                         {% if obj.staff %}
                                             {% if user.is_staff %}
 
-                                                {% partialdef exam_round inline=True %} {# exam_round partial #}
+                                                {% partialdef exam_round inline=True %}
                                                     <td class="text-nowrap p-2">
                                                         {% if obj.student %}
                                                             <a href="{{ obj.detail_url }}" hx-boost="true">
@@ -143,14 +141,13 @@
 
                                                 {% partial exam_info %}
 
-
                                             {% endif %}
                                         {% else %}
                                             {% partial exam_round %}
                                             {% if user.is_staff %}
                                                 {% partial exam_info %}
                                             {% else %}
-                                                {% if current_time > obj.opened_at %}
+                                                {% if current_time > obj.answer_official_opened_at %}
                                                     {% partial exam_info %}
                                                 {% else %}
                                                     <td class="text-nowrap p-2" colspan="8">
@@ -159,7 +156,7 @@
                                                            hx-target="#modalContainer" hx-swap="innerHTML"
                                                            hx-push-url="false"
                                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                            성적 공개 일시 : {{ obj.opened_at|date:'n/d(D) H:i' }}
+                                                            성적 공개 일시 : {{ obj.answer_official_opened_at|date:'n/d(D) H:i' }}
                                                         </a>
                                                     </td>
                                                 {% endif %}

@@ -1,0 +1,24 @@
+{% load psat_filter %}
+
+<div class="card-header">성적 확인</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTab" role="tablist">
+            {% for id in '012' %}
+                {% cycle 'my' 'total' 'department' as prefix silent %}
+                {% cycle '내 성적' '전체 기준' '직렬 기준' as tab_title silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreSheetContent">
+        {% for id in '012' %}
+            {% cycle 'my' 'total' 'department' as prefix silent %}
+            {% cycle '' stat_total stat_department as stat_data silent %}
+            {% cycle 'a_score/snippets/psat_sheet_score_table_1.html' 'a_score/snippets/psat_sheet_score_table_2.html' 'a_score/snippets/psat_sheet_score_table_2.html' as template_name silent %}
+            {% #nav_content prefix=prefix id=id %}{% include template_name %}{% /nav_content %}
+        {% endfor %}
+    </div>
+</div>

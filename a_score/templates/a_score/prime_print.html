@@ -2,8 +2,6 @@
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
-{% load partials %}
-{% load slippers %}
 
 {% block head_title %}{{ student.serial }}_{{ student.department_name }}_{{ student.name }}_제{{ round }}회_전국모의고사_성적표{% endblock head_title %}
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
@@ -260,7 +258,7 @@
         </table>
     </div>
     <div class="table-responsive">
-        {% include 'score/prime_v3/snippets/prime_chart.html#chart_canvas' with print_class='print' %}
+        {% include 'a_score/snippets/psat_chart.html#chart_canvas' with print_class='print' %}
     </div>
 
     <script>

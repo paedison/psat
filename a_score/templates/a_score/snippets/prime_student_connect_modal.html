@@ -1,5 +1,3 @@
-{% load slippers %}
-
 {% #modal header=header size=" " %}
     {% partialdef student_info inline=True %}
         {% if user_verified %}
@@ -23,7 +21,7 @@
         {% else %}
             <form id="student_info"
                   hx-swap="outerHTML swap:0.25s" hx-target="#student_info"
-                  hx-post="{% url 'score_prime_psat:student_connect' exam_year exam_round %}">
+                  hx-post="{{ url_student_connect }}">
                 {% if no_student %}
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         수험 정보를 다시 확인해주세요.

@@ -1,6 +1,4 @@
 {% load static %}
-{% load partials %}
-{% load slippers %}
 
 <div class="card-header">성적 분포 차트</div>
 
@@ -12,8 +10,8 @@
                 {% partial chart_contents %}
             </div>
             <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
-                {{ frequency_score.psat_avg|json_script:'psat_avg' }}
-                {{ frequency_score.psat_avg_point|json_script:'psat_avg_point' }}
+                {{ frequency_score.psat_avg_points|json_script:'psat_avg_points' }}
+                {{ frequency_score.psat_avg_colors|json_script:'psat_avg_colors' }}
                 <canvas id="scoreChartTotal"></canvas>
                 {% partial chart_contents_total %}
             </div>
@@ -35,67 +33,67 @@
 <script type="text/javascript">
     screenWidth = window.innerWidth;
     my_score = [
-        {{ student_score.score_heonbeob|floatformat:1 }},
-        {{ student_score.score_eoneo|floatformat:1 }},
-        {{ student_score.score_jaryo|floatformat:1 }},
-        {{ student_score.score_sanghwang|floatformat:1 }},
-        {{ student_score.score_psat_avg|floatformat:1 }},
+        {{ student.score.heonbeob|floatformat:1 }},
+        {{ student.score.eoneo|floatformat:1 }},
+        {{ student.score.jaryo|floatformat:1 }},
+        {{ student.score.sanghwang|floatformat:1 }},
+        {{ student.score.psat_avg|floatformat:1 }},
     ]
     department_average = [
-        {{ stat_department.avg_score_heonbeob|floatformat:1 }},
-        {{ stat_department.avg_score_eoneo|floatformat:1 }},
-        {{ stat_department.avg_score_jaryo|floatformat:1 }},
-        {{ stat_department.avg_score_sanghwang|floatformat:1 }},
-        {{ stat_department.avg_score_psat_avg|floatformat:1 }},
+        {{ stat_department.heonbeob.avg_score|floatformat:1 }},
+        {{ stat_department.eoneo.avg_score|floatformat:1 }},
+        {{ stat_department.jaryo.avg_score|floatformat:1 }},
+        {{ stat_department.sanghwang.avg_score|floatformat:1 }},
+        {{ stat_department.psat_avg.avg_score|floatformat:1 }},
     ]
     total_average = [
-        {{ stat_total.avg_score_heonbeob|floatformat:1 }},
-        {{ stat_total.avg_score_eoneo|floatformat:1 }},
-        {{ stat_total.avg_score_jaryo|floatformat:1 }},
-        {{ stat_total.avg_score_sanghwang|floatformat:1 }},
-        {{ stat_total.avg_score_psat_avg|floatformat:1 }},
+        {{ stat_total.heonbeob.avg_score|floatformat:1 }},
+        {{ stat_total.eoneo.avg_score|floatformat:1 }},
+        {{ stat_total.jaryo.avg_score|floatformat:1 }},
+        {{ stat_total.sanghwang.avg_score|floatformat:1 }},
+        {{ stat_total.psat_avg.avg_score|floatformat:1 }},
     ]
     department_score_20 = [
-        {{ stat_department.top_score_20_heonbeob|floatformat:1 }},
-        {{ stat_department.top_score_20_eoneo|floatformat:1 }},
-        {{ stat_department.top_score_20_jaryo|floatformat:1 }},
-        {{ stat_department.top_score_20_sanghwang|floatformat:1 }},
-        {{ stat_department.top_score_20_psat_avg|floatformat:1 }},
+        {{ stat_department.heonbeob.top_score_20|floatformat:1 }},
+        {{ stat_department.eoneo.top_score_20|floatformat:1 }},
+        {{ stat_department.jaryo.top_score_20|floatformat:1 }},
+        {{ stat_department.sanghwang.top_score_20|floatformat:1 }},
+        {{ stat_department.psat_avg.top_score_20|floatformat:1 }},
     ]
     total_score_20 = [
-        {{ stat_total.top_score_20_heonbeob|floatformat:1 }},
-        {{ stat_total.top_score_20_eoneo|floatformat:1 }},
-        {{ stat_total.top_score_20_jaryo|floatformat:1 }},
-        {{ stat_total.top_score_20_sanghwang|floatformat:1 }},
-        {{ stat_total.top_score_20_psat_avg|floatformat:1 }},
+        {{ stat_total.heonbeob.top_score_20|floatformat:1 }},
+        {{ stat_total.eoneo.top_score_20|floatformat:1 }},
+        {{ stat_total.jaryo.top_score_20|floatformat:1 }},
+        {{ stat_total.sanghwang.top_score_20|floatformat:1 }},
+        {{ stat_total.psat_avg.top_score_20|floatformat:1 }},
     ]
     department_score_10 = [
-        {{ stat_department.top_score_10_heonbeob|floatformat:1 }},
-        {{ stat_department.top_score_10_eoneo|floatformat:1 }},
-        {{ stat_department.top_score_10_jaryo|floatformat:1 }},
-        {{ stat_department.top_score_10_sanghwang|floatformat:1 }},
-        {{ stat_department.top_score_10_psat_avg|floatformat:1 }},
+        {{ stat_department.heonbeob.top_score_10|floatformat:1 }},
+        {{ stat_department.eoneo.top_score_10|floatformat:1 }},
+        {{ stat_department.jaryo.top_score_10|floatformat:1 }},
+        {{ stat_department.sanghwang.top_score_10|floatformat:1 }},
+        {{ stat_department.psat_avg.top_score_10|floatformat:1 }},
     ]
     total_score_10 = [
-        {{ stat_total.top_score_10_heonbeob|floatformat:1 }},
-        {{ stat_total.top_score_10_eoneo|floatformat:1 }},
-        {{ stat_total.top_score_10_jaryo|floatformat:1 }},
-        {{ stat_total.top_score_10_sanghwang|floatformat:1 }},
-        {{ stat_total.top_score_10_psat_avg|floatformat:1 }},
+        {{ stat_total.heonbeob.top_score_10|floatformat:1 }},
+        {{ stat_total.eoneo.top_score_10|floatformat:1 }},
+        {{ stat_total.jaryo.top_score_10|floatformat:1 }},
+        {{ stat_total.sanghwang.top_score_10|floatformat:1 }},
+        {{ stat_total.psat_avg.top_score_10|floatformat:1 }},
     ]
     department_top = [
-        {{ stat_department.max_score_heonbeob|floatformat:1 }},
-        {{ stat_department.max_score_eoneo|floatformat:1 }},
-        {{ stat_department.max_score_jaryo|floatformat:1 }},
-        {{ stat_department.max_score_sanghwang|floatformat:1 }},
-        {{ stat_department.max_score_psat_avg|floatformat:1 }},
+        {{ stat_department.heonbeob.max_score|floatformat:1 }},
+        {{ stat_department.eoneo.max_score|floatformat:1 }},
+        {{ stat_department.jaryo.max_score|floatformat:1 }},
+        {{ stat_department.sanghwang.max_score|floatformat:1 }},
+        {{ stat_department.psat_avg.max_score|floatformat:1 }},
     ]
     total_top = [
-        {{ stat_total.max_score_heonbeob|floatformat:1 }},
-        {{ stat_total.max_score_eoneo|floatformat:1 }},
-        {{ stat_total.max_score_jaryo|floatformat:1 }},
-        {{ stat_total.max_score_sanghwang|floatformat:1 }},
-        {{ stat_total.max_score_psat_avg|floatformat:1 }},
+        {{ stat_total.heonbeob.max_score|floatformat:1 }},
+        {{ stat_total.eoneo.max_score|floatformat:1 }},
+        {{ stat_total.jaryo.max_score|floatformat:1 }},
+        {{ stat_total.sanghwang.max_score|floatformat:1 }},
+        {{ stat_total.psat_avg.max_score|floatformat:1 }},
     ]
     chart_datasets = [
         {label: '내 점수', borderWidth: 1, data: my_score},
@@ -155,23 +153,23 @@
 
 {% partialdef chart_contents_total %}
 <script type="text/javascript">
-    psat_avg = JSON.parse(document.getElementById('psat_avg').textContent);
-    psat_avg_point = JSON.parse(document.getElementById('psat_avg_point').textContent);
+    psat_avg_points = JSON.parse(document.getElementById('psat_avg_points').textContent);
+    psat_avg_colors = JSON.parse(document.getElementById('psat_avg_colors').textContent);
 
     chart_datasets_total = [
         {
             label: 'PSAT 평균',
-            data: Object.values(psat_avg),
+            data: Object.values(psat_avg_points),
             borderWidth: 2,
             tension: 0.4,
-            pointBackgroundColor: psat_avg_point,
+            pointBackgroundColor: psat_avg_colors,
         },
     ]
 
     chart_data_total = {
         type: 'line',
         data: {
-            labels: Object.keys(psat_avg),
+            labels: Object.keys(psat_avg_points),
             datasets: chart_datasets_total,
         },
         options: {
