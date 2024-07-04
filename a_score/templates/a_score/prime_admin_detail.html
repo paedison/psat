@@ -1,0 +1,62 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load partials %}
+
+{% block head_title %}{{ sub_title }}{% endblock %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+
+{% block main %}
+{% partialdef admin_main inline=True %} {# admin_main partial #}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon_menu|safe }} {{ title }}
+        <span class="fs-6 text-secondary">{{ sub_title }}</span>
+        <a class="btn btn-sm btn-outline-primary ms-2"
+           hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
+           href="{% url 'prime:detail' year round %}">
+            일반 페이지
+        </a>
+    </h1>
+
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">Score</li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'prime:list' %}" hx-boost="true">Prime</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'prime:list' %}" hx-boost="true">Admin</a>
+            </li>
+            <li class="breadcrumb-item">{{ year }}</li>
+            <li class="breadcrumb-item active">제{{ round }}회</li>
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-12">
+            <div id="statistics" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+                {% include 'score/prime_v3/snippets_admin/detail_statistics.html' %}
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div id="answer_analysis" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {% include 'score/prime_v3/snippets_admin/detail_answer_analysis.html' %}
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div id="catalog" class="card htmx-fade-in htmx-fade-out"
+                 hx-target="#catalog" hx-swap="innerHTML swap:0.25s">
+                {% include 'score/prime_v3/snippets_admin/detail_catalog.html' %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endpartialdef list_main %}
+{% endblock main %}

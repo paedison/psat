@@ -1,0 +1,110 @@
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+{% load humanize %}
+
+
+<div class="card-header">
+    <div class="d-flex align-items-center">
+        <span>제{{ round }}회 | 문항 분석표</span>
+        <div class="btn-group ms-auto">
+            <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
+               href="{% url 'prime_admin:export_analysis' year round %}">
+                Excel로 내보내기
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
+            {% #nav_tab prefix='answer_heonbeob' id='0' %}{{ icon_subject.헌법|safe }} 헌법{% /nav_tab %}
+            {% #nav_tab prefix='answer_eoneo' id='1' %}{{ icon_subject.언어|safe }} 언어{% /nav_tab %}
+            {% #nav_tab prefix='answer_jaryo' id='2' %}{{ icon_subject.자료|safe }} 자료{% /nav_tab %}
+            {% #nav_tab prefix='answer_sanghwang' id='3' %}{{ icon_subject.상황|safe }} 상황{% /nav_tab %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="answerAnalysisContent">
+        {% with sub='헌법' answer_count=answer_count_analysis.헌법 %}
+            {% #nav_content prefix='answer_heonbeob' id='0' %}{% partial answer_analysis_table %}{% /nav_content %}
+        {% endwith %}
+
+        {% with sub='언어' answer_count=answer_count_analysis.언어 %}
+            {% #nav_content prefix='answer_eoneo' id='1' %}{% partial answer_analysis_table %}{% /nav_content %}
+        {% endwith %}
+
+        {% with sub='자료' answer_count=answer_count_analysis.자료 %}
+            {% #nav_content prefix='answer_jaryo' id='2' %}{% partial answer_analysis_table %}{% /nav_content %}
+        {% endwith %}
+
+        {% with sub='상황' answer_count=answer_count_analysis.상황 %}
+            {% #nav_content prefix='answer_sanghwang' id='3' %}{% partial answer_analysis_table %}{% /nav_content %}
+        {% endwith %}
+    </div>
+</div>
+
+{% partialdef answer_analysis_table %} {# predicted_answer_table partial #}
+    <article class="table-responsive">
+        <table class="table table-bordered table-striped small align-middle m-0">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2" rowspan="2">문제<br/>번호</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">정답</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">전체<br/>정답률(%)</th>
+                    {% if sub == '헌법' %}
+                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)</th>
+                        <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)</th>
+                    {% else %}
+                        <th class="text-primary text-nowrap p-2" colspan="6">답안 선택수(명)</th>
+                        <th class="text-primary text-nowrap p-2" colspan="6">답안 선택률(%)</th>
+                    {% endif %}
+                </tr>
+                <tr class="text-center table-warning align-middle">
+                    {% for _ in '12' %}
+                        <th class="text-primary text-nowrap p-2 td-right-no-border">①</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">②</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">③</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">④</th>
+                        {% if sub != '헌법' %}
+                            <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">⑤</th>
+                        {% endif %}
+                        <th class="text-primary text-nowrap p-2 td-left-no-border">무응답</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for problem in answer_count %}
+                    <tr class="text-center">
+                        <td>{{ problem.number }}</td>
+                        <td>
+                            <button class="btn btn-circle btn-sm fs-6 btn-success">
+                                {{ problem.answer_correct }}
+                            </button>
+                        </td>
+                        <td>{{ problem.rate_correct|floatformat:1 }}</td>
+
+                        <td class="td-right-no-border">{{ problem.count_1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.count_2 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.count_3 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.count_4 }}</td>
+                        {% if sub != '헌법' %}
+                            <td class="td-left-no-border td-right-no-border">{{ problem.count_5 }}</td>
+                        {% endif %}
+                        <td class="td-left-no-border">{{ problem.count_0 }}</td>
+
+                        <td class="td-right-no-border">{{ problem.rate_1|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.rate_2|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.rate_3|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">{{ problem.rate_4|floatformat:1 }}</td>
+                        {% if sub != '헌법' %}
+                            <td class="td-left-no-border td-right-no-border">{{ problem.rate_5|floatformat:1 }}</td>
+                        {% endif %}
+                        <td class="td-left-no-border">{{ problem.rate_0|floatformat:1 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+{% endpartialdef %}

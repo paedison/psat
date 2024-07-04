@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     'community',
     'predict',
     'lecture',
+    'a_score',
 ]
 
 MIDDLEWARE = [

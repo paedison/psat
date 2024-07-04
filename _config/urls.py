@@ -23,6 +23,8 @@ urlpatterns = [
     path('analysis/', include('analysis.urls')),  # Analysis
     # path('study/', include('study.urls')),  # Study
     path('lecture/', include('lecture.urls')),  # Lecture
+
+    path('a_score/', include('a_score.urls')),  # Score
 ]
 
 if settings.DEBUG:
