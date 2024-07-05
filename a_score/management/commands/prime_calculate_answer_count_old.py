@@ -36,12 +36,32 @@ class Command(BaseCommand):
         answer_count_model = answer_count_model_dict[exam_type]
 
         field_dict = {
-            'psat': ['heonbeob', 'eoneo', 'jaryo', 'sanghwang'],
-            'police': [
-                'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', 'haengbeob', 'haenghag', 'minbeob',
-                'sebeob', 'hoegye', 'sangbeob', 'gyeongje', 'tonggye', 'jaejeong',
-                'jeongbo', 'sine', 'debe', 'tongsin', 'sowe',
-            ],
+            'psat': {
+                'heonbeob': '헌법',
+                'eoneo': '언어',
+                'jaryo': '자료',
+                'sanghwang': '상황',
+            },
+            'police': {
+                'hyeongsa': '형사',
+                'heonbeob': '헌법',
+                'gyeongchal': '경찰',
+                'beomjoe': '범죄',
+                'haengbeob': '행법',
+                'haenghag': '행학',
+                'minbeob': '민법',
+                'sebeob': '세법',
+                'hoegye': '회계',
+                'sangbeob': '상법',
+                'gyeongje': '경제',
+                'tonggye': '통계',
+                'jaejeong': '재정',
+                'jeongbo': '정보',
+                'sine': '시네',
+                'debe': '데베',
+                'tongsin': '통신',
+                'sowe': '소웨'
+            },
         }
         fields = field_dict[exam_type]
 
@@ -51,12 +71,12 @@ class Command(BaseCommand):
         count_create = 0
 
         total_count = {}
-        for field in fields:
+        for field, subject in fields.items():
             total_count[field] = []
             for i in range(1, 41):
                 total_count[field].append({
                     'year': exam_year, 'exam': '프모', 'round': exam_round,
-                    'subject': field, 'number': i, 'answer': 0,
+                    'subject': subject, 'number': i, 'answer': 0,
                     'count_1': 0, 'count_2': 0, 'count_3': 0, 'count_4': 0, 'count_5': 0,
                     'count_0': 0, 'count_multiple': 0, 'count_total': 0,
                 })
@@ -102,7 +122,7 @@ class Command(BaseCommand):
             'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0', 'count_multiple', 'count_total',
         ]
 
-        for field in fields:
+        for field in fields.keys():
             for c in total_count[field]:
                 if c['count_total']:
                     try:

@@ -10,8 +10,8 @@
                 {% partial chart_contents %}
             </div>
             <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
-                {{ frequency_score.psat_avg_points|json_script:'psat_avg_points' }}
-                {{ frequency_score.psat_avg_colors|json_script:'psat_avg_colors' }}
+                {{ frequency_score.avg_points|json_script:'avg_points' }}
+                {{ frequency_score.avg_colors|json_script:'avg_colors' }}
                 <canvas id="scoreChartTotal"></canvas>
                 {% partial chart_contents_total %}
             </div>
@@ -153,23 +153,23 @@
 
 {% partialdef chart_contents_total %}
 <script type="text/javascript">
-    psat_avg_points = JSON.parse(document.getElementById('psat_avg_points').textContent);
-    psat_avg_colors = JSON.parse(document.getElementById('psat_avg_colors').textContent);
+    avg_points = JSON.parse(document.getElementById('avg_points').textContent);
+    avg_colors = JSON.parse(document.getElementById('avg_colors').textContent);
 
     chart_datasets_total = [
         {
             label: 'PSAT 평균',
-            data: Object.values(psat_avg_points),
+            data: Object.values(avg_points),
             borderWidth: 2,
             tension: 0.4,
-            pointBackgroundColor: psat_avg_colors,
+            pointBackgroundColor: avg_colors,
         },
     ]
 
     chart_data_total = {
         type: 'line',
         data: {
-            labels: Object.keys(psat_avg_points),
+            labels: Object.keys(avg_points),
             datasets: chart_datasets_total,
         },
         options: {

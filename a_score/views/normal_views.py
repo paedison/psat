@@ -10,14 +10,18 @@ from ..forms import PrimePsatStudentForm
 from ..models import PrimePsatExam, PrimePsatStudent, PrimePsatRegisteredStudent, PrimePsatAnswerCount
 from ..utils import get_tuple_data_answer_official_student, get_dict_stat_data, get_dict_frequency_score
 
+FIELD_VARS: dict[str, tuple] = {
+    'heonbeob': ('헌법', '헌법'),
+    'eoneo': ('언어', '언어논리'),
+    'jaryo': ('자료', '자료해석'),
+    'sanghwang': ('상황', '상황판단'),
+    'psat_avg': ('평균', 'PSAT 평균'),
+}  # Field variables for chart, sheet score
+INFO = {'menu': 'score', 'view_type': 'primeScore'}
+
 
 def list_view(request: HtmxHttpRequest):
-    info = {
-        'menu': 'score',
-        'view_type': 'primeScore',
-    }
     exam_list = PrimePsatExam.objects.all()
-
     page_number = request.GET.get('page', 1)
     paginator = Paginator(exam_list, 10)
     page_obj = paginator.get_page(page_number)
@@ -36,7 +40,7 @@ def list_view(request: HtmxHttpRequest):
 
     context = update_context_data(
         # base info
-        info=info,
+        info=INFO,
         title='Score',
         sub_title='프라임 PSAT 모의고사 성적표',
         current_time=timezone.now(),
@@ -64,25 +68,21 @@ def detail_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
     if not student:
         return redirect('score_prime_psat:list')
 
-    info = {
-        'menu': 'score',
-        'view_type': 'primeScore',
-    }
-
     exam = get_object_or_404(PrimePsatExam, year=exam_year, round=exam_round)
     qs_answer_count = PrimePsatAnswerCount.objects.filter(
         year=exam_year, round=exam_round).order_by('subject', 'number')
     data_answer_official, data_answer_student = get_tuple_data_answer_official_student(
-        student, exam, qs_answer_count)
+        answer_student=student.answer, answer_official=exam.answer_official,
+        qs_answer_count=qs_answer_count, subject_fields=list(FIELD_VARS.keys()))
 
-    stat_total = get_dict_stat_data(student=student, statistics_type='total')
-    stat_department = get_dict_stat_data(student=student, statistics_type='department')
+    stat_total = get_dict_stat_data(student=student, statistics_type='total', field_vars=FIELD_VARS)
+    stat_department = get_dict_stat_data(student=student, statistics_type='department', field_vars=FIELD_VARS)
 
-    frequency_score = get_dict_frequency_score(student)
+    frequency_score = get_dict_frequency_score(student=student, target_avg='psat_avg')
 
     context = update_context_data(
         # base info
-        info=info,
+        info=INFO,
         exam_year=exam_year,
         exam_round=exam_round,
         title='Score',
