@@ -45,12 +45,12 @@ class Command(BaseCommand):
         }
         fields = field_dict[exam_type]
 
-        list_update = []
-        list_create = []
-        count_update = 0
-        count_create = 0
+        update_list = []
+        create_list = []
+        update_count = 0
+        create_count = 0
 
-        total_count = {}
+        total_count: dict[str, list[dict[str, str | int]]] = {}
         for field in fields:
             total_count[field] = []
             for i in range(1, 41):
@@ -97,10 +97,14 @@ class Command(BaseCommand):
                         'count_multiple': count_multiple,
                         'count_total': count_total,
                     })
+                    if exam_type == 'police':
+                        total_count[field][index].pop('count_5')
 
         field_list_for_matching = [
             'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0', 'count_multiple', 'count_total',
         ]
+        if exam_type == 'police':
+            field_list_for_matching.remove('count_5')
 
         for field in fields:
             for c in total_count[field]:
@@ -115,21 +119,21 @@ class Command(BaseCommand):
                         if fields_not_match:
                             for fld in field_list_for_matching:
                                 setattr(obj, fld, c[fld])
-                            list_update.append(obj)
-                            count_update += 1
+                            update_list.append(obj)
+                            update_count += 1
                     except answer_count_model.DoesNotExist:
-                        list_create.append(answer_count_model(**c))
-                        count_create += 1
+                        create_list.append(answer_count_model(**c))
+                        create_count += 1
 
         try:
             with transaction.atomic():
-                if list_create:
-                    answer_count_model.objects.bulk_create(list_create)
-                    message = f'Successfully created {count_create} PrimeAnswerCount instances.'
-                if list_update:
-                    answer_count_model.objects.bulk_update(list_update, field_list_for_matching)
-                    message = f'Successfully updated {count_update} PrimeAnswerCount instances.'
-                if not list_create and not list_update:
+                if create_list:
+                    answer_count_model.objects.bulk_create(create_list)
+                    message = f'Successfully created {create_count} PrimeAnswerCount instances.'
+                if update_list:
+                    answer_count_model.objects.bulk_update(update_list, field_list_for_matching)
+                    message = f'Successfully updated {update_count} PrimeAnswerCount instances.'
+                if not create_list and not update_list:
                     message = f'No changes were made to PrimeAnswerCount instances.'
         except django.db.utils.IntegrityError:
             traceback_message = traceback.format_exc()

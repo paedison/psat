@@ -129,6 +129,10 @@ ICON_SUBJECT = {
     '피셋': '',
     '총점': '',
     '평균': '',
+    '형사': '',
+    '경찰': '',
+    '범죄': '',
+    '민법': '',
 }
 
 ICON_SEARCH = '<i class="fa-solid fa-fw fa-magnifying-glass"></i>'

@@ -17,7 +17,7 @@
         <span class="fs-6 text-secondary">프라임 모의고사 관리자 페이지</span>
         <a class="btn btn-sm btn-outline-primary ms-2"
            hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-           href="{% url 'prime:list' %}">
+           href="{% url 'score_prime_psat:list' %}">
             일반 페이지
         </a>
     </h1>
@@ -28,10 +28,10 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a href="{% url 'prime:list' %}" hx-boost="true">Prime</a>
+                <a href="{% url 'score_prime_psat:list' %}" hx-boost="true">Prime</a>
             </li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'prime:list' %}" hx-boost="true">Admin</a>
+                <a class="active" href="{% url 'score_prime_psat:list' %}" hx-boost="true">Admin</a>
             </li>
         </ol>
     </nav>
@@ -41,14 +41,14 @@
     <div class="row">
         <div class="col-12">
             <div id="exam_list" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-                {% include 'score/prime_v3/snippets_admin/list_exam_list.html' %}
+                {% include 'a_score/prime_psat_admin/snippets/list_exam_list.html' %}
             </div>
         </div>
 
         <div class="col-12">
             <div id="student_list" class="card htmx-fade-in htmx-fade-out"
                  hx-target="#student_list" hx-swap="innerHTML swap:0.25s">
-                {% include 'score/prime_v3/snippets_admin/list_student_list.html' %}
+                {% include 'a_score/prime_psat_admin/snippets/list_student_list.html' %}
             </div>
         </div>
     </div>

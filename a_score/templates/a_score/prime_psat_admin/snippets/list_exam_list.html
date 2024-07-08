@@ -30,9 +30,9 @@
                     {% for obj in exam_page_obj %}
                         <tr class="text-center">
                             <td class="text-nowrap p-2">
-                                {{ obj.date|date:'Y.n.j(D)' }}
+                                {{ obj.exam_started_at|date:'Y.n.j(D)' }}
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
-                                   href="{% url 'prime_admin:detail' obj.year obj.round %}">
+                                   href="{% url 'score_prime_psat_admin:detail' obj.year obj.round %}">
                                     클릭
                                 </a>
                             </td>

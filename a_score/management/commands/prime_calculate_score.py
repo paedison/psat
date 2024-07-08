@@ -11,7 +11,7 @@ from a_score.models import (
 
 
 class Command(BaseCommand):
-    help = 'Count Answers'
+    help = 'Calculate Scores'
 
     def add_arguments(self, parser):
         parser.add_argument('exam_type', type=str, help='Prime Exam type')  # psat, police
@@ -40,9 +40,8 @@ class Command(BaseCommand):
         qs_student = student_model.objects.filter(year=exam_year, round=exam_round)
         answer_official = exam_model.objects.get(year=exam_year, round=exam_round).answer_official
         for student in qs_student:
-            answer_student: dict = student.answer
             score = {}
-            for field, value in answer_student.items():
+            for field, answer in student.answer.items():
                 score_per_problem = 2.5
                 if exam_type == 'psat' and field in ['heonbeob']:
                     score_per_problem = 4.0
@@ -55,8 +54,8 @@ class Command(BaseCommand):
                     score_per_problem = score_dict[field] if field in score_dict.keys() else 1.5
 
                 correct_count = 0
-                for index, answer in enumerate(value):
-                    if answer == answer_official[field][index]:
+                for index, ans in enumerate(answer):
+                    if ans == answer_official[field][index]:
                         correct_count += 1
                 score[field] = correct_count * score_per_problem
 
@@ -66,7 +65,6 @@ class Command(BaseCommand):
                 score['psat_avg'] = sum(sum_list) / 3
             elif exam_type == 'police':
                 score['sum'] = sum(s for s in score.values())
-                score['avg'] = score['sum'] / 5
 
             if student.score != score:
                 student.score = score

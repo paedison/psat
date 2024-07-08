@@ -24,12 +24,12 @@
                         <tr class="text-center">
                             <td class="text-nowrap p-2">{{ obj.id }}</td>
                             <td class="text-nowrap p-2">{{ obj.user_id }}</td>
-                            <td class="text-nowrap p-2">{{ obj.username }}</td>
-                            <td class="text-nowrap p-2">{{ obj.year }}</td>
-                            <td class="text-nowrap p-2">{{ obj.round }}</td>
-                            <td class="text-nowrap p-2">{{ obj.serial }}</td>
-                            <td class="text-nowrap p-2">{{ obj.name }}</td>
-                            <td class="text-nowrap p-2">{{ obj.department_name }}</td>
+                            <td class="text-nowrap p-2">{{ obj.user.username }}</td>
+                            <td class="text-nowrap p-2">{{ obj.student.year }}</td>
+                            <td class="text-nowrap p-2">{{ obj.student.round }}</td>
+                            <td class="text-nowrap p-2">{{ obj.student.serial }}</td>
+                            <td class="text-nowrap p-2">{{ obj.student.name }}</td>
+                            <td class="text-nowrap p-2">{{ obj.student.department }}</td>
                         </tr>
                     {% endfor %}
                 {% endif %}

@@ -15,7 +15,7 @@
         {% if user.is_staff %}
             <a class="btn btn-sm btn-outline-primary ms-2"
                hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-               href="">
+               href="{% url 'score_prime_psat_admin:list' %}">
                 관리자 페이지
             </a>
         {% endif %}
@@ -46,46 +46,46 @@
                                 <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
                                 <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
                             </div>
-                            <div class="row g-3">
-                                <div class="col-6 text-sm-end">
-                                    <a class="btn btn-outline-danger" target="_blank"
-                                       href="https://renew.primeedunet.com/psat/product/prereg/group/108">
-                                        모의고사 신청
-                                    </a>
-                                </div>
-                                {% if user.is_staff %}
-                                    {% partialdef predict_score inline=True %}
-                                        {% if student %}
-                                            <div class="col-6 text-sm-start">
-                                                <a class="btn btn-outline-primary" hx-target="#main"
-                                                   href="{% url 'predict:student_create' %}" hx-boost="true">
-                                                    성적 예측하기
-                                                </a>
-                                            </div>
-                                        {% else %}
-                                            <div class="col-6 text-sm-start">
-                                                <a class="btn btn-outline-primary" hx-target="#main"
-                                                   href="{% url 'predict:index' %}" hx-boost="true">
-                                                    성적 예측하기
-                                                </a>
-                                            </div>
-                                        {% endif %}
-                                    {% endpartialdef %}
-                                {% else %}
-                                    {% if current_time > predict_opened_at %}
-                                        {% partial predict_score %}
-                                    {% else %}
-                                        <div class="col-6 text-sm-start">
-                                            <a class="btn btn-outline-primary"
-                                               hx-get="{% url 'score_prime_psat:no_predict_open_modal' %}" href=""
-                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                               data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                성적 예측하기
-                                            </a>
-                                        </div>
-                                    {% endif %}
-                                {% endif %}
-                            </div>
+{#                            <div class="row g-3">#}
+{#                                <div class="col-6 text-sm-end">#}
+{#                                    <a class="btn btn-outline-danger" target="_blank"#}
+{#                                       href="https://renew.primeedunet.com/psat/product/prereg/group/108">#}
+{#                                        모의고사 신청#}
+{#                                    </a>#}
+{#                                </div>#}
+{#                                {% if user.is_staff %}#}
+{#                                    {% partialdef predict_score inline=True %}#}
+{#                                        {% if student %}#}
+{#                                            <div class="col-6 text-sm-start">#}
+{#                                                <a class="btn btn-outline-primary" hx-target="#main"#}
+{#                                                   href="{% url 'predict:student_create' %}" hx-boost="true">#}
+{#                                                    성적 예측하기#}
+{#                                                </a>#}
+{#                                            </div>#}
+{#                                        {% else %}#}
+{#                                            <div class="col-6 text-sm-start">#}
+{#                                                <a class="btn btn-outline-primary" hx-target="#main"#}
+{#                                                   href="{% url 'predict:index' %}" hx-boost="true">#}
+{#                                                    성적 예측하기#}
+{#                                                </a>#}
+{#                                            </div>#}
+{#                                        {% endif %}#}
+{#                                    {% endpartialdef %}#}
+{#                                {% else %}#}
+{#                                    {% if current_time > predict_opened_at %}#}
+{#                                        {% partial predict_score %}#}
+{#                                    {% else %}#}
+{#                                        <div class="col-6 text-sm-start">#}
+{#                                            <a class="btn btn-outline-primary"#}
+{#                                               hx-get="{% url 'score_prime_psat:no_predict_open_modal' %}" href=""#}
+{#                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"#}
+{#                                               data-bs-toggle="modal" data-bs-target="#modalContainer">#}
+{#                                                성적 예측하기#}
+{#                                            </a>#}
+{#                                        </div>#}
+{#                                    {% endif %}#}
+{#                                {% endif %}#}
+{#                            </div>#}
                         </div>
                     </h5>
                 </div>
@@ -270,27 +270,27 @@
     </td>
     <td class="d-none d-md-table-cell">
         {% if user.is_authenticated %}
-            {{ obj.student_score.score_eoneo|floatformat:1 }}
+            {{ obj.student.score.eoneo|floatformat:1 }}
         {% endif %}
     </td>
     <td class="d-none d-md-table-cell">
         {% if user.is_authenticated %}
-            {{ obj.student_score.score_jaryo|floatformat:1 }}
+            {{ obj.student.score.jaryo|floatformat:1 }}
         {% endif %}
     </td>
     <td class="d-none d-md-table-cell">
         {% if user.is_authenticated %}
-            {{ obj.student_score.score_sanghwang|floatformat:1 }}
+            {{ obj.student.score.sanghwang|floatformat:1 }}
         {% endif %}
     </td>
     <td>
         {% if user.is_authenticated %}
-            {{ obj.student_score.score_psat_avg|floatformat:1 }}
+            {{ obj.student.score.psat_avg|floatformat:1 }}
         {% endif %}
     </td>
     <td class="d-none d-md-table-cell">
         {% if user.is_authenticated %}
-            {{ obj.student_score.score_heonbeob|floatformat:1 }}
+            {{ obj.student.score.heonbeob|floatformat:1 }}
         {% endif %}
     </td>
 {% endpartialdef exam_info %}

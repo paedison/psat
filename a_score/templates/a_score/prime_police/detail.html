@@ -30,11 +30,11 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a href="{% url 'score_prime_psat:list' %}" hx-boost="true">Prime</a>
+                <a href="{% url 'score_prime_police:list' %}" hx-boost="true">Prime</a>
             </li>
             <li class="breadcrumb-item">{{ exam_year }}</li>
             <li class="breadcrumb-item active">
-                <a class="active" href="{% url 'score_prime_psat:detail' exam_year exam_round %}" hx-boost="true">
+                <a class="active" href="{% url 'score_prime_police:detail' exam_year exam_round %}" hx-boost="true">
                     제{{ exam_round }}회</a>
             </li>
         </ol>
@@ -50,11 +50,11 @@
                         <div class="d-flex">
                             <div class="btn-group ms-auto">
                                 <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-                                   href="{% url 'prime:list' %}" hx-boost="true">
+                                   href="{% url 'score_prime_police:list' %}" hx-boost="true">
                                     목록
                                 </a>
                                 <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-                                   href="{% url 'score_prime_psat:print' exam_year exam_round %}" target="score_print">
+                                   href="{% url 'score_prime_police:print' exam_year exam_round %}" target="score_print">
                                     인쇄하기
                                 </a>
                             </div>
@@ -76,25 +76,25 @@
 
         <div class="col-12">
             <div id="student_info" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_score/snippets/psat_info_student.html' %}
+                {% include 'a_score/prime_police/snippets/info_student.html' %}
             </div>
         </div>
 
         <div class="col-12">
             <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_score/snippets/psat_sheet_score.html' with is_confirmed=True %}
+                {% include 'a_score/prime_police/snippets/sheet_score.html' with is_confirmed=True %}
             </div>
         </div>
 
         <div class="col-12">
             <div id="chart" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_score/snippets/psat_chart.html' with is_confirmed=True %}
+                {% include 'a_score/prime_police/snippets/chart.html' with is_confirmed=True %}
             </div>
         </div>
 
         <div class="col-12">
             <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_score/snippets/psat_sheet_answer.html' %}
+                {% include 'a_score/prime_police/snippets/sheet_answer.html' %}
             </div>
         </div>
     </div>

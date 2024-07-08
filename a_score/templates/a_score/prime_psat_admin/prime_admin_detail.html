@@ -13,7 +13,7 @@
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
         <a class="btn btn-sm btn-outline-primary ms-2"
            hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-           href="{% url 'prime:detail' year round %}">
+           href="{% url 'score_prime_psat:detail' exam_year exam_round %}">
             일반 페이지
         </a>
     </h1>
@@ -25,13 +25,13 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a href="{% url 'prime:list' %}" hx-boost="true">Prime</a>
+                <a href="{% url 'score_prime_psat:list' %}" hx-boost="true">Prime</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{% url 'prime:list' %}" hx-boost="true">Admin</a>
+                <a href="{% url 'score_prime_psat:list' %}" hx-boost="true">Admin</a>
             </li>
-            <li class="breadcrumb-item">{{ year }}</li>
-            <li class="breadcrumb-item active">제{{ round }}회</li>
+            <li class="breadcrumb-item">{{ exam_year }}</li>
+            <li class="breadcrumb-item active">제{{ exam_round }}회</li>
         </ol>
     </nav>
 </div><!-- Page Title End -->
@@ -40,13 +40,13 @@
     <div class="row">
         <div class="col-12">
             <div id="statistics" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-                {% include 'score/prime_v3/snippets_admin/detail_statistics.html' %}
+{#                {% include 'score/prime_v3/snippets_admin/detail_statistics.html' %}#}
             </div>
         </div>
 
         <div class="col-12">
             <div id="answer_analysis" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                {% include 'score/prime_v3/snippets_admin/detail_answer_analysis.html' %}
+{#                {% include 'score/prime_v3/snippets_admin/detail_answer_analysis.html' %}#}
             </div>
         </div>
 

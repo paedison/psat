@@ -72,13 +72,13 @@
         </a>
         <ul id="score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
             <li>
-                {% if user.is_admin %}
-                    <a id="psatScoreList" class="aside-nav-icon" hx-boost="true" href="{% url 'score:list' %}">
-                        <i class="fa-regular fa-fw fa-file-lines"></i>
-                        <span>PSAT 기출문제</span>
-                    </a>
-                {% endif %}
-                <a id="primeScoreList" class="aside-nav-icon" hx-boost="true" href="{% url 'prime:list' %}">
+{#                {% if user.is_admin %}#}
+{#                    <a id="psatScoreList" class="aside-nav-icon" hx-boost="true" href="{% url 'score:list' %}">#}
+{#                        <i class="fa-regular fa-fw fa-file-lines"></i>#}
+{#                        <span>PSAT 기출문제</span>#}
+{#                    </a>#}
+{#                {% endif %}#}
+                <a id="primeScoreList" class="aside-nav-icon" hx-boost="true" href="{% url 'score_prime_police:list' %}">
                     <i class="fa-regular fa-fw fa-file"></i>
                     <span>프라임 모의고사</span>
                 </a>

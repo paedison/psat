@@ -86,14 +86,14 @@ def get_dict_stat_data(student, statistics_type: str, field_vars: dict) -> dict:
     return stat_data
 
 
-def get_dict_frequency_score(student, target_avg: str) -> dict:
+def get_dict_frequency_score(student, target_score: str) -> dict:
     qs_student = student.__class__.objects.filter(
         year=student.year, round=student.round).values_list('score', flat=True)
-    score_counts_list = [round(score[target_avg], 1) for score in qs_student]
+    score_counts_list = [round(score[target_score], 1) for score in qs_student]
     score_counts_list.sort()
 
     score_counts = Counter(score_counts_list)
-    student_psat_avg = round(student.score[target_avg], 1)
-    avg_colors = ['blue' if score == student_psat_avg else 'white' for score in score_counts.keys()]
+    student_target_score = round(student.score[target_score], 1)
+    score_colors = ['blue' if score == student_target_score else 'white' for score in score_counts.keys()]
 
-    return {'avg_points': dict(score_counts), 'avg_colors': avg_colors}
+    return {'score_points': dict(score_counts), 'score_colors': score_colors}

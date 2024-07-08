@@ -14,7 +14,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),  # Dashboard
     path('psat/', include('psat.urls')),  # PSAT
     path('community/', include('community.urls')),  # Community
-    path('score/', include('score.urls')),  # Score
+    # path('score/', include('score.urls')),  # Score
     path('schedule/', include('schedule.urls')),  # Schedule
     path('predict/', include('predict.urls')),  # Schedule
 
@@ -24,7 +24,7 @@ urlpatterns = [
     # path('study/', include('study.urls')),  # Study
     path('lecture/', include('lecture.urls')),  # Lecture
 
-    path('a_score/', include('a_score.urls')),  # Score
+    path('score/', include('a_score.urls')),  # Score
 ]
 
 if settings.DEBUG:
