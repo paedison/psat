@@ -7,8 +7,8 @@
         {% if user.is_authenticated %}{% partial menu_dashboard %}{% endif %}
         {% partial menu_lecture %}
         {% partial menu_psat %}
-        {% partial menu_predict %}
-        {% partial menu_score %}
+        {% if user.is_staff %}{% partial menu_predict %}{% endif %}
+        {% if user.is_staff %}{% partial menu_score %}{% endif %}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
     </ul>
     {% partial sidebar_toggle %}
