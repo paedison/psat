@@ -166,7 +166,7 @@ def student_connect_view(request: HtmxHttpRequest, exam_year: int, exam_round: i
         else:
             context = update_context_data(context, form=form)
 
-    return render(request, 'a_score/prime_police/snippets/prime_student_connect_modal.html#student_info', context)
+    return render(request, 'a_score/prime_police/snippets/modal_student_connect.html#student_info', context)
 
 
 @login_required

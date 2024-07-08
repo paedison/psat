@@ -40,14 +40,6 @@
         {{ student.score.minbeob|floatformat:1 }},
         {{ student.score.sum|floatformat:1 }},
     ]
-    department_average = [
-        {{ stat_department.hyeongsa.avg_score|floatformat:1 }},
-        {{ stat_department.heonbeob.avg_score|floatformat:1 }},
-        {{ stat_department.gyeongchal.avg_score|floatformat:1 }},
-        {{ stat_department.beomjoe.avg_score|floatformat:1 }},
-        {{ stat_department.minbeob.avg_score|floatformat:1 }},
-        {{ stat_department.sum.avg_score|floatformat:1 }},
-    ]
     total_average = [
         {{ stat_total.hyeongsa.avg_score|floatformat:1 }},
         {{ stat_total.heonbeob.avg_score|floatformat:1 }},
@@ -55,14 +47,6 @@
         {{ stat_total.beomjoe.avg_score|floatformat:1 }},
         {{ stat_total.minbeob.avg_score|floatformat:1 }},
         {{ stat_total.sum.avg_score|floatformat:1 }},
-    ]
-    department_score_20 = [
-        {{ stat_department.hyeongsa.top_score_20|floatformat:1 }},
-        {{ stat_department.heonbeob.top_score_20|floatformat:1 }},
-        {{ stat_department.gyeongchal.top_score_20|floatformat:1 }},
-        {{ stat_department.beomjoe.top_score_20|floatformat:1 }},
-        {{ stat_department.minbeob.top_score_20|floatformat:1 }},
-        {{ stat_department.sum.top_score_20|floatformat:1 }},
     ]
     total_score_20 = [
         {{ stat_total.hyeongsa.top_score_20|floatformat:1 }},
@@ -72,14 +56,6 @@
         {{ stat_total.minbeob.top_score_20|floatformat:1 }},
         {{ stat_total.sum.top_score_20|floatformat:1 }},
     ]
-    department_score_10 = [
-        {{ stat_department.hyeongsa.top_score_10|floatformat:1 }},
-        {{ stat_department.heonbeob.top_score_10|floatformat:1 }},
-        {{ stat_department.gyeongchal.top_score_10|floatformat:1 }},
-        {{ stat_department.beomjoe.top_score_10|floatformat:1 }},
-        {{ stat_department.minbeob.top_score_10|floatformat:1 }},
-        {{ stat_department.sum.top_score_10|floatformat:1 }},
-    ]
     total_score_10 = [
         {{ stat_total.hyeongsa.top_score_10|floatformat:1 }},
         {{ stat_total.heonbeob.top_score_10|floatformat:1 }},
@@ -87,14 +63,6 @@
         {{ stat_total.beomjoe.top_score_10|floatformat:1 }},
         {{ stat_total.minbeob.top_score_10|floatformat:1 }},
         {{ stat_total.sum.top_score_10|floatformat:1 }},
-    ]
-    department_top = [
-        {{ stat_department.hyeongsa.max_score|floatformat:1 }},
-        {{ stat_department.heonbeob.max_score|floatformat:1 }},
-        {{ stat_department.gyeongchal.max_score|floatformat:1 }},
-        {{ stat_department.beomjoe.max_score|floatformat:1 }},
-        {{ stat_department.minbeob.max_score|floatformat:1 }},
-        {{ stat_department.sum.max_score|floatformat:1 }},
     ]
     total_top = [
         {{ stat_total.hyeongsa.max_score|floatformat:1 }},
@@ -106,14 +74,10 @@
     ]
     chart_datasets = [
         {label: '내 점수', borderWidth: 1, data: my_score},
-        {label: '직렬 평균', borderWidth: 1, data: department_average},
         {label: '전체 평균', borderWidth: 1, data: total_average},
-        {label: '직렬 상위 20%', borderWidth: 1, data: department_score_20, hidden: true},
-        {label: '전체 상위 20%', borderWidth: 1, data: total_score_20, hidden: true},
-        {label: '직렬 상위 10%', borderWidth: 1, data: department_score_10},
+        {label: '전체 상위 20%', borderWidth: 1, data: total_score_20},
         {label: '전체 상위 10%', borderWidth: 1, data: total_score_10},
-        {label: '직렬 최고', borderWidth: 1, data: department_top, hidden: true},
-        {label: '전체 최고', borderWidth: 1, data: total_top, hidden: true},
+        {label: '전체 최고', borderWidth: 1, data: total_top},
     ]
 
     chart_data = {
