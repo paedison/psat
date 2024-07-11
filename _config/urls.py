@@ -25,7 +25,7 @@ urlpatterns = [
     path('lecture/', include('lecture.urls')),  # Lecture
 
     path('score/', include('a_score.urls')),  # Score
-    path('predict/', include('a_predict.urls')),  # Schedule
+    # path('predict/', include('a_predict.urls')),  # Schedule
 ]
 
 if settings.DEBUG:
