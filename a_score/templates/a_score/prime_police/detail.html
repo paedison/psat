@@ -6,7 +6,7 @@
 {% load slippers %}
 
 {% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2025/police/banner1_490x257.png' %}"/>{% endblock %}
 
 {% block main %}
 {% partialdef detail_main inline=True %}
@@ -43,36 +43,36 @@
 
 <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title mb-0 text-center">
-                        <div class="d-flex">
-                            <div class="btn-group ms-auto">
-                                <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-                                   href="{% url 'score_prime_police:list' %}" hx-boost="true">
-                                    목록
-                                </a>
-                                <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-                                   href="{% url 'score_prime_police:print' exam_year exam_round %}" target="score_print">
-                                    인쇄하기
-                                </a>
-                            </div>
-                        </div>
-                        <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>
-                        <div class="fs-1 fw-bolder">제 {{ exam_round }} 회 성적표</div>
-                        {% if not student %}
-                            <div class="container p-0">
-                                <div class="container">
-                                    <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
-                                    <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </h5>
-                </div>
-            </div>
-        </div>
+{#        <div class="col-12">#}
+{#            <div class="card">#}
+{#                <div class="card-body">#}
+{#                    <h5 class="card-title mb-0 text-center">#}
+{#                        <div class="d-flex">#}
+{#                            <div class="btn-group ms-auto">#}
+{#                                <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"#}
+{#                                   href="{% url 'score_prime_police:list' %}" hx-boost="true">#}
+{#                                    목록#}
+{#                                </a>#}
+{#                                <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"#}
+{#                                   href="{% url 'score_prime_police:print' exam_year exam_round %}" target="score_print">#}
+{#                                    인쇄하기#}
+{#                                </a>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>#}
+{#                        <div class="fs-1 fw-bolder">제 {{ exam_round }} 회 성적표</div>#}
+{#                        {% if not student %}#}
+{#                            <div class="container p-0">#}
+{#                                <div class="container">#}
+{#                                    <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>#}
+{#                                    <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        {% endif %}#}
+{#                    </h5>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
 
         <div class="col-12">
             <div id="student_info" class="card htmx-fade-in htmx-fade-out">

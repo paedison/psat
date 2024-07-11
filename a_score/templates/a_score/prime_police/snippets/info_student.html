@@ -1,7 +1,22 @@
 {% load static %}
+{% load i18n %}
 {% load psat_filter %}
 
-<div class="card-header">수험정보</div>
+<div class="card-header">
+    <div class="d-flex">
+        수험정보
+        <div class="btn-group ms-auto">
+            <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
+               href="{% url 'score_prime_police:list' %}" hx-boost="true">
+                목록
+            </a>
+            <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
+               href="{% url 'score_prime_police:print' exam_year exam_round %}" target="score_print">
+                인쇄하기
+            </a>
+        </div>
+    </div>
+</div>
 
 <div class="card-body">
     <table class="table">

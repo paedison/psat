@@ -4,7 +4,7 @@
 {% load psat_filter %}
 
 {% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2025/police/banner1_490x257.png' %}"/>{% endblock %}
 
 {% block main %}
 {% partialdef list_main inline=True %}
@@ -36,66 +36,15 @@
 <section class="section htmx-fade-in htmx-fade-out"
          hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title mb-0 text-center">
-                        <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>
-                        <div class="container p-0">
-                            <div class="container mb-3">
-                                <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
-                                <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
-                            </div>
-                            <div class="col-12 text-center">
-                                <a class="btn btn-outline-danger" target="_blank"
-                                   href="https://renew.primeedunet.com/psat/product/prereg/group/108">
-                                    모의고사 신청
-                                </a>
-                            </div>
-{#                            <div class="row g-3">#}
-{#                                <div class="col-6 text-sm-end">#}
-{#                                    <a class="btn btn-outline-danger" target="_blank"#}
-{#                                       href="https://renew.primeedunet.com/psat/product/prereg/group/108">#}
-{#                                        모의고사 신청#}
-{#                                    </a>#}
-{#                                </div>#}
-{#                                {% if user.is_staff %}#}
-{#                                    {% partialdef predict_score inline=True %}#}
-{#                                        {% if student %}#}
-{#                                            <div class="col-6 text-sm-start">#}
-{#                                                <a class="btn btn-outline-primary" hx-target="#main"#}
-{#                                                   href="{% url 'predict:student_create' %}" hx-boost="true">#}
-{#                                                    성적 예측하기#}
-{#                                                </a>#}
-{#                                            </div>#}
-{#                                        {% else %}#}
-{#                                            <div class="col-6 text-sm-start">#}
-{#                                                <a class="btn btn-outline-primary" hx-target="#main"#}
-{#                                                   href="{% url 'predict:index' %}" hx-boost="true">#}
-{#                                                    성적 예측하기#}
-{#                                                </a>#}
-{#                                            </div>#}
-{#                                        {% endif %}#}
-{#                                    {% endpartialdef %}#}
-{#                                {% else %}#}
-{#                                    {% if current_time > predict_opened_at %}#}
-{#                                        {% partial predict_score %}#}
-{#                                    {% else %}#}
-{#                                        <div class="col-6 text-sm-start">#}
-{#                                            <a class="btn btn-outline-primary"#}
-{#                                               hx-get="{% url 'score_prime_police:no_predict_open_modal' %}" href=""#}
-{#                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"#}
-{#                                               data-bs-toggle="modal" data-bs-target="#modalContainer">#}
-{#                                                성적 예측하기#}
-{#                                            </a>#}
-{#                                        </div>#}
-{#                                    {% endif %}#}
-{#                                {% endif %}#}
-{#                            </div>#}
-                        </div>
-                    </h5>
-                </div>
-            </div>
+        <div class="col-12 mb-3">
+            <a class="text-decoration-none d-md-none" target="_blank"
+               href="https://renew.primeedunet.com/policeinspector/product/landing/172">
+                <img src="{% static 'image/prime/2025/police/banner1_490x257.png' %}" class="w-100" alt="Message"/>
+            </a>
+            <a class="text-decoration-none d-none d-md-flex justify-content-center" target="_blank"
+               href="https://renew.primeedunet.com/policeinspector/product/landing/172">
+                <img src="{% static 'image/prime/2025/police/banner3_1400x800.png' %}" class="mw-100" alt="Message"/>
+            </a>
         </div>
 
         <div class="col-12">
@@ -110,24 +59,12 @@
                                 <th class="text-primary text-nowrap p-2 col-1">수험번호</th>
                                 <th class="text-primary text-nowrap p-2 col-1">직렬</th>
                                 <th class="text-primary text-nowrap p-2 col-1">성적표</th>
-                                <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
-                                    형사
-                                </th>
-                                <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
-                                    헌법
-                                </th>
-                                <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
-                                    경찰
-                                </th>
-                                <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
-                                    범죄
-                                </th>
-                                <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
-                                    민법
-                                </th>
-                                <th class="text-primary text-nowrap p-2 col-1 d-none d-md-table-cell">
-                                    총점
-                                </th>
+                                <th class="text-primary text-nowrap p-2 col-1">형사</th>
+                                <th class="text-primary text-nowrap p-2 col-1">헌법</th>
+                                <th class="text-primary text-nowrap p-2 col-1">경찰</th>
+                                <th class="text-primary text-nowrap p-2 col-1">범죄</th>
+                                <th class="text-primary text-nowrap p-2 col-1">선택과목</th>
+                                <th class="text-primary text-nowrap p-2 col-1">총점</th>
                             </tr>
                         </thead>
 
@@ -182,20 +119,23 @@
             </div>
         </div>
 
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">시험 일정</div>
-
-                <div class="card-body">
-                    <div class="container d-none d-lg-block text-center p-0">
-                        <img src="{% static 'image/prime/2024/exam/schedule_1.jpg' %}" class="mw-100" alt="Schedule"/>
-                    </div>
-                    <div class="container d-lg-none text-center p-0">
-                        <img src="{% static 'image/prime/2024/exam/schedule_2.jpg' %}" class="mw-100" alt="Schedule"/>
-                    </div>
-                </div>
-            </div>
+        <div class="col-12 d-flex justify-content-center mb-3">
+            <img src="{% static 'image/prime/2025/police/banner2_1400x500.png' %}" class="mw-100" alt="Message"/>
         </div>
+{#        <div class="col-12">#}
+{#            <div class="card">#}
+{#                <div class="card-header">시험 일정</div>#}
+{##}
+{#                <div class="card-body">#}
+{#                    <div class="container d-none d-lg-block text-center p-0">#}
+{#                        <img src="{% static 'image/prime/2024/exam/schedule_1.jpg' %}" class="mw-100" alt="Schedule"/>#}
+{#                    </div>#}
+{#                    <div class="container d-lg-none text-center p-0">#}
+{#                        <img src="{% static 'image/prime/2024/exam/schedule_2.jpg' %}" class="mw-100" alt="Schedule"/>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
     </div>
 </section>
 {% endpartialdef list_main %}
@@ -279,17 +219,17 @@
             {% endwith %}
         {% endif %}
     </td>
-    <td class="d-none d-md-table-cell">
+    <td class="text-nowrap p-2">
         {% if user.is_authenticated %}
             {{ obj.student.score.hyeongsa|floatformat:1 }}
         {% endif %}
     </td>
-    <td class="d-none d-md-table-cell">
+    <td class="text-nowrap p-2">
         {% if user.is_authenticated %}
             {{ obj.student.score.heonbeob|floatformat:1 }}
         {% endif %}
     </td>
-    <td class="d-none d-md-table-cell">
+    <td class="text-nowrap p-2">
         {% if user.is_authenticated %}
             {{ obj.student.score.gyeongchal|floatformat:1 }}
         {% endif %}
@@ -299,12 +239,12 @@
             {{ obj.student.score.beomjoe|floatformat:1 }}
         {% endif %}
     </td>
-    <td class="d-none d-md-table-cell">
+    <td class="text-nowrap p-2">
         {% if user.is_authenticated %}
             {{ obj.student.score.minbeob|floatformat:1 }}
         {% endif %}
     </td>
-    <td class="d-none d-md-table-cell">
+    <td class="text-nowrap p-2">
         {% if user.is_authenticated %}
             {{ obj.student.score.sum|floatformat:1 }}
         {% endif %}

@@ -37,7 +37,7 @@
         {{ student.score.heonbeob|floatformat:1 }},
         {{ student.score.gyeongchal|floatformat:1 }},
         {{ student.score.beomjoe|floatformat:1 }},
-        {{ student.score.minbeob|floatformat:1 }},
+        {{ student.score.selection|floatformat:1 }},
         {{ student.score.sum|floatformat:1 }},
     ]
     total_average = [
@@ -45,7 +45,7 @@
         {{ stat_total.heonbeob.avg_score|floatformat:1 }},
         {{ stat_total.gyeongchal.avg_score|floatformat:1 }},
         {{ stat_total.beomjoe.avg_score|floatformat:1 }},
-        {{ stat_total.minbeob.avg_score|floatformat:1 }},
+        {{ stat_total.selection.avg_score|floatformat:1 }},
         {{ stat_total.sum.avg_score|floatformat:1 }},
     ]
     total_score_20 = [
@@ -53,7 +53,7 @@
         {{ stat_total.heonbeob.top_score_20|floatformat:1 }},
         {{ stat_total.gyeongchal.top_score_20|floatformat:1 }},
         {{ stat_total.beomjoe.top_score_20|floatformat:1 }},
-        {{ stat_total.minbeob.top_score_20|floatformat:1 }},
+        {{ stat_total.selection.top_score_20|floatformat:1 }},
         {{ stat_total.sum.top_score_20|floatformat:1 }},
     ]
     total_score_10 = [
@@ -61,7 +61,7 @@
         {{ stat_total.heonbeob.top_score_10|floatformat:1 }},
         {{ stat_total.gyeongchal.top_score_10|floatformat:1 }},
         {{ stat_total.beomjoe.top_score_10|floatformat:1 }},
-        {{ stat_total.minbeob.top_score_10|floatformat:1 }},
+        {{ stat_total.selection.top_score_10|floatformat:1 }},
         {{ stat_total.sum.top_score_10|floatformat:1 }},
     ]
     total_top = [
@@ -69,7 +69,7 @@
         {{ stat_total.heonbeob.max_score|floatformat:1 }},
         {{ stat_total.gyeongchal.max_score|floatformat:1 }},
         {{ stat_total.beomjoe.max_score|floatformat:1 }},
-        {{ stat_total.minbeob.max_score|floatformat:1 }},
+        {{ stat_total.selection.max_score|floatformat:1 }},
         {{ stat_total.sum.max_score|floatformat:1 }},
     ]
     chart_datasets = [
@@ -83,7 +83,11 @@
     chart_data = {
         type: 'bar',
         data: {
-            labels: ['형사법', '헌법', '경찰학', '범죄학', '민법총칙', '총점'],
+            labels: [
+                '형사법', '헌법', '경찰학', '범죄학',
+                '선택과목({{ stat_total.selection.subject }})',
+                '총점',
+            ],
             datasets: chart_datasets,
         },
         options: {

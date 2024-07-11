@@ -12,7 +12,7 @@ urlpatterns = [
     path('', list_view, name='list'),
 
     path('<int:exam_year>/<int:exam_round>/', detail_view, name='detail'),
-    path('<int:exam_year>/<int:exam_round>/print/', detail_print_view, name='print'),
+    path('print/<int:exam_year>/<int:exam_round>/', detail_print_view, name='print'),
 
     path('no_open/<int:exam_year>/<int:exam_round>/', no_open_modal_view, name='no_open_modal'),
     path('no_student/<int:exam_year>/<int:exam_round>/', no_student_modal_view, name='no_student_modal'),

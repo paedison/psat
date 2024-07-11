@@ -31,7 +31,7 @@
             </thead>
             <tbody>
                 {% for _ in '012345' %}
-                    {% cycle stat_total.hyeongsa stat_total.heonbeob stat_total.gyeongchal stat_total.beomjoe stat_total.minbeob stat_total.sum as stat_tot silent %}
+                    {% cycle stat_total.hyeongsa stat_total.heonbeob stat_total.gyeongchal stat_total.beomjoe stat_total.selection stat_total.sum as stat_tot silent %}
                     {% if stat_tot %}{% partial sub_score_line %}{% endif %}
                 {% endfor %}
             </tbody>
@@ -42,13 +42,10 @@
 {% partialdef sub_score_line %}
     <tr class="text-center {% if stat_tot.field == 'sum' %}table-warning{% endif %}">
         <th class="text-nowrap" aria-label="과목">
-            {% if stat_tot.is_confirmed or stat_tot.field == 'sum' %}
-                {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
+            {% if stat_tot.field == 'selection' %}
+                선택과목<br/>({{ stat_tot.subject }})
             {% else %}
-                <a class="text-decoration-none"
-                   href="" hx-boost="true">
-                    {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
-                </a>
+                {{ stat_tot.subject }}
             {% endif %}
         </th>
 

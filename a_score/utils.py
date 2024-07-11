@@ -60,29 +60,36 @@ def get_dict_stat_data(student, statistics_type: str, field_vars: dict) -> dict:
     score = {}
     stat_data = {}
     for field, subject_tuple in field_vars.items():
-        participants = participants_dict[field]
-        score[field] = [qs['score'][field] for qs in qs_student if field in qs['score']]
+        if field in participants_dict.keys():
+            participants = participants_dict[field]
+            score[field] = [qs['score'][field] for qs in qs_student if field in qs['score']]
 
-        student_score = student.score[field]
-        sorted_scores = sorted(score[field], reverse=True)
-        rank = sorted_scores.index(student_score) + 1
-        top_10_threshold = max(1, int(participants * 0.1))
-        top_20_threshold = max(1, int(participants * 0.2))
+            student_score = student.score[field]
+            sorted_scores = sorted(score[field], reverse=True)
+            rank = sorted_scores.index(student_score) + 1
+            top_10_threshold = max(1, int(participants * 0.1))
+            top_20_threshold = max(1, int(participants * 0.2))
 
-        stat_data[field] = {
-            'field': field,
-            'is_confirmed': True,
-            'sub': subject_tuple[0],
-            'subject': subject_tuple[1],
-            'icon': icon_set_new.ICON_SUBJECT[subject_tuple[0]],
-            'rank': rank,
-            'score': student_score,
-            'participants': participants,
-            'max_score': sorted_scores[0],
-            'top_score_10': sorted_scores[top_10_threshold - 1],
-            'top_score_20': sorted_scores[top_20_threshold - 1],
-            'avg_score': sum(score[field]) / participants,
-        }
+            stat_data[field] = {
+                'field': field,
+                'is_confirmed': True,
+                'sub': subject_tuple[0],
+                'subject': subject_tuple[1],
+                'icon': icon_set_new.ICON_SUBJECT[subject_tuple[0]],
+                'rank': rank,
+                'score': student_score,
+                'participants': participants,
+                'max_score': sorted_scores[0],
+                'top_score_10': sorted_scores[top_10_threshold - 1],
+                'top_score_20': sorted_scores[top_20_threshold - 1],
+                'avg_score': sum(score[field]) / participants,
+            }
+    if 'minbeob' in stat_data.keys():
+        stat_data['selection'] = stat_data['minbeob']
+    else:
+        stat_data['selection'] = stat_data['haenghag']
+    stat_data['selection']['field'] = 'selection'
+
     return stat_data
 
 

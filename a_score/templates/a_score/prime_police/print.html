@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+
+{% block head_title %}{{ student.serial }}_{{ student.department_name }}_{{ student.name }}_제{{ round }}회_전국모의고사_성적표{% endblock head_title %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2025/police/banner1_490x257.png' %}"/>{% endblock %}
+{% block google_adsense %}{% endblock %}
+
+{% block html_body %}
+<body class="bg-white">
+    {{ info|json_script:'info' }}
+    <h2 class="fw-bold text-center mb-4">{{ sub_title }} 성적표</h2>
+    <div class="mb-2">
+        <table class="table table-sm table-bordered small align-middle">
+            <tbody>
+                <tr class="text-center">
+                    <td>응시번호 : {{ student.serial }}</td>
+                    <td>직렬 : {{ student.department_name }}</td>
+                    <td>이름 : {{ student.name }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="mb-2">
+        <table class="table table-sm table-bordered small align-middle">
+            <thead>
+                <tr class="text-center small align-middle">
+                    <th>과목</th>
+                    <th>점수(점)</th>
+                    <th>응시자수(명)</th>
+
+                    <th>전체 석차(등)</th>
+                    <th>전체 석차(%)</th>
+                    <th>최고 점수(점)</th>
+                    <th>상위 10%(점)</th>
+                    <th>상위 20%(점)</th>
+                    <th>평균 점수(점)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for _ in '012345' %}
+                    {% cycle stat_total.hyeongsa stat_total.heonbeob stat_total.gyeongchal stat_total.beomjoe stat_total.selection stat_total.sum as stat_tot silent %}
+                    <tr class="text-center small">
+                        <th>{{ stat_tot.subject }}</th>
+                        <td>{{ stat_tot.score|floatformat:1 }}</td>
+                        <td>{{ stat_tot.participants }}</td>
+
+                        <td>{{ stat_tot.rank }}</td>
+                        <td>{{ stat_tot.rank|percentageby:stat_tot.participants|floatformat:1 }}</td>
+                        <td>{{ stat_tot.max_score|floatformat:1 }}</td>
+                        <td>{{ stat_tot.top_score_10|floatformat:1 }}</td>
+                        <td>{{ stat_tot.top_score_20|floatformat:1 }}</td>
+                        <td>{{ stat_tot.avg_score|floatformat:1 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mb-2">
+        <table class="table table-sm table-bordered small align-middle">
+            <thead>
+                <tr class="text-center small align-middle">
+                    <th colspan="2">과목</th>
+                    {% for _ in 'x'|ljust:40 %}
+                        <th class="text-nowrap fw-bold text-secondary">{{ forloop.counter|add:0 }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for id in '01234' %}
+                    {% cycle stat_total.hyeongsa stat_total.heonbeob stat_total.gyeongchal stat_total.beomjoe stat_total.selection stat_total.sum as stat_tot silent %}
+                    {% cycle data_answer_official.hyeongsa data_answer_official.heonbeob data_answer_official.gyeongchal data_answer_official.beomjoe data_answer_official.minbeob as answer_official silent %}
+                    {% cycle data_answer_student.hyeongsa data_answer_student.heonbeob data_answer_student.gyeongchal data_answer_student.beomjoe data_answer_student.minbeob as answer_student silent %}
+                    {% partial answer_tbody %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="table-responsive">
+        {% include 'a_score/prime_police/snippets/chart.html#chart_canvas' with print_class='print' %}
+    </div>
+
+    <script>
+        window.onload = function () {
+            setTimeout(function () {
+                window.print();
+            }, 1000);
+        };
+    </script>
+</body>
+{% endblock html_body %}
+
+{% partialdef answer_tbody %}
+    <tr class="text-center small">
+        <th class="text-nowrap align-center" rowspan="5">{{ stat_tot.sub }}</th>
+        <th class="text-nowrap">정답</th>
+        {% for answer in answer_official %}
+            <td data-number="{{ answer.no }}">
+                {% if answer.ans <= 5 %}
+                    {{ answer.ans }}
+                {% elif answer.ans == 12345 %}
+                    전체 정답
+                {% else %}
+                    {% for ans in answer.ans %}{{ ans }}{% endfor %}
+                {% endif %}
+            </td>
+        {% endfor %}
+    </tr>
+    <tr class="text-center small">
+        <th class="text-nowrap">정답률(%)</th>
+        {% for answer in answer_official %}
+            <td data-number="{{ answer.no }}">{{ answer.rate_correct|floatformat:0 }}</td>
+        {% endfor %}
+    </tr>
+    <tr class="text-center small">
+        <th class="text-nowrap">제출 답안</th>
+        {% for answer in answer_student %}
+            <td data-number="{{ answer.no }}">{{ answer.ans }}</td>
+        {% endfor %}
+    </tr>
+    <tr class="text-center small">
+        <th class="text-nowrap">정오</th>
+        {% for answer in answer_student %}
+            <td data-number="{{ answer.no }}">{% if answer.result %}O{% else %}X{% endif %}</td>
+        {% endfor %}
+    </tr>
+    <tr class="text-center small">
+        <th class="text-nowrap">선택률(%)</th>
+        {% for answer in answer_student %}
+            <td data-number="{{ answer.no }}">{{ answer.rate_selection|floatformat:0 }}</td>
+        {% endfor %}
+    </tr>
+{% endpartialdef answer_tbody %}

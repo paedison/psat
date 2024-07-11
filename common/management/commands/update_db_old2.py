@@ -3,33 +3,11 @@ import json
 import traceback
 
 import django.db.utils
-import pytz
-from dateutil import parser
 from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from common.utils import detect_encoding
-
-
-def get_aware_datetime_value(value):
-    try:
-        int(value)
-        return value
-    except ValueError:
-        pass
-    try:
-        float(value)
-        return value
-    except ValueError:
-        pass
-    try:
-        dt = parser.parse(value)
-        if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
-            return pytz.timezone('UTC').localize(dt)
-        return dt
-    except ValueError:
-        return value
 
 
 def create_instance_get_messages(file_name: str, model: any) -> dict:
@@ -54,8 +32,6 @@ def create_instance_get_messages(file_name: str, model: any) -> dict:
                         print(row['id'])
                         print(f'JSONDecodeError: {e}')
                         print(f"Problematic JSON: {row[key]}")
-                elif key != 'id':
-                    row[key] = get_aware_datetime_value(value)
             if row['id']:
                 try:
                     instance = model.objects.get(id=row['id'])

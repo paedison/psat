@@ -7,7 +7,7 @@
         {% if user.is_authenticated %}{% partial menu_dashboard %}{% endif %}
         {% partial menu_lecture %}
         {% partial menu_psat %}
-        {% if user.is_staff %}{% partial menu_predict %}{% endif %}
+        {% if user.is_admin %}{% partial menu_predict %}{% endif %}
         {% if user.is_staff %}{% partial menu_score %}{% endif %}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
     </ul>
@@ -46,7 +46,7 @@
 
 {% partialdef menu_predict %}
     <li class="nav-item">
-        <a id="predictList" class="nav-link collapsed" hx-boost="true" href="{% url 'predict_test:index' %}">
+        <a id="predictList" class="nav-link collapsed" hx-boost="true" href="{% url 'predict:index' %}">
             <i class="fa-solid fa-fw fa-arrows-up-to-line"></i>
             <span>Predict</span>
         </a>

@@ -16,6 +16,7 @@ FIELD_VARS: dict[str, tuple] = {
     'gyeongchal': ('경찰', '경찰학'),
     'beomjoe': ('범죄', '범죄학'),
     'minbeob': ('민법', '민법총칙'),
+    'haenghag': ('행학', '행정학'),
     'sum': ('총점', '총점'),
 }  # Field variables for chart, sheet score
 INFO = {'menu': 'score', 'view_type': 'primeScore'}
@@ -59,10 +60,7 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_score/prime_police/list.html', context)
 
 
-def detail_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    if not request.user.is_authenticated:
-        return redirect('score_prime_police:list')
-
+def get_detail_context(request: HtmxHttpRequest, exam_year: int, exam_round: int) -> dict:
     student = PrimePoliceStudent.objects.filter(
         year=exam_year, round=exam_round, registered_students__user=request.user).first()
     if not student:
@@ -105,6 +103,14 @@ def detail_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
         data_answer_official=data_answer_official,
         data_answer_student=data_answer_student,
     )
+    return context
+
+
+def detail_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
+    if not request.user.is_authenticated:
+        return redirect('score_prime_police:list')
+
+    context = get_detail_context(request=request, exam_year=exam_year, exam_round=exam_round)
 
     if request.htmx:
         return render(request, 'a_score/prime_police/detail.html#detail_main', context)
@@ -112,7 +118,8 @@ def detail_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
 
 
 def detail_print_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    pass
+    context = get_detail_context(request=request, exam_year=exam_year, exam_round=exam_round)
+    return render(request, 'a_score/prime_police/print.html', context)
 
 
 def no_open_modal_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
