@@ -1,0 +1,459 @@
+import numpy as np
+from django.db.models import F, Count, Max, Avg
+from django.db.models import Window
+from django.db.models.functions import Rank, PercentRank
+from django.urls import reverse_lazy, reverse
+
+from common.constants import icon_set_new
+
+
+def get_data_answer_official(exam_vars: dict, qs_exam) -> tuple:
+    # {
+    #     'heonbeob': [
+    #         {
+    #             'no': 10,
+    #             'ans': 1,
+    #         },
+    #         ...
+    #     ]
+    # }
+    subject_fields = exam_vars['subject_fields']
+    problem_count = exam_vars['problem_count']
+    official_answer_uploaded = False
+
+    data_answer_official = {}
+    for field in subject_fields:
+        data_answer_official[field] = [{'no': no, 'ans': 0} for no in range(1, problem_count[field] + 1)]
+
+    if qs_exam and qs_exam.is_answer_official_opened:
+        official_answer_uploaded = True
+        try:
+            for field, answer in qs_exam.answer_official.items():
+                for no, ans in enumerate(answer, start=1):
+                    data_answer_official[field][no - 1] = {'no': no, 'ans': ans}
+        except IndexError:
+            official_answer_uploaded = False
+        except KeyError:
+            official_answer_uploaded = False
+    return data_answer_official, official_answer_uploaded
+
+
+def get_data_answer_predict(qs_answer_count, exam_vars: dict) -> dict:
+    subject_fields = exam_vars['subject_fields']
+    problem_count = exam_vars['problem_count']
+    count_field_list = [
+        'count_1', 'count_2', 'count_3', 'count_4', 'count_5',
+        'count_0', 'count_multiple', 'count_total',
+    ]
+    data_answer_predict = {
+        field: [
+            {} for _ in range(problem_count[field])
+        ] for field in subject_fields
+    }
+    for qs in qs_answer_count:
+        field = qs.subject
+        index = qs.number - 1
+
+        count_list = [c for c in [qs.count_1, qs.count_2, qs.count_3, qs.count_4, qs.count_5]]
+        ans_predict = count_list.index(max(count_list)) + 1
+        rate_accuracy = getattr(qs, f'rate_{ans_predict}')
+
+        count_dict = {c: getattr(qs, c) for c in count_field_list}
+        count_dict.update({
+            'no': qs.number,
+            'ans': ans_predict,
+            'rate_accuracy': rate_accuracy,
+        })
+        data_answer_predict[field][index].update(count_dict)
+
+    return data_answer_predict
+
+
+def get_data_answer_student(
+        student,
+        data_answer_official: dict,
+        official_answer_uploaded: bool,
+        data_answer_predict: dict,
+        exam_vars: dict,
+):
+    data_answer_student = {field: [] for field in exam_vars['subject_fields']}
+
+    for field, value in data_answer_predict.items():
+        if student.answer_confirmed[field]:
+            for idx, answer_predict in enumerate(value):
+                ans_student = student.answer[field][idx]
+                ans_predict = answer_predict['ans']
+                count_total = answer_predict['count_total']
+                rate_selection = 0
+                if count_total:
+                    rate_selection = answer_predict[f'count_{ans_student}'] * 100 / count_total
+
+                prediction_is_correct = result = None
+                if official_answer_uploaded:
+                    ans_official = data_answer_official[field][idx]['ans']
+                    prediction_is_correct = ans_official == ans_predict
+                    answer_predict['prediction_is_correct'] = ans_official == ans_predict
+                    if 1 <= ans_official <= 5:
+                        result = ans_student == ans_official
+                        rate_correct = answer_predict[f'count_{ans_official}'] * 100 / count_total
+                    else:
+                        ans_official_list = [int(ans) for ans in str(ans_official)]
+                        result = ans_student in ans_official_list
+                        rate_correct = sum(
+                            answer_predict[f'count_{ans}'] for ans in ans_official_list
+                        ) * 100 / count_total
+                    data_answer_official[field][idx]['rate_correct'] = rate_correct
+
+                answer_predict['prediction_is_correct'] = prediction_is_correct
+                data_answer_student[field].append({
+                    'no': idx + 1,
+                    'ans': ans_student,
+                    'rate_selection': rate_selection,
+                    'result_real': result,
+                })
+    return data_answer_student
+
+
+def get_info_answer_student(
+        student,
+        data_answer_student: dict,
+        data_answer_predict: dict,
+        exam_vars: dict,
+) -> dict:
+    info_answer_student = {}
+    psat_score_predict = 0
+    psat_fields = ['eoneo', 'jaryo', 'sanghwang']
+    max_participants = 0
+
+    for field, value in student.answer.items():
+        sub, subject = exam_vars['field_vars'][field]
+        problem_count = exam_vars['problem_count'][field]
+        answer_count = student.answer_count[field]
+        is_confirmed = student.answer_confirmed[field]
+        participants = student.participants_total[field]
+        score_real = student.score[field]
+        max_participants = max_participants if max_participants >= participants else participants
+
+        correct_predict_count = 0
+        for idx, answer_student in enumerate(data_answer_student[field]):
+            ans_student = answer_student['ans']
+            ans_predict = data_answer_predict[field][idx]['ans']
+
+            result_predict = ans_student == ans_predict
+            answer_student['result_predict'] = result_predict
+            correct_predict_count += 1 if result_predict else 0
+
+        score_predict = correct_predict_count * 100 / problem_count
+        psat_score_predict += score_predict if field in psat_fields else 0
+
+        info_answer_student[field] = {
+            'icon': icon_set_new.ICON_SUBJECT[sub],
+            'sub': sub,
+            'subject': subject,
+            'field': field,
+            'problem_count': problem_count,
+            'participants': participants,
+            'answer_count': answer_count,
+            'score_real': score_real,
+            'score_predict': score_predict,
+            'is_confirmed': is_confirmed,
+        }
+
+    info_answer_student['psat_avg'] = {
+        'icon': icon_set_new.ICON_SUBJECT['평균'],
+        'sub': '평균',
+        'subject': 'PSAT 평균',
+        'field': 'psat_avg',
+        'problem_count': sum([val for val in exam_vars['problem_count'].values()]),
+        'participants': max_participants,
+        'answer_count': sum([val for val in student.answer_count.values()]),
+        'score_real': student.score['psat_avg'],
+        'score_predict': psat_score_predict / 3,
+        'is_confirmed': student.answer_all_confirmed_at is not None,
+    }
+    return info_answer_student
+
+
+def get_dict_stat_data(
+        student, stat_type: str, exam_vars: dict, qs_exam, filtered: bool = False
+) -> dict:
+    field_vars = exam_vars['field_vars']
+    filter_exp = {'year': student.year, 'exam': student.exam, 'round': student.round}
+    if stat_type == 'department':
+        filter_exp['department'] = student.department
+    if filtered:
+        filter_exp['answer_all_confirmed_at__lte'] = qs_exam.answer_official_opened_at
+    qs_student = student.__class__.objects.filter(**filter_exp).values('score')
+
+    if qs_exam.is_answer_official_opened:
+        score = {}
+        stat_data = {}
+        for field, subject_tuple in field_vars.items():
+            sub, subject = subject_tuple
+            if field == 'psat_avg':
+                is_confirmed = all(student.answer_confirmed.values())
+            else:
+                is_confirmed = student.answer_confirmed[field]
+
+            score[field] = [qs['score'][field] for qs in qs_student if field in qs['score']]
+
+            participants = len(score[field])
+            sorted_scores = sorted(score[field], reverse=True)
+
+            student_score = student.score[field]
+            rank = sorted_scores.index(student_score) + 1
+            top_10_threshold = max(1, int(participants * 0.1))
+            top_20_threshold = max(1, int(participants * 0.2))
+
+            stat_data[field] = {
+                'field': field,
+                'sub': sub,
+                'subject': subject,
+                'icon': icon_set_new.ICON_SUBJECT[sub],
+                'is_confirmed': is_confirmed,
+                'rank': rank,
+                'score': student_score,
+                'participants': participants,
+                'max_score': sorted_scores[0],
+                'top_score_10': sorted_scores[top_10_threshold - 1],
+                'top_score_20': sorted_scores[top_20_threshold - 1],
+                'avg_score': sum(score[field]) / participants if participants else 0,
+            }
+        return stat_data
+
+
+def get_str_next_url(student, exam_vars: dict) -> str:
+    for field in exam_vars['subject_fields']:
+        is_confirmed = student.answer_confirmed[field]
+        if not is_confirmed:
+            return reverse('predict:answer-input', args=[field])
+    return reverse('predict:index')
+
+
+# def create_submitted_answer(student, sub: str):
+#     number = request.POST.get('number')
+#     answer = request.POST.get('answer')
+#     with transaction.atomic():
+#         submitted_answer, _ = PsatSubmittedAnswer.objects.get_or_create(student=student, subject=sub, number=number)
+#         submitted_answer.answer = answer
+#         submitted_answer.save()
+#         submitted_answer.refresh_from_db()
+#         return submitted_answer
+
+
+def get_dict_by_sub(target_list: list[dict]) -> dict:
+    result_dict = {'헌법': [], '언어': [], '자료': [], '상황': []}
+    for key in result_dict.keys():
+        result_list = []
+        for t in target_list:
+            if t and t['sub'] == key:
+                result_list.append(t)
+        result_dict[key] = result_list
+    return result_dict
+
+
+def get_rank_qs(queryset):
+    def rank_func(field_name) -> Window:
+        return Window(expression=Rank(), order_by=F(field_name).desc())
+
+    def rank_ratio_func(field_name) -> Window:
+        return Window(expression=PercentRank(), order_by=F(field_name).desc())
+
+    return queryset.annotate(
+        user_id=F('student__user_id'),
+
+        rank_heonbeob=rank_func('score_heonbeob'),
+        rank_eoneo=rank_func('score_eoneo'),
+        rank_jaryo=rank_func('score_jaryo'),
+        rank_sanghwang=rank_func('score_sanghwang'),
+        rank_psat=rank_func('score_psat_avg'),
+
+        rank_ratio_heonbeob=rank_ratio_func('score_heonbeob'),
+        rank_ratio_eoneo=rank_ratio_func('score_eoneo'),
+        rank_ratio_jaryo=rank_ratio_func('score_jaryo'),
+        rank_ratio_sanghwang=rank_ratio_func('score_sanghwang'),
+        rank_ratio_psat=rank_ratio_func('score_psat_avg'),
+    )
+
+
+def get_all_ranks_dict(get_students_qs, user_id) -> dict:
+    rank_total = rank_department = None
+
+    students_qs_total = get_students_qs('전체')
+    rank_qs_total = get_rank_qs(students_qs_total).values()
+    for qs in rank_qs_total:
+        if qs['user_id'] == user_id:
+            rank_total = qs
+
+    students_qs_department = get_students_qs('직렬')
+    rank_qs_department = get_rank_qs(students_qs_department).values()
+    for qs in rank_qs_department:
+        if qs['user_id'] == user_id:
+            rank_department = qs
+
+    return {
+        '전체': rank_total,
+        '직렬': rank_department,
+    }
+
+
+def get_top_score(score_list: list):
+    try:
+        return np.percentile(score_list, [90, 80], interpolation='nearest')
+    except IndexError:
+        return [0, 0]
+    except TypeError:
+        return [0, 0]
+
+
+def get_score_stat_korean(queryset) -> dict:
+    stat_queryset = queryset.aggregate(
+        응시_인원=Count('id'),
+
+        헌법_최고_점수=Max('score_heonbeob', default=0),
+        언어_최고_점수=Max('score_eoneo', default=0),
+        자료_최고_점수=Max('score_jaryo', default=0),
+        상황_최고_점수=Max('score_sanghwang', default=0),
+        PSAT_최고_점수=Max('score_psat_avg', default=0),
+
+        헌법_평균_점수=Avg('score_heonbeob', default=0),
+        언어_평균_점수=Avg('score_eoneo', default=0),
+        자료_평균_점수=Avg('score_jaryo', default=0),
+        상황_평균_점수=Avg('score_sanghwang', default=0),
+        PSAT_평균_점수=Avg('score_psat_avg', default=0),
+    )
+
+    score_list_all = list(queryset.values(
+        'score_eoneo', 'score_jaryo', 'score_sanghwang', 'score_psat_avg', 'score_heonbeob'))
+    score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
+    score_list_eoneo = [s['score_eoneo'] for s in score_list_all]
+    score_list_jaryo = [s['score_jaryo'] for s in score_list_all]
+    score_list_sanghwang = [s['score_sanghwang'] for s in score_list_all]
+    score_psat_avg = [s['score_psat_avg'] for s in score_list_all]
+
+    top_score_heonbeob = get_top_score(score_list_heonbeob)
+    top_score_eoneo = get_top_score(score_list_eoneo)
+    top_score_jaryo = get_top_score(score_list_jaryo)
+    top_score_sanghwang = get_top_score(score_list_sanghwang)
+    top_score_psat_avg = get_top_score(score_psat_avg)
+
+    try:
+        stat_queryset['헌법_상위_10%'] = top_score_heonbeob[0]
+        stat_queryset['헌법_상위_20%'] = top_score_heonbeob[1]
+
+        stat_queryset['언어_상위_10%'] = top_score_eoneo[0]
+        stat_queryset['언어_상위_20%'] = top_score_eoneo[1]
+
+        stat_queryset['자료_상위_10%'] = top_score_jaryo[0]
+        stat_queryset['자료_상위_20%'] = top_score_jaryo[1]
+
+        stat_queryset['상황_상위_10%'] = top_score_sanghwang[0]
+        stat_queryset['상황_상위_20%'] = top_score_sanghwang[1]
+
+        stat_queryset['PSAT_상위_10%'] = top_score_psat_avg[0]
+        stat_queryset['PSAT_상위_20%'] = top_score_psat_avg[1]
+    except TypeError:
+        pass
+
+    return stat_queryset
+
+
+def get_score_stat_sub(queryset) -> dict:
+    score_stat_sub = {
+        '헌법': {'sub': 'heonbeob'},
+        '언어': {'sub': 'eoneo'},
+        '자료': {'sub': 'jaryo'},
+        '상황': {'sub': 'sanghwang'},
+        '피셋': {'sub': 'psat'},
+    }
+    for key, item in score_stat_sub.items():
+        item['num_students'] = None
+        item['max_score'] = None
+        item['avg_score'] = None
+        item['top_score_10'] = None
+        item['top_score_20'] = None
+    stat_queryset = queryset.aggregate(
+        num_students=Count('id'),
+
+        max_score_heonbeob=Max('score_heonbeob', default=0),
+        max_score_eoneo=Max('score_eoneo', default=0),
+        max_score_jaryo=Max('score_jaryo', default=0),
+        max_score_sanghwang=Max('score_sanghwang', default=0),
+        max_score_psat_avg=Max('score_psat_avg', default=0),
+
+        avg_score_heonbeob=Avg('score_heonbeob', default=0),
+        avg_score_eoneo=Avg('score_eoneo', default=0),
+        avg_score_jaryo=Avg('score_jaryo', default=0),
+        avg_score_sanghwang=Avg('score_sanghwang', default=0),
+        avg_score_psat_avg=Avg('score_psat_avg', default=0),
+    )
+
+    score_list_all = list(queryset.values(
+        'score_eoneo', 'score_jaryo', 'score_sanghwang', 'score_psat_avg', 'score_heonbeob'))
+    score_list_heonbeob = []
+    score_list_eoneo = []
+    score_list_jaryo = []
+    score_list_sanghwang = []
+    score_psat_avg = []
+    for s in score_list_all:
+        if s['score_heonbeob']:
+            score_list_heonbeob.append(s['score_heonbeob'])
+        if s['score_eoneo']:
+            score_list_eoneo.append(s['score_eoneo'])
+        if s['score_jaryo']:
+            score_list_jaryo.append(s['score_jaryo'])
+        if s['score_sanghwang']:
+            score_list_sanghwang.append(s['score_sanghwang'])
+        if s['score_psat_avg']:
+            score_psat_avg.append(s['score_psat_avg'])
+    # score_list_heonbeob = [s['score_heonbeob'] for s in score_list_all]
+    # score_list_eoneo = [s['score_eoneo'] for s in score_list_all]
+    # score_list_jaryo = [s['score_jaryo'] for s in score_list_all]
+    # score_list_sanghwang = [s['score_sanghwang'] for s in score_list_all]
+    # score_psat_avg = [s['score_psat_avg'] for s in score_list_all]
+
+    top_score_heonbeob = get_top_score(score_list_heonbeob)
+    top_score_eoneo = get_top_score(score_list_eoneo)
+    top_score_jaryo = get_top_score(score_list_jaryo)
+    top_score_sanghwang = get_top_score(score_list_sanghwang)
+    top_score_psat_avg = get_top_score(score_psat_avg)
+
+    for key, data in score_stat_sub.items():
+        sub = data['sub']
+        data['num_students'] = stat_queryset[f'num_students']
+        if sub == 'psat':
+            data['max_score'] = stat_queryset[f'max_score_psat_avg']
+            data['avg_score'] = stat_queryset[f'avg_score_psat_avg']
+        else:
+            data['max_score'] = stat_queryset[f'max_score_{sub}']
+            data['avg_score'] = stat_queryset[f'avg_score_{sub}']
+
+    score_stat_sub['헌법']['top_score_10'] = top_score_heonbeob[0]
+    score_stat_sub['헌법']['top_score_20'] = top_score_heonbeob[1]
+
+    score_stat_sub['언어']['top_score_10'] = top_score_eoneo[0]
+    score_stat_sub['언어']['top_score_20'] = top_score_eoneo[1]
+
+    score_stat_sub['자료']['top_score_10'] = top_score_jaryo[0]
+    score_stat_sub['자료']['top_score_20'] = top_score_jaryo[1]
+
+    score_stat_sub['상황']['top_score_10'] = top_score_sanghwang[0]
+    score_stat_sub['상황']['top_score_20'] = top_score_sanghwang[1]
+
+    score_stat_sub['피셋']['top_score_10'] = top_score_psat_avg[0]
+    score_stat_sub['피셋']['top_score_20'] = top_score_psat_avg[1]
+
+    return score_stat_sub
+
+
+def get_all_score_stat_sub_dict(get_statistics_qs, student) -> dict:
+    stat_total = stat_department = None
+
+    if student:
+        stat_total = get_score_stat_sub(get_statistics_qs('전체'))
+        stat_department = get_score_stat_sub(get_statistics_qs('직렬'))
+
+    return {
+        '전체': stat_total,
+        '직렬': stat_department,
+    }

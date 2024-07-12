@@ -128,3 +128,11 @@ jQuery('body').on('htmx:afterSwap', function() {
     attachContentCkeditor();
     mainAnchorClick();
 });
+
+// Disable button while htmx request
+$(document).on('htmx:configRequest', function(event) {
+    $('.prevent_double_click').prop('disabled', true);
+});
+$(document).on('htmx:afterRequest', function(event) {
+    $('.prevent_double_click').prop('disabled', false);
+});

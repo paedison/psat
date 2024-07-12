@@ -104,15 +104,15 @@ INSTALLED_APPS = [
     'log',
     'notice',
     'analysis',
-    'score',
     'study',
     'reference',
     'dashboard',
     'community',
-    'predict',
     'lecture',
     'a_score',
-    # 'a_predict',
+    'a_predict',
+    'score',
+    'predict',
 ]
 
 MIDDLEWARE = [

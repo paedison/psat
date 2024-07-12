@@ -1,0 +1,48 @@
+{% load static %}
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+
+<div class="card-header">수험정보</div>
+
+<div class="card-body">
+    <table class="table">
+        <tbody>
+            {% if student.prime_id %}
+                <tr>
+                    <th class="text-nowrap px-0" scope="row">프라임법학원 ID</th>
+                    <td>{{ student.prime_id }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <th class="text-nowrap px-0" scope="row">응시번호 / 이름</th>
+                <td>{{ student.serial }} / {{ student.name }}</td>
+            </tr>
+            {% if exam.category == 'PSAT' %}
+                <tr>
+                    <th class="text-nowrap px-0" scope="row">모집단위 / 직렬</th>
+                    <td>{{ student.unit_name }} / {{ student.department_name }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <th class="text-nowrap px-0" scope="row">직렬</th>
+                    <td>{{ student.department_name }}</td>
+                </tr>
+            {% endif %}
+            {% if location %}
+                <tr>
+                    <th class="text-nowrap px-0" scope="row">응시지역 / 시험장</th>
+                    <td>{{ location.region }} / {{ location.school }}</td>
+                </tr>
+                <tr>
+                    <th class="text-nowrap px-0" scope="row">소재지</th>
+                    <td>{{ location.address }}</td>
+                </tr>
+                <tr>
+                    <th class="text-nowrap px-0" scope="row">연락처</th>
+                    <td>{{ location.contact }}</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>

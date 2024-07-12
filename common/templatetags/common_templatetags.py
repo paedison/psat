@@ -16,14 +16,14 @@ register = Library()
 #     return digit
 #
 #
-# @register.filter(name='to_int')
-# def to_int(value) -> int:
-#     try:
-#         return int(value)
-#     except (ValueError, TypeError):
-#         return 0  # or handle the error as needed
-#
-#
+@register.filter(name='to_int')
+def to_int(value) -> int:
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return 0  # or handle the error as needed
+
+
 # @register.filter
 # def percentage(content) -> float:
 #     if content:

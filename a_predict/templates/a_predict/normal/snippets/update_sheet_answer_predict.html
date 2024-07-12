@@ -1,0 +1,31 @@
+{% load psat_filter %}
+{% load partials %}
+
+{% with sub='헌법' answer_predict=data_answer_predict.헌법 %}
+    {% partialdef sheet_answer_sub inline=True %}
+        {% for answer in answer_predict %}
+            <div id="{{ sub }}ans_{{ answer.number }}"
+                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}"
+                 hx-swap-oob="outerHTML:#{{ sub }}ans_{{ answer.number }}">
+                {{ answer.ans_number }}
+            </div>
+            <div id="{{ sub }}accracy_{{ answer.number }}" aria-label="정확도"
+                 class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}"
+                 hx-swap-oob="outerHTML:#{{ sub }}accracy_{{ answer.number }}">
+                {{ answer.rate_accuracy|floatformat:0 }}
+            </div>
+        {% endfor %}
+    {% endpartialdef sheet_answer_sub %}
+{% endwith %}
+
+{% with sub='언어' answer_predict=data_answer_predict.언어 %}
+    {% partial sheet_answer_sub %}
+{% endwith %}
+
+{% with sub='자료' answer_predict=data_answer_predict.자료 %}
+    {% partial sheet_answer_sub %}
+{% endwith %}
+
+{% with sub='상황' answer_predict=data_answer_predict.상황 %}
+    {% partial sheet_answer_sub %}
+{% endwith %}

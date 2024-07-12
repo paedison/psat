@@ -1,0 +1,87 @@
+{% load psat_filter %}
+{% load partials %}
+{% load slippers %}
+{% load humanize %}
+
+<div class="card-header">
+    답안 제출 현황
+</div>
+
+<div class="card-body">
+    <article class="table-responsive">
+        <table class="table small align-middle">
+            <thead>
+                <tr class="text-center align-middle table-warning">
+                    <th rowspan="2" aria-label="과목">과목</th>
+                    <th class="text-nowrap" aria-label="실제 점수">
+                        <span class="d-sm-none">실제 점수<br/>(점)</span>
+                        <span class="d-none d-sm-inline">실제 점수(점)</span>
+                    </th>
+                    <th class="text-nowrap" aria-label="예상 점수">
+                        <span class="d-sm-none">예상 점수<br/>(점)</span>
+                        <span class="d-none d-sm-inline">예상 점수(점)</span>
+                    </th>
+                    <th class="text-nowrap" aria-label="총 참여자수">
+                        <span class="d-sm-none">총 참여자수<br/>(명)</span>
+                        <span class="d-none d-sm-inline">총 참여자수(명)</span>
+                    </th>
+                    <th class="text-nowrap" aria-label="선택 답안수">
+                        <span class="d-sm-none">선택 답안수<br/>(문제)</span>
+                        <span class="d-none d-sm-inline">선택 답안수(문제)</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% with info_answer=info_answer_student.헌법 %}{% partial sub_answer_line %}{% endwith %}
+                {% with info_answer=info_answer_student.언어 %}{% partial sub_answer_line %}{% endwith %}
+                {% with info_answer=info_answer_student.자료 %}{% partial sub_answer_line %}{% endwith %}
+                {% with info_answer=info_answer_student.상황 %}{% partial sub_answer_line %}{% endwith %}
+                {% with info_answer=info_answer_student.피셋 %}{% partial sub_answer_line %}{% endwith %}
+            </tbody>
+        </table>
+        <div>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+            <ol class="text-success small fw-bold m-0">
+                <li>예상 점수는 시험 종료 이후 {{ exam.answer_predict_open_datetime|date:'G시 i분' }}에 공개됩니다.</li>
+                <li>총 참여자수는 과목별로 답안 제출을 완료한 응시생수입니다.</li>
+                <li>선택 답안수는 과목별로 답안을 선택한 문제수 및 총 문제수입니다.</li>
+                <li>최종 제출한 답안만 통계에 포함되니 답안 제출을 완료해주세요.</li>
+                <li>최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
+            </ol>
+        </div>
+    </article>
+</div>
+
+{% partialdef sub_answer_line %}
+    <tr class="text-center {% if info_answer.sub == '피셋' %}table-warning{% endif %}">
+        <th class="text-nowrap" aria-label="과목">
+            {% if info_answer.is_confirmed or info_answer.sub == '피셋' %}
+                {{ info_answer.icon|safe }} {{ info_answer.subject }}
+            {% else %}
+                <a class="text-decoration-none"
+                   href="{% url 'predict_test:answer_input' info_answer.sub %}" hx-boost="true">
+                    {{ info_answer.icon|safe }} {{ info_answer.subject }}
+                </a>
+            {% endif %}
+        </th>
+        <td aria-label="실제 점수">
+            <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-0">
+                {{ info_answer.score_real|default:'' }}
+            </div>
+        </td>
+        <td aria-label="예상 점수">
+            <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-0">
+                {{ info_answer.score_virtual|default:'' }}
+            </div>
+        </td>
+        <td aria-label="총 참여자수">
+            <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in delay-2">
+                {{ info_answer.participants|default:0 }}
+            </div>
+        </td>
+        <td class="text-nowrap" aria-label="선택 답안수">
+            {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
+            <span class="badge rounded-pill text-bg-success">제출 완료</span>
+        </td>
+    </tr>
+{% endpartialdef sub_answer_line %}

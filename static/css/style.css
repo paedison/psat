@@ -425,8 +425,19 @@ div.django-ckeditor-widget {
 .carousel-control-prev:hover, .carousel-control-prev:focus,
 .carousel-control-next:hover,
 .carousel-control-next:focus {
-  color: #fff;
-  text-decoration: none;
-  outline: 0;
-  opacity: 0.5;
+    color: #fff;
+    text-decoration: none;
+    outline: 0;
+    opacity: 0.5;
+}
+
+ul.errorlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+ul.errorlist>li {
+    color: rgba(var(--bs-danger-rgb), 1) !important;
+    text-align: left !important;
+    font-weight: 700 !important;
 }

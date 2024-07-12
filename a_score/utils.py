@@ -86,7 +86,7 @@ def get_dict_stat_data(student, statistics_type: str, field_vars: dict) -> dict:
             }
     if 'minbeob' in stat_data.keys():
         stat_data['selection'] = stat_data['minbeob']
-    else:
+    elif 'haenghag' in stat_data.keys():
         stat_data['selection'] = stat_data['haenghag']
     stat_data['selection']['field'] = 'selection'
 
