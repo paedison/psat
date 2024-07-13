@@ -1,4 +1,5 @@
 import numpy as np
+from django.db import transaction
 from django.db.models import F, Count, Max, Avg
 from django.db.models import Window
 from django.db.models.functions import Rank, PercentRank
@@ -7,7 +8,7 @@ from django.urls import reverse
 from common.constants import icon_set_new
 
 
-def update_exam_participants(exam_vars: dict, qs_exam, qs_department, qs_student):
+def update_exam_participants(exam_vars: dict, exam, qs_department, qs_student):
     score_fields = exam_vars['score_fields']
     department_dict = {department.name: department.id for department in qs_department}
 
@@ -30,16 +31,16 @@ def update_exam_participants(exam_vars: dict, qs_exam, qs_department, qs_student
                 participants['all'][d_id][field] += 1
 
             all_confirmed_at = student.answer_all_confirmed_at
-            if all_confirmed_at and all_confirmed_at < qs_exam.answer_official_opened_at:
+            if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
                 participants['filtered']['total'][field] += 1
                 participants['filtered'][d_id][field] += 1
-    qs_exam.participants = participants
-    qs_exam.save()
+    exam.participants = participants
+    exam.save()
 
     return participants
 
 
-def get_data_answer_official(exam_vars: dict, qs_exam) -> tuple:
+def get_data_answer_official(exam_vars: dict, exam) -> tuple:
     # {
     #     'heonbeob': [
     #         {
@@ -55,12 +56,13 @@ def get_data_answer_official(exam_vars: dict, qs_exam) -> tuple:
 
     data_answer_official = {}
     for field in subject_fields:
-        data_answer_official[field] = [{'no': no, 'ans': 0} for no in range(1, problem_count[field] + 1)]
+        data_answer_official[field] = [
+            {'no': no, 'ans': 0} for no in range(1, problem_count[field] + 1)]
 
-    if qs_exam and qs_exam.is_answer_official_opened:
+    if exam and exam.is_answer_official_opened:
         official_answer_uploaded = True
         try:
-            for field, answer in qs_exam.answer_official.items():
+            for field, answer in exam.answer_official.items():
                 for no, ans in enumerate(answer, start=1):
                     data_answer_official[field][no - 1] = {'no': no, 'ans': ans}
         except IndexError:
@@ -70,7 +72,7 @@ def get_data_answer_official(exam_vars: dict, qs_exam) -> tuple:
     return data_answer_official, official_answer_uploaded
 
 
-def get_data_answer_predict(qs_answer_count, exam_vars: dict) -> dict:
+def get_data_answer_predict(exam_vars: dict, qs_answer_count) -> dict:
     subject_fields = exam_vars['subject_fields']
     problem_count = exam_vars['problem_count']
     count_field_list = [
@@ -97,11 +99,10 @@ def get_data_answer_predict(qs_answer_count, exam_vars: dict) -> dict:
 
 
 def get_data_answer_student(
-        student,
+        exam_vars: dict, student,
         data_answer_official: dict,
         official_answer_uploaded: bool,
         data_answer_predict: dict,
-        exam_vars: dict,
 ):
     data_answer_student = {field: [] for field in exam_vars['subject_fields']}
 
@@ -142,18 +143,16 @@ def get_data_answer_student(
 
 
 def get_info_answer_student(
-        student,
-        qs_exam,
+        exam_vars: dict, student, exam,
         data_answer_student: dict,
         data_answer_predict: dict,
-        exam_vars: dict,
 ) -> dict:
     score_fields = exam_vars['score_fields']
     info_answer_student = {field: {} for field in score_fields}
 
     psat_score_predict = 0
     psat_fields = ['eoneo', 'jaryo', 'sanghwang']
-    participants = qs_exam.participants['all']['total']
+    participants = exam.participants['all']['total']
 
     for field in score_fields:
         sub, subject = exam_vars['field_vars'][field]
@@ -191,17 +190,18 @@ def get_info_answer_student(
 
 
 def get_dict_stat_data(
-        student, stat_type: str, exam_vars: dict, qs_exam, qs_student, filtered: bool = False
+        exam_vars: dict, student, stat_type: str,
+        exam, qs_student, filtered: bool = False
 ) -> dict:
     field_vars = exam_vars['field_vars']
     filter_exp = {'year': student.year, 'exam': student.exam, 'round': student.round}
     if stat_type == 'department':
         filter_exp['department'] = student.department
     if filtered:
-        filter_exp['answer_all_confirmed_at__lte'] = qs_exam.answer_official_opened_at
+        filter_exp['answer_all_confirmed_at__lte'] = exam.answer_official_opened_at
     qs_student = qs_student.filter(**filter_exp)
 
-    if qs_exam.is_answer_official_opened:
+    if exam.is_answer_official_opened:
         score = {field: [] for field in field_vars.keys()}
         stat_data = {field: {} for field in field_vars.keys()}
 
@@ -238,7 +238,86 @@ def get_dict_stat_data(
         return stat_data
 
 
-def get_str_next_url(student, exam_vars: dict) -> str:
+def update_rank(
+        exam_vars: dict, student,
+        stat_total_all: dict,
+        stat_department_all: dict,
+        stat_total_filtered: dict,
+        stat_department_filtered: dict,
+):
+    score_fields = exam_vars['score_fields']
+    rank = {
+        'all': {
+            'total': {field: stat_total_all[field]['rank'] for field in score_fields},
+            'department': {field: stat_department_all[field]['rank'] for field in score_fields},
+        },
+        'filtered': {
+            'total': {field: stat_total_filtered[field]['rank'] for field in score_fields},
+            'department': {field: stat_department_filtered[field]['rank'] for field in score_fields},
+        },
+    }
+    if student.rank != rank:
+        student.rank = rank
+        student.save()
+
+
+def create_student_instance(exam_vars: dict, student, request):
+    problem_count = exam_vars['problem_count']
+    score_fields = exam_vars['score_fields']
+    with transaction.atomic():
+        student.user = request.user
+        student.year = exam_vars['year']
+        student.exam = exam_vars['exam']
+        student.round = exam_vars['round']
+        student.answer = {
+            field: [0 for _ in range(count)] for field, count in problem_count.items()
+        }
+        student.answer_count = {field: 0 for field in score_fields}
+        student.answer_confirmed = {field: False for field in score_fields}
+        student.score = {field: 0 for field in score_fields}
+        student.rank = {
+            'all': {
+                'total': {field: 0 for field in score_fields},
+                'department': {field: 0 for field in score_fields},
+            },
+            'filtered': {
+                'total': {field: 0 for field in score_fields},
+                'department': {field: 0 for field in score_fields},
+            },
+        }
+        student.save()
+
+
+def save_submitted_answer(student, subject_field: str, no: int, ans: int):
+    idx = no - 1
+    with transaction.atomic():
+        student.answer[subject_field][idx] = ans
+        student.save()
+        student.refresh_from_db()
+    return {'no': no, 'ans': student.answer[subject_field][idx]}
+
+
+def confirm_answer_student(exam_vars: dict, student, subject_field: str) -> tuple:
+    problem_count = exam_vars['problem_count']
+    answer_student = student.answer[subject_field]
+    is_confirmed = all(answer_student) and len(answer_student) == problem_count[subject_field]
+    if is_confirmed:
+        student.answer_confirmed[subject_field] = is_confirmed
+        student.save()
+    student.refresh_from_db()
+    return student, is_confirmed
+
+
+def update_answer_count(student, subject_field: str, qs_answer_count):
+    for answer_count in qs_answer_count:
+        idx = answer_count.number - 1
+        ans_student = student.answer[subject_field][idx]
+        setattr(answer_count, f'count_{ans_student}', F(f'count_{ans_student}') + 1)
+        setattr(answer_count, f'count_total', F(f'count_total') + 1)
+        answer_count.save()
+
+
+def get_next_url(exam_vars: dict, student) -> str:
     for field in exam_vars['subject_fields']:
         is_confirmed = student.answer_confirmed[field]
         if not is_confirmed:
