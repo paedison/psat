@@ -1,5 +1,5 @@
 from .psat_models import (
-    PsatExam, PsatUnit, PsatDepartment, PsatStudent, PsatSubmittedAnswer, PsatAnswerCount, PsatLocation,
+    PsatExam, PsatUnit, PsatDepartment, PsatStudent, PsatAnswerCount, PsatLocation,
 )
 # from .prime_psat_models import (
 #     PrimePsatExam, PrimePsatStudent, PrimePsatRegisteredStudent, PrimePsatAnswerCount

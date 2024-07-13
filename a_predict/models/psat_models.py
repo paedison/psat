@@ -1,6 +1,6 @@
 from django.db import models
 
-from .base_settings import Exam, Unit, Department, Student, SubmittedAnswer, AnswerCount, Location, ChoiceMethod
+from .base_settings import Exam, Unit, Department, Student, AnswerCount, Location, ChoiceMethod
 
 
 class PsatExam(Exam):
@@ -9,7 +9,6 @@ class PsatExam(Exam):
         choices=ChoiceMethod.year_choices, default=ChoiceMethod.get_this_year(), verbose_name='연도')
     exam = models.CharField(
         max_length=2, choices=ChoiceMethod.psat_exam_choices, default='행시', verbose_name='시험')
-    participants_total = models.JSONField(default=dict, verbose_name='전체 참여자수')
 
     class Meta:
         verbose_name = verbose_name_plural = "PSAT 성적예측 [1] 시험"
@@ -63,17 +62,6 @@ class PsatStudent(Student):
         db_table = 'a_predict_psat_student'
 
 
-class PsatSubmittedAnswer(SubmittedAnswer):
-    # Override parent abstract model fields
-    student = models.ForeignKey(PsatStudent, on_delete=models.CASCADE, related_name='submitted_answers')
-    subject = models.CharField(
-        max_length=20, choices=ChoiceMethod.psat_subject_choices, default='heonbeob', verbose_name='과목')
-
-    class Meta:
-        verbose_name = verbose_name_plural = "PSAT 성적예측 [5] 제출답안"
-        db_table = 'a_predict_psat_submitted_answer'
-
-
 class PsatAnswerCount(AnswerCount):
     # Override parent abstract model fields
     year = models.IntegerField(
@@ -84,11 +72,11 @@ class PsatAnswerCount(AnswerCount):
         max_length=20, choices=ChoiceMethod.psat_subject_choices, default='heonbeob', verbose_name='과목')
 
     class Meta:
-        verbose_name = verbose_name_plural = "PSAT 성적예측 [6] 답안개수"
+        verbose_name = verbose_name_plural = "PSAT 성적예측 [5] 답안개수"
         db_table = 'a_predict_psat_answer_count'
 
 
 class PsatLocation(Location):
     class Meta:
-        verbose_name = verbose_name_plural = "PSAT 성적예측 [7] 시험장소"
+        verbose_name = verbose_name_plural = "PSAT 성적예측 [6] 시험장소"
         db_table = 'a_predict_psat_location'

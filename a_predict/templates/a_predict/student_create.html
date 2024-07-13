@@ -130,7 +130,7 @@
                             name="unit" aria-label="Select unit"
                             hx-push-url="false" hx-trigger="change"
                             hx-target="#id_department" hx-swap="outerHTML"
-                            hx-post="{% url 'predict:department-list' %}">
+                            hx-post="{% url 'predict_new:department-list' %}">
                         <option value="">모집 단위를 선택해주세요.</option>
                         {% for unit in units %}
                             {% if unit == form.unit.value %}
@@ -160,7 +160,7 @@
                 </div>
                 <button class="btn btn-outline-secondary prevent_double_click" type="submit"
                         hx-target="#main"
-                        hx-post="{% url 'predict:student-create' %}">
+                        hx-post="{% url 'predict_new:student-create' %}">
                     입력
                 </button>
             </div>

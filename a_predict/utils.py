@@ -2,9 +2,41 @@ import numpy as np
 from django.db.models import F, Count, Max, Avg
 from django.db.models import Window
 from django.db.models.functions import Rank, PercentRank
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse
 
 from common.constants import icon_set_new
+
+
+def update_exam_participants(exam_vars: dict, qs_exam, qs_department, qs_student):
+    score_fields = exam_vars['score_fields']
+    department_dict = {department.name: department.id for department in qs_department}
+
+    participants = {
+        'all': {'total': {field: 0 for field in score_fields}},
+        'filtered': {'total': {field: 0 for field in score_fields}},
+    }
+    participants['all'].update({
+        d_id: {field: 0 for field in score_fields} for d_id in department_dict.values()
+    })
+    participants['filtered'].update({
+        d_id: {field: 0 for field in score_fields} for d_id in department_dict.values()
+    })
+
+    for student in qs_student:
+        d_id = department_dict[student.department]
+        for field, is_confirmed in student.answer_confirmed.items():
+            if is_confirmed:
+                participants['all']['total'][field] += 1
+                participants['all'][d_id][field] += 1
+
+            all_confirmed_at = student.answer_all_confirmed_at
+            if all_confirmed_at and all_confirmed_at < qs_exam.answer_official_opened_at:
+                participants['filtered']['total'][field] += 1
+                participants['filtered'][d_id][field] += 1
+    qs_exam.participants = participants
+    qs_exam.save()
+
+    return participants
 
 
 def get_data_answer_official(exam_vars: dict, qs_exam) -> tuple:
@@ -46,15 +78,10 @@ def get_data_answer_predict(qs_answer_count, exam_vars: dict) -> dict:
         'count_0', 'count_multiple', 'count_total',
     ]
     data_answer_predict = {
-        field: [
-            {} for _ in range(problem_count[field])
-        ] for field in subject_fields
+        field: [{} for _ in range(problem_count[field])] for field in subject_fields
     }
     for qs in qs_answer_count:
-        field = qs.subject
-        index = qs.number - 1
-
-        count_list = [c for c in [qs.count_1, qs.count_2, qs.count_3, qs.count_4, qs.count_5]]
+        count_list = [getattr(qs, f'count_{i}') for i in range(1, 6)]
         ans_predict = count_list.index(max(count_list)) + 1
         rate_accuracy = getattr(qs, f'rate_{ans_predict}')
 
@@ -64,7 +91,7 @@ def get_data_answer_predict(qs_answer_count, exam_vars: dict) -> dict:
             'ans': ans_predict,
             'rate_accuracy': rate_accuracy,
         })
-        data_answer_predict[field][index].update(count_dict)
+        data_answer_predict[qs.subject][qs.number - 1].update(count_dict)
 
     return data_answer_predict
 
@@ -116,66 +143,55 @@ def get_data_answer_student(
 
 def get_info_answer_student(
         student,
+        qs_exam,
         data_answer_student: dict,
         data_answer_predict: dict,
         exam_vars: dict,
 ) -> dict:
-    info_answer_student = {}
+    score_fields = exam_vars['score_fields']
+    info_answer_student = {field: {} for field in score_fields}
+
     psat_score_predict = 0
     psat_fields = ['eoneo', 'jaryo', 'sanghwang']
-    max_participants = 0
+    participants = qs_exam.participants['all']['total']
 
-    for field, value in student.answer.items():
+    for field in score_fields:
         sub, subject = exam_vars['field_vars'][field]
-        problem_count = exam_vars['problem_count'][field]
-        answer_count = student.answer_count[field]
         is_confirmed = student.answer_confirmed[field]
-        participants = student.participants_total[field]
         score_real = student.score[field]
-        max_participants = max_participants if max_participants >= participants else participants
 
-        correct_predict_count = 0
-        for idx, answer_student in enumerate(data_answer_student[field]):
-            ans_student = answer_student['ans']
-            ans_predict = data_answer_predict[field][idx]['ans']
+        if field != 'psat_avg':
+            correct_predict_count = 0
+            for idx, answer_student in enumerate(data_answer_student[field]):
+                ans_student = answer_student['ans']
+                ans_predict = data_answer_predict[field][idx]['ans']
 
-            result_predict = ans_student == ans_predict
-            answer_student['result_predict'] = result_predict
-            correct_predict_count += 1 if result_predict else 0
+                result_predict = ans_student == ans_predict
+                answer_student['result_predict'] = result_predict
+                correct_predict_count += 1 if result_predict else 0
 
-        score_predict = correct_predict_count * 100 / problem_count
-        psat_score_predict += score_predict if field in psat_fields else 0
+            problem_count = exam_vars['problem_count'][field]
+            answer_count = student.answer_count[field]
+            score_predict = correct_predict_count * 100 / problem_count
+            psat_score_predict += score_predict if field in psat_fields else 0
+        else:
+            problem_count = sum([val for val in exam_vars['problem_count'].values()])
+            answer_count = sum([val for val in student.answer_count.values()])
+            score_predict = psat_score_predict / 3
 
         info_answer_student[field] = {
             'icon': icon_set_new.ICON_SUBJECT[sub],
-            'sub': sub,
-            'subject': subject,
-            'field': field,
-            'problem_count': problem_count,
-            'participants': participants,
-            'answer_count': answer_count,
-            'score_real': score_real,
-            'score_predict': score_predict,
+            'sub': sub, 'subject': subject, 'field': field,
             'is_confirmed': is_confirmed,
+            'participants': participants[field],
+            'score_real': score_real, 'score_predict': score_predict,
+            'problem_count': problem_count, 'answer_count': answer_count,
         }
-
-    info_answer_student['psat_avg'] = {
-        'icon': icon_set_new.ICON_SUBJECT['평균'],
-        'sub': '평균',
-        'subject': 'PSAT 평균',
-        'field': 'psat_avg',
-        'problem_count': sum([val for val in exam_vars['problem_count'].values()]),
-        'participants': max_participants,
-        'answer_count': sum([val for val in student.answer_count.values()]),
-        'score_real': student.score['psat_avg'],
-        'score_predict': psat_score_predict / 3,
-        'is_confirmed': student.answer_all_confirmed_at is not None,
-    }
     return info_answer_student
 
 
 def get_dict_stat_data(
-        student, stat_type: str, exam_vars: dict, qs_exam, filtered: bool = False
+        student, stat_type: str, exam_vars: dict, qs_exam, qs_student, filtered: bool = False
 ) -> dict:
     field_vars = exam_vars['field_vars']
     filter_exp = {'year': student.year, 'exam': student.exam, 'round': student.round}
@@ -183,19 +199,19 @@ def get_dict_stat_data(
         filter_exp['department'] = student.department
     if filtered:
         filter_exp['answer_all_confirmed_at__lte'] = qs_exam.answer_official_opened_at
-    qs_student = student.__class__.objects.filter(**filter_exp).values('score')
+    qs_student = qs_student.filter(**filter_exp)
 
     if qs_exam.is_answer_official_opened:
-        score = {}
-        stat_data = {}
+        score = {field: [] for field in field_vars.keys()}
+        stat_data = {field: {} for field in field_vars.keys()}
+
         for field, subject_tuple in field_vars.items():
             sub, subject = subject_tuple
-            if field == 'psat_avg':
-                is_confirmed = all(student.answer_confirmed.values())
-            else:
-                is_confirmed = student.answer_confirmed[field]
+            is_confirmed = student.answer_confirmed[field]
 
-            score[field] = [qs['score'][field] for qs in qs_student if field in qs['score']]
+            for stu in qs_student:
+                if stu.answer_confirmed[field]:
+                    score[field].append(stu.score[field])
 
             participants = len(score[field])
             sorted_scores = sorted(score[field], reverse=True)
@@ -226,19 +242,8 @@ def get_str_next_url(student, exam_vars: dict) -> str:
     for field in exam_vars['subject_fields']:
         is_confirmed = student.answer_confirmed[field]
         if not is_confirmed:
-            return reverse('predict:answer-input', args=[field])
-    return reverse('predict:index')
-
-
-# def create_submitted_answer(student, sub: str):
-#     number = request.POST.get('number')
-#     answer = request.POST.get('answer')
-#     with transaction.atomic():
-#         submitted_answer, _ = PsatSubmittedAnswer.objects.get_or_create(student=student, subject=sub, number=number)
-#         submitted_answer.answer = answer
-#         submitted_answer.save()
-#         submitted_answer.refresh_from_db()
-#         return submitted_answer
+            return reverse('predict_new:answer-input', args=[field])
+    return reverse('predict_new:index')
 
 
 def get_dict_by_sub(target_list: list[dict]) -> dict:

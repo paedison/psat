@@ -394,7 +394,7 @@ class Exam(YearExamRoundField):
     exam_finished_at = models.DateTimeField(default=timezone.now)
     answer_predict_opened_at = models.DateTimeField(default=timezone.now)
     answer_official_opened_at = models.DateTimeField(default=timezone.now)
-    # participants_total = models.JSONField(default=dict, verbose_name='전체 참여자수')
+    participants = models.JSONField(default=dict, verbose_name='전체 참여자수')
 
     class Meta:
         abstract = True
@@ -409,8 +409,8 @@ class Exam(YearExamRoundField):
         return timezone.now() <= self.page_opened_at
 
     @property
-    def is_not_exam_finished(self):
-        return self.page_opened_at < timezone.now() <= self.exam_finished_at
+    def is_not_finished(self):
+        return timezone.now() <= self.exam_finished_at
 
     @property
     def is_collecting_answer(self):
@@ -470,10 +470,7 @@ class Student(TimeRecordField, RemarksField, YearExamRoundField, ChoiceMethod):
     answer_all_confirmed_at = models.DateTimeField(null=True, blank=True, verbose_name='답안 전체 확정 일시')
 
     score = models.JSONField(default=dict, verbose_name='점수')
-    rank_total = models.JSONField(default=dict, verbose_name='전체 등수')
-    rank_department = models.JSONField(default=dict, verbose_name='직렬 등수')
-    participants_total = models.JSONField(default=dict, verbose_name='전체 참여자수')
-    participants_department = models.JSONField(default=dict, verbose_name='직렬 참여자수')
+    rank = models.JSONField(default=dict, verbose_name='등수')
 
     class Meta:
         abstract = True
@@ -493,21 +490,6 @@ class Student(TimeRecordField, RemarksField, YearExamRoundField, ChoiceMethod):
         for field, answer_student in self.answer.items():
             self.answer_count[field] = len([ans for ans in answer_student if ans])
         super().save(*args, **kwargs)
-
-
-class SubmittedAnswer(TimeRecordField, RemarksField):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)  # Should override when inherited
-    subject = models.CharField(max_length=20, verbose_name='과목')  # Should override when inherited
-    number = models.IntegerField(choices=ChoiceMethod.number_choices, default=1, verbose_name='번호')
-    answer = models.IntegerField(choices=ChoiceMethod.answer_choices, default=0, verbose_name='제출답안')
-
-    class Meta:
-        abstract = True
-        unique_together = ['student', 'subject', 'number']
-
-    def __str__(self):
-        return (f'[Predict]{self.__class__.__name__}:{self.student.student_info}'
-                f'({self.subject}{self.number:02})')
 
 
 class AnswerCount(TimeRecordField, YearExamRoundField, ChoiceMethod):

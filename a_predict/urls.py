@@ -22,7 +22,7 @@ student_patterns = [
     path('department/', normal_views.department_list, name='department-list'),
 ]
 
-answer_patterns =[
+answer_patterns = [
     path('<str:subject_field>/', normal_views.answer_input_view, name='answer-input'),
     path('<str:subject_field>/submit/', normal_views.answer_submit, name='answer-submit'),
     path('<str:subject_field>/confirm/', normal_views.answer_confirm, name='answer-confirm'),

@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django_htmx.http import retarget
+from django_htmx.http import retarget, reswap
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
@@ -47,6 +47,11 @@ DEFAULT_COUNT: int = 25 if EXAM_EXAM == '칠급' else 40
 PROBLEM_COUNT: dict[str, int] = {
     SUBJECT_VARS[sub][1]: 25 if sub == '헌법' else DEFAULT_COUNT for sub in SUB_LIST
 }
+COUNT_FIELDS = [
+    'count_1', 'count_2', 'count_3', 'count_4', 'count_5',
+    'count_0', 'count_multiple', 'count_total',
+]
+COUNT_FIELDS_FOR_PREDICT = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5']
 
 # Customize PROBLEM_COUNT, SUBJECT_VARS by EXAM_EXAM
 if EXAM_EXAM == '칠급':
@@ -63,7 +68,8 @@ EXAM_VARS = {
     'sub_list': SUB_LIST, 'subject_list': SUBJECT_LIST,
     'subject_fields': SUBJECT_FIELDS, 'score_fields': SCORE_FIELDS,
     'subject_vars': SUBJECT_VARS, 'field_vars': FIELD_VARS,
-    'problem_count': PROBLEM_COUNT,
+    'problem_count': PROBLEM_COUNT, 'count_fields': COUNT_FIELDS,
+    'count_fields_for_predict': COUNT_FIELDS_FOR_PREDICT,
 }
 
 
@@ -73,12 +79,17 @@ def index_view(request: HtmxHttpRequest):
     else:
         student = None
     if not student:
-        return redirect('predict:student-create')
+        return redirect('predict_new:student-create')
 
     qs_exam = models.PsatExam.objects.filter(**EXAM_INFO).first()
     serial = int(student.serial)
     location = models.PsatLocation.objects.filter(
         **EXAM_INFO, serial_start__lte=serial, serial_end__gte=serial).first()
+
+    qs_department = models.PsatDepartment.objects.filter(exam=EXAM_EXAM).order_by('id')
+    qs_student = models.PsatStudent.objects.filter(**EXAM_INFO)
+    utils.update_exam_participants(
+        exam_vars=EXAM_VARS, qs_exam=qs_exam, qs_department=qs_department, qs_student=qs_student)
 
     data_answer_official, official_answer_uploaded = utils.get_data_answer_official(
         exam_vars=EXAM_VARS, qs_exam=qs_exam)
@@ -98,25 +109,30 @@ def index_view(request: HtmxHttpRequest):
 
     info_answer_student = utils.get_info_answer_student(
         student=student,
+        qs_exam=qs_exam,
         data_answer_student=data_answer_student,
         data_answer_predict=data_answer_predict,
         exam_vars=EXAM_VARS,
     )
 
     stat_total_all = utils.get_dict_stat_data(
-        student=student, stat_type='total', exam_vars=EXAM_VARS, qs_exam=qs_exam)
+        student=student, stat_type='total', exam_vars=EXAM_VARS,
+        qs_exam=qs_exam, qs_student=qs_student)
     stat_department_all = utils.get_dict_stat_data(
-        student=student, stat_type='department', exam_vars=EXAM_VARS, qs_exam=qs_exam)
+        student=student, stat_type='department', exam_vars=EXAM_VARS,
+        qs_exam=qs_exam, qs_student=qs_student)
 
     stat_total_filtered = utils.get_dict_stat_data(
-        student=student, stat_type='total', exam_vars=EXAM_VARS, qs_exam=qs_exam, filtered=True)
+        student=student, stat_type='total', exam_vars=EXAM_VARS,
+        qs_exam=qs_exam, qs_student=qs_student, filtered=True)
     stat_department_filtered = utils.get_dict_stat_data(
-        student=student, stat_type='department', exam_vars=EXAM_VARS, qs_exam=qs_exam, filtered=True)
+        student=student, stat_type='department', exam_vars=EXAM_VARS,
+        qs_exam=qs_exam, qs_student=qs_student, filtered=True)
 
     context = update_context_data(
         # base info
         info=INFO,
-        exam=models.PsatExam.objects.filter(**EXAM_INFO).first(),
+        exam=qs_exam,
         current_time=timezone.now(),
         title='Predict',
         sub_title=SUB_TITLE,
@@ -181,15 +197,21 @@ def student_create_view(request: HtmxHttpRequest):
                 student.exam = EXAM_EXAM
                 student.round = EXAM_ROUND
                 student.answer = {field: [0 for _ in range(count)] for field, count in PROBLEM_COUNT.items()}
-                student.answer_count = {field: 0 for field in PROBLEM_COUNT.keys()}
-                student.answer_confirmed = {field: False for field in PROBLEM_COUNT.keys()}
+                student.answer_count = {field: 0 for field in FIELD_VARS.keys()}
+                student.answer_confirmed = {field: False for field in FIELD_VARS.keys()}
                 student.score = {field: 0 for field in FIELD_VARS.keys()}
-                student.rank_total = {field: 0 for field in FIELD_VARS.keys()}
-                student.rank_department = {field: 0 for field in FIELD_VARS.keys()}
-                student.participants_total = {field: 0 for field in FIELD_VARS.keys()}
-                student.participants_department = {field: 0 for field in FIELD_VARS.keys()}
+                student.rank = {
+                    'all': {
+                        'total': {field: 0 for field in FIELD_VARS.keys()},
+                        'department': {field: 0 for field in FIELD_VARS.keys()},
+                    },
+                    'filtered': {
+                        'total': {field: 0 for field in FIELD_VARS.keys()},
+                        'department': {field: 0 for field in FIELD_VARS.keys()},
+                    },
+                }
                 student.save()
-            return redirect('predict:answer-input', SUBJECT_FIELDS[0])
+            return redirect('predict_new:answer-input', SUBJECT_FIELDS[0])
         else:
             unit = form.cleaned_data['unit'] if 'unit' in form.cleaned_data.keys() else ''
             departments = models.PsatDepartment.objects.filter(exam=EXAM_EXAM, unit=unit)
@@ -199,7 +221,7 @@ def student_create_view(request: HtmxHttpRequest):
     else:
         if request.user.is_authenticated and models.PsatStudent.objects.filter(
                 **EXAM_INFO, user=request.user).exists():
-            return redirect('predict:index')
+            return redirect('predict_new:index')
 
         form = forms.StudentForm()
         context = update_context_data(context, form=form)
@@ -221,14 +243,14 @@ def department_list(request: HtmxHttpRequest):
 @login_required
 def answer_input_view(request: HtmxHttpRequest, subject_field: str):
     if subject_field not in PROBLEM_COUNT.keys():
-        return redirect('predict:index')
+        return redirect('predict_new:index')
 
     student = models.PsatStudent.objects.filter(**EXAM_INFO, user=request.user).first()
     if not student:
-        return redirect('predict:student-create')
+        return redirect('predict_new:student-create')
 
     if student.answer_confirmed[subject_field]:
-        return redirect('predict:index')
+        return redirect('predict_new:index')
 
     sub, subject = FIELD_VARS[subject_field]
     answer_student = []
@@ -269,7 +291,7 @@ def answer_submit(request: HtmxHttpRequest, subject_field: str):
         req_answer = int(req_answer)
     except Exception as e:
         print(e)
-        return HttpResponse('')
+        return reswap(HttpResponse(''), 'none')
 
     if 1 <= req_number <= len(student.answer[subject_field]) and 1 <= req_answer <= 5:
         idx = req_number - 1
@@ -281,8 +303,8 @@ def answer_submit(request: HtmxHttpRequest, subject_field: str):
         context = update_context_data(subject_field=subject_field, answer=answer_student)
         return render(request, 'a_predict/snippets/answer_button.html', context)
     else:
-        print('error')
-        return HttpResponse('')
+        print('Answer is not appropriate.')
+        return reswap(HttpResponse(''), 'none')
 
 
 @require_POST
@@ -296,6 +318,7 @@ def answer_confirm(request: HtmxHttpRequest, subject_field: str):
     if is_confirmed:
         student.answer_confirmed[subject_field] = is_confirmed
         student.save()
+
     student.refresh_from_db()
     qs_answer_count = models.PsatAnswerCount.objects.filter(
         **EXAM_INFO, subject=subject_field).annotate(no=F('number')).order_by('subject', 'number')

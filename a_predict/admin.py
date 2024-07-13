@@ -2,8 +2,7 @@ from django.contrib import admin
 
 from .models import (
     PsatExam, PsatUnit, PsatDepartment,
-    PsatStudent, PsatSubmittedAnswer,
-    PsatAnswerCount, PsatLocation,
+    PsatStudent, PsatAnswerCount, PsatLocation,
 )
 
 
@@ -29,11 +28,6 @@ class PsatDepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(PsatStudent)
 class PsatStudentAdmin(admin.ModelAdmin):
-    list_per_page = 20
-
-
-@admin.register(PsatSubmittedAnswer)
-class PsatSubmittedAnswerAdmin(admin.ModelAdmin):
     list_per_page = 20
 
 

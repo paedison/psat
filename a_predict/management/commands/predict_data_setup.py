@@ -6,19 +6,30 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import F
 
-from a_predict.models import PsatExam, PsatStudent, PsatAnswerCount
+from a_predict import models
 from predict import models as old_predict_models
 
-SUB_LIST: list[str] = ['헌법', '언어', '자료', '상황']
-SUBJECT_FIELDS = ['heonbeob', 'eoneo', 'jaryo', 'sanghwang']
-ONLY_PSAT_FIELDS = ['eoneo', 'jaryo', 'sanghwang']
-PSAT_SUBJECT_FIELDS = {'헌법': 'heonbeob', '언어': 'eoneo', '자료': 'jaryo', '상황': 'sanghwang'}
-PROBLEM_COUNT: dict[str, int] = {'heonbeob': 25, 'eoneo': 40, 'jaryo': 40, 'sanghwang': 40}
-FIELD_VARS: dict[str, tuple] = {
-    'heonbeob': ('헌법', '헌법'),
-    'eoneo': ('언어', '언어논리'),
-    'jaryo': ('자료', '자료해석'),
-    'sanghwang': ('상황', '상황판단'),
+PSAT_VARS = {
+    'sub_list': ['헌법', '언어', '자료', '상황'],
+    'subject_list': ['헌법', '언어논리', '자료해석', '상황판단'],
+    'subject_fields': ['heonbeob', 'eoneo', 'jaryo', 'sanghwang'],
+    'score_fields': ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg'],
+    'psat_fields': ['eoneo', 'jaryo', 'sanghwang'],
+    'subject_vars': {
+        '헌법': ('헌법', 'heonbeob'),
+        '언어': ('언어논리', 'eoneo'),
+        '자료': ('자료해석', 'jaryo'),
+        '상황': ('상황판단', 'sanghwang'),
+        '평균': ('PSAT 평균', 'psat_avg'),
+    },
+    'field_vars': {
+        'heonbeob': ('헌법', '헌법'),
+        'eoneo': ('언어', '언어논리'),
+        'jaryo': ('자료', '자료해석'),
+        'sanghwang': ('상황', '상황판단'),
+        'psat_avg': ('평균', 'PSAT 평균'),
+    },
+    'problem_count': {'heonbeob': 25, 'eoneo': 40, 'jaryo': 40, 'sanghwang': 40},
 }
 UNIT_DICT = {
     1: '5급 행정(전국)',
@@ -100,101 +111,107 @@ DEPARTMENT_DICT = {
 }
 
 
-def get_new_models_and_field(exam_exam: str) -> tuple:
-    if exam_exam != '프모':
-        return PsatExam, PsatStudent, PsatAnswerCount, SUBJECT_FIELDS
-    else:
-        raise Exception("exam_type should be one of 'psat' or 'police'.")
+class Command(BaseCommand):
+    help = 'Calculate Scores'
+
+    def add_arguments(self, parser):
+        parser.add_argument('exam_year', type=str, help='Year')  # 2024
+        parser.add_argument('exam_exam', type=str, help='Exam type')  # 행시
+        parser.add_argument('exam_round', type=str, help='Round')  # 0
+
+    def handle(self, *args, **kwargs):
+        exam_year = kwargs['exam_year']
+        exam_exam = kwargs['exam_exam']
+        exam_round = kwargs['exam_round']
+        exam_info = {'year': exam_year, 'exam': exam_exam, 'round': exam_round}
+
+        # Set up exam_vars
+        exam_vars = get_exam_vars(exam_info=exam_info)
+        exam_model = exam_vars['exam_model']
+        student_model = exam_vars['student_model']
+        answer_count_model = exam_vars['answer_count_model']
+
+        answer_official = exam_model.objects.get(**exam_info).answer_official
+
+        # Create or update student_model instances
+        old_students = old_predict_models.Student.objects.filter(
+            exam__ex=exam_exam, exam__round=exam_round).annotate(created_at=F('timestamp'))
+        student_data = get_student_model_data(exam_vars=exam_vars, old_students=old_students)
+        student_update_fields = ['answer', 'answer_count', 'answer_confirmed', 'answer_all_confirmed_at']
+        create_or_update_model(
+            model=student_model, update_fields=student_update_fields, model_data=student_data)
+
+        # Update exam_model for participants
+        qs_student = student_model.objects.filter(**exam_info)
+        qs_exam = exam_model.objects.filter(**exam_info).first()
+        participants, exam_model_data = get_participants_and_exam_model_data(
+            exam_vars=exam_vars, qs_exam=qs_exam, qs_student=qs_student)
+        create_or_update_model(
+            model=exam_model, update_fields=['participants'], model_data=exam_model_data)
+
+        # Update student_model for score
+        total_answer_lists, score_data = get_total_answer_lists_and_score_data(
+            exam_vars=exam_vars,
+            qs_student=qs_student,
+            answer_official=answer_official,
+        )
+        create_or_update_model(model=student_model, update_fields=['score'], model_data=score_data)
+
+        # Update student_model for rank
+        rank_data = get_rank_data(exam_vars=exam_vars, qs_exam=qs_exam, qs_student=qs_student)
+        create_or_update_model(
+            model=student_model,
+            update_fields=['rank'],
+            model_data=rank_data,
+        )
+
+        # Create or update student_model for answer count
+        all_count_dict = get_all_count_dict(exam_vars=exam_vars, total_answer_lists=total_answer_lists)
+        answer_count_matching_fields = [
+            'count_1', 'count_2', 'count_3', 'count_4', 'count_5',
+            'count_0', 'count_multiple', 'count_total',
+        ]
+        answer_count_data = get_answer_count_model_data(
+            exam_vars=exam_vars,
+            matching_fields=answer_count_matching_fields,
+            all_count_dict=all_count_dict,
+        )
+        create_or_update_model(
+            model=answer_count_model,
+            update_fields=answer_count_matching_fields,
+            model_data=answer_count_data,
+        )
 
 
-def get_empty_model_data() -> dict:
-    return {'update_list': [], 'create_list': [], 'update_count': 0, 'create_count': 0}
-
-
-def add_obj_to_model_update_data(
-        model_data: dict, obj,
-        matching_data: dict, matching_fields: list,
-):
-    fields_not_match = any(
-        getattr(obj, fld) != matching_data[fld] for fld in matching_fields)
-    if fields_not_match:
-        for fld in matching_fields:
-            setattr(obj, fld, matching_data[fld])
-        model_data['update_list'].append(obj)
-        model_data['update_count'] += 1
-
-
-def update_model_data(
-        model_data: dict, model, lookup: dict,
-        matching_data: dict, matching_fields: list,
-        obj=None,
-):
-    if obj:
-        add_obj_to_model_update_data(
-            model_data=model_data, obj=obj,
-            matching_data=matching_data, matching_fields=matching_fields)
-    else:
-        try:
-            obj = model.objects.get(**lookup)
-            add_obj_to_model_update_data(
-                model_data=model_data, obj=obj,
-                matching_data=matching_data, matching_fields=matching_fields)
-        except model.DoesNotExist:
-            model_data['create_list'].append(model(**matching_data))
-            model_data['create_count'] += 1
-
-
-def get_old_answer_data(student):
-    old_answers = [
-        old_predict_models.Answer.objects.filter(student=student, sub=sub).first() for sub in SUB_LIST
-    ]
-
-    answer_dict = {field: [0 for _ in range(count)] for field, count in PROBLEM_COUNT.items()}
-    answer_count_dict = {field: 0 for field in PROBLEM_COUNT.keys()}
-    answer_confirmed_dict = {field: False for field in PROBLEM_COUNT.keys()}
-    answer_updated_at_dict = {field: None for field in PROBLEM_COUNT.keys()}
-    answer_all_confirmed_at = None
-
-    for answer in old_answers:
-        if answer:
-            field = PSAT_SUBJECT_FIELDS[answer.sub]
-            answer_confirmed_dict[field] = answer.is_confirmed
-            answer_updated_at_dict[field] = answer.updated_at
-
-            for idx in range(PROBLEM_COUNT[field]):
-                no = idx + 1
-                ans = getattr(answer, f'prob{no}') or 0
-                answer_count_dict[field] += 1 if ans else 0
-                answer_dict[field][idx] = ans
-
-    if all([val for val in answer_confirmed_dict.values()]):
-        try:
-            answer_all_confirmed_at = max([val for val in answer_updated_at_dict.values()])
-        except ValueError:
-            pass
-    return {
-        'answer': answer_dict,
-        'answer_count': answer_count_dict,
-        'answer_confirmed_dict': answer_confirmed_dict,
-        'answer_all_confirmed_at': answer_all_confirmed_at,
+def get_exam_vars(exam_info: dict):
+    exam_vars = {
+        'year': exam_info['year'],
+        'exam': exam_info['exam'],
+        'round': exam_info['round'],
+        'info': exam_info,
     }
+    if exam_info['exam'] == '행시':
+        exam_vars.update(PSAT_VARS)
+        exam_vars.update({
+            'exam_model': models.PsatExam,
+            'student_model': models.PsatStudent,
+            'answer_count_model': models.PsatAnswerCount,
+            'department_model': models.PsatDepartment,
+        })
+    return exam_vars
 
 
-def get_student_model_data(exam_data: dict) -> dict:
+def get_student_model_data(exam_vars: dict, old_students) -> dict:
     student_model_data = get_empty_model_data()
-    old_students = old_predict_models.Student.objects.filter(
-        exam__ex=exam_data['exam_exam'], exam__round=exam_data['exam_round']).annotate(
-        created_at=F('timestamp'),
-    )
-    student_model = exam_data['student_model']
+    student_model = exam_vars['student_model']
 
     for student in old_students:
-        old_answer_data = get_old_answer_data(student=student)
+        old_answer_data = get_old_answer_data(exam_vars=exam_vars, student=student)
         student_info = {
             'user_id': student.user_id,
-            'year': exam_data['exam_year'],
-            'exam': exam_data['exam_exam'],
-            'round': exam_data['exam_round'],
+            'year': exam_vars['year'],
+            'exam': exam_vars['exam'],
+            'round': exam_vars['round'],
 
             'name': student.name,
             'serial': student.serial,
@@ -212,9 +229,9 @@ def get_student_model_data(exam_data: dict) -> dict:
 
         lookup_dict = {
             'user_id': student.user_id,
-            'year': exam_data['exam_year'],
-            'exam': exam_data['exam_exam'],
-            'round': exam_data['exam_round'],
+            'year': exam_vars['year'],
+            'exam': exam_vars['exam'],
+            'round': exam_vars['round'],
             'name': student.name,
             'serial': student.serial,
         }
@@ -226,12 +243,98 @@ def get_student_model_data(exam_data: dict) -> dict:
     return student_model_data
 
 
-def get_total_answer_lists_and_score_data(exam_data: dict, qs_student, answer_official: dict) -> tuple:
-    score_data = get_empty_model_data()
-    total_answer_lists = {field: [] for field in exam_data['fields']}
+def get_old_answer_data(exam_vars: dict, student):
+    sub_list: dict = exam_vars['sub_list']
+    problem_count: dict = exam_vars['problem_count']
+    subject_fields: list = exam_vars['subject_fields']
+    subject_vars: list = exam_vars['subject_vars']
+
+    old_answers = [
+        old_predict_models.Answer.objects.filter(student=student, sub=sub).first() for sub in sub_list
+    ]
+
+    answer_dict = {field: [0 for _ in range(count)] for field, count in problem_count.items()}
+    answer_count_dict = {field: 0 for field in subject_fields}
+    answer_confirmed_dict = {field: False for field in subject_fields}
+    answer_updated_at_dict = {field: None for field in subject_fields}
+    answer_all_confirmed_at = None
+
+    for answer in old_answers:
+        if answer:
+            field = subject_vars[answer.sub][1]
+            answer_confirmed_dict[field] = answer.is_confirmed
+            answer_updated_at_dict[field] = answer.updated_at
+
+            for idx in range(problem_count[field]):
+                no = idx + 1
+                ans = getattr(answer, f'prob{no}') or 0
+                answer_dict[field][idx] = ans
+                answer_count_dict[field] += 1 if ans else 0
+    answer_count_dict['psat_avg'] = sum([i for i in answer_count_dict.values()])
+    answer_confirmed_dict['psat_avg'] = all([b for b in answer_confirmed_dict.values()])
+
+    if all([val for val in answer_confirmed_dict.values()]):
+        try:
+            answer_all_confirmed_at = max([val for val in answer_updated_at_dict.values()])
+        except ValueError:
+            pass
+
+    return {
+        'answer': answer_dict,
+        'answer_count': answer_count_dict,
+        'answer_confirmed': answer_confirmed_dict,
+        'answer_all_confirmed_at': answer_all_confirmed_at,
+    }
+
+
+def get_participants_and_exam_model_data(exam_vars: dict, qs_exam, qs_student) -> tuple:
+    department_model = exam_vars['department_model']
+    score_fields = exam_vars['score_fields']
+    exam_model_data = get_empty_model_data()
+
+    qs_department = department_model.objects.filter(exam=exam_vars['exam']).order_by('id')
+    department_dict = {department.name: department.id for department in qs_department}
+
+    participants = {
+        'all': {'total': {field: 0 for field in score_fields}},
+        'filtered': {'total': {field: 0 for field in score_fields}},
+    }
+    participants['all'].update({
+        d_id: {field: 0 for field in score_fields} for d_id in department_dict.values()
+    })
+    participants['filtered'].update({
+        d_id: {field: 0 for field in score_fields} for d_id in department_dict.values()
+    })
 
     for student in qs_student:
-        score = {field: 0 for field in FIELD_VARS.keys()}
+        d_id = department_dict[student.department]
+        for field, is_confirmed in student.answer_confirmed.items():
+            if is_confirmed:
+                participants['all']['total'][field] += 1
+                participants['all'][d_id][field] += 1
+
+            all_confirmed_at = student.answer_all_confirmed_at
+            if all_confirmed_at and all_confirmed_at < qs_exam.answer_official_opened_at:
+                participants['filtered']['total'][field] += 1
+                participants['filtered'][d_id][field] += 1
+
+    if qs_exam.participants != participants:
+        qs_exam.participants = participants
+        exam_model_data['update_list'].append(qs_exam)
+        exam_model_data['update_count'] += 1
+
+    return participants, exam_model_data
+
+
+def get_total_answer_lists_and_score_data(exam_vars: dict, qs_student, answer_official: dict) -> tuple:
+    score_data = get_empty_model_data()
+    subject_fields = exam_vars['subject_fields']
+    score_fields = exam_vars['score_fields']
+    psat_fields = exam_vars['psat_fields']
+    total_answer_lists = {field: [] for field in subject_fields}
+
+    for student in qs_student:
+        score = {field: 0 for field in score_fields}
         for field, answer in student.answer.items():
             if student.answer_confirmed[field]:
                 total_answer_lists[field].append(answer)
@@ -242,7 +345,7 @@ def get_total_answer_lists_and_score_data(exam_data: dict, qs_student, answer_of
                 correct_count += 1 if ans == answer_official[field][idx] else 0
             score[field] = correct_count * score_unit
 
-        sum_list = [score[field] for field in ONLY_PSAT_FIELDS if field in score]
+        sum_list = [score[field] for field in psat_fields if field in score]
         score['psat_avg'] = sum(sum_list) / 3 if sum_list else 0
 
         add_obj_to_model_update_data(
@@ -252,72 +355,97 @@ def get_total_answer_lists_and_score_data(exam_data: dict, qs_student, answer_of
     return total_answer_lists, score_data
 
 
-def get_confirmed_scores_participants(
-        qs_student, department: str | None = None
-) -> dict:
-    if department:
-        qs_student = qs_student.filter(department=department)
-
-    confirmed_scores = {field: [] for field in FIELD_VARS.keys()}
-    confirmed_participants = {field: 0 for field in FIELD_VARS.keys()}
-    for field in FIELD_VARS.keys():
-        for qs in qs_student:
-            if qs.answer_confirmed[field]:
-                confirmed_scores[field].append(qs.score[field])
-        confirmed_participants[field] = len(confirmed_scores[field])
-    return {
-        f'score': confirmed_scores,
-        f'participants': confirmed_participants,
+def get_rank_data(exam_vars: dict, qs_exam, qs_student) -> dict:
+    score_fields = exam_vars['score_fields']  # eoneo, jaryo, sanghwang, psat_avg
+    scores_total = get_confirmed_scores(exam_vars=exam_vars, qs_exam=qs_exam, qs_student=qs_student)
+    scores: dict[str, dict[str, dict[str, list]]] = {
+        'all': {'total': scores_total['all'], 'department': {}},
+        'filtered': {'total': scores_total['filtered'], 'department': {}},
     }
 
-
-def get_stat_data(student, total_data: dict, department_data: dict):
-    stat_data = {
-        'participants_total': total_data['participants'],
-        'participants_department': department_data['participants'],
-        'rank_total': {field: 0 for field in FIELD_VARS.keys()},
-        'rank_department': {field: 0 for field in FIELD_VARS.keys()},
-    }
-    for field, score in student.score.items():
-        if student.answer_confirmed[field]:
-            sorted_score = {
-                'total': sorted(total_data['score'][field], reverse=True),
-                'department': sorted(department_data['score'][field], reverse=True)
-            }
-            stat_data['rank_total'][field] = sorted_score['total'].index(score) + 1
-            stat_data['rank_department'][field] = sorted_score['department'].index(score) + 1
-    return stat_data
-
-
-def get_rank_data(qs_student) -> dict:
     rank_data = get_empty_model_data()
     for student in qs_student:
-        total_data = get_confirmed_scores_participants(qs_student=qs_student)
-        department_data = get_confirmed_scores_participants(
-            qs_student=qs_student, department=student.department)
-        stat_data = get_stat_data(student=student, total_data=total_data, department_data=department_data)
+        scores_department = get_confirmed_scores(
+            exam_vars=exam_vars, qs_exam=qs_exam, qs_student=qs_student, department=student.department)
+        scores['all']['department'] = scores_department['all']
+        scores['filtered']['department'] = scores_department['filtered']
 
-        add_obj_to_model_update_data(
-            model_data=rank_data, obj=student,
-            matching_data=stat_data, matching_fields=[stat_data.keys()])
+        rank = {
+            'all': {
+                'total': {field: 0 for field in score_fields},
+                'department': {field: 0 for field in score_fields},
+            },
+            'filtered': {
+                'total': {field: 0 for field in score_fields},
+                'department': {field: 0 for field in score_fields},
+            },
+        }
+        for field in score_fields:
+            score_student = student.score[field]
+            if student.answer_confirmed[field]:
+                rank['all']['total'][field] = (
+                        scores['all']['total'][field].index(score_student) + 1)
+                rank['all']['department'][field] = (
+                        scores['all']['department'][field].index(score_student) + 1)
+
+            all_confirmed_at = student.answer_all_confirmed_at
+            if all_confirmed_at and all_confirmed_at < qs_exam.answer_official_opened_at:
+                rank['filtered']['total'][field] = (
+                        scores['filtered']['total'][field].index(score_student) + 1)
+                rank['filtered']['department'][field] = (
+                        scores['filtered']['department'][field].index(score_student) + 1)
+
+        if student.rank != rank:
+            student.rank = rank
+            rank_data['update_list'].append(student)
+            rank_data['update_count'] += 1
 
     return rank_data
 
 
-def get_all_count_dict(exam_data: dict, total_answer_lists: dict) -> dict:
+def get_confirmed_scores(
+        exam_vars: dict, qs_exam, qs_student, department: str | None = None
+) -> dict:
+    score_fields = exam_vars['score_fields']  # eoneo, jaryo, sanghwang, psat_avg
+    if department:
+        qs_student = qs_student.filter(department=department)
+
+    scores = {
+        'all': {field: [] for field in score_fields},
+        'filtered': {field: [] for field in score_fields},
+    }
+    for field in score_fields:
+        for student in qs_student:
+            if student.answer_confirmed[field]:
+                scores['all'][field].append(student.score[field])
+
+            all_confirmed_at = student.answer_all_confirmed_at
+            if all_confirmed_at and all_confirmed_at < qs_exam.answer_official_opened_at:
+                scores['filtered'][field].append(student.score[field])
+
+    sorted_scores = {
+        'all': {field: sorted(scores['all'][field], reverse=True) for field in score_fields},
+        'filtered': {field: sorted(scores['filtered'][field], reverse=True) for field in score_fields},
+    }
+    return sorted_scores
+
+
+def get_all_count_dict(exam_vars: dict, total_answer_lists: dict) -> dict:
+    problem_count = exam_vars['problem_count']
     all_count_dict: dict[str, list[dict[str, str | int]]] = {
         field: [
             {
-                'year': exam_data['exam_year'], 'exam': exam_data['exam_exam'],
-                'round': exam_data['exam_round'], 'subject': field, 'number': i, 'answer': 0,
+                'year': exam_vars['year'], 'exam': exam_vars['exam'],
+                'round': exam_vars['round'], 'subject': field, 'number': i, 'answer': 0,
                 'count_1': 0, 'count_2': 0, 'count_3': 0, 'count_4': 0, 'count_5': 0,
                 'count_0': 0, 'count_multiple': 0, 'count_total': 0,
             } for i in range(1, count + 1)
-        ] for field, count in PROBLEM_COUNT.items()
+        ] for field, count in problem_count.items()
     }
     for field, answer_lists in total_answer_lists.items():
+        p_count = problem_count[field]
         if answer_lists:
-            distributions = [Counter() for _ in range(40)]
+            distributions = [Counter() for _ in range(p_count)]
             for lst in answer_lists:
                 for i, value in enumerate(lst):
                     if value > 5:
@@ -325,25 +453,26 @@ def get_all_count_dict(exam_data: dict, total_answer_lists: dict) -> dict:
                     else:
                         distributions[i][value] += 1
 
-            for index, counter in enumerate(distributions):
+            for idx, counter in enumerate(distributions):
                 count_dict = {f'count_{i}': counter.get(i, 0) for i in range(6)}
                 count_dict['count_multiple'] = counter.get('count_multiple', 0)
                 count_total = sum(value for value in count_dict.values())
                 count_dict['count_total'] = count_total
-                all_count_dict[field][index].update(count_dict)
+                all_count_dict[field][idx].update(count_dict)
     return all_count_dict
 
 
-def get_answer_count_model_data(exam_data: dict, matching_fields: list, all_count_dict: dict):
+def get_answer_count_model_data(exam_vars: dict, matching_fields: list, all_count_dict: dict):
     answer_count_model_data = get_empty_model_data()
-    answer_count_model = exam_data['answer_count_model']
-    for field in exam_data['fields']:
+    answer_count_model = exam_vars['answer_count_model']
+    subject_fields = exam_vars['subject_fields']
+    for field in subject_fields:
         for count in all_count_dict[field]:
             if count['count_total']:
                 lookup_dict = {
-                    'year': exam_data['exam_year'],
-                    'exam': exam_data['exam_exam'],
-                    'round': exam_data['exam_round'],
+                    'year': exam_vars['year'],
+                    'exam': exam_vars['exam'],
+                    'round': exam_vars['round'],
                     'subject': count['subject'],
                     'number': count['number'],
                 }
@@ -379,67 +508,38 @@ def create_or_update_model(model, update_fields: list, model_data: dict):
     print(message)
 
 
-class Command(BaseCommand):
-    help = 'Calculate Scores'
+def update_model_data(
+        model_data: dict, model, lookup: dict,
+        matching_data: dict, matching_fields: list,
+        obj=None,
+):
+    if obj:
+        add_obj_to_model_update_data(
+            model_data=model_data, obj=obj,
+            matching_data=matching_data, matching_fields=matching_fields)
+    else:
+        try:
+            obj = model.objects.get(**lookup)
+            add_obj_to_model_update_data(
+                model_data=model_data, obj=obj,
+                matching_data=matching_data, matching_fields=matching_fields)
+        except model.DoesNotExist:
+            model_data['create_list'].append(model(**matching_data))
+            model_data['create_count'] += 1
 
-    def add_arguments(self, parser):
-        parser.add_argument('exam_year', type=str, help='Year')  # 2024
-        parser.add_argument('exam_exam', type=str, help='Exam type')  # 행시
-        parser.add_argument('exam_round', type=str, help='Round')  # 0
 
-    def handle(self, *args, **kwargs):
-        exam_year = kwargs['exam_year']
-        exam_exam = kwargs['exam_exam']
-        exam_round = kwargs['exam_round']
+def add_obj_to_model_update_data(
+        model_data: dict, obj,
+        matching_data: dict, matching_fields: list,
+):
+    fields_not_match = any(
+        getattr(obj, fld) != matching_data[fld] for fld in matching_fields)
+    if fields_not_match:
+        for fld in matching_fields:
+            setattr(obj, fld, matching_data[fld])
+        model_data['update_list'].append(obj)
+        model_data['update_count'] += 1
 
-        # Set up default models, fields and empty_model_data
-        exam_model, student_model, answer_count_model, fields = get_new_models_and_field(exam_exam=exam_exam)
-        exam_data = {
-            'exam_year': exam_year, 'exam_exam': exam_exam, 'exam_round': exam_round,
-            'exam_model': exam_model, 'student_model': student_model,
-            'answer_count_model': answer_count_model, 'fields': fields,
-        }
 
-        answer_official = PsatExam.objects.get(year=exam_year, exam=exam_exam, round=exam_round).answer_official
-
-        # Create or update student_model instances
-        student_data = get_student_model_data(exam_data=exam_data)
-        student_update_fields = ['answer', 'answer_count', 'answer_confirmed', 'answer_all_confirmed_at']
-        create_or_update_model(
-            model=student_model, update_fields=student_update_fields, model_data=student_data)
-
-        # Update student_model for score
-        qs_student = student_model.objects.filter(year=exam_year, exam=exam_exam, round=exam_round)
-        total_answer_lists, score_data = get_total_answer_lists_and_score_data(
-            exam_data=exam_data,
-            qs_student=qs_student,
-            answer_official=answer_official,
-        )
-        create_or_update_model(model=student_model, update_fields=['score'], model_data=score_data)
-
-        # Update student_model for rank
-        rank_data = get_rank_data(qs_student=qs_student)
-        rank_matching_fields_for = [
-            'rank_total', 'participants_total', 'rank_department', 'participants_department']
-        create_or_update_model(
-            model=student_model,
-            update_fields=rank_matching_fields_for,
-            model_data=rank_data,
-        )
-
-        # Create or update student_model for answer count
-        all_count_dict = get_all_count_dict(exam_data=exam_data, total_answer_lists=total_answer_lists)
-        answer_count_matching_fields = [
-            'count_1', 'count_2', 'count_3', 'count_4', 'count_5',
-            'count_0', 'count_multiple', 'count_total',
-        ]
-        answer_count_data = get_answer_count_model_data(
-            exam_data=exam_data,
-            matching_fields=answer_count_matching_fields,
-            all_count_dict=all_count_dict,
-        )
-        create_or_update_model(
-            model=answer_count_model,
-            update_fields=answer_count_matching_fields,
-            model_data=answer_count_data,
-        )
+def get_empty_model_data() -> dict:
+    return {'update_list': [], 'create_list': [], 'update_count': 0, 'create_count': 0}

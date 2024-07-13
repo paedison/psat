@@ -19,7 +19,7 @@
             </li>
             <li class="breadcrumb-item">Answer</li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict:answer-input' subject_field %}" hx-boost="true">{{ subject }}</a>
+                <a class="active" href="{% url 'predict_new:answer-input' subject_field %}" hx-boost="true">{{ subject }}</a>
             </li>
         </ol>
     </nav>
@@ -33,7 +33,7 @@
                     <h5 class="card-title d-flex align-items-center">
                         {{ subject }} 답안 입력
                         <a class="btn btn-sm btn-outline-primary ms-auto" hx-boost="true"
-                           href="{% url 'predict:index' %}">
+                           href="{% url 'predict_new:index' %}">
                             성적 예측 페이지로 이동
                         </a>
                     </h5>
@@ -83,13 +83,13 @@
                         <button class="btn btn-primary prevent_double_click" type="submit"
                                 data-bs-toggle="modal" data-bs-target="#modalContainer"
                                 hx-target="#modalContainer" hx-push-url="false" hx-swap="innerHTML"
-                                hx-post="{% url 'predict:answer-confirm' subject_field %}">
+                                hx-post="{% url 'predict_new:answer-confirm' subject_field %}">
                             답안 제출
                         </button>
                     </form>
                     <div class="text-center">
                         <a class="btn btn-outline-primary" hx-boost="true"
-                           href="{% url 'predict:index' %}">
+                           href="{% url 'predict_new:index' %}">
                             성적 예측 페이지로 이동
                         </a>
                     </div>
