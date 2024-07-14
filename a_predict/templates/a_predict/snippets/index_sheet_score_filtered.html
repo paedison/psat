@@ -9,21 +9,21 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetFilteredTab" role="tablist">
-            {% for id in '012' %}
-                {% cycle 'my_filtered' 'total_filtered' 'department_filtered' as prefix silent %}
-                {% cycle '내 성적' '전체 기준' '직렬 기준' as tab_title silent %}
+            {% for id in exam_vars.score_tab_id %}
+                {% cycle exam_vars.score_tab_title.0 exam_vars.score_tab_title.1 exam_vars.score_tab_title.2 as tab_title silent %}
+                {% cycle exam_vars.prefix_sf.0 exam_vars.prefix_sf.1 exam_vars.prefix_sf.2 as prefix silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
 
-    <div class="tab-content" id="scoreSheetContent">
-        {% for id in '012' %}
-            {% cycle 'my_filtered' 'total_filtered' 'department_filtered' as prefix silent %}
+    <div class="tab-content" id="scoreSheetFilteredContent">
+        {% for id in exam_vars.score_tab_id %}
+            {% cycle exam_vars.prefix_sf.0 exam_vars.prefix_sf.1 exam_vars.prefix_sf.2 as prefix silent %}
             {% cycle stat_total_filtered as stat_total silent %}
             {% cycle stat_department_filtered as stat_department silent %}
             {% cycle '' stat_total_filtered stat_department_filtered as stat_data silent %}
-            {% cycle 'a_predict/snippets/index_sheet_score_table_1.html' 'a_predict/snippets/index_sheet_score_table_2.html' 'a_predict/snippets/index_sheet_score_table_2.html' as template_name silent %}
+            {% cycle exam_vars.score_template.0 exam_vars.score_template.1 exam_vars.score_template.2 as template_name silent %}
             {% #nav_content prefix=prefix id=id %}{% include template_name %}{% /nav_content %}
         {% endfor %}
 

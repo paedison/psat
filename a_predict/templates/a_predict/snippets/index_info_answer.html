@@ -4,7 +4,7 @@
 <div class="card-header">
     답안 제출 현황
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#info_answer_spinner"
-       hx-get="">
+       hx-get="{% url 'predict_new:update-info-answer' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="info_answer_spinner" role="status"
@@ -28,6 +28,10 @@
                             <span class="d-none d-sm-inline">예상 점수(점)</span>
                         {% endif %}
                     </th>
+{#                    <th>#}
+{#                        <span class="d-sm-none">예상 점수<br/>(점)</span>#}
+{#                        <span class="d-none d-sm-inline">예상 점수(점)</span>#}
+{#                    </th>#}
                     <th class="text-nowrap" aria-label="총 참여자수">
                         <span class="d-sm-none">총 참여자수<br/>(명)</span>
                         <span class="d-none d-sm-inline">총 참여자수(명)</span>
@@ -39,9 +43,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for _ in '01234' %}
-                    {% cycle '헌법' '언어논리' '자료해석' '상황판단' 'PSAT 평균' as subject silent %}
-                    {% cycle info_answer_student.heonbeob info_answer_student.eoneo info_answer_student.jaryo info_answer_student.sanghwang info_answer_student.psat_avg as info_answer silent %}
+                {% for _ in exam_vars.info_tab_id %}
+                    {% cycle info_answer_student.0 info_answer_student.1 info_answer_student.2 info_answer_student.3 info_answer_student.4 as info_answer silent %}
                     {% if info_answer %}{% partial sub_answer_line %}{% endif %}
                 {% endfor %}
             </tbody>
@@ -99,7 +102,11 @@
                 {% endif %}
             {% endif %}
         </td>
-
+{#        <td>#}
+{#            <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-1 text-primary fw-bold">#}
+{#                {{ info_answer.score_predict|floatformat:1|default:'' }}#}
+{#            </div>#}
+{#        </td>#}
         <td aria-label="총 참여자수">
             <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in delay-2">
                 {{ info_answer.participants|default:0 }}

@@ -4,7 +4,7 @@
 <div class="card-header">
     예상 정답
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#answer_predict_spinner"
-       hx-get="">
+       hx-get="{% url 'predict_new:update-answer-predict' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="answer_predict_spinner" role="status"
@@ -15,45 +15,26 @@
 
 <div class="card-body">
     <nav>
-        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
-            {% if exam.exam == '칠급' %}
-                {% for id in '012' %}
-                    {% cycle '언어' '자료' '상황' as sub silent %}
-                    {% cycle 'eoneo_predict' 'jaryo_predict' 'sanghwang_predict' as prefix silent %}
-                    {% cycle icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
-                    {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
-                {% endfor %}
-            {% else %}
-                {% for id in '0123' %}
-                    {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
-                    {% cycle 'heonbeob_predict' 'eoneo_predict' 'jaryo_predict' 'sanghwang_predict' as prefix silent %}
-                    {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
-                    {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
-                {% endfor %}
-            {% endif %}
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerPredictTab" role="tablist">
+            {% for id in exam_vars.answer_tab_id %}
+                {% cycle exam_vars.answer_tab_title.0 exam_vars.answer_tab_title.1 exam_vars.answer_tab_title.2 exam_vars.answer_tab_title.3 as tab_title silent %}
+                {% cycle exam_vars.prefix_ap.0 exam_vars.prefix_ap.1 exam_vars.prefix_ap.2 exam_vars.prefix_ap.3 as prefix silent %}
+                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
+            {% endfor %}
         </div>
     </nav>
 
-    <div class="tab-content" id="scoreAnswersContent">
-        {% if exam.exam == '칠급' %}
-            {% for id in '012' %}
-                {% cycle 'eoneo_predict' 'jaryo_predict' 'sanghwang_predict' as prefix silent %}
-                {% cycle data_answer_official.eoneo data_answer_official.jaryo data_answer_official.sanghwang as answer_official silent %}
-                {% cycle data_answer_student.eoneo data_answer_student.jaryo data_answer_student.sanghwang as answer_student silent %}
-                {% cycle data_answer_predict.eoneo data_answer_predict.jaryo data_answer_predict.sanghwang as answer_predict silent %}
-                {% cycle info_answer_student.eoneo info_answer_student.jaryo info_answer_student.sanghwang as info_answer silent %}
+    <div class="tab-content" id="scoreAnswerPredictContent">
+            {% for id in exam_vars.answer_tab_id %}
+                {% cycle exam_vars.prefix_ap.0 exam_vars.prefix_ap.1 exam_vars.prefix_ap.2 exam_vars.prefix_ap.3 as prefix silent %}
+                {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
+                {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 as answer_official silent %}
+                {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 as answer_student silent %}
+                {% cycle data_answer_predict.0 data_answer_predict.1 data_answer_predict.2 data_answer_predict.3 as answer_predict silent %}
+                {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
                 {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
             {% endfor %}
-        {% else %}
-            {% for id in '0123' %}
-                {% cycle 'heonbeob_predict' 'eoneo_predict' 'jaryo_predict' 'sanghwang_predict' as prefix silent %}
-                {% cycle data_answer_official.heonbeob data_answer_official.eoneo data_answer_official.jaryo data_answer_official.sanghwang as answer_official silent %}
-                {% cycle data_answer_student.heonbeob data_answer_student.eoneo data_answer_student.jaryo data_answer_student.sanghwang as answer_student silent %}
-                {% cycle data_answer_predict.heonbeob data_answer_predict.eoneo data_answer_predict.jaryo data_answer_predict.sanghwang as answer_predict silent %}
-                {% cycle info_answer_student.heonbeob info_answer_student.eoneo info_answer_student.jaryo info_answer_student.sanghwang as info_answer silent %}
-                {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
-            {% endfor %}
-        {% endif %}
     </div>
     <div>
         <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
@@ -75,11 +56,11 @@
     <article class="table-responsive">
         <table class="table small align-middle">
             <tbody>
-                {% if not info_answer.is_confirmed %}
+                {% if not is_confirmed %}
                     <tr class="text-center">
                         <th>
                             <a class="btn btn-outline-danger my-4" hx-boost="true"
-                               href="{% url 'predict_new:answer-input' info_answer.field %}">
+                               href="{% url 'predict_new:answer-input' field %}">
                                 답안을 제출해주세요.
                             </a>
                         </th>
@@ -159,7 +140,7 @@
                 <td>
                     <div data-number="{{ answer.no }}"
                          class="fw-bold {% if answer.prediction_is_correct %}text-success{% else %}text-danger{% endif %}">
-                        <div id="{{ prefix }}_accuracy_{{ answer.no }}" aria-label="정확도"
+                        <div id="{{ prefix }}_accuracy_{{ answer.no }}"
                              class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                             {{ answer.rate_accuracy|floatformat:0 }}
                         </div>

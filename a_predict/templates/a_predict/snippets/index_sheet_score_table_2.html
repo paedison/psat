@@ -21,17 +21,10 @@
             </tr>
         </thead>
         <tbody>
-            {% if exam.exam == '칠급' %}
-                {% for _ in '0123' %}
-                    {% cycle stat_data.eoneo stat_data.jaryo stat_data.sanghwang stat_data.psat_avg as stat silent %}
-                    {% if stat %}{% partial sub_stat_line %}{% endif %}
-                {% endfor %}
-            {% else %}
-                {% for _ in '01234' %}
-                    {% cycle stat_data.heonbeob stat_data.eoneo stat_data.jaryo stat_data.sanghwang stat_data.psat_avg as stat silent %}
-                    {% if stat %}{% partial sub_stat_line %}{% endif %}
-                {% endfor %}
-            {% endif %}
+            {% for _ in exam_vars.info_tab_id %}
+                {% cycle stat_data.0 stat_data.1 stat_data.2 stat_data.3 stat_data.4 as stat silent %}
+                {% if stat %}{% partial sub_stat_line %}{% endif %}
+            {% endfor %}
         </tbody>
     </table>
 </article>

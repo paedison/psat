@@ -4,19 +4,6 @@ from .views import normal_views
 
 app_name = 'predict_new'
 
-normal_patterns = [
-    # path('test/', normal_views.index_test_view, name='index_test'),
-    #
-    # path('answer/<str:sub>/', normal_views.answer_input_view, name='answer_input'),
-    # path('answer/<str:sub>/submit/', normal_views.answer_submit_view, name='answer_submit'),
-    # path('answer/<str:sub>/confirm/', normal_views.answer_confirm_view, name='answer_confirm'),
-    #
-    # path('update/info_answer/', normal_views.update_info_answer, name='update_info_answer'),
-    # path('update/sheet_answer_predict/', normal_views.update_sheet_answer_predict, name='update_sheet_answer_predict'),
-    # path('update/sheet_answer/', normal_views.update_sheet_answer, name='update_sheet_answer'),
-    # path('update/sheet_score/', normal_views.update_sheet_score, name='update_sheet_score'),
-]
-
 student_patterns = [
     path('create/', normal_views.student_create_view, name='student-create'),
     path('department/', normal_views.department_list, name='department-list'),
@@ -28,21 +15,12 @@ answer_patterns = [
     path('<str:subject_field>/confirm/', normal_views.answer_confirm, name='answer-confirm'),
 ]
 
-# old_normal_patterns = [
-#     path('test/', normal_views_old.index_test_view, name='index_test'),
-#     path('student/', normal_views_old.student_create_view, name='student_create'),
-#     path('student/department/',
-#          normal_views_old.student_create_department, name='student_create_department'),
-#
-#     path('answer/<str:sub>/', normal_views_old.answer_input_view, name='answer_input'),
-#     path('answer/<str:sub>/submit/', normal_views_old.answer_submit_view, name='answer_submit'),
-#     path('answer/<str:sub>/confirm/', normal_views_old.answer_confirm_view, name='answer_confirm'),
-#
-#     path('update/info_answer/', normal_views_old.update_info_answer, name='update_info_answer'),
-#     path('update/sheet_answer_predict/', normal_views_old.update_sheet_answer_predict, name='update_sheet_answer_predict'),
-#     path('update/sheet_answer/', normal_views_old.update_sheet_answer, name='update_sheet_answer'),
-#     path('update/sheet_score/', normal_views_old.update_sheet_score, name='update_sheet_score'),
-# ]
+update_patterns = [
+    path('info/answer/', normal_views.update_info_answer, name='update-info-answer'),
+    path('answer/predict/', normal_views.update_answer_predict, name='update-answer-predict'),
+    path('answer/submit/', normal_views.update_answer_submit, name='update-answer-submit'),
+    path('score/', normal_views.update_score, name='update-score'),
+]
 
 # admin_patterns = [
 #     path('', admin_views.list_view, name='list'),
@@ -95,5 +73,6 @@ urlpatterns = [
 
     path('student/', include(student_patterns)),
     path('answer/', include(answer_patterns)),
+    path('update/', include(update_patterns)),
     # path('admin/', include(admin_patterns)),
 ]

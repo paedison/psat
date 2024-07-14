@@ -5,7 +5,7 @@
     성적 예측 I
     <span class="text-danger small">[전체 데이터]</span>
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_score_spinner"
-       hx-get="">
+       hx-get="{% url 'predict_new:update-score' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="sheet_score_spinner" role="status"
@@ -16,22 +16,22 @@
 
 <div class="card-body">
     <nav>
-        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTab" role="tablist">
-            {% for id in '012' %}
-                {% cycle 'my_all' 'total_all' 'department_all' as prefix silent %}
-                {% cycle '내 성적' '전체 기준' '직렬 기준' as tab_title silent %}
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetAllTab" role="tablist">
+            {% for id in exam_vars.score_tab_id %}
+                {% cycle exam_vars.score_tab_title.0 exam_vars.score_tab_title.1 exam_vars.score_tab_title.2 as tab_title silent %}
+                {% cycle exam_vars.prefix_sa.0 exam_vars.prefix_sa.1 exam_vars.prefix_sa.2 as prefix silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
 
-    <div class="tab-content" id="scoreSheetContent">
-        {% for id in '012' %}
-            {% cycle 'my_all' 'total_all' 'department_all' as prefix silent %}
+    <div class="tab-content" id="scoreSheetAllContent">
+        {% for id in exam_vars.score_tab_id %}
+            {% cycle exam_vars.prefix_sa.0 exam_vars.prefix_sa.1 exam_vars.prefix_sa.2 as prefix silent %}
             {% cycle stat_total_all as stat_total silent %}
             {% cycle stat_department_all as stat_department silent %}
             {% cycle '' stat_total_all stat_department_all as stat_data silent %}
-            {% cycle 'a_predict/snippets/index_sheet_score_table_1.html' 'a_predict/snippets/index_sheet_score_table_2.html' 'a_predict/snippets/index_sheet_score_table_2.html' as template_name silent %}
+            {% cycle exam_vars.score_template.0 exam_vars.score_template.1 exam_vars.score_template.2 as template_name silent %}
             {% #nav_content prefix=prefix id=id %}{% include template_name %}{% /nav_content %}
         {% endfor %}
 

@@ -4,7 +4,7 @@
 <div class="card-header">
     정답 확인
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
-       hx-get="">
+       hx-get="{% url 'predict_new:update-answer-submit' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="sheet_answer_spinner" role="status"
@@ -15,43 +15,25 @@
 
 <div class="card-body">
     <nav>
-        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
-            {% if exam.exam == '칠급' %}
-                {% for id in '012' %}
-                    {% cycle '언어' '자료' '상황' as sub silent %}
-                    {% cycle 'eoneo_submit' 'jaryo_submit' 'sanghwang_submit' as prefix silent %}
-                    {% cycle icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
-                    {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
-                {% endfor %}
-            {% else %}
-                {% for id in '0123' %}
-                    {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
-                    {% cycle 'heonbeob_submit' 'eoneo_submit' 'jaryo_submit' 'sanghwang_submit' as prefix silent %}
-                    {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
-                    {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
-                {% endfor %}
-            {% endif %}
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerSubmitTab" role="tablist">
+            {% for id in exam_vars.answer_tab_id %}
+                {% cycle exam_vars.answer_tab_title.0 exam_vars.answer_tab_title.1 exam_vars.answer_tab_title.2 exam_vars.answer_tab_title.3 as tab_title silent %}
+                {% cycle exam_vars.prefix_as.0 exam_vars.prefix_as.1 exam_vars.prefix_as.2 exam_vars.prefix_as.3 as prefix silent %}
+                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
+            {% endfor %}
         </div>
     </nav>
 
-    <div class="tab-content" id="scoreAnswersContent">
-        {% if exam.exam == '칠급' %}
-            {% for id in '012' %}
-                {% cycle 'eoneo_submit' 'jaryo_submit' 'sanghwang_submit' as prefix silent %}
-                {% cycle data_answer_official.eoneo data_answer_official.jaryo data_answer_official.sanghwang as answer_official silent %}
-                {% cycle data_answer_student.eoneo data_answer_student.jaryo data_answer_student.sanghwang as answer_student silent %}
-                {% cycle info_answer_student.eoneo info_answer_student.jaryo info_answer_student.sanghwang as info_answer silent %}
-                {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
-            {% endfor %}
-        {% else %}
-            {% for id in '0123' %}
-                {% cycle 'heonbeob_submit' 'eoneo_submit' 'jaryo_submit' 'sanghwang_submit' as prefix silent %}
-                {% cycle data_answer_official.heonbeob data_answer_official.eoneo data_answer_official.jaryo data_answer_official.sanghwang as answer_official silent %}
-                {% cycle data_answer_student.heonbeob data_answer_student.eoneo data_answer_student.jaryo data_answer_student.sanghwang as answer_student silent %}
-                {% cycle info_answer_student.heonbeob info_answer_student.eoneo info_answer_student.jaryo info_answer_student.sanghwang as info_answer silent %}
-                {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
-            {% endfor %}
-        {% endif %}
+    <div class="tab-content" id="scoreAnswerSubmitContent">
+        {% for id in exam_vars.answer_tab_id %}
+            {% cycle exam_vars.prefix_as.0 exam_vars.prefix_as.1 exam_vars.prefix_as.2 exam_vars.prefix_as.3 as prefix silent %}
+            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
+            {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 as answer_official silent %}
+            {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 as answer_student silent %}
+            {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
+            {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
+        {% endfor %}
     </div>
     <div>
         <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
@@ -71,11 +53,11 @@
     <article class="table-responsive">
         <table class="table small align-middle">
             <tbody>
-                {% if not info_answer.is_confirmed %}
+                {% if not is_confirmed %}
                     <tr class="text-center">
                         <th>
                             <a class="btn btn-outline-danger my-4" hx-boost="true"
-                               href="{% url 'predict_new:answer-input' info_answer.field %}">
+                               href="{% url 'predict_new:answer-input' field %}">
                                 답안을 제출해주세요.
                             </a>
                         </th>
@@ -123,20 +105,20 @@
                     <td class="td-no-border">
                         {% if answer.ans_list %}
                             {% if answer.ans == 1234 or answer.ans == 12345 %}
-                                <span data-number="{{ forloop.counter }}"
+                                <span data-number="{{ answer.no }}"
                                       class="badge rounded-pill text-bg-secondary">
                                     전체 정답
                                 </span>
                             {% else %}
                                 {% for ans in answer.ans_number_list %}
-                                    <button data-number="{{ forloop.counter }}"
+                                    <button data-number="{{ answer.no }}"
                                             class="btn btn-circle btn-sm fs-6 my-2 btn-success">
                                         {{ ans }}
                                     </button>
                                 {% endfor %}
                             {% endif %}
                         {% else %}
-                            <button data-number="{{ forloop.counter }}"
+                            <button data-number="{{ answer.no }}"
                                     class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
                                 {{ answer.ans }}
                             </button>
@@ -150,8 +132,8 @@
             {% for answer in answer_official %}
                 {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                     <td>
-                        <div data-number="{{ forloop.counter }}" class="fw-bold text-success">
-                            <div id="{{ prefix }}_correct_{{ forloop.counter }}"
+                        <div data-number="{{ answer.no }}" class="fw-bold text-success">
+                            <div id="{{ prefix }}_correct_{{ answer.no }}"
                                  class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                 {{ answer.rate_correct|floatformat:0 }}
                             </div>
@@ -169,12 +151,12 @@
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td class="td-no-border">
                     {% if not exam.is_answer_official_opened %}
-                        <button data-number="{{ forloop.counter }}"
+                        <button data-number="{{ answer.no }}"
                                 class="btn btn-circle btn-sm btn-primary fs-6 mx-1 my-2">
                             {{ answer.ans }}
                         </button>
                     {% else %}
-                        <button data-number="{{ forloop.counter }}"
+                        <button data-number="{{ answer.no }}"
                                 class="btn btn-circle btn-sm fs-6 mx-1 my-2 {% if answer.result_real %}btn-success{% else %}btn-danger{% endif %}">
                             {{ answer.ans }}
                         </button>
@@ -189,16 +171,16 @@
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td>
                     {% if not exam.is_answer_official_opened %}
-                        <div data-number="{{ forloop.counter }}" class="fw-bold text-primary">
-                            <div id="{{ prefix }}_selection_{{ forloop.counter }}_before"
+                        <div data-number="{{ answer.no }}" class="fw-bold text-primary">
+                            <div id="{{ prefix }}_selection_{{ answer.no }}"
                                  class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                 {{ answer.rate_selection|floatformat:0 }}
                             </div>
                         </div>
                     {% else %}
-                        <div data-number="{{ forloop.counter }}"
+                        <div data-number="{{ answer.no }}"
                              class="fw-bold {% if answer.result_real %}text-success{% else %}text-danger{% endif %}">
-                            <div id="{{ prefix }}_selection_{{ forloop.counter }}_after"
+                            <div id="{{ prefix }}_selection_{{ answer.no }}"
                                  class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                 {{ answer.rate_selection|floatformat:0 }}
                             </div>

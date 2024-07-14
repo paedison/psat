@@ -23,19 +23,11 @@
             </tr>
         </thead>
         <tbody>
-            {% if exam.exam == '칠급' %}
-                {% for _ in '0123' %}
-                    {% cycle stat_total.eoneo stat_total.jaryo stat_total.sanghwang stat_total.psat_avg as stat_tot silent %}
-                    {% cycle stat_department.eoneo stat_department.jaryo stat_department.sanghwang stat_department.psat_avg as stat_dep silent %}
-                    {% if stat_tot %}{% partial sub_score_line %}{% endif %}
-                {% endfor %}
-            {% else %}
-                {% for _ in '01234' %}
-                    {% cycle stat_total.heonbeob stat_total.eoneo stat_total.jaryo stat_total.sanghwang stat_total.psat_avg as stat_tot silent %}
-                    {% cycle stat_department.heonbeob stat_department.eoneo stat_department.jaryo stat_department.sanghwang stat_department.psat_avg as stat_dep silent %}
-                    {% if stat_tot %}{% partial sub_score_line %}{% endif %}
-                {% endfor %}
-            {% endif %}
+            {% for _ in exam_vars.info_tab_id %}
+                {% cycle stat_total.0 stat_total.1 stat_total.2 stat_total.3 stat_total.4 as stat_tot silent %}
+                {% cycle stat_department.0 stat_department.1 stat_department.2 stat_department.3 stat_department.4 as stat_dep silent %}
+                {% if stat_tot %}{% partial sub_score_line %}{% endif %}
+            {% endfor %}
         </tbody>
     </table>
 </article>
@@ -66,31 +58,31 @@
             </td>
         {% else %}
             <td>
-                <div id="{{ prefix }}my_score_{{ stat_tot.field }}"
+                <div id="{{ prefix }}_my_score_{{ stat_tot.field }}"
                      class="htmx-fade-up-in delay-0 text-success fw-bold">
                     {{ stat_tot.score|floatformat:1 }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}rank_total_{{ stat_tot.field }}"
+                <div id="{{ prefix }}_rank_total_{{ stat_tot.field }}"
                      class="htmx-fade-up-in delay-1">
                     {{ stat_tot.rank }} / {{ stat_tot.participants }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}rank_ratio_total_{{ stat_tot.field }}"
+                <div id="{{ prefix }}_rank_ratio_total_{{ stat_tot.field }}"
                      class="htmx-fade-up-in delay-2">
                     {{ stat_tot.rank|percentageby:stat_tot.participants|floatformat:1 }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}rank_department_{{ stat_tot.field }}"
+                <div id="{{ prefix }}_rank_department_{{ stat_tot.field }}"
                      class="htmx-fade-up-in delay-3">
                     {{ stat_dep.rank }} / {{ stat_dep.participants }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}rank_ratio_department_{{ stat_tot.field }}"
+                <div id="{{ prefix }}_rank_ratio_department_{{ stat_tot.field }}"
                      class="htmx-fade-up-in delay-4">
                     {{ stat_dep.rank|percentageby:stat_dep.participants|floatformat:1 }}
                 </div>

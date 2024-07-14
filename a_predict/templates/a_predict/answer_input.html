@@ -31,7 +31,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title d-flex align-items-center">
-                        {{ subject }} 답안 입력
+                        <div>{{ icon_subject|safe }} {{ subject }} 답안 입력</div>
                         <a class="btn btn-sm btn-outline-primary ms-auto" hx-boost="true"
                            href="{% url 'predict_new:index' %}">
                             성적 예측 페이지로 이동

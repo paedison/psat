@@ -101,7 +101,7 @@
             {% if exam.is_answer_official_opened %}
                 <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
                     <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_predict/snippets/index_sheet_score.html' %}
+                        {% include 'a_predict/snippets/index_sheet_score_all.html' %}
                     </div>
                 </div>
                 {% if student.answer_all_confirmed_at < exam.answer_official_opened_at %}
@@ -123,7 +123,7 @@
 
             <div class="col-12" aria-label="정답 확인">
                 <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_predict/snippets/index_sheet_answer.html' %}
+                    {% include 'a_predict/snippets/index_sheet_answer_submit.html' %}
                 </div>
             </div>
         {% endif %}

@@ -46,11 +46,9 @@ DEFAULT_COUNT: int = 25 if EXAM_EXAM == '칠급' else 40
 PROBLEM_COUNT: dict[str, int] = {
     SUBJECT_VARS[sub][1]: 25 if sub == '헌법' else DEFAULT_COUNT for sub in SUB_LIST
 }
-COUNT_FIELDS = [
-    'count_1', 'count_2', 'count_3', 'count_4', 'count_5',
-    'count_0', 'count_multiple', 'count_total',
-]
-COUNT_FIELDS_FOR_PREDICT = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5']
+COUNT_FIELDS = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5']
+SCORE_TEMPLATE_TABLE_1 = 'a_predict/snippets/index_sheet_score_table_1.html'
+SCORE_TEMPLATE_TABLE_2 = 'a_predict/snippets/index_sheet_score_table_2.html'
 
 # Customize PROBLEM_COUNT, SUBJECT_VARS by EXAM_EXAM
 if EXAM_EXAM == '칠급':
@@ -63,60 +61,47 @@ if EXAM_EXAM == '칠급':
     PROBLEM_COUNT.pop('heonbeob')
 
 EXAM_VARS = {
-    'year': EXAM_YEAR, 'exam': EXAM_EXAM, 'round': EXAM_ROUND,
+    'year': EXAM_YEAR, 'exam': EXAM_EXAM, 'round': EXAM_ROUND, 'exam_info': EXAM_INFO,
     'sub_list': SUB_LIST, 'subject_list': SUBJECT_LIST,
     'subject_fields': SUBJECT_FIELDS, 'score_fields': SCORE_FIELDS,
     'subject_vars': SUBJECT_VARS, 'field_vars': FIELD_VARS,
     'problem_count': PROBLEM_COUNT, 'count_fields': COUNT_FIELDS,
-    'count_fields_for_predict': COUNT_FIELDS_FOR_PREDICT,
+    'exam_model': models.PsatExam, 'unit_model': models.PsatUnit,
+    'department_model': models.PsatDepartment, 'location_model': models.PsatLocation,
+    'student_model': models.PsatStudent, 'answer_count_model': models.PsatAnswerCount,
+
+    'icon_subject': [icon_set_new.ICON_SUBJECT[sub] for sub in SUB_LIST],
+
+    'info_tab_id': '01234',
+
+    'answer_tab_id': ''.join([str(i) for i in range(len(SUB_LIST))]),
+    'answer_tab_title': SUB_LIST,
+    'prefix_as': [f'{field}_submit' for field in SUBJECT_FIELDS],
+    'prefix_ap': [f'{field}_predict' for field in SUBJECT_FIELDS],
+
+    'score_tab_id': '012',
+    'score_tab_title': ['내 성적', '전체 기준', '직렬 기준'],
+    'prefix_sa': ['my_all', 'total_all', 'department_all'],
+    'prefix_sf': ['my_filtered', 'total_filtered', 'department_filtered'],
+    'score_template': [SCORE_TEMPLATE_TABLE_1, SCORE_TEMPLATE_TABLE_2, SCORE_TEMPLATE_TABLE_2],
 }
 
 
-def get_student(request):
-    return models.PsatStudent.objects.filter(**EXAM_INFO, user=request.user).first()
-
-
-def get_exam():
-    return models.PsatExam.objects.filter(**EXAM_INFO).first()
-
-
-def get_qs_answer_count():
-    return models.PsatAnswerCount.objects.filter(**EXAM_INFO).annotate(
-        no=F('number')).order_by('subject', 'number')
-
-
 def index_view(request: HtmxHttpRequest):
-    if request.user.is_authenticated:
-        student = get_student(request=request)
-    else:
-        student = None
+    student = utils.get_student(request=request, exam_vars=EXAM_VARS)
     if not student:
         return redirect('predict_new:student-create')
 
-    exam = get_exam()
-    serial = int(student.serial)
-    location = models.PsatLocation.objects.filter(
-        **EXAM_INFO, serial_start__lte=serial, serial_end__gte=serial).first()
+    exam = utils.get_exam(exam_vars=EXAM_VARS)
+    location = utils.get_location(exam_vars=EXAM_VARS, student=student)
 
-    qs_department = models.PsatDepartment.objects.filter(exam=EXAM_EXAM).order_by('id')
-    qs_student = models.PsatStudent.objects.filter(**EXAM_INFO)
-    utils.update_exam_participants(
-        exam_vars=EXAM_VARS, exam=exam,
-        qs_department=qs_department, qs_student=qs_student)
+    answer_confirmed = utils.get_answer_confirmed(student=student, exam_vars=EXAM_VARS)
+    data_answer_predict = get_data_answer_predict()
 
-    data_answer_official, official_answer_uploaded = utils.get_data_answer_official(
-        exam_vars=EXAM_VARS, exam=exam)
-
-    qs_answer_count = get_qs_answer_count()
-    data_answer_predict = utils.get_data_answer_predict(
-        exam_vars=EXAM_VARS, qs_answer_count=qs_answer_count)
-
-    data_answer_student = utils.get_data_answer_student(
-        exam_vars=EXAM_VARS, student=student,
-        data_answer_official=data_answer_official,
-        official_answer_uploaded=official_answer_uploaded,
-        data_answer_predict=data_answer_predict,
-    )
+    data_answer = get_context_for_update_answer_submit(
+        exam=exam, student=student, data_answer_predict=data_answer_predict)
+    data_answer_official = data_answer['data_answer_official']
+    data_answer_student = data_answer['data_answer_student']
 
     info_answer_student = utils.get_info_answer_student(
         exam_vars=EXAM_VARS, student=student, exam=exam,
@@ -124,37 +109,17 @@ def index_view(request: HtmxHttpRequest):
         data_answer_predict=data_answer_predict,
     )
 
-    stat_total_all = utils.get_dict_stat_data(
-        exam_vars=EXAM_VARS, student=student, stat_type='total',
-        exam=exam, qs_student=qs_student)
-    stat_department_all = utils.get_dict_stat_data(
-        exam_vars=EXAM_VARS, student=student, stat_type='department',
-        exam=exam, qs_student=qs_student)
-
-    stat_total_filtered = utils.get_dict_stat_data(
-        exam_vars=EXAM_VARS, student=student, stat_type='total',
-        exam=exam, qs_student=qs_student, filtered=True)
-    stat_department_filtered = utils.get_dict_stat_data(
-        exam_vars=EXAM_VARS, student=student, stat_type='department',
-        exam=exam, qs_student=qs_student, filtered=True)
-
-    utils.update_rank(
-        exam_vars=EXAM_VARS, student=student,
-        stat_total_all=stat_total_all,
-        stat_department_all=stat_department_all,
-        stat_total_filtered=stat_total_filtered,
-        stat_department_filtered=stat_department_filtered
-    )
+    stat = get_context_for_update_score(exam=exam, student=student)
+    stat_total_all = stat['stat_total_all']
+    stat_department_all = stat['stat_department_all']
+    stat_total_filtered = stat['stat_total_filtered']
+    stat_department_filtered = stat['stat_department_filtered']
 
     context = update_context_data(
         # base info
         info=INFO, exam=exam, current_time=timezone.now(),
-        title='Predict', sub_title=SUB_TITLE,
-
-        # icons
+        title='Predict', sub_title=SUB_TITLE, exam_vars=EXAM_VARS,
         icon_menu=icon_set_new.ICON_MENU['predict'],
-        icon_subject=icon_set_new.ICON_SUBJECT,
-        icon_nav=icon_set_new.ICON_NAV,
 
         # index_info_student: 수험 정보
         student=student, location=location,
@@ -163,6 +128,7 @@ def index_view(request: HtmxHttpRequest):
         info_answer_student=info_answer_student,
 
         # index_sheet_answer: 답안 확인
+        answer_confirmed=answer_confirmed,
         data_answer_official=data_answer_official,
         data_answer_predict=data_answer_predict,
         data_answer_student=data_answer_student,
@@ -180,20 +146,131 @@ def index_view(request: HtmxHttpRequest):
     return render(request, 'a_predict/index.html', context)
 
 
+@login_required
+def update_answer_predict(request: HtmxHttpRequest):
+    if not request.htmx:
+        return redirect('predict_new:index')
+    student = utils.get_student(request=request, exam_vars=EXAM_VARS)
+    data_answer_predict = get_data_answer_predict()
+    answer_confirmed = utils.get_answer_confirmed(student=student, exam_vars=EXAM_VARS)
+    context = update_context_data(
+        exam_vars=EXAM_VARS, data_answer_predict=data_answer_predict, answer_confirmed=answer_confirmed)
+    return render(request, 'a_predict/snippets/update_sheet_answer_predict.html', context)
+
+
+@login_required
+def update_answer_submit(request: HtmxHttpRequest):
+    if not request.htmx:
+        return redirect('predict_new:index')
+    exam = utils.get_exam(exam_vars=EXAM_VARS)
+    student = utils.get_student(request=request, exam_vars=EXAM_VARS)
+    answer_confirmed = utils.get_answer_confirmed(student=student, exam_vars=EXAM_VARS)
+    context = get_context_for_update_answer_submit(exam=exam, student=student)
+    context = update_context_data(context, exam_vars=EXAM_VARS, answer_confirmed=answer_confirmed)
+    return render(request, 'a_predict/snippets/update_sheet_answer_submit.html', context)
+
+
+@login_required
+def update_info_answer(request: HtmxHttpRequest):
+    if not request.htmx:
+        return redirect('predict_new:index')
+    exam = utils.get_exam(exam_vars=EXAM_VARS)
+    student = utils.get_student(request=request, exam_vars=EXAM_VARS)
+    data_answer_predict = get_data_answer_predict()
+    context = get_context_for_update_info_answer(
+        exam=exam, student=student, data_answer_predict=data_answer_predict)
+    context = update_context_data(context, exam_vars=EXAM_VARS)
+    return render(request, 'a_predict/snippets/update_info_answer.html', context)
+
+
+@login_required
+def update_score(request: HtmxHttpRequest):
+    if not request.htmx:
+        return redirect('predict_new:index')
+    exam = utils.get_exam(exam_vars=EXAM_VARS)
+    student = utils.get_student(request=request, exam_vars=EXAM_VARS)
+    context = get_context_for_update_score(exam=exam, student=student)
+    context = update_context_data(context, exam_vars=EXAM_VARS)
+    return render(request, 'a_predict/snippets/update_sheet_score.html', context)
+
+
+def get_data_answer_predict():
+    qs_answer_count = utils.get_qs_answer_count(exam_vars=EXAM_VARS)
+    data_answer_predict = utils.get_data_answer_predict(
+        exam_vars=EXAM_VARS, qs_answer_count=qs_answer_count)
+    return data_answer_predict
+
+
+def get_context_for_update_answer_submit(exam, student, data_answer_predict=None):
+    if data_answer_predict is None:
+        data_answer_predict = get_data_answer_predict()
+    data_answer_official, official_answer_uploaded = utils.get_data_answer_official(
+        exam_vars=EXAM_VARS, exam=exam)
+    data_answer_student = utils.get_data_answer_student(
+        exam_vars=EXAM_VARS, student=student,
+        data_answer_official=data_answer_official,
+        official_answer_uploaded=official_answer_uploaded,
+        data_answer_predict=data_answer_predict,
+    )
+    return update_context_data(
+        data_answer_official=data_answer_official,
+        data_answer_student=data_answer_student,
+    )
+
+
+def get_context_for_update_info_answer(exam, student, data_answer_predict):
+    data_answer = get_context_for_update_answer_submit(
+        exam=exam, student=student, data_answer_predict=data_answer_predict)
+    data_answer_student = data_answer['data_answer_student']
+    info_answer_student = utils.get_info_answer_student(
+        exam_vars=EXAM_VARS, student=student, exam=exam,
+        data_answer_student=data_answer_student,
+        data_answer_predict=data_answer_predict,
+    )
+    return update_context_data(info_answer_student=info_answer_student)
+
+
+def get_context_for_update_score(exam, student):
+    qs_department = utils.get_qs_department(exam_vars=EXAM_VARS)
+    qs_student = utils.get_qs_student(exam_vars=EXAM_VARS)
+    utils.update_exam_participants(
+        exam_vars=EXAM_VARS, exam=exam,
+        qs_department=qs_department, qs_student=qs_student)
+    stat_total_all = utils.get_dict_stat_data(
+        exam_vars=EXAM_VARS, student=student, stat_type='total',
+        exam=exam, qs_student=qs_student)
+    stat_department_all = utils.get_dict_stat_data(
+        exam_vars=EXAM_VARS, student=student, stat_type='department',
+        exam=exam, qs_student=qs_student)
+    stat_total_filtered = utils.get_dict_stat_data(
+        exam_vars=EXAM_VARS, student=student, stat_type='total',
+        exam=exam, qs_student=qs_student, filtered=True)
+    stat_department_filtered = utils.get_dict_stat_data(
+        exam_vars=EXAM_VARS, student=student, stat_type='department',
+        exam=exam, qs_student=qs_student, filtered=True)
+    utils.update_rank(
+        student=student,
+        stat_total_all=stat_total_all,
+        stat_department_all=stat_department_all,
+        stat_total_filtered=stat_total_filtered,
+        stat_department_filtered=stat_department_filtered
+    )
+    return update_context_data(
+        stat_total_all=stat_total_all,
+        stat_department_all=stat_department_all,
+        stat_total_filtered=stat_total_filtered,
+        stat_department_filtered=stat_department_filtered
+    )
+
+
 def student_create_view(request: HtmxHttpRequest):
     units = models.PsatUnit.objects.filter(exam=EXAM_EXAM).values_list('name', flat=True)
+    exam = utils.get_exam(exam_vars=EXAM_VARS)
     context = update_context_data(
-        # base info
-        info=INFO, exam=get_exam(),
+        info=INFO, exam=exam,
         current_time=timezone.now(),
         title='Predict', sub_title=SUB_TITLE,
-
-        # icons
         icon_menu=icon_set_new.ICON_MENU['predict'],
-        icon_subject=icon_set_new.ICON_SUBJECT,
-        icon_nav=icon_set_new.ICON_NAV,
-
-        # index_info_student: 수험 정보
         units=units,
     )
 
@@ -234,33 +311,23 @@ def department_list(request: HtmxHttpRequest):
 
 @login_required
 def answer_input_view(request: HtmxHttpRequest, subject_field: str):
-    if subject_field not in PROBLEM_COUNT.keys():
-        return redirect('predict_new:index')
-
-    student = get_student(request=request)
+    student = utils.get_student(request=request, exam_vars=EXAM_VARS)
     if not student:
         return redirect('predict_new:student-create')
 
-    if student.answer_confirmed[subject_field]:
+    if subject_field not in PROBLEM_COUNT.keys() or student.answer_confirmed[subject_field]:
         return redirect('predict_new:index')
 
-    answer_student = []
-    for no, ans in enumerate(student.answer[subject_field], start=1):
-        answer_student.append({'no': no, 'ans': ans})
-
+    answer_student = [
+        {'no': no, 'ans': ans} for no, ans in enumerate(student.answer[subject_field], start=1)
+    ]
+    sub, subject = FIELD_VARS[subject_field]
     context = update_context_data(
-        # base info
-        info=INFO,
-        subject=FIELD_VARS[subject_field][1],
+        info=INFO, subject=subject,
         subject_field=subject_field,
         title='Predict', sub_title=SUB_TITLE,
-
-        # icons
         icon_menu=icon_set_new.ICON_MENU['predict'],
-        icon_subject=icon_set_new.ICON_SUBJECT,
-        icon_nav=icon_set_new.ICON_NAV,
-
-        # answer info
+        icon_subject=icon_set_new.ICON_SUBJECT[sub],
         student=student, answer_student=answer_student,
     )
     if request.htmx:
@@ -271,7 +338,7 @@ def answer_input_view(request: HtmxHttpRequest, subject_field: str):
 @require_POST
 @login_required
 def answer_submit(request: HtmxHttpRequest, subject_field: str):
-    student = get_student(request=request)
+    student = utils.get_student(request=request, exam_vars=EXAM_VARS)
     no = request.POST.get('number')
     ans = request.POST.get('answer')
     try:
@@ -295,10 +362,10 @@ def answer_submit(request: HtmxHttpRequest, subject_field: str):
 @login_required
 def answer_confirm(request: HtmxHttpRequest, subject_field: str):
     subject = FIELD_VARS[subject_field][1]
-    student = get_student(request=request)
+    student = utils.get_student(request=request, exam_vars=EXAM_VARS)
     student, is_confirmed = utils.confirm_answer_student(
         exam_vars=EXAM_VARS, student=student, subject_field=subject_field)
-    qs_answer_count = get_qs_answer_count().filter(subject=subject_field)
+    qs_answer_count = utils.get_qs_answer_count(exam_vars=EXAM_VARS).filter(subject=subject_field)
     utils.update_answer_count(
         student=student, subject_field=subject_field, qs_answer_count=qs_answer_count)
 
