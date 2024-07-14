@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from a_predict.models import PsatExam, PsatStudent, PsatAnswerCount
-from a_predict.views.normal_views import EXAM_EXAM
+from a_predict.views.psat_views import EXAM_EXAM
 
 PSAT_SUBJECTS = ['헌법', '언어', '자료', '상황']
 PSAT_FIELDS = ['heonbeob', 'eoneo', 'jaryo', 'sanghwang']

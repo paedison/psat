@@ -1,32 +1,34 @@
 from django.urls import path, include
 
-from .views import normal_views
+from .views import psat_views, psat_admin_views
 
 app_name = 'predict_new'
 
 student_patterns = [
-    path('create/', normal_views.student_create_view, name='student-create'),
-    path('department/', normal_views.department_list, name='department-list'),
+    path('create/', psat_views.student_create_view, name='student-create'),
+    path('department/', psat_views.department_list, name='department-list'),
 ]
 
 answer_patterns = [
-    path('<str:subject_field>/', normal_views.answer_input_view, name='answer-input'),
-    path('<str:subject_field>/submit/', normal_views.answer_submit, name='answer-submit'),
-    path('<str:subject_field>/confirm/', normal_views.answer_confirm, name='answer-confirm'),
+    path('<str:subject_field>/', psat_views.answer_input_view, name='answer-input'),
+    path('<str:subject_field>/submit/', psat_views.answer_submit, name='answer-submit'),
+    path('<str:subject_field>/confirm/', psat_views.answer_confirm, name='answer-confirm'),
 ]
 
 update_patterns = [
-    path('info/answer/', normal_views.update_info_answer, name='update-info-answer'),
-    path('answer/predict/', normal_views.update_answer_predict, name='update-answer-predict'),
-    path('answer/submit/', normal_views.update_answer_submit, name='update-answer-submit'),
-    path('score/', normal_views.update_score, name='update-score'),
+    path('info/answer/', psat_views.update_info_answer, name='update-info-answer'),
+    path('answer/predict/', psat_views.update_answer_predict, name='update-answer-predict'),
+    path('answer/submit/', psat_views.update_answer_submit, name='update-answer-submit'),
+    path('score/', psat_views.update_score, name='update-score'),
+]
+
+admin_patterns = [
+    path('', psat_admin_views.list_view, name='admin-list'),
+    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', psat_admin_views.detail_view, name='admin-detail'),
 ]
 
 # admin_patterns = [
-#     path('', admin_views.list_view, name='list'),
 #     path('student/', admin_views.list_student_view, name='list_student'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/',
-#          admin_views.detail_view, name='detail'),
 #
 #     path('<str:category>/<int:year>/<str:ex>/<int:round>/statistics/',
 #          admin_views.statistics_view, name='statistics'),
@@ -69,10 +71,10 @@ update_patterns = [
 # ]
 
 urlpatterns = [
-    path('', normal_views.index_view, name='index'),
+    path('', psat_views.index_view, name='index'),
 
     path('student/', include(student_patterns)),
     path('answer/', include(answer_patterns)),
     path('update/', include(update_patterns)),
-    # path('admin/', include(admin_patterns)),
+    path('admin/', include(admin_patterns)),
 ]

@@ -1,4 +1,5 @@
 import numpy as np
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, Count, Max, Avg
 from django.db.models import Window
@@ -364,6 +365,22 @@ def get_next_url(exam_vars: dict, student) -> str:
         if not is_confirmed:
             return reverse('predict_new:answer-input', args=[field])
     return reverse('predict_new:index')
+
+
+def get_page_obj_and_range(page_data, per_page=10, page_number=1):
+    paginator = Paginator(page_data, per_page)
+    try:
+        page_obj = paginator.get_page(page_number)
+        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+        return page_obj, page_range
+    except TypeError:
+        return None, None
+
+
+def get_sub_title(exam):
+    if exam.exam == '프모':
+        return f'제{exam.round}회 {exam.get_exam_display} 성적 예측'
+    return f'{exam.year}년 {exam.get_exam_display} 성적 예측'
 
 
 def get_dict_by_sub(target_list: list[dict]) -> dict:
