@@ -1,4 +1,5 @@
 import traceback
+from copy import deepcopy
 
 import django.db.utils
 from django.core.management.base import BaseCommand
@@ -57,13 +58,14 @@ def get_answer_count_model_data(model, problem_count: dict, exam_info: dict):
     answer_count_model_data = get_empty_model_data()
     for field, count in problem_count.items():
         for number in range(1, count + 1):
-            lookup_dict = exam_info.copy()
+            lookup_dict = deepcopy(exam_info)
             lookup_dict.update({
                 'subject': field,
                 'number': number,
             })
             matching_data = {f'count_{i}': 0 for i in range(1, 6)}
             matching_data.update({'count_0': 0, 'count_multiple': 0, 'count_total': 0})
+            matching_data.update(lookup_dict)
 
             update_model_data(
                 model_data=answer_count_model_data, model=model, lookup=lookup_dict,
