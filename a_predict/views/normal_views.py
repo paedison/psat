@@ -15,7 +15,7 @@ from .. import utils
 INFO = {'menu': 'predict', 'view_type': 'predict'}
 
 EXAM_YEAR = 2024
-EXAM_EXAM = '칠급'
+EXAM_EXAM = '행시'
 EXAM_ROUND = 0
 EXAM_INFO = {'year': EXAM_YEAR, 'exam': EXAM_EXAM, 'round': EXAM_ROUND}
 STUDENT_EXAM_INFO = {
