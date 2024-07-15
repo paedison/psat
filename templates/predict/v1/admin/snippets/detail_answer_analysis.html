@@ -3,7 +3,6 @@
 {% load slippers %}
 {% load humanize %}
 
-
 <div class="card-header">
     <div class="d-flex align-items-center">
         <span>문항 분석표</span>
@@ -19,71 +18,24 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-            <button id="navTabHeonbeob" class="nav-link p-2 active"
-                    type="button" role="tab" data-bs-toggle="tab" aria-selected="true"
-                    data-bs-target="#navContentHeonbeob" aria-controls="navContentHeonbeob">
-                <span class="fw-bold">{{ icon_subject.헌법|safe }} 헌법</span>
-            </button>
-            <button id="navTabEoneo" class="nav-link p-2"
-                    hx-get=""
-{#                    hx-trigger="load"#}
-                    hx-target="#navContentEoneo"
-                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
-                    data-bs-target="#navContentEoneo" aria-controls="navContentEoneo">
-                <span class="fw-bold">{{ icon_subject.언어|safe }} 언어</span>
-            </button>
-            <button id="navTabJaryo" class="nav-link p-2"
-                    hx-get=""
-{#                    hx-trigger="load"#}
-                    hx-target="#navContentJaryo"
-                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
-                    data-bs-target="#navContentJaryo" aria-controls="navContentJaryo">
-                <span class="fw-bold">{{ icon_subject.자료|safe }} 자료</span>
-            </button>
-            <button id="navTabSanghwang" class="nav-link p-2"
-                    hx-get=""
-{#                    hx-trigger="load"#}
-                    hx-target="#navContentSanghwang"
-                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
-                    data-bs-target="#navContentSanghwang" aria-controls="navContentSanghwang">
-                <span class="fw-bold">{{ icon_subject.상황|safe }} 상황</span>
-            </button>
+            {% for id in exam_vars.answer_tab_id %}
+                {% cycle exam_vars.answer_tab_title.0 exam_vars.answer_tab_title.1 exam_vars.answer_tab_title.2 exam_vars.answer_tab_title.3 as tab_title silent %}
+                {% cycle exam_vars.prefix_aa.0 exam_vars.prefix_aa.1 exam_vars.prefix_aa.2 exam_vars.prefix_aa.3 as prefix silent %}
+                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
+            {% endfor %}
         </div>
     </nav>
 
     <div class="tab-content" id="answerAnalysisContent">
-        <div id="navContentHeonbeob" class="tab-pane fade show active htmx-fade-out"
-             role="tabpanel" aria-labelledby="navTabHeonbeob">
-            {% partialdef heonbeob inline=True %}
-                {% with sub='헌법' page_obj=heonbeob_page_obj page_range=heonbeob_page_range pagination_url=heonbeob_pagination_url target_id='navContentHeonbeob' %}
-                    {% partial table_data %}
-                {% endwith %}
-            {% endpartialdef heonbeob %}
-        </div>
-        <div id="navContentEoneo" class="tab-pane fade htmx-fade-out"
-             role="tabpanel" aria-labelledby="navTabEoneo">
-            {% partialdef eoneo inline=True %}
-                {% with sub='언어' page_obj=eoneo_page_obj page_range=eoneo_page_range pagination_url=eoneo_pagination_url target_id='navContentEoneo' %}
-                    {% partial table_data %}
-                {% endwith %}
-            {% endpartialdef eoneo %}
-        </div>
-        <div id="navContentJaryo" class="tab-pane fade htmx-fade-out"
-             role="tabpanel" aria-labelledby="navTabJaryo">
-            {% partialdef jaryo inline=True %}
-                {% with sub='자료' page_obj=jaryo_page_obj page_range=jaryo_page_range pagination_url=jaryo_pagination_url target_id='navContentJaryo' %}
-                    {% partial table_data %}
-                {% endwith %}
-            {% endpartialdef jaryo %}
-        </div>
-        <div id="navContentSanghwang" class="tab-pane fade htmx-fade-out"
-             role="tabpanel" aria-labelledby="navTabSanghwang">
-            {% partialdef sanghwang inline=True %}
-                {% with sub='상황' page_obj=sanghwang_page_obj page_range=sanghwang_page_range pagination_url=sanghwang_pagination_url target_id='navContentSanghwang' %}
-                    {% partial table_data %}
-                {% endwith %}
-            {% endpartialdef sanghwang %}
-        </div>
+        {% for id in exam_vars.answer_tab_id %}
+            {% cycle exam_vars.prefix_aa.0 exam_vars.prefix_aa.1 exam_vars.prefix_aa.2 exam_vars.prefix_aa.3 as prefix silent %}
+            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
+            {% cycle answer_all_page_obj.0 answer_all_page_obj.1 answer_all_page_obj.2 answer_all_page_obj.3 as page_obj silent %}
+            {% cycle answer_all_page_range.0 answer_all_page_range.1 answer_all_page_range.2 answer_all_page_range.3 as page_range silent %}
+            {% cycle answer_all_pagination_url.0 answer_all_pagination_url.1 answer_all_pagination_url.2 answer_all_pagination_url.3 as pagination_url silent %}
+            {% #nav_content prefix=prefix id=id %}{% partial table_data %}{% /nav_content %}
+        {% endfor %}
     </div>
 </div>
 
@@ -100,7 +52,7 @@
                     <th class="text-primary text-nowrap p-2" rowspan="2">중위권<br/>정답률(%)</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">하위권<br/>정답률(%)</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">변별도</th>
-                    {% if sub == '헌법' %}
+                    {% if field == 'heonbeob' %}
                         <th class="text-primary text-nowrap p-2" colspan="4">답안 선택수(명)-전체</th>
                         <th class="text-primary text-nowrap p-2" colspan="4">답안 선택률(%)-전체</th>
                         <th class="text-primary text-nowrap p-2" colspan="4">답안 선택수(명)-상위권</th>
@@ -125,7 +77,7 @@
                         <th class="text-primary text-nowrap p-2 td-right-no-border">①</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">②</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">③</th>
-                        {% if sub == '헌법' %}
+                        {% if field == 'heonbeob' %}
                             <th class="text-primary text-nowrap p-2 td-left-no-border">④</th>
                         {% else %}
                             <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">④</th>
@@ -137,25 +89,25 @@
             <tbody>
                 {% for problem in page_obj %}
                     <tr class="text-center">
-                        <td>{{ problem.number }}</td>
+                        <td>{{ problem.no }}</td>
                         <td>
                             <button class="btn btn-circle btn-sm fs-6 btn-success">
-                                {{ problem.answer_correct }}
+                                {{ problem.ans_official }}
                             </button>
                         </td>
                         <td>
-                            {% if problem.answer_predict == problem.answer_correct %}
+                            {% if problem.ans_predict == problem.ans_official %}
                                 <button class="btn btn-circle btn-sm fs-6 btn-success">
-                                    {{ problem.answer_predict }}
+                                    {{ problem.ans_predict }}
                                 </button>
                             {% else %}
                                 <button class="btn btn-circle btn-sm fs-6 btn-danger">
-                                    {{ problem.answer_predict }}
+                                    {{ problem.ans_predict }}
                                 </button>
                             {% endif %}
                         </td>
                         {% for _ in '12345' %}
-                            {% cycle problem.rate_correct problem.rate_correct_top problem.rate_correct_mid problem.rate_correct_low problem.rate_correct_gap as rate_correct silent %}
+                            {% cycle problem.rate_all_rank problem.rate_top_rank problem.rate_mid_rank problem.rate_low_rank problem.rate_gap as rate_correct silent %}
                             <td>
                                 {% if rate_correct %}
                                     {{ rate_correct|floatformat:1 }}
@@ -164,35 +116,31 @@
                         {% endfor %}
 
                         {% for _ in '1234' %}
-                            {% cycle problem.count_1 problem.count_1_top problem.count_1_mid problem.count_1_low as count_1 silent %}
-                            {% cycle problem.count_2 problem.count_2_top problem.count_2_mid problem.count_2_low as count_2 silent %}
-                            {% cycle problem.count_3 problem.count_3_top problem.count_3_mid problem.count_3_low as count_3 silent %}
-                            {% cycle problem.count_4 problem.count_4_top problem.count_4_mid problem.count_4_low as count_4 silent %}
-                            {% cycle problem.count_5 problem.count_5_top problem.count_5_mid problem.count_5_low as count_5 silent %}
-                            {% cycle problem.rate_1 problem.rate_1_top problem.rate_1_mid problem.rate_1_low as rate_1 silent %}
-                            {% cycle problem.rate_2 problem.rate_2_top problem.rate_2_mid problem.rate_2_low as rate_2 silent %}
-                            {% cycle problem.rate_3 problem.rate_3_top problem.rate_3_mid problem.rate_3_low as rate_3 silent %}
-                            {% cycle problem.rate_4 problem.rate_4_top problem.rate_4_mid problem.rate_4_low as rate_4 silent %}
-                            {% cycle problem.rate_5 problem.rate_5_top problem.rate_5_mid problem.rate_5_low as rate_5 silent %}
+                            {% cycle problem.all_rank.1 problem.top_rank.1 problem.mid_rank.1 problem.low_rank.1 as count_1 silent %}
+                            {% cycle problem.all_rank.2 problem.top_rank.2 problem.mid_rank.2 problem.low_rank.2 as count_2 silent %}
+                            {% cycle problem.all_rank.3 problem.top_rank.3 problem.mid_rank.3 problem.low_rank.3 as count_3 silent %}
+                            {% cycle problem.all_rank.4 problem.top_rank.4 problem.mid_rank.4 problem.low_rank.4 as count_4 silent %}
+                            {% cycle problem.all_rank.5 problem.top_rank.5 problem.mid_rank.5 problem.low_rank.5 as count_5 silent %}
+                            {% cycle problem.all_rank|last problem.top_rank|last problem.mid_rank|last problem.low_rank|last as count_total silent %}
 
                             <td class="td-right-no-border">{{ count_1 }}</td>
                             <td class="td-left-no-border td-right-no-border">{{ count_2 }}</td>
                             <td class="td-left-no-border td-right-no-border">{{ count_3 }}</td>
-                            {% if sub == '헌법' %}
+                            {% if field == 'heonbeob' %}
                                 <td class="td-left-no-border">{{ count_4 }}</td>
                             {% else %}
                                 <td class="td-left-no-border td-right-no-border">{{ count_4 }}</td>
                                 <td class="td-left-no-border">{{ count_5 }}</td>
                             {% endif %}
 
-                            <td class="td-right-no-border">{{ rate_1|floatformat:1 }}</td>
-                            <td class="td-left-no-border td-right-no-border">{{ rate_2|floatformat:1 }}</td>
-                            <td class="td-left-no-border td-right-no-border">{{ rate_3|floatformat:1 }}</td>
-                            {% if sub == '헌법' %}
-                                <td class="td-left-no-border">{{ rate_4|floatformat:1 }}</td>
+                            <td class="td-right-no-border">{{ count_1|percentageby:count_total|floatformat:1|default:0.0 }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_2|percentageby:count_total|floatformat:1|default:0.0 }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_3|percentageby:count_total|floatformat:1|default:0.0 }}</td>
+                            {% if field == 'heonbeob' %}
+                                <td class="td-left-no-border">{{ count_4|percentageby:count_total|floatformat:1|default:0.0 }}</td>
                             {% else %}
-                                <td class="td-left-no-border td-right-no-border">{{ rate_4|floatformat:1 }}</td>
-                                <td class="td-left-no-border">{{ rate_5|floatformat:1 }}</td>
+                                <td class="td-left-no-border td-right-no-border">{{ count_4|percentageby:count_total|floatformat:1|default:0.0 }}</td>
+                                <td class="td-left-no-border">{{ count_5|percentageby:count_total|floatformat:1|default:0.0 }}</td>
                             {% endif %}
                         {% endfor %}
                     </tr>

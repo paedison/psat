@@ -45,39 +45,23 @@
 
 <div class="card-body">
     <nav>
-        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetAllTab" role="tablist">
+        <div class="nav nav-tabs nav-tabs-colored" id="statTab" role="tablist">
             {% for id in '01' %}
                 {% cycle '전체' '필터링' as tab_title silent %}
-                {% cycle 'all' 'filtered' as prefix silent %}
+                {% cycle 'stat_all' 'stat_filtered' as prefix silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
-    <div class="tab-content" id="statisticsContent">
+    <div class="tab-content" id="statContent">
         {% for id in '01' %}
-            {% cycle 'all' 'filtered' as prefix silent %}
+            {% cycle 'stat_all' 'stat_filtered' as prefix silent %}
             {% cycle 'navContentStatAll' 'navContentStatFiltered' as target_id silent %}
-            {% cycle stat_all_page_obj stat_filtered_page_obj as page_obj silent %}
-            {% cycle stat_all_page_range stat_filtered_page_range as page_range silent %}
-            {% cycle stat_all_pagination_url stat_filtered_pagination_url as pagination_url silent %}
+            {% cycle stat_page_obj.0 stat_page_obj.1 as page_obj silent %}
+            {% cycle stat_page_range.0 stat_page_range.1 as page_range silent %}
+            {% cycle stat_pagination_url.0 stat_pagination_url.1 as pagination_url silent %}
             {% #nav_content prefix=prefix id=id %}{% partial table_data %}{% /nav_content %}
         {% endfor %}
-{#        <div id="navContentStatistics" class="tab-pane fade show active htmx-fade-out"#}
-{#             role="tabpanel" aria-labelledby="navTabStatistics">#}
-{#            {% partialdef real inline=True %}#}
-{#                {% with page_obj=statistics_page_obj page_range=statistics_page_range pagination_url=statistics_pagination_url target_id='navContentStatistics' %}#}
-{#                    {% partial table_data %}#}
-{#                {% endwith %}#}
-{#            {% endpartialdef real %}#}
-{#        </div>#}
-{#        <div id="navContentStatisticsVirtual" class="tab-pane fade htmx-fade-out"#}
-{#             role="tabpanel" aria-labelledby="navTabStatisticsVirtual">#}
-{#            {% partialdef virtual inline=True %}#}
-{#                {% with page_obj=statistics_virtual_page_obj page_range=statistics_virtual_page_range pagination_url=statistics_virtual_pagination_url target_id='navContentStatisticsVirtual' %}#}
-{#                    {% partial table_data %}#}
-{#                {% endwith %}#}
-{#            {% endpartialdef virtual %}#}
-{#        </div>#}
     </div>
 </div>
 

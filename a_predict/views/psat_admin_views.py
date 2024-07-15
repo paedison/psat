@@ -46,6 +46,7 @@ PROBLEM_COUNT: dict[str, int] = {
 COUNT_FIELDS = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5']
 SCORE_TEMPLATE_TABLE_1 = 'a_predict/snippets/index_sheet_score_table_1.html'
 SCORE_TEMPLATE_TABLE_2 = 'a_predict/snippets/index_sheet_score_table_2.html'
+RANK_LIST = ['all_rank', 'low_rank', 'mid_rank', 'top_rank']
 
 # Customize PROBLEM_COUNT, SUBJECT_VARS by EXAM_EXAM
 if EXAM_EXAM == '칠급':
@@ -63,6 +64,8 @@ EXAM_VARS = {
     'subject_fields': SUBJECT_FIELDS, 'score_fields': SCORE_FIELDS,
     'subject_vars': SUBJECT_VARS, 'field_vars': FIELD_VARS,
     'problem_count': PROBLEM_COUNT, 'count_fields': COUNT_FIELDS,
+    'rank_list': RANK_LIST,
+
     'exam_model': models.PsatExam, 'unit_model': models.PsatUnit,
     'department_model': models.PsatDepartment, 'location_model': models.PsatLocation,
     'student_model': models.PsatStudent, 'answer_count_model': models.PsatAnswerCount,
@@ -73,8 +76,8 @@ EXAM_VARS = {
 
     'answer_tab_id': ''.join([str(i) for i in range(len(SUB_LIST))]),
     'answer_tab_title': SUB_LIST,
-    'prefix_as': [f'{field}_submit' for field in SUBJECT_FIELDS],
-    'prefix_ap': [f'{field}_predict' for field in SUBJECT_FIELDS],
+    'prefix_aa': [f'{field}_all' for field in SUBJECT_FIELDS],
+    'prefix_af': [f'{field}_filtered' for field in SUBJECT_FIELDS],
 
     'score_tab_id': '012',
     'score_tab_title': ['내 성적', '전체 기준', '직렬 기준'],
@@ -116,76 +119,31 @@ def list_view(request: HtmxHttpRequest):
 def detail_view(request: HtmxHttpRequest, pk: int):
     exam = get_object_or_404(models.PsatExam, pk=pk)
     exam_info = {'year': exam.year, 'exam': exam.exam, 'round': exam.round}
-    admin_score_fields = ['department'] + [SCORE_FIELDS[-1]]
-    admin_score_fields.extend(SCORE_FIELDS[:-1])
-    admin_score_field_vars = deepcopy(FIELD_VARS)
-    admin_score_field_vars['department'] = ('전체', 'department')
 
-    participants = exam.participants
-    statistics = exam.statistics
-
-    qs_department = models.PsatDepartment.objects.filter(exam=exam.exam).order_by('id')
-    departments = [{'id': 'total', 'unit': '', 'department': '전체'}]
-    departments.extend(qs_department.values('id', 'unit', department=F('name')))
-
-    stat_data: dict[str, list[list[dict]]] = {
-        'all': [
-            [
-                {} for _ in admin_score_fields
-            ] for _ in departments
-        ],
-        'filtered': [
-            [
-                {} for _ in admin_score_fields
-            ] for _ in departments
-        ],
-    }
-    for category in ['all', 'filtered']:
-        for department_idx, department in enumerate(departments):
-            for field_idx, field in enumerate(admin_score_fields):
-                sub, subject = admin_score_field_vars[field]
-                department_id = str(department['id'])
-                if field == 'department':
-                    stat_data[category][department_idx][field_idx] = department
-                else:
-                    if statistics[category][department_id][field]:
-                        stat_data[category][department_idx][field_idx] = {
-                            'field': field, 'sub': sub, 'subject': subject,
-                            'participants': participants[category][department_id][field],
-                            'max': statistics[category][department_id][field]['max'],
-                            't10': statistics[category][department_id][field]['t10'],
-                            't20': statistics[category][department_id][field]['t20'],
-                            'avg': statistics[category][department_id][field]['avg'],
-                        }
-    stat_all_page_obj, stat_all_page_range = utils.get_page_obj_and_range(stat_data['all'])
-    stat_filtered_page_obj, stat_filtered_page_range = utils.get_page_obj_and_range(stat_data['filtered'])
-
-    qs_answer_count = models.PsatAnswerCount.objects.filter(
-        **exam_info).order_by('number').values('subject', 'number', 'all', 'filtered')
-    answer_count_all_by_subject = [
-        [
-            {'no': no} for no in range(1, problem_count + 1)
-        ] for field, problem_count in PROBLEM_COUNT.items()
+    stat_data = utils.get_admin_stat_data(exam_vars=EXAM_VARS, exam=exam)
+    stat_page_data = [
+        utils.get_page_obj_and_range(stat_data[cat]) for cat in ['all', 'filtered']
     ]
+    stat_page_obj = [page_data[0] for page_data in stat_page_data]
+    stat_page_range = [page_data[1] for page_data in stat_page_data]
+    stat_pagination_url = ['?', '?']
 
-    # answer_count_all_by_subject = [
-    #     [
-    #         answer_count for answer_count in qs_answer_count
-    #         if qs_answer_count['subject'] == field and
-    #     ] for field in SUBJECT_FIELDS
-    # ]
-
-    answer_count = {
-        field: [
-            models.PsatAnswerCount.objects.filter(
-                **exam_info, subject=field).order_by('number')
-        ] for field in SUBJECT_FIELDS
-    }
+    qs_answer_count = models.PsatAnswerCount.objects.filter(**exam_info).order_by('id')
+    answer_predict = utils.get_data_answer_predict(exam_vars=EXAM_VARS, qs_answer_count=qs_answer_count)
+    answer_count_data = utils.get_admin_answer_count_data(
+        exam_vars=EXAM_VARS, exam=exam, answer_predict=answer_predict)
+    answer_all_page_data = [
+        utils.get_page_obj_and_range(answer_count_data['all'][i]) for i in range(4)
+    ]
+    answer_all_page_obj = [page_data[0] for page_data in answer_all_page_data]
+    answer_all_page_range = [page_data[1] for page_data in answer_all_page_data]
+    answer_all_pagination_url = ['?', '?', '?', '?']
 
     context = update_context_data(
         # base info
         info=INFO, exam=exam, title='Predict',
         sub_title=utils.get_sub_title(exam),
+        exam_vars=EXAM_VARS,
 
         # icons
         icon_menu=icon_set_new.ICON_MENU['score'],
@@ -193,20 +151,15 @@ def detail_view(request: HtmxHttpRequest, pk: int):
         icon_nav=icon_set_new.ICON_NAV,
         icon_search=icon_set_new.ICON_SEARCH,
 
-        answer_count=answer_count,
         # statistics
-        stat_all_page_obj=stat_all_page_obj,
-        stat_all_page_range=stat_all_page_range,
-        stat_all_pagination_url=f'?',
+        stat_page_obj=stat_page_obj,
+        stat_page_range=stat_page_range,
+        stat_pagination_url=stat_pagination_url,
 
-        stat_filtered_page_obj=stat_filtered_page_obj,
-        stat_filtered_page_range=stat_filtered_page_range,
-        stat_filtered_pagination_url=f'?',
-        #
-        # # answer count analysis
-        # heonbeob_page_obj=heonbeob_page_obj,
-        # heonbeob_page_range=heonbeob_page_range,
-        # heonbeob_pagination_url=self.get_url('answer_count_heonbeob'),
+        # answer count analysis
+        answer_all_page_obj=answer_all_page_obj,
+        answer_all_page_range=answer_all_page_range,
+        answer_all_pagination_url=answer_all_pagination_url,
         #
         # # catalog
         # catalog_page_obj=catalog_page_obj,

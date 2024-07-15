@@ -50,3 +50,7 @@ from .statistics import (
     get_confirmed_scores,
     get_statistics,
 )
+from .admin_view_utils import (
+    get_admin_stat_data,
+    get_admin_answer_count_data
+)
