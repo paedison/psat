@@ -24,7 +24,7 @@ update_patterns = [
 
 admin_patterns = [
     path('', psat_admin_views.list_view, name='admin-list'),
-    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', psat_admin_views.detail_view, name='admin-detail'),
+    path('<int:pk>/', psat_admin_views.detail_view, name='admin-detail'),
 ]
 
 # admin_patterns = [

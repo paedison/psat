@@ -395,6 +395,7 @@ class Exam(YearExamRoundField):
     answer_predict_opened_at = models.DateTimeField(default=timezone.now)
     answer_official_opened_at = models.DateTimeField(default=timezone.now)
     participants = models.JSONField(default=dict, verbose_name='전체 참여자수')
+    statistics = models.JSONField(default=dict, verbose_name='성적 통계')
 
     class Meta:
         abstract = True
@@ -503,8 +504,10 @@ class AnswerCount(TimeRecordField, YearExamRoundField, ChoiceMethod):
     count_4 = models.IntegerField(default=0, verbose_name='④')
     count_5 = models.IntegerField(default=0, verbose_name='⑤')
     count_0 = models.IntegerField(default=0, verbose_name='미표기')
-    count_multiple = models.IntegerField(default=0, verbose_name='중복 표기')
-    count_total = models.IntegerField(default=0, verbose_name='전체')
+    count_multiple = models.IntegerField(default=0, verbose_name='중복표기')
+    count_total = models.IntegerField(default=0, verbose_name='총계')
+    all = models.JSONField(default=dict, verbose_name='전체')
+    filtered = models.JSONField(default=dict, verbose_name='필터링')
 
     class Meta:
         abstract = True

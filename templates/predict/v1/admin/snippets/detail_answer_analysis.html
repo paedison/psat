@@ -9,7 +9,7 @@
         <span>문항 분석표</span>
         <div class="btn-group ms-auto">
             <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-               href="{% url 'predict_test_admin:export_analysis' category year ex round %}">
+               href="">
                 Excel로 내보내기
             </a>
         </div>
@@ -25,22 +25,25 @@
                 <span class="fw-bold">{{ icon_subject.헌법|safe }} 헌법</span>
             </button>
             <button id="navTabEoneo" class="nav-link p-2"
-                    hx-get="{% url 'predict_test_admin:answer_count_eoneo' category year ex round %}"
-                    hx-trigger="load" hx-target="#navContentEoneo"
+                    hx-get=""
+{#                    hx-trigger="load"#}
+                    hx-target="#navContentEoneo"
                     type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
                     data-bs-target="#navContentEoneo" aria-controls="navContentEoneo">
                 <span class="fw-bold">{{ icon_subject.언어|safe }} 언어</span>
             </button>
             <button id="navTabJaryo" class="nav-link p-2"
-                    hx-get="{% url 'predict_test_admin:answer_count_jaryo' category year ex round %}"
-                    hx-trigger="load" hx-target="#navContentJaryo"
+                    hx-get=""
+{#                    hx-trigger="load"#}
+                    hx-target="#navContentJaryo"
                     type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
                     data-bs-target="#navContentJaryo" aria-controls="navContentJaryo">
                 <span class="fw-bold">{{ icon_subject.자료|safe }} 자료</span>
             </button>
             <button id="navTabSanghwang" class="nav-link p-2"
-                    hx-get="{% url 'predict_test_admin:answer_count_sanghwang' category year ex round %}"
-                    hx-trigger="load" hx-target="#navContentSanghwang"
+                    hx-get=""
+{#                    hx-trigger="load"#}
+                    hx-target="#navContentSanghwang"
                     type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
                     data-bs-target="#navContentSanghwang" aria-controls="navContentSanghwang">
                 <span class="fw-bold">{{ icon_subject.상황|safe }} 상황</span>

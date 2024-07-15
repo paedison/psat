@@ -7,32 +7,32 @@
         <span>성적 통계</span>
         <div class="btn-group ms-auto">
             <a class="btn btn-sm btn-outline-secondary" title="목록" hx-push-url="true"
-               href="{% url 'predict_test_admin:list' %}" hx-post="{% url 'predict_test_admin:list' %}">
+               hx-get="{% url 'predict_new:admin-list' %}">
                 목록
             </a>
             <a class="btn btn-sm btn-outline-secondary" title="정답 업데이트"
                hx-confirm="정답 자료를 업데이트하시겠습니까?" href=""
-               hx-get="{% url 'predict_test_admin:update_answer' category year ex round %}"
+               hx-get=""
                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                data-bs-toggle="modal" data-bs-target="#modalContainer">
                 정답 업데이트
             </a>
             <a class="btn btn-sm btn-outline-secondary" title="업데이트"
                hx-confirm="성적 자료를 업데이트하시겠습니까?" href=""
-               hx-get="{% url 'predict_test_admin:update_score' category year ex round %}"
+               hx-get=""
                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                data-bs-toggle="modal" data-bs-target="#modalContainer">
                 성적 업데이트
             </a>
             <a class="btn btn-sm btn-outline-secondary" title="업데이트"
                hx-confirm="통계 자료를 업데이트하시겠습니까?" href=""
-               hx-get="{% url 'predict_test_admin:update_statistics' category year ex round %}"
+               hx-get=""
                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                data-bs-toggle="modal" data-bs-target="#modalContainer">
                 통계 업데이트
             </a>
             <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-               href="{% url 'predict_test_admin:export_statistics' category year ex round %}">
+               href="">
                 Excel로 내보내기
             </a>
 {#            <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"#}
@@ -45,38 +45,39 @@
 
 <div class="card-body">
     <nav>
-        <div class="nav nav-tabs nav-tabs-colored" id="statisticsTab" role="tablist">
-            <button id="navTabStatistics" class="nav-link p-2 active"
-                    type="button" role="tab" data-bs-toggle="tab" aria-selected="true"
-                    data-bs-target="#navContentStatistics" aria-controls="navContentStatistics">
-                <span class="fw-bold">실제 성적</span>
-            </button>
-            <button id="navTabStatisticsVirtual" class="nav-link p-2"
-                    hx-get="{% url 'predict_test_admin:statistics_virtual' category year ex round %}"
-                    hx-trigger="load" hx-target="#navContentStatisticsVirtual"
-                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
-                    data-bs-target="#navContentStatisticsVirtual" aria-controls="navContentStatisticsVirtual">
-                <span class="fw-bold">예상 성적</span>
-            </button>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetAllTab" role="tablist">
+            {% for id in '01' %}
+                {% cycle '전체' '필터링' as tab_title silent %}
+                {% cycle 'all' 'filtered' as prefix silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
+            {% endfor %}
         </div>
     </nav>
     <div class="tab-content" id="statisticsContent">
-        <div id="navContentStatistics" class="tab-pane fade show active htmx-fade-out"
-             role="tabpanel" aria-labelledby="navTabStatistics">
-            {% partialdef real inline=True %}
-                {% with page_obj=statistics_page_obj page_range=statistics_page_range pagination_url=statistics_pagination_url target_id='navContentStatistics' %}
-                    {% partial table_data %}
-                {% endwith %}
-            {% endpartialdef real %}
-        </div>
-        <div id="navContentStatisticsVirtual" class="tab-pane fade htmx-fade-out"
-             role="tabpanel" aria-labelledby="navTabStatisticsVirtual">
-            {% partialdef virtual inline=True %}
-                {% with page_obj=statistics_virtual_page_obj page_range=statistics_virtual_page_range pagination_url=statistics_virtual_pagination_url target_id='navContentStatisticsVirtual' %}
-                    {% partial table_data %}
-                {% endwith %}
-            {% endpartialdef virtual %}
-        </div>
+        {% for id in '01' %}
+            {% cycle 'all' 'filtered' as prefix silent %}
+            {% cycle 'navContentStatAll' 'navContentStatFiltered' as target_id silent %}
+            {% cycle stat_all_page_obj stat_filtered_page_obj as page_obj silent %}
+            {% cycle stat_all_page_range stat_filtered_page_range as page_range silent %}
+            {% cycle stat_all_pagination_url stat_filtered_pagination_url as pagination_url silent %}
+            {% #nav_content prefix=prefix id=id %}{% partial table_data %}{% /nav_content %}
+        {% endfor %}
+{#        <div id="navContentStatistics" class="tab-pane fade show active htmx-fade-out"#}
+{#             role="tabpanel" aria-labelledby="navTabStatistics">#}
+{#            {% partialdef real inline=True %}#}
+{#                {% with page_obj=statistics_page_obj page_range=statistics_page_range pagination_url=statistics_pagination_url target_id='navContentStatistics' %}#}
+{#                    {% partial table_data %}#}
+{#                {% endwith %}#}
+{#            {% endpartialdef real %}#}
+{#        </div>#}
+{#        <div id="navContentStatisticsVirtual" class="tab-pane fade htmx-fade-out"#}
+{#             role="tabpanel" aria-labelledby="navTabStatisticsVirtual">#}
+{#            {% partialdef virtual inline=True %}#}
+{#                {% with page_obj=statistics_virtual_page_obj page_range=statistics_virtual_page_range pagination_url=statistics_virtual_pagination_url target_id='navContentStatisticsVirtual' %}#}
+{#                    {% partial table_data %}#}
+{#                {% endwith %}#}
+{#            {% endpartialdef virtual %}#}
+{#        </div>#}
     </div>
 </div>
 
@@ -85,21 +86,19 @@
         <table class="table table-bordered table-striped small align-middle m-0">
             <thead>
                 <tr class="text-center table-warning align-middle">
-                    {% if category == 'PSAT' %}
-                        <th class="text-primary text-nowrap p-2" rowspan="2">모집단위</th>
-                    {% endif %}
+                    <th class="text-primary text-nowrap p-2" rowspan="2">모집단위</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
-                    <th class="text-primary text-nowrap p-2" rowspan="2">응시 인원</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">PSAT</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">헌법</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">언어논리</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">자료해석</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">상황판단</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">PSAT</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">헌법</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">언어논리</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">자료해석</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">상황판단</th>
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
                     {% for _ in '12345' %}
-                        <th class="text-primary text-nowrap p-2 td-right-no-border">최고<br/>점수</th>
+                        <th class="text-primary text-nowrap p-2 td-right-no-border">응시<br/>인원</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">최고<br/>점수</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>20%</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border">평균<br/>점수</th>
@@ -110,31 +109,29 @@
                 {% if page_obj %}
                     {% for obj in page_obj %}
                         <tr class="text-center">
-                            {% if category == 'PSAT' %}
-                                <td class="text-nowrap p-2">{{ obj.unit }}</td>
-                            {% endif %}
-                            <td class="text-nowrap p-2">{{ obj.department }}</td>
-                            <td class="text-nowrap p-2">{{ obj.헌법.num_students|intcomma }}</td>
+                            <td class="text-nowrap p-2">{{ obj.0.unit }}</td>
+                            <td class="text-nowrap p-2">{{ obj.0.department }}</td>
                             {% for _ in '01234' %}
-                                {% cycle obj.피셋 obj.헌법 obj.언어 obj.자료 obj.상황 as stat silent %}
-                                <td class="text-nowrap p-2 td-right-no-border">
-                                    {% if stat.max_score %}
-                                        {{ stat.max_score|floatformat:1 }}
+                                {% cycle obj.1 obj.2 obj.3 obj.4 obj.5 as stat silent %}
+                                <td class="text-nowrap p-2 td-right-no-border">{{ stat.participants|intcomma }}</td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {% if stat.max %}
+                                        {{ stat.max|floatformat:1 }}
                                     {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {% if stat.max_score %}
-                                        {{ stat.top_score_10|floatformat:1 }}
+                                    {% if stat.t10 %}
+                                        {{ stat.t10|floatformat:1 }}
                                     {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {% if stat.max_score %}
-                                        {{ stat.top_score_20|floatformat:1 }}
+                                    {% if stat.t20 %}
+                                        {{ stat.t20|floatformat:1 }}
                                     {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border">
-                                    {% if stat.max_score %}
-                                        {{ stat.avg_score|floatformat:1 }}
+                                    {% if stat.avg %}
+                                        {{ stat.avg|floatformat:1 }}
                                     {% endif %}
                                 </td>
                             {% endfor %}

@@ -6,12 +6,12 @@
 <div class="card-header">
     <div class="d-flex align-items-center">
         성적 일람표
-        <form method="POST" action="{% url 'prime_admin:export_transcript' year round %}"
+        <form method="POST" action=""
               class="ms-auto">
             {% csrf_token %}
             <div class="btn-group">
                 <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-                   href="{% url 'predict_test_admin:export_scores' category year ex round %}">
+                   href="">
                     Excel로 내보내기
                 </a>
 {#                <input name="student_ids" type="text" aria-label="Student IDs" hidden#}
@@ -34,8 +34,9 @@
                 <span class="fw-bold">실제 성적</span>
             </button>
             <button id="navTabCatalogVirtual" class="nav-link p-2"
-                    hx-get="{% url 'predict_test_admin:catalog_virtual' category year ex round %}"
-                    hx-trigger="load" hx-target="#navContentCatalogVirtual"
+                    hx-get=""
+{#                    hx-trigger="load"#}
+                    hx-target="#navContentCatalogVirtual"
                     type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
                     data-bs-target="#navContentCatalogVirtual" aria-controls="navContentCatalogVirtual">
                 <span class="fw-bold">예상 성적</span>
