@@ -28,42 +28,26 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="catalogTab" role="tablist">
-            <button id="navTabCatalog" class="nav-link p-2 active"
-                    type="button" role="tab" data-bs-toggle="tab" aria-selected="true"
-                    data-bs-target="#navContentCatalog" aria-controls="navContentCatalog">
-                <span class="fw-bold">실제 성적</span>
-            </button>
-            <button id="navTabCatalogVirtual" class="nav-link p-2"
-                    hx-get=""
-{#                    hx-trigger="load"#}
-                    hx-target="#navContentCatalogVirtual"
-                    type="button" role="tab" data-bs-toggle="tab" aria-selected="false"
-                    data-bs-target="#navContentCatalogVirtual" aria-controls="navContentCatalogVirtual">
-                <span class="fw-bold">예상 성적</span>
-            </button>
+            {% for id in '01' %}
+                {% cycle '전체' '필터링' as tab_title silent %}
+                {% cycle 'CatalogAll' 'CatalogFiltered' as prefix silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
+            {% endfor %}
         </div>
     </nav>
     <div class="tab-content" id="catalogContent">
-        <div id="navContentCatalog" class="tab-pane fade show active htmx-fade-out"
-             role="tabpanel" aria-labelledby="navTabCatalog">
-            {% partialdef real inline=True %}
-                {% with page_obj=catalog_page_obj page_range=catalog_page_range pagination_url=catalog_pagination_url target_id='navContentCatalog' %}
-                    {% partial table_data_1 %}
-                {% endwith %}
-            {% endpartialdef real %}
-        </div>
-        <div id="navContentCatalogVirtual" class="tab-pane fade htmx-fade-out"
-             role="tabpanel" aria-labelledby="navTabCatalogVirtual">
-            {% partialdef virtual inline=True %}
-                {% with page_obj=catalog_virtual_page_obj page_range=catalog_virtual_page_range pagination_url=catalog_virtual_pagination_url target_id='navContentCatalogVirtual' %}
-                    {% partial table_data_2 %}
-                {% endwith %}
-            {% endpartialdef virtual %}
-        </div>
+        {% for id in '01' %}
+            {% cycle 'CatalogAll' 'CatalogFiltered' as prefix silent %}
+            {% cycle 'navContentCatalogAll0' 'navContentCatalogFiltered1' as target_id silent %}
+            {% cycle all_catalog_page.0 filtered_catalog_page.0 as page_obj silent %}
+            {% cycle all_catalog_page.1 filtered_catalog_page.1 as page_range silent %}
+            {% cycle all_catalog_pagination_url filtered_catalog_pagination_url as pagination_url silent %}
+            {% #nav_content prefix=prefix id=id %}{% partial table_data %}{% /nav_content %}
+        {% endfor %}
     </div>
 </div>
 
-{% partialdef table_data_1 %}
+{% partialdef table_data %}
     <article class="table-responsive" hx-target="#main">
         <table class="table table-bordered table-striped small align-middle m-0">
             <thead>
@@ -75,7 +59,7 @@
                     <th class="text-primary text-nowrap p-2" rowspan="3">모집단위</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">직렬</th>
 
-                    <th class="text-primary text-nowrap p-2" colspan="6">PSAT</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">PSAT</th>
                     <th class="text-primary text-nowrap p-2" colspan="5">헌법</th>
                     <th class="text-primary text-nowrap p-2" colspan="5">언어논리</th>
                     <th class="text-primary text-nowrap p-2" colspan="5">자료해석</th>
@@ -83,11 +67,7 @@
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap p-2 td-right-no-border" rowspan="2">총점</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" rowspan="2">평균</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border" colspan="2">직렬 석차</th>
-                    {% for _ in '1234' %}
+                    {% for _ in '12345' %}
                         <th class="text-primary text-nowrap p-2 td-right-no-border" rowspan="2">점수</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border" colspan="2">직렬 석차</th>
@@ -107,74 +87,36 @@
                 {% if page_obj %}
                     {% for obj in page_obj %}
                         <tr class="text-center">
-                            <td class="text-nowrap p-2">{{ obj.student_id }}</td>
-                            <td class="text-nowrap p-2">{{ obj.rank_total_psat|default:'' }}</td>
+                            <td class="text-nowrap p-2">{{ obj.id }}</td>
+                            <td class="text-nowrap p-2">{{ obj.rank.all.total.psat_avg|default:'' }}</td>
                             <td class="text-nowrap p-2">
-                                <a href="{% url 'predict_test_admin:individual' category year ex round obj.user_id %}"
+                                <a href=""
                                    hx-boost="true" hx-push-url="true">
                                     {{ obj.name }}
                                 </a>
                             </td>
                             <td class="text-nowrap p-2">{{ obj.serial }}</td>
-                            <td class="text-nowrap p-2">{{ obj.unit_name }}</td>
-                            <td class="text-nowrap p-2">{{ obj.department_name }}</td>
+                            <td class="text-nowrap p-2">{{ obj.unit }}</td>
+                            <td class="text-nowrap p-2">{{ obj.get_department_display }}</td>
 
-                            <td class="text-nowrap p-2 td-right-no-border">
-                                {{ obj.score_psat|floatformat:1 }}
-                            </td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score_psat_avg|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_psat|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_psat|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_psat|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_psat|percentage|floatformat:1 }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">
-                                {% if obj.score_heonbeob %}
-                                    {{ obj.score_heonbeob|floatformat:1 }}
-                                {% else %}
-                                    <span class="text-danger fw-bold">{{ obj.score_heonbeob|floatformat:1 }}</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_heonbeob|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_heonbeob|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_heonbeob|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_heonbeob|percentage|floatformat:1 }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">
-                                {% if obj.score_eoneo %}
-                                    {{ obj.score_eoneo|floatformat:1 }}
-                                {% else %}
-                                    <span class="text-danger fw-bold">{{ obj.score_eoneo|floatformat:1 }}</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_eoneo|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_eoneo|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_eoneo|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_eoneo|percentage|floatformat:1 }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">
-                                {% if obj.score_jaryo %}
-                                    {{ obj.score_jaryo|floatformat:1 }}
-                                {% else %}
-                                    <span class="text-danger fw-bold">{{ obj.score_jaryo|floatformat:1 }}</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_jaryo|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_jaryo|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_jaryo|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_jaryo|percentage|floatformat:1 }}</td>
-
-                            <td class="text-nowrap p-2 td-right-no-border">
-                                {% if obj.score_sanghwang %}
-                                    {{ obj.score_sanghwang|floatformat:1 }}
-                                {% else %}
-                                    <span class="text-danger fw-bold">{{ obj.score_sanghwang|floatformat:1 }}</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total_sanghwang|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_ratio_total_sanghwang|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_department_sanghwang|default:'' }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_ratio_department_sanghwang|percentage|floatformat:1 }}</td>
+                            {% for _ in '01234' %}
+                                {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 as stat silent %}
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {{ stat.score|floatformat:1 }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {{ stat.rank_total|default:'' }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {{ stat.rank_ratio_total|default:'' }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {{ stat.rank_department|default:'' }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border">
+                                    {{ stat.rank_ratio_department|default:'' }}
+                                </td>
+                            {% endfor %}
                         </tr>
                     {% endfor %}
                 {% endif %}

@@ -48,7 +48,7 @@
         <div class="nav nav-tabs nav-tabs-colored" id="statTab" role="tablist">
             {% for id in '01' %}
                 {% cycle '전체' '필터링' as tab_title silent %}
-                {% cycle 'stat_all' 'stat_filtered' as prefix silent %}
+                {% cycle 'StatAll' 'StatFiltered' as prefix silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
@@ -57,9 +57,9 @@
         {% for id in '01' %}
             {% cycle 'StatAll' 'StatFiltered' as prefix silent %}
             {% cycle 'navContentStatAll0' 'navContentStatFiltered1' as target_id silent %}
-            {% cycle stat_page_obj.0 stat_page_obj.1 as page_obj silent %}
-            {% cycle stat_page_range.0 stat_page_range.1 as page_range silent %}
-            {% cycle stat_pagination_url.0 stat_pagination_url.1 as pagination_url silent %}
+            {% cycle all_stat_page.0 filtered_stat_page.0 as page_obj silent %}
+            {% cycle all_stat_page.1 filtered_stat_page.1 as page_range silent %}
+            {% cycle stat_all_pagination_url stat_pagination_url.1 as pagination_url silent %}
             {% #nav_content prefix=prefix id=id %}{% partial table_data %}{% /nav_content %}
         {% endfor %}
     </div>
@@ -93,10 +93,10 @@
                 {% if page_obj %}
                     {% for obj in page_obj %}
                         <tr class="text-center">
-                            <td class="text-nowrap p-2">{{ obj.0.unit }}</td>
-                            <td class="text-nowrap p-2">{{ obj.0.department }}</td>
+                            <td class="text-nowrap p-2">{{ obj.unit }}</td>
+                            <td class="text-nowrap p-2">{{ obj.get_name_display }}</td>
                             {% for _ in '01234' %}
-                                {% cycle obj.1 obj.2 obj.3 obj.4 obj.5 as stat silent %}
+                                {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 as stat silent %}
                                 <td class="text-nowrap p-2 td-right-no-border">{{ stat.participants|intcomma }}</td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
                                     {% if stat.max %}

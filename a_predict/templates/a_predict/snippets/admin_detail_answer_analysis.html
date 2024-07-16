@@ -18,9 +18,9 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-            {% for id in exam_vars.answer_tab_id %}
-                {% cycle exam_vars.answer_tab_title.0 exam_vars.answer_tab_title.1 exam_vars.answer_tab_title.2 exam_vars.answer_tab_title.3 as tab_title silent %}
-                {% cycle exam_vars.prefix_aa.0 exam_vars.prefix_aa.1 exam_vars.prefix_aa.2 exam_vars.prefix_aa.3 as prefix silent %}
+            {% for id in exam_vars.answer_analysis_tab.id %}
+                {% cycle exam_vars.answer_analysis_tab.title.0 exam_vars.answer_analysis_tab.title.1 exam_vars.answer_analysis_tab.title.2 exam_vars.answer_analysis_tab.title.3 as tab_title silent %}
+                {% cycle exam_vars.answer_analysis_tab.prefix_all.0 exam_vars.answer_analysis_tab.prefix_all.1 exam_vars.answer_analysis_tab.prefix_all.2 exam_vars.answer_analysis_tab.prefix_all.3 as prefix silent %}
                 {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
@@ -28,12 +28,12 @@
     </nav>
 
     <div class="tab-content" id="answerAnalysisContent">
-        {% for id in exam_vars.answer_tab_id %}
-            {% cycle exam_vars.prefix_aa.0 exam_vars.prefix_aa.1 exam_vars.prefix_aa.2 exam_vars.prefix_aa.3 as prefix silent %}
+        {% for id in exam_vars.answer_analysis_tab.id %}
+            {% cycle all_answer_page.0.0 all_answer_page.1.0 all_answer_page.2.0 all_answer_page.3.0 as page_obj silent %}
+            {% cycle all_answer_page.0.1 all_answer_page.1.1 all_answer_page.2.1 all_answer_page.3.1 as page_range silent %}
+            {% cycle all_answer_pagination_url.0 all_answer_pagination_url.1 all_answer_pagination_url.2 all_answer_pagination_url.3 as pagination_url silent %}
+            {% cycle exam_vars.answer_analysis_tab.prefix_all.0 exam_vars.answer_analysis_tab.prefix_all.1 exam_vars.answer_analysis_tab.prefix_all.2 exam_vars.answer_analysis_tab.prefix_all.3 as prefix silent %}
             {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
-            {% cycle answer_all_page_obj.0 answer_all_page_obj.1 answer_all_page_obj.2 answer_all_page_obj.3 as page_obj silent %}
-            {% cycle answer_all_page_range.0 answer_all_page_range.1 answer_all_page_range.2 answer_all_page_range.3 as page_range silent %}
-            {% cycle answer_all_pagination_url.0 answer_all_pagination_url.1 answer_all_pagination_url.2 answer_all_pagination_url.3 as pagination_url silent %}
             {% #nav_content prefix=prefix id=id %}{% partial table_data %}{% /nav_content %}
         {% endfor %}
     </div>

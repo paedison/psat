@@ -52,6 +52,8 @@ from .statistics import (
     get_statistics,
 )
 from .admin_view_utils import (
-    get_admin_stat_data,
-    get_admin_answer_count_data
+    update_stat_page,
+    get_admin_ans_count_data,
+    update_answer_page,
+    update_admin_catalog_page,
 )

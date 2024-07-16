@@ -36,6 +36,8 @@ class PsatExamVars:
         'template': [score_template_table_1, score_template_table_2, score_template_table_2],
     }
 
+    rank_list = ['all_rank', 'top_rank', 'mid_rank', 'low_rank']
+
     @property
     def exam_info(self):
         return {'year': self.exam_year, 'exam': self.exam_exam, 'round': self.exam_round}
@@ -149,6 +151,13 @@ class PsatExamVars:
         return default
 
     @property
+    def admin_score_fields(self):
+        default = ['psat_avg', 'heonbeob', 'eoneo', 'jaryo', 'sanghwang']
+        if self.exam_exam == '칠급':
+            default.remove('heonbeob')
+        return default
+
+    @property
     def field_vars(self):
         default = {
             'heonbeob': ('헌법', '헌법'), 'eoneo': ('언어', '언어논리'), 'jaryo': ('자료', '자료해석'),
@@ -184,6 +193,15 @@ class PsatExamVars:
             'prefix_submit': [f'{field}_submit' for field in self.subject_fields],
             'prefix_predict': [f'{field}_predict' for field in self.subject_fields],
             'url_answer_input': self.url_answer_input,
+        }
+
+    @property
+    def answer_analysis_tab(self):
+        return {
+            'id': ''.join([str(i) for i in range(len(self.sub_list))]),
+            'title': self.sub_list,
+            'prefix_all': [f'{field}_all' for field in self.subject_fields],
+            'prefix_filtered': [f'{field}_filtered' for field in self.subject_fields],
         }
 
     def get_empty_data_answer(self):

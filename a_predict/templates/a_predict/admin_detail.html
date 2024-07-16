@@ -6,7 +6,6 @@
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 
 {% block main %}
-{% partialdef admin_main inline=True %}
 {{ info|json_script:'info' }}
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
@@ -62,5 +61,4 @@
         </div>
     </div>
 </section>
-{% endpartialdef list_main %}
 {% endblock main %}
