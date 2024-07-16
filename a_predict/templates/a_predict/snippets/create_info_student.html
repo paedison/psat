@@ -1,0 +1,66 @@
+{% if exam.is_not_page_open %}
+    <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+        <i class="fa-solid fa-circle-exclamation"></i>
+            수험정보는 {{ exam.page_opened_at|date:'n/d(D) H:i' }}부터 입력 가능합니다.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% else %}
+    <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+        <i class="fa-solid fa-circle-exclamation"></i>
+            {{ exam.get_exam_display }} 수험정보를 입력해주세요.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <form>
+        <input name="password" value="0" aria-label="password" hidden/>
+        <input name="id_prime_id" value="" aria-label="Prime ID" hidden/>
+
+        <div class="row">
+            <div class="col-6">
+                <select id="id_unit" class="form-select mt-3 select2-filter-style"
+                        name="unit" aria-label="Select unit"
+                        hx-push-url="false" hx-trigger="change"
+                        hx-target="#id_department" hx-swap="outerHTML"
+                        hx-post="{% url 'predict_new:department-list' exam.exam %}">
+                    <option value="">모집 단위를 선택해주세요.</option>
+                    {% for unit in units %}
+                        {% if unit == form.unit.value %}
+                            <option value="{{ unit }}" selected>{{ unit }}</option>
+                        {% else %}
+                            <option value="{{ unit }}">{{ unit }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6">
+                {% include 'a_predict/snippets/department_list.html' %}
+            </div>
+        </div>
+        {{ form.errors.department }}
+
+        <div class="form-floating mt-3">
+            {{ form.serial }}
+            {{ form.serial.label_tag }}
+        </div>
+        {{ form.errors.serial }}
+
+        <div class="input-group mt-3">
+            <div class="form-floating">
+                {{ form.name }}
+                {{ form.name.label_tag }}
+            </div>
+            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                    hx-target="#main"
+                    hx-post="{% url 'predict_new:student-create' exam.year exam.exam exam.round %}">
+                입력
+            </button>
+        </div>
+        {{ form.errors.name }}
+    </form>
+    <div class="d-flex align-items-start mt-3">
+        <div class="badge bg-danger me-2"><i class="fa-regular fa-circle-check"></i> 참고</div>
+        <div class="text-danger small fw-bold">
+            입력하신 수험정보는 변경할 수 없으니 주의하시기 바랍니다.
+        </div>
+    </div>
+{% endif %}

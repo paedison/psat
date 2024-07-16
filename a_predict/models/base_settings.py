@@ -396,6 +396,7 @@ class Exam(YearExamRoundField):
     answer_official_opened_at = models.DateTimeField(default=timezone.now)
     participants = models.JSONField(default=dict, verbose_name='전체 참여자수')
     statistics = models.JSONField(default=dict, verbose_name='성적 통계')
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         abstract = True
@@ -424,6 +425,15 @@ class Exam(YearExamRoundField):
     @property
     def is_answer_official_opened(self):
         return self.answer_official_opened_at <= timezone.now()
+
+    @property
+    def exam_abbr(self):
+        exam_dict = {
+            '행시': '5급공채 등',
+            '입시': '입법고시',
+            '칠급': '7급공채 등',
+        }
+        return exam_dict[self.exam]
 
 
 class Unit(TimeRecordField, RemarksField):

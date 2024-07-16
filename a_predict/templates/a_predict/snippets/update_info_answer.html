@@ -1,21 +1,21 @@
 {% load psat_filter %}
 {% load partials %}
 
-{% for _ in exam_vars.info_tab_id %}
+{% for _ in exam_vars.info_tab.id %}
     {% cycle info_answer_student.0 info_answer_student.1 info_answer_student.2 info_answer_student.3 info_answer_student.4 as info_answer silent %}
     {% if info_answer %}{% partial sub_answer_line %}{% endif %}
 {% endfor %}
 
 {% partialdef sub_answer_line %}
-    <div id="{{ info_answer.sub }}_score_real"
+    <div id="{{ info_answer.field }}_score_real"
          class="htmx-fade-up-in delay-1 text-success fw-bold" hx-swap-oob="true">
         {{ info_answer.score_real|floatformat:1|default:'' }}
     </div>
-    <div id="{{ info_answer.sub }}_score_virtual"
+    <div id="{{ info_answer.field }}_score_virtual"
          class="htmx-fade-up-in delay-1 text-primary fw-bold" hx-swap-oob="true">
         {{ info_answer.score_predict|floatformat:1|default:'' }}
     </div>
-    <div id="{{ info_answer.sub }}_participants"
+    <div id="{{ info_answer.field }}_participants"
          class="htmx-fade-up-in delay-2" hx-swap-oob="true">
         {{ info_answer.participants|default:0 }}
     </div>

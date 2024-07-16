@@ -9,21 +9,21 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetFilteredTab" role="tablist">
-            {% for id in exam_vars.score_tab_id %}
-                {% cycle exam_vars.score_tab_title.0 exam_vars.score_tab_title.1 exam_vars.score_tab_title.2 as tab_title silent %}
-                {% cycle exam_vars.prefix_sf.0 exam_vars.prefix_sf.1 exam_vars.prefix_sf.2 as prefix silent %}
+            {% for id in exam_vars.score_tab.id %}
+                {% cycle exam_vars.score_tab.title.0 exam_vars.score_tab.title.1 exam_vars.score_tab.title.2 as tab_title silent %}
+                {% cycle exam_vars.score_tab.prefix_filtered.0 exam_vars.score_tab.prefix_filtered.1 exam_vars.score_tab.prefix_filtered.2 as prefix silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
 
     <div class="tab-content" id="scoreSheetFilteredContent">
-        {% for id in exam_vars.score_tab_id %}
-            {% cycle exam_vars.prefix_sf.0 exam_vars.prefix_sf.1 exam_vars.prefix_sf.2 as prefix silent %}
+        {% for id in exam_vars.score_tab.id %}
             {% cycle stat_total_filtered as stat_total silent %}
             {% cycle stat_department_filtered as stat_department silent %}
             {% cycle '' stat_total_filtered stat_department_filtered as stat_data silent %}
-            {% cycle exam_vars.score_template.0 exam_vars.score_template.1 exam_vars.score_template.2 as template_name silent %}
+            {% cycle exam_vars.score_tab.prefix_filtered.0 exam_vars.score_tab.prefix_filtered.1 exam_vars.score_tab.prefix_filtered.2 as prefix silent %}
+            {% cycle exam_vars.score_tab.template.0 exam_vars.score_tab.template.1 exam_vars.score_tab.template.2 as template_name silent %}
             {% #nav_content prefix=prefix id=id %}{% include template_name %}{% /nav_content %}
         {% endfor %}
 

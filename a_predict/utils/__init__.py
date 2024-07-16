@@ -1,6 +1,7 @@
 from .get_queryset import (
     get_student,
     get_exam,
+    get_units,
     get_location,
     get_qs_department,
     get_qs_student,

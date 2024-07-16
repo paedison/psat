@@ -4,27 +4,44 @@ from .views import psat_views, psat_admin_views
 
 app_name = 'predict_new'
 
+default_patterns = [
+    path('', psat_views.index_view, name='index'),
+    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', psat_views.detail_view, name='psat-detail'),
+]
+
 student_patterns = [
-    path('create/', psat_views.student_create_view, name='student-create'),
-    path('department/', psat_views.department_list, name='department-list'),
+    path('create/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         psat_views.student_create_view, name='student-create'),
+    path('department/<str:exam_exam>/', psat_views.department_list, name='department-list'),
 ]
 
 answer_patterns = [
-    path('<str:subject_field>/', psat_views.answer_input_view, name='answer-input'),
-    path('<str:subject_field>/submit/', psat_views.answer_submit, name='answer-submit'),
-    path('<str:subject_field>/confirm/', psat_views.answer_confirm, name='answer-confirm'),
+    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
+         psat_views.answer_input_view, name='answer-input'),
+    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/submit/',
+         psat_views.answer_submit, name='answer-submit'),
+    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/confirm/',
+         psat_views.answer_confirm, name='answer-confirm'),
 ]
 
 update_patterns = [
-    path('info/answer/', psat_views.update_info_answer, name='update-info-answer'),
-    path('answer/predict/', psat_views.update_answer_predict, name='update-answer-predict'),
-    path('answer/submit/', psat_views.update_answer_submit, name='update-answer-submit'),
-    path('score/', psat_views.update_score, name='update-score'),
+    path('info/answer/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         psat_views.update_info_answer, name='update-info-answer'),
+    path('answer/predict/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         psat_views.update_answer_predict, name='update-answer-predict'),
+    path('answer/submit/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         psat_views.update_answer_submit, name='update-answer-submit'),
+    path('score/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         psat_views.update_score, name='update-score'),
 ]
 
 admin_patterns = [
     path('', psat_admin_views.list_view, name='admin-list'),
-    path('<int:pk>/', psat_admin_views.detail_view, name='admin-detail'),
+    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', psat_admin_views.detail_view, name='admin-detail'),
+    # path('statistics/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+    #      psat_admin_views.statistics_view, name='statistics'),
+    # path('statistics_virtual/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+    #      psat_admin_views.statistics_virtual_view, name='statistics_virtual'),
 ]
 
 # admin_patterns = [
@@ -71,8 +88,7 @@ admin_patterns = [
 # ]
 
 urlpatterns = [
-    path('', psat_views.index_view, name='index'),
-
+    path('', include(default_patterns)),
     path('student/', include(student_patterns)),
     path('answer/', include(answer_patterns)),
     path('update/', include(update_patterns)),

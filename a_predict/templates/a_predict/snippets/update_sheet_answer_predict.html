@@ -1,8 +1,8 @@
 {% load psat_filter %}
 {% load partials %}
 
-{% for id in exam_vars.answer_tab_id %}
-    {% cycle exam_vars.prefix_ap.0 exam_vars.prefix_ap.1 exam_vars.prefix_ap.2 exam_vars.prefix_ap.3 as prefix silent %}
+{% for id in exam_vars.answer_tab.id %}
+    {% cycle exam_vars.answer_tab.prefix_predict.0 exam_vars.answer_tab.prefix_predict.1 exam_vars.answer_tab.prefix_predict.2 exam_vars.answer_tab.prefix_predict.3 as prefix silent %}
     {% cycle data_answer_predict.0 data_answer_predict.1 data_answer_predict.2 data_answer_predict.3 as answer_predict silent %}
     {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
 

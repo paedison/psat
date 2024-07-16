@@ -7,7 +7,7 @@
     <input id="p{{ answer.no|stringformat:'02d' }}_answer{{ i }}"
            type="radio" class="btn-check prevent_double_click" name="answer" value="{{ i }}"
            hx-trigger="change"
-           hx-post="{% url 'predict_new:answer-submit' subject_field %}"/>
+           hx-post="{{ url_answer_submit }}"/>
     <label class="btn btn-circle btn-sm fs-6
            {% if i|to_int == answer.ans %}btn-primary
            {% else %}btn-outline-secondary{% endif %}"

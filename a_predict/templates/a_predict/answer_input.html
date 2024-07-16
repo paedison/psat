@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block main %}
-{% partialdef detail_main inline=True %}
 {{ info|json_script:'info' }}
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
@@ -15,11 +14,14 @@
                 <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{% url 'predict_test:index' %}" hx-boost="true">Predict</a>
+                <a href="{{ exam_vars.url_index }}" hx-boost="true">Predict</a>
             </li>
-            <li class="breadcrumb-item">Answer</li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict_new:answer-input' subject_field %}" hx-boost="true">{{ subject }}</a>
+                <a href="{{ exam_vars.url_detail }}" hx-boost="true">{{ exam.exam_abbr }}</a>
+            </li>
+            <li class="breadcrumb-item">{{ subject }}</li>
+            <li class="breadcrumb-item active">
+                <a class="active" href="" hx-boost="true">답안 제출</a>
             </li>
         </ol>
     </nav>
@@ -29,15 +31,17 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title d-flex align-items-center">
+                <div class="card-header m-0">
+                    <div class="d-flex align-items-center">
                         <div>{{ icon_subject|safe }} {{ subject }} 답안 입력</div>
                         <a class="btn btn-sm btn-outline-primary ms-auto" hx-boost="true"
-                           href="{% url 'predict_new:index' %}">
+                           href="{{ exam_vars.url_detail }}">
                             성적 예측 페이지로 이동
                         </a>
-                    </h5>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="col-md-6 ms-auto me-auto alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="fa-solid fa-circle-exclamation"></i>
                             답안 선택 후 제출 버튼을 클릭해주세요.
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -83,13 +87,13 @@
                         <button class="btn btn-primary prevent_double_click" type="submit"
                                 data-bs-toggle="modal" data-bs-target="#modalContainer"
                                 hx-target="#modalContainer" hx-push-url="false" hx-swap="innerHTML"
-                                hx-post="{% url 'predict_new:answer-confirm' subject_field %}">
+                                hx-post="{{ url_answer_confirm }}">
                             답안 제출
                         </button>
                     </form>
                     <div class="text-center">
                         <a class="btn btn-outline-primary" hx-boost="true"
-                           href="{% url 'predict_new:index' %}">
+                           href="{{ exam_vars.url_detail }}">
                             성적 예측 페이지로 이동
                         </a>
                     </div>
@@ -98,7 +102,6 @@
         </div>
     </div>
 </section>
-{% endpartialdef detail_main %}
 {% endblock main %}
 
 {% partialdef form %}

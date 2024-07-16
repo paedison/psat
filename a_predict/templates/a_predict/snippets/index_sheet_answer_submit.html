@@ -4,7 +4,7 @@
 <div class="card-header">
     정답 확인
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
-       hx-get="{% url 'predict_new:update-answer-submit' %}">
+       hx-get="{{ exam_vars.url_update_answer_submit }}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="sheet_answer_spinner" role="status"
@@ -16,9 +16,9 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerSubmitTab" role="tablist">
-            {% for id in exam_vars.answer_tab_id %}
-                {% cycle exam_vars.answer_tab_title.0 exam_vars.answer_tab_title.1 exam_vars.answer_tab_title.2 exam_vars.answer_tab_title.3 as tab_title silent %}
-                {% cycle exam_vars.prefix_as.0 exam_vars.prefix_as.1 exam_vars.prefix_as.2 exam_vars.prefix_as.3 as prefix silent %}
+            {% for id in exam_vars.answer_tab.id %}
+                {% cycle exam_vars.answer_tab.title.0 exam_vars.answer_tab.title.1 exam_vars.answer_tab.title.2 exam_vars.answer_tab.title.3 as tab_title silent %}
+                {% cycle exam_vars.answer_tab.prefix_submit.0 exam_vars.answer_tab.prefix_submit.1 exam_vars.answer_tab.prefix_submit.2 exam_vars.answer_tab.prefix_submit.3 as prefix silent %}
                 {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
@@ -26,11 +26,12 @@
     </nav>
 
     <div class="tab-content" id="scoreAnswerSubmitContent">
-        {% for id in exam_vars.answer_tab_id %}
-            {% cycle exam_vars.prefix_as.0 exam_vars.prefix_as.1 exam_vars.prefix_as.2 exam_vars.prefix_as.3 as prefix silent %}
-            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
+        {% for id in exam_vars.answer_tab.id %}
             {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 as answer_official silent %}
             {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 as answer_student silent %}
+            {% cycle exam_vars.answer_tab.prefix_submit.0 exam_vars.answer_tab.prefix_submit.1 exam_vars.answer_tab.prefix_submit.2 exam_vars.answer_tab.prefix_submit.3 as prefix silent %}
+            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
+            {% cycle exam_vars.url_answer_input.0 exam_vars.url_answer_input.1 exam_vars.url_answer_input.2 exam_vars.url_answer_input.3 as url_answer_input silent %}
             {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
             {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
@@ -39,12 +40,12 @@
         <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
         <ol class="text-success small fw-bold m-0">
             {% if exam.is_collecting_answer or exam.is_answer_predict_opened %}
-                <li>정답 및 정답률은 공식 정답 공개 후 {{ exam.answer_official_opened_at|date:'G시 i분' }}에 확인 가능합니다.</li>
+                <li>정답 및 정답률은 {{ exam.answer_official_opened_at|date:'G시 i분' }}에 확인 가능합니다.</li>
             {% endif %}
             {% if exam.is_answer_official_opened %}
-                <li>정답률 = 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
+                <li>정답률 = 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
             {% endif %}
-            <li>선택률 = 본인과 같은 정답을 선택한 응시생 수 / 답안 제출을 완료한 전체 응시생 수</li>
+            <li>선택률 = 동일 답안 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
         </ol>
     </div>
 </div>
@@ -57,7 +58,7 @@
                     <tr class="text-center">
                         <th>
                             <a class="btn btn-outline-danger my-4" hx-boost="true"
-                               href="{% url 'predict_new:answer-input' field %}">
+                               href="{{ url_answer_input }}">
                                 답안을 제출해주세요.
                             </a>
                         </th>

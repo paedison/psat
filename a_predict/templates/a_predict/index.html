@@ -2,11 +2,8 @@
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
-{% load partials %}
-{% load slippers %}
 
 {% block main %}
-{% partialdef index_main inline=True %}
 {{ info|json_script:'info' }}
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
@@ -36,36 +33,25 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body text-center p-4">
-                    {% if exam.exam == '프모' %}
-                        <img src="{% static 'image/predict/cover_prime.jpg' %}" class="mw-100" alt="Title"/>
-                        <div class="fs-1 fw-bolder">제 {{ exam.round }} 회 성적 예측</div>
-                    {% else %}
-                        <img src="{% static 'image/predict/cover_psat.jpg' %}" class="mw-100" alt="Title"/>
-                    {% endif %}
-                    {% if not student %}
-                        <div class="container d-sm-none my-4">
-                            <p>수험생 여러분,<br/>그 동안 수고 많으셨습니다.</p>
-                            <p>여러분의 합격을<br/>기원하는 마음과 함께<br/>
-                                아래와 같이 합격예측시스템을<br/>제공해드리고 있습니다.</p>
-                            <p>모집단위와 직렬 및 응시번호,<br/>이름을 입력하신 뒤,<br/>
-                                과목별 시험 답안을 제출해주시면<br/>집계 후 여러분의<br/>
-                                합격 여부를 예측해드립니다.</p>
-                        </div>
-                        <div class="container d-none d-sm-block my-4">
-                            <p>수험생 여러분, 그 동안 수고 많으셨습니다.</p>
-                            <p>여러분의 합격을 기원하는 마음과 함께</p>
-                            <p>아래와 같이 합격예측시스템을 제공해드리고 있습니다.</p>
-                            <p>모집단위와 직렬 및 응시번호, 이름을 입력하신 뒤,</p>
-                            <p>과목별 시험 답안을 제출해주시면 집계 후</p>
-                            <p>여러분의 합격 여부를 예측해드립니다.</p>
-                        </div>
-                        <div class="container p-0">
-                            <div class="container">
-                                <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
-                                <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
-                            </div>
-                        </div>
-                    {% endif %}
+                    <img src="{% static 'image/predict/cover_psat.jpg' %}" class="mw-100" alt="Title"/>
+
+                    <div class="container d-sm-none my-4">
+                        <p>수험생 여러분,<br/>그 동안 수고 많으셨습니다.</p>
+                        <p>여러분의 합격을<br/>기원하는 마음과 함께<br/>
+                            아래와 같이 합격예측시스템을<br/>제공해드리고 있습니다.</p>
+                        <p>모집단위와 직렬 및 응시번호,<br/>이름을 입력하신 뒤,<br/>
+                            과목별 시험 답안을 제출해주시면<br/>집계 후 여러분의<br/>
+                            합격 여부를 예측해드립니다.</p>
+                    </div>
+                    <div class="container d-none d-sm-block my-4">
+                        <p>수험생 여러분, 그 동안 수고 많으셨습니다.</p>
+                        <p>여러분의 합격을 기원하는 마음과 함께</p>
+                        <p>아래와 같이 합격예측시스템을 제공해드리고 있습니다.</p>
+                        <p>모집단위와 직렬 및 응시번호, 이름을 입력하신 뒤,</p>
+                        <p>과목별 시험 답안을 제출해주시면 집계 후</p>
+                        <p>여러분의 합격 여부를 예측해드립니다.</p>
+                    </div>
+
                     {% if not user.is_authenticated %}
                         <a class="btn btn-outline-danger mt-4"
                            hx-target="body" hx-swap="innerHTML swap:0.25s"
@@ -73,60 +59,20 @@
                             로그인이 필요합니다.
                         </a>
                     {% endif %}
+                    <a href="{% url 'predict_new:psat-detail' 2024 '행시' 0 %}"
+                       class="btn btn-primary"
+                       hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        2024년 5급공채
+                    </a>
+                    <a href="{% url 'predict_new:psat-detail' 2024 '칠급' 0 %}"
+                       class="btn btn-primary"
+                       hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        2024년 7급공채
+                    </a>
                 </div>
             </div>
         </div>
 
-        {% if user.is_authenticated and student %}
-            <div class="col-12" aria-label="수험 정보">
-                <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_predict/snippets/index_info_student.html' %}
-                </div>
-            </div>
-{#            student_id: {{ student.id }}<br/>#}
-{#            exam_id: {{ exam.id }}<br/>#}
-{#            현재 시각: {{ current_time }}<br/>#}
-{#            페이지 오픈 시각: {{ exam.page_opened_at }}<br/>#}
-{#            시험 시작 시각: {{ exam.started_at }}<br/>#}
-{#            시험 종료 시각: {{ exam.finished_at }}<br/>#}
-{#            예상 정답 공개 시각: {{ exam.answer_predict_opened_at }}<br/>#}
-{#            정답 공개 시각: {{ exam.answer_official_opened_at }}<br/>#}
-
-            <div class="col-12" aria-label="답안 제출 현황">
-                <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_predict/snippets/index_info_answer.html' %}
-                </div>
-            </div>
-
-            {% if exam.is_answer_official_opened %}
-                <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
-                    <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_predict/snippets/index_sheet_score_all.html' %}
-                    </div>
-                </div>
-                {% if student.answer_all_confirmed_at < exam.answer_official_opened_at %}
-                    <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
-                        <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                            {% include 'a_predict/snippets/index_sheet_score_filtered.html' %}
-                        </div>
-                    </div>
-                {% endif %}
-            {% endif %}
-
-            {% if exam.is_collecting_answer or exam.is_answer_predict_opened %}
-                <div class="col-12" aria-label="예상 정답">
-                    <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_predict/snippets/index_sheet_answer_predict.html' %}
-                    </div>
-                </div>
-            {% endif %}
-
-            <div class="col-12" aria-label="정답 확인">
-                <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_predict/snippets/index_sheet_answer_submit.html' %}
-                </div>
-            </div>
-        {% endif %}
         <div class="col-12">
             <div class="card">
                 <div class="card-body p-4">
@@ -141,5 +87,4 @@
         </div>
     </div>
 </section>
-{% endpartialdef index_main %}
 {% endblock main %}

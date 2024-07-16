@@ -1,0 +1,129 @@
+{% load humanize %}
+{% load partials %}
+{% load slippers %}
+
+<div class="card-header">
+    <div class="d-flex align-items-center">
+        <span>성적 통계</span>
+        <div class="btn-group ms-auto">
+            <a class="btn btn-sm btn-outline-secondary" title="목록" hx-push-url="true"
+               hx-get="{% url 'predict_new:admin-list' %}">
+                목록
+            </a>
+            <a class="btn btn-sm btn-outline-secondary" title="정답 업데이트"
+               hx-confirm="정답 자료를 업데이트하시겠습니까?" href=""
+               hx-get=""
+               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                정답 업데이트
+            </a>
+            <a class="btn btn-sm btn-outline-secondary" title="업데이트"
+               hx-confirm="성적 자료를 업데이트하시겠습니까?" href=""
+               hx-get=""
+               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                성적 업데이트
+            </a>
+            <a class="btn btn-sm btn-outline-secondary" title="업데이트"
+               hx-confirm="통계 자료를 업데이트하시겠습니까?" href=""
+               hx-get=""
+               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                통계 업데이트
+            </a>
+            <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
+               href="">
+                Excel로 내보내기
+            </a>
+{#            <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"#}
+{#               href="{% url 'prime_admin:print' year round %}" target="_blank">#}
+{#                인쇄하기#}
+{#            </a>#}
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="statTab" role="tablist">
+            {% for id in '01' %}
+                {% cycle '전체' '필터링' as tab_title silent %}
+                {% cycle 'stat_all' 'stat_filtered' as prefix silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+    <div class="tab-content" id="statContent">
+        {% for id in '01' %}
+            {% cycle 'StatAll' 'StatFiltered' as prefix silent %}
+            {% cycle 'navContentStatAll0' 'navContentStatFiltered1' as target_id silent %}
+            {% cycle stat_page_obj.0 stat_page_obj.1 as page_obj silent %}
+            {% cycle stat_page_range.0 stat_page_range.1 as page_range silent %}
+            {% cycle stat_pagination_url.0 stat_pagination_url.1 as pagination_url silent %}
+            {% #nav_content prefix=prefix id=id %}{% partial table_data %}{% /nav_content %}
+        {% endfor %}
+    </div>
+</div>
+
+{% partialdef table_data %}
+    <article class="table-responsive">
+        <table class="table table-bordered table-striped small align-middle m-0">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2" rowspan="2">모집단위</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">PSAT</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">헌법</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">언어논리</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">자료해석</th>
+                    <th class="text-primary text-nowrap p-2" colspan="5">상황판단</th>
+                </tr>
+
+                <tr class="text-center table-warning align-middle">
+                    {% for _ in '12345' %}
+                        <th class="text-primary text-nowrap p-2 td-right-no-border">응시<br/>인원</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">최고<br/>점수</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>20%</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border">평균<br/>점수</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">{{ obj.0.unit }}</td>
+                            <td class="text-nowrap p-2">{{ obj.0.department }}</td>
+                            {% for _ in '01234' %}
+                                {% cycle obj.1 obj.2 obj.3 obj.4 obj.5 as stat silent %}
+                                <td class="text-nowrap p-2 td-right-no-border">{{ stat.participants|intcomma }}</td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {% if stat.max %}
+                                        {{ stat.max|floatformat:1 }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {% if stat.t10 %}
+                                        {{ stat.t10|floatformat:1 }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {% if stat.t20 %}
+                                        {{ stat.t20|floatformat:1 }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border">
+                                    {% if stat.avg %}
+                                        {{ stat.avg|floatformat:1 }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </article>
+    {% include 'a_predict/snippets/pagination.html' %}
+{% endpartialdef table_data %}

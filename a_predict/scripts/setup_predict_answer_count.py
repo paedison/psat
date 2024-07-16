@@ -1,9 +1,6 @@
-from pprint import pprint
-
 from django.db.models import Count, F
 
-from a_predict.models import Student, StudentAnswer, SubmittedAnswer, AnswerCount
-from a_predict.views.base_info import ExamInfo
+from a_predict.models import Student, SubmittedAnswer, AnswerCount
 
 
 def run():

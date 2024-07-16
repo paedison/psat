@@ -4,8 +4,8 @@ from django.urls import reverse
 from common.constants import icon_set_new
 
 
-def get_answer_confirmed(exam_vars: dict, student):
-    return [student.answer_confirmed[field] for field in exam_vars['score_fields']]
+def get_answer_confirmed(exam_vars, student):
+    return [student.answer_confirmed[field] for field in exam_vars.score_fields]
 
 
 def get_empty_data_answer(fields: list, problem_count: dict):
@@ -16,7 +16,7 @@ def get_empty_data_answer(fields: list, problem_count: dict):
     ]
 
 
-def get_data_answer_official(exam_vars: dict, exam) -> tuple[list, bool]:
+def get_data_answer_official(exam_vars, exam) -> tuple[list, bool]:
     # {
     #     'heonbeob': [
     #         {
@@ -26,16 +26,14 @@ def get_data_answer_official(exam_vars: dict, exam) -> tuple[list, bool]:
     #         ...
     #     ]
     # }
-    subject_fields = exam_vars['subject_fields']
-    problem_count = exam_vars['problem_count']
     official_answer_uploaded = False
 
-    data_answer_official = get_empty_data_answer(fields=subject_fields, problem_count=problem_count)
+    data_answer_official = exam_vars.get_empty_data_answer()
     if exam and exam.is_answer_official_opened:
         official_answer_uploaded = True
         try:
             for field, answer in exam.answer_official.items():
-                field_idx = subject_fields.index(field)
+                field_idx = exam_vars.get_field_idx(field)
                 for no, ans in enumerate(answer, start=1):
                     data_answer_official[field_idx][no - 1] = {'no': no, 'ans': ans, 'field': field}
         except IndexError:
@@ -45,10 +43,10 @@ def get_data_answer_official(exam_vars: dict, exam) -> tuple[list, bool]:
     return data_answer_official, official_answer_uploaded
 
 
-def get_data_answer_predict(exam_vars: dict, qs_answer_count) -> list:
-    subject_fields = exam_vars['subject_fields']
-    problem_count = exam_vars['problem_count']
-    count_fields = exam_vars['count_fields']
+def get_data_answer_predict(exam_vars, qs_answer_count) -> list:
+    subject_fields = exam_vars.subject_fields
+    problem_count = exam_vars.problem_count
+    count_fields = exam_vars.count_fields
     data_answer_predict = get_empty_data_answer(fields=subject_fields, problem_count=problem_count)
     for answer_count in qs_answer_count:
         field = answer_count.subject
@@ -70,15 +68,14 @@ def get_data_answer_predict(exam_vars: dict, qs_answer_count) -> list:
 
 
 def get_data_answer_student(
-        exam_vars: dict, student,
+        exam_vars, student,
         data_answer_official: list[list[dict]],
         official_answer_uploaded: bool,
         data_answer_predict: list[list[dict]],
 ) -> list:
-    subject_fields = exam_vars['subject_fields']
-    problem_count = exam_vars['problem_count']
-    data_answer_student = get_empty_data_answer(
-        fields=subject_fields, problem_count=problem_count)
+    subject_fields = exam_vars.subject_fields
+    problem_count = exam_vars.problem_count
+    data_answer_student = get_empty_data_answer(fields=subject_fields, problem_count=problem_count)
 
     for field_idx, value in enumerate(data_answer_predict):
         field = subject_fields[field_idx]
@@ -117,24 +114,24 @@ def get_data_answer_student(
 
 
 def get_info_answer_student(
-        exam_vars: dict, student, exam,
+        exam_vars, student, exam,
         data_answer_student: list[list[dict]],
         data_answer_predict: list[list[dict]],
 ) -> list:
-    score_fields = exam_vars['score_fields']
+    score_fields: list = exam_vars.score_fields
+    subject_fields: list = exam_vars.subject_fields
     info_answer_student: list[dict] = [{} for _ in score_fields]
 
-    psat_score_predict = 0
-    psat_fields = ['eoneo', 'jaryo', 'sanghwang']
+    score_predict_sum = 0
     participants = exam.participants['all']['total']
 
     for field in score_fields:
         field_idx = score_fields.index(field)
-        sub, subject = exam_vars['field_vars'][field]
+        sub, subject = exam_vars.field_vars[field]
         is_confirmed = student.answer_confirmed[field]
         score_real = student.score[field]
 
-        if field != 'psat_avg':
+        if field != exam_vars.avg_field:
             correct_predict_count = 0
             for idx, answer_student in enumerate(data_answer_student[field_idx]):
                 ans_student = answer_student['ans']
@@ -144,14 +141,15 @@ def get_info_answer_student(
                 answer_student['result_predict'] = result_predict
                 correct_predict_count += 1 if result_predict else 0
 
-            problem_count = exam_vars['problem_count'][field]
+            problem_count = exam_vars.problem_count[field]
             answer_count = student.answer_count[field]
             score_predict = correct_predict_count * 100 / problem_count
-            psat_score_predict += score_predict if field in psat_fields else 0
+            score_predict_sum += score_predict if field in exam_vars.sum_fields else 0
         else:
-            problem_count = sum([val for val in exam_vars['problem_count'].values()])
+            problem_count = sum([val for val in exam_vars.problem_count.values()])
             answer_count = sum([val for val in student.answer_count.values()])
-            score_predict = psat_score_predict / 3
+            score_predict = score_predict_sum / 3
+        url_answer_input = exam_vars.url_answer_input[field_idx] if field in subject_fields else ''
 
         info_answer_student[field_idx].update({
             'icon': icon_set_new.ICON_SUBJECT[sub],
@@ -160,16 +158,17 @@ def get_info_answer_student(
             'participants': participants[field],
             'score_real': score_real, 'score_predict': score_predict,
             'problem_count': problem_count, 'answer_count': answer_count,
+            'url_answer_input': url_answer_input,
         })
     return info_answer_student
 
 
 def get_dict_stat_data(
-        exam_vars: dict, student, stat_type: str,
+        exam_vars, student, stat_type: str,
         exam, qs_student, filtered: bool = False
 ) -> list:
-    score_fields = exam_vars['score_fields']
-    field_vars = exam_vars['field_vars']
+    score_fields = exam_vars.score_fields
+    field_vars = exam_vars.field_vars
     score_list = {field: [] for field in field_vars.keys()}
     stat_data = [
         {
@@ -215,11 +214,13 @@ def get_dict_stat_data(
     return stat_data
 
 
-def get_next_url(exam_vars: dict, student) -> str:
-    for field in exam_vars['subject_fields']:
+def get_next_url(exam_vars, student) -> str:
+    for field in exam_vars.subject_fields:
         is_confirmed = student.answer_confirmed[field]
         if not is_confirmed:
-            return reverse('predict_new:answer-input', args=[field])
+            url_kwargs = exam_vars.exam_url_kwargs.copy()
+            url_kwargs['subject_field'] = field
+            return reverse('predict_new:answer-input', kwargs=url_kwargs)
     return reverse('predict_new:index')
 
 

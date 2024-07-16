@@ -23,7 +23,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for _ in exam_vars.info_tab_id %}
+            {% for _ in exam_vars.info_tab.id %}
                 {% cycle stat_total.0 stat_total.1 stat_total.2 stat_total.3 stat_total.4 as stat_tot silent %}
                 {% cycle stat_department.0 stat_department.1 stat_department.2 stat_department.3 stat_department.4 as stat_dep silent %}
                 {% if stat_tot %}{% partial sub_score_line %}{% endif %}

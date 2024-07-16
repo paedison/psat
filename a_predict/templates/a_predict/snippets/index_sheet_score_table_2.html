@@ -21,7 +21,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for _ in exam_vars.info_tab_id %}
+            {% for _ in exam_vars.info_tab.id %}
                 {% cycle stat_data.0 stat_data.1 stat_data.2 stat_data.3 stat_data.4 as stat silent %}
                 {% if stat %}{% partial sub_stat_line %}{% endif %}
             {% endfor %}

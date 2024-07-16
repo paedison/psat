@@ -1,9 +1,9 @@
 {% load psat_filter %}
 {% load partials %}
 
-{% for id in exam_vars.score_tab_id %}
-    {% cycle exam_vars.prefix_sa.0 exam_vars.prefix_sa.1 exam_vars.prefix_sa.2 as prefix silent %}
-    {% for _ in exam_vars.info_tab_id %}
+{% for id in exam_vars.score_tab.id %}
+    {% cycle exam_vars.score_tab.prefix_all.0 exam_vars.score_tab.prefix_all.1 exam_vars.score_tab.prefix_all.2 as prefix silent %}
+    {% for _ in exam_vars.info_tab.id %}
         {% if id == '0' %}
             {% cycle stat_total_all.0 stat_total_all.1 stat_total_all.2 stat_total_all.3 stat_total_all.4 as stat_tot silent %}
             {% cycle stat_department_all.0 stat_department_all.1 stat_department_all.2 stat_department_all.3 stat_department_all.4 as stat_dep silent %}

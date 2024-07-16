@@ -4,7 +4,7 @@
 <div class="card-header">
     답안 제출 현황
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#info_answer_spinner"
-       hx-get="{% url 'predict_new:update-info-answer' %}">
+       hx-get="{{ exam_vars.url_update_info_answer }}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="info_answer_spinner" role="status"
@@ -43,7 +43,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for _ in exam_vars.info_tab_id %}
+                {% for _ in exam_vars.info_tab.id %}
                     {% cycle info_answer_student.0 info_answer_student.1 info_answer_student.2 info_answer_student.3 info_answer_student.4 as info_answer silent %}
                     {% if info_answer %}{% partial sub_answer_line %}{% endif %}
                 {% endfor %}
@@ -82,7 +82,7 @@
                 {% if info_answer.field == 'psat_avg' %}
                     <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                 {% else %}
-                    <a href="{% url 'predict_new:answer-input' info_answer.field %}" hx-boost="true">
+                    <a href="{{ info_answer.url_answer_input }}" hx-boost="true">
                         <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                     </a>
                 {% endif %}
@@ -92,11 +92,11 @@
                 {% elif exam.is_collecting_answer %} {# 시험 종료 이후 ~ 예상 정답 공개 이전 #}
                     <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
                 {% elif exam.is_answer_predict_opened %} {# 예상 정답 공개 이후 ~ 공식 정답 공개 이전 #}
-                    <div id="{{ info_answer.sub }}_score_virtual" class="htmx-fade-up-in delay-1 text-primary fw-bold">
+                    <div id="{{ info_answer.field }}_score_virtual" class="htmx-fade-up-in delay-1 text-primary fw-bold">
                         {{ info_answer.score_predict|floatformat:1|default:'' }}
                     </div>
                 {% elif exam.is_answer_official_opened %} {# 공식 정답 공개 이후 #}
-                    <div id="{{ info_answer.sub }}_score_real" class="htmx-fade-up-in delay-1 text-success fw-bold">
+                    <div id="{{ info_answer.field }}_score_real" class="htmx-fade-up-in delay-1 text-success fw-bold">
                         {{ info_answer.score_real|floatformat:1|default:'' }}
                     </div>
                 {% endif %}
@@ -108,7 +108,7 @@
 {#            </div>#}
 {#        </td>#}
         <td aria-label="총 참여자수">
-            <div id="{{ info_answer.sub }}_participants" class="htmx-fade-up-in delay-2">
+            <div id="{{ info_answer.field }}_participants" class="htmx-fade-up-in delay-2">
                 {{ info_answer.participants|default:0 }}
             </div>
         </td>
@@ -123,7 +123,7 @@
                     <span class="badge rounded-pill text-bg-danger">미제출</span>
                 {% else %}
                     <a class="text-decoration-none"
-                       href="{% url 'predict_new:answer-input' info_answer.field %}" hx-boost="true">
+                       href="{{ info_answer.url_answer_input }}" hx-boost="true">
                         {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                         <span class="badge rounded-pill text-bg-danger">미제출</span>
                     </a>

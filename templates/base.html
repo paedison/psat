@@ -1,4 +1,9 @@
-<!doctype html>{% load static %}{% load psat_filter %}{% lineless %}
+{% load static %}
+{% load psat_filter %}
+{% lineless %}
+
+{% if not request.htmx %}
+<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8"/>
@@ -63,8 +68,10 @@
 
 {% block extra_head %}{% endblock extra_head %}
 </head>
+{% endif %}
 
 {% block html_body %}
+{% if not request.htmx %}
 <body class="htmx-fade-in htmx-fade-out"
 {#      hx-ext="debug, event-header"#}
       hx-ext="event-header"
@@ -74,7 +81,11 @@
 {% block aside %}{% endblock aside %}
 
 <main id="main" class="main htmx-fade-in htmx-fade-out">
+{% endif %}
+
     {% block main %}{% endblock main %}
+
+{% if not request.htmx %}
 </main><!-- Main End -->
 
 {% block footer %}{% endblock footer %}
@@ -93,6 +104,10 @@
 {% block page_script %}{% endblock page_script %}
 
 </body>
+{% endif %}
 {% endblock html_body %}
 
-</html>{% endlineless %}
+{% if not request.htmx %}
+</html>
+{% endif %}
+{% endlineless %}

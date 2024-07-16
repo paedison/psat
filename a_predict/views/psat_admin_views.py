@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from django.db.models import F
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
@@ -116,9 +114,11 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_predict/admin_list.html', context)
 
 
-def detail_view(request: HtmxHttpRequest, pk: int):
-    exam = get_object_or_404(models.PsatExam, pk=pk)
-    exam_info = {'year': exam.year, 'exam': exam.exam, 'round': exam.round}
+def detail_view(
+        request: HtmxHttpRequest, exam_year: int, exam_exam: str, exam_round: int
+):
+    exam_info = {'year': exam_year, 'exam': exam_exam, 'round': exam_round}
+    exam = get_object_or_404(models.PsatExam, **exam_info)
 
     stat_data = utils.get_admin_stat_data(exam_vars=EXAM_VARS, exam=exam)
     stat_page_data = [

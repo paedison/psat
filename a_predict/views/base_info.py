@@ -1,373 +1,197 @@
-import os
+import dataclasses
 
-import pandas as pd
-from django.conf import settings
-from django.db import transaction
-from django.db.models import Count, QuerySet, F
-from django.urls import reverse_lazy
-from pandas import DataFrame
+from django.urls import reverse
 
 from common.constants import icon_set_new
-from common.utils import detect_encoding, HtmxHttpRequest
-from a_predict.models import (
-    PsatExam, PsatUnit, PsatDepartment, PsatLocation,
-    PsatStudent, PsatSubmittedAnswer, PsatAnswerCount,
-)
+from .. import models, forms
 
 
-class ExamInfo:
-    # Target PsatExam
-    YEAR = 2024
-    EXAM = '행시'
-    ROUND = 0
+@dataclasses.dataclass
+class PsatExamVars:
+    info = {'menu': 'predict', 'view_type': 'predict'}
 
-    # Subject full name, field
-    HEONBEOB = ('헌법', 'heonbeob')
-    EONEO = ('언어논리', 'eoneo')
-    JARYO = ('자료해석', 'jaryo')
-    SANGHWANG = ('상황판단', 'sanghwang')
-    PSAT_TOTAL = ('PSAT 총점', 'psat')
-    PSAT_AVG = ('PSAT 평균', 'psat_avg')
+    exam_year: int = 0
+    exam_exam: str = ''
+    exam_round: int = 0
 
-    # Subject variables dictionary
-    SUBJECT_VARS = {
-        '헌법': HEONBEOB,
-        '언어': EONEO,
-        '자료': JARYO,
-        '상황': SANGHWANG,
-        '총점': PSAT_TOTAL,
-        '평균': PSAT_AVG,
-    }
-    FIELD_VARS = {
-        'heonbeob': ('헌법', '헌법'),
-        'eoneo': ('언어', '언어논리'),
-        'jaryo': ('자료', '자료해석'),
-        'sanghwang': ('상황', '상황판단'),
-        'psat_total': ('총점', 'PSAT 총점'),
-        'psat_avg': ('평균', 'PSAT 평균'),
+    count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5']
+    avg_field = 'psat_avg'
+    sum_fields = ['eoneo', 'jaryo', 'sanghwang']
+
+    exam_model = models.PsatExam
+    unit_model = models.PsatUnit
+    department_model = models.PsatDepartment
+    location_model = models.PsatLocation
+    student_model = models.PsatStudent
+    answer_count_model = models.PsatAnswerCount
+    student_form = forms.StudentForm
+
+    score_template_table_1 = 'a_predict/snippets/index_sheet_score_table_1.html'
+    score_template_table_2 = 'a_predict/snippets/index_sheet_score_table_2.html'
+    score_tab = {
+        'id': '012',
+        'title': ['내 성적', '전체 기준', '직렬 기준'],
+        'prefix_all': ['my_all', 'total_all', 'department_all'],
+        'prefix_filtered': ['my_filtered', 'total_filtered', 'department_filtered'],
+        'template': [score_template_table_1, score_template_table_2, score_template_table_2],
     }
 
-    # Customize PROBLEM_COUNT, SUBJECT_VARS by PsatExam
-    if EXAM == '칠급':
-        PROBLEM_COUNT = {'eoneo': 25, 'jaryo': 25, 'sanghwang': 25}
-        SUBJECT_VARS.pop('헌법')
-    else:
-        PROBLEM_COUNT = {'heonbeob': 25, 'eoneo': 40, 'jaryo': 40, 'sanghwang': 40}
+    @property
+    def exam_info(self):
+        return {'year': self.exam_year, 'exam': self.exam_exam, 'round': self.exam_round}
 
-    # Answer file
-    ANSWER_FILE = settings.BASE_DIR / 'a_predict/data/answers.csv'
-    EMPTY_FILE = settings.BASE_DIR / 'a_predict/data/answers_empty.csv'
-    ANSWER_FILE = ANSWER_FILE if os.path.exists(ANSWER_FILE) else EMPTY_FILE
-    ANSWER_FILE_ENCODING = detect_encoding(ANSWER_FILE)
+    @property
+    def exam_url_kwargs(self):
+        return {'exam_year': self.exam_year, 'exam_exam': self.exam_exam, 'exam_round': self.exam_round}
 
-    # View info
-    INFO = {
-        'menu': 'predict',
-        'view_type': 'predict',
-    }
+    @property
+    def url_index(self):
+        return reverse('predict_new:index')
 
-    # Queryset variables
-    qs_exam = PsatExam.objects.filter(exam=EXAM, round=ROUND)
-    qs_unit = PsatUnit.objects.filter(exam=EXAM)
-    qs_department = PsatDepartment.objects.filter(exam=EXAM)
-    qs_location = PsatLocation.objects.filter(year=YEAR, exam=EXAM)
-    qs_student = PsatStudent.objects.filter(year=YEAR, exam=EXAM, round=ROUND)
-    qs_student_answer = PsatStudent.objects.filter(
-        year=YEAR, exam=EXAM, round=ROUND)
-    qs_submitted_answer = PsatSubmittedAnswer.objects.filter(
-        student__year=YEAR, student__exam=EXAM, student__round=ROUND)
-    qs_answer_count = PsatAnswerCount.objects.filter(
-        year=YEAR, exam=EXAM, round=ROUND).annotate(no=F('number')).order_by('subject', 'number')
-    qs_official_answer = PsatExam.objects.filter(year=YEAR, exam=EXAM, round=ROUND)
+    @property
+    def url_detail(self):
+        return reverse('predict_new:psat-detail', kwargs=self.exam_url_kwargs)
 
-    def create_student(self, student: PsatStudent, request: HtmxHttpRequest) -> PsatStudent:
-        with transaction.atomic():
-            student.year = self.YEAR
-            student.exam = self.EXAM
-            student.round = self.ROUND
-            student.user = request.user
-            student.save()
-            PsatStudent.objects.get_or_create(student=student)
-            return student
+    @property
+    def url_update_info_answer(self):
+        return reverse('predict_new:update-info-answer', kwargs=self.exam_url_kwargs)
 
-    def get_obj_student(self, request: HtmxHttpRequest) -> PsatStudent:
-        return self.qs_student.filter(user=request.user).first()
+    @property
+    def url_update_answer_predict(self):
+        return reverse('predict_new:update-answer-predict', kwargs=self.exam_url_kwargs)
 
-    def get_obj_student_answer(self, request: HtmxHttpRequest) -> PsatStudent:
-        return self.qs_student_answer.filter(student__user=request.user).first()
+    @property
+    def url_update_answer_submit(self):
+        return reverse('predict_new:update-answer-submit', kwargs=self.exam_url_kwargs)
 
-    def get_dict_participants_count(self) -> dict:
-        qs_participants_count = self.qs_submitted_answer.values('subject').annotate(
-            count=Count('student', distinct=True))
-        return {self.SUBJECT_VARS[p['subject']][1]: p['count'] for p in qs_participants_count}
+    @property
+    def url_update_score(self):
+        return reverse('predict_new:update-score', kwargs=self.exam_url_kwargs)
 
-    def get_dict_data_answer_rate(self, data_answer_official: dict, qs_answer_count) -> dict:
-        dict_answer_count = {field: [] for field in self.PROBLEM_COUNT.keys()}
+    @property
+    def url_answer_input(self):
+        kwargs_dict = [
+            {
+                'exam_year': self.exam_year, 'exam_exam': self.exam_exam,
+                'exam_round': self.exam_round, 'subject_field': field,
+            } for field in self.subject_fields
+        ]
+        return [
+            reverse('predict_new:answer-input', kwargs=kwargs)
+            for kwargs in kwargs_dict
+        ]
 
-        qs: PsatAnswerCount
-        for qs in qs_answer_count:
-            field = self.SUBJECT_VARS[qs.subject][1]
-            dict_answer_count[field].append(qs)
-            if data_answer_official:
-                answer_official = data_answer_official[field][qs.number - 1]
-                ans_official = answer_official['ans']
-                qs.rate_correct = getattr(qs, f'rate_{ans_official}')
-                answer_official['rate_correct'] = getattr(qs, f'rate_{ans_official}')
+    def get_url_answer_submit(self, subject_field):
+        kwargs = {
+            'exam_year': self.exam_year, 'exam_exam': self.exam_exam,
+            'exam_round': self.exam_round, 'subject_field': subject_field,
+        }
+        return reverse('predict_new:answer-submit', kwargs=kwargs)
 
-        return dict_answer_count
+    def get_url_answer_confirm(self, subject_field):
+        kwargs = {
+            'exam_year': self.exam_year, 'exam_exam': self.exam_exam,
+            'exam_round': self.exam_round, 'subject_field': subject_field,
+        }
+        return reverse('predict_new:answer-confirm', kwargs=kwargs)
 
-    @staticmethod
-    def get_list_answer_empty(problem_count: int) -> list:
-        answer_empty = []
-        for i in range(1, problem_count + 1):
-            answer_empty.append({'no': i, 'ans': ''})
-        return answer_empty
-
-    def get_list_answer_temp(
-            self,
-            request: HtmxHttpRequest,
-            sub: str,
-            queryset: PsatSubmittedAnswer | None = None
-    ) -> list:
-        problem_count: int = self.PROBLEM_COUNT[sub]
-        answer_temp: list = self.get_list_answer_empty(problem_count=problem_count)
-        if queryset is None:
-            queryset = self.qs_submitted_answer.filter(student__user=request.user)
-        for qs in queryset:
-            qs: PsatSubmittedAnswer
-            if qs.subject == sub:
-                answer_temp[qs.number - 1] = {'no': qs.number, 'ans': qs.answer}
-        return answer_temp
-
-    def get_tuple_data_answer_student(
-            self, request: HtmxHttpRequest,
-            data_answer_rate: dict | None,
-    ) -> tuple[dict[str, list], dict[str, int], dict[str, bool]]:
-        qs_answer_final: PsatStudent = self.get_obj_student_answer(request=request)
-        qs_answer_temp: QuerySet[PsatSubmittedAnswer] = self.qs_submitted_answer.filter(student__user=request.user)
-
-        data_answer_student: dict[str, list] = qs_answer_final.answer
-        data_answer_count: dict[str, int] = qs_answer_final.answer_count
-        data_answer_confirmed: dict[str, bool] = qs_answer_final.answer_confirmed
-
-        for field, value in data_answer_student.items():
-            for answer_student in value:
-                number = answer_student['no']
-                ans_number = answer_student['ans']
-                answer_rate: PsatAnswerCount = data_answer_rate[field][number - 1]
-                answer_student['rate_selection'] = getattr(answer_rate, f'rate_{ans_number}')
-
-        return data_answer_student, data_answer_count, data_answer_confirmed
-
-    def create_submitted_answer(self, request: HtmxHttpRequest, sub: str) -> PsatSubmittedAnswer:
-        student = self.get_obj_student(request=request)
-        number = request.POST.get('number')
-        answer = request.POST.get('answer')
-        with transaction.atomic():
-            submitted_answer, _ = PsatSubmittedAnswer.objects.get_or_create(student=student, subject=sub, number=number)
-            submitted_answer.answer = answer
-            submitted_answer.save()
-            submitted_answer.refresh_from_db()
-            return submitted_answer
-
-    def get_tuple_answer_string_confirm(self, request: HtmxHttpRequest, sub: str) -> tuple[str, bool]:
-        answer_temp: list = self.get_list_answer_temp(request=request, sub=sub)
-        is_confirmed = True
-
-        answer_list: list[str] = []
-        for answer in answer_temp:
-            ans_number = answer['ans_number']
-            if ans_number == '':
-                is_confirmed = False
-            else:
-                answer_list.append(str(ans_number))
-        answer_string = ','.join(answer_list) if is_confirmed else ''
-        return answer_string, is_confirmed
-
-    def get_str_next_url(self, student_answer: PsatStudent) -> str:
-        for sub in self.PROBLEM_COUNT.keys():
-            field = self.SUBJECT_VARS[sub][1]
-            is_confirmed = getattr(student_answer, f'{field}_confirmed')
-            if not is_confirmed:
-                return reverse_lazy('predict:answer-input', args=[sub])
-        return reverse_lazy('predict_test:index')
-
-    def get_dict_data_answer_predict(self, qs_answer_count) -> dict:
-        data_answer_predict = {subject: [] for subject in self.PROBLEM_COUNT.keys()}
-        qs: PsatAnswerCount
-        for qs in qs_answer_count:
-            field = self.SUBJECT_VARS[qs.subject][1]
-            count_list = [c for c in [qs.count_1, qs.count_2, qs.count_3, qs.count_4, qs.count_5]]
-            qs.ans_predict = count_list.index(max(count_list)) + 1
-            qs.rate_accuracy = getattr(qs, f'rate_{qs.ans_predict}')
-            data_answer_predict[field].append(qs)
-        return data_answer_predict
-
-    #
-    # def get_dict_data_answer_predict(self, data_answer_official: dict, qs_answer_count: PsatAnswerCount) -> dict:
-    #     data_answer_predict = {}
-    #     for qs in qs_answer_count:
-    #         field = self.SUBJECT_VARS[qs.subject][1]
-    #         problem_count = self.PROBLEM_COUNT[qs.subject]
-    #         data_answer_predict[qs.subject] = self.get_list_answer_empty(problem_count=problem_count)
-    #         for idx in range(problem_count):
-    #             ans_official = data_answer_official[field][idx]['ans'] if data_answer_official else None
-    #
-    #             answer_count_list = []  # list for counting answers
-    #             for i in range(1, 6):
-    #                 answer_count_list.append(problem[f'count_{i}'])
-    #             ans_predict = answer_count_list.index(max(answer_count_list)) + 1  # 예상 정답
-    #             rate_accuracy = problem[f'rate_{ans_predict}']  # 정확도
-    #
-    #             result = 'O'
-    #             if ans_official and ans_official != ans_predict:
-    #                 result = 'X'
-    #             data_answer_predict[sub].append(
-    #                 {
-    #                     'no': number,
-    #                     'ans': ans_predict,
-    #                     'result': result,
-    #                     'rate_accuracy': rate_accuracy,
-    #                 }
-    #             )
-
-    def get_dict_info_answer_student_empty(self, field):
-        sub = self.FIELD_VARS[field][0]
+    @property
+    def student_exam_info(self):
         return {
-            'icon': icon_set_new.ICON_SUBJECT[sub],
-            'sub': sub,
-            'subject': self.SUBJECT_VARS[sub][0],
-            'field': self.SUBJECT_VARS[sub][1],
+            'student__year': self.exam_year, 'student__exam': self.exam_exam, 'student__round': self.exam_round
         }
 
-    def get_dict_info_answer_student(
-            self,
-            data_answer_student: dict,
-            data_answer_count: dict,
-            data_answer_confirmed: dict,
-            data_answer_official: dict,
-            data_answer_predict: dict,
-    ) -> dict:
-        participants_count = self.get_dict_participants_count()
-        info_answer_student = {}
-        if data_answer_student:
-            psat_score_real = psat_score_predict = 0
-            psat_fields = ['eoneo', 'jaryo', 'sanghwang']
-
-            for field, value in data_answer_student.items():
-                problem_count = self.PROBLEM_COUNT[field]
-                answer_count = data_answer_count[field]
-                is_confirmed = data_answer_confirmed[field]
-
-                try:
-                    participants = participants_count[field]
-                except KeyError:
-                    participants = 0
-
-                correct_real_count = correct_predict_count = 0
-                for idx, answer_student in enumerate(value):
-                    ans_student = answer_student['ans']
-                    ans_official = data_answer_official[field][idx]['ans'] if data_answer_official else None
-                    ans_predict = data_answer_predict[field][idx].ans_predict
-
-                    try:
-                        ans_official_list = data_answer_official[field][idx]['ans_list']
-                    except (KeyError, TypeError):
-                        ans_official_list = None
-
-                    result_real = 'X'
-                    if ans_official_list and ans_student in ans_official_list:
-                        result_real = 'O'
-                    if ans_student == ans_official:
-                        result_real = 'O'
-                    answer_student['result_real'] = result_real
-                    correct_real_count += 1 if result_real == 'O' else 0
-
-                    result_predict = 'X'
-                    if ans_student == ans_predict:
-                        result_predict = 'O'
-                    answer_student['result_predict'] = result_predict
-                    correct_predict_count += 1 if result_predict == 'O' else 0
-
-                score_real = correct_real_count * 100 / problem_count
-                psat_score_real += score_real if field in psat_fields else 0
-
-                score_predict = correct_predict_count * 100 / problem_count
-                psat_score_predict += score_predict if field in psat_fields else 0
-
-                info_answer_student[field] = self.get_dict_info_answer_student_empty(field)
-                info_answer_student[field].update({
-                    'problem_count': problem_count,
-                    'participants': participants,
-                    'answer_count': answer_count,
-                    'score_real': correct_real_count * 100 / problem_count,
-                    'score_predict': score_predict,
-                    'is_confirmed': is_confirmed,
-                })
-
-            info_answer_student['psat_avg'] = self.get_dict_info_answer_student_empty('psat_avg')
-            info_answer_student['psat_avg'].update({
-                'participants': participants_count[max(participants_count)],
-                'problem_count': sum([val for val in self.PROBLEM_COUNT.values()]),
-                'answer_count': sum([val for val in data_answer_count.values()]),
-                'score_real': psat_score_real / 3,
-                'score_predict': psat_score_predict / 3,
-                'is_confirmed': all(data_answer_confirmed),
-            })
-        return info_answer_student
-
-    def get_dict_stat_data(
-            self,
-            student: PsatStudent,
-            statistics_type: str,
-            exam: PsatExam | None = None,
-    ):
-        filter_exp = {
-            'student__year': student.year,
-            'student__exam': student.exam,
-            'student__round': student.round,
+    @property
+    def sub_title(self):
+        default = {
+            '프모': f'제{self.exam_round}회 프라임모의고사 성적 예측',
+            '행시': f'{self.exam_year}년 5급공채 등 합격 예측',
+            '칠급': f'{self.exam_year}년 7급공채 등 합격 예측',
         }
-        if statistics_type == 'department':
-            filter_exp['student__department'] = student.department
-        if exam:
-            filter_exp['student__student_answers__confirmed_at__lte'] = exam.answer_official_opened_at
-        queryset = PsatStudent.objects.filter(**filter_exp).values('score')
+        return default[self.exam_exam]
 
-        score = {}
-        stat_data = {}
-        fields = list(self.PROBLEM_COUNT.keys())
-        fields.append('psat_avg')
-        for field in fields:
-            sub, subject = self.FIELD_VARS[field]
-            if field == 'psat_avg':
-                is_confirmed = all(student.student_answers.answer_confirmed.values())
-            else:
-                is_confirmed = student.student_answers.answer_confirmed[field]
+    @property
+    def sub_list(self):
+        default = ['헌법', '언어', '자료', '상황']
+        if self.exam_exam == '칠급':
+            default.remove('헌법')
+        return default
 
-            score[field] = []
-            for qs in queryset:
-                if field in qs['score'].keys():
-                    score[field].append(qs['score'][field])
+    @property
+    def subject_list(self):
+        default = ['헌법', '언어논리', '자료해석', '상황판단']
+        if self.exam_exam == '칠급':
+            default.remove('헌법')
+        return default
 
-            participants = len(score[field])
-            sorted_scores = sorted(score[field], reverse=True)
+    @property
+    def subject_vars(self):
+        default = {
+            '헌법': ('헌법', 'heonbeob'), '언어': ('언어논리', 'eoneo'), '자료': ('자료해석', 'jaryo'),
+            '상황': ('상황판단', 'sanghwang'), '평균': ('PSAT 평균', 'psat_avg'),
+        }
+        if self.exam_exam == '칠급':
+            default.pop('헌법')
+        return default
 
-            rank = sorted_scores.index(student.statistics.score[field]) + 1
-            top_10_threshold = max(1, int(participants * 0.1))
-            top_20_threshold = max(1, int(participants * 0.2))
+    @property
+    def subject_fields(self):
+        default = ['heonbeob', 'eoneo', 'jaryo', 'sanghwang']
+        if self.exam_exam == '칠급':
+            default.remove('heonbeob')
+        return default
 
-            stat_data[field] = {
-                'field': field,
-                'sub': sub,
-                'subject': subject,
-                'icon': icon_set_new.ICON_SUBJECT[sub],
-                'is_confirmed': is_confirmed,
-                'rank': rank,
-                'score': student.statistics.score[field],
-                'participants': participants,
-                'max_score': sorted_scores[0],
-                'top_score_10': sorted_scores[top_10_threshold - 1],
-                'top_score_20': sorted_scores[top_20_threshold - 1],
-                'avg_score': sum(score[field]) / participants,
-            }
-        return stat_data
+    @property
+    def score_fields(self):
+        default = ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
+        if self.exam_exam == '칠급':
+            default.remove('heonbeob')
+        return default
+
+    @property
+    def field_vars(self):
+        default = {
+            'heonbeob': ('헌법', '헌법'), 'eoneo': ('언어', '언어논리'), 'jaryo': ('자료', '자료해석'),
+            'sanghwang': ('상황', '상황판단'), 'psat_avg': ('평균', 'PSAT 평균'),
+        }
+        if self.exam_exam == '칠급':
+            default.pop('heonbeob')
+        return default
+
+    @property
+    def problem_count(self):
+        count = 25 if self.exam_exam == '칠급' else 40
+        default = {'heonbeob': 25, 'eoneo': count, 'jaryo': count, 'sanghwang': count}
+        if self.exam_exam == '칠급':
+            default.pop('heonbeob')
+        return default
+
+    @property
+    def icon_subject(self):
+        return [icon_set_new.ICON_SUBJECT[sub] for sub in self.sub_list]
+
+    @property
+    def info_tab(self):
+        return {
+            'id': ''.join([str(i) for i in range(len(self.subject_vars))]),
+        }
+
+    @property
+    def answer_tab(self):
+        return {
+            'id': ''.join([str(i) for i in range(len(self.sub_list))]),
+            'title': self.sub_list,
+            'prefix_submit': [f'{field}_submit' for field in self.subject_fields],
+            'prefix_predict': [f'{field}_predict' for field in self.subject_fields],
+            'url_answer_input': self.url_answer_input,
+        }
+
+    def get_empty_data_answer(self):
+        return [
+            [
+                {'no': no, 'ans': 0, 'field': field} for no in range(1, self.problem_count[field] + 1)
+            ] for field in self.subject_fields
+        ]
+
+    def get_field_idx(self, field):
+        return self.subject_fields.index(field)
