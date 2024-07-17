@@ -69,13 +69,14 @@ def get_data_answer_predict(exam_vars, qs_answer_count) -> list:
 
 def get_data_answer_student(
         exam_vars, student,
-        data_answer_official: list[list[dict]],
-        official_answer_uploaded: bool,
         data_answer_predict: list[list[dict]],
+        data_answer_official_tuple: tuple[list[list[dict]], bool],
 ) -> list:
     subject_fields = exam_vars.subject_fields
     problem_count = exam_vars.problem_count
     data_answer_student = get_empty_data_answer(fields=subject_fields, problem_count=problem_count)
+    data_answer_official = data_answer_official_tuple[0]
+    official_answer_uploaded = data_answer_official[1]
 
     for field_idx, value in enumerate(data_answer_predict):
         field = subject_fields[field_idx]

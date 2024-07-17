@@ -4,71 +4,12 @@ from .views import psat_views, psat_admin_views
 
 app_name = 'predict_new'
 
-default_patterns = [
-    path('', psat_views.index_view, name='index'),
-    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', psat_views.detail_view, name='psat-detail'),
-]
-
-student_patterns = [
-    path('create/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-         psat_views.student_create_view, name='student-create'),
-    path('department/<str:exam_exam>/', psat_views.department_list, name='department-list'),
-]
-
-answer_patterns = [
-    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
-         psat_views.answer_input_view, name='answer-input'),
-    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/submit/',
-         psat_views.answer_submit, name='answer-submit'),
-    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/confirm/',
-         psat_views.answer_confirm, name='answer-confirm'),
-]
-
-update_patterns = [
-    path('info/answer/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-         psat_views.update_info_answer, name='update-info-answer'),
-    path('answer/predict/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-         psat_views.update_answer_predict, name='update-answer-predict'),
-    path('answer/submit/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-         psat_views.update_answer_submit, name='update-answer-submit'),
-    path('score/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-         psat_views.update_score, name='update-score'),
-]
-
 admin_patterns = [
     path('', psat_admin_views.list_view, name='admin-list'),
     path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', psat_admin_views.detail_view, name='admin-detail'),
-    # path('statistics/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-    #      psat_admin_views.statistics_view, name='statistics'),
-    # path('statistics_virtual/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-    #      psat_admin_views.statistics_virtual_view, name='statistics_virtual'),
 ]
 
 # admin_patterns = [
-#     path('student/', admin_views.list_student_view, name='list_student'),
-#
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/statistics/',
-#          admin_views.statistics_view, name='statistics'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/statistics_virtual/',
-#          admin_views.statistics_virtual_view, name='statistics_virtual'),
-#
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/answer_count/헌법/',
-#          admin_views.answer_count_heonbeob_view, name='answer_count_heonbeob'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/answer_count/언어/',
-#          admin_views.answer_count_eoneo_view, name='answer_count_eoneo'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/answer_count/자료/',
-#          admin_views.answer_count_jaryo_view, name='answer_count_jaryo'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/answer_count/상황/',
-#          admin_views.answer_count_sanghwang_view, name='answer_count_sanghwang'),
-#
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/catalog/',
-#          admin_views.catalog_view, name='catalog'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/catalog_virtual/',
-#          admin_views.catalog_virtual_view, name='catalog_virtual'),
-#
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/user<int:user_id>/',
-#          admin_views.individual_index_view, name='individual'),
-#
 #     path('<str:category>/<int:year>/<str:ex>/<int:round>/update/answer/',
 #          admin_views.update_answer, name='update_answer'),
 #     path('<str:category>/<int:year>/<str:ex>/<int:round>/update/score/',
@@ -88,9 +29,12 @@ admin_patterns = [
 # ]
 
 urlpatterns = [
-    path('', include(default_patterns)),
-    path('student/', include(student_patterns)),
-    path('answer/', include(answer_patterns)),
-    path('update/', include(update_patterns)),
+    path('', psat_views.index_view, name='index'),
+    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         psat_views.detail_view, name='psat-detail'),
+    path('student/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         psat_views.student_create_view, name='student-create'),
+    path('answer/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
+         psat_views.answer_input_view, name='answer-input'),
     path('admin/', include(admin_patterns)),
 ]

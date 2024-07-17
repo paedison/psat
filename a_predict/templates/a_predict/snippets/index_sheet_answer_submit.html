@@ -4,7 +4,7 @@
 <div class="card-header">
     정답 확인
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
-       hx-get="{{ exam_vars.url_update_answer_submit }}">
+       hx-headers='{"Hx-Update":"answer_submit"}' hx-get="">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="sheet_answer_spinner" role="status"

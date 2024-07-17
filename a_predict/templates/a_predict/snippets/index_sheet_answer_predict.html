@@ -4,7 +4,7 @@
 <div class="card-header">
     예상 정답
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#answer_predict_spinner"
-       hx-get="{{ exam_vars.url_update_answer_predict }}">
+       hx-headers='{"Hx-Update":"answer_predict"}' hx-get="">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="answer_predict_spinner" role="status"
@@ -27,8 +27,6 @@
 
     <div class="tab-content" id="scoreAnswerPredictContent">
         {% for id in exam_vars.answer_tab.id %}
-            {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 as answer_official silent %}
-            {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 as answer_student silent %}
             {% cycle data_answer_predict.0 data_answer_predict.1 data_answer_predict.2 data_answer_predict.3 as answer_predict silent %}
             {% cycle exam_vars.answer_tab.prefix_predict.0 exam_vars.answer_tab.prefix_predict.1 exam_vars.answer_tab.prefix_predict.2 exam_vars.answer_tab.prefix_predict.3 as prefix silent %}
             {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
@@ -74,7 +72,7 @@
                             </th>
                         </tr>
                     {% elif exam.is_answer_predict_opened %}
-                        {% if answer_student|length == 25  %}
+                        {% if answer_predict|length == 25  %}
                             {% for _ in '012' %}
                                 {% cycle 10 10 5 as loop_counter silent %}
                                 {% cycle 0 10 20 as loop_min silent %}
@@ -88,7 +86,7 @@
                             {% endfor %}
                         {% endif %}
                     {% endif %}
-                        {% if answer_student|length == 25  %}
+                        {% if answer_predict|length == 25  %}
                             {% for _ in '012' %}
                                 {% cycle 10 10 5 as loop_counter silent %}
                                 {% cycle 0 10 20 as loop_min silent %}

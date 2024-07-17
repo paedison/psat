@@ -3,8 +3,9 @@
 
 <div class="card-header">
     답안 제출 현황
-    <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#info_answer_spinner"
-       hx-get="{{ exam_vars.url_update_info_answer }}">
+    <a class="text-decoration-none ms-2" href=""
+       hx-swap="none" hx-indicator="#info_answer_spinner"
+       hx-headers='{"Hx-Update":"info_answer"}' hx-get="">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="info_answer_spinner" role="status"

@@ -55,22 +55,6 @@ class PsatExamVars:
         return reverse('predict_new:psat-detail', kwargs=self.exam_url_kwargs)
 
     @property
-    def url_update_info_answer(self):
-        return reverse('predict_new:update-info-answer', kwargs=self.exam_url_kwargs)
-
-    @property
-    def url_update_answer_predict(self):
-        return reverse('predict_new:update-answer-predict', kwargs=self.exam_url_kwargs)
-
-    @property
-    def url_update_answer_submit(self):
-        return reverse('predict_new:update-answer-submit', kwargs=self.exam_url_kwargs)
-
-    @property
-    def url_update_score(self):
-        return reverse('predict_new:update-score', kwargs=self.exam_url_kwargs)
-
-    @property
     def url_answer_input(self):
         kwargs_dict = [
             {
@@ -82,20 +66,6 @@ class PsatExamVars:
             reverse('predict_new:answer-input', kwargs=kwargs)
             for kwargs in kwargs_dict
         ]
-
-    def get_url_answer_submit(self, subject_field):
-        kwargs = {
-            'exam_year': self.exam_year, 'exam_exam': self.exam_exam,
-            'exam_round': self.exam_round, 'subject_field': subject_field,
-        }
-        return reverse('predict_new:answer-submit', kwargs=kwargs)
-
-    def get_url_answer_confirm(self, subject_field):
-        kwargs = {
-            'exam_year': self.exam_year, 'exam_exam': self.exam_exam,
-            'exam_round': self.exam_round, 'subject_field': subject_field,
-        }
-        return reverse('predict_new:answer-confirm', kwargs=kwargs)
 
     @property
     def student_exam_info(self):
@@ -193,15 +163,6 @@ class PsatExamVars:
             'prefix_submit': [f'{field}_submit' for field in self.subject_fields],
             'prefix_predict': [f'{field}_predict' for field in self.subject_fields],
             'url_answer_input': self.url_answer_input,
-        }
-
-    @property
-    def answer_analysis_tab(self):
-        return {
-            'id': ''.join([str(i) for i in range(len(self.sub_list))]),
-            'title': self.sub_list,
-            'prefix_all': [f'{field}_all' for field in self.subject_fields],
-            'prefix_filtered': [f'{field}_filtered' for field in self.subject_fields],
         }
 
     def get_empty_data_answer(self):

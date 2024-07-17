@@ -12,7 +12,7 @@
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
         <a class="btn btn-sm btn-outline-primary ms-2"
            hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-           href="{% url 'predict_test:index' %}">
+           href="{% url 'predict_new:index' %}">
             일반 페이지
         </a>
     </h1>
@@ -22,10 +22,10 @@
                 <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{% url 'predict_test:index' %}" hx-boost="true">Predict</a>
+                <a href="{% url 'predict_new:index' %}" hx-boost="true">Predict</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{% url 'predict_test_admin:list' %}" hx-boost="true">Admin</a>
+                <a href="" hx-boost="true">Admin</a>
             </li>
             {% if category == 'PSAT' %}
                 <li class="breadcrumb-item">PSAT</li>
@@ -49,14 +49,14 @@
         </div>
 
         <div class="col-12">
-            <div id="answer_analysis" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                {% include 'a_predict/snippets/admin_detail_answer_analysis.html' %}
+            <div id="catalog" class="card htmx-fade-in htmx-fade-out" hx-swap="innerHTML swap:0.25s">
+                {% include 'a_predict/snippets/admin_detail_catalog.html' %}
             </div>
         </div>
 
         <div class="col-12">
-            <div id="catalog" class="card htmx-fade-in htmx-fade-out" hx-swap="innerHTML swap:0.25s">
-                {% include 'a_predict/snippets/admin_detail_catalog.html' %}
+            <div id="answer_analysis" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {% include 'a_predict/snippets/admin_detail_answer.html' %}
             </div>
         </div>
     </div>

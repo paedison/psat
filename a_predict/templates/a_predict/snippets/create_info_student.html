@@ -11,7 +11,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <form>
+    <form method="post">
+        {% csrf_token %}
         <input name="password" value="0" aria-label="password" hidden/>
         <input name="id_prime_id" value="" aria-label="Prime ID" hidden/>
 
@@ -20,8 +21,7 @@
                 <select id="id_unit" class="form-select mt-3 select2-filter-style"
                         name="unit" aria-label="Select unit"
                         hx-push-url="false" hx-trigger="change"
-                        hx-target="#id_department" hx-swap="outerHTML"
-                        hx-post="{% url 'predict_new:department-list' exam.exam %}">
+                        hx-target="#id_department" hx-swap="outerHTML" hx-patch="">
                     <option value="">모집 단위를 선택해주세요.</option>
                     {% for unit in units %}
                         {% if unit == form.unit.value %}
@@ -49,9 +49,7 @@
                 {{ form.name }}
                 {{ form.name.label_tag }}
             </div>
-            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                    hx-target="#main"
-                    hx-post="{% url 'predict_new:student-create' exam.year exam.exam exam.round %}">
+            <button class="btn btn-outline-secondary prevent_double_click" type="submit">
                 입력
             </button>
         </div>

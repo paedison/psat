@@ -18,9 +18,9 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-            {% for id in exam_vars.answer_analysis_tab.id %}
-                {% cycle exam_vars.answer_analysis_tab.title.0 exam_vars.answer_analysis_tab.title.1 exam_vars.answer_analysis_tab.title.2 exam_vars.answer_analysis_tab.title.3 as tab_title silent %}
-                {% cycle exam_vars.answer_analysis_tab.prefix_all.0 exam_vars.answer_analysis_tab.prefix_all.1 exam_vars.answer_analysis_tab.prefix_all.2 exam_vars.answer_analysis_tab.prefix_all.3 as prefix silent %}
+            {% for id in '0123' %}
+                {% cycle answer_prefix.0 answer_prefix.1 answer_prefix.2 answer_prefix.3 as prefix silent %}
+                {% cycle answer_title.0 answer_title.1 answer_title.2 answer_title.3 as tab_title silent %}
                 {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
@@ -28,14 +28,34 @@
     </nav>
 
     <div class="tab-content" id="answerAnalysisContent">
-        {% for id in exam_vars.answer_analysis_tab.id %}
-            {% cycle all_answer_page.0.0 all_answer_page.1.0 all_answer_page.2.0 all_answer_page.3.0 as page_obj silent %}
-            {% cycle all_answer_page.0.1 all_answer_page.1.1 all_answer_page.2.1 all_answer_page.3.1 as page_range silent %}
-            {% cycle all_answer_pagination_url.0 all_answer_pagination_url.1 all_answer_pagination_url.2 all_answer_pagination_url.3 as pagination_url silent %}
-            {% cycle exam_vars.answer_analysis_tab.prefix_all.0 exam_vars.answer_analysis_tab.prefix_all.1 exam_vars.answer_analysis_tab.prefix_all.2 exam_vars.answer_analysis_tab.prefix_all.3 as prefix silent %}
-            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
-            {% #nav_content prefix=prefix id=id %}{% partial table_data %}{% /nav_content %}
-        {% endfor %}
+        {% #nav_content prefix=answer_prefix.0 id='0' %}
+            {% partialdef answer_0 inline=True %}
+                {% with prefix=answer_prefix.0 page_obj=answer_0_page.0 page_range=answer_0_page.1 %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef %}
+        {% /nav_content %}
+        {% #nav_content prefix=answer_prefix.1 id='1' %}
+            {% partialdef answer_1 inline=True %}
+                {% with prefix=answer_prefix.1 page_obj=answer_1_page.0 page_range=answer_1_page.1 %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef %}
+        {% /nav_content %}
+        {% #nav_content prefix=answer_prefix.2 id='2' %}
+            {% partialdef answer_2 inline=True %}
+                {% with prefix=answer_prefix.2 page_obj=answer_2_page.0 page_range=answer_2_page.1 %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef %}
+        {% /nav_content %}
+        {% #nav_content prefix=answer_prefix.3 id='3' %}
+            {% partialdef answer_3 inline=True %}
+                {% with prefix=answer_prefix.3 page_obj=answer_3_page.0 page_range=answer_3_page.1 %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef %}
+        {% /nav_content %}
     </div>
 </div>
 

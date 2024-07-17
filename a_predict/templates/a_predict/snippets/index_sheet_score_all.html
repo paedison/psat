@@ -5,7 +5,7 @@
     성적 예측 I
     <span class="text-danger small">[전체 데이터]</span>
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_score_spinner"
-       hx-get="{{ exam_vars.url_update_score }}">
+       hx-headers='{"Hx-Update":"score_all"}' hx-get="">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="sheet_score_spinner" role="status"

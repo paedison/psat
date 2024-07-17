@@ -81,6 +81,7 @@ def create_student_instance(exam_vars, student, request):
             },
         }
         student.save()
+    return student
 
 
 def save_submitted_answer(student, subject_field: str, no: int, ans: int):

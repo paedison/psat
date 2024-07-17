@@ -1,6 +1,4 @@
-{% load partials %}
-
-<nav class="pt-3 me-auto ms-auto" aria-label="pagination" hx-target="#{{ target_id }}">
+<nav class="pt-3 me-auto ms-auto" aria-label="pagination" data-nothing hx-target="closest div">
     <ul class="pagination pagination-sm justify-content-center m-0">
         {% if page_obj.has_previous %}
             {% with page_num=page_obj.number|add:-1 chevron='left' %}
@@ -38,6 +36,7 @@
                 tabindex="-1" aria-disabled="true"
             {% else %}
                 hx-get="{{ pagination_url }}&page={{ page_num }}"
+                hx-headers='{"Hx-Pagination": "{{ prefix }}"}'
             {% endif %}>
             {% if chevron %}
                 <i class="fa-solid fa-chevron-{{ chevron }}"></i>

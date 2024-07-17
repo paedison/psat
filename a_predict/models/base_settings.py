@@ -493,6 +493,15 @@ class Student(TimeRecordField, RemarksField, YearExamRoundField, ChoiceMethod):
     @property
     def student_info(self): return f'{self.serial}-{self.name}'
 
+    @property
+    def exam_abbr(self):
+        exam_dict = {
+            '행시': '5급공채 등',
+            '입시': '입법고시',
+            '칠급': '7급공채 등',
+        }
+        return exam_dict[self.exam]
+
     def get_answer_count(self, subject_field):
         answer_student = self.answer[subject_field]
         return len([ans for ans in answer_student if ans])

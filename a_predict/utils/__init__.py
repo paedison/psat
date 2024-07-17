@@ -53,7 +53,6 @@ from .statistics import (
 )
 from .admin_view_utils import (
     update_stat_page,
-    get_admin_ans_count_data,
     update_answer_page,
     update_admin_catalog_page,
 )

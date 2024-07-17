@@ -27,8 +27,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% if exam_page_obj %}
-                    {% for obj in exam_page_obj %}
+                {% if exam_page_data.0 %}
+                    {% for obj in exam_page_data.0 %}
                         <tr class="text-center">
                             <td class="text-nowrap p-2">
                                 {{ obj.start_datetime|date:'Y.n.j(D)' }}
@@ -38,7 +38,7 @@
                                 </a>
                             </td>
                             <td class="text-nowrap p-2">{{ obj.year }}</td>
-                            <td class="text-nowrap p-2">{{ obj.exam }}</td>
+                            <td class="text-nowrap p-2">{{ obj.exam_abbr }}</td>
                             <td class="text-nowrap p-2">
                                 {% if obj.round %}{{ obj.round }}{% endif %}
                             </td>
