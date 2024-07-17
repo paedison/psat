@@ -302,6 +302,8 @@ def update_model_data(
         except model.DoesNotExist:
             model_data['create_list'].append(model(**matching_data))
             model_data['create_count'] += 1
+        except model.MultipleObjectsReturned:
+            print(f'{obj.id} is duplicated.')
 
 
 def add_obj_to_model_update_data(
