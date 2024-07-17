@@ -6,9 +6,9 @@ from django.utils import timezone
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from ..forms import PrimePoliceStudentForm
-from ..models import PrimePoliceExam, PrimePoliceStudent, PrimePoliceRegisteredStudent, PrimePoliceAnswerCount
-from ..utils import get_tuple_data_answer_official_student, get_dict_stat_data, get_dict_frequency_score
+from .. import forms
+from .. import models
+from .. import utils
 
 FIELD_VARS: dict[str, tuple] = {
     'hyeongsa': ('형사', '형사법'),
@@ -23,7 +23,7 @@ INFO = {'menu': 'score', 'view_type': 'primeScore'}
 
 
 def list_view(request: HtmxHttpRequest):
-    exam_list = PrimePoliceExam.objects.all()
+    exam_list = models.PrimePoliceExam.objects.all()
     page_number = request.GET.get('page', 1)
     paginator = Paginator(exam_list, 10)
     page_obj = paginator.get_page(page_number)
@@ -31,7 +31,7 @@ def list_view(request: HtmxHttpRequest):
 
     if request.user.is_authenticated:
         for obj in page_obj:
-            student = PrimePoliceStudent.objects.filter(
+            student = models.PrimePoliceStudent.objects.filter(
                 registered_students__user=request.user, year=obj.year, round=obj.round).first()
             if student:
                 obj.student = student
@@ -41,8 +41,7 @@ def list_view(request: HtmxHttpRequest):
 
     context = update_context_data(
         # base info
-        info=INFO,
-        title='Score',
+        info=INFO, title='Score',
         sub_title='프라임 경위공채 모의고사 성적표',
         current_time=timezone.now(),
 
@@ -54,28 +53,25 @@ def list_view(request: HtmxHttpRequest):
         page_obj=page_obj,
         page_range=page_range,
     )
-
-    if request.htmx:
-        return render(request, 'a_score/prime_police/list.html#list_main', context)
     return render(request, 'a_score/prime_police/list.html', context)
 
 
 def get_detail_context(request: HtmxHttpRequest, exam_year: int, exam_round: int) -> dict:
-    student = PrimePoliceStudent.objects.filter(
+    student = models.PrimePoliceStudent.objects.filter(
         year=exam_year, round=exam_round, registered_students__user=request.user).first()
     if not student:
         return redirect('score_prime_police:list')
 
-    exam = get_object_or_404(PrimePoliceExam, year=exam_year, round=exam_round)
-    qs_answer_count = PrimePoliceAnswerCount.objects.filter(
+    exam = get_object_or_404(models.PrimePoliceExam, year=exam_year, round=exam_round)
+    qs_answer_count = models.PrimePoliceAnswerCount.objects.filter(
         year=exam_year, round=exam_round).order_by('subject', 'number')
-    data_answer_official, data_answer_student = get_tuple_data_answer_official_student(
+    data_answer_official, data_answer_student = utils.get_tuple_data_answer_official_student(
         answer_student=student.answer, answer_official=exam.answer_official,
         qs_answer_count=qs_answer_count, subject_fields=list(FIELD_VARS.keys()))
 
-    stat_total = get_dict_stat_data(student=student, statistics_type='total', field_vars=FIELD_VARS)
+    stat_total = utils.get_dict_stat_data(student=student, statistics_type='total', field_vars=FIELD_VARS)
 
-    frequency_score = get_dict_frequency_score(student=student, target_score='sum')
+    frequency_score = utils.get_dict_frequency_score(student=student, target_score='sum')
 
     context = update_context_data(
         # base info
@@ -123,7 +119,7 @@ def detail_print_view(request: HtmxHttpRequest, exam_year: int, exam_round: int)
 
 
 def no_open_modal_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    exam = get_object_or_404(PrimePoliceExam, year=exam_year, round=exam_round)
+    exam = get_object_or_404(models.PrimePoliceExam, year=exam_year, round=exam_round)
     context = update_context_data(exam=exam)
     return render(request, 'a_score/prime_police/snippets/modal_no_open.html', context)
 
@@ -153,23 +149,21 @@ def no_predict_open_modal(request: HtmxHttpRequest):
 
 @login_required
 def student_connect_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    form = PrimePoliceStudentForm()
+    form = forms.PrimePoliceStudentForm()
     context = update_context_data(form=form, exam_year=exam_year, exam_round=exam_round)
     if request.method == "POST":
-        form = PrimePoliceStudentForm(data=request.POST, files=request.FILES)
+        form = forms.PrimePoliceStudentForm(data=request.POST, files=request.FILES)
         if form.is_valid():
-            form = form.save(commit=False)
-            target_student = PrimePoliceStudent.objects.get(
-                year=exam_year,
-                round=exam_round,
-                serial=form.serial,
-                name=form.name,
-                password=form.password,
-            )
-            registered_student, _ = PrimePoliceRegisteredStudent.objects.get_or_create(
-                user=request.user, student=target_student
-            )
-            context = update_context_data(context, form=form, user_verified=True)
+            serial = form.cleaned_data['serial']
+            name = form.cleaned_data['name']
+            target_student = models.PrimePoliceStudent.objects.filter(
+                year=exam_year, round=exam_round, serial=serial, name=name).first()
+            if target_student:
+                registered_student, _ = models.PrimePoliceRegisteredStudent.objects.get_or_create(
+                    user=request.user, student=target_student)
+                context = update_context_data(context, form=form, user_verified=True)
+            else:
+                context = update_context_data(context, form=form)
         else:
             context = update_context_data(context, form=form)
 

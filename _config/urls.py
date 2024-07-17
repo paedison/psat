@@ -14,7 +14,6 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),  # Dashboard
     path('psat/', include('psat.urls')),  # PSAT
     path('community/', include('community.urls')),  # Community
-    path('score/', include('score.urls')),  # Old score
     path('schedule/', include('schedule.urls')),  # Schedule
 
     # path('quiz/', include('quiz.urls')),  # Quiz
@@ -24,8 +23,10 @@ urlpatterns = [
     path('lecture/', include('lecture.urls')),  # Lecture
 
     path('score/', include('a_score.urls')),  # Score
-    path('a_predict/', include('a_predict.urls')),  # Predict
-    path('predict/', include('predict.urls')),  # Old predict
+    path('predict/', include('a_predict.urls')),  # Predict
+
+    path('score_old/', include('score.urls')),  # Old score
+    path('predict_old/', include('predict.urls')),  # Old predict
 
 ]
 

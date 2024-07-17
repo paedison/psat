@@ -1,0 +1,47 @@
+{% if exam.is_not_page_open %}
+    <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+        <i class="fa-solid fa-circle-exclamation"></i>
+            수험정보는 {{ exam.page_opened_at|date:'n/d(D) H:i' }}부터 입력 가능합니다.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% else %}
+    <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+        <i class="fa-solid fa-circle-exclamation"></i>
+            수험정보를 입력해주세요.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {% if no_student %}
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                수험 정보를 다시 확인해주세요.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
+        <div class="form-floating mt-3">
+            {{ form.serial }}
+            {{ form.serial.label_tag }}
+        </div>
+        {{ form.errors.serial }}
+
+        <div class="input-group mt-3">
+            <div class="form-floating">
+                {{ form.name }}
+                {{ form.name.label_tag }}
+            </div>
+            <button class="btn btn-outline-secondary prevent_double_click" type="submit">
+                입력
+            </button>
+        </div>
+        {{ form.errors.name }}
+    </form>
+    <div class="d-flex align-items-start mt-3">
+        <div class="badge bg-danger me-2"><i class="fa-regular fa-circle-check"></i> 참고</div>
+        <div class="text-danger small fw-bold">
+            입력하신 수험정보는 변경할 수 없으니 주의하시기 바랍니다.
+        </div>
+    </div>
+{% endif %}

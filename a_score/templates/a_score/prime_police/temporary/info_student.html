@@ -1,0 +1,34 @@
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+
+<div class="card-header">
+    <div class="d-flex">
+        수험정보
+{#        <div class="btn-group ms-auto">#}
+{#            <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"#}
+{#               href="{% url 'score_prime_police:print' exam_year exam_round %}" target="score_print">#}
+{#                인쇄하기#}
+{#            </a>#}
+{#        </div>#}
+    </div>
+</div>
+
+<div class="card-body">
+    <table class="table">
+        <tbody>
+            <tr>
+                <th class="px-0" scope="row">수험번호</th>
+                <td>{{ student.serial }}</td>
+            </tr>
+            <tr>
+                <th class="px-0" scope="row">직렬</th>
+                <td>{{ student.department }}</td>
+            </tr>
+            <tr>
+                <th class="px-0" scope="row">이름</th>
+                <td>{{ student.name }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

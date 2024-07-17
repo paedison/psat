@@ -1,0 +1,47 @@
+{% extends 'a_predict/_base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block main %}
+{{ info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>{{ icon_menu|safe }} {{ title }}
+        <span class="fs-6 text-secondary">{{ sub_title }}</span>
+        {% if user.is_staff %}
+            <a class="btn btn-sm btn-outline-primary ms-2"
+               hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
+               href="">
+                관리자 페이지
+            </a>
+        {% endif %}
+    </h1>
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a class="active" href="{% url 'score_new:temporary-index' %}" hx-boost="true">Score</a>
+            </li>
+            <li class="breadcrumb-item">프라임 경위공채</li>
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
+
+<section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header m-0">
+                    <span class="text-primary">수험 정보</span>
+                </div>
+                <div class="card-body p-4">
+                    <div id="infoStudent" class="htmx-fade-in htmx-fade-out">
+                        {% include 'a_score/prime_police/temporary/create_info_student.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}
