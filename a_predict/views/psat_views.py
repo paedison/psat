@@ -10,6 +10,11 @@ from .base_info import PsatExamVars
 from .. import utils
 
 
+def get_exam_vars(exam_year: int, exam_exam: str, exam_round: int):
+    if exam_exam == '행시' or exam_exam == '칠급':
+        return PsatExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
+
+
 def index_view(request: HtmxHttpRequest):
     info = {'menu': 'predict', 'view_type': 'predict'}
 
@@ -25,8 +30,13 @@ def index_view(request: HtmxHttpRequest):
 def detail_view(
         request: HtmxHttpRequest, exam_year: int, exam_exam: str, exam_round: int
 ):
-    main_page = 'main'
-    hx_update = request.headers.get('Hx-Update', main_page)
+    # Hx-Update header
+    hx_update = request.headers.get('Hx-Update', 'main')
+    is_main = hx_update == 'main'
+    is_answer_predict = hx_update == 'answer_predict'
+    is_answer_submit = hx_update == 'answer_submit'
+    is_info_answer = hx_update == 'info_answer'
+    is_score_all = hx_update == 'score_all'
 
     exam_vars = get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
     exam = utils.get_exam(exam_vars=exam_vars)
@@ -41,7 +51,7 @@ def detail_view(
         exam_vars=exam_vars, exam=exam, student=student,
     )
 
-    if hx_update == 'main':
+    if is_main:
         location = utils.get_location(exam_vars=exam_vars, student=student)
         context = update_context_data(context, location=location)
 
@@ -50,25 +60,25 @@ def detail_view(
     data_answer_predict = utils.get_data_answer_predict(
         exam_vars=exam_vars, qs_answer_count=qs_answer_count)
     answer_confirmed = utils.get_answer_confirmed(exam_vars=exam_vars, student=student)
-    if hx_update in ['main', 'answer_predict', 'info_answer']:
+    if is_main or is_answer_predict or is_info_answer:
         context = update_context_data(
             context, answer_confirmed=answer_confirmed, data_answer_predict=data_answer_predict)
-        if hx_update == 'answer_predict':
-            return render(request, 'a_predict/snippets/update_sheet_answer_predict.html', context)
+    if is_answer_predict:
+        return render(request, 'a_predict/snippets/update_sheet_answer_predict.html', context)
 
     # answer_submit
     data_answer_official_tuple = utils.get_data_answer_official(exam_vars=exam_vars, exam=exam)
     data_answer_student = utils.get_data_answer_student(
         exam_vars=exam_vars, student=student, data_answer_predict=data_answer_predict,
         data_answer_official_tuple=data_answer_official_tuple)
-    if hx_update in ['main', 'answer_submit']:
+    if is_main or is_answer_submit:
         context = update_context_data(
             context, answer_confirmed=answer_confirmed,
             data_answer_official=data_answer_official_tuple[0],
             data_answer_student=data_answer_student,
         )
-        if hx_update == 'answer_submit':
-            return render(request, 'a_predict/snippets/update_sheet_answer_submit.html', context)
+    if is_answer_submit:
+        return render(request, 'a_predict/snippets/update_sheet_answer_submit.html', context)
 
     # info_answer
     info_answer_student = utils.get_info_answer_student(
@@ -76,24 +86,19 @@ def detail_view(
         data_answer_student=data_answer_student,
         data_answer_predict=data_answer_predict,
     )
-    if hx_update in ['main', 'info_answer']:
+    if is_main or is_info_answer:
         context = update_context_data(context, info_answer_student=info_answer_student)
-        if hx_update == 'info_answer':
-            return render(request, 'a_predict/snippets/update_info_answer.html', context)
+    if is_info_answer:
+        return render(request, 'a_predict/snippets/update_info_answer.html', context)
 
     # score_all / score_filter
     stat = get_stat_context(exam_vars=exam_vars, exam=exam, student=student)
-    if hx_update in ['main', 'score_all']:
+    if is_main or is_score_all:
         context = update_context_data(context, **stat)
-        if hx_update == 'score_all':
-            return render(request, 'a_predict/snippets/update_sheet_score.html', context)
+    if is_score_all:
+        return render(request, 'a_predict/snippets/update_sheet_score.html', context)
 
     return render(request, 'a_predict/normal_detail.html', context)
-
-
-def get_exam_vars(exam_year: int, exam_exam: str, exam_round: int):
-    if exam_exam == '행시' or exam_exam == '칠급':
-        return PsatExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
 
 
 def get_stat_context(exam_vars, exam, student):
@@ -131,9 +136,8 @@ def student_create_view(
     )
 
     # department_list
-    if request.method == 'PATCH':
-        data = QueryDict(request.body.decode('utf-8'))
-        unit = data.get('unit')
+    if request.headers.get('select-department'):
+        unit = request.GET.get('unit')
         departments = utils.get_qs_department(exam_vars=exam_vars, unit=unit)
         context = update_context_data(departments=departments)
         return render(request, 'a_predict/snippets/department_list.html', context)
@@ -180,11 +184,10 @@ def answer_input_view(
         return redirect('predict_new:psat-detail', **exam_vars.exam_url_kwargs)
 
     # answer_submit
-    if request.method == 'PATCH':
-        data = QueryDict(request.body.decode('utf-8'))
+    if request.headers.get('answer-submit') and request.method == 'POST':
         try:
-            no = int(data.get('number'))
-            ans = int(data.get('answer'))
+            no = int(request.POST.get('number'))
+            ans = int(request.POST.get('answer'))
         except Exception as e:
             print(e)
             return reswap(HttpResponse(''), 'none')
@@ -200,7 +203,7 @@ def answer_input_view(
             return reswap(HttpResponse(''), 'none')
 
     # answer_confirm
-    if request.method == 'POST':
+    if request.headers.get('answer-confirm') and request.method == 'POST':
         subject = exam_vars.field_vars[subject_field][1]
         student, is_confirmed = utils.confirm_answer_student(
             exam_vars=exam_vars, student=student, subject_field=subject_field)

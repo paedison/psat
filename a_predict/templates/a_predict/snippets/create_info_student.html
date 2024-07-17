@@ -21,7 +21,8 @@
                 <select id="id_unit" class="form-select mt-3 select2-filter-style"
                         name="unit" aria-label="Select unit"
                         hx-push-url="false" hx-trigger="change"
-                        hx-target="#id_department" hx-swap="outerHTML" hx-patch="">
+                        hx-target="#id_department" hx-swap="outerHTML"
+                        hx-headers='{"select-department":true}' hx-get="">
                     <option value="">모집 단위를 선택해주세요.</option>
                     {% for unit in units %}
                         {% if unit == form.unit.value %}

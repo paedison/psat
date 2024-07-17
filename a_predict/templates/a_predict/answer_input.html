@@ -86,7 +86,8 @@
                         <input type="text" name="answer_id" value="{{ answer_student.id }}" aria-label="Answer ID" hidden/>
                         <button class="btn btn-primary prevent_double_click" type="submit"
                                 data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                hx-target="#modalContainer" hx-push-url="false" hx-swap="innerHTML" hx-post="">
+                                hx-target="#modalContainer" hx-push-url="false" hx-swap="innerHTML"
+                                hx-headers='{"answer-confirm":true}' hx-post="">
                             답안 제출
                         </button>
                     </form>
