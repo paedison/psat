@@ -48,7 +48,7 @@
                 {% else %}
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                    data-bs-toggle="modal" data-bs-target="#modalContainer"
-                   hx-get="{% url 'account_login_modal' %}"
+                   hx-get="{% url 'account_login_modal' %}" href=""
                 {% endif %}
             >
                 <img src="{% static 'image/prime/2025/police/banner1_490x257.jpg' %}" class="w-100" alt="Message"/>
@@ -58,9 +58,9 @@
                    href="{% url 'score_new:temporary-register' %}"
                    hx-boost="true"
                 {% else %}
-                   hx-get="{% url 'account_login_modal' %}"
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                    data-bs-toggle="modal" data-bs-target="#modalContainer"
+                   hx-get="{% url 'account_login_modal' %}" href=""
                 {% endif %}
             >
                 <img src="{% static 'image/prime/2025/police/banner3_1400x800.jpg' %}" class="mw-100" alt="Message"/>
