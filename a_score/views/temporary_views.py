@@ -33,9 +33,10 @@ def get_registered_student(request):
 
 
 def index_view(request: HtmxHttpRequest):
-    registered_student = get_registered_student(request=request)
-    if registered_student:
-        return redirect('score_new:temporary-result')
+    if request.user.is_authenticated:
+        registered_student = get_registered_student(request=request)
+        if registered_student:
+            return redirect('score_new:temporary-result')
     context = update_context_data(**BASE_INFO)
     return render(request, 'a_score/prime_police/temporary/police_index.html', context)
 
