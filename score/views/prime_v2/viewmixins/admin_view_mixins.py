@@ -79,7 +79,7 @@ class ListViewMixin(BaseViewMixin):
         for obj in page_obj:
             statistics = self.get_statistics(obj['year'], obj['round'])
             obj['statistics'] = statistics
-            obj['detail_url'] = reverse_lazy('prime_admin:detail_year_round', args=[obj['year'], obj['round']])
+            obj['detail_url'] = reverse_lazy('score_old:prime-admin-detail-year-round', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
 
@@ -143,7 +143,7 @@ class DetailViewMixin(BaseViewMixin):
 
         self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
         self.base_url = reverse_lazy(
-            'prime_admin:catalog_year_round', args=[self.year, self.round])
+            'score_old:prime-admin-catalog-year-round', args=[self.year, self.round])
         self.pagination_url = f'{self.base_url}?category={self.current_category}'
 
     def get_variable(self, variable: str) -> str:

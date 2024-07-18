@@ -48,7 +48,7 @@ class ListViewMixin(ConstantIconSet, BaseMixin):
                 )
                 obj['student'] = student
                 obj['student_score'] = score
-                obj['detail_url'] = reverse_lazy('prime:detail', args=[obj['year'], obj['round']])
+                obj['detail_url'] = reverse_lazy('score_old:prime-detail', args=[obj['year'], obj['round']])
         return page_obj, page_range
 
 

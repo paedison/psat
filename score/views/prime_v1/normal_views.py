@@ -103,7 +103,7 @@ def student_connect_view(request):
                 )
                 student.user_id = request.user.id
                 student.save()
-                return redirect(reverse_lazy('prime:detail_year_round', args=[year, round_]))
+                return redirect(reverse_lazy('score_old:prime-detail-year-round', args=[year, round_]))
             except models.student_model.DoesNotExist:
                 pass
 

@@ -5,7 +5,7 @@
             <div class="btn-group ms-auto">
                 <a class="btn btn-sm btn-outline-secondary" title="구글시트 내보내기"
                    hx-confirm="구글시트로 내보내시겠습니까?" href=""
-                   hx-get="{% url 'predict_admin:export_predict_to_google' %}"
+                   hx-get="{% url 'score_old:predict-admin-export-predict-to-google' %}"
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                    data-bs-toggle="modal" data-bs-target="#modalContainer">
                     구글시트로 내보내기
@@ -33,7 +33,7 @@
                             <td class="text-nowrap p-2">
                                 {{ obj.date|date:'Y.n.j(D)' }}
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
-                                   href="{% url 'predict_admin:detail' obj.category obj.year obj.ex obj.round %}">
+                                   href="{% url 'score_old:predict-admin-detail' obj.category obj.year obj.ex obj.round %}">
                                     클릭
                                 </a>
                             </td>

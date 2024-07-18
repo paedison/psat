@@ -72,7 +72,7 @@
 
                                         {% partialdef update_student inline=True %} {# update_student partial #}
                                             <a class="badge rounded-pill text-bg-warning"
-                                               hx-get="{% url 'score:student_update_modal' obj.student.id %}" href=""
+                                               hx-get="{% url 'score_old:psat-student-update-modal' obj.student.id %}" href=""
                                                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
                                                 수정
@@ -88,7 +88,7 @@
                                     <td class="text-nowrap p-2">
                                         {% partialdef create_student inline=True %} {# create_student partial #}
                                             <a class="badge rounded-pill text-bg-warning mx-2"
-                                               hx-get="{% url 'score:student_create_modal' obj.year obj.ex %}" href=""
+                                               hx-get="{% url 'score_old:psat-student-create-modal' obj.year obj.ex %}" href=""
                                                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
                                                 입력
@@ -122,12 +122,12 @@
                                 {% if user.is_authenticated %}
                                     {% if obj.student %}
                                         <a class="badge rounded-pill text-bg-success" hx-boost="true"
-                                           href="{% url 'score:detail_year_ex' obj.year obj.ex %}">
+                                           href="{% url 'score_old:psat-detail-year-ex' obj.year obj.ex %}">
                                             확인
                                         </a>
                                     {% else %}
                                         <a class="badge rounded-pill text-bg-danger" href="" hx-push-url="false"
-                                           hx-get="{% url 'score:no_student_modal' %}" hx-target="#modalContainer"
+                                           hx-get="{% url 'score_old:psat-no-student-modal' %}" hx-target="#modalContainer"
                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
                                             미응시
                                         </a>
@@ -145,7 +145,7 @@
                                         {% if target.data %}
                                             {% if target.temporary %}
                                                 <a class="badge rounded-pill text-bg-warning" hx-boost="true"
-                                                   href="{% url 'score:detail_year_ex' obj.year obj.ex %}">
+                                                   href="{% url 'score_old:psat-detail-year-ex' obj.year obj.ex %}">
                                                     작성 중
                                                 </a>
                                             {% elif target.confirmed %}

@@ -19,7 +19,7 @@
                             {{ student.serial }}
                             {% partialdef update_student inline=True %}
                                 <a class="badge rounded-pill text-bg-warning mx-2"
-                                   hx-get="{% url 'score:student_update_modal' student.id %}" href=""
+                                   hx-get="{% url 'score_old:psat-student-update-modal' student.id %}" href=""
                                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
                                     수정
@@ -28,7 +28,7 @@
                         {% else %}
                             {% partialdef create_student inline=True %}
                                 <a class="badge rounded-pill text-bg-warning mx-2"
-                                   hx-get="{% url 'score:student_create_modal' year ex %}" href=""
+                                   hx-get="{% url 'score_old:psat-student-create-modal' year ex %}" href=""
                                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
                                     입력

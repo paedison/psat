@@ -17,7 +17,7 @@
         {% if user.is_staff %}
             <a class="btn btn-sm btn-outline-primary ms-2"
                hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-               href="{% url 'prime_admin:list' %}">
+               href="{% url 'score_old:prime-admin-list' %}">
                 관리자 페이지
             </a>
         {% endif %}
@@ -29,7 +29,7 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'prime:list' %}" hx-boost="true">Prime</a>
+                <a class="active" href="{% url 'score_old:prime-list' %}" hx-boost="true">Prime</a>
             </li>
         </ol>
     </nav>
@@ -60,14 +60,14 @@
                                         {% if student %}
                                             <div class="col-6 text-sm-start">
                                                 <a class="btn btn-outline-primary" hx-target="#main"
-                                                   href="{% url 'predict:student_create' %}" hx-boost="true">
+                                                   href="{% url 'score_old:predict-student-create' %}" hx-boost="true">
                                                     성적 예측하기
                                                 </a>
                                             </div>
                                         {% else %}
                                             <div class="col-6 text-sm-start">
                                                 <a class="btn btn-outline-primary" hx-target="#main"
-                                                   href="{% url 'predict:index' %}" hx-boost="true">
+                                                   href="{% url 'score_old:predict-index' %}" hx-boost="true">
                                                     성적 예측하기
                                                 </a>
                                             </div>
@@ -79,7 +79,7 @@
                                     {% else %}
                                         <div class="col-6 text-sm-start">
                                             <a class="btn btn-outline-primary"
-                                               hx-get="{% url 'prime:no_predict_open_modal' %}" href=""
+                                               hx-get="{% url 'score_old:prime-no-predict-open-modal' %}" href=""
                                                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
                                                 성적 예측하기
@@ -152,8 +152,8 @@
                                                                     {% if user.is_staff %}
                                                                         <a class="badge rounded-pill text-bg-danger"
                                                                            hx-confirm="수험 정보를 삭제하시겠습니까?"
-                                                                           href="{% url 'prime:student_reset' obj.year obj.round %}"
-                                                                           hx-post="{% url 'prime:student_reset' obj.year obj.round %}">
+                                                                           href="{% url 'score_old:prime-student-reset' obj.year obj.round %}"
+                                                                           hx-post="{% url 'score_old:prime-student-reset' obj.year obj.round %}">
                                                                             삭제
                                                                         </a>
                                                                     {% endif %}
@@ -161,7 +161,7 @@
                                                             {% else %}
                                                                 {% partialdef input_button inline=True %} {# input_button partial #}
                                                                     <a class="badge rounded-pill text-bg-warning" href=""
-                                                                       hx-get="{% url 'prime:student_connect_modal' obj.year obj.round %}"
+                                                                       hx-get="{% url 'score_old:prime-student-connect-modal' obj.year obj.round %}"
                                                                        hx-target="#modalContainer" hx-swap="innerHTML"
                                                                        hx-push-url="false"
                                                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
@@ -207,7 +207,7 @@
                                                                 </a>
                                                             {% else %}
                                                                 <a class="badge rounded-pill text-bg-danger"
-                                                                   hx-get="{% url 'prime:no_student_modal' obj.year obj.round %}" href=""
+                                                                   hx-get="{% url 'score_old:prime-no-student-modal' obj.year obj.round %}" href=""
                                                                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
                                                                     미응시
@@ -257,7 +257,7 @@
                                                 {% else %}
                                                     <td class="text-nowrap p-2" colspan="8">
                                                         <a class="badge rounded-pill text-bg-danger" href=""
-                                                           hx-get="{% url 'prime:no_open_modal' obj.year obj.round %}"
+                                                           hx-get="{% url 'score_old:prime-no-open-modal' obj.year obj.round %}"
                                                            hx-target="#modalContainer" hx-swap="innerHTML"
                                                            hx-push-url="false"
                                                            data-bs-toggle="modal" data-bs-target="#modalContainer">

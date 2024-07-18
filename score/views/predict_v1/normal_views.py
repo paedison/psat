@@ -30,7 +30,7 @@ class IndexView(
             if self.request.user.is_admin or self.request.user.is_staff:
                 context = self.get_context_data()
                 return self.render_to_response(context)
-        return HttpResponseRedirect(reverse_lazy('prime:list'))
+        return HttpResponseRedirect(reverse_lazy('score_old:prime-list'))
 
     def post(self, request, *args, **kwargs):
         return self.get(self, request, *args, **kwargs)
@@ -125,7 +125,7 @@ class StudentCreateView(
                 self.get_properties()
                 context = self.get_context_data()
                 return self.render_to_response(context)
-        return HttpResponseRedirect(reverse_lazy('prime:list'))
+        return HttpResponseRedirect(reverse_lazy('score_old:prime-list'))
 
     def post(self, request, *args, **kwargs):
         self.get_properties()
@@ -140,7 +140,7 @@ class StudentCreateView(
             form.ex = self.ex
             form.round = self.round
             form.save()
-        return HttpResponseRedirect(reverse_lazy('predict:answer_input', args=['헌법']))
+        return HttpResponseRedirect(reverse_lazy('score_old:predict-answer-input', args=['헌법']))
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
@@ -204,9 +204,9 @@ class AnswerInputView(
     def get(self, request, *args, **kwargs):
         self.get_properties()
         if not self.student:
-            return HttpResponseRedirect(reverse_lazy('predict:student_create'))
+            return HttpResponseRedirect(reverse_lazy('score_old:predict-student-create'))
         if self.is_confirmed:
-            return HttpResponseRedirect(reverse_lazy('predict:index'))
+            return HttpResponseRedirect(reverse_lazy('score_old:predict-index'))
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -284,7 +284,7 @@ class AnswerConfirmView(
 
     def get(self, request, *args, **kwargs):
         self.get_properties()
-        return HttpResponseRedirect(reverse_lazy('predict:answer_input', args=[self.sub]))
+        return HttpResponseRedirect(reverse_lazy('score_old:predict-answer-input', args=[self.sub]))
 
     def post(self, request, *args, **kwargs):
         self.get_properties()

@@ -208,14 +208,14 @@
             {% if subject == 'heonbeob' %}
                 {% for i in '1234' %}
                     <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score:no_student_modal' year ex %}" hx-swap="innerHTML"
+                         hx-get="{% url 'score_old:psat-no-student-modal' year ex %}" hx-swap="innerHTML"
                          hx-target="#modalContainer" data-bs-toggle="modal"
                          data-bs-target="#modalContainer">{{ i }}</div>
                 {% endfor %}
             {% else %}
                 {% for i in '12345' %}
                     <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score:no_student_modal' year ex %}" hx-swap="innerHTML"
+                         hx-get="{% url 'score_old:psat-no-student-modal' year ex %}" hx-swap="innerHTML"
                          hx-target="#modalContainer" data-bs-toggle="modal"
                          data-bs-target="#modalContainer">{{ i }}</div>
                 {% endfor %}

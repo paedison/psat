@@ -21,7 +21,7 @@
                 <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict:index' %}" hx-boost="true">Predict</a>
+                <a class="active" href="{% url 'predict_new:index' %}" hx-boost="true">Predict</a>
             </li>
             <li class="breadcrumb-item">{{ exam.get_year_display }}</li>
         </ol>

@@ -24,9 +24,9 @@
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
                 {% if category == 'PSAT' %}
-                    <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
+                    <a href="{% url 'score_old:psat-list' %}" hx-post="{% url 'score_old:psat-list' %}">PSAT</a>
                 {% elif category == 'Prime' %}
-                    <a href="{% url 'prime:list' %}" hx-post="{% url 'prime:list' %}">Prime</a>
+                    <a href="{% url 'score_old:prime-list' %}" hx-post="{% url 'score_old:prime-list' %}">Prime</a>
                 {% endif %}
             </li>
             {% if round %}

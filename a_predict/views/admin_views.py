@@ -1,8 +1,5 @@
-from django.utils import timezone
 from django.views import generic
 
-from .normal_views_old import IndexView
-from a_predict.utils import get_all_score_stat_sub_dict
 from .viewmixins import admin_view_mixins, base_mixins
 
 
@@ -257,51 +254,6 @@ class CatalogVirtualView(DetailPartialView):
         }
 
 
-class IndividualIndexView(
-    base_mixins.OnlyStaffAllowedMixin,
-    IndexView,
-):
-    template_name = 'a_predict/admin/predict_individual_index.html'
-
-    def get_properties(self):
-        self.year = self.kwargs.get('year')
-        self.ex = self.kwargs.get('ex')
-        self.round = self.kwargs.get('round')
-
-        self.exam = self.get_exam()
-        self.sub_title = self.get_sub_title()
-        self.departments = self.department_model.objects.filter(unit__exam__abbr=self.ex).values()
-
-        user_id = self.kwargs.get('user_id')
-        self.student = self.get_student(user_id)  # Check
-        self.location = self.get_location()
-
-        self.problem_count_dict = self.get_problem_count_dict()
-        self.answer_correct_dict = self.get_answer_correct_dict()
-
-        self.all_answer_count = self.get_all_answer_count()
-        self.dataset_answer_student = self.get_dataset_answer_student(self.student)  # Check
-        self.answer_student_status = self.get_answer_student_status()
-        self.participant_count = self.get_participant_count()
-
-        self.data_answer = self.get_data_answer()
-        self.info_answer_student = self.get_info_answer_student()
-
-        self.all_score_stat = {'전체': '', '직렬': ''}
-        self.score_student = {}
-        self.filtered_all_score_stat = {'전체': '', '직렬': ''}
-        self.filtered_score_student = {}
-
-        if timezone.now() > self.exam.answer_open_datetime and self.student:
-            statistics_student = self.calculate_score()
-            self.all_score_stat = get_all_score_stat_sub_dict(self.get_statistics_qs, self.student)
-            self.score_student = self.get_score_student(statistics_student)
-            self.update_info_answer_student()
-            if statistics_student.student.statistics_virtual.updated_at < self.exam.answer_open_datetime:
-                self.filtered_all_score_stat = get_all_score_stat_sub_dict(self.get_filtered_statistics_qs, self.student)
-                self.filtered_score_student = self.get_filtered_score_student(statistics_student)
-
-
 class PrintView(
     DetailView,
     generic.TemplateView,
@@ -433,8 +385,6 @@ list_view = ListView.as_view()
 list_student_view = ListStudentView.as_view()
 
 detail_view = DetailView.as_view()
-
-individual_index_view = IndividualIndexView.as_view()
 
 update_answer = UpdateAnswer.as_view()
 update_score = UpdateScore.as_view()

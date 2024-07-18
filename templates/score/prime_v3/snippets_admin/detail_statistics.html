@@ -5,15 +5,15 @@
         <span>제{{ round }}회 | 성적 통계</span>
         <div class="btn-group ms-auto">
             <a class="btn btn-sm btn-outline-secondary" title="목록"
-               href="{% url 'prime_admin:list' %}" hx-post="{% url 'prime_admin:list' %}">
+               href="{% url 'score_old:prime-admin-list' %}" hx-post="{% url 'score_old:prime-admin-list' %}">
                 목록
             </a>
             <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"
-               href="{% url 'prime_admin:print' year round %}" target="_blank">
+               href="{% url 'score_old:prime-admin-print' year round %}" target="_blank">
                 인쇄하기
             </a>
             <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-               href="{% url 'prime_admin:export_statistics' year round %}">
+               href="{% url 'score_old:prime-admin-export-statistics' year round %}">
                 Excel로 내보내기
             </a>
         </div>

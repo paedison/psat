@@ -56,14 +56,14 @@
                                 {% if obj.student %}
                                     {{ obj.student.department.name }}
                                     <a class="badge rounded-pill text-bg-warning"
-                                       hx-get="{% url 'score:student_update_modal' obj.student.id %}" href=""
+                                       hx-get="{% url 'score_old:psat-student-update-modal' obj.student.id %}" href=""
                                        hx-target="#modalContainer" hx-swap="innerHTML"
                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         수정
                                     </a>
                                 {% else %}
                                     <a class="badge rounded-pill text-bg-warning"
-                                       hx-get="{% url 'score:student_create_modal' obj.year obj.ex %}" href=""
+                                       hx-get="{% url 'score_old:psat-student-create-modal' obj.year obj.ex %}" href=""
                                        hx-target="#modalContainer" hx-swap="innerHTML"
                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         입력
@@ -106,12 +106,12 @@
 {% partialdef process_badge %}
     {% if target.status is None %}
         <a class="badge rounded-pill text-bg-primary" href="" hx-swap="innerHTML swap:0.25s"
-           hx-get="{% url 'score:detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
+           hx-get="{% url 'score_old:psat-detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
             작성 전
         </a>
     {% elif target.status is False %}
         <a class="badge rounded-pill text-bg-warning" href="" hx-swap="innerHTML swap:0.25s"
-           hx-get="{% url 'score:detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
+           hx-get="{% url 'score_old:psat-detail' target.exam.id %}" hx-target="#main" hx-push-url="true">
             작성 중
         </a>
     {% elif target.status is True %}

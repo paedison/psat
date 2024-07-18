@@ -25,7 +25,7 @@
     {% #content_row class3='p-4' %}
         <div class="col-12 d-flex align-items-center justify-content-between pb-2">
             <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
-               hx-post="{% url 'score:list' %}" hx-target="#main"
+               hx-post="{% url 'score_old:psat-list' %}" hx-target="#main"
                hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
                 {{ BOARD_ICON_SET.list|safe }}
             </a>
@@ -46,7 +46,7 @@
             <div id="result"></div>
         <div class="col-12 d-flex align-items-center justify-content-between pb-2">
             <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
-               hx-post="{% url 'score:list' %}" hx-target="#main"
+               hx-post="{% url 'score_old:psat-list' %}" hx-target="#main"
                hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
                 {{ BOARD_ICON_SET.list|safe }}
             </a>
@@ -67,7 +67,7 @@
                 </a>
             </p>
             <div id="p{{ problem.id }}_answer" class="d-flex justify-content-center align-content-center me-3"
-                 hx-post="{% url 'score:submit' problem.id %}" hx-swap="innerHTML"
+                 hx-post="{% url 'score_old:psat-submit' problem.id %}" hx-swap="innerHTML"
                  hx-include="#p{{ problem.id }}_answer>input[name='answer']:checked"
                  hx-include="#p{{ problem.id }}" hx-target="this" hx-trigger="change">
                 {% partial initial_form %}
@@ -110,7 +110,7 @@
         {% csrf_token %}
         <input type="text" name="exam" value="{{ exam.id }}" aria-label="Exam ID" hidden/>
         <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
-                hx-post="{% url 'score:confirm_modal' exam.id %}" hx-swap="innerHTML" hx-trigger="click"
+                hx-post="{% url 'score_old:psat-confirm-modal' exam.id %}" hx-swap="innerHTML" hx-trigger="click"
                 data-bs-toggle="modal" data-bs-target="#modalContainer">
             최종 답안 제출
         </button>

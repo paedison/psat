@@ -26,7 +26,7 @@
     {% #content_row class3='p-4' %}
         <div class="col-12 d-flex align-items-center justify-content-between pb-2">
             <a class="btn btn-circle btn-sm btn-outline-secondary" href=""
-               hx-post="{% url 'score:list' %}" hx-target="#main"
+               hx-post="{% url 'score_old:psat-list' %}" hx-target="#main"
                hx-swap="innerHTML swap:0.25s" hx-push-url="true" title="Score List">
                 {{ BOARD_ICON_SET.list|safe }}
             </a>

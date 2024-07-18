@@ -455,8 +455,8 @@ class AnswerConfirmViewMixin(ConstantIconSet, BaseMixin):
         )
         for sub in sub_dict.keys():
             if sub not in answer_sub_list:
-                return reverse_lazy('predict:answer_input', args=[sub])
-        return reverse_lazy('predict:index')
+                return reverse_lazy('score_old:predict-answer-input', args=[sub])
+        return reverse_lazy('score_old:predict-index')
 
     def update_answer_count(self, answer_student):
         problem_count = self.problem_count_dict[self.sub]

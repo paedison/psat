@@ -233,7 +233,7 @@ class StudentResetView(
             verified_user.delete()
         except self.verified_user_model.DoesNotExist:
             pass
-        list_url = reverse_lazy('prime:list')
+        list_url = reverse_lazy('score_old:prime-list')
         return HttpResponseRedirect(list_url)
 
 

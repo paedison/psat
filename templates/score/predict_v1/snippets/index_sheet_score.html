@@ -6,7 +6,7 @@
 <div class="card-header">
     성적 예측
     <a class="text-decoration-none ms-2" href="" hx-swap="none"
-       hx-get="{% url 'predict:update_sheet_score' %}">
+       hx-get="{% url 'score_old:predict-update-sheet-score' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
 </div>
@@ -85,7 +85,7 @@
                     {{ score_data.icon|safe }} {{ score_data.subject }}
                 {% else %}
                     <a class="text-decoration-none"
-                       href="{% url 'predict:answer_input' score_data.sub %}" hx-boost="true">
+                       href="{% url 'score_old:predict-answer-input' score_data.sub %}" hx-boost="true">
                         {{ score_data.icon|safe }} {{ score_data.subject }}
                     </a>
                 {% endif %}
@@ -95,7 +95,7 @@
                     {% if score_data.sub == '피셋' %}
                         <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                     {% else %}
-                        <a hx-boost="true" href="{% url 'predict:answer_input' score_data.sub %}">
+                        <a hx-boost="true" href="{% url 'score_old:predict-answer-input' score_data.sub %}">
                             <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                         </a>
                     {% endif %}

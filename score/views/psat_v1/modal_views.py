@@ -85,7 +85,7 @@ def student_update_view(request, student_id):
             student = form.save(commit=False)
             student.user = request.user
             student.save()
-    return redirect(reverse_lazy('score:list'))
+    return redirect(reverse_lazy('score_old:psat-list'))
 
 
 class ConfirmModalView(TemplateView):

@@ -5,7 +5,7 @@
 <div class="card-header">
     답안 확인
     <a class="text-decoration-none ms-2" href="" hx-swap="none"
-       hx-get="{% url 'predict:update_sheet_answer' %}">
+       hx-get="{% url 'score_old:predict-update-sheet-answer' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
 </div>
@@ -41,7 +41,7 @@
                     <tr class="text-center">
                         <th>
                             <a class="btn btn-outline-danger my-4"
-                               href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
+                               href="{% url 'score_old:predict-answer-input' info_answer.sub %}" hx-boost="true">
                                 답안을 제출해주세요.
                             </a>
                         </th>

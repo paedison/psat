@@ -92,7 +92,7 @@ class StudentConnectView(
             target_student.user_id = self.request.user.id
             target_student.save()
             success_url = reverse_lazy(
-                'prime:detail_year_round', args=[target_student.year, target_student.round]
+                'score_old:prime-detail-year-round', args=[target_student.year, target_student.round]
             )
             return HttpResponseRedirect(success_url)
         except self.student_model.DoesNotExist:

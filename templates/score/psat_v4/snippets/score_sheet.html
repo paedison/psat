@@ -95,7 +95,7 @@
                                     <span>모든 과목의 답안을 입력해주세요.</span>
                                 {% else %}
                                     <a class="badge rounded-pill text-bg-danger"
-                                       hx-get="{% url 'score:student_create_modal' year ex %}" href=""
+                                       hx-get="{% url 'score_old:psat-student-create-modal' year ex %}" href=""
                                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         수험 정보를 입력해주세요.

@@ -5,7 +5,7 @@
 <div class="card-header">
     답안 제출 현황
     <a class="text-decoration-none ms-2" href="" hx-swap="none"
-       hx-get="{% url 'predict:update_info_answer' %}">
+       hx-get="{% url 'score_old:predict-update-info-answer' %}">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
 </div>
@@ -107,7 +107,7 @@
                     {{ info_answer.icon|safe }} {{ info_answer.subject }}
                 {% else %}
                     <a class="text-decoration-none"
-                       href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
+                       href="{% url 'score_old:predict-answer-input' info_answer.sub %}" hx-boost="true">
                         {{ info_answer.icon|safe }} {{ info_answer.subject }}
                     </a>
                 {% endif %}
@@ -116,7 +116,7 @@
                 {% if info_answer.sub == '피셋' %}
                     <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                 {% else %}
-                    <a href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
+                    <a href="{% url 'score_old:predict-answer-input' info_answer.sub %}" hx-boost="true">
                         <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                     </a>
                 {% endif %}
@@ -127,7 +127,7 @@
                     <span class="badge rounded-pill text-bg-danger">미제출</span>
                 {% else %}
                     <a class="text-decoration-none"
-                       href="{% url 'predict:answer_input' info_answer.sub %}" hx-boost="true">
+                       href="{% url 'score_old:predict-answer-input' info_answer.sub %}" hx-boost="true">
                         {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                         <span class="badge rounded-pill text-bg-danger">미제출</span>
                     </a>

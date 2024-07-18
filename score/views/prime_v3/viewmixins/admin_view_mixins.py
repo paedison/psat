@@ -22,7 +22,7 @@ class OnlyStaffAllowedMixin(LoginRequiredMixin, UserPassesTestMixin):
         return self.request.user.is_staff
 
     def handle_no_permission(self):
-        return HttpResponseRedirect(reverse_lazy('prime:list'))
+        return HttpResponseRedirect(reverse_lazy('score_old:prime-list'))
 
 
 class ListViewMixin(ConstantIconSet, AdminBaseMixin):
@@ -42,7 +42,7 @@ class ListViewMixin(ConstantIconSet, AdminBaseMixin):
         self.exam_page_obj, self.exam_page_range = self.get_paginator_info(self.exam_list)
 
         self.student_page_obj, self.student_page_range = self.get_paginator_info(self.student_list)
-        self.student_base_url = reverse_lazy('prime_admin:list_student')
+        self.student_base_url = reverse_lazy('score_old:prime-admin-list-student')
         self.student_pagination_url = f'{self.student_base_url}?'
 
     def get_paginator_info(self, data) -> tuple:
@@ -81,7 +81,7 @@ class DetailViewMixin(ConstantIconSet, AdminBaseMixin):
 
         self.page_obj, self.page_range, self.student_ids = self.get_paginator_info()
         self.base_url = reverse_lazy(
-            'prime_admin:catalog_year_round', args=[self.year, self.round])
+            'score_old:prime-admin-catalog-year-round', args=[self.year, self.round])
         self.pagination_url = f'{self.base_url}?category={self.current_category}'
 
     def get_variable(self, variable: str) -> str:

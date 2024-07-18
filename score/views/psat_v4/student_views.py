@@ -90,7 +90,7 @@ class StudentCreateView(
             )
             year = new_student.year
             ex = new_student.department.unit.exam.abbr
-        success_url = reverse_lazy('score:detail_year_ex', args=[year, ex])
+        success_url = reverse_lazy('score_old:psat-detail-year-ex', args=[year, ex])
         return HttpResponseRedirect(success_url)
 
 
@@ -169,7 +169,7 @@ class StudentUpdateView(
 
         year = self.object.year
         ex = self.object.department.unit.exam.abbr
-        success_url = reverse_lazy('score:detail_year_ex', args=[year, ex])
+        success_url = reverse_lazy('score_old:psat-detail-year-ex', args=[year, ex])
 
         return HttpResponseRedirect(success_url)
 

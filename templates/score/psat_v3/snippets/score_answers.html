@@ -136,7 +136,7 @@
                 <input type="text" name="ex" value="{{ ex }}" aria-label="Exam" hidden/>
                 <input type="text" name="psat_id" value="{{ problems.0.psat_id }}" aria-label="PSAT ID" hidden/>
                 <button class="btn btn-primary" hx-target="#modalContainer" type="submit"
-                        hx-post="{% url 'score:confirm_modal' %}" hx-swap="innerHTML" hx-trigger="click"
+                        hx-post="{% url 'score_old:psat-confirm-modal' %}" hx-swap="innerHTML" hx-trigger="click"
                         hx-push-url="False"
                         data-bs-toggle="modal" data-bs-target="#modalContainer">
                     최종 답안 제출
@@ -180,7 +180,7 @@
             </a>
         </p>
         <div id="p{{ problem.id }}_answer" class="d-flex justify-content-center align-content-center me-3"
-             hx-post="{% url 'score:submit' problem.id %}" hx-swap="innerHTML" hx-push-url="false"
+             hx-post="{% url 'score_old:psat-submit' problem.id %}" hx-swap="innerHTML" hx-push-url="false"
              hx-include="#p{{ problem.id }}_answer>input[name='answer']:checked"
              hx-include="#p{{ problem.id }}" hx-target="this" hx-trigger="change">
             {% with target_answer=problem.answer_temporary target_problem=problem %}
@@ -233,14 +233,14 @@
             {% if subject == 'heonbeob' %}
                 {% for i in '1234' %}
                     <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score:no_student_modal' %}" hx-swap="innerHTML"
+                         hx-get="{% url 'score_old:psat-no-student-modal' %}" hx-swap="innerHTML"
                          hx-target="#modalContainer" data-bs-toggle="modal"
                          data-bs-target="#modalContainer">{{ i }}</div>
                 {% endfor %}
             {% else %}
                 {% for i in '12345' %}
                     <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score:no_student_modal' %}" hx-swap="innerHTML"
+                         hx-get="{% url 'score_old:psat-no-student-modal' %}" hx-swap="innerHTML"
                          hx-target="#modalContainer" data-bs-toggle="modal"
                          data-bs-target="#modalContainer">{{ i }}</div>
                 {% endfor %}

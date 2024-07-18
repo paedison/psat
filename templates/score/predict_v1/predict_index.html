@@ -14,14 +14,14 @@
         {% if user.is_staff %}
             <a class="btn btn-sm btn-outline-primary ms-2"
                hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-               href="{% url 'predict_admin:list' %}">
+               href="{% url 'score_old:predict-admin-list' %}">
                 관리자 페이지
             </a>
         {% endif %}
         {% if user.is_admin %}
             <a class="btn btn-sm btn-outline-primary ms-2"
                hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-               href="{% url 'predict_admin:test' %}">
+               href="{% url 'score_old:predict-admin-test' %}">
                 테스트 페이지
             </a>
         {% endif %}
@@ -33,7 +33,7 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict:index' %}" hx-boost="true">Predict</a>
+                <a class="active" href="{% url 'score_old:predict-index' %}" hx-boost="true">Predict</a>
             </li>
         </ol>
     </nav>
@@ -56,7 +56,7 @@
                             </div>
                         {% endif %}
                         <a class="btn btn-outline-primary ms-auto mt-4" hx-boost="true"
-                           href="{% url 'prime:list' %}">
+                           href="{% url 'score_old:prime-list' %}">
                             메인 페이지로 이동
                         </a>
                     </h5>

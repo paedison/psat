@@ -64,7 +64,7 @@
                 {% endpartialdef student_create_department %}
             {% else %}
                 <select id="id_unit" class="form-select" name="unit_id" aria-label="Select unit"
-                        hx-post="{% url 'predict:student_create_department' %}" hx-push-url="false"
+                        hx-post="{% url 'score_old:predict-student-create-department' %}" hx-push-url="false"
                         hx-trigger="change" hx-target="#student_create_department">
                     <option selected>모집 단위를 선택해주세요.</option>
                     {% for unit in units %}
@@ -90,7 +90,7 @@
                 {% if category == 'PSAT' %}
                     {% partialdef form_submit inline=True %} {# form_submit partial #}
                         <button class="btn btn-outline-secondary" type="submit" hx-target="#main"
-                                hx-post="{% url 'predict:student_create' %}">
+                                hx-post="{% url 'score_old:predict-student-create' %}">
                             입력
                         </button>
                     {% endpartialdef form_submit %}

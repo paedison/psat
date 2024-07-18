@@ -6,7 +6,7 @@
 <div class="card-header">
     <div class="d-flex align-items-center">
         성적 일람표
-        <form method="POST" action="{% url 'prime_admin:export_transcript' year round %}"
+        <form method="POST" action="{% url 'score_old:prime-admin-export-transcript' year round %}"
               class="ms-auto">
             {% csrf_token %}
             <div class="btn-group">

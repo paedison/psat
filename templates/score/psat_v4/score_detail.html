@@ -19,7 +19,7 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a href="{% url 'score:list' %}" hx-post="{% url 'score:list' %}">PSAT</a>
+                <a href="{% url 'score_old:psat-list' %}" hx-post="{% url 'score_old:psat-list' %}">PSAT</a>
             </li>
             <li class="breadcrumb-item">{{ year }}</li>
             <li class="breadcrumb-item active">{{ exam }}</li>
@@ -31,8 +31,8 @@
              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
     {% #content_row class1='col-12' %}
         <h5 class="card-title mb-0 text-end">
-            <a class="btn btn-sm btn-outline-secondary" href="{% url 'score:list' %}"
-               hx-post="{% url 'score:list' %}" title="Score List">
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'score_old:psat-list' %}"
+               hx-post="{% url 'score_old:psat-list' %}" title="Score List">
                 목록
             </a>
         </h5>

@@ -20,7 +20,7 @@
 
                             {% partialdef update_student inline=True %} {# update_student partial #}
                                 <a class="badge rounded-pill text-bg-warning mx-2"
-                                   hx-get="{% url 'score:student_update_modal' student.id %}" href=""
+                                   hx-get="{% url 'score_old:psat-student-update-modal' student.id %}" href=""
                                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
                                     수정
@@ -54,7 +54,7 @@
                     <tr class="text-center align-middle">
                         <td class="text-danger fs-6 py-4">
                             <a class="badge rounded-pill text-bg-danger"
-                               hx-get="{% url 'score:student_create_modal' year ex %}" href=""
+                               hx-get="{% url 'score_old:psat-student-create-modal' year ex %}" href=""
                                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                data-bs-toggle="modal" data-bs-target="#modalContainer">
                                 수험 정보를 입력해주세요.

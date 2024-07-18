@@ -111,7 +111,7 @@
         {% endfor %}
     </select>
     <button class="btn btn-outline-secondary" type="submit" data-bs-dismiss="modal"
-            hx-post="{% url 'score:student_create' %}" hx-target="#main">
+            hx-post="{% url 'score_old:psat-student-create' %}" hx-target="#main">
         입력
     </button>
 {% endpartialdef %}
@@ -150,7 +150,7 @@
                     {% endfor %}
                 </select>
                 <button class="btn btn-outline-secondary" type="submit" data-bs-dismiss="modal"
-                        hx-post="{% url 'score:student_update' student.id %}" hx-target="#main">
+                        hx-post="{% url 'score_old:psat-student-update' student.id %}" hx-target="#main">
                     수정
                 </button>
             </div>

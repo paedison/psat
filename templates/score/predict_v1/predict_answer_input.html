@@ -19,11 +19,11 @@
             </li>
             <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a href="{% url 'predict:index' %}" hx-boost="true">Predict</a>
+                <a href="{% url 'score_old:predict-index' %}" hx-boost="true">Predict</a>
             </li>
             <li class="breadcrumb-item">Answer</li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict:answer_input' sub %}" hx-boost="true">{{ sub }}</a>
+                <a class="active" href="{% url 'score_old:predict-answer-input' sub %}" hx-boost="true">{{ sub }}</a>
             </li>
         </ol>
     </nav>
@@ -37,7 +37,7 @@
                     <h5 class="card-title d-flex align-items-center">
                         {{ subject }} 답안 입력
                         <a class="btn btn-sm btn-outline-primary ms-auto" hx-boost="true"
-                           href="{% url 'predict:index' %}">
+                           href="{% url 'score_old:predict-index' %}">
                             성적 예측 페이지로 이동
                         </a>
                     </h5>
@@ -129,14 +129,14 @@
                     <form class="text-center mb-3">
                         <input type="text" name="answer_id" value="{{ answer_student.id }}" aria-label="Answer ID" hidden/>
                         <button class="btn btn-primary" hx-target="#modalContainer" type="submit" hx-push-url="false"
-                                hx-post="{% url 'predict:answer_confirm' sub %}" hx-swap="innerHTML"
+                                hx-post="{% url 'score_old:predict-answer-confirm' sub %}" hx-swap="innerHTML"
                                 data-bs-toggle="modal" data-bs-target="#modalContainer">
                             답안 제출
                         </button>
                     </form>
                     <div class="text-center">
                         <a class="btn btn-outline-primary" hx-boost="true"
-                           href="{% url 'predict:index' %}">
+                           href="{% url 'score_old:predict-index' %}">
                             성적 예측 페이지로 이동
                         </a>
                     </div>
@@ -155,7 +155,7 @@
     <div class="d-flex justify-content-center py-2">
         <div class="d-inline-block fw-bold text-secondary pe-2">{{ problem.number|stringformat:'02d' }}.</div>
         <div id="p{{ problem.number|stringformat:'02d' }}_answer"
-             hx-post="{% url 'predict:answer_submit' sub %}"
+             hx-post="{% url 'score_old:predict-answer-submit' sub %}"
              hx-include="#p{{ problem.number|stringformat:'02d' }}_answer>input[name='answer']:checked"
              hx-target="this" hx-trigger="change" hx-swap="innerHTML" hx-push-url="false">
             {% with target_answer=problem.answer_student target_problem=problem %}
@@ -207,14 +207,14 @@
             {% if subject == 'heonbeob' %}
                 {% for i in '1234' %}
                     <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score:no_student_modal' year ex %}" hx-swap="innerHTML"
+                         hx-get="{% url 'score_old:psat-no-student-modal' year ex %}" hx-swap="innerHTML"
                          hx-target="#modalContainer" data-bs-toggle="modal"
                          data-bs-target="#modalContainer">{{ i }}</div>
                 {% endfor %}
             {% else %}
                 {% for i in '12345' %}
                     <div class="btn btn-circle btn-outline-secondary btn-sm fs-6 mx-1 my-2"
-                         hx-get="{% url 'score:no_student_modal' year ex %}" hx-swap="innerHTML"
+                         hx-get="{% url 'score_old:psat-no-student-modal' year ex %}" hx-swap="innerHTML"
                          hx-target="#modalContainer" data-bs-toggle="modal"
                          data-bs-target="#modalContainer">{{ i }}</div>
                 {% endfor %}
