@@ -24,7 +24,14 @@ class PrimePoliceStudentForm(forms.ModelForm):
             attrs={'class': 'form-control form-control-sm', 'placeholder': '이름'}),
         error_messages={'required': '이름을 입력해주세요.'},
     )
+    password = forms.CharField(
+        label='비밀번호',
+        label_suffix='',
+        widget=forms.TextInput(
+            attrs={'class': 'form-control form-control-sm', 'placeholder': '비밀번호'}),
+        error_messages={'required': '비밀번호를 입력해주세요.'},
+    )
 
     class Meta:
         model = PrimePoliceStudent
-        fields = ['serial', 'name']
+        fields = ['serial', 'name', 'password']

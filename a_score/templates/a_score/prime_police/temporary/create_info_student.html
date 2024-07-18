@@ -11,12 +11,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <form method="post">
+    <form hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-post="">
         {% csrf_token %}
         {% if no_student %}
             <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
                 <i class="fa-solid fa-circle-exclamation"></i>
-                수험 정보를 다시 확인해주세요.
+                수험정보를 다시 확인해주세요.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         {% endif %}
@@ -27,10 +27,15 @@
         </div>
         {{ form.errors.serial }}
 
+        <div class="form-floating mt-3">
+            {{ form.name }}
+            {{ form.name.label_tag }}
+        </div>
+
         <div class="input-group mt-3">
             <div class="form-floating">
-                {{ form.name }}
-                {{ form.name.label_tag }}
+                {{ form.password }}
+                {{ form.password.label_tag }}
             </div>
             <button class="btn btn-outline-secondary prevent_double_click" type="submit">
                 입력

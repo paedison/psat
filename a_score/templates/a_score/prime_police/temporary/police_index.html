@@ -4,7 +4,7 @@
 {% load psat_filter %}
 
 {% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2025/police/banner1_490x257.png' %}"/>{% endblock %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2025/police/banner1_490x257.jpg' %}"/>{% endblock %}
 
 {% block main %}
 {{ info|json_script:'info' }}
@@ -46,7 +46,7 @@
                    hx-get="{% url 'account_login_modal' %}"
                 {% endif %}
             >
-                <img src="{% static 'image/prime/2025/police/banner1_490x257.png' %}" class="w-100" alt="Message"/>
+                <img src="{% static 'image/prime/2025/police/banner1_490x257.jpg' %}" class="w-100" alt="Message"/>
             </a>
             <a class="text-decoration-none d-none d-md-flex justify-content-center"
                 {% if user.is_authenticated %}
@@ -58,7 +58,7 @@
                    data-bs-toggle="modal" data-bs-target="#modalContainer"
                 {% endif %}
             >
-                <img src="{% static 'image/prime/2025/police/banner3_1400x800.png' %}" class="mw-100" alt="Message"/>
+                <img src="{% static 'image/prime/2025/police/banner3_1400x800.jpg' %}" class="mw-100" alt="Message"/>
             </a>
         </div>
 
