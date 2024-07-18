@@ -1,7 +1,7 @@
-{% if exam.is_not_page_open %}
+{% if exam.is_not_page_opened %}
     <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
         <i class="fa-solid fa-circle-exclamation"></i>
-            수험정보는 {{ exam.page_opened_at|date:'n/d(D) H:i' }}부터 입력 가능합니다.
+            모의고사 성적은 {{ exam.page_opened_at|date:'n/d(D) H:i' }}부터 확인 가능합니다.
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 {% else %}

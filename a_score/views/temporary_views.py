@@ -54,7 +54,7 @@ def student_register_view(request: HtmxHttpRequest):
     if registered_student:
         return redirect('score_new:temporary-result')
     context = update_context_data(
-        info=INFO, exam=EXAM, title='Predict',
+        info=INFO, exam=EXAM, title='Score',
         current_time=timezone.now(),
         sub_title='74기 대비 프라임 경위공채 전국모의고사',
         icon_menu=icon_set_new.ICON_MENU['score'],
