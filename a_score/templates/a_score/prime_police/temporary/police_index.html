@@ -22,11 +22,16 @@
     <nav>
         <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             <li class="breadcrumb-item">
-                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                <a href="{% url 'index' %}" hx-boost="true">Home</a>
             </li>
-            <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a class="active" href="" hx-boost="true">Prime</a>
+                <a href="{% url 'score_new:temporary-index' %}" hx-boost="true">Score</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="" hx-boost="true">Prime</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a class="active" href="" hx-boost="true">전국모의고사</a>
             </li>
         </ol>
     </nav>

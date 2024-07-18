@@ -10,7 +10,13 @@ from .prime_police_views import get_detail_context
 from .. import forms
 from .. import models
 
-INFO = {'menu': 'score', 'view_type': 'primeScore'}
+BASE_INFO = {
+    'info': {'menu': 'score', 'view_type': 'primeScore'},
+    'title': 'Score',
+    'sub_title': '74기 대비 프라임 경위공채 전국모의고사',
+    'icon_menu': icon_set_new.ICON_MENU['score'],
+    'icon_subject': icon_set_new.ICON_SUBJECT,
+}
 
 EXAM_YEAR = 2025
 EXAM_ROUND = 1
@@ -30,13 +36,7 @@ def index_view(request: HtmxHttpRequest):
     registered_student = get_registered_student(request=request)
     if registered_student:
         return redirect('score_new:temporary-result')
-    context = update_context_data(
-        info=INFO, title='Score',
-        sub_title='프라임 경위공채 모의고사 성적표',
-        current_time=timezone.now(),
-        icon_menu=icon_set_new.ICON_MENU['score'],
-        icon_subject=icon_set_new.ICON_SUBJECT,
-    )
+    context = update_context_data(**BASE_INFO)
     return render(request, 'a_score/prime_police/temporary/police_index.html', context)
 
 
@@ -45,6 +45,7 @@ def result_view(request: HtmxHttpRequest):
     if not registered_student:
         return redirect('score_new:temporary-index')
     context = get_detail_context(request=request, **EXAM_URL_KWARGS)
+    context.update(BASE_INFO)
     return render(request, 'a_score/prime_police/temporary/police_result.html', context)
 
 
@@ -53,12 +54,7 @@ def student_register_view(request: HtmxHttpRequest):
     registered_student = get_registered_student(request=request)
     if registered_student:
         return redirect('score_new:temporary-result')
-    context = update_context_data(
-        info=INFO, exam=EXAM, title='Score',
-        current_time=timezone.now(),
-        sub_title='74기 대비 프라임 경위공채 전국모의고사',
-        icon_menu=icon_set_new.ICON_MENU['score'],
-    )
+    context = update_context_data(**BASE_INFO, exam=EXAM)
 
     # student_create
     form_class = forms.PrimePoliceStudentForm

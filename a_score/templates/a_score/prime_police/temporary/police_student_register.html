@@ -18,12 +18,17 @@
     <nav>
         <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             <li class="breadcrumb-item">
-                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                <a href="{% url 'index' %}" hx-boost="true">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'score_new:temporary-index' %}" hx-boost="true">Score</a>
+                <a href="{% url 'score_new:temporary-index' %}" hx-boost="true">Score</a>
             </li>
-            <li class="breadcrumb-item">프라임 경위공채</li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'score_new:temporary-index' %}" hx-boost="true">Prime</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a class="active" href="" hx-boost="true">수험정보 입력</a>
+            </li>
         </ol>
     </nav>
 </div><!-- Page Title End -->
@@ -32,8 +37,12 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header m-0">
+                <div class="card-header d-flex align-items-center m-0">
                     <span class="text-primary">수험정보</span>
+                        <a class="btn btn-outline-primary ms-auto" hx-push-url="true"
+                           hx-get="{% url 'score_new:temporary-index' %}">
+                            <i class="fa-solid fa-arrow-left"></i> 뒤로 가기
+                        </a>
                 </div>
                 <div class="card-body p-4">
                     <div id="infoStudent" class="htmx-fade-in htmx-fade-out">

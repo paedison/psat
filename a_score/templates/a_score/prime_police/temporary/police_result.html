@@ -12,7 +12,7 @@
 {{ info|json_script:'info' }}
 <div class="pagetitle">
     <h1>{{ icon_menu|safe }} {{ title }}
-        <span class="fs-6 text-secondary">74기 대비 프라임 경위공채 전국모의고사</span>
+        <span class="fs-6 text-secondary">{{ sub_title }}</span>
         {% if user.is_staff %}
             <a class="btn btn-sm btn-outline-primary ms-2"
                hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
@@ -25,11 +25,16 @@
     <nav>
         <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
             <li class="breadcrumb-item">
-                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                <a href="{% url 'index' %}" hx-boost="true">Home</a>
             </li>
-            <li class="breadcrumb-item">Score</li>
             <li class="breadcrumb-item">
-                <a href="" class="active" hx-boost="true">Prime</a>
+                <a href="{% url 'score_new:temporary-index' %}" hx-boost="true">Score</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'score_new:temporary-index' %}" hx-boost="true">Prime</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a class="active" href="{% url 'score_new:temporary-result' %}" hx-boost="true">성적표</a>
             </li>
         </ol>
     </nav>

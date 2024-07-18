@@ -9,7 +9,8 @@
         {% partial menu_psat %}
 {#        {% partial menu_predict %}#}
         {% if user.is_admin %}{% partial menu_predict %}{% endif %}
-        {% if user.is_staff %}{% partial menu_score %}{% endif %}
+        {% partial menu_score %}
+{#        {% if user.is_staff %}{% partial menu_score %}{% endif %}#}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
         {% if user.is_admin %}{% partial menu_old_predict %}{% endif %}
         {% if user.is_admin %}{% partial menu_old_score %}{% endif %}
