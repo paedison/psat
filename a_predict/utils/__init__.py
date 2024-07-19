@@ -8,6 +8,7 @@ from .get_queryset import (
     get_qs_answer_count,
 )
 from .view_utils import (
+    get_exam_vars,
     get_answer_confirmed,
     get_empty_data_answer,
     get_data_answer_official,
@@ -17,7 +18,6 @@ from .view_utils import (
     get_dict_stat_data,
     get_next_url,
     get_page_obj_and_range,
-    get_sub_title,
     get_dict_by_sub,
 )
 from .update_models import (

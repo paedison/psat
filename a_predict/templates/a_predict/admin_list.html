@@ -13,7 +13,7 @@
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
         <a class="btn btn-sm btn-outline-primary ms-2"
            hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-           href="{% url 'predict_new:index' %}">
+           href="{% url 'predict:index' %}">
             일반 페이지
         </a>
     </h1>
@@ -23,10 +23,10 @@
                 <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{% url 'predict_new:index' %}" hx-boost="true">Predict</a>
+                <a href="{% url 'predict:index' %}" hx-boost="true">Predict</a>
             </li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict_new:admin-list' %}" hx-boost="true">Admin</a>
+                <a class="active" href="{% url 'predict:admin-list' %}" hx-boost="true">Admin</a>
             </li>
         </ol>
     </nav>

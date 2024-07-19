@@ -1,7 +1,15 @@
 from django.core.paginator import Paginator
 from django.urls import reverse
 
+from a_predict.views.base_info import PsatExamVars, PoliceExamVars
 from common.constants import icon_set_new
+
+
+def get_exam_vars(exam_year: int, exam_exam: str, exam_round: int):
+    if exam_exam == '행시' or exam_exam == '칠급':
+        return PsatExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
+    elif exam_exam == '경위':
+        return PoliceExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
 
 
 def get_answer_confirmed(exam_vars, student):
@@ -50,19 +58,20 @@ def get_data_answer_predict(exam_vars, qs_answer_count) -> list:
     data_answer_predict = get_empty_data_answer(fields=subject_fields, problem_count=problem_count)
     for answer_count in qs_answer_count:
         field = answer_count.subject
-        field_idx = subject_fields.index(field)
-        no = answer_count.number
+        if field in subject_fields:
+            field_idx = subject_fields.index(field)
+            no = answer_count.number
 
-        count_list = [getattr(answer_count, c) for c in count_fields]
-        ans_predict = count_list[1:].index(max(count_list[1:])) + 1
-        rate_accuracy = round(getattr(answer_count, f'rate_{ans_predict}'), 1)
+            count_list = [getattr(answer_count, c) for c in count_fields]
+            ans_predict = count_list[1:].index(max(count_list[1:])) + 1
+            rate_accuracy = round(getattr(answer_count, f'rate_{ans_predict}'), 1)
 
-        count_list.extend([answer_count.count_multiple, answer_count.count_total])
+            count_list.extend([answer_count.count_multiple, answer_count.count_total])
 
-        data_answer_predict[field_idx][no - 1].update({
-            'no': no, 'ans': ans_predict, 'field': field,
-            'rate_accuracy': rate_accuracy, 'count': count_list,
-        })
+            data_answer_predict[field_idx][no - 1].update({
+                'no': no, 'ans': ans_predict, 'field': field,
+                'rate_accuracy': rate_accuracy, 'count': count_list,
+            })
 
     return data_answer_predict
 
@@ -119,6 +128,7 @@ def get_info_answer_student(
         data_answer_student: list[list[dict]],
         data_answer_predict: list[list[dict]],
 ) -> list:
+    is_not_police = exam_vars.exam_exam != '경위'
     score_fields: list = exam_vars.score_fields
     subject_fields: list = exam_vars.subject_fields
     info_answer_student: list[dict] = [{} for _ in score_fields]
@@ -153,7 +163,7 @@ def get_info_answer_student(
         url_answer_input = exam_vars.url_answer_input[field_idx] if field in subject_fields else ''
 
         info_answer_student[field_idx].update({
-            'icon': icon_set_new.ICON_SUBJECT[sub],
+            'icon': icon_set_new.ICON_SUBJECT[sub] if is_not_police else '',
             'sub': sub, 'subject': subject, 'field': field,
             'is_confirmed': is_confirmed,
             'participants': participants[field],
@@ -221,8 +231,8 @@ def get_next_url(exam_vars, student) -> str:
         if not is_confirmed:
             url_kwargs = exam_vars.exam_url_kwargs.copy()
             url_kwargs['subject_field'] = field
-            return reverse('predict_new:answer-input', kwargs=url_kwargs)
-    return reverse('predict_new:index')
+            return reverse('predict:answer-input', kwargs=url_kwargs)
+    return reverse('predict:index')
 
 
 def get_page_obj_and_range(page_data, per_page=10, page_number=1):
@@ -233,12 +243,6 @@ def get_page_obj_and_range(page_data, per_page=10, page_number=1):
         return page_obj, page_range
     except TypeError:
         return None, None
-
-
-def get_sub_title(exam):
-    if exam.exam == '프모':
-        return f'제{exam.round}회 {exam.get_exam_display()} 성적 예측'
-    return f'{exam.year}년 {exam.get_exam_display()} 성적 예측'
 
 
 def get_dict_by_sub(target_list: list[dict]) -> dict:

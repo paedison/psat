@@ -21,7 +21,7 @@ class PsatUnit(Unit):
         max_length=2, choices=ChoiceMethod.psat_exam_choices, default='행시', verbose_name='시험')
     name = models.CharField(
         max_length=20, choices=ChoiceMethod.psat_unit_choices,
-        default='5급공채', verbose_name='모집단위')
+        default='5급 행정(전국)', verbose_name='모집단위')
 
     class Meta:
         verbose_name = verbose_name_plural = "PSAT 성적예측 [2] 모집단위"

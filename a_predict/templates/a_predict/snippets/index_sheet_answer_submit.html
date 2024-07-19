@@ -17,9 +17,9 @@
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerSubmitTab" role="tablist">
             {% for id in exam_vars.answer_tab.id %}
-                {% cycle exam_vars.answer_tab.title.0 exam_vars.answer_tab.title.1 exam_vars.answer_tab.title.2 exam_vars.answer_tab.title.3 as tab_title silent %}
-                {% cycle exam_vars.answer_tab.prefix_submit.0 exam_vars.answer_tab.prefix_submit.1 exam_vars.answer_tab.prefix_submit.2 exam_vars.answer_tab.prefix_submit.3 as prefix silent %}
-                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
+                {% cycle exam_vars.answer_tab.title.0 exam_vars.answer_tab.title.1 exam_vars.answer_tab.title.2 exam_vars.answer_tab.title.3 exam_vars.answer_tab.title.4 as tab_title silent %}
+                {% cycle exam_vars.answer_tab.prefix_submit.0 exam_vars.answer_tab.prefix_submit.1 exam_vars.answer_tab.prefix_submit.2 exam_vars.answer_tab.prefix_submit.3 exam_vars.answer_tab.prefix_submit.4 as prefix silent %}
+                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe exam_vars.icon_subject.4|safe as icon silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
@@ -27,12 +27,12 @@
 
     <div class="tab-content" id="scoreAnswerSubmitContent">
         {% for id in exam_vars.answer_tab.id %}
-            {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 as answer_official silent %}
-            {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 as answer_student silent %}
-            {% cycle exam_vars.answer_tab.prefix_submit.0 exam_vars.answer_tab.prefix_submit.1 exam_vars.answer_tab.prefix_submit.2 exam_vars.answer_tab.prefix_submit.3 as prefix silent %}
-            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 as field silent %}
-            {% cycle exam_vars.url_answer_input.0 exam_vars.url_answer_input.1 exam_vars.url_answer_input.2 exam_vars.url_answer_input.3 as url_answer_input silent %}
-            {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
+            {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
+            {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
+            {% cycle exam_vars.answer_tab.prefix_submit.0 exam_vars.answer_tab.prefix_submit.1 exam_vars.answer_tab.prefix_submit.2 exam_vars.answer_tab.prefix_submit.3 exam_vars.answer_tab.prefix_submit.4 as prefix silent %}
+            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 exam_vars.subject_fields.4 as field silent %}
+            {% cycle exam_vars.url_answer_input.0 exam_vars.url_answer_input.1 exam_vars.url_answer_input.2 exam_vars.url_answer_input.3 exam_vars.url_answer_input.4 as url_answer_input silent %}
+            {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
             {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
     </div>

@@ -363,8 +363,8 @@ def get_next_url(exam_vars: dict, student) -> str:
     for field in exam_vars['subject_fields']:
         is_confirmed = student.answer_confirmed[field]
         if not is_confirmed:
-            return reverse('predict_new:answer-input', args=[field])
-    return reverse('predict_new:index')
+            return reverse('predict:answer-input', args=[field])
+    return reverse('predict:index')
 
 
 def get_page_obj_and_range(page_data, per_page=10, page_number=1):

@@ -44,7 +44,7 @@ class BaseMixin:
     statistics_model = predict_models.Statistics
     statistics_virtual_model = predict_models.StatisticsVirtual
     location_model = predict_models.Location
-    student_form = predict_forms.StudentForm
+    student_form = predict_forms.PsatStudentForm
 
     # answer_file
     data_dir = os.path.join(settings.BASE_DIR, 'a_predict', 'data')

@@ -1,18 +1,12 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, QueryDict
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django_htmx.http import retarget, reswap, push_url
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from .base_info import PsatExamVars
 from .. import utils
-
-
-def get_exam_vars(exam_year: int, exam_exam: str, exam_round: int):
-    if exam_exam == '행시' or exam_exam == '칠급':
-        return PsatExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
 
 
 def index_view(request: HtmxHttpRequest):
@@ -32,17 +26,18 @@ def detail_view(
 ):
     # Hx-Update header
     hx_update = request.headers.get('Hx-Update', 'main')
+    is_police = exam_exam == '경위'
     is_main = hx_update == 'main'
     is_answer_predict = hx_update == 'answer_predict'
     is_answer_submit = hx_update == 'answer_submit'
     is_info_answer = hx_update == 'info_answer'
     is_score_all = hx_update == 'score_all'
 
-    exam_vars = get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
+    exam_vars = utils.get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
     exam = utils.get_exam(exam_vars=exam_vars)
     student = utils.get_student(request=request, exam_vars=exam_vars)
     if not student:
-        return redirect('predict_new:student-create', **exam_vars.exam_url_kwargs)
+        return redirect('predict:student-create', **exam_vars.exam_url_kwargs)
 
     context = update_context_data(
         info=exam_vars.info, current_time=timezone.now(),
@@ -122,10 +117,10 @@ def get_stat_context(exam_vars, exam, student):
 def student_create_view(
         request: HtmxHttpRequest, exam_year: int, exam_exam: str, exam_round: int
 ):
-    exam_vars = get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
+    exam_vars = utils.get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
     exam = utils.get_exam(exam_vars=exam_vars)
     if not exam_vars or not exam or not exam.is_active:
-        return redirect('predict_new:index')
+        return redirect('predict:index')
 
     units = utils.get_units(exam_vars=exam_vars)
     context = update_context_data(
@@ -134,6 +129,8 @@ def student_create_view(
         icon_menu=icon_set_new.ICON_MENU['predict'],
         units=units,
     )
+    if exam_exam == '경위':
+        context = update_context_data(context, selection_choice=exam_vars.selection_choice)
 
     # department_list
     if request.headers.get('select-department'):
@@ -161,7 +158,7 @@ def student_create_view(
             return retarget(response, '#infoStudent')
     else:
         if utils.get_student(request=request, exam_vars=exam_vars):
-            return redirect('predict_new:index')
+            return redirect('predict:index')
         context = update_context_data(context, form=form_class())
 
         return render(request, 'a_predict/student_create.html', context)
@@ -171,17 +168,17 @@ def student_create_view(
 def answer_input_view(
         request: HtmxHttpRequest, exam_year: int, exam_exam: str, exam_round: int, subject_field: str,
 ):
-    exam_vars = get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
+    exam_vars = utils.get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
     if not exam_vars:
-        return redirect('predict_new:index')
+        return redirect('predict:index')
 
     student = utils.get_student(request=request, exam_vars=exam_vars)
     if not student:
-        return redirect('predict_new:student-create', **exam_vars.exam_url_kwargs)
+        return redirect('predict:student-create', **exam_vars.exam_url_kwargs)
 
     exam = utils.get_exam(exam_vars=exam_vars)
     if subject_field not in exam_vars.problem_count.keys() or student.answer_confirmed[subject_field]:
-        return redirect('predict_new:psat-detail', **exam_vars.exam_url_kwargs)
+        return redirect('predict:psat-detail', **exam_vars.exam_url_kwargs)
 
     # answer_submit
     if request.headers.get('answer-submit') and request.method == 'POST':

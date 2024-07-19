@@ -17,8 +17,9 @@ def get_units(exam_vars):
 
 def get_location(exam_vars, student):
     serial = int(student.serial)
-    return exam_vars.location_model.objects.filter(
-        **exam_vars.exam_info, serial_start__lte=serial, serial_end__gte=serial).first()
+    if exam_vars.location_model:
+        return exam_vars.location_model.objects.filter(
+            **exam_vars.exam_info, serial_start__lte=serial, serial_end__gte=serial).first()
 
 
 def get_qs_department(exam_vars, unit=None):

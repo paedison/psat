@@ -432,6 +432,7 @@ class Exam(YearExamRoundField):
             '행시': '5급공채 등',
             '입시': '입법고시',
             '칠급': '7급공채 등',
+            '경위': '경위공채',
         }
         return exam_dict[self.exam]
 

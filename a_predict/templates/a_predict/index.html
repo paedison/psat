@@ -1,7 +1,5 @@
 {% extends 'a_predict/_base.html' %}
 {% load static %}
-{% load i18n %}
-{% load psat_filter %}
 
 {% block main %}
 {{ info|json_script:'info' }}
@@ -11,7 +9,7 @@
         {% if user.is_staff %}
             <a class="btn btn-sm btn-outline-primary ms-2"
                hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-               href="{% url 'predict_new:admin-list' %}">
+               href="{% url 'predict:admin-list' %}">
                 관리자 페이지
             </a>
         {% endif %}
@@ -22,7 +20,7 @@
                 <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict_new:index' %}" hx-boost="true">Predict</a>
+                <a class="active" href="{% url 'predict:index' %}" hx-boost="true">Predict</a>
             </li>
         </ol>
     </nav>
@@ -33,8 +31,6 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body text-center p-4">
-                    <img src="{% static 'image/predict/cover_psat.jpg' %}" class="mw-100" alt="Title"/>
-
                     <div class="container d-sm-none my-4">
                         <p>수험생 여러분,<br/>그 동안 수고 많으셨습니다.</p>
                         <p>여러분의 합격을<br/>기원하는 마음과 함께<br/>
@@ -59,15 +55,13 @@
                             로그인이 필요합니다.
                         </a>
                     {% endif %}
-                    <a href="{% url 'predict_new:psat-detail' 2024 '행시' 0 %}"
-                       class="btn btn-primary"
+                    <a href="{% url 'predict:psat-detail' 2024 '칠급' 0 %}"
                        hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                        2024년 5급공채
+                        <img src="{% static 'image/banner/psat_2024_chilgeup_button.jpg' %}" class="mw-100" alt="Title"/>
                     </a>
-                    <a href="{% url 'predict_new:psat-detail' 2024 '칠급' 0 %}"
-                       class="btn btn-primary"
+                    <a href="{% url 'predict:psat-detail' 2025 '경위' 0 %}"
                        hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                        2024년 7급공채
+                        <img src="{% static 'image/banner/police_2025_button.jpg' %}" class="mw-100" alt="Title"/>
                     </a>
                 </div>
             </div>
@@ -75,13 +69,11 @@
 
         <div class="col-12">
             <div class="card">
-                <div class="card-body p-4">
-                    <div class="iframe_container">
-                        <iframe class="iframe_content" title="YouTube video player"
-                                src="https://www.youtube.com/embed/Fal8-8NRabY?si=4765xVgFBlV_l_Kh"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowfullscreen></iframe>
-                    </div>
+                <div class="iframe_container">
+                    <iframe class="iframe_content" title="YouTube video player"
+                            src="https://www.youtube.com/embed/Fal8-8NRabY?si=4765xVgFBlV_l_Kh"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
                 </div>
             </div>
         </div>

@@ -3,29 +3,17 @@ import dataclasses
 from django.urls import reverse
 
 from common.constants import icon_set_new
-from .. import models, forms
+from .. import forms
+from ..models import psat_models, police_models
 
 
 @dataclasses.dataclass
-class PsatExamVars:
+class ExamVars:
+    exam_year: int
+    exam_exam: str
+    exam_round: int
+
     info = {'menu': 'predict', 'view_type': 'predict'}
-
-    exam_year: int = 0
-    exam_exam: str = ''
-    exam_round: int = 0
-
-    count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5']
-    avg_field = 'psat_avg'
-    sum_fields = ['eoneo', 'jaryo', 'sanghwang']
-
-    exam_model = models.PsatExam
-    unit_model = models.PsatUnit
-    department_model = models.PsatDepartment
-    location_model = models.PsatLocation
-    student_model = models.PsatStudent
-    answer_count_model = models.PsatAnswerCount
-    student_form = forms.StudentForm
-
     score_template_table_1 = 'a_predict/snippets/index_sheet_score_table_1.html'
     score_template_table_2 = 'a_predict/snippets/index_sheet_score_table_2.html'
     score_tab = {
@@ -35,7 +23,6 @@ class PsatExamVars:
         'prefix_filtered': ['my_filtered', 'total_filtered', 'department_filtered'],
         'template': [score_template_table_1, score_template_table_2, score_template_table_2],
     }
-
     rank_list = ['all_rank', 'top_rank', 'mid_rank', 'low_rank']
 
     @property
@@ -48,11 +35,32 @@ class PsatExamVars:
 
     @property
     def url_index(self):
-        return reverse('predict_new:index')
+        return reverse('predict:index')
 
     @property
     def url_detail(self):
-        return reverse('predict_new:psat-detail', kwargs=self.exam_url_kwargs)
+        return reverse('predict:psat-detail', kwargs=self.exam_url_kwargs)
+
+    @property
+    def student_exam_info(self):
+        return {
+            'student__year': self.exam_year, 'student__exam': self.exam_exam, 'student__round': self.exam_round
+        }
+
+
+@dataclasses.dataclass
+class PsatExamVars(ExamVars):
+    count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5']
+    avg_field = 'psat_avg'
+    sum_fields = ['eoneo', 'jaryo', 'sanghwang']
+
+    exam_model = psat_models.PsatExam
+    unit_model = psat_models.PsatUnit
+    department_model = psat_models.PsatDepartment
+    location_model = psat_models.PsatLocation
+    student_model = psat_models.PsatStudent
+    answer_count_model = psat_models.PsatAnswerCount
+    student_form = forms.PsatStudentForm
 
     @property
     def url_answer_input(self):
@@ -63,20 +71,14 @@ class PsatExamVars:
             } for field in self.subject_fields
         ]
         return [
-            reverse('predict_new:answer-input', kwargs=kwargs)
+            reverse('predict:answer-input', kwargs=kwargs)
             for kwargs in kwargs_dict
         ]
 
     @property
-    def student_exam_info(self):
-        return {
-            'student__year': self.exam_year, 'student__exam': self.exam_exam, 'student__round': self.exam_round
-        }
-
-    @property
     def sub_title(self):
         default = {
-            '프모': f'제{self.exam_round}회 프라임모의고사 성적 예측',
+            '프모': f'제{self.exam_round}회 프라임모의고사 합격 예측',
             '행시': f'{self.exam_year}년 5급공채 등 합격 예측',
             '칠급': f'{self.exam_year}년 7급공채 등 합격 예측',
         }
@@ -160,6 +162,136 @@ class PsatExamVars:
         return {
             'id': ''.join([str(i) for i in range(len(self.sub_list))]),
             'title': self.sub_list,
+            'prefix_submit': [f'{fld}_submit' for fld in self.subject_fields],
+            'prefix_predict': [f'{fld}_predict' for fld in self.subject_fields],
+            'url_answer_input': self.url_answer_input,
+        }
+
+    def get_empty_data_answer(self):
+        return [
+            [
+                {'no': no, 'ans': 0, 'field': fld} for no in range(1, self.problem_count[fld] + 1)
+            ] for fld in self.subject_fields
+        ]
+
+    def get_field_idx(self, field):
+        return self.subject_fields.index(field)
+
+
+@dataclasses.dataclass
+class PoliceExamVars(ExamVars):
+    selection: str = 'minbeob'
+
+    count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4']
+    avg_field = 'sum'
+
+    @property
+    def sum_fields(self):
+        return ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', self.selection]
+
+    exam_model = police_models.PoliceExam
+    unit_model = police_models.PoliceUnit
+    department_model = police_models.PoliceDepartment
+    location_model = None
+    student_model = police_models.PoliceStudent
+    answer_count_model = police_models.PoliceAnswerCount
+    student_form = forms.PoliceStudentForm
+
+    @property
+    def url_answer_input(self):
+        kwargs_dict = [
+            {
+                'exam_year': self.exam_year, 'exam_exam': self.exam_exam,
+                'exam_round': self.exam_round, 'subject_field': field,
+            } for field in self.subject_fields
+        ]
+        return [
+            reverse('predict:answer-input', kwargs=kwargs)
+            for kwargs in kwargs_dict
+        ]
+
+    @property
+    def sub_title(self):
+        default = {
+            '프모': f'제{self.exam_round}회 프라임모의고사 합격 예측',
+            '경위': f'{self.exam_year}년 경위공채 합격 예측',
+        }
+        return default[self.exam_exam]
+
+    @property
+    def sub_list(self):
+        sub_dict = {'haengbeob': '행법', 'haenghag': '행학', 'minbeob': '민법'}
+        return ['형사', '헌법', '경찰', '범죄', sub_dict[self.selection]]
+
+    @property
+    def subject_list(self):
+        subject_dict = {'haengbeob': '행정법', 'haenghag': '행정학', 'minbeob': '민법총칙'}
+        return ['형사학', '헌법', '경찰학', '범죄학', subject_dict[self.selection]]
+
+    @property
+    def subject_vars(self):
+        subject_vars_dict = {
+            'haengbeob': ('행법', ('행정법', 'haengbeob')),
+            'haenghag': ('행학', ('행정학', 'haenghag')),
+            'minbeob': ('민법', ('민법총칙', 'minbeob')),
+        }
+        return {
+            '형사': ('형사학', 'hyeongsa'), '헌법': ('헌법', 'heonbeob'),
+            '경찰': ('경찰학', 'gyeongchal'), '범죄': ('범죄학', 'beomjoe'),
+            subject_vars_dict[self.selection][0]: subject_vars_dict[self.selection][1],
+            '총점': ('총점', 'sum')
+        }
+
+    @property
+    def subject_fields(self):
+        return ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', self.selection]
+
+    @property
+    def score_fields(self):
+        return ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', self.selection, 'sum']
+
+    @property
+    def admin_score_fields(self):
+        return ['sum', 'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', self.selection]
+
+    @property
+    def field_vars(self):
+        field_vars_dict = {
+            'haengbeob': ('행법', '행정법'), 'haenghag': ('행학', '행정학'), 'minbeob': ('민법', '민법총칙'),
+        }
+        return {
+            'hyeongsa': ('형사', '형사학'), 'heonbeob': ('헌법', '헌법'),
+            'gyeongchal': ('경찰', '경찰학'), 'beomjoe': ('범죄', '범죄학'),
+            self.selection: field_vars_dict[self.selection], 'sum': ('총점', '총점'),
+        }
+
+    @property
+    def selection_choice(self):
+        return [
+            {'field': 'minbeob', 'name': '민법총칙'},
+            {'field': 'haenghag', 'name': '행정학'},
+            {'field': 'haengbeob', 'name': '행정법'},
+        ]
+
+    @property
+    def problem_count(self):
+        return {fld: 40 for fld in self.subject_fields}
+
+    @property
+    def icon_subject(self):
+        return ['' for _ in self.sub_list]
+
+    @property
+    def info_tab(self):
+        return {
+            'id': ''.join([str(i) for i in range(len(self.subject_vars))]),
+        }
+
+    @property
+    def answer_tab(self):
+        return {
+            'id': ''.join([str(i) for i in range(len(self.sub_list))]),
+            'title': self.sub_list,
             'prefix_submit': [f'{field}_submit' for field in self.subject_fields],
             'prefix_predict': [f'{field}_predict' for field in self.subject_fields],
             'url_answer_input': self.url_answer_input,
@@ -168,8 +300,8 @@ class PsatExamVars:
     def get_empty_data_answer(self):
         return [
             [
-                {'no': no, 'ans': 0, 'field': field} for no in range(1, self.problem_count[field] + 1)
-            ] for field in self.subject_fields
+                {'no': no, 'ans': 0, 'field': fld} for no in range(1, self.problem_count[fld] + 1)
+            ] for fld in self.subject_fields
         ]
 
     def get_field_idx(self, field):

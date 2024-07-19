@@ -1,12 +1,12 @@
 from django.urls import path, include
 
-from .views import psat_views, psat_admin_views
+from .views import normal_views, admin_views
 
-app_name = 'predict_new'
+app_name = 'predict'
 
 admin_patterns = [
-    path('', psat_admin_views.list_view, name='admin-list'),
-    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', psat_admin_views.detail_view, name='admin-detail'),
+    path('', admin_views.list_view, name='admin-list'),
+    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', admin_views.detail_view, name='admin-detail'),
 ]
 
 # admin_patterns = [
@@ -29,12 +29,12 @@ admin_patterns = [
 # ]
 
 urlpatterns = [
-    path('', psat_views.index_view, name='index'),
+    path('', normal_views.index_view, name='index'),
     path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-         psat_views.detail_view, name='psat-detail'),
+         normal_views.detail_view, name='psat-detail'),
     path('student/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-         psat_views.student_create_view, name='student-create'),
+         normal_views.student_create_view, name='student-create'),
     path('answer/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
-         psat_views.answer_input_view, name='answer-input'),
+         normal_views.answer_input_view, name='answer-input'),
     path('admin/', include(admin_patterns)),
 ]

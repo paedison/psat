@@ -1,0 +1,36 @@
+{% extends 'a_predict/_base.html' %}
+{% load static %}
+
+{% block main %}
+{{ info|json_script:'info' }}
+<section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <a href="{% url 'predict:psat-detail' 2024 '칠급' 0 %}"
+                   hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <img src="{% static 'image/banner/psat_2024_chilgeup_predict_banner.jpg' %}" class="mw-100" alt="Title"/>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card">
+                <a href="{% url 'predict:psat-detail' 2025 '경위' 0 %}"
+                   hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <img src="{% static 'image/banner/police_2025_predict_banner.jpg' %}" class="mw-100" alt="Title"/>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card">
+                <a href="{% url 'score_new:temporary-index' %}"
+                   hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <img src="{% static 'image/banner/prime_police_2025_banner.jpg' %}" class="mw-100" alt="Title"/>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}

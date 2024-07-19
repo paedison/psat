@@ -1,408 +1,153 @@
-from django.views import generic
+from django.db.models import F, Case, When, Value, IntegerField
+from django.db.models.fields.json import KeyTextTransform
+from django.shortcuts import render
 
-from .viewmixins import admin_view_mixins, base_mixins
+from common.constants import icon_set_new
+from common.utils import HtmxHttpRequest, update_context_data
+from .. import models
+from .. import utils
 
 
-class ListView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.ListViewMixin,
-    generic.TemplateView,
+def list_view(request: HtmxHttpRequest):
+    info = {'menu': 'predict', 'view_type': 'predict'}
+
+    # Hx-Pagination header
+    page = request.GET.get('page', 1)
+    hx_pagination = request.headers.get('Hx-Pagination', 'main')
+    is_all_student = hx_pagination == 'all_student'
+
+    context = update_context_data(
+        info=info, title='Predict', sub_title='합격 예측 [관리자 페이지]',
+        icon_menu=icon_set_new.ICON_MENU['score'], pagination_url='?')
+
+    # student
+    qs_student = models.PsatStudent.objects.annotate(username=F('user__username')).order_by('id')
+    student_page_data = utils.get_page_obj_and_range(qs_student, page_number=page)
+    context = update_context_data(context, student_page_data=student_page_data)
+    if is_all_student:
+        return render(request, 'a_predict/snippets/admin_list_student.html#all_student', context)
+
+    qs_psat_exam = models.PsatExam.objects.order_by('id')
+    qs_police_exam = models.PoliceExam.objects.order_by('id')
+    qs_exam = list(qs_psat_exam) + list(qs_police_exam)
+    exam_page_data = utils.get_page_obj_and_range(qs_exam)
+    context = update_context_data(context, exam_list=qs_exam, exam_page_data=exam_page_data)
+    return render(request, 'a_predict/admin_list.html', context)
+
+
+def detail_view(
+        request: HtmxHttpRequest, exam_year: int, exam_exam: str, exam_round: int
 ):
-    template_name = 'a_predict/admin/predict_admin_list.html'
+    exam_vars = utils.get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
+    exam = utils.get_exam(exam_vars=exam_vars)
 
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#list_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
+    # page prefix
+    stat_prefix = ['all_stat', 'filtered_stat']
+    catalog_prefix = ['all_catalog', 'filtered_catalog']
+    answer_prefix = [f'answer_{idx}' for idx in range(len(exam_vars.subject_fields))]
 
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
+    # Hx-Pagination header
+    page = request.GET.get('page', 1)
+    hx_pagination = request.headers.get('Hx-Pagination', 'main')
+    is_stat = hx_pagination in stat_prefix
+    is_catalog = hx_pagination in catalog_prefix
+    is_answer = hx_pagination in answer_prefix
 
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        exam_list = self.exam_model.objects.all()
-        exam_page_obj, exam_page_range = self.get_paginator_info(exam_list)
-        student_page_obj, student_page_range = self.get_paginator_info(self.student_list)
+    context = update_context_data(
+        # base info
+        info=exam_vars.info, exam=exam, title='Predict',
+        sub_title=exam_vars.sub_title,
+        exam_vars=exam_vars,
 
-        return {
-            # base info
-            'info': self.info,
-            'title': 'Score',
-            'sub_title': '성적 예측 [관리자 페이지]',
-            'exam_list': self.exam_list,
+        # icons
+        icon_menu=icon_set_new.ICON_MENU['score'],
+        icon_subject=icon_set_new.ICON_SUBJECT,
+        icon_nav=icon_set_new.ICON_NAV,
+        icon_search=icon_set_new.ICON_SEARCH,
 
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
+        # default page settings
+        pagination_url='?',
+        stat_prefix=stat_prefix,
+        catalog_prefix=catalog_prefix,
+        answer_prefix=answer_prefix,
+        answer_title=exam_vars.sub_list
+    )
 
-            # exam_list
-            'exam_page_obj': exam_page_obj,
-            'exam_page_range': exam_page_range,
+    # stat_page
+    if is_stat:
+        context = get_context_for_stat_page(
+            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=hx_pagination)
+        return render(request, f'a_predict/snippets/admin_detail_statistics.html#{hx_pagination}', context)
 
-            # student_list
-            'student_page_obj': student_page_obj,
-            'student_page_range': student_page_range,
-            'student_pagination_url': self.get_url('list_student'),
-        }
+    # catalog_page
+    if is_catalog:
+        context = get_context_for_catalog_page(
+            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=hx_pagination)
+        return render(request, f'a_predict/snippets/admin_detail_catalog.html#{hx_pagination}', context)
+
+    # answer_page
+    qs_answer_count = utils.get_qs_answer_count(exam_vars=exam_vars)
+    answer_predict = utils.get_data_answer_predict(exam_vars=exam_vars, qs_answer_count=qs_answer_count)
+    if is_answer:
+        context = get_context_for_answer_page(
+            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=hx_pagination,
+            qs_answer_count=qs_answer_count, answer_predict=answer_predict)
+        return render(request, f'a_predict/snippets/admin_detail_answer.html#{hx_pagination}', context)
+
+    for prefix in stat_prefix:
+        context = get_context_for_stat_page(
+            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=prefix)
+    for prefix in catalog_prefix:
+        context = get_context_for_catalog_page(
+            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=prefix)
+    for prefix in answer_prefix:
+        context = get_context_for_answer_page(
+            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=prefix,
+            qs_answer_count=qs_answer_count, answer_predict=answer_predict)
+    return render(request, 'a_predict/admin_detail.html', context)
 
 
-class ListStudentView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.ListViewMixin,
-    generic.TemplateView,
+def get_context_for_stat_page(exam_vars, exam, page, context, prefix):
+    category = prefix.split('_')[0]
+    qs_department = utils.get_qs_department(exam_vars=exam_vars)
+    departments = [{'id': 'total', 'unit': '전체', 'department': '전체'}]
+    departments.extend(qs_department)
+    stat_page: tuple = utils.get_page_obj_and_range(departments, page_number=page)
+    utils.update_stat_page(
+        exam_vars=exam_vars, exam=exam, page_obj=stat_page[0], category=category)
+    return update_context_data(context, **{f'{prefix}_page': stat_page})
+
+
+def get_context_for_catalog_page(exam_vars, exam, page, context, prefix):
+    category = prefix.split('_')[0]
+    qs_department = utils.get_qs_department(exam_vars=exam_vars)
+    qs_student = utils.get_qs_student(exam_vars=exam_vars)
+    if category == 'filtered':
+        qs_student = qs_student.filter(answer_all_confirmed_at__isnull=False)
+    qs_student = qs_student.annotate(
+        all_psat_rank=KeyTextTransform('psat_avg', KeyTextTransform(
+            'total', KeyTextTransform(category, 'rank'))),
+        zero_rank_order=Case(
+            When(all_psat_rank=0, then=Value(1)),
+            default=Value(0), output_field=IntegerField(),
+        )
+    ).order_by('zero_rank_order', 'all_psat_rank')
+    catalog_page: tuple = utils.get_page_obj_and_range(qs_student, page_number=page)
+    utils.update_admin_catalog_page(
+        exam_vars=exam_vars, exam=exam, qs_department=qs_department,
+        page_obj=catalog_page[0], category=category)
+    return update_context_data(context, **{f'{prefix}_page': catalog_page})
+
+
+def get_context_for_answer_page(
+        exam_vars, exam, page, context, prefix, qs_answer_count, answer_predict
 ):
-    template_name = 'a_predict/admin/snippets/list_student_list.html'
-
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        student_page_obj, student_page_range = self.get_paginator_info(self.student_list)
-        return {
-            'student_page_obj': student_page_obj,
-            'student_page_range': student_page_range,
-            'student_pagination_url': self.get_url('list_student'),
-        }
-
-
-class DetailView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.DetailViewMixin,
-    generic.TemplateView,
-):
-    template_name = 'a_predict/admin/predict_admin_detail.html'
-
-    def get_template_names(self):
-        htmx_template = {
-            'False': self.template_name,
-            'True': f'{self.template_name}#admin_main',
-        }
-        return htmx_template[f'{bool(self.request.htmx)}']
-
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        statistics_page_obj, statistics_page_range = self.get_detail_statistics()
-        heonbeob_page_obj, heonbeob_page_range = self.get_sub_answer_count('헌법')
-        all_stat = self.get_all_stat()
-        catalog_page_obj, catalog_page_range = self.get_paginator_info(all_stat)
-
-        return {
-            # base info
-            'info': self.info,
-            'category': self.category,
-            'year': self.year,
-            'ex': self.ex,
-            'round': self.round,
-            'title': 'Score',
-            'sub_title': self.get_sub_title(),
-
-            # icons
-            'icon_menu': self.ICON_MENU['score'],
-            'icon_subject': self.ICON_SUBJECT,
-            'icon_nav': self.ICON_NAV,
-            'icon_search': self.ICON_SEARCH,
-
-            # statistics
-            'statistics_page_obj': statistics_page_obj,
-            'statistics_page_range': statistics_page_range,
-            'statistics_pagination_url': self.get_url('statistics'),
-
-            # answer count analysis
-            'heonbeob_page_obj': heonbeob_page_obj,
-            'heonbeob_page_range': heonbeob_page_range,
-            'heonbeob_pagination_url': self.get_url('answer_count_heonbeob'),
-
-            # catalog
-            'catalog_page_obj': catalog_page_obj,
-            'catalog_page_range': catalog_page_range,
-            'catalog_pagination_url': self.get_url('catalog'),
-        }
-
-
-class DetailPartialView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.DetailViewMixin,
-    generic.TemplateView,
-):
-
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
-
-class StatisticsView(DetailPartialView):
-    template_name = 'a_predict/admin/snippets/detail_statistics.html#real'
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        statistics_page_obj, statistics_page_range = self.get_detail_statistics()
-        return {
-            'statistics_page_obj': statistics_page_obj,
-            'statistics_page_range': statistics_page_range,
-            'statistics_pagination_url': self.get_url('statistics'),
-        }
-
-
-class StatisticsVirtualView(DetailPartialView):
-    template_name = 'a_predict/admin/snippets/detail_statistics.html#virtual'
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        statistics_virtual_page_obj, statistics_virtual_page_range = self.get_detail_statistics('virtual')
-        return {
-            'statistics_virtual_page_obj': statistics_virtual_page_obj,
-            'statistics_virtual_page_range': statistics_virtual_page_range,
-            'statistics_virtual_pagination_url': self.get_url('statistics_virtual'),
-        }
-
-
-class AnswerCountHeonbeobView(DetailPartialView):
-    template_name = 'a_predict/admin/snippets/detail_answer_analysis.html#heonbeob'
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        heonbeob_page_obj, heonbeob_page_range = self.get_sub_answer_count('헌법')
-        return {
-            'heonbeob_page_obj': heonbeob_page_obj,
-            'heonbeob_page_range': heonbeob_page_range,
-            'heonbeob_pagination_url': self.get_url('answer_count_heonbeob'),
-        }
-
-
-class AnswerCountEoneoView(DetailPartialView):
-    template_name = 'a_predict/admin/snippets/detail_answer_analysis.html#eoneo'
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        eoneo_page_obj, eoneo_page_range = self.get_sub_answer_count('언어')
-        return {
-            'eoneo_page_obj': eoneo_page_obj,
-            'eoneo_page_range': eoneo_page_range,
-            'eoneo_pagination_url': self.get_url('answer_count_eoneo'),
-        }
-
-
-class AnswerCountJaryoView(DetailPartialView):
-    template_name = 'a_predict/admin/snippets/detail_answer_analysis.html#jaryo'
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        jaryo_page_obj, jaryo_page_range = self.get_sub_answer_count('자료')
-        return {
-            'jaryo_page_obj': jaryo_page_obj,
-            'jaryo_page_range': jaryo_page_range,
-            'jaryo_pagination_url': self.get_url('answer_count_jaryo'),
-        }
-
-
-class AnswerCountSanghwangView(DetailPartialView):
-    template_name = 'a_predict/admin/snippets/detail_answer_analysis.html#sanghwang'
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        sanghwang_page_obj, sanghwang_page_range = self.get_sub_answer_count('상황')
-        return {
-            'sanghwang_page_obj': sanghwang_page_obj,
-            'sanghwang_page_range': sanghwang_page_range,
-            'sanghwang_pagination_url': self.get_url('answer_count_sanghwang'),
-        }
-
-
-class CatalogView(DetailPartialView):
-    template_name = 'a_predict/admin/snippets/detail_catalog.html#real'
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        all_stat = self.get_all_stat()
-        catalog_page_obj, catalog_page_range = self.get_paginator_info(all_stat)
-        return {
-            # base info
-            'category': self.category,
-            'year': self.year,
-            'ex': self.ex,
-            'round': self.round,
-
-            # page objectives
-            'catalog_page_obj': catalog_page_obj,
-            'catalog_page_range': catalog_page_range,
-            'catalog_pagination_url': self.get_url('catalog'),
-        }
-
-
-class CatalogVirtualView(DetailPartialView):
-    template_name = 'a_predict/admin/snippets/detail_catalog.html#virtual'
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.get_properties()
-        all_virtual_stat = self.get_all_stat('virtual')
-        catalog_virtual_page_obj, catalog_virtual_page_range = self.get_paginator_info(all_virtual_stat)
-        return {
-            # base info
-            'category': self.category,
-            'year': self.year,
-            'ex': self.ex,
-            'round': self.round,
-
-            # page objectives
-            'catalog_virtual_page_obj': catalog_virtual_page_obj,
-            'catalog_virtual_page_range': catalog_virtual_page_range,
-            'catalog_virtual_pagination_url': self.get_url('catalog_virtual'),
-        }
-
-
-class PrintView(
-    DetailView,
-    generic.TemplateView,
-):
-    template_name = 'a_predict/admin/score_admin_print.html'
-    view_type = 'print'
-
-    def post(self, request, *args, **kwargs):
-        return self.get(self, request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs) -> dict:
-        self.category = self.kwargs.get('category')
-        self.year = self.kwargs.get('year')
-        self.ex = self.kwargs.get('ex')
-        self.round = self.kwargs.get('round')
-
-        context = super().get_context_data(**kwargs)
-        context['all_stat'] = self.get_all_stat()
-        return context
-
-
-class UpdateAnswer(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.UpdateAnswerMixin,
-    generic.TemplateView,
-):
-    template_name = 'a_predict/admin/snippets/predict_admin_modal.html#update'
-
-    def get_context_data(self, **kwargs):
-        self.category = self.kwargs.get('category')
-        self.year = self.kwargs.get('year')
-        self.ex = self.kwargs.get('ex')
-        self.round = self.kwargs.get('round')
-
-        self.get_properties()
-
-        return {'message': self.update_answer()}
-
-
-class UpdateScore(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.UpdateScoreMixin,
-    generic.TemplateView,
-):
-    template_name = 'a_predict/admin/snippets/predict_admin_modal.html#update'
-
-    def get_context_data(self, **kwargs):
-        self.category = self.kwargs.get('category')
-        self.year = self.kwargs.get('year')
-        self.ex = self.kwargs.get('ex')
-        self.round = self.kwargs.get('round')
-
-        self.get_properties()
-        return {'message': self.update_score()}
-
-
-class UpdateStatistics(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.UpdateStatisticsMixin,
-    generic.TemplateView,
-):
-    template_name = 'a_predict/admin/snippets/predict_admin_modal.html#update'
-
-    def get_context_data(self, **kwargs):
-        self.category = self.kwargs.get('category')
-        self.year = self.kwargs.get('year')
-        self.ex = self.kwargs.get('ex')
-        self.round = self.kwargs.get('round')
-
-        self.get_properties()
-
-        return {
-            'message': self.update_statistics(),
-            'next_url': self.get_next_url()
-        }
-
-
-class ExportStatisticsToExcelView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.ExportStatisticsToExcelMixin,
-    generic.View,
-):
-    view_type = 'export'
-
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-
-class ExportAnalysisToExcelView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.ExportAnalysisToExcelMixin,
-    generic.View,
-):
-    view_type = 'export'
-
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-
-class ExportScoresToExcelView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.ExportScoresToExcelMixin,
-    generic.View,
-):
-    view_type = 'export'
-
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-
-class ExportPredictDataToGoogleSheetView(
-    base_mixins.OnlyStaffAllowedMixin,
-    admin_view_mixins.ExportPredictDataToGoogleSheetMixin,
-    generic.TemplateView,
-):
-    template_name = 'a_predict/admin/snippets/predict_admin_modal.html#update'
-
-    def get(self, request, *args, **kwargs):
-        self.export_data()
-        return super().get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        return {
-            'message': '구글시트가 업데이트되었습니다.'
-        }
-
-
-list_view = ListView.as_view()
-list_student_view = ListStudentView.as_view()
-
-detail_view = DetailView.as_view()
-
-update_answer = UpdateAnswer.as_view()
-update_score = UpdateScore.as_view()
-update_statistics = UpdateStatistics.as_view()
-
-statistics_view = StatisticsView.as_view()
-statistics_virtual_view = StatisticsVirtualView.as_view()
-
-answer_count_heonbeob_view = AnswerCountHeonbeobView.as_view()
-answer_count_eoneo_view = AnswerCountEoneoView.as_view()
-answer_count_jaryo_view = AnswerCountJaryoView.as_view()
-answer_count_sanghwang_view = AnswerCountSanghwangView.as_view()
-
-catalog_view = CatalogView.as_view()
-catalog_virtual_view = CatalogVirtualView.as_view()
-
-print_view = PrintView.as_view()
-export_statistics_to_excel_view = ExportStatisticsToExcelView.as_view()
-export_analysis_to_excel_view = ExportAnalysisToExcelView.as_view()
-export_scores_to_excel_view = ExportScoresToExcelView.as_view()
-export_predict_data_to_google_sheet_view = ExportPredictDataToGoogleSheetView.as_view()
+    field_idx = int(prefix.split('_')[1])
+    field = exam_vars.subject_fields[field_idx]
+    qs_answer_count = qs_answer_count.filter(subject=field)
+    answer_page: tuple = utils.get_page_obj_and_range(qs_answer_count, page_number=page)
+    utils.update_answer_page(
+        exam_vars=exam_vars, exam=exam, page_obj=answer_page[0],
+        answer_predict=answer_predict)
+    update_context_data(context, **{f'answer_{field_idx}_page': answer_page})
+    return context

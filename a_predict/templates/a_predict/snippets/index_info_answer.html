@@ -45,7 +45,7 @@
             </thead>
             <tbody>
                 {% for _ in exam_vars.info_tab.id %}
-                    {% cycle info_answer_student.0 info_answer_student.1 info_answer_student.2 info_answer_student.3 info_answer_student.4 as info_answer silent %}
+                    {% cycle info_answer_student.0 info_answer_student.1 info_answer_student.2 info_answer_student.3 info_answer_student.4 info_answer_student.5 as info_answer silent %}
                     {% if info_answer %}{% partial sub_answer_line %}{% endif %}
                 {% endfor %}
             </tbody>
@@ -66,9 +66,9 @@
 </div>
 
 {% partialdef sub_answer_line %}
-    <tr class="text-center {% if info_answer.field == 'psat_avg' %}table-warning{% endif %}">
+    <tr class="text-center {% if info_answer.field == 'psat_avg' or info_answer.field == 'sum' %}table-warning{% endif %}">
         <th class="text-nowrap" aria-label="과목">
-            {% if info_answer.is_confirmed or info_answer.field == 'psat_avg' %}
+            {% if info_answer.is_confirmed or info_answer.field == 'psat_avg' or info_answer.field == 'sum' %}
                 {{ info_answer.icon|safe }} {{ info_answer.subject }}
             {% else %}
                 <a class="text-decoration-none"
@@ -80,7 +80,7 @@
 
         <td aria-label="점수">
             {% if not info_answer.is_confirmed %}
-                {% if info_answer.field == 'psat_avg' %}
+                {% if info_answer.field == 'psat_avg' or info_answer.field == 'sum' %}
                     <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                 {% else %}
                     <a href="{{ info_answer.url_answer_input }}" hx-boost="true">
@@ -119,7 +119,7 @@
                 {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                 <span class="badge rounded-pill text-bg-success">제출 완료</span>
             {% else %}
-                {% if info_answer.field == 'psat_avg' %}
+                {% if info_answer.field == 'psat_avg' or info_answer.field == 'sum' %}
                     {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                     <span class="badge rounded-pill text-bg-danger">미제출</span>
                 {% else %}
