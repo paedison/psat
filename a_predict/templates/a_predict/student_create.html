@@ -4,24 +4,22 @@
 
 {% block main %}
 {{ info|json_script:'info' }}
-<div class="pagetitle">
+<div class="pagetitle" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
     <h1>{{ icon_menu|safe }} {{ title }}
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
         {% if user.is_staff %}
-            <a class="btn btn-sm btn-outline-primary ms-2"
-               hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true"
-               href="{% url 'predict:admin-list' %}">
+            <a class="btn btn-sm btn-outline-primary ms-2" href="{% url 'predict:admin-list' %}">
                 관리자 페이지
             </a>
         {% endif %}
     </h1>
     <nav>
-        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                <a href="{% url 'index' %}">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict:index' %}" hx-boost="true">Predict</a>
+                <a class="active" href="{% url 'predict:index' %}">Predict</a>
             </li>
             <li class="breadcrumb-item">{{ exam.get_year_display }}</li>
         </ol>
@@ -32,17 +30,13 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                {% if exam.exam == '칠급' %}
-                    <a href="{% url 'predict:psat-detail' 2024 '칠급' 0 %}"
-                       hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                        <img src="{% static 'image/banner/psat_2024_chilgeup_predict_banner.jpg' %}" class="mw-100" alt="Title"/>
+                    <a href="{{ exam_vars.url_detail }}" hx-boost="true">
+                        {% if exam.exam == '칠급' %}
+                            <img src="{% static 'image/banner/psat_2024_chilgeup_predict_banner.jpg' %}" class="mw-100" alt="Title"/>
+                        {% elif exam.exam == '경위' %}
+                            <img src="{% static 'image/banner/police_2025_predict_banner.jpg' %}" class="mw-100" alt="Title"/>
+                        {% endif %}
                     </a>
-                {% elif exam.exam == '경위' %}
-                    <a href="{% url 'predict:psat-detail' 2025 '경위' 0 %}"
-                       hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                        <img src="{% static 'image/banner/police_2025_predict_banner.jpg' %}" class="mw-100" alt="Title"/>
-                    </a>
-                {% endif %}
             </div>
         </div>
 

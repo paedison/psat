@@ -15,7 +15,7 @@ from .view_utils import (
     get_data_answer_predict,
     get_data_answer_student,
     get_info_answer_student,
-    get_dict_stat_data,
+    get_stat_data,
     get_next_url,
     get_page_obj_and_range,
     get_dict_by_sub,

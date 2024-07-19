@@ -1,10 +1,13 @@
 from django.db import transaction
 from django.db.models import F
 
+from a_predict.views.base_info import PsatExamVars, PoliceExamVars
 
-def update_exam_participants(exam_vars, exam, qs_department, qs_student):
+
+def update_exam_participants(exam_vars: PsatExamVars | PoliceExamVars):
+    exam = exam_vars.exam
     score_fields = exam_vars.score_fields
-    department_dict = {department.name: department.id for department in qs_department}
+    department_dict = {department.name: department.id for department in exam_vars.qs_department}
 
     participants = {
         'all': {'total': {field: 0 for field in score_fields}},
@@ -17,7 +20,7 @@ def update_exam_participants(exam_vars, exam, qs_department, qs_student):
         d_id: {field: 0 for field in score_fields} for d_id in department_dict.values()
     })
 
-    for student in qs_student:
+    for student in exam_vars.qs_student:
         d_id = department_dict[student.department]
         for field, is_confirmed in student.answer_confirmed.items():
             if is_confirmed:
@@ -34,21 +37,16 @@ def update_exam_participants(exam_vars, exam, qs_department, qs_student):
     return participants
 
 
-def update_rank(
-        student,
-        stat_total_all: list,
-        stat_department_all: list,
-        stat_total_filtered: list,
-        stat_department_filtered: list,
-):
+def update_rank(exam_vars: PsatExamVars | PoliceExamVars, **stat):
+    student = exam_vars.student
     rank = {
         'all': {
-            'total': {stat['field']: stat['rank'] for stat in stat_total_all},
-            'department': {stat['field']: stat['rank'] for stat in stat_department_all},
+            'total': {s['field']: s['rank'] for s in stat['stat_total_all']},
+            'department': {s['field']: s['rank'] for s in stat['stat_department_all']},
         },
         'filtered': {
-            'total': {stat['field']: stat['rank'] for stat in stat_total_filtered},
-            'department': {stat['field']: stat['rank'] for stat in stat_department_filtered},
+            'total': {s['field']: s['rank'] for s in stat['stat_total_filtered']},
+            'department': {s['field']: s['rank'] for s in stat['stat_department_filtered']},
         },
     }
     if student.rank != rank:
@@ -56,7 +54,7 @@ def update_rank(
         student.save()
 
 
-def create_student_instance(exam_vars, student, request):
+def create_student_instance(request, exam_vars: PsatExamVars | PoliceExamVars, student):
     problem_count = exam_vars.problem_count
     score_fields = exam_vars.score_fields
     with transaction.atomic():

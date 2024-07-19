@@ -13,7 +13,23 @@ class ExamVars:
     exam_exam: str
     exam_round: int
 
+    exam: psat_models.PsatExam | police_models.PoliceExam = None
+    student: psat_models.PsatStudent | police_models.PoliceStudent = None
+    location: psat_models.Location = None
+    qs_answer_count = None
+    qs_student = None
+    qs_department = None
+
+    data_answer_predict: list[list[dict]] = dataclasses.field(default_factory=list)
+    answer_confirmed: list[bool] = dataclasses.field(default_factory=list)
+    data_answer_official_tuple: tuple[list[list[dict]], bool] = dataclasses.field(default_factory=tuple)
+    data_answer_student: list[list[dict]] = dataclasses.field(default_factory=list)
+    info_answer_student: list = dataclasses.field(default_factory=list)
+
+    stat: dict[str, list[dict]] = dataclasses.field(default_factory=dict)
+
     info = {'menu': 'predict', 'view_type': 'predict'}
+    icon_menu = icon_set_new.ICON_MENU['predict']
     score_template_table_1 = 'a_predict/snippets/index_sheet_score_table_1.html'
     score_template_table_2 = 'a_predict/snippets/index_sheet_score_table_2.html'
     score_tab = {
@@ -40,6 +56,10 @@ class ExamVars:
     @property
     def url_detail(self):
         return reverse('predict:psat-detail', kwargs=self.exam_url_kwargs)
+
+    @property
+    def url_student_create(self):
+        return reverse('predict:student-create', kwargs=self.exam_url_kwargs)
 
     @property
     def student_exam_info(self):

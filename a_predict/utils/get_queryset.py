@@ -15,8 +15,8 @@ def get_units(exam_vars):
     return exam_vars.unit_model.objects.filter(exam=exam_vars.exam_exam).values_list('name', flat=True)
 
 
-def get_location(exam_vars, student):
-    serial = int(student.serial)
+def get_location(exam_vars):
+    serial = int(exam_vars.student.serial)
     if exam_vars.location_model:
         return exam_vars.location_model.objects.filter(
             **exam_vars.exam_info, serial_start__lte=serial, serial_end__gte=serial).first()

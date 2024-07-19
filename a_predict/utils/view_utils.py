@@ -12,8 +12,8 @@ def get_exam_vars(exam_year: int, exam_exam: str, exam_round: int):
         return PoliceExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
 
 
-def get_answer_confirmed(exam_vars, student):
-    return [student.answer_confirmed[field] for field in exam_vars.score_fields]
+def get_answer_confirmed(exam_vars: PsatExamVars | PoliceExamVars):
+    return [exam_vars.student.answer_confirmed[field] for field in exam_vars.score_fields]
 
 
 def get_empty_data_answer(fields: list, problem_count: dict):
@@ -24,7 +24,7 @@ def get_empty_data_answer(fields: list, problem_count: dict):
     ]
 
 
-def get_data_answer_official(exam_vars, exam) -> tuple[list, bool]:
+def get_data_answer_official(exam_vars: PsatExamVars | PoliceExamVars) -> tuple[list, bool]:
     # {
     #     'heonbeob': [
     #         {
@@ -35,6 +35,7 @@ def get_data_answer_official(exam_vars, exam) -> tuple[list, bool]:
     #     ]
     # }
     official_answer_uploaded = False
+    exam = exam_vars.exam
 
     data_answer_official = exam_vars.get_empty_data_answer()
     if exam and exam.is_answer_official_opened:
@@ -51,12 +52,12 @@ def get_data_answer_official(exam_vars, exam) -> tuple[list, bool]:
     return data_answer_official, official_answer_uploaded
 
 
-def get_data_answer_predict(exam_vars, qs_answer_count) -> list:
+def get_data_answer_predict(exam_vars: PsatExamVars | PoliceExamVars) -> list:
     subject_fields = exam_vars.subject_fields
     problem_count = exam_vars.problem_count
     count_fields = exam_vars.count_fields
     data_answer_predict = get_empty_data_answer(fields=subject_fields, problem_count=problem_count)
-    for answer_count in qs_answer_count:
+    for answer_count in exam_vars.qs_answer_count:
         field = answer_count.subject
         if field in subject_fields:
             field_idx = subject_fields.index(field)
@@ -76,18 +77,15 @@ def get_data_answer_predict(exam_vars, qs_answer_count) -> list:
     return data_answer_predict
 
 
-def get_data_answer_student(
-        exam_vars, student,
-        data_answer_predict: list[list[dict]],
-        data_answer_official_tuple: tuple[list[list[dict]], bool],
-) -> list:
+def get_data_answer_student(exam_vars: PsatExamVars | PoliceExamVars) -> list:
+    student = exam_vars.student
     subject_fields = exam_vars.subject_fields
     problem_count = exam_vars.problem_count
     data_answer_student = get_empty_data_answer(fields=subject_fields, problem_count=problem_count)
-    data_answer_official = data_answer_official_tuple[0]
+    data_answer_official = exam_vars.data_answer_official_tuple[0]
     official_answer_uploaded = data_answer_official[1]
 
-    for field_idx, value in enumerate(data_answer_predict):
+    for field_idx, value in enumerate(exam_vars.data_answer_predict):
         field = subject_fields[field_idx]
         if student.answer_confirmed[field]:
             for idx, answer_predict in enumerate(value):
@@ -123,18 +121,17 @@ def get_data_answer_student(
     return data_answer_student
 
 
-def get_info_answer_student(
-        exam_vars, student, exam,
-        data_answer_student: list[list[dict]],
-        data_answer_predict: list[list[dict]],
-) -> list:
+def get_info_answer_student(exam_vars: PsatExamVars | PoliceExamVars) -> list:
     is_not_police = exam_vars.exam_exam != '경위'
+    student = exam_vars.student
+    data_answer_student = exam_vars.data_answer_student
+    data_answer_predict = exam_vars.data_answer_predict
     score_fields: list = exam_vars.score_fields
     subject_fields: list = exam_vars.subject_fields
     info_answer_student: list[dict] = [{} for _ in score_fields]
 
     score_predict_sum = 0
-    participants = exam.participants['all']['total']
+    participants = exam_vars.exam.participants['all']['total']
 
     for field in score_fields:
         field_idx = score_fields.index(field)
@@ -174,10 +171,12 @@ def get_info_answer_student(
     return info_answer_student
 
 
-def get_dict_stat_data(
-        exam_vars, student, stat_type: str,
-        exam, qs_student, filtered: bool = False
+def get_stat_data(
+        exam_vars: PsatExamVars | PoliceExamVars,
+        stat_type: str, filtered: bool = False
 ) -> list:
+    student = exam_vars.student
+    exam = exam_vars.exam
     score_fields = exam_vars.score_fields
     field_vars = exam_vars.field_vars
     score_list = {field: [] for field in field_vars.keys()}
@@ -197,7 +196,7 @@ def get_dict_stat_data(
         filter_exp['department'] = student.department
     if filtered:
         filter_exp['answer_all_confirmed_at__lte'] = exam.answer_official_opened_at
-    qs_student = qs_student.filter(**filter_exp)
+    qs_student = exam_vars.qs_student.filter(**filter_exp)
 
     for field, subject_tuple in field_vars.items():
         field_idx = score_fields.index(field)
