@@ -1,12 +1,12 @@
 {% if exam.is_not_page_open %}
     <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
-        <i class="fa-solid fa-circle-exclamation"></i>
+        <i class="fa-solid fa-triangle-exclamation"></i>
             수험정보는 {{ exam.page_opened_at|date:'n/d(D) H:i' }}부터 입력 가능합니다.
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 {% else %}
     <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
-        <i class="fa-solid fa-circle-exclamation"></i>
+        <i class="fa-solid fa-triangle-exclamation"></i>
             {{ exam.get_exam_display }}{% if exam.exam == '경위' %}(일반 직렬){% endif %} 수험정보를 입력해주세요.
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
@@ -69,7 +69,7 @@
         {{ form.errors.name }}
     </form>
     <div class="d-flex align-items-start mt-3">
-        <div class="badge bg-danger me-2"><i class="fa-regular fa-circle-check"></i> 참고</div>
+        <div class="badge bg-danger me-2"><i class="fa-solid fa-triangle-exclamation"></i> 주의</div>
         <div class="text-danger small fw-bold">
             입력하신 수험정보는 변경할 수 없으니 주의하시기 바랍니다.
         </div>

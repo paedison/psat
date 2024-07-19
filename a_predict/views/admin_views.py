@@ -1,5 +1,4 @@
-from django.db.models import F, Case, When, Value, IntegerField
-from django.db.models.fields.json import KeyTextTransform
+from django.db.models import F
 from django.shortcuts import render
 
 from common.constants import icon_set_new
@@ -22,7 +21,7 @@ def list_view(request: HtmxHttpRequest):
 
     # student
     qs_student = models.PsatStudent.objects.annotate(username=F('user__username')).order_by('id')
-    student_page_data = utils.get_page_obj_and_range(qs_student, page_number=page)
+    student_page_data = utils.get_page_obj_and_range(qs_student, page)
     context = update_context_data(context, student_page_data=student_page_data)
     if is_all_student:
         return render(request, 'a_predict/snippets/admin_list_student.html#all_student', context)
@@ -35,27 +34,30 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_predict/admin_list.html', context)
 
 
-def detail_view(
-        request: HtmxHttpRequest, exam_year: int, exam_exam: str, exam_round: int
-):
-    exam_vars = utils.get_exam_vars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
-    exam = utils.get_exam(exam_vars=exam_vars)
+def detail_view(request: HtmxHttpRequest, **exam_info):
+    exam_vars = utils.get_exam_vars(**exam_info)
+    exam_vars.exam = utils.get_exam(exam_vars)
 
     # page prefix
-    stat_prefix = ['all_stat', 'filtered_stat']
-    catalog_prefix = ['all_catalog', 'filtered_catalog']
-    answer_prefix = [f'answer_{idx}' for idx in range(len(exam_vars.subject_fields))]
+    prefix_stat = ['all_stat', 'filtered_stat']
+    prefix_catalog = ['all_catalog', 'filtered_catalog']
+    prefix_answer = [f'answer_{idx}' for idx in range(len(exam_vars.subject_fields))]
 
     # Hx-Pagination header
     page = request.GET.get('page', 1)
     hx_pagination = request.headers.get('Hx-Pagination', 'main')
-    is_stat = hx_pagination in stat_prefix
-    is_catalog = hx_pagination in catalog_prefix
-    is_answer = hx_pagination in answer_prefix
+    is_stat = hx_pagination in prefix_stat
+    is_catalog = hx_pagination in prefix_catalog
+    is_answer = hx_pagination in prefix_answer
+
+    # template names
+    template_stat = f'a_predict/snippets/admin_detail_statistics.html#{hx_pagination}'
+    template_catalog = f'a_predict/snippets/admin_detail_catalog.html#{hx_pagination}'
+    template_answer = f'a_predict/snippets/admin_detail_answer.html#{hx_pagination}'
 
     context = update_context_data(
         # base info
-        info=exam_vars.info, exam=exam, title='Predict',
+        info=exam_vars.info, exam=exam_vars.exam, title='Predict',
         sub_title=exam_vars.sub_title,
         exam_vars=exam_vars,
 
@@ -67,87 +69,65 @@ def detail_view(
 
         # default page settings
         pagination_url='?',
-        stat_prefix=stat_prefix,
-        catalog_prefix=catalog_prefix,
-        answer_prefix=answer_prefix,
+        prefix_stat=prefix_stat,
+        prefix_catalog=prefix_catalog,
+        prefix_answer=prefix_answer,
         answer_title=exam_vars.sub_list
     )
 
     # stat_page
     if is_stat:
-        context = get_context_for_stat_page(
-            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=hx_pagination)
-        return render(request, f'a_predict/snippets/admin_detail_statistics.html#{hx_pagination}', context)
+        context = get_context_for_stat_page(exam_vars, page, context, hx_pagination)
+        return render(request, template_stat, context)
 
     # catalog_page
+    exam_vars.qs_department = utils.get_qs_department(exam_vars)
     if is_catalog:
-        context = get_context_for_catalog_page(
-            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=hx_pagination)
-        return render(request, f'a_predict/snippets/admin_detail_catalog.html#{hx_pagination}', context)
+        context = get_context_for_catalog_page(exam_vars, page, context, hx_pagination)
+        return render(request, template_catalog, context)
 
     # answer_page
-    qs_answer_count = utils.get_qs_answer_count(exam_vars=exam_vars)
-    answer_predict = utils.get_data_answer_predict(exam_vars=exam_vars, qs_answer_count=qs_answer_count)
+    exam_vars.qs_answer_count = utils.get_qs_answer_count(exam_vars)
+    exam_vars.answer_predict = utils.get_data_answer_predict(exam_vars)
     if is_answer:
-        context = get_context_for_answer_page(
-            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=hx_pagination,
-            qs_answer_count=qs_answer_count, answer_predict=answer_predict)
-        return render(request, f'a_predict/snippets/admin_detail_answer.html#{hx_pagination}', context)
+        context = get_context_for_answer_page(exam_vars, page, context, hx_pagination)
+        return render(request, template_answer, context)
 
-    for prefix in stat_prefix:
-        context = get_context_for_stat_page(
-            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=prefix)
-    for prefix in catalog_prefix:
-        context = get_context_for_catalog_page(
-            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=prefix)
-    for prefix in answer_prefix:
-        context = get_context_for_answer_page(
-            exam_vars=exam_vars, exam=exam, page=page, context=context, prefix=prefix,
-            qs_answer_count=qs_answer_count, answer_predict=answer_predict)
+    for prefix in prefix_stat:
+        context = get_context_for_stat_page(exam_vars, page, context, prefix)
+    for prefix in prefix_catalog:
+        context = get_context_for_catalog_page(exam_vars, page, context, prefix)
+    for prefix in prefix_answer:
+        context = get_context_for_answer_page(exam_vars, page, context, prefix)
     return render(request, 'a_predict/admin_detail.html', context)
 
 
-def get_context_for_stat_page(exam_vars, exam, page, context, prefix):
+def get_context_for_stat_page(exam_vars, page, context, prefix):
     category = prefix.split('_')[0]
-    qs_department = utils.get_qs_department(exam_vars=exam_vars)
+    qs_department = utils.get_qs_department(exam_vars)
     departments = [{'id': 'total', 'unit': '전체', 'department': '전체'}]
     departments.extend(qs_department)
-    stat_page: tuple = utils.get_page_obj_and_range(departments, page_number=page)
-    utils.update_stat_page(
-        exam_vars=exam_vars, exam=exam, page_obj=stat_page[0], category=category)
+    stat_page: tuple = utils.get_page_obj_and_range(departments, page)
+    utils.update_stat_page(exam_vars, stat_page[0], category)
     return update_context_data(context, **{f'{prefix}_page': stat_page})
 
 
-def get_context_for_catalog_page(exam_vars, exam, page, context, prefix):
+def get_context_for_catalog_page(exam_vars, page, context, prefix):
     category = prefix.split('_')[0]
-    qs_department = utils.get_qs_department(exam_vars=exam_vars)
-    qs_student = utils.get_qs_student(exam_vars=exam_vars)
+    qs_student = utils.get_qs_student(exam_vars)
     if category == 'filtered':
         qs_student = qs_student.filter(answer_all_confirmed_at__isnull=False)
-    qs_student = qs_student.annotate(
-        all_psat_rank=KeyTextTransform('psat_avg', KeyTextTransform(
-            'total', KeyTextTransform(category, 'rank'))),
-        zero_rank_order=Case(
-            When(all_psat_rank=0, then=Value(1)),
-            default=Value(0), output_field=IntegerField(),
-        )
-    ).order_by('zero_rank_order', 'all_psat_rank')
-    catalog_page: tuple = utils.get_page_obj_and_range(qs_student, page_number=page)
-    utils.update_admin_catalog_page(
-        exam_vars=exam_vars, exam=exam, qs_department=qs_department,
-        page_obj=catalog_page[0], category=category)
+    qs_student = utils.get_qs_student_for_admin_views(qs_student, category)
+    catalog_page: tuple = utils.get_page_obj_and_range(qs_student, page)
+    utils.update_admin_catalog_page(exam_vars, catalog_page[0], category)
     return update_context_data(context, **{f'{prefix}_page': catalog_page})
 
 
-def get_context_for_answer_page(
-        exam_vars, exam, page, context, prefix, qs_answer_count, answer_predict
-):
+def get_context_for_answer_page(exam_vars, page, context, prefix):
     field_idx = int(prefix.split('_')[1])
     field = exam_vars.subject_fields[field_idx]
-    qs_answer_count = qs_answer_count.filter(subject=field)
-    answer_page: tuple = utils.get_page_obj_and_range(qs_answer_count, page_number=page)
-    utils.update_answer_page(
-        exam_vars=exam_vars, exam=exam, page_obj=answer_page[0],
-        answer_predict=answer_predict)
+    qs_answer_count = exam_vars.qs_answer_count.filter(subject=field)
+    answer_page: tuple = utils.get_page_obj_and_range(qs_answer_count, page)
+    utils.update_answer_page(exam_vars, answer_page[0])
     update_context_data(context, **{f'answer_{field_idx}_page': answer_page})
     return context

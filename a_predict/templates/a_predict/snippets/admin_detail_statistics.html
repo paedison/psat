@@ -48,22 +48,22 @@
         <div class="nav nav-tabs nav-tabs-colored" id="statTab" role="tablist">
             {% for id in '01' %}
                 {% cycle '전체' '필터링' as tab_title silent %}
-                {% cycle stat_prefix.0 stat_prefix.1 as prefix silent %}
+                {% cycle prefix_stat.0 prefix_stat.1 as prefix silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
     <div class="tab-content htmx-fade-out htmx-fade-in" id="statContent">
-        {% #nav_content prefix=stat_prefix.0 id='0' %}
+        {% #nav_content prefix=prefix_stat.0 id='0' %}
             {% partialdef all_stat inline=True %}
-                {% with prefix=stat_prefix.0 page_obj=all_stat_page.0 page_range=all_stat_page.1 %}
+                {% with prefix=prefix_stat.0 page_obj=all_stat_page.0 page_range=all_stat_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=stat_prefix.1 id='1' %}
+        {% #nav_content prefix=prefix_stat.1 id='1' %}
             {% partialdef filtered_stat inline=True %}
-                {% with prefix=stat_prefix.1 page_obj=filtered_stat_page.0 page_range=filtered_stat_page.1 %}
+                {% with prefix=prefix_stat.1 page_obj=filtered_stat_page.0 page_range=filtered_stat_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}

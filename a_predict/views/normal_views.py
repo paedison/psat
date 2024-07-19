@@ -158,7 +158,7 @@ def answer_input_view(request: HtmxHttpRequest, subject_field: str, **exam_info)
         return redirect(exam_vars.url_student_create)
 
     exam = utils.get_exam(exam_vars)
-    if subject_field not in exam_vars.problem_count.keys() or student.answer_confirmed[subject_field]:
+    if subject_field not in exam_vars.subject_fields or student.answer_confirmed[subject_field]:
         return redirect(exam_vars.url_detail)
 
     # answer_submit

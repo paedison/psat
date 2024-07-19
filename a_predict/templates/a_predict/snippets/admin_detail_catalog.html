@@ -28,22 +28,22 @@
         <div class="nav nav-tabs nav-tabs-colored" id="catalogTab" role="tablist">
             {% for id in '01' %}
                 {% cycle '전체' '필터링' as tab_title silent %}
-                {% cycle 'all_catalog' 'filtered_catalog' as prefix silent %}
+                {% cycle prefix_catalog.0 prefix_catalog.1 as prefix silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
     <div class="tab-content" id="catalogContent">
-        {% #nav_content prefix=catalog_prefix.0 id='0' %}
+        {% #nav_content prefix=prefix_catalog.0 id='0' %}
             {% partialdef all_catalog inline=True %}
-                {% with prefix=catalog_prefix.0 page_obj=all_catalog_page.0 page_range=all_catalog_page.1 %}
+                {% with prefix=prefix_catalog.0 page_obj=all_catalog_page.0 page_range=all_catalog_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=catalog_prefix.1 id='1' %}
+        {% #nav_content prefix=prefix_catalog.1 id='1' %}
             {% partialdef filtered_catalog inline=True %}
-                {% with prefix=catalog_prefix.1 page_obj=filtered_catalog_page.0 page_range=filtered_catalog_page.1 %}
+                {% with prefix=prefix_catalog.1 page_obj=filtered_catalog_page.0 page_range=filtered_catalog_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}

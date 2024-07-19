@@ -1,7 +1,22 @@
-def update_stat_page(exam_vars, exam, page_obj, category: str):
+from django.db.models import Case, When, Value, IntegerField
+from django.db.models.fields.json import KeyTextTransform
+
+
+def get_qs_student_for_admin_views(qs_student, category):
+    return qs_student.annotate(
+        all_psat_rank=KeyTextTransform('psat_avg', KeyTextTransform(
+            'total', KeyTextTransform(category, 'rank'))),
+        zero_rank_order=Case(
+            When(all_psat_rank=0, then=Value(1)),
+            default=Value(0), output_field=IntegerField(),
+        )
+    ).order_by('zero_rank_order', 'all_psat_rank')
+
+
+def update_stat_page(exam_vars, page_obj, category: str):
     admin_score_fields = exam_vars.admin_score_fields
-    participants = exam.participants[category]
-    statistics = exam.statistics[category]
+    participants = exam_vars.exam.participants[category]
+    statistics = exam_vars.exam.statistics[category]
     for obj in page_obj:
         try:
             obj_id = str(obj.id)
@@ -24,7 +39,7 @@ def update_stat_page(exam_vars, exam, page_obj, category: str):
                 obj['stat'].append(stat_dict)
 
 
-def update_answer_page(exam_vars, exam, page_obj, answer_predict):
+def update_answer_page(exam_vars, page_obj):
     subject_fields = exam_vars.subject_fields
     rank_list = exam_vars.rank_list
 
@@ -33,10 +48,10 @@ def update_answer_page(exam_vars, exam, page_obj, answer_predict):
         field = obj.subject
         field_idx = subject_fields.index(field)
         answer_count = getattr(obj, 'all')
-        ans_official = exam.answer_official[field][no - 1]
+        ans_official = exam_vars.exam.answer_official[field][no - 1]
 
         obj.ans_official = ans_official
-        obj.ans_predict = answer_predict[field_idx][no - 1]['ans']
+        obj.ans_predict = exam_vars.answer_predict[field_idx][no - 1]['ans']
         for field in rank_list:
             rate = round(
                 answer_count[field][ans_official] * 100 / answer_count[field][-1], 1
@@ -46,12 +61,12 @@ def update_answer_page(exam_vars, exam, page_obj, answer_predict):
         setattr(obj, 'rate_gap', obj.rate_top_rank - obj.rate_low_rank)
 
 
-def update_admin_catalog_page(exam_vars, exam, qs_department, page_obj, category):
+def update_admin_catalog_page(exam_vars, page_obj, category):
     admin_catalog_fields = exam_vars.admin_score_fields
-    participants = exam.participants[category]
+    participants = exam_vars.exam.participants[category]
 
     departments = {
-        department.name: str(department.id) for department in qs_department
+        department.name: str(department.id) for department in exam_vars.qs_department
     }
 
     for obj in page_obj:

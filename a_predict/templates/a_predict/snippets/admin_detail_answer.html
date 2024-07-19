@@ -19,7 +19,7 @@
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
             {% for id in '0123' %}
-                {% cycle answer_prefix.0 answer_prefix.1 answer_prefix.2 answer_prefix.3 as prefix silent %}
+                {% cycle prefix_answer.0 prefix_answer.1 prefix_answer.2 prefix_answer.3 as prefix silent %}
                 {% cycle answer_title.0 answer_title.1 answer_title.2 answer_title.3 as tab_title silent %}
                 {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
                 {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
@@ -28,30 +28,30 @@
     </nav>
 
     <div class="tab-content" id="answerAnalysisContent">
-        {% #nav_content prefix=answer_prefix.0 id='0' %}
+        {% #nav_content prefix=prefix_answer.0 id='0' %}
             {% partialdef answer_0 inline=True %}
-                {% with prefix=answer_prefix.0 page_obj=answer_0_page.0 page_range=answer_0_page.1 %}
+                {% with prefix=prefix_answer.0 page_obj=answer_0_page.0 page_range=answer_0_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=answer_prefix.1 id='1' %}
+        {% #nav_content prefix=prefix_answer.1 id='1' %}
             {% partialdef answer_1 inline=True %}
-                {% with prefix=answer_prefix.1 page_obj=answer_1_page.0 page_range=answer_1_page.1 %}
+                {% with prefix=prefix_answer.1 page_obj=answer_1_page.0 page_range=answer_1_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=answer_prefix.2 id='2' %}
+        {% #nav_content prefix=prefix_answer.2 id='2' %}
             {% partialdef answer_2 inline=True %}
-                {% with prefix=answer_prefix.2 page_obj=answer_2_page.0 page_range=answer_2_page.1 %}
+                {% with prefix=prefix_answer.2 page_obj=answer_2_page.0 page_range=answer_2_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=answer_prefix.3 id='3' %}
+        {% #nav_content prefix=prefix_answer.3 id='3' %}
             {% partialdef answer_3 inline=True %}
-                {% with prefix=answer_prefix.3 page_obj=answer_3_page.0 page_range=answer_3_page.1 %}
+                {% with prefix=prefix_answer.3 page_obj=answer_3_page.0 page_range=answer_3_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}

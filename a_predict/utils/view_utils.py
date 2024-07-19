@@ -234,7 +234,7 @@ def get_next_url(exam_vars, student) -> str:
     return reverse('predict:index')
 
 
-def get_page_obj_and_range(page_data, per_page=10, page_number=1):
+def get_page_obj_and_range(page_data, page_number=1, per_page=10):
     paginator = Paginator(page_data, per_page)
     try:
         page_obj = paginator.get_page(page_number)
