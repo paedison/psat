@@ -93,7 +93,7 @@ def get_stat_context(exam_vars):
     stat = {}
     for stat_type in ['total', 'department']:
         for filtered in [False, True]:
-            category = 'all' if filtered else 'filtered'
+            category = 'filtered' if filtered else 'all'
             stat[f'stat_{stat_type}_{category}'] = utils.get_stat_data(
                 exam_vars, stat_type, filtered)
     utils.update_rank(exam_vars, **stat)

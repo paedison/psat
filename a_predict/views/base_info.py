@@ -234,7 +234,7 @@ class PoliceExamVars(ExamVars):
     def sub_title(self):
         default = {
             '프모': f'제{self.exam_round}회 프라임모의고사 합격 예측',
-            '경위': f'{self.exam_year}년 경위공채 합격 예측',
+            '경위': f'74기 경위공채 합격 예측',
         }
         return default[self.exam_exam]
 
