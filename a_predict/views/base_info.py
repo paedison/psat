@@ -13,6 +13,7 @@ class ExamVars:
     exam_exam: str
     exam_round: int
 
+    # Obj and queryset derived from views
     exam: psat_models.PsatExam | police_models.PoliceExam = None
     student: psat_models.PsatStudent | police_models.PoliceStudent = None
     location: psat_models.Location = None
@@ -20,14 +21,15 @@ class ExamVars:
     qs_student = None
     qs_department = None
 
+    # Template variables
     data_answer_predict: list[list[dict]] = dataclasses.field(default_factory=list)
     answer_confirmed: list[bool] = dataclasses.field(default_factory=list)
     data_answer_official_tuple: tuple[list[list[dict]], bool] = dataclasses.field(default_factory=tuple)
     data_answer_student: list[list[dict]] = dataclasses.field(default_factory=list)
     info_answer_student: list = dataclasses.field(default_factory=list)
-
     stat: dict[str, list[dict]] = dataclasses.field(default_factory=dict)
 
+    # Template constants
     info = {'menu': 'predict', 'view_type': 'predict'}
     icon_menu = icon_set_new.ICON_MENU['predict']
     score_template_table_1 = 'a_predict/snippets/index_sheet_score_table_1.html'
@@ -44,6 +46,12 @@ class ExamVars:
     @property
     def exam_info(self):
         return {'year': self.exam_year, 'exam': self.exam_exam, 'round': self.exam_round}
+
+    def get_problem_info(self, field: str, number: int):
+        return {
+            'year': self.exam_year, 'exam': self.exam_exam, 'round': self.exam_round,
+            'subject': field, 'number': number,
+        }
 
     @property
     def exam_url_kwargs(self):
@@ -70,10 +78,6 @@ class ExamVars:
 
 @dataclasses.dataclass
 class PsatExamVars(ExamVars):
-    count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5']
-    avg_field = 'psat_avg'
-    sum_fields = ['eoneo', 'jaryo', 'sanghwang']
-
     exam_model = psat_models.PsatExam
     unit_model = psat_models.PsatUnit
     department_model = psat_models.PsatDepartment
@@ -81,6 +85,17 @@ class PsatExamVars(ExamVars):
     student_model = psat_models.PsatStudent
     answer_count_model = psat_models.PsatAnswerCount
     student_form = forms.PsatStudentForm
+
+    # Answer count fields constant
+    count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5']
+    all_count_fields = count_fields + ['count_multiple', 'count_total']
+
+    def get_count_default(self):
+        return {fld: 0 for fld in self.all_count_fields}
+
+    # Sum or average fields
+    avg_field = 'psat_avg'
+    sum_fields = ['eoneo', 'jaryo', 'sanghwang']
 
     @property
     def url_answer_input(self):
@@ -202,13 +217,6 @@ class PsatExamVars(ExamVars):
 class PoliceExamVars(ExamVars):
     selection: str = 'minbeob'
 
-    count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4']
-    avg_field = 'sum'
-
-    @property
-    def sum_fields(self):
-        return ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', self.selection]
-
     exam_model = police_models.PoliceExam
     unit_model = police_models.PoliceUnit
     department_model = police_models.PoliceDepartment
@@ -216,6 +224,17 @@ class PoliceExamVars(ExamVars):
     student_model = police_models.PoliceStudent
     answer_count_model = police_models.PoliceAnswerCount
     student_form = forms.PoliceStudentForm
+
+    # Answer count fields constant
+    count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4']
+    all_count_fields = count_fields + ['count_multiple', 'count_total']
+
+    # Sum fields
+    avg_field = 'sum'
+
+    @property
+    def sum_fields(self):
+        return ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', self.selection]
 
     @property
     def url_answer_input(self):

@@ -22,26 +22,31 @@ class Command(BaseCommand):
         exam_round = options['exam_round']
 
         if exam_type == 'psat':
-            exam_vars = CommandPsatExamVars(exam_year, exam_exam, exam_round)
+            exam_vars = DefaultPsatExamVars(exam_year, exam_exam, exam_round)
         else:
-            exam_vars = CommandPoliceExamVars(exam_year, exam_exam, exam_round)
+            exam_vars = DefaultPoliceExamVars(exam_year, exam_exam, exam_round)
 
-        matching_fields = exam_vars.count_fields + ['all', 'filtered']
+        self.stdout.write('================')
+        self.stdout.write(f'Create or update answer_count_model default instances')
+        matching_fields = exam_vars.count_fields + [
+            'count_multiple', 'count_total', 'all', 'filtered']
         answer_count_model_data = get_default_answer_count_model_data(exam_vars)
         utils.create_or_update_model(exam_vars.answer_count_model, matching_fields, answer_count_model_data)
 
+        self.stdout.write('================')
+        self.stdout.write(f'Create or update exam_model default instances')
         matching_fields = ['participants', 'statistics']
         exam_model_data = get_default_exam_model_data(exam_vars, matching_fields)
         utils.create_or_update_model(exam_vars.exam_model, matching_fields, exam_model_data)
 
 
 @dataclasses.dataclass
-class CommandPsatExamVars(PsatExamVars):
+class DefaultPsatExamVars(PsatExamVars):
     pass
 
 
 @dataclasses.dataclass
-class CommandPoliceExamVars(PoliceExamVars):
+class DefaultPoliceExamVars(PoliceExamVars):
     sub_list = ['형사', '헌법', '경찰', '범죄', '민법', '행학', '행법']
     subject_list = ['형사학', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
     subject_vars = {
@@ -71,50 +76,37 @@ class CommandPoliceExamVars(PoliceExamVars):
     }
 
 
-def get_default_answer_count_model_data(exam_vars: CommandPsatExamVars | PoliceExamVars):
+def get_default_answer_count_model_data(exam_vars: DefaultPsatExamVars | DefaultPoliceExamVars):
     answer_count_model_data = utils.get_empty_model_data()
     num_of_count_fields = len(exam_vars.count_fields) + 2
     rank_list = exam_vars.rank_list
 
     for field, count in exam_vars.problem_count.items():
         for number in range(1, count + 1):
-            lookup_dict = {key: value for key, value in exam_vars.exam_info.items()}
-            lookup_dict.update({'subject': field, 'number': number})
-
-            count_dict = {
-                'all': {rank: [0 for _ in range(num_of_count_fields)] for rank in rank_list},
-                'filtered': {rank: [0 for _ in range(num_of_count_fields)] for rank in rank_list},
-            }
-            count_dict.update(lookup_dict)
-            count_fields = [key for key in count_dict.keys()]
+            problem_info = exam_vars.get_problem_info(field, number)
+            count_default = exam_vars.get_count_default()
+            count_default.update({
+                'all': get_count_by_rank(num_of_count_fields, rank_list),
+                'filtered': get_count_by_rank(num_of_count_fields, rank_list),
+            })
+            count_default.update(problem_info)
+            count_fields = [key for key in count_default.keys()]
 
             utils.update_model_data(
-                answer_count_model_data, exam_vars.answer_count_model, lookup_dict, count_dict, count_fields)
+                answer_count_model_data, exam_vars.answer_count_model, problem_info, count_default, count_fields)
     return answer_count_model_data
 
 
-def get_default_exam_model_data(exam_vars: CommandPsatExamVars | PoliceExamVars, matching_fields: list):
+def get_count_by_rank(num_fields, rank_list):
+    return {rank: [0 for _ in range(num_fields)] for rank in rank_list}
+
+
+def get_default_exam_model_data(exam_vars: DefaultPsatExamVars | DefaultPoliceExamVars, matching_fields: list):
     exam_model_data = utils.get_empty_model_data()
     matching_data = {
-        'participants': get_default_dict(exam_vars, 0),
-        'statistics': get_default_dict(exam_vars, {}),
+        'participants': utils.get_default_dict(exam_vars, 0),
+        'statistics': utils.get_default_dict(exam_vars, {}),
     }
     utils.update_model_data(
         exam_model_data, exam_vars.exam_model, exam_vars.exam_info, matching_data, matching_fields)
     return exam_model_data
-
-
-def get_default_dict(exam_vars: CommandPsatExamVars | PoliceExamVars, default):
-    score_fields = exam_vars.score_fields
-    department_dict = utils.get_department_dict(exam_vars)
-    default_dict = {
-        'all': {'total': {fld: default for fld in score_fields}},
-        'filtered': {'total': {fld: default for fld in score_fields}},
-    }
-    default_dict['all'].update({
-        d_id: {fld: default for fld in score_fields} for d_id in department_dict.values()
-    })
-    default_dict['filtered'].update({
-        d_id: {fld: default for fld in score_fields} for d_id in department_dict.values()
-    })
-    return default_dict

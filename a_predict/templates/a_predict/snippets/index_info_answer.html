@@ -72,7 +72,7 @@
                 {{ info_answer.icon|safe }} {{ info_answer.subject }}
             {% else %}
                 <a class="text-decoration-none"
-                   href="" hx-boost="true">
+                   href="{{ info_answer.url_answer_input }}" hx-boost="true">
                     {{ info_answer.icon|safe }} {{ info_answer.subject }}
                 </a>
             {% endif %}

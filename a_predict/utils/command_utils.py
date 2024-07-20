@@ -3,7 +3,11 @@ import traceback
 import django.db.utils
 from django.db import transaction
 
+from .get_queryset import get_department_dict
+from ..views.base_info import PsatExamVars, PoliceExamVars
+
 __all__ = [
+    'get_default_dict',
     'get_student_model_data', 'get_old_answer_data', 'get_exam_model_data',
     'get_total_answer_lists_and_score_data', 'get_answer_count_model_data',
     'get_statistics_data', 'get_total_answer_count_model_data',
@@ -91,60 +95,65 @@ DEPARTMENT_DICT = {
 }
 
 
-def get_student_model_data(exam_vars: dict, old_students) -> dict:
+def get_default_dict(exam_vars: PsatExamVars | PoliceExamVars, default):
+    score_fields = exam_vars.score_fields
+    department_dict = get_department_dict(exam_vars)
+    default_dict = {
+        'all': {'total': {fld: default for fld in score_fields}},
+        'filtered': {'total': {fld: default for fld in score_fields}},
+    }
+    default_dict['all'].update({
+        d_id: {fld: default for fld in score_fields} for d_id in department_dict.values()
+    })
+    default_dict['filtered'].update({
+        d_id: {fld: default for fld in score_fields} for d_id in department_dict.values()
+    })
+    return default_dict
+
+
+def get_student_model_data(exam_vars, old_students) -> dict:
     student_model_data = get_empty_model_data()
-    student_model = exam_vars['student_model']
 
     for student in old_students:
-        old_answer_data = get_old_answer_data(exam_vars=exam_vars, student=student)
-        student_info = {
-            'user_id': student.user_id,
-            'year': exam_vars['year'],
-            'exam': exam_vars['exam'],
-            'round': exam_vars['round'],
-
-            'name': student.name,
-            'serial': student.serial,
+        old_answer_data = get_old_answer_data(exam_vars, student)
+        student_info = {}
+        base_info = {
+            'user_id': student.user_id, 'year': exam_vars.exam_year,
+            'exam': exam_vars.exam_exam, 'round': exam_vars.exam_round,
+            'name': student.name, 'serial': student.serial,
+        }
+        extra_info = {
             'unit': UNIT_DICT[student.unit_id],
             'department': DEPARTMENT_DICT[student.department_id],
-
             'password': student.password,
             'prime_id': student.prime_id,
-
+        }
+        answer_info = {
             'answer': old_answer_data['answer'],
             'answer_count': old_answer_data['answer_count'],
             'answer_confirmed': old_answer_data['answer_confirmed'],
             'answer_all_confirmed_at': old_answer_data['answer_all_confirmed_at'],
         }
+        student_info.update(base_info)
+        student_info.update(extra_info)
+        student_info.update(answer_info)
 
-        lookup_dict = {
-            'user_id': student.user_id,
-            'year': exam_vars['year'],
-            'exam': exam_vars['exam'],
-            'round': exam_vars['round'],
-            'name': student.name,
-            'serial': student.serial,
-        }
-        matching_fields = ['answer', 'answer_count', 'answer_confirmed', 'answer_all_confirmed_at']
+        answer_fields = [key for key in answer_info.keys()]
         update_model_data(
-            model_data=student_model_data, model=student_model, lookup=lookup_dict,
-            matching_data=student_info, matching_fields=matching_fields,
-        )
+            student_model_data, exam_vars.student_model, base_info, student_info, answer_fields)
     return student_model_data
 
 
-def get_old_answer_data(exam_vars: dict, student):
-    sub_list: dict = exam_vars['sub_list']
-    problem_count: dict = exam_vars['problem_count']
-    subject_fields: list = exam_vars['subject_fields']
-    subject_vars: list = exam_vars['subject_vars']
-    old_answer_model = exam_vars['old_answer_model']
+def get_old_answer_data(exam_vars, student):
+    subject_fields: list = exam_vars.subject_fields
 
     old_answers = [
-        old_answer_model.objects.filter(student=student, sub=sub).first() for sub in sub_list
+        exam_vars.old_answer_model.objects.filter(student=student, sub=sub).first() for sub in exam_vars.sub_list
     ]
 
-    answer_dict = {field: [0 for _ in range(count)] for field, count in problem_count.items()}
+    answer_dict = {
+        field: [0 for _ in range(count)] for field, count in exam_vars.problem_count.items()
+    }
     answer_count_dict = {field: 0 for field in subject_fields}
     answer_confirmed_dict = {field: False for field in subject_fields}
     answer_updated_at_dict = {field: None for field in subject_fields}
@@ -152,11 +161,11 @@ def get_old_answer_data(exam_vars: dict, student):
 
     for answer in old_answers:
         if answer:
-            field = subject_vars[answer.sub][1]
+            field = exam_vars.subject_vars[answer.sub][1]
             answer_confirmed_dict[field] = answer.is_confirmed
             answer_updated_at_dict[field] = answer.updated_at
 
-            for idx in range(problem_count[field]):
+            for idx in range(exam_vars.problem_count[field]):
                 no = idx + 1
                 ans = getattr(answer, f'prob{no}') or 0
                 answer_dict[field][idx] = ans
@@ -178,7 +187,8 @@ def get_old_answer_data(exam_vars: dict, student):
     }
 
 
-def get_exam_model_data(exam, participants):
+def get_exam_model_data(exam_vars: PsatExamVars, participants):
+    exam = exam_vars.exam
     exam_model_data = get_empty_model_data()
     if exam.participants != participants:
         exam.participants = participants
@@ -187,15 +197,13 @@ def get_exam_model_data(exam, participants):
     return exam_model_data
 
 
-def get_total_answer_lists_and_score_data(exam_vars: dict, qs_student, answer_official: dict) -> tuple:
+def get_total_answer_lists_and_score_data(exam_vars: PsatExamVars, qs_student) -> tuple:
+    answer_official = exam_vars.exam.answer_official
     score_data = get_empty_model_data()
-    subject_fields = exam_vars['subject_fields']
-    score_fields = exam_vars['score_fields']  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
-    psat_fields = exam_vars['psat_fields']
-    total_answer_lists = {field: [] for field in subject_fields}
+    total_answer_lists = {field: [] for field in exam_vars.subject_fields}
 
     for student in qs_student:
-        score = {field: 0 for field in score_fields}
+        score = {field: 0 for field in exam_vars.score_fields}
         for field, answer in student.answer.items():
             if student.answer_confirmed[field]:
                 total_answer_lists[field].append(answer)
@@ -206,39 +214,31 @@ def get_total_answer_lists_and_score_data(exam_vars: dict, qs_student, answer_of
                 correct_count += 1 if ans == answer_official[field][idx] else 0
             score[field] = correct_count * score_unit
 
-        sum_list = [score[field] for field in psat_fields if field in score]
+        sum_list = [score[field] for field in exam_vars.sum_fields if field in score]
         score['psat_avg'] = sum(sum_list) / 3 if sum_list else 0
 
         add_obj_to_model_update_data(
-            model_data=score_data, obj=student,
-            matching_data={'score': score}, matching_fields=['score'])
+            score_data, student, {'score': score}, ['score'])
 
     return total_answer_lists, score_data
 
 
-def get_answer_count_model_data(exam_vars: dict, matching_fields: list, all_count_dict: dict):
+def get_answer_count_model_data(
+        exam_vars: PsatExamVars, matching_fields: list, all_count_dict: dict):
     answer_count_model_data = get_empty_model_data()
-    answer_count_model = exam_vars['answer_count_model']
-    subject_fields = exam_vars['subject_fields']
-    for field in subject_fields:
+    for field in exam_vars.subject_fields:
         for count in all_count_dict[field]:
             if count['count_total']:
-                lookup_dict = {
-                    'year': exam_vars['year'],
-                    'exam': exam_vars['exam'],
-                    'round': exam_vars['round'],
-                    'subject': count['subject'],
-                    'number': count['number'],
-                }
+                problem_info = exam_vars.get_problem_info(
+                    count['subject'], count['number'])
                 update_model_data(
-                    model_data=answer_count_model_data,
-                    model=answer_count_model, lookup=lookup_dict,
-                    matching_data=count, matching_fields=matching_fields,
-                )
+                    answer_count_model_data, exam_vars.answer_count_model,
+                    problem_info, count, matching_fields)
     return answer_count_model_data
 
 
-def get_statistics_data(exam, statistics):
+def get_statistics_data(exam_vars: PsatExamVars, statistics):
+    exam = exam_vars.exam
     statistics_data = get_empty_model_data()
     if exam.statistics != statistics:
         exam.statistics = statistics
@@ -247,24 +247,15 @@ def get_statistics_data(exam, statistics):
     return statistics_data
 
 
-def get_total_answer_count_model_data(exam_vars: dict, matching_fields: list, all_count_dict: dict):
+def get_total_answer_count_model_data(
+        exam_vars: PsatExamVars, matching_fields: list, all_count_dict: dict):
     answer_count_model_data = get_empty_model_data()
-    answer_count_model = exam_vars['answer_count_model']
-    subject_fields = exam_vars['subject_fields']
-    for field in subject_fields:
+    for field in exam_vars.subject_fields:
         for data in all_count_dict[field]:
-            lookup_dict = {
-                'year': exam_vars['year'],
-                'exam': exam_vars['exam'],
-                'round': exam_vars['round'],
-                'subject': data['subject'],
-                'number': data['number'],
-            }
+            problem_info = exam_vars.get_problem_info(data['subject'], data['number'])
             update_model_data(
-                model_data=answer_count_model_data,
-                model=answer_count_model, lookup=lookup_dict,
-                matching_data=data, matching_fields=matching_fields,
-            )
+                answer_count_model_data, exam_vars.answer_count_model,
+                problem_info, data, matching_fields)
     return answer_count_model_data
 
 
@@ -298,15 +289,11 @@ def update_model_data(
         obj=None,
 ):
     if obj:
-        add_obj_to_model_update_data(
-            model_data=model_data, obj=obj,
-            matching_data=matching_data, matching_fields=matching_fields)
+        add_obj_to_model_update_data(model_data, obj, matching_data, matching_fields)
     else:
         try:
             obj = model.objects.get(**lookup)
-            add_obj_to_model_update_data(
-                model_data=model_data, obj=obj,
-                matching_data=matching_data, matching_fields=matching_fields)
+            add_obj_to_model_update_data(model_data, obj, matching_data, matching_fields)
         except model.DoesNotExist:
             model_data['create_list'].append(model(**matching_data))
             model_data['create_count'] += 1

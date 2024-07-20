@@ -1,25 +1,15 @@
+from .command_utils import get_default_dict
+from .get_queryset import get_department_dict
+from ..views.base_info import PsatExamVars
+
 __all__ = [
     'get_participants', 'get_rank_data', 'get_confirmed_scores', 'get_statistics',
 ]
 
 
-def get_participants(exam_vars: dict, exam, qs_student):
-    department_model = exam_vars['department_model']
-    score_fields = exam_vars['score_fields']  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
-
-    qs_department = department_model.objects.filter(exam=exam_vars['exam']).order_by('id')
-    department_dict = {department.name: department.id for department in qs_department}
-
-    participants = {
-        'all': {'total': {field: 0 for field in score_fields}},
-        'filtered': {'total': {field: 0 for field in score_fields}},
-    }
-    participants['all'].update({
-        d_id: {field: 0 for field in score_fields} for d_id in department_dict.values()
-    })
-    participants['filtered'].update({
-        d_id: {field: 0 for field in score_fields} for d_id in department_dict.values()
-    })
+def get_participants(exam_vars: PsatExamVars, qs_student):
+    participants = get_default_dict(exam_vars, 0)
+    department_dict = get_department_dict(exam_vars)
 
     for student in qs_student:
         d_id = department_dict[student.department]
@@ -29,15 +19,15 @@ def get_participants(exam_vars: dict, exam, qs_student):
                 participants['all'][d_id][field] += 1
 
             all_confirmed_at = student.answer_all_confirmed_at
-            if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
+            if all_confirmed_at and all_confirmed_at < exam_vars.exam.answer_official_opened_at:
                 participants['filtered']['total'][field] += 1
                 participants['filtered'][d_id][field] += 1
     return participants
 
 
-def get_rank_data(exam_vars: dict, exam, qs_student) -> dict:
-    score_fields = exam_vars['score_fields']  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
-    scores_total = get_confirmed_scores(exam_vars=exam_vars, exam=exam, qs_student=qs_student)
+def get_rank_data(exam_vars: PsatExamVars, qs_student) -> dict:
+    score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
+    scores_total = get_confirmed_scores(exam_vars, qs_student)
     scores: dict[str, dict[str, dict[str, list]]] = {
         'all': {'total': scores_total['all'], 'department': {}},
         'filtered': {'total': scores_total['filtered'], 'department': {}},
@@ -45,8 +35,7 @@ def get_rank_data(exam_vars: dict, exam, qs_student) -> dict:
 
     rank_data = get_empty_model_data()
     for student in qs_student:
-        scores_department = get_confirmed_scores(
-            exam_vars=exam_vars, exam=exam, qs_student=qs_student, department=student.department)
+        scores_department = get_confirmed_scores(exam_vars, qs_student, student.department)
         scores['all']['department'] = scores_department['all']
         scores['filtered']['department'] = scores_department['filtered']
 
@@ -69,7 +58,7 @@ def get_rank_data(exam_vars: dict, exam, qs_student) -> dict:
                         scores['all']['department'][field].index(score_student) + 1)
 
             all_confirmed_at = student.answer_all_confirmed_at
-            if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
+            if all_confirmed_at and all_confirmed_at < exam_vars.exam.answer_official_opened_at:
                 rank['filtered']['total'][field] = (
                         scores['filtered']['total'][field].index(score_student) + 1)
                 rank['filtered']['department'][field] = (
@@ -84,9 +73,9 @@ def get_rank_data(exam_vars: dict, exam, qs_student) -> dict:
 
 
 def get_confirmed_scores(
-        exam_vars: dict, exam, qs_student, department: str | None = None
+        exam_vars: PsatExamVars, qs_student, department: str | None = None
 ) -> dict:
-    score_fields = exam_vars['score_fields']  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
+    score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
     if department:
         qs_student = qs_student.filter(department=department)
 
@@ -100,7 +89,7 @@ def get_confirmed_scores(
                 scores['all'][field].append(student.score[field])
 
             all_confirmed_at = student.answer_all_confirmed_at
-            if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
+            if all_confirmed_at and all_confirmed_at < exam_vars.exam.answer_official_opened_at:
                 scores['filtered'][field].append(student.score[field])
 
     sorted_scores = {
@@ -110,9 +99,9 @@ def get_confirmed_scores(
     return sorted_scores
 
 
-def get_statistics(exam_vars: dict, exam, qs_department, qs_student):
-    score_fields = exam_vars['score_fields']  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
-    scores_total = get_confirmed_scores(exam_vars=exam_vars, exam=exam, qs_student=qs_student)
+def get_statistics(exam_vars: PsatExamVars, qs_department, qs_student):
+    score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
+    scores_total = get_confirmed_scores(exam_vars, qs_student)
     scores: dict[str, dict[str, dict[str, list]]] = {
         'all': {'total': scores_total['all']},
         'filtered': {'total': scores_total['filtered']},
@@ -126,8 +115,7 @@ def get_statistics(exam_vars: dict, exam, qs_department, qs_student):
         },
     }
     for department in qs_department:
-        scores_department = get_confirmed_scores(
-            exam_vars=exam_vars, exam=exam, qs_student=qs_student, department=department.name)
+        scores_department = get_confirmed_scores(exam_vars, qs_student, department.name)
         scores['all'][department.id] = scores_department['all']
         scores['filtered'][department.id] = scores_department['filtered']
         statistics['all'][department.id] = {field: {} for field in score_fields}
