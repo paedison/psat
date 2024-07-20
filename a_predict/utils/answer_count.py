@@ -1,5 +1,9 @@
 from collections import Counter
 
+__all__ = [
+    'get_all_count_dict', 'get_total_count_dict_by_category', 'get_total_answer_lists_by_category'
+]
+
 
 def get_all_count_dict(exam_vars: dict, total_answer_lists: dict) -> dict:
     problem_count = exam_vars['problem_count']

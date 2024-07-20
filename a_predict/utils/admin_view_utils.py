@@ -1,6 +1,11 @@
 from django.db.models import Case, When, Value, IntegerField
 from django.db.models.fields.json import KeyTextTransform
 
+__all__ = [
+    'get_qs_student_for_admin_views', 'update_stat_page',
+    'update_answer_page', 'update_admin_catalog_page'
+]
+
 
 def get_qs_student_for_admin_views(qs_student, category):
     return qs_student.annotate(

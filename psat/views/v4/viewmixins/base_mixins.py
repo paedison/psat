@@ -1,5 +1,5 @@
 from common.constants import icon_set
-from common.views.base_views import HtmxHttpRequest
+from common.utils import HtmxHttpRequest
 from dashboard.models import psat_log_models
 from psat import utils
 from psat.models import psat_data_models

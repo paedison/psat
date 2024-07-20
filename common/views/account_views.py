@@ -6,10 +6,10 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
-from common import forms as common_forms
-from common.constants.icon_set import ConstantIconSet
-from common.models import User
-from common.views.base_views import HtmxHttpRequest
+from .. import forms as common_forms
+from ..constants.icon_set import ConstantIconSet
+from ..models import User
+from ..utils import HtmxHttpRequest
 
 
 class OnlyLoggedInAllowedMixin(UserPassesTestMixin):

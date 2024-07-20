@@ -17,8 +17,18 @@ from django.urls import reverse_lazy
 from a_common.constants.icon_set import ConstantIconSet
 from a_common.models import User
 # from a_predict import serializers
-from a_predict.utils import get_dict_by_sub
 from .base_mixins import AdminBaseMixin
+
+
+def get_dict_by_sub(target_list: list[dict]) -> dict:
+    result_dict = {'헌법': [], '언어': [], '자료': [], '상황': []}
+    for key in result_dict.keys():
+        result_list = []
+        for t in target_list:
+            if t and t['sub'] == key:
+                result_list.append(t)
+        result_dict[key] = result_list
+    return result_dict
 
 
 class ListViewMixin(AdminBaseMixin, ConstantIconSet):

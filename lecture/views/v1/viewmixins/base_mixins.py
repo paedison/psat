@@ -1,7 +1,7 @@
 from common.constants import icon_set
-from common.views.base_views import HtmxHttpRequest
-from lecture.models import lecture_models, custom_models
+from common.utils import HtmxHttpRequest
 from lecture import utils
+from lecture.models import lecture_models, custom_models
 from reference.models import psat_models
 
 

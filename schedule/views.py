@@ -8,7 +8,7 @@ from django.utils.safestring import mark_safe
 from vanilla import ListView
 
 from common.constants import icon
-from common.views.base_views import HtmxHttpRequest
+from common.utils import HtmxHttpRequest
 from .forms import EventForm
 from .models import Calendar, Event
 from .utils import Calendar

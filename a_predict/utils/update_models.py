@@ -1,7 +1,13 @@
 from django.db import transaction
 from django.db.models import F
 
-from a_predict.views.base_info import PsatExamVars, PoliceExamVars
+from ..views.base_info import PsatExamVars, PoliceExamVars
+from common.utils import HtmxHttpRequest
+
+__all__ = [
+    'update_exam_participants', 'update_rank', 'create_student_instance',
+    'save_submitted_answer', 'confirm_answer_student', 'update_answer_count',
+]
 
 
 def update_exam_participants(exam_vars: PsatExamVars | PoliceExamVars):
@@ -54,7 +60,8 @@ def update_rank(exam_vars: PsatExamVars | PoliceExamVars, **stat):
         student.save()
 
 
-def create_student_instance(request, exam_vars: PsatExamVars | PoliceExamVars, student):
+def create_student_instance(
+        request: HtmxHttpRequest, exam_vars: PsatExamVars | PoliceExamVars, student):
     problem_count = exam_vars.problem_count
     score_fields = exam_vars.score_fields
     with transaction.atomic():
@@ -91,7 +98,8 @@ def save_submitted_answer(student, subject_field: str, no: int, ans: int):
     return {'no': no, 'ans': student.answer[subject_field][idx]}
 
 
-def confirm_answer_student(exam_vars, student, subject_field: str) -> tuple:
+def confirm_answer_student(
+        exam_vars: PsatExamVars | PoliceExamVars, student, subject_field: str) -> tuple:
     problem_count = exam_vars.problem_count
     answer_student = student.answer[subject_field]
     is_confirmed = all(answer_student) and len(answer_student) == problem_count[subject_field]

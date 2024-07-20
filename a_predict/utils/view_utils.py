@@ -4,6 +4,12 @@ from django.urls import reverse
 from a_predict.views.base_info import PsatExamVars, PoliceExamVars
 from common.constants import icon_set_new
 
+__all__ = [
+    'get_exam_vars', 'get_answer_confirmed', 'get_empty_data_answer',
+    'get_data_answer_official', 'get_data_answer_predict', 'get_data_answer_student',
+    'get_info_answer_student', 'get_stat_data', 'get_next_url', 'get_page_obj_and_range',
+]
+
 
 def get_exam_vars(exam_year: int, exam_exam: str, exam_round: int):
     if exam_exam == '행시' or exam_exam == '칠급':
@@ -223,7 +229,7 @@ def get_stat_data(
     return stat_data
 
 
-def get_next_url(exam_vars, student) -> str:
+def get_next_url(exam_vars: PsatExamVars | PoliceExamVars, student) -> str:
     for field in exam_vars.subject_fields:
         is_confirmed = student.answer_confirmed[field]
         if not is_confirmed:
@@ -241,14 +247,3 @@ def get_page_obj_and_range(page_data, page_number=1, per_page=10):
         return page_obj, page_range
     except TypeError:
         return None, None
-
-
-def get_dict_by_sub(target_list: list[dict]) -> dict:
-    result_dict = {'헌법': [], '언어': [], '자료': [], '상황': []}
-    for key in result_dict.keys():
-        result_list = []
-        for t in target_list:
-            if t and t['sub'] == key:
-                result_list.append(t)
-        result_dict[key] = result_list
-    return result_dict
