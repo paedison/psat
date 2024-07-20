@@ -138,6 +138,7 @@ def get_info_answer_student(exam_vars: PsatExamVars | PoliceExamVars) -> list:
         sub, subject = exam_vars.field_vars[field]
         is_confirmed = student.answer_confirmed[field]
         score_real = student.score[field]
+        answer_count = student.answer_count[field]
 
         if field != exam_vars.avg_field:
             correct_predict_count = 0
@@ -150,12 +151,10 @@ def get_info_answer_student(exam_vars: PsatExamVars | PoliceExamVars) -> list:
                 correct_predict_count += 1 if result_predict else 0
 
             problem_count = exam_vars.problem_count[field]
-            answer_count = student.answer_count[field]
             score_predict = correct_predict_count * 100 / problem_count
             score_predict_sum += score_predict if field in exam_vars.sum_fields else 0
         else:
             problem_count = sum([val for val in exam_vars.problem_count.values()])
-            answer_count = sum([val for val in student.answer_count.values()])
             score_predict = score_predict_sum / 3
         url_answer_input = exam_vars.url_answer_input[field_idx] if field in subject_fields else ''
 
