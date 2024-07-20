@@ -31,7 +31,7 @@ def list_view(request: HtmxHttpRequest):
     qs_exam = list(qs_psat_exam) + list(qs_police_exam)
     exam_page_data = utils.get_page_obj_and_range(qs_exam)
     context = update_context_data(context, exam_list=qs_exam, exam_page_data=exam_page_data)
-    return render(request, 'a_predict/admin_list.html', context)
+    return render(request, 'a_predict/predict_admin_list.html', context)
 
 
 def detail_view(request: HtmxHttpRequest, **exam_info):
@@ -99,7 +99,7 @@ def detail_view(request: HtmxHttpRequest, **exam_info):
         context = get_context_for_catalog_page(exam_vars, page, context, prefix)
     for prefix in prefix_answer:
         context = get_context_for_answer_page(exam_vars, page, context, prefix)
-    return render(request, 'a_predict/admin_detail.html', context)
+    return render(request, 'a_predict/predict_admin_detail.html', context)
 
 
 def get_context_for_stat_page(exam_vars, page, context, prefix):

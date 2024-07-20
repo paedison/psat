@@ -1,4 +1,4 @@
-{% extends 'a_predict/_base.html' %}
+{% extends 'a_predict/_predict_base.html' %}
 {% load static %}
 {% load i18n %}
 {% load psat_filter %}
@@ -38,11 +38,11 @@
             <div class="card">
                 <div class="card-body text-center p-4">
                     {% if exam.exam == '행시' %}
-                        <img src="{% static 'image/banner/psat_2024_haengsi_main_cover.jpg' %}" class="mw-100" alt="Title"/>
+                        <img src="{% static 'image/banner/predict_psat_2024_haengsi_main_cover.jpg' %}" class="mw-100" alt="Title"/>
                     {% elif exam.exam == '칠급' %}
-                        <img src="{% static 'image/banner/psat_2024_chilgeup_main_cover.jpg' %}" class="mw-100" alt="Title"/>
+                        <img src="{% static 'image/banner/predict_psat_2024_chilgeup_main_cover.jpg' %}" class="mw-100" alt="Title"/>
                     {% elif exam.exam == '경위' %}
-                        <img src="{% static 'image/banner/police_2025_main_cover.jpg' %}" class="mw-100" alt="Title"/>
+                        <img src="{% static 'image/banner/predict_police_2025_main_cover.jpg' %}" class="mw-100" alt="Title"/>
                     {% endif %}
                     {% if not student %}
                         <div class="container d-sm-none my-4">

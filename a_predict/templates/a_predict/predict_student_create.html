@@ -1,4 +1,4 @@
-{% extends 'a_predict/_base.html' %}
+{% extends 'a_predict/_predict_base.html' %}
 {% load static %}
 {% load i18n %}
 
@@ -29,23 +29,20 @@
 <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                    <a href="{{ exam_vars.url_detail }}" hx-boost="true">
-                        {% if exam.exam == '칠급' %}
-                            <img src="{% static 'image/banner/psat_2024_chilgeup_predict_banner.jpg' %}" class="mw-100" alt="Title"/>
-                        {% elif exam.exam == '경위' %}
-                            <img src="{% static 'image/banner/police_2025_predict_banner.jpg' %}" class="mw-100" alt="Title"/>
-                        {% endif %}
-                    </a>
-            </div>
+            {% if exam.exam == '칠급' %}
+                {% include '_banner/predict_psat_2024_chilgeup.html' %}
+            {% elif exam.exam == '경위' %}
+                {% include '_banner/predict_police_2025.html' %}
+            {% endif %}
         </div>
 
         <div class="col-12">
             <div class="card">
-                <div class="card-header m-0">
+                <div class="card-header d-flex align-items-center m-0">
                     <span class="text-primary">
                         {{ exam.get_exam_display }}{% if exam.exam == '경위' %}(일반 직렬){% endif %} 수험정보
                     </span>
+                    {% include 'snippets/button_back_navigator.html' %}
                 </div>
                 <div class="card-body p-4">
                     <div id="infoStudent" class="htmx-fade-in htmx-fade-out">

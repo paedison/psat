@@ -14,7 +14,7 @@ def index_view(request: HtmxHttpRequest):
     context = update_context_data(
         info=info, current_time=timezone.now(), title='Predict',
         sub_title='합격 예측', icon_menu=icon_set_new.ICON_MENU['predict'])
-    return render(request, 'a_predict/index.html', context)
+    return render(request, 'a_predict/predict_index.html', context)
 
 
 def detail_view(request: HtmxHttpRequest, **exam_info):
@@ -83,7 +83,7 @@ def detail_view(request: HtmxHttpRequest, **exam_info):
     if is_score_all:
         return render(request, 'a_predict/snippets/update_sheet_score.html', context)
 
-    return render(request, 'a_predict/normal_detail.html', context)
+    return render(request, 'a_predict/predict_normal_detail.html', context)
 
 
 def get_stat_context(exam_vars):
@@ -144,7 +144,7 @@ def student_create_view(request: HtmxHttpRequest, **exam_info):
             return redirect(exam_vars.url_detail)
         context = update_context_data(context, form=form_class())
 
-        return render(request, 'a_predict/student_create.html', context)
+        return render(request, 'a_predict/predict_student_create.html', context)
 
 
 @login_required
@@ -204,4 +204,4 @@ def answer_input_view(request: HtmxHttpRequest, subject_field: str, **exam_info)
         icon_subject=icon_set_new.ICON_SUBJECT[sub],
         student=student, answer_student=answer_student,
     )
-    return render(request, 'a_predict/answer_input.html', context)
+    return render(request, 'a_predict/predict_answer_input.html', context)
