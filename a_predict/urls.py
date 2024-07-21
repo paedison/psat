@@ -7,16 +7,10 @@ app_name = 'predict'
 admin_patterns = [
     path('', admin_views.list_view, name='admin-list'),
     path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', admin_views.detail_view, name='admin-detail'),
+    path('update/<int:exam_year>/<str:exam_exam>/<int:exam_round>/', admin_views.update_view, name='admin-update'),
 ]
 
 # admin_patterns = [
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/update/answer/',
-#          admin_views.update_answer, name='update_answer'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/update/score/',
-#          admin_views.update_score, name='update_score'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/update/statistics/',
-#          admin_views.update_statistics, name='update_statistics'),
-#
 #     path('<str:category>/<int:year>/<str:ex>/<int:round>/print/', admin_views.print_view, name='print'),
 #     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/statistics/',
 #          admin_views.export_statistics_to_excel_view, name='export_statistics'),
@@ -31,7 +25,7 @@ admin_patterns = [
 urlpatterns = [
     path('', normal_views.index_view, name='index'),
     path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-         normal_views.detail_view, name='psat-detail'),
+         normal_views.detail_view, name='detail'),
     path('student/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
          normal_views.student_create_view, name='student-create'),
     path('answer/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',

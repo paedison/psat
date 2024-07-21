@@ -13,8 +13,9 @@ def get_all_count_dict(exam_vars: PsatExamVars, total_answer_lists: dict) -> dic
     for field, count in exam_vars.problem_count.items():
         all_count_dict[field] = []
         for number in range(1, count + 1):
+            problem_info = exam_vars.get_problem_info(field, number)
             count_default = exam_vars.get_count_default()
-            count_default.update(exam_vars.get_problem_info(field, number))
+            count_default.update(problem_info)
             all_count_dict[field].append(count_default)
 
     for field, answer_lists in total_answer_lists.items():

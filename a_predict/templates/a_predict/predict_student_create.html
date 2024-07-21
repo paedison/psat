@@ -8,20 +8,16 @@
     <h1>{{ icon_menu|safe }} {{ title }}
         <span class="fs-6 text-secondary">{{ sub_title }}</span>
         {% if user.is_staff %}
-            <a class="btn btn-sm btn-outline-primary ms-2" href="{% url 'predict:admin-list' %}">
+            <a class="btn btn-sm btn-outline-primary ms-2" href="{{ exam_vars.url_admin_detail }}">
                 관리자 페이지
             </a>
         {% endif %}
     </h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{% url 'index' %}">Home</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a class="active" href="{% url 'predict:index' %}">Predict</a>
-            </li>
-            <li class="breadcrumb-item">{{ exam.get_year_display }}</li>
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ exam_vars.url_index }}">Predict</a></li>
+            <li class="breadcrumb-item"><a class="active" href="">{{ exam.exam_abbr }}</a></li>
         </ol>
     </nav>
 </div><!-- Page Title End -->

@@ -56,3 +56,12 @@ class PoliceStudentForm(forms.ModelForm):
         error_messages = {
             'department': {'required': '모집 단위 및 직렬을 선택해주세요.'},
         }
+
+
+class UploadAnswerOfficialFileForm(forms.Form):
+    file = forms.FileField(
+        label='',
+        label_suffix='',
+        widget=forms.FileInput(
+            attrs={'class': 'form-control'}),
+    )

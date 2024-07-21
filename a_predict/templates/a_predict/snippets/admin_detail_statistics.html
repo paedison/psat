@@ -10,27 +10,6 @@
                hx-get="{% url 'predict:admin-list' %}">
                 목록
             </a>
-            <a class="btn btn-sm btn-outline-secondary" title="정답 업데이트"
-               hx-confirm="정답 자료를 업데이트하시겠습니까?" href=""
-               hx-get=""
-               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-               data-bs-toggle="modal" data-bs-target="#modalContainer">
-                정답 업데이트
-            </a>
-            <a class="btn btn-sm btn-outline-secondary" title="업데이트"
-               hx-confirm="성적 자료를 업데이트하시겠습니까?" href=""
-               hx-get=""
-               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-               data-bs-toggle="modal" data-bs-target="#modalContainer">
-                성적 업데이트
-            </a>
-            <a class="btn btn-sm btn-outline-secondary" title="업데이트"
-               hx-confirm="통계 자료를 업데이트하시겠습니까?" href=""
-               hx-get=""
-               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-               data-bs-toggle="modal" data-bs-target="#modalContainer">
-                통계 업데이트
-            </a>
             <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
                href="">
                 Excel로 내보내기
@@ -48,22 +27,22 @@
         <div class="nav nav-tabs nav-tabs-colored" id="statTab" role="tablist">
             {% for id in '01' %}
                 {% cycle '전체' '필터링' as tab_title silent %}
-                {% cycle prefix_stat.0 prefix_stat.1 as prefix silent %}
-                {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
+                {% #nav_tab prefix='Catalog' id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
     <div class="tab-content htmx-fade-out htmx-fade-in" id="statContent">
-        {% #nav_content prefix=prefix_stat.0 id='0' %}
+        {% #nav_content prefix='Catalog' id='0' %}
             {% partialdef all_stat inline=True %}
-                {% with prefix=prefix_stat.0 page_obj=all_stat_page.0 page_range=all_stat_page.1 %}
+                {% with header=header_stat.0 page_obj=all_stat_page.0 page_range=all_stat_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=prefix_stat.1 id='1' %}
+
+        {% #nav_content prefix='Catalog' id='1' %}
             {% partialdef filtered_stat inline=True %}
-                {% with prefix=prefix_stat.1 page_obj=filtered_stat_page.0 page_range=filtered_stat_page.1 %}
+                {% with header=header_stat.1 page_obj=filtered_stat_page.0 page_range=filtered_stat_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
@@ -78,15 +57,13 @@
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap p-2" rowspan="2">모집단위</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">PSAT</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">헌법</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">언어논리</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">자료해석</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">상황판단</th>
+                    {% for subject in exam_vars.admin_subject_list %}
+                        <th class="text-primary text-nowrap p-2" colspan="5">{{ subject }}</th>
+                    {% endfor %}
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
-                    {% for _ in '12345' %}
+                    {% for _ in exam_vars.info_tab.id %}
                         <th class="text-primary text-nowrap p-2 td-right-no-border">응시<br/>인원</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">최고<br/>점수</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
@@ -101,28 +78,28 @@
                         <tr class="text-center">
                             <td class="text-nowrap p-2">{{ obj.unit }}</td>
                             <td class="text-nowrap p-2">{{ obj.get_name_display }}</td>
-                            {% for _ in '01234' %}
-                                {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 as stat silent %}
-                                <td class="text-nowrap p-2 td-right-no-border">{{ stat.participants|intcomma }}</td>
-                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {% if stat.max %}
-                                        {{ stat.max|floatformat:1 }}
-                                    {% endif %}
+                            {% for _ in exam_vars.info_tab.id %}
+                                {% if exam_vars.info_tab.id|length == 4 %}
+                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 as stat silent %}
+                                {% elif exam_vars.info_tab.id|length == 5 %}
+                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 as stat silent %}
+                                {% elif exam_vars.info_tab.id|length == 8 %}
+                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 obj.stat.5 obj.stat.6 obj.stat.7 as stat silent %}
+                                {% endif %}
+                                <td class="text-nowrap p-2 td-right-no-border">
+                                    {{ stat.participants|intcomma|default:'' }}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {% if stat.t10 %}
-                                        {{ stat.t10|floatformat:1 }}
-                                    {% endif %}
+                                    {{ stat.max|floatformat:1|default:'' }}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {% if stat.t20 %}
-                                        {{ stat.t20|floatformat:1 }}
-                                    {% endif %}
+                                    {{ stat.t10|floatformat:1|default:'' }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {{ stat.t20|floatformat:1|default:'' }}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border">
-                                    {% if stat.avg %}
-                                        {{ stat.avg|floatformat:1 }}
-                                    {% endif %}
+                                    {{ stat.avg|floatformat:1|default:'' }}
                                 </td>
                             {% endfor %}
                         </tr>

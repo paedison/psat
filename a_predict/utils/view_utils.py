@@ -1,11 +1,12 @@
 from django.core.paginator import Paginator
 from django.urls import reverse
 
-from a_predict.views.base_info import PsatExamVars, PoliceExamVars
+from a_predict.views.base_info import PsatExamVars, PoliceExamVars, AdminPoliceExamVars
 from common.constants import icon_set_new
 
 __all__ = [
-    'get_exam_vars', 'get_answer_confirmed', 'get_empty_data_answer',
+    'get_exam_vars', 'get_admin_exam_vars',
+    'get_answer_confirmed', 'get_empty_data_answer',
     'get_data_answer_official', 'get_data_answer_predict', 'get_data_answer_student',
     'get_info_answer_student', 'get_stat_data', 'get_next_url', 'get_page_obj_and_range',
 ]
@@ -16,6 +17,13 @@ def get_exam_vars(exam_year: int, exam_exam: str, exam_round: int):
         return PsatExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
     elif exam_exam == '경위':
         return PoliceExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
+
+
+def get_admin_exam_vars(exam_year: int, exam_exam: str, exam_round: int):
+    if exam_exam == '행시' or exam_exam == '칠급':
+        return PsatExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
+    elif exam_exam == '경위':
+        return AdminPoliceExamVars(exam_year=exam_year, exam_exam=exam_exam, exam_round=exam_round)
 
 
 def get_answer_confirmed(exam_vars: PsatExamVars | PoliceExamVars):

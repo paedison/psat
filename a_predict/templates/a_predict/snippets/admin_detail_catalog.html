@@ -28,22 +28,22 @@
         <div class="nav nav-tabs nav-tabs-colored" id="catalogTab" role="tablist">
             {% for id in '01' %}
                 {% cycle '전체' '필터링' as tab_title silent %}
-                {% cycle prefix_catalog.0 prefix_catalog.1 as prefix silent %}
-                {% #nav_tab prefix=prefix id=id %}{{ tab_title }}{% /nav_tab %}
+                {% #nav_tab prefix='Catalog' id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
     <div class="tab-content" id="catalogContent">
-        {% #nav_content prefix=prefix_catalog.0 id='0' %}
+        {% #nav_content prefix='Catalog' id='0' %}
             {% partialdef all_catalog inline=True %}
-                {% with prefix=prefix_catalog.0 page_obj=all_catalog_page.0 page_range=all_catalog_page.1 %}
+                {% with header=header_catalog.0 page_obj=all_catalog_page.0 page_range=all_catalog_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=prefix_catalog.1 id='1' %}
+
+        {% #nav_content prefix='Catalog' id='1' %}
             {% partialdef filtered_catalog inline=True %}
-                {% with prefix=prefix_catalog.1 page_obj=filtered_catalog_page.0 page_range=filtered_catalog_page.1 %}
+                {% with header=header_catalog.1 page_obj=filtered_catalog_page.0 page_range=filtered_catalog_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
@@ -62,16 +62,13 @@
                     <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">모집단위</th>
                     <th class="text-primary text-nowrap p-2" rowspan="3">직렬</th>
-
-                    <th class="text-primary text-nowrap p-2" colspan="5">PSAT</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">헌법</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">언어논리</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">자료해석</th>
-                    <th class="text-primary text-nowrap p-2" colspan="5">상황판단</th>
+                    {% for subject in exam_vars.admin_subject_list %}
+                        <th class="text-primary text-nowrap p-2" colspan="5">{{ subject }}</th>
+                    {% endfor %}
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
-                    {% for _ in '12345' %}
+                    {% for _ in exam_vars.info_tab.id %}
                         <th class="text-primary text-nowrap p-2 td-right-no-border" rowspan="2">점수</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border" colspan="2">직렬 석차</th>
@@ -79,7 +76,7 @@
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
-                    {% for _ in '12345' %}
+                    {% for _ in exam_vars.info_tab.id %}
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">%</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
@@ -103,22 +100,28 @@
                             <td class="text-nowrap p-2">{{ obj.unit }}</td>
                             <td class="text-nowrap p-2">{{ obj.get_department_display }}</td>
 
-                            {% for _ in '01234' %}
-                                {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 as stat silent %}
+                            {% for _ in exam_vars.info_tab.id %}
+                                {% if exam_vars.info_tab.id|length == 4 %}
+                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 as stat silent %}
+                                {% elif exam_vars.info_tab.id|length == 5 %}
+                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 as stat silent %}
+                                {% elif exam_vars.info_tab.id|length == 8 %}
+                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 obj.stat.5 obj.stat.6 obj.stat.7 as stat silent %}
+                                {% endif %}
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {{ stat.score|floatformat:1 }}
+                                    {{ stat.score|floatformat:1|default:'' }}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
                                     {{ stat.rank_total|default:'' }}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {{ stat.rank_ratio_total|default:'' }}
+                                    {{ stat.rank_total|percentageby:stat.participants_total|floatformat:1|default:'' }}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
                                     {{ stat.rank_department|default:'' }}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border">
-                                    {{ stat.rank_ratio_department|default:'' }}
+                                    {{ stat.rank_department|percentageby:stat.participants_department|floatformat:1|default:'' }}
                                 </td>
                             {% endfor %}
                         </tr>

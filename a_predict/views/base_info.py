@@ -63,11 +63,23 @@ class ExamVars:
 
     @property
     def url_detail(self):
-        return reverse('predict:psat-detail', kwargs=self.exam_url_kwargs)
+        return reverse('predict:detail', kwargs=self.exam_url_kwargs)
 
     @property
     def url_student_create(self):
         return reverse('predict:student-create', kwargs=self.exam_url_kwargs)
+
+    @property
+    def url_admin_list(self):
+        return reverse('predict:admin-list')
+
+    @property
+    def url_admin_detail(self):
+        return reverse('predict:admin-detail', kwargs=self.exam_url_kwargs)
+
+    @property
+    def url_admin_update(self):
+        return reverse('predict:admin-update', kwargs=self.exam_url_kwargs)
 
     @property
     def student_exam_info(self):
@@ -134,6 +146,13 @@ class PsatExamVars(ExamVars):
         return default
 
     @property
+    def admin_subject_list(self):
+        default = ['PSAT', '헌법', '언어논리', '자료해석', '상황판단']
+        if self.exam_exam == '칠급':
+            default.remove('헌법')
+        return default
+
+    @property
     def subject_vars(self):
         default = {
             '헌법': ('헌법', 'heonbeob'), '언어': ('언어논리', 'eoneo'), '자료': ('자료해석', 'jaryo'),
@@ -173,6 +192,15 @@ class PsatExamVars(ExamVars):
         if self.exam_exam == '칠급':
             default.pop('heonbeob')
         return default
+
+    def get_subject_field(self, subject):
+        for field, subject_tuple in self.field_vars.items():
+            if field == subject:
+                return field
+            if subject_tuple[0] == subject:
+                return field
+            if subject_tuple[1] == subject:
+                return field
 
     @property
     def problem_count(self):
@@ -228,6 +256,9 @@ class PoliceExamVars(ExamVars):
     # Answer count fields constant
     count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4']
     all_count_fields = count_fields + ['count_multiple', 'count_total']
+
+    def get_count_default(self):
+        return {fld: 0 for fld in self.all_count_fields}
 
     # Sum fields
     avg_field = 'sum'
@@ -290,10 +321,6 @@ class PoliceExamVars(ExamVars):
         return ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', self.selection, 'sum']
 
     @property
-    def admin_score_fields(self):
-        return ['sum', 'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', self.selection]
-
-    @property
     def field_vars(self):
         field_vars_dict = {
             'haengbeob': ('행법', '행정법'), 'haenghag': ('행학', '행정학'), 'minbeob': ('민법', '민법총칙'),
@@ -345,3 +372,185 @@ class PoliceExamVars(ExamVars):
 
     def get_field_idx(self, field):
         return self.subject_fields.index(field)
+
+
+@dataclasses.dataclass
+class AdminPoliceExamVars(PoliceExamVars):
+    @property
+    def sum_fields(self):
+        return self.subject_fields
+
+    @property
+    def sub_list(self):
+        return ['형사', '헌법', '경찰', '범죄', '민법', '행학', '행법']
+
+    @property
+    def subject_list(self):
+        return ['형사학', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
+
+    @property
+    def admin_subject_list(self):
+        return ['총점', '형사학', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
+
+    @property
+    def subject_vars(self):
+        return {
+            '형사': ('형사학', 'hyeongsa'), '헌법': ('헌법', 'heonbeob'),
+            '경찰': ('경찰학', 'gyeongchal'), '범죄': ('범죄학', 'beomjoe'),
+            '민법': ('민법총칙', 'minbeob'), '행학': ('행정학', 'haenghag'),
+            '행법': ('행정법', 'haengbeob'), '총점': ('총점', 'sum'),
+        }
+
+    @property
+    def subject_fields(self):
+        return [
+            'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', 'minbeob', 'haenghag', 'haengbeob',
+        ]
+
+    @property
+    def score_fields(self):
+        return [
+            'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', 'minbeob', 'haenghag', 'haengbeob', 'sum',
+        ]
+
+    @property
+    def admin_score_fields(self):
+        return [
+            'sum', 'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe',
+            'minbeob', 'haenghag', 'haengbeob',
+        ]
+
+    @property
+    def field_vars(self):
+        return {
+            'hyeongsa': ('형사', '형사학'), 'heonbeob': ('헌법', '헌법'),
+            'gyeongchal': ('경찰', '경찰학'), 'beomjoe': ('범죄', '범죄학'),
+            'minbeob': ('민법', '민법총칙'), 'haenghag': ('행학', '행정학'),
+            'haengbeob': ('행법', '행정법'), 'sum': ('총점', '총점'),
+        }
+
+#
+#
+# @dataclasses.dataclass
+# class AdminPoliceExamVars(ExamVars):
+#     exam_model = police_models.PoliceExam
+#     unit_model = police_models.PoliceUnit
+#     department_model = police_models.PoliceDepartment
+#     location_model = None
+#     student_model = police_models.PoliceStudent
+#     answer_count_model = police_models.PoliceAnswerCount
+#     student_form = forms.PoliceStudentForm
+#
+#     # Answer count fields constant
+#     count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4']
+#     all_count_fields = count_fields + ['count_multiple', 'count_total']
+#
+#     def get_count_default(self):
+#         return {fld: 0 for fld in self.all_count_fields}
+#
+#     # Sum fields
+#     avg_field = 'sum'
+#
+#     @property
+#     def sum_fields(self):
+#         return self.subject_fields
+#
+#     @property
+#     def url_answer_input(self):
+#         kwargs_dict = [
+#             {
+#                 'exam_year': self.exam_year, 'exam_exam': self.exam_exam,
+#                 'exam_round': self.exam_round, 'subject_field': field,
+#             } for field in self.subject_fields
+#         ]
+#         return [
+#             reverse('predict:answer-input', kwargs=kwargs)
+#             for kwargs in kwargs_dict
+#         ]
+#
+#     @property
+#     def sub_title(self):
+#         default = {
+#             '프모': f'제{self.exam_round}회 프라임모의고사 합격 예측',
+#             '경위': f'74기 경위공채 합격 예측',
+#         }
+#         return default[self.exam_exam]
+#
+#     @property
+#     def sub_list(self):
+#         return ['형사', '헌법', '경찰', '범죄', '민법', '행학', '행법']
+#
+#     @property
+#     def subject_list(self):
+#         return ['형사학', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
+#
+#     @property
+#     def subject_vars(self):
+#         return {
+#             '형사': ('형사학', 'hyeongsa'), '헌법': ('헌법', 'heonbeob'),
+#             '경찰': ('경찰학', 'gyeongchal'), '범죄': ('범죄학', 'beomjoe'),
+#             '민법': ('민법총칙', 'minbeob'), '행학': ('행정학', 'haenghag'),
+#             '행법': ('행정법', 'haengbeob'), '총점': ('총점', 'sum'),
+#         }
+#
+#     @property
+#     def subject_fields(self):
+#         return [
+#             'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', 'minbeob', 'haenghag', 'haengbeob',
+#         ]
+#
+#     @property
+#     def score_fields(self):
+#         return [
+#             'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', 'minbeob', 'haenghag', 'haengbeob', 'sum',
+#         ]
+#
+#     @property
+#     def admin_score_fields(self):
+#         return [
+#             'sum', 'hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe',
+#             'minbeob', 'haenghag', 'haengbeob',
+#         ]
+#
+#     @property
+#     def field_vars(self):
+#         return {
+#             'hyeongsa': ('형사', '형사학'), 'heonbeob': ('헌법', '헌법'),
+#             'gyeongchal': ('경찰', '경찰학'), 'beomjoe': ('범죄', '범죄학'),
+#             'minbeob': ('민법', '민법총칙'), 'haenghag': ('행학', '행정학'),
+#             'haengbeob': ('행법', '행정법'), 'sum': ('총점', '총점'),
+#         }
+#
+#     @property
+#     def problem_count(self):
+#         return {fld: 40 for fld in self.subject_fields}
+#
+#     @property
+#     def icon_subject(self):
+#         return ['' for _ in self.sub_list]
+#
+#     @property
+#     def info_tab(self):
+#         return {
+#             'id': ''.join([str(i) for i in range(len(self.subject_vars))]),
+#         }
+#
+#     @property
+#     def answer_tab(self):
+#         return {
+#             'id': ''.join([str(i) for i in range(len(self.sub_list))]),
+#             'title': self.sub_list,
+#             'prefix_submit': [f'{field}_submit' for field in self.subject_fields],
+#             'prefix_predict': [f'{field}_predict' for field in self.subject_fields],
+#             'url_answer_input': self.url_answer_input,
+#         }
+#
+#     def get_empty_data_answer(self):
+#         return [
+#             [
+#                 {'no': no, 'ans': 0, 'field': fld} for no in range(1, self.problem_count[fld] + 1)
+#             ] for fld in self.subject_fields
+#         ]
+#
+#     def get_field_idx(self, field):
+#         return self.subject_fields.index(field)

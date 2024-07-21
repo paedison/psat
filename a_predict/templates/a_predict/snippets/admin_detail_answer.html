@@ -18,44 +18,78 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-            {% for id in '0123' %}
-                {% cycle prefix_answer.0 prefix_answer.1 prefix_answer.2 prefix_answer.3 as prefix silent %}
-                {% cycle answer_title.0 answer_title.1 answer_title.2 answer_title.3 as tab_title silent %}
-                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe as icon silent %}
-                {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
+            {% for id in exam_vars.answer_tab.id %}
+                {% cycle answer_title.0 answer_title.1 answer_title.2 answer_title.3 answer_title.4 answer_title.5 answer_title.6 as tab_title silent %}
+                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe exam_vars.icon_subject.4|safe exam_vars.icon_subject.5|safe exam_vars.icon_subject.6|safe as icon silent %}
+                {% #nav_tab prefix='Answer' id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
 
     <div class="tab-content" id="answerAnalysisContent">
-        {% #nav_content prefix=prefix_answer.0 id='0' %}
+        {% #nav_content prefix='Answer' id='0' %}
             {% partialdef answer_0 inline=True %}
-                {% with prefix=prefix_answer.0 page_obj=answer_0_page.0 page_range=answer_0_page.1 %}
+                {% with header=header_answer.0 page_obj=answer_0_page.0 page_range=answer_0_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=prefix_answer.1 id='1' %}
+
+        {% #nav_content prefix='Answer' id='1' %}
             {% partialdef answer_1 inline=True %}
-                {% with prefix=prefix_answer.1 page_obj=answer_1_page.0 page_range=answer_1_page.1 %}
+                {% with header=header_answer.1 page_obj=answer_1_page.0 page_range=answer_1_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=prefix_answer.2 id='2' %}
+
+        {% #nav_content prefix='Answer' id='2' %}
             {% partialdef answer_2 inline=True %}
-                {% with prefix=prefix_answer.2 page_obj=answer_2_page.0 page_range=answer_2_page.1 %}
+                {% with header=header_answer.2 page_obj=answer_2_page.0 page_range=answer_2_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
-        {% #nav_content prefix=prefix_answer.3 id='3' %}
-            {% partialdef answer_3 inline=True %}
-                {% with prefix=prefix_answer.3 page_obj=answer_3_page.0 page_range=answer_3_page.1 %}
-                    {% partial table_data %}
-                {% endwith %}
-            {% endpartialdef %}
-        {% /nav_content %}
+
+        {% if answer_3_page.0 %}
+            {% #nav_content prefix='Answer' id='3' %}
+                {% partialdef answer_3 inline=True %}
+                    {% with header='Answer' page_obj=answer_3_page.0 page_range=answer_3_page.1 %}
+                        {% partial table_data %}
+                    {% endwith %}
+                {% endpartialdef %}
+            {% /nav_content %}
+        {% endif %}
+
+        {% if answer_4_page.0 %}
+            {% #nav_content prefix='Answer' id='4' %}
+                {% partialdef answer_4 inline=True %}
+                    {% with header=header_answer.4 page_obj=answer_4_page.0 page_range=answer_4_page.1 %}
+                        {% partial table_data %}
+                    {% endwith %}
+                {% endpartialdef %}
+            {% /nav_content %}
+        {% endif %}
+
+        {% if answer_5_page.0 %}
+            {% #nav_content prefix='Answer' id='5' %}
+                {% partialdef answer_5 inline=True %}
+                    {% with header=header_answer.5 page_obj=answer_5_page.0 page_range=answer_5_page.1 %}
+                        {% partial table_data %}
+                    {% endwith %}
+                {% endpartialdef %}
+            {% /nav_content %}
+        {% endif %}
+
+        {% if answer_6_page.0 %}
+            {% #nav_content prefix='Answer' id='6' %}
+                {% partialdef answer_6 inline=True %}
+                    {% with header='Answer' page_obj=answer_6_page.0 page_range=answer_6_page.1 %}
+                        {% partial table_data %}
+                    {% endwith %}
+                {% endpartialdef %}
+            {% /nav_content %}
+        {% endif %}
     </div>
 </div>
 
@@ -72,7 +106,7 @@
                     <th class="text-primary text-nowrap p-2" rowspan="2">중위권<br/>정답률(%)</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">하위권<br/>정답률(%)</th>
                     <th class="text-primary text-nowrap p-2" rowspan="2">변별도</th>
-                    {% if field == 'heonbeob' %}
+                    {% if exam.exam != '행시' %}
                         <th class="text-primary text-nowrap p-2" colspan="4">답안 선택수(명)-전체</th>
                         <th class="text-primary text-nowrap p-2" colspan="4">답안 선택률(%)-전체</th>
                         <th class="text-primary text-nowrap p-2" colspan="4">답안 선택수(명)-상위권</th>
@@ -97,7 +131,7 @@
                         <th class="text-primary text-nowrap p-2 td-right-no-border">①</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">②</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">③</th>
-                        {% if field == 'heonbeob' %}
+                        {% if exam.exam != '행시' %}
                             <th class="text-primary text-nowrap p-2 td-left-no-border">④</th>
                         {% else %}
                             <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">④</th>
@@ -143,24 +177,24 @@
                             {% cycle problem.all_rank.5 problem.top_rank.5 problem.mid_rank.5 problem.low_rank.5 as count_5 silent %}
                             {% cycle problem.all_rank|last problem.top_rank|last problem.mid_rank|last problem.low_rank|last as count_total silent %}
 
-                            <td class="td-right-no-border">{{ count_1 }}</td>
-                            <td class="td-left-no-border td-right-no-border">{{ count_2 }}</td>
-                            <td class="td-left-no-border td-right-no-border">{{ count_3 }}</td>
-                            {% if field == 'heonbeob' %}
-                                <td class="td-left-no-border">{{ count_4 }}</td>
+                            <td class="td-right-no-border">{{ count_1|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_2|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_3|default:'' }}</td>
+                            {% if exam.exam != '행시' %}
+                                <td class="td-left-no-border">{{ count_4|default:'' }}</td>
                             {% else %}
-                                <td class="td-left-no-border td-right-no-border">{{ count_4 }}</td>
-                                <td class="td-left-no-border">{{ count_5 }}</td>
+                                <td class="td-left-no-border td-right-no-border">{{ count_4|default:'' }}</td>
+                                <td class="td-left-no-border">{{ count_5|default:'' }}</td>
                             {% endif %}
 
-                            <td class="td-right-no-border">{{ count_1|percentageby:count_total|floatformat:1|default:0.0 }}</td>
-                            <td class="td-left-no-border td-right-no-border">{{ count_2|percentageby:count_total|floatformat:1|default:0.0 }}</td>
-                            <td class="td-left-no-border td-right-no-border">{{ count_3|percentageby:count_total|floatformat:1|default:0.0 }}</td>
-                            {% if field == 'heonbeob' %}
-                                <td class="td-left-no-border">{{ count_4|percentageby:count_total|floatformat:1|default:0.0 }}</td>
+                            <td class="td-right-no-border">{{ count_1|percentageby:count_total|floatformat:1|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_2|percentageby:count_total|floatformat:1|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_3|percentageby:count_total|floatformat:1|default:'' }}</td>
+                            {% if exam.exam != '행시' %}
+                                <td class="td-left-no-border">{{ count_4|percentageby:count_total|floatformat:1|default:'' }}</td>
                             {% else %}
-                                <td class="td-left-no-border td-right-no-border">{{ count_4|percentageby:count_total|floatformat:1|default:0.0 }}</td>
-                                <td class="td-left-no-border">{{ count_5|percentageby:count_total|floatformat:1|default:0.0 }}</td>
+                                <td class="td-left-no-border td-right-no-border">{{ count_4|percentageby:count_total|floatformat:1|default:'' }}</td>
+                                <td class="td-left-no-border">{{ count_5|percentageby:count_total|floatformat:1|default:'' }}</td>
                             {% endif %}
                         {% endfor %}
                     </tr>
