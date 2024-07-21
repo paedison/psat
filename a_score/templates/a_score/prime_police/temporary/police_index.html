@@ -25,7 +25,7 @@
                 <a href="{% url 'index' %}" hx-boost="true">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{% url 'score_new:temporary-index' %}" hx-boost="true">Score</a>
+                <a href="{% url 'score:temporary-index' %}" hx-boost="true">Score</a>
             </li>
             <li class="breadcrumb-item">
                 <a href="" hx-boost="true">Prime</a>
@@ -43,7 +43,7 @@
         <div class="col-12 mb-4">
             <a class="text-decoration-none d-md-none"
                 {% if user.is_authenticated %}
-                   href="{% url 'score_new:temporary-register' %}"
+                   href="{% url 'score:temporary-register' %}"
                    hx-boost="true"
                 {% else %}
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
@@ -55,7 +55,7 @@
             </a>
             <a class="text-decoration-none d-none d-md-flex justify-content-center"
                 {% if user.is_authenticated %}
-                   href="{% url 'score_new:temporary-register' %}"
+                   href="{% url 'score:temporary-register' %}"
                    hx-boost="true"
                 {% else %}
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"

@@ -73,8 +73,8 @@
                             <td class="text-nowrap p-2">
                                 {% if obj.completed %}
                                     <a class="badge rounded-pill text-bg-success"
-                                       href="{% url 'score:result' obj.year obj.ex %}"
-                                       hx-get="{% url 'score:result' obj.year obj.ex %}"
+                                       href=""
+                                       hx-get=""
                                        hx-push-url="true" hx-target="#main"
                                        hx-swap="innerHTML swap:0.25s">
                                         확인
@@ -116,7 +116,7 @@
         </a>
     {% elif target.status is True %}
         <a class="badge rounded-pill text-bg-success" href="" hx-swap="innerHTML swap:0.25s"
-           hx-get="{% url 'score:confirmed' target.exam.id %}" hx-target="#main" hx-push-url="true">
+           hx-get="" hx-target="#main" hx-push-url="true">
             제출 완료
         </a>
     {% elif target.status == 'N/A' %}

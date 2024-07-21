@@ -1,0 +1,162 @@
+{% load i18n %}
+{% load psat_filter %}
+
+<div class="card-header">답안 확인</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
+            {% for id in '0123' %}
+                {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
+                {% cycle 'answer_heonbeob' 'answer_eoneo' 'answer_jaryo' 'answer_sanghwang' as prefix silent %}
+                {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
+                {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreAnswersContent">
+        {% for id in '0123' %}
+            {% cycle 'answer_heonbeob' 'answer_eoneo' 'answer_jaryo' 'answer_sanghwang' as prefix silent %}
+            {% cycle data_answer_official.heonbeob data_answer_official.eoneo data_answer_official.jaryo data_answer_official.sanghwang as answer_official silent %}
+            {% cycle data_answer_student.heonbeob data_answer_student.eoneo data_answer_student.jaryo data_answer_student.sanghwang as answer_student silent %}
+            {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
+        {% endfor %}
+
+{#        {% with answers=answer_student.헌법 rates=answer_rates.헌법 %}#}
+{#            {% #nav_content prefix='answer_heonbeob' id='0' %}{% partial confirmed_answer_table %}{% /nav_content %}#}
+{#        {% endwith %}#}
+{##}
+{#        {% with answers=answer_student.언어 rates=answer_rates.언어 %}#}
+{#            {% #nav_content prefix='answer_eoneo' id='1' %}{% partial confirmed_answer_table %}{% /nav_content %}#}
+{#        {% endwith %}#}
+{##}
+{#        {% with answers=answer_student.자료 rates=answer_rates.자료 %}#}
+{#            {% #nav_content prefix='answer_jaryo' id='2' %}{% partial confirmed_answer_table %}{% /nav_content %}#}
+{#        {% endwith %}#}
+{##}
+{#        {% with answers=answer_student.상황 rates=answer_rates.상황 %}#}
+{#            {% #nav_content prefix='answer_sanghwang' id='3' %}{% partial confirmed_answer_table %}{% /nav_content %}#}
+{#        {% endwith %}#}
+    </div>
+</div>
+
+{% partialdef answer_table %}
+    {% #responsive_table %}
+        <tbody>
+            {% if answer_official|length == 25  %}
+                {% for _ in '012' %}
+                    {% cycle 10 10 5 as loop_counter silent %}
+                    {% cycle 0 10 20 as loop_min silent %}
+                    {% partial answer_table_tr %}
+                {% endfor %}
+            {% else %}
+                {% for _ in '0123' %}
+                    {% cycle 10 10 10 10 as loop_counter silent %}
+                    {% cycle 0 10 20 30 as loop_min silent %}
+                    {% partial answer_table_tr %}
+                {% endfor %}
+            {% endif %}
+{#            {% with loop_counter=10 loop_min=0 %}#}
+{#            {% endwith %}#}
+{##}
+{#            {% with loop_counter=10 loop_min=10 %}{% partial answer_table_tr %}{% endwith %}#}
+{##}
+{#            {% if ex == '칠급' or answers|length == 25  %}#}
+{#                {% with loop_counter=5 loop_min=20 %}{% partial answer_table_tr %}{% endwith %}#}
+{#            {% else %}#}
+{#                {% with loop_counter=10 loop_min=20 %}{% partial answer_table_tr %}{% endwith %}#}
+{#                {% with loop_counter=10 loop_min=30 %}{% partial answer_table_tr %}{% endwith %}#}
+{#            {% endif %}#}
+        </tbody>
+    {% /responsive_table %}
+    <div class="my-3">
+        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+        <ol class="text-success small fw-bold">
+            <li>정답률은 전체 응시생 중 정답을 맞힌 학생의 비율을 의미합니다.</li>
+            <li>선택률은 전체 응시생 중 본인과 같은 정답을 선택한 학생의 비율을 의미합니다.</li>
+        </ol>
+    </div>
+{% endpartialdef confirmed_answer_table %}
+
+{% partialdef answer_table_tr %}
+    <tr class="text-center table-warning" aria-label="문제 번호">
+        <th class="text-nowrap" scope="row">문제 번호</th>
+        {% for _ in 'x'|ljust:loop_counter %}
+            <th>{{ forloop.counter|add:loop_min }}</th>
+        {% endfor %}
+    </tr>
+
+    {# answer_official #}
+    <tr class="text-center" aria-label="정답">
+        <th class="text-nowrap td-no-border" scope="row">정답</th>
+        {% for answer in answer_official %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                <td class="td-no-border">
+                    {% if answer.ans <= 5 %}
+                        <button data-number="{{ answer.no }}"
+                                class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                            {{ answer.ans }}</button>
+                    {% elif answer.ans == 12345 %}
+                        <span data-number="{{ answer.no }}"
+                              class="badge rounded-pill text-bg-secondary">
+                            전체 정답
+                        </span>
+                    {% else %}
+                        {% for ans in answer.ans %}
+                            <button data-number="{{ answer.no }}"
+                                    class="btn btn-circle btn-sm fs-6 my-2 btn-success">
+                                {{ ans }}</button>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr class="text-center" aria-label="정답률">
+        <th class="text-nowrap" scope="row">정답률(%)</th>
+        {% for answer in answer_official %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                <td>
+                    <span data-number="{{ answer.no }}" class="fw-bold text-success">
+                        {{ answer.rate_correct|floatformat:0 }}
+                    </span>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+
+    {# answer_student #}
+    <tr class="text-center" aria-label="선택 답안">
+        <th class="text-nowrap td-no-border" scope="row">선택 답안</th>
+        {% for answer in answer_student %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                <td class="td-no-border">
+                    <button data-number="{{ answer.no }}"
+                            class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                        btn-{% if answer.result %}success{% else %}danger{% endif %}">
+                        {% if answer.ans > 0 and answer.ans < 6 %}
+                            {{ answer.ans }}
+                        {% endif %}
+                    </button>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+
+    {# rate_selection #}
+    <tr class="text-center">
+        <th class="text-nowrap" scope="row">선택률(%)</th>
+        {% for answer in answer_student %}
+            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+                <td>
+                    <span data-number="{{ answer.no }}"
+                          class="fw-bold
+                          text-{% if answer.result %}success{% else %}danger{% endif %}">
+                        {{ answer.rate_selection|floatformat:0 }}
+                    </span>
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{% endpartialdef answer_table_tr %}

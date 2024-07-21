@@ -1,7 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.utils import timezone
 from django_htmx.http import retarget
 
 from common.constants import icon_set_new
@@ -36,7 +35,7 @@ def index_view(request: HtmxHttpRequest):
     if request.user.is_authenticated:
         registered_student = get_registered_student(request=request)
         if registered_student:
-            return redirect('score_new:temporary-result')
+            return redirect('score:temporary-result')
     context = update_context_data(**BASE_INFO)
     return render(request, 'a_score/prime_police/temporary/police_index.html', context)
 
@@ -44,7 +43,7 @@ def index_view(request: HtmxHttpRequest):
 def result_view(request: HtmxHttpRequest):
     registered_student = get_registered_student(request=request)
     if not registered_student:
-        return redirect('score_new:temporary-index')
+        return redirect('score:temporary-index')
     context = get_detail_context(request=request, **EXAM_URL_KWARGS)
     context.update(BASE_INFO)
     return render(request, 'a_score/prime_police/temporary/police_result.html', context)
@@ -54,7 +53,7 @@ def result_view(request: HtmxHttpRequest):
 def student_register_view(request: HtmxHttpRequest):
     registered_student = get_registered_student(request=request)
     if registered_student:
-        return redirect('score_new:temporary-result')
+        return redirect('score:temporary-result')
     context = update_context_data(**BASE_INFO, exam=EXAM)
 
     # student_create
@@ -70,7 +69,7 @@ def student_register_view(request: HtmxHttpRequest):
             if target_student:
                 registered_student, _ = models.PrimePoliceRegisteredStudent.objects.get_or_create(
                     user=request.user, student=target_student)
-                next_url = reverse('score_new:temporary-result')
+                next_url = reverse('score:temporary-result')
                 response = redirect(next_url)
                 response.headers['HX-Replace-Url'] = next_url
                 return response

@@ -2,31 +2,31 @@ from django.urls import path, include
 
 from .views import prime_psat_views, prime_psat_admin_views, prime_police_views, temporary_views
 
-app_name = 'score_new'
+app_name = 'score'
 
-# prime_psat_urlpatterns = [
-#     path('', prime_psat_views.list_view, name='list'),
-#
-#     path('<int:exam_year>/<int:exam_round>/',
-#          prime_psat_views.detail_view, name='detail'),
-#     path('<int:exam_year>/<int:exam_round>/print/',
-#          prime_psat_views.detail_print_view, name='print'),
-#
-#     path('no_open/<int:exam_year>/<int:exam_round>/',
-#          prime_psat_views.no_open_modal_view, name='no_open_modal'),
-#     path('no_student/<int:exam_year>/<int:exam_round>/',
-#          prime_psat_views.no_student_modal_view, name='no_student_modal'),
-#
-#     path('predict/no_open/',
-#          prime_psat_views.no_predict_open_modal, name='no_predict_open_modal'),
-#
-#     path('student/modal/<int:exam_year>/<int:exam_round>/',
-#          prime_psat_views.student_connect_modal_view, name='student_connect_modal'),
-#     path('student/connect/<int:exam_year>/<int:exam_round>/',
-#          prime_psat_views.student_connect_view, name='student_connect'),
-#     path('student/reset/<int:exam_year>/<int:exam_round>/',
-#          prime_psat_views.student_reset_view, name='student_reset'),
-# ]
+prime_urlpatterns = [
+    path('<str:exam_type>/', prime_psat_views.list_view, name='prime-list'),
+
+    path('<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.detail_view, name='prime-detail'),
+    path('print/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.detail_print_view, name='prime-print'),
+
+    path('no_open/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.no_open_modal_view, name='no_open_modal'),
+    path('no_student/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.no_student_modal_view, name='no_student_modal'),
+
+    path('predict/no_open/',
+         prime_psat_views.no_predict_open_modal, name='no_predict_open_modal'),
+
+    path('student/modal/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.student_connect_modal_view, name='student_connect_modal'),
+    path('student/connect/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.student_connect_view, name='prime-student-register'),
+    path('student/reset/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.student_reset_view, name='student_reset'),
+]
 
 prime_psat_admin_urlpatterns = [
     path('', prime_psat_admin_views.list_view, name='list'),
@@ -81,6 +81,6 @@ prime_police_patterns = [
 
 urlpatterns = [
     path('prime/police/', include(prime_police_patterns)),
-    # path('prime/psat/', include(prime_psat_urlpatterns)),
+    path('test/prime/', include(prime_urlpatterns)),
     # path('prime/psat/admin/', include(prime_psat_admin_urlpatterns)),
 ]

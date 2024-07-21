@@ -6,22 +6,15 @@ from django.utils import timezone
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from ..forms import PrimePsatStudentForm
-from ..models import PrimePsatExam, PrimePsatStudent, PrimePsatRegisteredStudent, PrimePsatAnswerCount
-from ..utils import get_tuple_data_answer_official_student, get_dict_stat_data, get_dict_frequency_score
-
-FIELD_VARS: dict[str, tuple] = {
-    'heonbeob': ('헌법', '헌법'),
-    'eoneo': ('언어', '언어논리'),
-    'jaryo': ('자료', '자료해석'),
-    'sanghwang': ('상황', '상황판단'),
-    'psat_avg': ('평균', 'PSAT 평균'),
-}  # Field variables for chart, sheet score
-INFO = {'menu': 'score', 'view_type': 'primeScore'}
+from .. import forms, models, utils
 
 
-def list_view(request: HtmxHttpRequest):
-    exam_list = PrimePsatExam.objects.all()
+def list_view(request: HtmxHttpRequest, exam_type: str):
+    if exam_type == 'psat':
+        exam_list = models.PrimePsatExam.objects.all()
+    else:
+        exam_list = models.PrimePoliceExam.objects.all()
+
     page_number = request.GET.get('page', 1)
     paginator = Paginator(exam_list, 10)
     page_obj = paginator.get_page(page_number)
@@ -29,17 +22,18 @@ def list_view(request: HtmxHttpRequest):
 
     if request.user.is_authenticated:
         for obj in page_obj:
-            student = PrimePsatStudent.objects.filter(
+            student = models.PrimePsatStudent.objects.filter(
                 registered_students__user=request.user, year=obj.year, round=obj.round).first()
             if student:
                 obj.student = student
                 obj.detail_url = reverse_lazy(
-                    'score_prime_psat:detail',
-                    kwargs={'exam_year': obj.year, 'exam_round': obj.round})
+                    'score:prime-detail',
+                    kwargs={'exam_type': 'psat', 'exam_year': obj.year, 'exam_round': obj.round})
 
+    info = {'menu': 'score', 'view_type': 'primeScore'}
     context = update_context_data(
         # base info
-        info=INFO,
+        info=info,
         title='Score',
         sub_title='프라임 PSAT 모의고사 성적표',
         current_time=timezone.now(),
@@ -52,45 +46,30 @@ def list_view(request: HtmxHttpRequest):
         page_obj=page_obj,
         page_range=page_range,
     )
-
-    if request.htmx:
-        return render(request, 'a_score/prime_psat/prime_list.html#list_main', context)
-    return render(request, 'a_score/prime_psat/prime_list.html', context)
+    return render(request, 'a_score/score_list.html', context)
 
 
-def detail_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    if not request.user.is_authenticated:
-        return redirect('score_prime_psat:list')
+def detail_view(request: HtmxHttpRequest, **kwargs):
+    exam_vars = utils.get_exam_vars(**kwargs)
+    exam_vars.student = student = exam_vars.get_student(request)
+    if not request.user.is_authenticated or not student:
+        return redirect(exam_vars.url_list)
 
-    student = PrimePsatStudent.objects.filter(
-        year=exam_year, round=exam_round, registered_students__user=request.user).first()
-    if not student:
-        return redirect('score_prime_psat:list')
+    data_answer_official, data_answer_student = utils.get_tuple_data_answer_official_student(exam_vars)
 
-    exam = get_object_or_404(PrimePsatExam, year=exam_year, round=exam_round)
-    qs_answer_count = PrimePsatAnswerCount.objects.filter(
-        year=exam_year, round=exam_round).order_by('subject', 'number')
-    data_answer_official, data_answer_student = get_tuple_data_answer_official_student(
-        answer_student=student.answer, answer_official=exam.answer_official,
-        qs_answer_count=qs_answer_count, subject_fields=list(FIELD_VARS.keys()))
+    stat_total = utils.get_dict_stat_data(exam_vars, 'total')
+    stat_department = utils.get_dict_stat_data(exam_vars, 'department')
 
-    stat_total = get_dict_stat_data(student=student, statistics_type='total', field_vars=FIELD_VARS)
-    stat_department = get_dict_stat_data(student=student, statistics_type='department', field_vars=FIELD_VARS)
-
-    frequency_score = get_dict_frequency_score(student=student, target_score='psat_avg')
+    frequency_score = utils.get_dict_frequency_score(exam_vars, 'psat_avg')
 
     context = update_context_data(
-        # base info
-        info=INFO,
-        exam_year=exam_year,
-        exam_round=exam_round,
-        title='Score',
-        sub_title=f'제{exam_round}회 프라임 PSAT 모의고사',
-
-        # icons
-        icon_menu=icon_set_new.ICON_MENU['score'],
+        info=exam_vars.info, current_time=timezone.now(),
+        title='Score', sub_title=exam_vars.sub_title,
+        icon_menu=exam_vars.icon_menu,
         icon_subject=icon_set_new.ICON_SUBJECT,
         icon_nav=icon_set_new.ICON_NAV,
+
+        exam_vars=exam_vars, exam=exam_vars.exam,
 
         # info_student: 수험 정보
         student=student,
@@ -106,10 +85,7 @@ def detail_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
         data_answer_official=data_answer_official,
         data_answer_student=data_answer_student,
     )
-
-    if request.htmx:
-        return render(request, 'a_score/prime_psat/prime_detail.html#detail_main', context)
-    return render(request, 'a_score/prime_psat/prime_detail.html', context)
+    return render(request, 'a_score/score_detail.html', context)
 
 
 def detail_print_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
@@ -117,7 +93,7 @@ def detail_print_view(request: HtmxHttpRequest, exam_year: int, exam_round: int)
 
 
 def no_open_modal_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    exam = get_object_or_404(PrimePsatExam, year=exam_year, round=exam_round)
+    exam = get_object_or_404(models.PrimePsatExam, year=exam_year, round=exam_round)
     context = update_context_data(exam=exam)
     return render(request, 'a_score/prime_psat/snippets/prime_no_open_modal.html', context)
 
@@ -147,20 +123,20 @@ def no_predict_open_modal(request: HtmxHttpRequest):
 
 @login_required
 def student_connect_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    form = PrimePsatStudentForm()
+    form = forms.PrimePsatStudentForm()
     context = update_context_data(form=form, exam_year=exam_year, exam_round=exam_round)
     if request.method == "POST":
-        form = PrimePsatStudentForm(data=request.POST, files=request.FILES)
+        form = forms.PrimePsatStudentForm(data=request.POST, files=request.FILES)
         if form.is_valid():
             form = form.save(commit=False)
-            target_student = PrimePsatStudent.objects.get(
+            target_student = models.PrimePsatStudent.objects.get(
                 year=exam_year,
                 round=exam_round,
                 serial=form.serial,
                 name=form.name,
                 password=form.password,
             )
-            registered_student, _ = PrimePsatRegisteredStudent.objects.get_or_create(
+            registered_student, _ = models.PrimePsatRegisteredStudent.objects.get_or_create(
                 user=request.user, student=target_student
             )
             context = update_context_data(context, form=form, user_verified=True)

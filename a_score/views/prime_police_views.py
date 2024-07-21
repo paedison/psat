@@ -8,7 +8,7 @@ from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 from .. import forms
 from .. import models
-from .. import utils
+from ..utils import old_utils
 
 FIELD_VARS: dict[str, tuple] = {
     'hyeongsa': ('형사', '형사법'),
@@ -65,13 +65,13 @@ def get_detail_context(request: HtmxHttpRequest, exam_year: int, exam_round: int
     exam = get_object_or_404(models.PrimePoliceExam, year=exam_year, round=exam_round)
     qs_answer_count = models.PrimePoliceAnswerCount.objects.filter(
         year=exam_year, round=exam_round).order_by('subject', 'number')
-    data_answer_official, data_answer_student = utils.get_tuple_data_answer_official_student(
+    data_answer_official, data_answer_student = old_utils.get_tuple_data_answer_official_student(
         answer_student=student.answer, answer_official=exam.answer_official,
         qs_answer_count=qs_answer_count, subject_fields=list(FIELD_VARS.keys()))
 
-    stat_total = utils.get_dict_stat_data(student=student, statistics_type='total', field_vars=FIELD_VARS)
+    stat_total = old_utils.get_dict_stat_data(student=student, statistics_type='total', field_vars=FIELD_VARS)
 
-    frequency_score = utils.get_dict_frequency_score(student=student, target_score='sum')
+    frequency_score = old_utils.get_dict_frequency_score(student=student, target_score='sum')
 
     context = update_context_data(
         # base info
