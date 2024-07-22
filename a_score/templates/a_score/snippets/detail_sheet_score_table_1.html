@@ -23,7 +23,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for _ in '01234' %}
+            {% for _ in exam_vars.info_tab.id %}
                 {% cycle stat_total.heonbeob stat_total.eoneo stat_total.jaryo stat_total.sanghwang stat_total.psat_avg as stat_tot silent %}
                 {% cycle stat_department.heonbeob stat_department.eoneo stat_department.jaryo stat_department.sanghwang stat_department.psat_avg as stat_dep silent %}
                 {% if stat_tot %}{% partial sub_score_line %}{% endif %}

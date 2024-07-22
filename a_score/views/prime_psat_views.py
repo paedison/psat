@@ -1,12 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from .. import forms, models, utils
+from .. import models, utils
 
 
 def list_view(request: HtmxHttpRequest, exam_type: str):
@@ -22,13 +23,13 @@ def list_view(request: HtmxHttpRequest, exam_type: str):
 
     if request.user.is_authenticated:
         for obj in page_obj:
+            obj_info = {'exam_type': 'psat', 'exam_year': obj.year, 'exam_round': obj.round}
+            obj.url_modal = reverse('score:prime-modal', kwargs=obj_info)
             student = models.PrimePsatStudent.objects.filter(
                 registered_students__user=request.user, year=obj.year, round=obj.round).first()
             if student:
                 obj.student = student
-                obj.detail_url = reverse_lazy(
-                    'score:prime-detail',
-                    kwargs={'exam_type': 'psat', 'exam_year': obj.year, 'exam_round': obj.round})
+                obj.url_detail = reverse('score:prime-detail', kwargs=obj_info)
 
     info = {'menu': 'score', 'view_type': 'primeScore'}
     context = update_context_data(
@@ -55,12 +56,12 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     if not request.user.is_authenticated or not student:
         return redirect(exam_vars.url_list)
 
-    data_answer_official, data_answer_student = utils.get_tuple_data_answer_official_student(exam_vars)
+    data_answer_official, data_answer_student = utils.get_data_answer(exam_vars, student)
 
-    stat_total = utils.get_dict_stat_data(exam_vars, 'total')
-    stat_department = utils.get_dict_stat_data(exam_vars, 'department')
+    stat_total = utils.get_dict_stat_data(exam_vars, student, 'total')
+    stat_department = utils.get_dict_stat_data(exam_vars, student, 'department')
 
-    frequency_score = utils.get_dict_frequency_score(exam_vars, 'psat_avg')
+    frequency_score = utils.get_dict_frequency_score(exam_vars, student, 'psat_avg')
 
     context = update_context_data(
         info=exam_vars.info, current_time=timezone.now(),
@@ -92,6 +93,43 @@ def detail_print_view(request: HtmxHttpRequest, exam_year: int, exam_round: int)
     pass
 
 
+def modal_view(request: HtmxHttpRequest, **kwargs):
+    exam_vars = utils.get_exam_vars(**kwargs)
+    exam = exam_vars.exam
+
+    hx_modal = request.headers.get('View-Modal', '')
+    is_no_open = hx_modal == 'no_open'
+    is_student_register = hx_modal == 'student_register'
+
+    if is_no_open:
+        context = update_context_data(exam=exam)
+        return render(request, 'a_score/snippets/modal_no_open.html', context)
+
+    if is_student_register:
+        header = f'{exam_vars.exam_year}년 대비 제{exam_vars.exam_round}회 프라임 모의고사 수험 정보 입력'
+        context = update_context_data(exam_vars=exam_vars, header=header, **exam_vars.exam_info)
+        return render(request, 'a_score/snippets/modal_student_register.html', context)
+
+
+@require_POST
+@login_required
+def student_register_view(request: HtmxHttpRequest, **kwargs):
+    exam_vars = utils.get_exam_vars(**kwargs)
+    context = update_context_data(exam_vars=exam_vars)
+    form = exam_vars.student_form(data=request.POST, files=request.FILES)
+    if form.is_valid():
+        target_student = models.PrimePsatStudent.objects.get(
+            **exam_vars.exam_info, serial=form.cleaned_data['serial'],
+            name=form.cleaned_data['name'], password=form.cleaned_data['password'])
+        registered_student, _ = exam_vars.registered_student_model.objects.get_or_create(
+            user=request.user, student=target_student)
+        context = update_context_data(context, form=form, user_verified=True)
+    else:
+        context = update_context_data(context, form=form)
+
+    return render(request, 'a_score/snippets/modal_student_register.html#student_info', context)
+
+
 def no_open_modal_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
     exam = get_object_or_404(models.PrimePsatExam, year=exam_year, round=exam_round)
     context = update_context_data(exam=exam)
@@ -103,47 +141,10 @@ def no_student_modal_view(request: HtmxHttpRequest, exam_year: int, exam_round: 
     return render(request, 'a_score/prime_psat/snippets/prime_no_student_modal.html', context)
 
 
-@login_required
-def student_connect_modal_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    header = f'{exam_year}년 대비 제{exam_round}회 프라임 모의고사 수험 정보 입력'
-    url_kwargs = {'exam_year': exam_year, 'exam_round': exam_round}
-    url_detail = reverse_lazy('score_prime_psat:detail', kwargs=url_kwargs)
-    url_student_connect = reverse_lazy('score_prime_psat:student_connect', kwargs=url_kwargs)
-    context = update_context_data(
-        header=header, exam_year=exam_year, exam_round=exam_round,
-        url_detail=url_detail, url_student_connect=url_student_connect)
-    return render(request, 'a_score/prime_psat/snippets/prime_student_connect_modal.html', context)
-
-
 def no_predict_open_modal(request: HtmxHttpRequest):
     context = update_context_data(
     )
     return render(request, 'a_score/prime_psat/snippets/prime_no_open_modal.html', context)
-
-
-@login_required
-def student_connect_view(request: HtmxHttpRequest, exam_year: int, exam_round: int):
-    form = forms.PrimePsatStudentForm()
-    context = update_context_data(form=form, exam_year=exam_year, exam_round=exam_round)
-    if request.method == "POST":
-        form = forms.PrimePsatStudentForm(data=request.POST, files=request.FILES)
-        if form.is_valid():
-            form = form.save(commit=False)
-            target_student = models.PrimePsatStudent.objects.get(
-                year=exam_year,
-                round=exam_round,
-                serial=form.serial,
-                name=form.name,
-                password=form.password,
-            )
-            registered_student, _ = models.PrimePsatRegisteredStudent.objects.get_or_create(
-                user=request.user, student=target_student
-            )
-            context = update_context_data(context, form=form, user_verified=True)
-        else:
-            context = update_context_data(context, form=form)
-
-    return render(request, 'a_score/prime_psat/snippets/prime_student_connect_modal.html#student_info', context)
 
 
 @login_required

@@ -3,7 +3,7 @@ from django.urls import path
 from a_score.views.prime_psat_views import (
     list_view, detail_view, detail_print_view,
     no_open_modal_view, no_student_modal_view, no_predict_open_modal,
-    student_connect_modal_view, student_connect_view, student_reset_view,
+    student_register_view, student_reset_view,
 )
 
 app_name = 'score_prime_psat'
@@ -19,10 +19,10 @@ urlpatterns = [
 
     path('predict/no_open/', no_predict_open_modal, name='no_predict_open_modal'),
 
-    path('student/modal/<int:exam_year>/<int:exam_round>/',
-         student_connect_modal_view, name='student_connect_modal'),
+    # path('student/modal/<int:exam_year>/<int:exam_round>/',
+    #      student_connect_modal_view, name='student_connect_modal'),
     path('student/connect/<int:exam_year>/<int:exam_round>/',
-         student_connect_view, name='student_connect'),
+         student_register_view, name='student_connect'),
     path('student/reset/<int:exam_year>/<int:exam_round>/',
          student_reset_view, name='student_reset'),
 ]

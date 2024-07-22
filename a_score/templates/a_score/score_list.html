@@ -122,43 +122,29 @@
                             {% if page_obj %}
                                 {% for obj in page_obj %}
                                     <tr class="text-center">
-                                        {% if obj.staff %}
-                                            {% if user.is_staff %}
-
-                                                {% partialdef exam_round inline=True %}
-                                                    <td class="text-nowrap p-2">
-                                                        {% if obj.student %}
-                                                            <a href="{{ obj.detail_url }}" hx-boost="true">
-                                                                제{{ obj.round }}회
-                                                            </a>
-                                                        {% else %}
-                                                            제{{ obj.round }}회
-                                                        {% endif %}
-                                                    </td>
-                                                {% endpartialdef exam_round %}
-
-                                                {% partial exam_info %}
-
-                                            {% endif %}
-                                        {% else %}
-                                            {% partial exam_round %}
-                                            {% if user.is_staff %}
-                                                {% partial exam_info %}
-                                            {% else %}
-                                                {% if current_time > obj.answer_official_opened_at %}
-                                                    {% partial exam_info %}
+                                        {% partialdef exam_round inline=True %}
+                                            <td class="text-nowrap p-2">
+                                                {% if obj.student %}
+                                                    <a href="{{ obj.url_detail }}" hx-boost="true">
+                                                        제{{ obj.round }}회
+                                                    </a>
                                                 {% else %}
-                                                    <td class="text-nowrap p-2" colspan="8">
-                                                        <a class="badge rounded-pill text-bg-danger" href=""
-                                                           hx-get=""
-                                                           hx-target="#modalContainer" hx-swap="innerHTML"
-                                                           hx-push-url="false"
-                                                           data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                            성적 공개 일시 : {{ obj.answer_official_opened_at|date:'n/d(D) H:i' }}
-                                                        </a>
-                                                    </td>
+                                                    제{{ obj.round }}회
                                                 {% endif %}
-                                            {% endif %}
+                                            </td>
+                                        {% endpartialdef %}
+                                        {% if current_time > obj.answer_official_opened_at %}
+                                            {% partial exam_info %}
+                                        {% else %}
+                                            <td class="text-nowrap p-2" colspan="8">
+                                                <a class="badge rounded-pill text-bg-danger" href=""
+                                                   hx-headers='{"View-Modal":"no_open"}'
+                                                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                   data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                                   hx-get="{{ obj.url_modal }}">
+                                                    성적 공개 일시 : {{ obj.answer_official_opened_at|date:'n/d(D) H:i' }}
+                                                </a>
+                                            </td>
                                         {% endif %}
                                     </tr>
                                 {% endfor %}
@@ -192,9 +178,7 @@
     <td class="text-nowrap p-2">
         {% if user.is_authenticated %}
             {% if obj.student %}
-                <a href="{{ obj.detail_url }}" hx-boost="true">
-                    {{ obj.student.serial }}
-                </a>
+                <a href="{{ obj.url_detail }}" hx-boost="true">{{ obj.student.serial }}</a>
                 {% partialdef delete_student inline=True %} {# delete_student partial #}
                     {% if user.is_staff %}
                         <a class="badge rounded-pill text-bg-danger"
@@ -208,10 +192,10 @@
             {% else %}
                 {% partialdef input_button inline=True %} {# input_button partial #}
                     <a class="badge rounded-pill text-bg-warning" href=""
-                       hx-get=""
-                       hx-target="#modalContainer" hx-swap="innerHTML"
-                       hx-push-url="false"
-                       data-bs-toggle="modal" data-bs-target="#modalContainer">
+                       hx-headers='{"View-Modal":"student_register"}'
+                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                       data-bs-toggle="modal" data-bs-target="#modalContainer"
+                       hx-get="{{ obj.url_modal }}">
                         입력
                     </a>
                 {% endpartialdef input_button %}
@@ -232,9 +216,7 @@
     <td class="text-nowrap p-2">
         {% if user.is_authenticated %}
             {% if obj.student %}
-                <a href="{{ obj.detail_url }}" hx-boost="true">
-                    {{ obj.student.department_name }}
-                </a>
+                <a href="{{ obj.url_detail }}" hx-boost="true">{{ obj.student.department_name }}</a>
                 {% partial delete_student %}
             {% else %}
                 {% partial input_button %}
@@ -249,14 +231,15 @@
         {% if user.is_authenticated %}
             {% if obj.student %}
                 <a class="badge rounded-pill text-bg-success" hx-boost="true"
-                   href="{{ obj.detail_url }}">
+                   href="{{ obj.url_detail }}">
                     확인
                 </a>
             {% else %}
-                <a class="badge rounded-pill text-bg-danger"
-                   hx-get="" href=""
+                <a class="badge rounded-pill text-bg-danger" href=""
+                   hx-headers='{"View-Modal":"student_register"}'
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                   data-bs-toggle="modal" data-bs-target="#modalContainer">
+                   data-bs-toggle="modal" data-bs-target="#modalContainer"
+                   hx-get="{{ obj.url_modal }}">
                     미응시
                 </a>
             {% endif %}

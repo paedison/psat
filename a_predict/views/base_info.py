@@ -37,8 +37,6 @@ class ExamVars:
     score_tab = {
         'id': '012',
         'title': ['내 성적', '전체 기준', '직렬 기준'],
-        'prefix_all': ['my_all', 'total_all', 'department_all'],
-        'prefix_filtered': ['my_filtered', 'total_filtered', 'department_filtered'],
         'template': [score_template_table_1, score_template_table_2, score_template_table_2],
     }
     rank_list = ['all_rank', 'top_rank', 'mid_rank', 'low_rank']
@@ -225,8 +223,6 @@ class PsatExamVars(ExamVars):
         return {
             'id': ''.join([str(i) for i in range(len(self.sub_list))]),
             'title': self.sub_list,
-            'prefix_submit': [f'{fld}_submit' for fld in self.subject_fields],
-            'prefix_predict': [f'{fld}_predict' for fld in self.subject_fields],
             'url_answer_input': self.url_answer_input,
         }
 

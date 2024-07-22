@@ -6,38 +6,23 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
-            {% for id in '0123' %}
-                {% cycle '헌법' '언어' '자료' '상황' as sub silent %}
-                {% cycle 'answer_heonbeob' 'answer_eoneo' 'answer_jaryo' 'answer_sanghwang' as prefix silent %}
-                {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}
-                {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
+            {% for id in exam_vars.answer_tab.id %}
+                {% cycle exam_vars.answer_tab.title.0 exam_vars.answer_tab.title.1 exam_vars.answer_tab.title.2 exam_vars.answer_tab.title.3 exam_vars.answer_tab.title.4 as tab_title silent %}
+                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe exam_vars.icon_subject.4|safe as icon silent %}
+                {% #nav_tab prefix='Answer' id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
 
     <div class="tab-content" id="scoreAnswersContent">
-        {% for id in '0123' %}
-            {% cycle 'answer_heonbeob' 'answer_eoneo' 'answer_jaryo' 'answer_sanghwang' as prefix silent %}
-            {% cycle data_answer_official.heonbeob data_answer_official.eoneo data_answer_official.jaryo data_answer_official.sanghwang as answer_official silent %}
-            {% cycle data_answer_student.heonbeob data_answer_student.eoneo data_answer_student.jaryo data_answer_student.sanghwang as answer_student silent %}
-            {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
+        {% for id in exam_vars.answer_tab.id %}
+            {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
+            {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
+            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 exam_vars.subject_fields.4 as field silent %}
+            {% cycle exam_vars.url_answer_input.0 exam_vars.url_answer_input.1 exam_vars.url_answer_input.2 exam_vars.url_answer_input.3 exam_vars.url_answer_input.4 as url_answer_input silent %}
+            {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
+            {% #nav_content prefix='Answer' id=id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
-
-{#        {% with answers=answer_student.헌법 rates=answer_rates.헌법 %}#}
-{#            {% #nav_content prefix='answer_heonbeob' id='0' %}{% partial confirmed_answer_table %}{% /nav_content %}#}
-{#        {% endwith %}#}
-{##}
-{#        {% with answers=answer_student.언어 rates=answer_rates.언어 %}#}
-{#            {% #nav_content prefix='answer_eoneo' id='1' %}{% partial confirmed_answer_table %}{% /nav_content %}#}
-{#        {% endwith %}#}
-{##}
-{#        {% with answers=answer_student.자료 rates=answer_rates.자료 %}#}
-{#            {% #nav_content prefix='answer_jaryo' id='2' %}{% partial confirmed_answer_table %}{% /nav_content %}#}
-{#        {% endwith %}#}
-{##}
-{#        {% with answers=answer_student.상황 rates=answer_rates.상황 %}#}
-{#            {% #nav_content prefix='answer_sanghwang' id='3' %}{% partial confirmed_answer_table %}{% /nav_content %}#}
-{#        {% endwith %}#}
     </div>
 </div>
 
@@ -57,17 +42,6 @@
                     {% partial answer_table_tr %}
                 {% endfor %}
             {% endif %}
-{#            {% with loop_counter=10 loop_min=0 %}#}
-{#            {% endwith %}#}
-{##}
-{#            {% with loop_counter=10 loop_min=10 %}{% partial answer_table_tr %}{% endwith %}#}
-{##}
-{#            {% if ex == '칠급' or answers|length == 25  %}#}
-{#                {% with loop_counter=5 loop_min=20 %}{% partial answer_table_tr %}{% endwith %}#}
-{#            {% else %}#}
-{#                {% with loop_counter=10 loop_min=20 %}{% partial answer_table_tr %}{% endwith %}#}
-{#                {% with loop_counter=10 loop_min=30 %}{% partial answer_table_tr %}{% endwith %}#}
-{#            {% endif %}#}
         </tbody>
     {% /responsive_table %}
     <div class="my-3">
@@ -93,21 +67,25 @@
         {% for answer in answer_official %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td class="td-no-border">
-                    {% if answer.ans <= 5 %}
+                    {% if answer.ans_list %}
+                        {% if answer.ans == 1234 or answer.ans == 12345 %}
+                            <span data-number="{{ answer.no }}"
+                                  class="badge rounded-pill text-bg-secondary">
+                                전체 정답
+                            </span>
+                        {% else %}
+                            {% for ans in answer.ans_number_list %}
+                                <button data-number="{{ answer.no }}"
+                                        class="btn btn-circle btn-sm fs-6 my-2 btn-success">
+                                    {{ ans }}
+                                </button>
+                            {% endfor %}
+                        {% endif %}
+                    {% else %}
                         <button data-number="{{ answer.no }}"
                                 class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
-                            {{ answer.ans }}</button>
-                    {% elif answer.ans == 12345 %}
-                        <span data-number="{{ answer.no }}"
-                              class="badge rounded-pill text-bg-secondary">
-                            전체 정답
-                        </span>
-                    {% else %}
-                        {% for ans in answer.ans %}
-                            <button data-number="{{ answer.no }}"
-                                    class="btn btn-circle btn-sm fs-6 my-2 btn-success">
-                                {{ ans }}</button>
-                        {% endfor %}
+                            {{ answer.ans }}
+                        </button>
                     {% endif %}
                 </td>
             {% endif %}

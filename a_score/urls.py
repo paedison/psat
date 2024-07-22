@@ -12,18 +12,17 @@ prime_urlpatterns = [
     path('print/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
          prime_psat_views.detail_print_view, name='prime-print'),
 
-    path('no_open/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
-         prime_psat_views.no_open_modal_view, name='no_open_modal'),
+    path('modal/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.modal_view, name='prime-modal'),
+
+    path('student/register/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
+         prime_psat_views.student_register_view, name='prime-student-register'),
+
     path('no_student/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
          prime_psat_views.no_student_modal_view, name='no_student_modal'),
 
     path('predict/no_open/',
          prime_psat_views.no_predict_open_modal, name='no_predict_open_modal'),
-
-    path('student/modal/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
-         prime_psat_views.student_connect_modal_view, name='student_connect_modal'),
-    path('student/connect/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
-         prime_psat_views.student_connect_view, name='prime-student-register'),
     path('student/reset/<str:exam_type>/<int:exam_year>/<int:exam_round>/',
          prime_psat_views.student_reset_view, name='student_reset'),
 ]

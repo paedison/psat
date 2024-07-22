@@ -18,9 +18,8 @@
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerPredictTab" role="tablist">
             {% for id in exam_vars.answer_tab.id %}
                 {% cycle exam_vars.answer_tab.title.0 exam_vars.answer_tab.title.1 exam_vars.answer_tab.title.2 exam_vars.answer_tab.title.3 exam_vars.answer_tab.title.4 as tab_title silent %}
-                {% cycle exam_vars.answer_tab.prefix_predict.0 exam_vars.answer_tab.prefix_predict.1 exam_vars.answer_tab.prefix_predict.2 exam_vars.answer_tab.prefix_predict.3 exam_vars.answer_tab.prefix_predict.4 as prefix silent %}
                 {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe exam_vars.icon_subject.4|safe as icon silent %}
-                {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
+                {% #nav_tab prefix='AnswerPredict' id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
@@ -28,11 +27,10 @@
     <div class="tab-content" id="scoreAnswerPredictContent">
         {% for id in exam_vars.answer_tab.id %}
             {% cycle data_answer_predict.0 data_answer_predict.1 data_answer_predict.2 data_answer_predict.3 data_answer_predict.4 as answer_predict silent %}
-            {% cycle exam_vars.answer_tab.prefix_predict.0 exam_vars.answer_tab.prefix_predict.1 exam_vars.answer_tab.prefix_predict.2 exam_vars.answer_tab.prefix_predict.3 exam_vars.answer_tab.prefix_predict.4 as prefix silent %}
             {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 exam_vars.subject_fields.4 as field silent %}
             {% cycle exam_vars.url_answer_input.0 exam_vars.url_answer_input.1 exam_vars.url_answer_input.2 exam_vars.url_answer_input.3 exam_vars.url_answer_input.4 as url_answer_input silent %}
             {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
-            {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
+            {% #nav_content prefix='AnswerPredict' id=id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
     </div>
     <div>

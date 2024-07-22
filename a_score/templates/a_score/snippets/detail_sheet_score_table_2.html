@@ -21,7 +21,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for _ in '01234' %}
+            {% for _ in exam_vars.info_tab.id %}
                 {% cycle stat_data.heonbeob stat_data.eoneo stat_data.jaryo stat_data.sanghwang stat_data.psat_avg as stat silent %}
                 {% if stat %}{% partial sub_stat_line %}{% endif %}
             {% endfor %}

@@ -25,13 +25,11 @@ class ScoreExamVars:
     # Template constants
     info = {'menu': 'predict', 'view_type': 'predict'}
     icon_menu = icon_set_new.ICON_MENU['score']
-    score_template_table_1 = 'a_predict/snippets/index_sheet_score_table_1.html'
-    score_template_table_2 = 'a_predict/snippets/index_sheet_score_table_2.html'
+    score_template_table_1 = 'a_score/snippets/detail_sheet_score_table_1.html'
+    score_template_table_2 = 'a_score/snippets/detail_sheet_score_table_2.html'
     score_tab = {
         'id': '012',
         'title': ['내 성적', '전체 기준', '직렬 기준'],
-        'prefix_all': ['my_all', 'total_all', 'department_all'],
-        'prefix_filtered': ['my_filtered', 'total_filtered', 'department_filtered'],
         'template': [score_template_table_1, score_template_table_2, score_template_table_2],
     }
     rank_list = ['all_rank', 'top_rank', 'mid_rank', 'low_rank']
@@ -55,12 +53,16 @@ class ScoreExamVars:
         return reverse('score:prime-list', args=[self.exam_type])
 
     @property
+    def url_modal(self):
+        return reverse('score:prime-modal', args=[self.exam_url_kwargs])
+
+    @property
     def url_detail(self):
         return reverse('score:prime-detail', kwargs=self.exam_url_kwargs)
 
     @property
     def url_student_register(self):
-        return reverse('score:student-register', kwargs=self.exam_url_kwargs)
+        return reverse('score:prime-student-register', kwargs=self.exam_url_kwargs)
 
     @property
     def url_admin_list(self):
@@ -157,8 +159,6 @@ class ScorePrimePsatExamVars(ScoreExamVars):
         return {
             'id': ''.join([str(i) for i in range(len(self.sub_list))]),
             'title': self.sub_list,
-            'prefix_submit': [f'{fld}_submit' for fld in self.subject_fields],
-            'prefix_predict': [f'{fld}_predict' for fld in self.subject_fields],
         }
 
     def get_empty_data_answer(self):
