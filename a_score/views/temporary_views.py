@@ -23,8 +23,6 @@ EXAM_INFO = {'year': EXAM_YEAR, 'round': EXAM_ROUND}
 REGISTERED_STUDENT_INFO = {'student__year': EXAM_YEAR, 'student__round': EXAM_ROUND}
 EXAM_URL_KWARGS = {'exam_year': EXAM_YEAR, 'exam_round': EXAM_ROUND}
 
-EXAM = models.PrimePoliceExam.objects.get(**EXAM_INFO)
-
 
 def get_registered_student(request):
     return models.PrimePoliceRegisteredStudent.objects.filter(
@@ -54,7 +52,9 @@ def student_register_view(request: HtmxHttpRequest):
     registered_student = get_registered_student(request=request)
     if registered_student:
         return redirect('score:temporary-result')
-    context = update_context_data(**BASE_INFO, exam=EXAM)
+
+    exam = models.PrimePoliceExam.objects.get(**EXAM_INFO)
+    context = update_context_data(**BASE_INFO, exam=exam)
 
     # student_create
     form_class = forms.PrimePoliceStudentForm

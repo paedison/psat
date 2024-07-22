@@ -7,9 +7,13 @@
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
             {% for id in '01234' %}
-                {% cycle '형사' '헌법' '경찰' '범죄' '민법' as sub silent %}
-                {% cycle 'answer_hyeongsa' 'answer_heonbeob' 'answer_gyeongchal' 'answer_beomjoe' 'answer_minbeob' as prefix silent %}
-{#                {% cycle icon_subject.헌법|safe icon_subject.언어|safe icon_subject.자료|safe icon_subject.상황|safe as icon silent %}#}
+                {% if student.selection == 'minbeob' %}
+                    {% cycle '형사법' '헌법' '경찰학' '범죄학' '민법' as sub silent %}
+                    {% cycle 'answer_hyeongsa' 'answer_heonbeob' 'answer_gyeongchal' 'answer_beomjoe' 'answer_minbeob' as prefix silent %}
+                {% else %}
+                    {% cycle '형사법' '헌법' '경찰학' '범죄학' '행정학' as sub silent %}
+                    {% cycle 'answer_hyeongsa' 'answer_heonbeob' 'answer_gyeongchal' 'answer_beomjoe' 'answer_haenghag' as prefix silent %}
+                {% endif %}
                 {% #nav_tab prefix=prefix id=id %}{{ icon }} {{ sub }}{% /nav_tab %}
             {% endfor %}
         </div>
@@ -17,9 +21,15 @@
 
     <div class="tab-content" id="scoreAnswersContent">
         {% for id in '01234' %}
-            {% cycle 'answer_hyeongsa' 'answer_heonbeob' 'answer_gyeongchal' 'answer_beomjoe' 'answer_minbeob' as prefix silent %}
-            {% cycle data_answer_official.hyeongsa data_answer_official.heonbeob data_answer_official.gyeongchal data_answer_official.beomjoe data_answer_official.minbeob as answer_official silent %}
-            {% cycle data_answer_student.hyeongsa data_answer_student.heonbeob data_answer_student.gyeongchal data_answer_student.beomjoe data_answer_student.minbeob as answer_student silent %}
+            {% if student.selection == 'minbeob' %}
+                {% cycle 'answer_hyeongsa' 'answer_heonbeob' 'answer_gyeongchal' 'answer_beomjoe' 'answer_minbeob' as prefix silent %}
+                {% cycle data_answer_official.hyeongsa data_answer_official.heonbeob data_answer_official.gyeongchal data_answer_official.beomjoe data_answer_official.minbeob as answer_official silent %}
+                {% cycle data_answer_student.hyeongsa data_answer_student.heonbeob data_answer_student.gyeongchal data_answer_student.beomjoe data_answer_student.minbeob as answer_student silent %}
+            {% else %}
+                {% cycle 'answer_hyeongsa' 'answer_heonbeob' 'answer_gyeongchal' 'answer_beomjoe' 'answer_haenghag' as prefix silent %}
+                {% cycle data_answer_official.hyeongsa data_answer_official.heonbeob data_answer_official.gyeongchal data_answer_official.beomjoe data_answer_official.haenghag as answer_official silent %}
+                {% cycle data_answer_student.hyeongsa data_answer_student.heonbeob data_answer_student.gyeongchal data_answer_student.beomjoe data_answer_student.haenghag as answer_student silent %}
+                {% endif %}
             {% #nav_content prefix=prefix id=id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
     </div>

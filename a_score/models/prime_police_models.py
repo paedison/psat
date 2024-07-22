@@ -29,6 +29,8 @@ class PrimePoliceStudent(Student):
     department = models.CharField(
         max_length=20, choices=ChoiceMethod.prime_police_department_choices,
         default='일반', verbose_name='직렬')
+    selection = models.CharField(
+        max_length=20, choices=ChoiceMethod.police_subject_choices, default='minbeob', verbose_name='선택과목')
 
     class Meta:
         verbose_name = "프라임 경위공채 모의고사 수험정보"

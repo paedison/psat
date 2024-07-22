@@ -166,7 +166,13 @@
                 },
             },
             scales: {
-                y: {ticks: {font: {weight: 'bold'}}},
+                y: {
+                    ticks: {
+                        font: {weight: 'bold'},
+                        stepSize: 1,
+                    },
+                    min: 0,
+                },
                 x: {ticks: {font: {weight: 'bold'}}},
             },
         }

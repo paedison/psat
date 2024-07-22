@@ -20,29 +20,30 @@ def get_tuple_data_answer_official_student(
 
     for qs in qs_answer_count:
         field = qs.subject
-        ans_official = answer_official[field][qs.number - 1]
-        ans_student = answer_student[field][qs.number - 1]
+        if field in answer_student:
+            ans_official = answer_official[field][qs.number - 1]
+            ans_student = answer_student[field][qs.number - 1]
 
-        if 1 <= ans_official <= 5:
-            result = ans_student == ans_official
-            rate_correct = getattr(qs, f'rate_{ans_official}')
-        else:
-            answer_official_list = [int(digit) for digit in str(ans_official)]
-            result = ans_student in answer_official_list
-            rate_correct = sum(getattr(qs, f'rate_{ans}') for ans in answer_official_list)
-        rate_selection = getattr(qs, f'rate_{ans_student}')
+            if 1 <= ans_official <= 5:
+                result = ans_student == ans_official
+                rate_correct = getattr(qs, f'rate_{ans_official}')
+            else:
+                answer_official_list = [int(digit) for digit in str(ans_official)]
+                result = ans_student in answer_official_list
+                rate_correct = sum(getattr(qs, f'rate_{ans}') for ans in answer_official_list)
+            rate_selection = getattr(qs, f'rate_{ans_student}')
 
-        data_answer_official[field].append({
-            'no': qs.number,
-            'ans': ans_official,
-            'rate_correct': rate_correct,
-        })
-        data_answer_student[field].append({
-            'no': qs.number,
-            'ans': ans_student,
-            'rate_selection': rate_selection,
-            'result': result,
-        })
+            data_answer_official[field].append({
+                'no': qs.number,
+                'ans': ans_official,
+                'rate_correct': rate_correct,
+            })
+            data_answer_student[field].append({
+                'no': qs.number,
+                'ans': ans_student,
+                'rate_selection': rate_selection,
+                'result': result,
+            })
 
     data_answer_official = {key: value for key, value in data_answer_official.items() if value}
     data_answer_student = {key: value for key, value in data_answer_student.items() if value}

@@ -133,6 +133,8 @@ ICON_SUBJECT = {
     '경찰': '',
     '범죄': '',
     '민법': '',
+    '행학': '',
+    '행법': '',
 }
 
 ICON_SEARCH = '<i class="fa-solid fa-fw fa-magnifying-glass"></i>'
