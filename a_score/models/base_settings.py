@@ -21,12 +21,6 @@ class ChoiceMethod:
     @staticmethod
     def number_choices() -> list: return [(number, f'{number}번') for number in range(1, 41)]
 
-    @staticmethod
-    def answer_choices() -> dict: return {1: '①', 2: '②', 3: '③', 4: '④', 5: '⑤'}
-
-    @staticmethod
-    def rating_choices() -> dict: return {1: '⭐️', 2: '⭐️⭐️', 3: '⭐️⭐️⭐️', 4: '⭐️⭐️⭐️⭐️', 5: '⭐️⭐️⭐️⭐️⭐️'}
-
     # PSAT exam, unit, subject choices
     @staticmethod
     def psat_exam_choices() -> dict:
@@ -243,6 +237,9 @@ class Exam(YearExamRoundField):
     exam_finished_at = models.DateTimeField(default=timezone.now)
     answer_predict_opened_at = models.DateTimeField(default=timezone.now)
     answer_official_opened_at = models.DateTimeField(default=timezone.now)
+    participants = models.JSONField(default=dict, verbose_name='전체 참여자수')
+    statistics = models.JSONField(default=dict, verbose_name='성적 통계')
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         abstract = True
@@ -257,8 +254,8 @@ class Exam(YearExamRoundField):
         return timezone.now() <= self.page_opened_at
 
     @property
-    def is_not_exam_finished(self):
-        return self.page_opened_at < timezone.now() <= self.exam_finished_at
+    def is_not_finished(self):
+        return timezone.now() <= self.exam_finished_at
 
     @property
     def is_collecting_answer(self):
@@ -288,6 +285,7 @@ class Student(TimeRecordField, RemarksField, YearExamRoundField, ChoiceMethod):
     answer_all_confirmed_at = models.DateTimeField(null=True, blank=True, verbose_name='답안 전체 확정 일시')
 
     score = models.JSONField(default=dict, verbose_name='점수')
+    rank = models.JSONField(default=dict, verbose_name='등수')
     rank_total = models.JSONField(default=dict, verbose_name='전체 등수')
     rank_department = models.JSONField(default=dict, verbose_name='직렬 등수')
     participants_total = models.JSONField(default=dict, verbose_name='전체 참여자수')
@@ -317,6 +315,7 @@ class AnswerCount(TimeRecordField, YearExamRoundField, ChoiceMethod):
     count_0 = models.IntegerField(default=0, verbose_name='미표기')
     count_multiple = models.IntegerField(default=0, verbose_name='중복 표기')
     count_total = models.IntegerField(default=0, verbose_name='전체')
+    all = models.JSONField(default=dict, verbose_name='전체')
 
     class Meta:
         abstract = True

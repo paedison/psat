@@ -88,6 +88,8 @@ class ExamVars:
 
 @dataclasses.dataclass
 class PsatExamVars(ExamVars):
+    exam_type: str = 'psat'
+
     exam_model = psat_models.PsatExam
     unit_model = psat_models.PsatUnit
     department_model = psat_models.PsatDepartment
@@ -239,6 +241,7 @@ class PsatExamVars(ExamVars):
 
 @dataclasses.dataclass
 class PoliceExamVars(ExamVars):
+    exam_type: str = 'police'
     selection: str = 'minbeob'
 
     exam_model = police_models.PoliceExam

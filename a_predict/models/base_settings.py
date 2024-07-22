@@ -23,13 +23,6 @@ class ChoiceMethod:
     @staticmethod
     def number_choices() -> list: return [(number, f'{number}번') for number in range(1, 41)]
 
-    @staticmethod
-    def answer_choices() -> dict: return {1: '①', 2: '②', 3: '③', 4: '④', 5: '⑤'}
-
-    @staticmethod
-    def rating_choices() -> dict:
-        return {1: '⭐️', 2: '⭐️⭐️', 3: '⭐️⭐️⭐️', 4: '⭐️⭐️⭐️⭐️', 5: '⭐️⭐️⭐️⭐️⭐️'}
-
     # PSAT exam, unit, subject choices
     @staticmethod
     def psat_exam_choices() -> dict:
