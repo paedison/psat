@@ -72,6 +72,22 @@ class CommandScoreExamVars:
         return default[self.exam_type]
 
     @property
+    def only_psat_fields(self):
+        return ['eoneo', 'jaryo', 'sanghwang']
+
+    @property
+    def final_field(self):
+        default = {'police': 'sum', 'psat': 'psat_avg'}
+        return default[self.exam_type]
+
+    def get_final_score(self, score):
+        if self.is_police:
+            return sum(s for s in score.values())
+        if self.is_psat:
+            sum_list = [score[fld] for fld in self.only_psat_fields if fld in score]
+            return round(sum(sum_list) / 3, 1) if sum_list else 0
+
+    @property
     def score_fields(self):
         default = {
             'police': ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', 'minbeob', 'haenghag', 'haengbeob', 'sum'],
@@ -149,10 +165,11 @@ class CommandScoreExamVars:
     @property
     def answer_official(self) -> dict[str, list]:
         df = pd.read_excel(self.file_name, sheet_name='정답', header=0, index_col=0)
-        df.dropna(inplace=True)
+        df.fillna(value=0, inplace=True)
         answer_official = {}
         for subject, answers in df.items():
-            answer_official.update({self.subject_fields_dict[subject]: [int(ans) for ans in answers]})
+            field = self.subject_fields_dict[subject]
+            answer_official[field] = [int(ans) for ans in answers if ans]
         return answer_official
 
     @property
@@ -164,3 +181,32 @@ class CommandScoreExamVars:
             'year': self.exam_year, 'round': self.exam_round,
             'subject': field, 'number': number,
         }
+
+
+data1 = [
+    {'type': 'input', 'field': 'heonbeob', 'sub': '헌법', 'subject': '헌법', 'answer': [], 'confirmed': False},
+    {'type': 'input', 'field': 'eoneo', 'sub': '언어', 'subject': '언어논리', 'answer': [], 'confirmed': False},
+    {'type': 'input', 'field': 'jaryo', 'sub': '자료', 'subject': '자료해석', 'answer': [], 'confirmed': False},
+    {'type': 'input', 'field': 'sanghwang', 'sub': '상황', 'subject': '상황판단', 'answer': [], 'confirmed': False},
+    {'type': 'final', 'field': 'psat_avg', 'sub': '평균', 'subject': 'PSAT 평균', 'confirmed': False},
+]
+data2 = {
+    'heonbeob': {'answer': [], 'confirmed': False},
+    'eoneo': {'answer': [], 'confirmed': False},
+    'jaryo': {'answer': [], 'confirmed': False},
+    'sanghwang': {'answer': [], 'confirmed': False},
+}
+data3 = [
+    ['heonbeob', False, 0, []],
+    ['eoneo', False, 0, []],
+    ['jaryo', False, 0, []],
+    ['sanghwang', False, 0, []],
+    ['psat_avg', False, 0, []],
+]
+data4 = [
+    ['heonbeob', [4, 4, 3, 1, 4, 1, 4, 4, 2, 2, 3, 1, 1, 3, 4, 2, 3, 2, 3, 4, 3, 2, 3, 2, 1], False, 0],
+    ['eoneo', [3, 3, 3, 5, 1, 5, 3, 2, 2, 2, 3, 1, 2, 3, 3, 3, 5, 2, 2, 5, 5, 5, 5, 5, 4, 5, 4, 5, 1, 4, 2, 3, 4, 2, 3, 3, 4, 3, 5, 4], False, 0],
+    ['jaryo', [2, 3, 2, 3, 3, 4, 4, 1, 4, 1, 1, 2, 1, 4, 4, 3, 2, 4, 1, 3, 5, 1, 4, 4, 1, 4, 5, 4, 2, 3, 4, 2, 5, 2, 5, 4, 1, 5, 5, 1], False, 0],
+    ['sanghwang', [4, 3, 2, 1, 2, 5, 5, 4, 4, 5, 5, 1, 4, 2, 3, 5, 5, 1, 1, 2, 1, 2, 4, 1, 2, 3, 4, 2, 3, 4, 2, 1, 4, 3, 3, 4, 4, 5, 4, 2], False, 0],
+    ['psat_avg', [], False, 0],
+]

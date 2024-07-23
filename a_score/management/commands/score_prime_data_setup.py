@@ -24,8 +24,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         exam_type = kwargs['exam_type']
-        exam_year = kwargs['exam_year']
-        exam_round = kwargs['exam_round']
+        exam_year = int(kwargs['exam_year'])
+        exam_round = int(kwargs['exam_round'])
         file_name = kwargs['file_name']
 
         # Set up exam_vars
@@ -51,9 +51,9 @@ class Command(BaseCommand):
 
         self.stdout.write('================')
         self.stdout.write(f'Update student_model for rank')
-        update_fields_for_rank = [
-            'rank_total', 'participants_total', 'rank_department', 'participants_department']
-        update_rank_data(exam_vars, update_fields_for_rank)
+        # update_fields_for_rank = [
+        #     'rank_total', 'participants_total', 'rank_department', 'participants_department']
+        # update_rank_data(exam_vars, update_fields_for_rank)
 
         update_fields_for_new_rank = ['rank']
         update_new_rank_data(exam_vars, update_fields_for_new_rank)
@@ -86,9 +86,10 @@ def get_empty_model_data() -> dict:
 
 def create_or_update_exam_model(exam_vars: CommandScoreExamVars, update_fields):
     exam_data = get_empty_model_data()
-    matching_data = {'answer_official': exam_vars.answer_official}
+    exam_info = exam_vars.exam_info
+    exam_info['answer_official'] = exam_vars.answer_official
     update_model_data(
-        exam_data, exam_vars.exam_model, exam_vars.exam_info, matching_data, update_fields)
+        exam_data, exam_vars.exam_model, exam_vars.exam_info, exam_info, update_fields)
     create_or_update_model(exam_vars.exam_model, update_fields, exam_data)
 
 
@@ -100,35 +101,50 @@ def update_student_data(exam_vars: CommandScoreExamVars, update_fields):
 
     df = pd.read_excel(exam_vars.file_name, sheet_name='문항별 표기', header=[0, 1])
     pd.set_option('future.no_silent_downcasting', True)
+    df[('name', 0)] = df[('name', 0)].fillna('noname').astype('string')
+    df[('department', 0)] = df[('department', 0)].fillna('noname').astype('string')
+    df[('password', 0)] = df[('password', 0)].fillna(0).astype('int32')
 
     timezone = pytz.timezone('UTC')
     now = datetime.now(timezone)
     answer_all_confirmed_at = datetime(now.year, now.month, now.day, tzinfo=timezone)
 
     for _, student in df.iterrows():
-        name = student.loc[('name', 0)]
-        serial = student.loc[('serial', 0)]
-        selection = student.loc[('selection', 0)]
+        name = student.loc[('name', 0)] or 'noname'
+        serial = student.loc[('serial', 0)] or ''
+        department = None
+        if is_psat:
+            department = student.loc[('department', 0)]
         password = student.loc[('password', 0)]
+        selection = None
 
         answer = {}
         answer_count = {}
         answer_confirmed = {}
         if is_police:
+            selection = student.loc[('selection', 0)]
             answer_count[selection] = 40
             answer_confirmed.update({selection: True, 'sum': True})
             selection_cs = student.xs(selection, level=0)
             answer[selection] = selection_cs.fillna(0).infer_objects(copy=False).astype(int).tolist()
+            for field in exam_vars.common_subject_fields:
+                cs = student.xs(field, level=0)
+                answer[field] = cs.fillna(0).infer_objects(copy=False).astype(int).tolist()
+                answer_count[field] = 25 if is_psat and field == 'heonbeob' else 40
+                answer_confirmed[field] = True
 
-        for field in exam_vars.common_subject_fields:
-            cs = student.xs(field, level=0)
-            answer[field] = cs.fillna(0).infer_objects(copy=False).astype(int).tolist()
-            answer_count[field] = 25 if is_psat and field == 'heonbeob' else 40
-            answer_confirmed[field] = True
+        if is_psat:
+            for field in exam_vars.subject_fields:
+                cs = student.xs(field, level=0)
+                answer[field] = cs.fillna(0).infer_objects(copy=False).astype(int).tolist()
+                answer_count[field] = 25 if field == 'heonbeob' else 40
+                answer_confirmed[field] = True
 
         student_info = {'name': name, 'serial': serial, 'password': password}
         if is_police:
             student_info['selection'] = selection
+        if is_psat:
+            student_info['department'] = department
         answer_info = {
             'answer': answer, 'answer_count': answer_count,
             'answer_confirmed': answer_confirmed,
@@ -137,6 +153,7 @@ def update_student_data(exam_vars: CommandScoreExamVars, update_fields):
 
         lookup = dict(exam_vars.exam_info, **student_info)
         update_info = dict(lookup, **answer_info)
+        update_fields = [key for key in update_info.keys()]
         update_model_data(student_data, student_model, lookup, update_info, update_fields)
     create_or_update_model(exam_vars.student_model, update_fields, student_data)
 
@@ -156,8 +173,7 @@ def get_total_answer_lists_and_update_score(exam_vars: CommandScoreExamVars, upd
             for idx, ans in enumerate(answer):
                 correct_count += 1 if ans == answer_official[field][idx] else 0
             score[field] = correct_count * score_unit
-        score['sum'] = sum(s for s in score.values())
-
+        score[exam_vars.final_field] = exam_vars.get_final_score(score)
         add_obj_to_model_update_data(
             score_data, student, {'score': score}, update_fields)
 
@@ -264,9 +280,9 @@ def update_participants(exam_vars: CommandScoreExamVars, update_fields):
 
     for student in qs_student:
         d_id = departments.index(student.department) + 1
-        for field in student.answer.keys():
-            participants['all']['total'][field] += 1
-            participants['all'][d_id][field] += 1
+        for fld in score_fields:
+            participants['all']['total'][fld] += 1
+            participants['all'][d_id][fld] += 1
     add_obj_to_model_update_data(
         exam_model_data, exam_vars.exam, {'participants': participants}, update_fields)
     create_or_update_model(exam_vars.exam_model, update_fields, exam_model_data)
@@ -355,34 +371,34 @@ def update_answer_count(exam_vars, update_fields, total_answer_lists):
 def get_total_answer_lists_by_category(exam_vars: CommandScoreExamVars, qs_student):
     subject_fields = exam_vars.subject_fields
     rank_list = exam_vars.rank_list
+    final_field = exam_vars.final_field
     participants = exam_vars.exam.participants
     total_answer_lists_by_category: dict[str, dict[str, dict[str, list]]] = {
         'all': {rnk: {fld: [] for fld in subject_fields} for rnk in rank_list},
     }
-    participants_all = participants['all']['total']['sum']
+    participants_all = participants['all']['total'][final_field]
 
     for student in qs_student:
-        rank_all_student = student.rank['all']['total']['sum']
+        rank_all_student = student.rank['all']['total'][final_field]
         rank_ratio_all = None
         if participants_all:
             rank_ratio_all = rank_all_student / participants_all
 
         for field in subject_fields:
-            if field in student.answer_confirmed and student.answer_confirmed[field]:
-                ans_student = student.answer[field]
-                top_rank_threshold = 0.27
-                mid_rank_threshold = 0.73
+            ans_student = student.answer[field]
+            top_rank_threshold = 0.27
+            mid_rank_threshold = 0.73
 
-                def append_answer(catgry: str, rank: str):
-                    total_answer_lists_by_category[catgry][rank][field].append(ans_student)
+            def append_answer(catgry: str, rank: str):
+                total_answer_lists_by_category[catgry][rank][field].append(ans_student)
 
-                append_answer('all', 'all_rank')
-                if rank_ratio_all and 0 <= rank_ratio_all <= top_rank_threshold:
-                    append_answer('all', 'top_rank')
-                elif rank_ratio_all and top_rank_threshold < rank_ratio_all <= mid_rank_threshold:
-                    append_answer('all', 'mid_rank')
-                elif rank_ratio_all and mid_rank_threshold < rank_ratio_all <= 1:
-                    append_answer('all', 'low_rank')
+            append_answer('all', 'all_rank')
+            if rank_ratio_all and 0 <= rank_ratio_all <= top_rank_threshold:
+                append_answer('all', 'top_rank')
+            elif rank_ratio_all and top_rank_threshold < rank_ratio_all <= mid_rank_threshold:
+                append_answer('all', 'mid_rank')
+            elif rank_ratio_all and mid_rank_threshold < rank_ratio_all <= 1:
+                append_answer('all', 'low_rank')
 
     return total_answer_lists_by_category
 
