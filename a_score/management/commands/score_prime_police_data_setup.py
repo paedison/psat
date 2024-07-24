@@ -313,7 +313,7 @@ def update_participants(exam_vars: CommandScorePrimePoliceExamVars, update_field
     create_or_update_model(exam_vars.exam_model, update_fields, exam_model_data)
 
 
-def update_statistics(exam_vars, update_fields):
+def update_statistics(exam_vars: CommandScorePrimePoliceExamVars, update_fields):
     score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'sum']
     scores_total = get_confirmed_scores(exam_vars, exam_vars.qs_student)
     scores: dict[str, dict[str, dict[str, list]]] = {
@@ -345,7 +345,7 @@ def update_statistics(exam_vars, update_fields):
     create_or_update_model(exam_vars.exam_model, update_fields, statistics_data)
 
 
-def update_answer_count(exam_vars, update_fields, total_answer_lists):
+def update_answer_count(exam_vars: CommandScorePrimePoliceExamVars, update_fields, total_answer_lists):
     answer_official = exam_vars.answer_official
     total_count: dict[str, list[dict[str, str | int]]] = {}
     for field in exam_vars.subject_fields:

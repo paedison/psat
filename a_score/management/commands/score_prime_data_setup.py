@@ -1,11 +1,9 @@
 import traceback
 from collections import Counter
-from datetime import datetime
 
 import django.db.utils
 import django.db.utils
 import pandas as pd
-import pytz
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -33,71 +31,55 @@ class Command(BaseCommand):
 
         self.stdout.write('================')
         self.stdout.write(f'Create or update exam_model with answer official')
-        update_fields_for_exam = ['answer_official']
-        create_or_update_exam_model(exam_vars, update_fields_for_exam)
-
-        # exam_vars.exam = exam_vars.exam_model.objects.get(**exam_vars.exam_info)
+        create_or_update_exam_model(exam_vars, ['answer_official'])
 
         self.stdout.write('================')
-        self.stdout.write(f'Create or update student_model')
-        update_fields_for_answer = [
-            'answer', 'answer_count', 'answer_confirmed', 'answer_all_confirmed_at']
-        update_student_data(exam_vars, update_fields_for_answer)
+        self.stdout.write(f'Create or update student_model for data(answer)')
+        answer_lists = update_student_model_for_data(exam_vars, ['data'])
 
         self.stdout.write('================')
-        self.stdout.write(f'Update student_model for score')
-        update_fields_for_score = ['score']
-        total_answer_lists = get_total_answer_lists_and_update_score(exam_vars, update_fields_for_score)
+        self.stdout.write(f'Update student_model for data(score)')
+        score_lists = update_student_model_for_score(exam_vars, ['data'])
 
         self.stdout.write('================')
         self.stdout.write(f'Update student_model for rank')
-        # update_fields_for_rank = [
-        #     'rank_total', 'participants_total', 'rank_department', 'participants_department']
-        # update_rank_data(exam_vars, update_fields_for_rank)
-
-        update_fields_for_new_rank = ['rank']
-        update_new_rank_data(exam_vars, update_fields_for_new_rank)
+        update_student_model_for_rank(exam_vars, score_lists, ['rank'])
 
         self.stdout.write('================')
         self.stdout.write('Update exam_model for participants')
-        update_fields_for_participants = ['participants']
-        update_participants(exam_vars, update_fields_for_participants)
+        update_exam_model_for_participants(exam_vars, ['participants'])
 
         self.stdout.write('================')
         self.stdout.write('Update exam_model for statistics')
-        update_fields_for_statistics = ['statistics']
-        update_statistics(exam_vars, update_fields_for_statistics)
+        update_exam_model_for_statistics(exam_vars, score_lists, ['statistics'])
 
         self.stdout.write('================')
         self.stdout.write(f'Create or update answer_count_model')
         update_fields_for_answer_count = exam_vars.all_count_fields + ['answer']
-        update_answer_count(exam_vars, update_fields_for_answer_count, total_answer_lists)
+        update_answer_count_model(exam_vars, update_fields_for_answer_count, answer_lists)
 
         self.stdout.write('================')
         self.stdout.write('Update answer_count_model by rank')
-        total_answer_lists = get_total_answer_lists_by_category(exam_vars, exam_vars.qs_student)
-        total_count_dict = get_total_count_dict_by_category(exam_vars, total_answer_lists)
-        update_total_answer_count_model_data(exam_vars, ['all'], total_count_dict)
+        answer_lists_by_category = get_answer_lists_by_category(exam_vars)
+        all_count_dict = get_total_count_dict_by_category(exam_vars, answer_lists_by_category)
+        update_answer_count_model_by_rank(exam_vars, all_count_dict, ['all'])
 
 
 def get_empty_model_data() -> dict:
     return {'update_list': [], 'create_list': [], 'update_count': 0, 'create_count': 0}
 
 
-def create_or_update_exam_model(exam_vars: CommandScoreExamVars, update_fields):
+def create_or_update_exam_model(exam_vars: CommandScoreExamVars, update_fields: list):
     exam_data = get_empty_model_data()
     exam_info = exam_vars.exam_info
-    exam_info['answer_official'] = exam_vars.answer_official
-    update_model_data(
-        exam_data, exam_vars.exam_model, exam_vars.exam_info, exam_info, update_fields)
+    exam_info['answer_official'] = exam_vars.get_answer_official()
+    update_model_data(exam_data, exam_vars.exam_model, exam_info, exam_info, update_fields)
     create_or_update_model(exam_vars.exam_model, update_fields, exam_data)
 
 
-def update_student_data(exam_vars: CommandScoreExamVars, update_fields):
+def update_student_model_for_data(exam_vars: CommandScoreExamVars, update_fields: list):
     student_data = get_empty_model_data()
-    student_model = exam_vars.student_model
-    is_police = exam_vars.is_police
-    is_psat = exam_vars.is_psat
+    answer_lists: dict[str, list] = {fld: [] for fld in exam_vars.all_answer_fields}
 
     df = pd.read_excel(exam_vars.file_name, sheet_name='문항별 표기', header=[0, 1])
     pd.set_option('future.no_silent_downcasting', True)
@@ -105,220 +87,147 @@ def update_student_data(exam_vars: CommandScoreExamVars, update_fields):
     df[('department', 0)] = df[('department', 0)].fillna('noname').astype('string')
     df[('password', 0)] = df[('password', 0)].fillna(0).astype('int32')
 
-    timezone = pytz.timezone('UTC')
-    now = datetime.now(timezone)
-    answer_all_confirmed_at = datetime(now.year, now.month, now.day, tzinfo=timezone)
-
     for _, student in df.iterrows():
         name = student.loc[('name', 0)] or 'noname'
         serial = student.loc[('serial', 0)] or ''
-        department = None
-        if is_psat:
-            department = student.loc[('department', 0)]
         password = student.loc[('password', 0)]
-        selection = None
 
-        answer = {}
-        answer_count = {}
-        answer_confirmed = {}
-        if is_police:
-            selection = student.loc[('selection', 0)]
-            answer_count[selection] = 40
-            answer_confirmed.update({selection: True, 'sum': True})
-            selection_cs = student.xs(selection, level=0)
-            answer[selection] = selection_cs.fillna(0).infer_objects(copy=False).astype(int).tolist()
-            for field in exam_vars.common_subject_fields:
-                cs = student.xs(field, level=0)
-                answer[field] = cs.fillna(0).infer_objects(copy=False).astype(int).tolist()
-                answer_count[field] = 25 if is_psat and field == 'heonbeob' else 40
-                answer_confirmed[field] = True
-
-        if is_psat:
-            for field in exam_vars.subject_fields:
-                cs = student.xs(field, level=0)
-                answer[field] = cs.fillna(0).infer_objects(copy=False).astype(int).tolist()
-                answer_count[field] = 25 if field == 'heonbeob' else 40
-                answer_confirmed[field] = True
-
+        student_score_fields = None
         student_info = {'name': name, 'serial': serial, 'password': password}
-        if is_police:
+        if exam_vars.is_psat:
+            student_info['department'] = student.loc[('department', 0)]
+            student_score_fields = exam_vars.psat_all_score_fields
+        if exam_vars.is_police:
+            selection = student.loc[('selection', 0)]
             student_info['selection'] = selection
-        if is_psat:
-            student_info['department'] = department
-        answer_info = {
-            'answer': answer, 'answer_count': answer_count,
-            'answer_confirmed': answer_confirmed,
-            'answer_all_confirmed_at': answer_all_confirmed_at,
-        }
+            student_score_fields = exam_vars.get_police_student_score_fields(selection)
+
+        data = [[fld, True, 0, []] for fld in student_score_fields]
+        for idx, fld in enumerate(student_score_fields[:-1]):
+            subject = exam_vars.get_subject_name(fld)
+            cs = student.xs(subject, level=0)
+            answer_student = cs.fillna(0).infer_objects(copy=False).astype(int).tolist()
+
+            data[idx][-1] = answer_student
+            answer_lists[fld].append(answer_student)
 
         lookup = dict(exam_vars.exam_info, **student_info)
-        update_info = dict(lookup, **answer_info)
+        update_info = dict(lookup, **{'data': data})
         update_fields = [key for key in update_info.keys()]
-        update_model_data(student_data, student_model, lookup, update_info, update_fields)
+        update_model_data(student_data, exam_vars.student_model, lookup, update_info, update_fields)
+
     create_or_update_model(exam_vars.student_model, update_fields, student_data)
+    return answer_lists
 
 
-def get_total_answer_lists_and_update_score(exam_vars: CommandScoreExamVars, update_fields):
-    qs_student = exam_vars.qs_student
-    answer_official = exam_vars.answer_official
+def update_student_model_for_score(exam_vars: CommandScoreExamVars, update_fields: list):
     score_data = get_empty_model_data()
-    total_answer_lists = {field: [] for field in exam_vars.subject_fields}
+    qs_student = exam_vars.qs_student
+    answer_official = exam_vars.exam.answer_official
+    score_lists: dict[str, dict[str, list]] = {
+        'total': {fld: [] for fld in exam_vars.all_score_fields}
+    }
+    score_lists.update({
+        dep: {fld: [] for fld in exam_vars.all_score_fields}
+        for dep in exam_vars.all_departments
+    })
 
     for student in qs_student:
-        score = {}
-        for field, answer in student.answer.items():
-            total_answer_lists[field].append(answer)
+        score_sum = 0
+        score_final = 0
+        for dt in student.data[:-1]:
             correct_count = 0
-            score_unit = exam_vars.dict_score_unit.get(field, 1.5)
-            for idx, ans in enumerate(answer):
-                correct_count += 1 if ans == answer_official[field][idx] else 0
-            score[field] = correct_count * score_unit
-        score[exam_vars.final_field] = exam_vars.get_final_score(score)
-        add_obj_to_model_update_data(
-            score_data, student, {'score': score}, update_fields)
+            score_unit = exam_vars.get_score_unit(dt[0])
+            for idx, ans_student in enumerate(dt[-1]):
+                ans_official = answer_official[dt[0]][idx]
+                if 1 <= ans_official <= 5:
+                    is_correct = ans_student == ans_official
+                else:
+                    ans_official_list = [int(digit) for digit in str(ans_official)]
+                    is_correct = ans_student in ans_official_list
+                correct_count += 1 if is_correct else 0
+
+            score = correct_count * score_unit
+            dt[2] = score
+            score_lists['total'][dt[0]].append(score)
+            score_lists[student.department][dt[0]].append(score)
+
+            if exam_vars.is_psat:
+                score_sum += score if dt[0] != 'heonbeob' else 0
+            elif exam_vars.is_police:
+                score_sum += score
+
+        if exam_vars.is_psat:
+            score_final = round(score_sum / 3, 1)
+        elif exam_vars.is_police:
+            score_final = score_sum
+        student.data[-1][2] = score_final
+        score_lists['total'][exam_vars.final_field].append(score_final)
+        score_lists[student.department][exam_vars.final_field].append(score_final)
+
+        score_data['update_list'].append(student)
+        score_data['update_count'] += 1
 
     create_or_update_model(exam_vars.student_model, update_fields, score_data)
-    return total_answer_lists
+    return score_lists
 
 
-def update_rank_data(exam_vars: CommandScoreExamVars, update_fields):
+def update_student_model_for_rank(
+        exam_vars: CommandScoreExamVars, score_lists: dict, update_fields: list):
     rank_data = get_empty_model_data()
-    qs_student = exam_vars.qs_student
-    for student in qs_student:
-        qs_all_score_department = qs_student.filter(department=student.department)
-        total_rank = get_statistics_data(qs_student, 'total', student)
-        department_rank = get_statistics_data(qs_all_score_department, 'department', student)
-        stat_dict = dict(total_rank, **department_rank)
-        add_obj_to_model_update_data(rank_data, student, stat_dict, update_fields)
-
-    create_or_update_model(exam_vars.student_model, update_fields, rank_data)
-
-
-def get_statistics_data(qs_student, stat_type: str, student=None) -> dict:
-    score = {}
-    participants = {}
-    rank = {}
-
-    queryset = qs_student.values('score')
-    if stat_type == 'department':
-        queryset = qs_student.filter(department=student.department).values('score')
-
-    for field, value in student.score.items():
-        score[field] = []
-        for qs in queryset:
-            if field in qs['score']:
-                score[field].append(qs['score'][field])
-
-        participants[field] = len(score[field])
-        if field in student.score:
-            sorted_score = sorted(score[field], reverse=True)
-            rank[field] = sorted_score.index(student.score[field]) + 1
-
-    return {
-        f'rank_{stat_type}': rank,
-        f'participants_{stat_type}': participants,
-    }
-
-
-def update_new_rank_data(exam_vars: CommandScoreExamVars, update_fields):
-    qs_student = exam_vars.qs_student
-    score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'sum']
-    scores_total = get_scores(exam_vars, qs_student)
-    scores: dict[str, dict[str, dict[str, list]]] = {
-        'all': {'total': scores_total['all'], 'department': {}},
-    }
-    rank_data = get_empty_model_data()
-    for student in qs_student:
-        scores_department = get_scores(exam_vars, qs_student, student.department)
-        scores['all']['department'] = scores_department['all']
+    for student in exam_vars.qs_student:
         rank = {
-            'all': {
-                'total': {field: 0 for field in score_fields},
-                'department': {field: 0 for field in score_fields},
-            },
+            'total': {fld: 0 for fld in exam_vars.all_score_fields},
+            'department': {fld: 0 for fld in exam_vars.all_score_fields},
         }
-        for field in score_fields:
-            if field in student.score:
-                score_student = student.score[field]
-                rank['all']['total'][field] = (
-                        scores['all']['total'][field].index(score_student) + 1)
-                rank['all']['department'][field] = (
-                        scores['all']['department'][field].index(score_student) + 1)
+        for idx, fld in enumerate(exam_vars.all_score_fields):
+            for dt in student.data:
+                if fld == dt[0]:
+                    rank['total'][fld] = (score_lists['total'][fld].index(dt[2]) + 1)
+                    rank['department'][fld] = (score_lists[student.department][fld].index(dt[2]) + 1)
         add_obj_to_model_update_data(
             rank_data, student, {'rank': rank}, update_fields)
 
     create_or_update_model(exam_vars.student_model, update_fields, rank_data)
 
 
-def get_scores(
-        exam_vars: CommandScoreExamVars, qs_student, department: str | None = None
-) -> dict:
-    score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'sum']
-    if department:
-        qs_student = qs_student.filter(department=department)
-
-    scores = {'all': {field: [] for field in score_fields}}
-    for field in score_fields:
-        for student in qs_student:
-            scores['all'][field].append(student.score[field])
-    sorted_scores = {
-        'all': {field: sorted(scores['all'][field], reverse=True) for field in score_fields},
-    }
-    return sorted_scores
-
-
-def update_participants(exam_vars: CommandScoreExamVars, update_fields):
-    qs_student = exam_vars.qs_student
-    score_fields = exam_vars.score_fields
-    departments = exam_vars.departments
+def update_exam_model_for_participants(exam_vars: CommandScoreExamVars, update_fields: list):
     exam_model_data = get_empty_model_data()
+    participants = {'total': 0}
+    participants.update({d_id: 0 for d_id, _ in enumerate(exam_vars.all_departments)})
 
-    participants = {'all': {'total': {fld: 0 for fld in score_fields}}}
-    participants['all'].update({
-        d_id: {fld: 0 for fld in score_fields} for d_id, _ in enumerate(departments, start=1)
-    })
-
-    for student in qs_student:
-        d_id = departments.index(student.department) + 1
-        for fld in score_fields:
-            participants['all']['total'][fld] += 1
-            participants['all'][d_id][fld] += 1
+    for student in exam_vars.qs_student:
+        d_id = exam_vars.all_departments.index(student.department)
+        participants['total'] += 1
+        participants[d_id] += 1
     add_obj_to_model_update_data(
         exam_model_data, exam_vars.exam, {'participants': participants}, update_fields)
     create_or_update_model(exam_vars.exam_model, update_fields, exam_model_data)
 
 
-def update_statistics(exam_vars, update_fields):
-    score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'sum']
-    scores_total = get_scores(exam_vars, exam_vars.qs_student)
-    scores: dict[str, dict[str, dict[str, list]]] = {
-        'all': {'total': scores_total['all']},
-    }
+def update_exam_model_for_statistics(
+        exam_vars: CommandScoreExamVars, all_score_lists: dict, update_fields: list):
     statistics: dict[str, dict[str | int, dict]] = {
-        'all': {
-            'total': {field: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for field in score_fields},
-        },
+        'total': {fld: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for fld in exam_vars.all_score_fields},
     }
+    statistics.update({
+        dep: {
+            fld: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for fld in exam_vars.all_score_fields
+        } for dep in exam_vars.all_departments
+    })
 
-    departments = exam_vars.departments
-    for d_id, department in enumerate(departments, start=1):
-        scores_department = get_scores(exam_vars, exam_vars.qs_student, department)
-        scores['all'][d_id] = scores_department['all']
-        statistics['all'][d_id] = {field: {} for field in score_fields}
+    for dep, val in all_score_lists.items():
+        for fld, score_list in val.items():
+            participants = len(score_list)
+            top_10 = max(1, int(participants * 0.1))
+            top_20 = max(1, int(participants * 0.2))
 
-    for key, value in scores.items():
-        for department, scores_dict in value.items():
-            for field, score_list in scores_dict.items():
-                participants = len(score_list)
-                top_10 = max(1, int(participants * 0.1))
-                top_20 = max(1, int(participants * 0.2))
-
-                if score_list:
-                    statistics[key][department][field]['max'] = round(score_list[0], 1)
-                    statistics[key][department][field]['t10'] = round(score_list[top_10 - 1], 1)
-                    statistics[key][department][field]['t20'] = round(score_list[top_20 - 1], 1)
-                    statistics[key][department][field]['avg'] = round(
-                        sum(score_list) / participants if participants else 0, 1)
+            if score_list:
+                statistics[dep][fld]['max'] = round(score_list[0], 1)
+                statistics[dep][fld]['t10'] = round(score_list[top_10 - 1], 1)
+                statistics[dep][fld]['t20'] = round(score_list[top_20 - 1], 1)
+                statistics[dep][fld]['avg'] = round(
+                    sum(score_list) / participants if participants else 0, 1)
 
     statistics_data = get_empty_model_data()
     add_obj_to_model_update_data(
@@ -326,22 +235,25 @@ def update_statistics(exam_vars, update_fields):
     create_or_update_model(exam_vars.exam_model, update_fields, statistics_data)
 
 
-def update_answer_count(exam_vars, update_fields, total_answer_lists):
-    answer_official = exam_vars.answer_official
+def update_answer_count_model(
+        exam_vars: CommandScoreExamVars, update_fields: list, total_answer_lists: dict):
+    answer_official = exam_vars.exam.answer_official
     total_count: dict[str, list[dict[str, str | int]]] = {}
-    for field in exam_vars.subject_fields:
-        ans_official = answer_official[field] if field in answer_official else None
-        total_count[field] = []
-        problem_count = exam_vars.get_problem_count(field)
+
+    for fld in exam_vars.all_answer_fields:
+        ans_official = answer_official[fld] if fld in answer_official else None
+        total_count[fld] = []
+        problem_count = exam_vars.get_problem_count(fld)
         for i in range(1, problem_count + 1):
             answer = ans_official[i - 1] if ans_official else 0
-            problem_info = exam_vars.get_problem_info(field, i)
+            problem_info = exam_vars.get_problem_info(fld, i)
             count_fields_info = {fld: 0 for fld in exam_vars.all_count_fields}
             append_dict = dict(problem_info, **count_fields_info, **{'answer': answer})
-            total_count[field].append(append_dict)
-    for field, answer_lists in total_answer_lists.items():
+            total_count[fld].append(append_dict)
+
+    for fld, answer_lists in total_answer_lists.items():
         if answer_lists:
-            problem_count = exam_vars.get_problem_count(field)
+            problem_count = exam_vars.get_problem_count(fld)
             distributions = [Counter() for _ in range(problem_count)]
             for lst in answer_lists:
                 for i, value in enumerate(lst):
@@ -355,95 +267,89 @@ def update_answer_count(exam_vars, update_fields, total_answer_lists):
                 count_dict['count_multiple'] = counter.get('count_multiple', 0)
                 count_total = sum(value for value in count_dict.values())
                 count_dict['count_total'] = count_total
-                total_count[field][index].update(count_dict)
+                total_count[fld][index].update(count_dict)
 
     answer_count_data = get_empty_model_data()
-    for field in exam_vars.subject_fields:
-        for count in total_count[field]:
-            if count['count_total']:
-                problem_info = exam_vars.get_problem_info(count['subject'], count['number'])
+    for fld in exam_vars.all_answer_fields:
+        for cnt in total_count[fld]:
+            if cnt['count_total']:
+                problem_info = exam_vars.get_problem_info(cnt['subject'], cnt['number'])
                 update_model_data(
                     answer_count_data, exam_vars.answer_count_model,
-                    problem_info, count, update_fields)
+                    problem_info, cnt, update_fields)
     create_or_update_model(exam_vars.answer_count_model, update_fields, answer_count_data)
 
 
-def get_total_answer_lists_by_category(exam_vars: CommandScoreExamVars, qs_student):
-    subject_fields = exam_vars.subject_fields
-    rank_list = exam_vars.rank_list
-    final_field = exam_vars.final_field
-    participants = exam_vars.exam.participants
-    total_answer_lists_by_category: dict[str, dict[str, dict[str, list]]] = {
-        'all': {rnk: {fld: [] for fld in subject_fields} for rnk in rank_list},
+def get_answer_lists_by_category(exam_vars: CommandScoreExamVars):
+    answer_lists_by_category: dict[str, dict[str, list]] = {
+        rnk: {fld: [] for fld in exam_vars.all_answer_fields} for rnk in exam_vars.rank_list
     }
-    participants_all = participants['all']['total'][final_field]
+    participants = exam_vars.exam.participants['total']
 
-    for student in qs_student:
-        rank_all_student = student.rank['all']['total'][final_field]
-        rank_ratio_all = None
-        if participants_all:
-            rank_ratio_all = rank_all_student / participants_all
+    for student in exam_vars.qs_student:
+        rank_student = student.rank['total'][exam_vars.final_field]
+        rank_ratio = None
+        if participants:
+            rank_ratio = rank_student / participants
 
-        for field in subject_fields:
-            ans_student = student.answer[field]
+        for idx, fld in enumerate(exam_vars.all_answer_fields):
+            ans_student = student.data[idx][-1]
             top_rank_threshold = 0.27
             mid_rank_threshold = 0.73
 
-            def append_answer(catgry: str, rank: str):
-                total_answer_lists_by_category[catgry][rank][field].append(ans_student)
+            def append_answer(rnk: str):
+                answer_lists_by_category[rnk][fld].append(ans_student)
 
-            append_answer('all', 'all_rank')
-            if rank_ratio_all and 0 <= rank_ratio_all <= top_rank_threshold:
-                append_answer('all', 'top_rank')
-            elif rank_ratio_all and top_rank_threshold < rank_ratio_all <= mid_rank_threshold:
-                append_answer('all', 'mid_rank')
-            elif rank_ratio_all and mid_rank_threshold < rank_ratio_all <= 1:
-                append_answer('all', 'low_rank')
+            append_answer('all_rank')
+            if rank_ratio and 0 <= rank_ratio <= top_rank_threshold:
+                append_answer('top_rank')
+            elif rank_ratio and top_rank_threshold < rank_ratio <= mid_rank_threshold:
+                append_answer('mid_rank')
+            elif rank_ratio and mid_rank_threshold < rank_ratio <= 1:
+                append_answer('low_rank')
 
-    return total_answer_lists_by_category
+    return answer_lists_by_category
 
 
 def get_total_count_dict_by_category(exam_vars: CommandScoreExamVars, total_answer_lists: dict):
-    total_count_dict = {}
-    for field in exam_vars.subject_fields:
-        total_count_dict[field] = []
+    total_count_dict: dict[str, list[dict]] = {}
+    for fld in exam_vars.all_answer_fields:
+        total_count_dict[fld] = []
         for number in range(1, 41):
-            problem_info = exam_vars.get_problem_info(field, number)
+            problem_info = exam_vars.get_problem_info(fld, number)
             problem_info['all'] = {rank: [] for rank in exam_vars.rank_list}
-            total_count_dict[field].append(problem_info)
+            total_count_dict[fld].append(problem_info)
 
-    for category, value1 in total_answer_lists.items():
-        for rank, value2 in value1.items():
-            for field, answer_lists in value2.items():
-                if answer_lists:
-                    distributions = [Counter() for _ in range(40)]
-                    for lst in answer_lists:
-                        for i, value in enumerate(lst):
-                            if value > 5:
-                                distributions[i]['count_multiple'] += 1
-                            else:
-                                distributions[i][value] += 1
+    for rank, value2 in total_answer_lists.items():
+        for fld, answer_lists in value2.items():
+            if answer_lists:
+                distributions = [Counter() for _ in range(40)]
+                for lst in answer_lists:
+                    for i, value in enumerate(lst):
+                        if value > 5:
+                            distributions[i]['count_multiple'] += 1
+                        else:
+                            distributions[i][value] += 1
 
-                    for idx, counter in enumerate(distributions):
-                        count_list = [counter.get(i, 0) for i in range(6)]
-                        count_total = sum(count_list[1:])
-                        count_list.extend([counter.get('count_multiple', 0), count_total])
-                        total_count_dict[field][idx][category][rank] = count_list
+                for idx, counter in enumerate(distributions):
+                    count_list = [counter.get(i, 0) for i in range(6)]
+                    count_total = sum(count_list[1:])
+                    count_list.extend([counter.get('count_multiple', 0), count_total])
+                    total_count_dict[fld][idx]['all'][rank] = count_list
 
     return total_count_dict
 
 
-def update_total_answer_count_model_data(
-        exam_vars: CommandScoreExamVars, matching_fields: list, all_count_dict: dict):
+def update_answer_count_model_by_rank(
+        exam_vars: CommandScoreExamVars, all_count_dict: dict, matching_fields: list):
     answer_count_model_data = get_empty_model_data()
-    for field in exam_vars.subject_fields:
-        for data in all_count_dict[field]:
+    for fld in exam_vars.all_answer_fields:
+        for data in all_count_dict[fld]:
             problem_info = exam_vars.get_problem_info(data['subject'], data['number'])
             update_model_data(
                 answer_count_model_data, exam_vars.answer_count_model,
                 problem_info, data, matching_fields)
-    create_or_update_model(
-        exam_vars.answer_count_model, ['all'], answer_count_model_data)
+    create_or_update_model(exam_vars.answer_count_model, ['all'], answer_count_model_data)
 
 
 def create_or_update_model(model, update_fields: list, model_data: dict):

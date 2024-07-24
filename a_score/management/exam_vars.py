@@ -1,7 +1,8 @@
 import dataclasses
 import pandas as pd
+from django.db.models import QuerySet
 
-from a_score.models import prime_psat_models, prime_police_models
+import a_score.models as models
 
 
 @dataclasses.dataclass
@@ -11,202 +12,142 @@ class CommandScoreExamVars:
     exam_round: int
     file_name: str
 
+    default_count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4']
+    extra_count_fields = ['count_multiple', 'count_total']
+    rank_list = ['all_rank', 'top_rank', 'mid_rank', 'low_rank']
+    subject_to_field_dict = {
+        '언어논리': 'eoneo', '자료해석': 'jaryo', '상황판단': 'sanghwang',
+        '형사법': 'hyeongsa', '헌법': 'heonbeob',  # 전체 공통
+        '경찰학': 'gyeongchal', '범죄학': 'beomjoe',  # 일반 필수
+        '행정법': 'haengbeob', '행정학': 'haenghag', '민법총칙': 'minbeob',  # 일반 선택
+    }
+    field_to_subject_dict = {
+        'eoneo': '언어논리', 'jaryo': '자료해석', 'sanghwang': '상황판단',
+        'hyeongsa': '형사법', 'heonbeob': '헌법',  # 전체 공통
+        'gyeongchal': '경찰학', 'beomjoe': '범죄학',  # 일반 필수
+        'haengbeob': '행정법', 'haenghag': '행정학', 'minbeob': '민법총칙',  # 일반 선택
+    }
+    subject_vars = {
+        '언어': ('언어논리', 'eoneo'), '자료': ('자료해석', 'jaryo'),
+        '상황': ('상황판단', 'sanghwang'), '평균': ('PSAT 평균', 'psat_avg'),
+        '형사': ('형사학', 'hyeongsa'), '헌법': ('헌법', 'heonbeob'),
+        '경찰': ('경찰학', 'gyeongchal'), '범죄': ('범죄학', 'beomjoe'),
+        '민법': ('민법총칙', 'minbeob'), '행학': ('행정학', 'haenghag'),
+        '행법': ('행정법', 'haengbeob'), '총점': ('총점', 'sum'),
+    }
+
+    # psat vars
+    psat_exam_model = models.PrimePsatExam
+    psat_student_model = models.PrimePsatStudent
+    psat_answer_count_model = models.PrimePsatAnswerCount
+    psat_all_departments = [
+        '5급 일반행정', '5급 재경', '5급 기술', '5급 기타', '일반외교',
+        '7급 행정', '7급 기술', '지역인재 7급 행정', '지역인재 7급 기술', '기타 직렬'
+    ]
+
+    only_psat_fields = ['eoneo', 'jaryo', 'sanghwang']
+    psat_all_answer_fields = ['heonbeob'] + only_psat_fields
+    psat_final_field = 'psat_avg'
+    psat_all_score_fields = psat_all_answer_fields + [psat_final_field]
+
+    psat_count_fields = default_count_fields + ['count_5']
+    psat_all_count_fields = psat_count_fields + extra_count_fields
+    psat_score_unit = {'heonbeob': 4, 'eoneo': 2.5, 'jaryo': 2.5, 'sanghwang': 2.5}
+
+    # police vars
+    police_exam_model = models.PrimePoliceExam
+    police_student_model = models.PrimePoliceStudent
+    police_answer_count_model = models.PrimePoliceAnswerCount
+    police_all_departments = ['일반', '세무회계', '사이버']
+
+    police_common_subject_fields = ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe']
+    police_selection_subject_fields = ['minbeob', 'haenghag', 'haengbeob']
+    police_all_answer_fields = police_common_subject_fields + police_selection_subject_fields
+    police_final_field = 'sum'
+    police_all_score_fields = police_all_answer_fields + [police_final_field]
+
+    police_count_fields = default_count_fields
+    police_all_count_fields = police_count_fields + extra_count_fields
+    police_score_unit = {
+        'hyeongsa': 3, 'gyeongchal': 3, 'sebeob': 2, 'hoegye': 2, 'jeongbo': 2,
+        'sine': 2, 'haengbeob': 1, 'haenghag': 1, 'minbeob': 1,
+    }
+
     @property
-    def is_police(self):
+    def is_police(self) -> bool:
         return self.exam_type == 'police'
 
     @property
-    def is_psat(self):
+    def is_psat(self) -> bool:
         return self.exam_type == 'psat'
 
     @property
-    def exam_model(self):
-        default = {
-            'police': prime_police_models.PrimePoliceExam,
-            'psat': prime_psat_models.PrimePsatExam,
-        }
-        return default[self.exam_type]
+    def exam_model(self) -> models.PrimePsatExam | models.PrimePoliceExam:
+        return getattr(self, f'{self.exam_type}_exam_model')
 
     @property
-    def student_model(self):
-        default = {
-            'police': prime_police_models.PrimePoliceStudent,
-            'psat': prime_psat_models.PrimePsatStudent,
-        }
-        return default[self.exam_type]
+    def student_model(self) -> models.PrimePsatStudent | models.PrimePoliceStudent:
+        return getattr(self, f'{self.exam_type}_student_model')
 
     @property
-    def answer_count_model(self):
-        default = {
-            'police': prime_police_models.PrimePoliceAnswerCount,
-            'psat': prime_psat_models.PrimePsatAnswerCount,
-        }
-        return default[self.exam_type]
+    def answer_count_model(self)-> models.PrimePsatAnswerCount | models.PrimePoliceAnswerCount:
+        return getattr(self, f'{self.exam_type}_answer_count_model')
 
     @property
-    def exam_info(self):
+    def exam_info(self) -> dict:
         return {'year': self.exam_year, 'round': self.exam_round}
 
     @property
-    def exam(self):
+    def exam(self) -> models.PrimePsatExam | models.PrimePoliceExam:
         return self.exam_model.objects.filter(**self.exam_info).first()
 
     @property
-    def departments(self) -> list:
-        default = {
-            'police': ['일반', '세무회계', '사이버'],
-            'psat': [
-                '5급 일반행정', '5급 재경', '5급 기술', '5급 기타',
-                '7급 행정', '7급 기술', '일반외교',
-                '지역인재 7급 행정', '지역인재 7급 기술', '기타 직렬'
-            ]
-        }
-        return default[self.exam_type]
+    def qs_student(self) -> QuerySet:
+        return self.student_model.objects.filter(**self.exam_info)
 
     @property
-    def subject_fields(self):
-        default = {
-            'police': ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', 'minbeob', 'haenghag', 'haengbeob'],
-            'psat': ['heonbeob', 'eoneo', 'jaryo', 'sanghwang'],
-        }
-        return default[self.exam_type]
+    def all_departments(self) -> list:
+        return getattr(self, f'{self.exam_type}_all_departments')
 
     @property
-    def only_psat_fields(self):
-        return ['eoneo', 'jaryo', 'sanghwang']
+    def all_answer_fields(self) -> list:
+        return getattr(self, f'{self.exam_type}_all_answer_fields')
 
     @property
-    def final_field(self):
-        default = {'police': 'sum', 'psat': 'psat_avg'}
-        return default[self.exam_type]
-
-    def get_final_score(self, score):
-        if self.is_police:
-            return sum(s for s in score.values())
-        if self.is_psat:
-            sum_list = [score[fld] for fld in self.only_psat_fields if fld in score]
-            return round(sum(sum_list) / 3, 1) if sum_list else 0
+    def final_field(self) -> str:
+        return getattr(self, f'{self.exam_type}_final_field')
 
     @property
-    def score_fields(self):
-        default = {
-            'police': ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe', 'minbeob', 'haenghag', 'haengbeob', 'sum'],
-            'psat': ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg'],
-        }
-        return default[self.exam_type]
+    def all_score_fields(self) -> list:
+        return getattr(self, f'{self.exam_type}_all_score_fields')
 
     @property
-    def common_subject_fields(self):
-        if self.is_police:
-            return ['hyeongsa', 'heonbeob', 'gyeongchal', 'beomjoe']
+    def all_count_fields(self) -> list:
+        return getattr(self, f'{self.exam_type}_all_count_fields')
 
-    @property
-    def subject_vars(self):
-        default = {
-            'police': {
-                '형사': ('형사학', 'hyeongsa'), '헌법': ('헌법', 'heonbeob'),
-                '경찰': ('경찰학', 'gyeongchal'), '범죄': ('범죄학', 'beomjoe'),
-                '민법': ('민법총칙', 'minbeob'), '행학': ('행정학', 'haenghag'),
-                '행법': ('행정법', 'haengbeob'), '총점': ('총점', 'sum'),
-            },
-            'psat': {
-                '헌법': ('헌법', 'heonbeob'), '언어': ('언어논리', 'eoneo'), '자료': ('자료해석', 'jaryo'),
-                '상황': ('상황판단', 'sanghwang'), '평균': ('PSAT 평균', 'psat_avg'),
-            },
-        }
-        return default[self.exam_type]
+    def get_problem_info(self, field: str, number: int) -> dict:
+        return dict(self.exam_info, **{'subject': field, 'number': number})
 
-    @property
-    def subject_fields_dict(self):
-        default = {
-            'police': {
-                '형사법': 'hyeongsa', '헌법': 'heonbeob',  # 전체 공통
-                '경찰학': 'gyeongchal', '범죄학': 'beomjoe',  # 일반 필수
-                '행정법': 'haengbeob', '행정학': 'haenghag', '민법총칙': 'minbeob',  # 일반 선택
-            },
-            'psat': {
-                '헌법': 'heonbeob', '언어논리': 'eoneo', '자료해석': 'jaryo', '상황판단': 'sanghwang',
-            },
-        }
-        return default[self.exam_type]
+    def get_police_student_score_fields(self, selection) -> list:
+            return self.police_common_subject_fields + [selection] + [self.police_final_field]
 
-    @property
-    def count_fields(self):
-        default = {
-            'police': ['count_0', 'count_1', 'count_2', 'count_3', 'count_4'],
-            'psat': ['count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5'],
-        }
-        return default[self.exam_type]
+    def get_problem_count(self, field) -> int:
+        return 25 if self.is_psat and field == 'heonbeob' else 40
 
-    @property
-    def all_count_fields(self):
-        return self.count_fields + ['count_multiple', 'count_total']
+    def get_score_unit(self, field) -> float | int:
+        return getattr(self, f'{self.exam_type}_score_unit').get(field, 1.5)
 
-    def get_problem_count(self, field):
-        if self.is_psat and field == 'heonbeob':
-            return 25
-        return 40
-
-    @property
-    def dict_score_unit(self):
-        default = {
-            'police': {
-                'hyeongsa': 3, 'gyeongchal': 3,
-                'sebeob': 2, 'hoegye': 2, 'jeongbo': 2, 'sine': 2,
-                'haengbeob': 1, 'haenghag': 1, 'minbeob': 1,
-            },
-            'psat': {'heonbeob': 4, 'eoneo': 2.5, 'jaryo': 2.5, 'sanghwang': 2.5},
-        }
-        return default[self.exam_type]
-
-    @property
-    def rank_list(self): return ['all_rank', 'top_rank', 'mid_rank', 'low_rank']
-
-    @property
-    def answer_official(self) -> dict[str, list]:
+    def get_answer_official(self) -> dict[str, list]:
         df = pd.read_excel(self.file_name, sheet_name='정답', header=0, index_col=0)
         df.fillna(value=0, inplace=True)
         answer_official = {}
         for subject, answers in df.items():
-            field = self.subject_fields_dict[subject]
+            field = self.get_field_name(subject)
             answer_official[field] = [int(ans) for ans in answers if ans]
         return answer_official
 
-    @property
-    def qs_student(self):
-        return self.student_model.objects.filter(**self.exam_info)
+    def get_field_name(self, subject) -> str:
+        return self.subject_to_field_dict[subject]
 
-    def get_problem_info(self, field: str, number: int):
-        return {
-            'year': self.exam_year, 'round': self.exam_round,
-            'subject': field, 'number': number,
-        }
-
-
-data1 = [
-    {'type': 'input', 'field': 'heonbeob', 'sub': '헌법', 'subject': '헌법', 'answer': [], 'confirmed': False},
-    {'type': 'input', 'field': 'eoneo', 'sub': '언어', 'subject': '언어논리', 'answer': [], 'confirmed': False},
-    {'type': 'input', 'field': 'jaryo', 'sub': '자료', 'subject': '자료해석', 'answer': [], 'confirmed': False},
-    {'type': 'input', 'field': 'sanghwang', 'sub': '상황', 'subject': '상황판단', 'answer': [], 'confirmed': False},
-    {'type': 'final', 'field': 'psat_avg', 'sub': '평균', 'subject': 'PSAT 평균', 'confirmed': False},
-]
-data2 = {
-    'heonbeob': {'answer': [], 'confirmed': False},
-    'eoneo': {'answer': [], 'confirmed': False},
-    'jaryo': {'answer': [], 'confirmed': False},
-    'sanghwang': {'answer': [], 'confirmed': False},
-}
-data3 = [
-    ['heonbeob', False, 0, []],
-    ['eoneo', False, 0, []],
-    ['jaryo', False, 0, []],
-    ['sanghwang', False, 0, []],
-    ['psat_avg', False, 0, []],
-]
-data4 = [
-    ['heonbeob', [4, 4, 3, 1, 4, 1, 4, 4, 2, 2, 3, 1, 1, 3, 4, 2, 3, 2, 3, 4, 3, 2, 3, 2, 1], False, 0],
-    ['eoneo', [3, 3, 3, 5, 1, 5, 3, 2, 2, 2, 3, 1, 2, 3, 3, 3, 5, 2, 2, 5, 5, 5, 5, 5, 4, 5, 4, 5, 1, 4, 2, 3, 4, 2, 3, 3, 4, 3, 5, 4], False, 0],
-    ['jaryo', [2, 3, 2, 3, 3, 4, 4, 1, 4, 1, 1, 2, 1, 4, 4, 3, 2, 4, 1, 3, 5, 1, 4, 4, 1, 4, 5, 4, 2, 3, 4, 2, 5, 2, 5, 4, 1, 5, 5, 1], False, 0],
-    ['sanghwang', [4, 3, 2, 1, 2, 5, 5, 4, 4, 5, 5, 1, 4, 2, 3, 5, 5, 1, 1, 2, 1, 2, 4, 1, 2, 3, 4, 2, 3, 4, 2, 1, 4, 3, 3, 4, 4, 5, 4, 2], False, 0],
-    ['psat_avg', [], False, 0],
-]
+    def get_subject_name(self, field) -> str:
+        return self.field_to_subject_dict[field]
