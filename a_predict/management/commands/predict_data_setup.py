@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import F
 
 from a_predict import utils
-from a_predict.views.base_info import PsatExamVars
+from a_predict.views.old_base_info import PsatExamVars
 from predict import models as old_predict_models
 
 

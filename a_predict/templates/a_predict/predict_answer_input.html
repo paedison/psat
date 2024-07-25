@@ -92,8 +92,8 @@
                         <button class="btn btn-primary prevent_double_click" type="submit"
                                 data-bs-toggle="modal" data-bs-target="#modalContainer"
                                 hx-target="#modalContainer" hx-push-url="false" hx-swap="innerHTML"
-                                hx-headers='{"answer-confirm":true}' hx-post="">
-                            답안 제출
+                                hx-post="{{ url_answer_confirm }}">
+                            {{ subject }} 답안 제출
                         </button>
                     </form>
                     <div class="text-center">

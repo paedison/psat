@@ -469,6 +469,7 @@ class Student(TimeRecordField, RemarksField, YearExamRoundField, ChoiceMethod):
     password = models.CharField(max_length=10, null=True, blank=True, verbose_name='비밀번호')
     prime_id = models.CharField(max_length=15, blank=True, null=True, verbose_name='프라임 ID')
 
+    data = models.JSONField(default=list, verbose_name='답안 자료')
     answer = models.JSONField(default=dict, verbose_name='답안')
     answer_count = models.JSONField(default=dict, verbose_name='답안 개수')
     answer_confirmed = models.JSONField(default=dict, verbose_name='답안 확정')

@@ -4,7 +4,7 @@ import django.db.utils
 from django.db import transaction
 
 from .get_queryset import get_department_dict
-from ..views.base_info import PsatExamVars, PoliceExamVars
+from a_predict.views.old_base_info import PsatExamVars, PoliceExamVars
 
 __all__ = [
     'get_default_dict',

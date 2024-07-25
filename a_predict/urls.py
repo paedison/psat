@@ -6,8 +6,10 @@ app_name = 'predict'
 
 admin_patterns = [
     path('', admin_views.list_view, name='admin-list'),
-    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/', admin_views.detail_view, name='admin-detail'),
-    path('update/<int:exam_year>/<str:exam_exam>/<int:exam_round>/', admin_views.update_view, name='admin-update'),
+    path('<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         admin_views.detail_view, name='admin-detail'),
+    path('update/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         admin_views.update_view, name='admin-update'),
 ]
 
 # admin_patterns = [
@@ -24,11 +26,13 @@ admin_patterns = [
 
 urlpatterns = [
     path('', normal_views.index_view, name='index'),
-    path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+    path('<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
          normal_views.detail_view, name='detail'),
-    path('student/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+    path('student/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
          normal_views.student_create_view, name='student-create'),
-    path('answer/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
+    path('answer/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
          normal_views.answer_input_view, name='answer-input'),
+    path('answer/confirm/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
+         normal_views.answer_confirm_view, name='answer-confirm'),
     path('admin/', include(admin_patterns)),
 ]

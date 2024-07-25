@@ -1,6 +1,6 @@
 from .command_utils import get_default_dict
 from .get_queryset import get_department_dict
-from ..views.base_info import PsatExamVars
+from a_predict.views.old_base_info import PsatExamVars
 
 __all__ = [
     'get_participants', 'get_rank_data', 'get_confirmed_scores', 'get_statistics',

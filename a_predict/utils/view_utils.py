@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.urls import reverse
 
-from a_predict.views.base_info import PsatExamVars, PoliceExamVars, AdminPoliceExamVars
+from a_predict.views.old_base_info import PsatExamVars, PoliceExamVars, AdminPoliceExamVars
 from common.constants import icon_set_new
 
 __all__ = [

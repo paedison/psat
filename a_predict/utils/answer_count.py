@@ -1,6 +1,6 @@
 from collections import Counter
 
-from a_predict.views.base_info import PsatExamVars
+from a_predict.views.old_base_info import PsatExamVars
 
 __all__ = [
     'get_all_count_dict', 'get_total_count_dict_by_category', 'get_total_answer_lists_by_category'

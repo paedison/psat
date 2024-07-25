@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.db.models import F
 
-from ..views.base_info import PsatExamVars, PoliceExamVars
+from a_predict.views.old_base_info import PsatExamVars, PoliceExamVars
 from common.utils import HtmxHttpRequest
 
 __all__ = [

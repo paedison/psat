@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from a_predict import utils
-from a_predict.views.base_info import PsatExamVars, AdminPoliceExamVars
+from a_predict.views.old_base_info import PsatExamVars, AdminPoliceExamVars
 
 
 class Command(BaseCommand):
