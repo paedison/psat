@@ -12,7 +12,7 @@ from .. import forms, models
 
 @dataclasses.dataclass
 class PredictExamVars:
-    request: HtmxHttpRequest
+    request: HtmxHttpRequest | None
     exam_type: str
     exam_year: int
     exam_exam: str
@@ -137,25 +137,9 @@ class PredictExamVars:
         }
 
     @property
-    def exam(self) -> Type[models.PsatExam | models.PoliceExam]:
-        return self.exam_model.objects.filter(**self.exam_info).first()
-
-    @property
-    def all_units(self) -> list:
-        return self.unit_model.objects.filter(exam=self.exam_exam).values_list('name', flat=True)
-
-    @property
-    def qs_department(self) -> QuerySet:
-        return self.department_model.objects.filter(exam=self.exam_exam).order_by('order')
-
-    @property
     def department_dict(self) -> dict[str, int]:
         qs_department = self.department_model.objects.filter(exam=self.exam_exam).order_by('order')
         return {department.name: department.id for department in qs_department}
-
-    @property
-    def qs_student(self) -> QuerySet:
-        return self.student_model.objects.filter(**self.exam_info)
 
     @property
     def student(self) -> Type[models.PsatStudent | models.PoliceStudent]:
@@ -227,6 +211,12 @@ class PredictExamVars:
 
     @property
     def score_fields(self) -> list:
+        if self.is_admin:
+            return [self.final_field] + self.answer_fields
+        return self.answer_fields + [self.final_field]
+
+    @property
+    def admin_score_fields(self) -> list:
         if self.is_admin:
             return [self.final_field] + self.answer_fields
         return self.answer_fields + [self.final_field]
@@ -320,22 +310,33 @@ class PredictExamVars:
             'url_answer_input': self.url_answer_input,
         }
 
+    def get_exam(self) -> models.PsatExam | models.PoliceExam:
+        return self.exam_model.objects.filter(**self.exam_info).first()
+
+    def get_all_units(self) -> list:
+        return self.unit_model.objects.filter(exam=self.exam_exam).values_list('name', flat=True)
+
+    def get_qs_department(self, unit=None) -> QuerySet:
+        if unit:
+            return self.department_model.objects.filter(exam=self.exam_exam, unit=unit).order_by('order')
+        return self.department_model.objects.filter(exam=self.exam_exam).order_by('order')
+
+    def get_qs_student(self) -> QuerySet:
+        return self.student_model.objects.filter(**self.exam_info)
+
+    def get_student(self) -> models.PsatStudent | models.PoliceStudent:
+        if self.request.user.is_authenticated:
+            return self.student_model.objects.filter(**self.exam_info, user=self.request.user).first()
+
     def get_location(self, student) -> models.PsatLocation:
         if self.location_model:
             serial = int(student.serial)
             return self.location_model.objects.filter(
                 **self.exam_info, serial_start__lte=serial, serial_end__gte=serial).first()
 
-    def get_exam(self) -> models.PsatExam | models.PoliceExam:
-        return self.exam_model.objects.filter(**self.exam_info).first()
-
-    def get_qs_department(self, unit=None) -> models.PsatDepartment | models.PoliceDepartment:
-        if unit:
-            return self.department_model.objects.filter(exam=self.exam_exam, unit=unit).order_by('order')
-        return self.department_model.objects.filter(exam=self.exam_exam).order_by('order')
-
-    def get_student(self) -> models.PsatStudent | models.PoliceStudent:
-        return self.student_model.objects.filter(**self.exam_info, user=self.request.user).first()
+    def get_qs_answer_count(self) -> QuerySet:
+        return self.answer_count_model.objects.filter(**self.exam_info).annotate(
+            no=F('number')).order_by('subject', 'number')
 
     def get_problem_info(self, field: str, number: int) -> dict:
         return dict(self.exam_info, **{'subject': field, 'number': number})
@@ -513,7 +514,7 @@ class PredictExamVars:
             })
         return info_answer_student
 
-    def get_stat_data(self, exam, student, stat_type: str, filtered: bool = False) -> list:
+    def get_stat_data(self, exam, qs_student, student, stat_type: str, filtered: bool = False) -> list:
         score_list = {fld: [] for fld in self.score_fields}
         stat_data = []
         for fld_idx, fld in enumerate(self.score_fields):
@@ -532,7 +533,6 @@ class PredictExamVars:
             filter_exp['department'] = student.department
         if filtered:
             filter_exp['answer_all_confirmed_at__lte'] = exam.answer_official_opened_at
-        qs_student = self.qs_student.filter(**filter_exp)
 
         for fld_idx, fld in enumerate(self.score_fields):
             for stu in qs_student:
@@ -565,7 +565,7 @@ class PredictExamVars:
                 return self.url_answer_input[idx]
         return self.url_detail
 
-    def update_exam_participants(self, exam):
+    def update_exam_participants(self, exam, qs_student):
         department_dict = self.department_dict
         participants = {
             'all': {'total': {fld: 0 for fld in self.score_fields}},
@@ -578,7 +578,7 @@ class PredictExamVars:
             d_id: {fld: 0 for fld in self.score_fields} for d_id in department_dict.values()
         })
 
-        for student in self.qs_student:
+        for student in qs_student:
             d_id = department_dict[student.department]
             for fld_idx, dt in enumerate(student.data):
                 if dt[1]:

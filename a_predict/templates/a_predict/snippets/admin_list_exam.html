@@ -33,7 +33,7 @@
                             <td class="text-nowrap p-2">
                                 {{ obj.start_datetime|date:'Y.n.j(D)' }}
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
-                                   href="{% url 'predict:admin-detail' obj.year obj.exam obj.round %}">
+                                   href="{% url 'predict:admin-detail' obj.type obj.year obj.exam obj.round %}">
                                     클릭
                                 </a>
                             </td>

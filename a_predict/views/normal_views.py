@@ -81,23 +81,25 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
         return render(request, 'a_predict/snippets/update_info_answer.html', context)
 
     # score_all / score_filter
-    exam_vars.stat = get_stat_context(exam_vars, exam, student)
+    qs_student = exam_vars.get_qs_student()
+    stat = get_stat_context(exam_vars, exam, qs_student, student)
+    exam_vars.update_exam_participants(exam, qs_student)
+    exam_vars.update_rank(student, **stat)
     if is_main or is_score_all:
-        context = update_context_data(context, **exam_vars.stat)
+        context = update_context_data(context, **stat)
     if is_score_all:
         return render(request, 'a_predict/snippets/update_sheet_score.html', context)
 
     return render(request, 'a_predict/predict_normal_detail.html', context)
 
 
-def get_stat_context(exam_vars, exam, student):
-    exam_vars.update_exam_participants(exam)
+def get_stat_context(exam_vars, exam, qs_student, student):
     stat = {}
     for stat_type in ['total', 'department']:
         for filtered in [False, True]:
             category = 'filtered' if filtered else 'all'
-            stat[f'stat_{stat_type}_{category}'] = exam_vars.get_stat_data(exam, student, stat_type, filtered)
-    exam_vars.update_rank(student, **stat)
+            stat[f'stat_{stat_type}_{category}'] = exam_vars.get_stat_data(
+                exam, qs_student, student, stat_type, filtered)
     return stat
 
 
@@ -111,7 +113,7 @@ def student_create_view(request: HtmxHttpRequest, **kwargs):
     context = update_context_data(
         info=exam_vars.info, exam=exam, current_time=timezone.now(),
         title='Predict', sub_title=exam_vars.sub_title,
-        icon_menu=exam_vars.icon_menu, units=exam_vars.all_units,
+        icon_menu=exam_vars.icon_menu, units=exam_vars.get_all_units(),
     )
     if exam_vars.exam_exam == '경위':
         context = update_context_data(context, selection_choice=exam_vars.selection_choice)
