@@ -210,8 +210,6 @@ class PredictExamVars:
 
     @property
     def score_fields(self) -> list:
-        if self.is_admin:
-            return [self.final_field] + self.answer_fields
         return self.answer_fields + [self.final_field]
 
     @property
