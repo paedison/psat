@@ -171,12 +171,10 @@ class PredictExamVars:
         return police_common + [default[self.selection]]
 
     @property
-    def admin_subject_list(self):
+    def admin_subject_list(self) -> list[str]:
         if self.is_psat:
-            if self.exam_exam == '칠급':
-                return ['PSAT', '언어논리', '상황판단', '자료해석']
-            return ['PSAT', '헌법', '언어논리', '자료해석', '상황판단']
-        return ['형사학', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
+            return ['PSAT'] + self.subject_list
+        return ['총점', '형사학', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
 
     @property
     def answer_fields(self) -> list[str]:

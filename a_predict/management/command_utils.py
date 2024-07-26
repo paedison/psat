@@ -253,10 +253,10 @@ def get_score_data_score_lists(
             score_lists['all']['total'][fld].append(_score)
             score_lists['all'][d_id][fld].append(_score)
             if dt[1]:
-                score_lists['filtered'][d_id][dt[0]].append(_score)
                 all_confirmed_at = student.answer_all_confirmed_at
                 if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
                     score_lists['filtered']['total'][dt[0]].append(_score)
+                    score_lists['filtered'][d_id][dt[0]].append(_score)
 
         score_final = round(score_sum / 3, 1)
         data[-1][2] = score_final
@@ -264,8 +264,10 @@ def get_score_data_score_lists(
         score_lists['all']['total'][exam_vars.final_field].append(score_final)
         score_lists['all'][d_id][exam_vars.final_field].append(score_final)
         if data[-1][1]:
-            score_lists['filtered']['total'][exam_vars.final_field].append(score_final)
-            score_lists['filtered'][d_id][exam_vars.final_field].append(score_final)
+            all_confirmed_at = student.answer_all_confirmed_at
+            if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
+                score_lists['filtered']['total'][exam_vars.final_field].append(score_final)
+                score_lists['filtered'][d_id][exam_vars.final_field].append(score_final)
 
         score_data['update_list'].append(student)
         score_data['update_count'] += 1

@@ -89,7 +89,15 @@
                     {% for obj in page_obj %}
                         <tr class="text-center">
                             <td class="text-nowrap p-2">{{ obj.id }}</td>
-                            <td class="text-nowrap p-2">{{ obj.stat.0.rank_total|default:'' }}</td>
+                            <td class="text-nowrap p-2">
+                                {% if exam.exam == '칠급' %}
+                                    {{ obj.stat.3.rank_total|default:'' }}
+                                {% elif exam.exam == '행시' %}
+                                    {{ obj.stat.4.rank_total|default:'' }}
+                                {% else %}
+                                    {{ obj.stat.7.rank_total|default:'' }}
+                                {% endif %}
+                            </td>
                             <td class="text-nowrap p-2">
                                 <a href=""
                                    hx-boost="true" hx-push-url="true">
@@ -102,11 +110,11 @@
 
                             {% for _ in exam_vars.info_tab.id %}
                                 {% if exam_vars.info_tab.id|length == 4 %}
-                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 as stat silent %}
+                                    {% cycle obj.stat.3 obj.stat.0 obj.stat.1 obj.stat.2 as stat silent %}
                                 {% elif exam_vars.info_tab.id|length == 5 %}
-                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 as stat silent %}
+                                    {% cycle obj.stat.4 obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 as stat silent %}
                                 {% elif exam_vars.info_tab.id|length == 8 %}
-                                    {% cycle obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 obj.stat.5 obj.stat.6 obj.stat.7 as stat silent %}
+                                    {% cycle obj.stat.7 obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 obj.stat.5 obj.stat.6 as stat silent %}
                                 {% endif %}
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
                                     {{ stat.score|floatformat:1|default:'' }}

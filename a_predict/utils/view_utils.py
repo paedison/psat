@@ -8,6 +8,7 @@ __all__ = [
 from django.core.paginator import Paginator
 from django.db.models import Case, When, Value, IntegerField
 from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast
 
 from a_predict.views.base_info import PredictExamVars
 
@@ -26,8 +27,11 @@ def get_qs_student_for_admin_views(qs_student, category):
     if category == 'filtered':
         qs_student = qs_student.filter(answer_all_confirmed_at__isnull=False)
     return qs_student.annotate(
-        all_psat_rank=KeyTextTransform('psat_avg', KeyTextTransform(
-            'total', KeyTextTransform(category, 'rank'))),
+        all_psat_rank=Cast(
+            KeyTextTransform('psat_avg', KeyTextTransform(
+                'total', KeyTextTransform(category, 'rank'))),
+            output_field=IntegerField(),
+        ),
         zero_rank_order=Case(
             When(all_psat_rank=0, then=Value(1)), default=Value(0), output_field=IntegerField(),
         )
@@ -40,7 +44,7 @@ def update_stat_page(exam_vars: PredictExamVars, exam, page_obj, category: str):
     for idx, obj in enumerate(page_obj):
         obj_id = obj['id'] if isinstance(obj, dict) else str(obj.id)
         stat = []
-        for fld in exam_vars.admin_score_fields:
+        for fld in exam_vars.score_fields:
             stat_dict = {
                 'participants': participants[obj_id][fld],
                 'max': statistics[obj_id][fld].get('max'),
@@ -63,7 +67,7 @@ def update_catalog_page(exam_vars: PredictExamVars, exam, qs_department, page_ob
     for obj in page_obj:
         department_id = departments[obj.department]
         obj.stat = []
-        for idx, fld in enumerate(exam_vars.admin_score_fields):
+        for idx, fld in enumerate(exam_vars.score_fields):
             obj.stat.append({
                 'score': obj.data[idx][2],
                 'rank_total': obj.rank[category]['total'][fld],
