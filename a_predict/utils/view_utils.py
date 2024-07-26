@@ -29,8 +29,7 @@ def get_qs_student_for_admin_views(qs_student, category):
         all_psat_rank=KeyTextTransform('psat_avg', KeyTextTransform(
             'total', KeyTextTransform(category, 'rank'))),
         zero_rank_order=Case(
-            When(all_psat_rank=0, then=Value(1)),
-            default=Value(0), output_field=IntegerField(),
+            When(all_psat_rank=0, then=Value(1)), default=Value(0), output_field=IntegerField(),
         )
     ).order_by('zero_rank_order', 'all_psat_rank')
 
@@ -41,7 +40,7 @@ def update_stat_page(exam_vars: PredictExamVars, exam, page_obj, category: str):
     for idx, obj in enumerate(page_obj):
         obj_id = obj['id'] if isinstance(obj, dict) else str(obj.id)
         stat = []
-        for fld in exam_vars.score_fields:
+        for fld in exam_vars.admin_score_fields:
             stat_dict = {
                 'participants': participants[obj_id][fld],
                 'max': statistics[obj_id][fld].get('max'),
@@ -64,7 +63,7 @@ def update_catalog_page(exam_vars: PredictExamVars, exam, qs_department, page_ob
     for obj in page_obj:
         department_id = departments[obj.department]
         obj.stat = []
-        for idx, fld in enumerate(exam_vars.score_fields):
+        for idx, fld in enumerate(exam_vars.admin_score_fields):
             obj.stat.append({
                 'score': obj.data[idx][2],
                 'rank_total': obj.rank[category]['total'][fld],

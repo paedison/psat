@@ -42,8 +42,8 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     exam = exam_vars.get_exam()
 
     # page prefix
-    header_stat = ['all_stat', 'filtered_stat']
-    header_catalog = ['all_catalog', 'filtered_catalog']
+    header_stat = ['stat_all', 'stat_filtered']
+    header_catalog = ['catalog_all', 'catalog_filtered']
     header_answer = [f'answer_{idx}' for idx in range(len(exam_vars.all_subject_fields))]
 
     # Hx-Pagination header
@@ -80,7 +80,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
 
     # stat_page
     if is_stat:
-        category = hx_pagination.split('_')[0]
+        category = hx_pagination.split('_')[1]
         qs_department = exam_vars.get_qs_department()
         stat_page = get_stat_page(qs_department, page)
         utils.update_stat_page(exam_vars, exam, stat_page[0], category)
@@ -89,7 +89,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
 
     # catalog_page
     if is_catalog:
-        category = hx_pagination.split('_')[0]
+        category = hx_pagination.split('_')[1]
         qs_student = exam_vars.get_qs_student()
         qs_department = exam_vars.get_qs_department()
         catalog_page = get_catalog_page(qs_student, category, page)
@@ -109,21 +109,21 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     # main_page
     qs_department = exam_vars.get_qs_department()
     for header in header_stat:
-        category = header.split('_')[0]
+        category = header.split('_')[1]
         stat_page = get_stat_page(qs_department, page)
         utils.update_stat_page(exam_vars, exam, stat_page[0], category)
         context = update_context_data(context, **{f'{header}_page': stat_page})
 
     for header in header_catalog:
-        category = header.split('_')[0]
+        category = header.split('_')[1]
         qs_student = exam_vars.get_qs_student()
         catalog_page = get_catalog_page(qs_student, category, page)
         utils.update_catalog_page(exam_vars, exam, qs_department, catalog_page[0], category)
         context = update_context_data(context, **{f'{header}_page': catalog_page})
 
+    qs_answer_count = exam_vars.get_qs_answer_count()
+    answer_predict = exam_vars.get_data_answer_predict()
     for header in header_answer:
-        qs_answer_count = exam_vars.get_qs_answer_count()
-        answer_predict = exam_vars.get_data_answer_predict()
         answer_page = get_answer_page(qs_answer_count, exam_vars.all_subject_fields, page, header)
         utils.update_answer_page(exam_vars, exam, answer_predict, answer_page[0])
         context = update_context_data(context, **{f'{header}_page': answer_page})

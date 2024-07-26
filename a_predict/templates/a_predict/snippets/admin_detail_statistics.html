@@ -27,22 +27,22 @@
         <div class="nav nav-tabs nav-tabs-colored" id="statTab" role="tablist">
             {% for id in '01' %}
                 {% cycle '전체' '필터링' as tab_title silent %}
-                {% #nav_tab prefix='Catalog' id=id %}{{ tab_title }}{% /nav_tab %}
+                {% #nav_tab prefix='Stat' id=id %}{{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
     <div class="tab-content htmx-fade-out htmx-fade-in" id="statContent">
-        {% #nav_content prefix='Catalog' id='0' %}
-            {% partialdef all_stat inline=True %}
-                {% with header=header_stat.0 page_obj=all_stat_page.0 page_range=all_stat_page.1 %}
+        {% #nav_content prefix='Stat' id='0' %}
+            {% partialdef stat_all inline=True %}
+                {% with header=header_stat.0 page_obj=stat_all_page.0 page_range=stat_all_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
 
-        {% #nav_content prefix='Catalog' id='1' %}
-            {% partialdef filtered_stat inline=True %}
-                {% with header=header_stat.1 page_obj=filtered_stat_page.0 page_range=filtered_stat_page.1 %}
+        {% #nav_content prefix='Stat' id='1' %}
+            {% partialdef stat_filtered inline=True %}
+                {% with header=header_stat.1 page_obj=stat_filtered_page.0 page_range=stat_filtered_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}

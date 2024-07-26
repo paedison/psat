@@ -18,7 +18,6 @@ class PredictExamVars:
     exam_exam: str
     exam_round: int
     selection: str = ''
-    is_admin: bool = False
 
     # Template variables
     data_answer_predict: list[list[dict]] = dataclasses.field(default_factory=list)
@@ -163,21 +162,21 @@ class PredictExamVars:
 
     @property
     def subject_list(self) -> list[str]:
-        chilgeup = ['언어논리', '상황판단', '자료해석']
-        haengsi = ['헌법', '언어논리', '자료해석', '상황판단']
         if self.is_psat:
-            if self.is_admin:
-                return ['PSAT'] + self.subject_list
-            else:
-                if self.exam_exam == '칠급':
-                    return chilgeup
-                return haengsi
+            if self.exam_exam == '칠급':
+                return ['언어논리', '상황판단', '자료해석']
+            return ['헌법', '언어논리', '자료해석', '상황판단']
         police_common = ['형사학', '헌법', '경찰학', '범죄학']
-        if self.is_admin:
-            return ['총점'] + police_common + ['민법총칙', '행정학', '행정법']
-        else:
-            default = {'haengbeob': '행정법', 'haenghag': '행정학', 'minbeob': '민법총칙'}
-            return police_common + [default[self.selection]]
+        default = {'haengbeob': '행정법', 'haenghag': '행정학', 'minbeob': '민법총칙'}
+        return police_common + [default[self.selection]]
+
+    @property
+    def admin_subject_list(self):
+        if self.is_psat:
+            if self.exam_exam == '칠급':
+                return ['PSAT', '언어논리', '상황판단', '자료해석']
+            return ['PSAT', '헌법', '언어논리', '자료해석', '상황판단']
+        return ['형사학', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
 
     @property
     def answer_fields(self) -> list[str]:
@@ -217,9 +216,7 @@ class PredictExamVars:
 
     @property
     def admin_score_fields(self) -> list:
-        if self.is_admin:
-            return [self.final_field] + self.answer_fields
-        return self.answer_fields + [self.final_field]
+        return [self.final_field] + self.answer_fields
 
     @property
     def problem_count(self) -> dict[str, int]:

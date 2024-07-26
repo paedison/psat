@@ -34,16 +34,16 @@
     </nav>
     <div class="tab-content" id="catalogContent">
         {% #nav_content prefix='Catalog' id='0' %}
-            {% partialdef all_catalog inline=True %}
-                {% with header=header_catalog.0 page_obj=all_catalog_page.0 page_range=all_catalog_page.1 %}
+            {% partialdef catalog_all inline=True %}
+                {% with header=header_catalog.0 page_obj=catalog_all_page.0 page_range=catalog_all_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
         {% /nav_content %}
 
         {% #nav_content prefix='Catalog' id='1' %}
-            {% partialdef filtered_catalog inline=True %}
-                {% with header=header_catalog.1 page_obj=filtered_catalog_page.0 page_range=filtered_catalog_page.1 %}
+            {% partialdef catalog_filtered inline=True %}
+                {% with header=header_catalog.1 page_obj=catalog_filtered_page.0 page_range=catalog_filtered_page.1 %}
                     {% partial table_data %}
                 {% endwith %}
             {% endpartialdef %}
