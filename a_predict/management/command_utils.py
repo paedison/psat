@@ -403,13 +403,8 @@ def get_exam_model_data(exam, participants):
     return exam_model_data
 
 
-def get_statistics(exam_vars: CommandPredictExamVars, exam, qs_department, qs_student):
+def get_statistics(exam_vars: CommandPredictExamVars, score_lists, qs_department):
     score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
-    scores_total = get_confirmed_scores(exam_vars, exam, qs_student)
-    scores: dict[str, dict[str, dict[str, list]]] = {
-        'all': {'total': scores_total['all']},
-        'filtered': {'total': scores_total['filtered']},
-    }
     statistics: dict[str, dict[str | int, dict]] = {
         'all': {
             'total': {field: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for field in score_fields},
@@ -418,25 +413,22 @@ def get_statistics(exam_vars: CommandPredictExamVars, exam, qs_department, qs_st
             'total': {field: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for field in score_fields},
         },
     }
-    for department in qs_department:
-        scores_department = get_confirmed_scores(exam_vars, exam, qs_student, department.name)
-        scores['all'][department.id] = scores_department['all']
-        scores['filtered'][department.id] = scores_department['filtered']
-        statistics['all'][department.id] = {field: {} for field in score_fields}
-        statistics['filtered'][department.id] = {field: {} for field in score_fields}
+    for dep in qs_department:
+        statistics['all'][dep.id] = {field: {} for field in score_fields}
+        statistics['filtered'][dep.id] = {field: {} for field in score_fields}
 
-    for key, value in scores.items():
-        for department, scores_dict in value.items():
-            for field, score_list in scores_dict.items():
+    for key, val in score_lists.items():
+        for dep, scores_dict in val.items():
+            for fld, score_list in scores_dict.items():
                 participants = len(score_list)
                 top_10 = max(1, int(participants * 0.1))
                 top_20 = max(1, int(participants * 0.2))
 
                 if score_list:
-                    statistics[key][department][field]['max'] = round(score_list[0], 1)
-                    statistics[key][department][field]['t10'] = round(score_list[top_10 - 1], 1)
-                    statistics[key][department][field]['t20'] = round(score_list[top_20 - 1], 1)
-                    statistics[key][department][field]['avg'] = round(
+                    statistics[key][dep][fld]['max'] = round(score_list[0], 1)
+                    statistics[key][dep][fld]['t10'] = round(score_list[top_10 - 1], 1)
+                    statistics[key][dep][fld]['t20'] = round(score_list[top_20 - 1], 1)
+                    statistics[key][dep][fld]['avg'] = round(
                         sum(score_list) / participants if participants else 0, 1)
     return statistics
 
