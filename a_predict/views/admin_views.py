@@ -234,7 +234,7 @@ def update_statistics(exam_vars, exam, qs_student):
 
         # Update exam_model for statistics
         qs_department = command_utils.get_qs_department(exam_vars)
-        statistics = command_utils.get_statistics(exam_vars, exam, qs_department, qs_student)
+        statistics = command_utils.get_statistics(exam_vars, score_lists, qs_department)
         statistics_data = command_utils.get_statistics_data(exam, statistics)
         command_utils.create_or_update_model(exam_vars.exam_model, ['statistics'], statistics_data)
 
