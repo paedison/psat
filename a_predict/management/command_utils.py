@@ -122,7 +122,7 @@ def get_student_data_answer_lists(exam_vars: CommandPredictExamVars):
     Get answer_lists for further process(updating answer_count_model).
     """
     student_data = get_empty_model_data()
-    answer_lists: dict[str, list] = {fld: [] for fld in exam_vars.answer_fields}
+    answer_lists: dict[str, list] = {fld: [0 for _ in range(25)] for fld in exam_vars.answer_fields}
     old_students = old_predict_models.Student.objects.filter(
         exam__ex=exam_vars.exam_exam, exam__round=exam_vars.exam_round).annotate(created_at=F('timestamp'))
 
@@ -154,7 +154,6 @@ def get_student_data_answer_lists(exam_vars: CommandPredictExamVars):
         answer_fields = [key for key in answer_info.keys()]
         update_model_data(
             student_data, exam_vars.student_model, base_info, student_info, answer_fields)
-
     return student_data, answer_lists
 
 
@@ -233,17 +232,17 @@ def get_score_data_score_lists(
         score_sum = 0
         for dt in student.data:
             fld = dt[0]
-            answer_student = dt[-1]
             correct_count = 0
             score_unit = 4 if fld in ['heonbeob'] else 2.5
-            for idx, ans_student in enumerate(answer_student):
-                ans_official = exam.answer_official[fld][idx]
-                if 1 <= ans_official <= 5:
-                    is_correct = ans_student == ans_official
-                else:
-                    ans_official_list = [int(digit) for digit in str(ans_official)]
-                    is_correct = ans_student in ans_official_list
-                correct_count += 1 if is_correct else 0
+            for idx, ans_student in enumerate(dt):
+                if fld != exam_vars.final_field:
+                    ans_official = exam.answer_official[fld][idx]
+                    if 1 <= ans_official <= 5:
+                        is_correct = ans_student == ans_official
+                    else:
+                        ans_official_list = [int(digit) for digit in str(ans_official)]
+                        is_correct = ans_student in ans_official_list
+                    correct_count += 1 if is_correct else 0
 
             _score = correct_count * score_unit
             score_sum += _score if fld in exam_vars.only_psat_fields else 0
@@ -455,17 +454,16 @@ def get_count_lists(
             count_fields_info = {fld: 0 for fld in exam_vars.all_count_fields}
             append_dict = dict(problem_info, **count_fields_info, **{'answer': answer})
             count_lists[fld].append(append_dict)
-
     for fld, answer_lists in total_answer_lists.items():
         if answer_lists:
             problem_count = exam_vars.get_problem_count(fld)
             distributions = [Counter() for _ in range(problem_count)]
-            for lst in answer_lists:
-                for i, value in enumerate(lst):
-                    if value > 5:
+            for i, val in enumerate(answer_lists):
+                if fld != exam_vars.final_field:
+                    if val > 5:
                         distributions[i]['count_multiple'] += 1
                     else:
-                        distributions[i][value] += 1
+                        distributions[i][val] += 1
 
             for idx, counter in enumerate(distributions):
                 count_dict = {f'count_{i}': counter.get(i, 0) for i in range(6)}
@@ -509,14 +507,15 @@ def get_total_answer_lists_by_category(exam_vars: CommandPredictExamVars, exam, 
         if participants_filtered:
             rank_ratio_filtered = rank_filtered_student / participants_filtered
 
-        for field in answer_fields:
-            if student.answer_confirmed[field]:
-                ans_student = student.answer[field]
+        for fld in answer_fields:
+            fld_idx = exam_vars.get_field_idx(fld)
+            if student.data[fld_idx]:
+                ans_student = student.data[fld_idx][-1]
                 top_rank_threshold = 0.27
                 mid_rank_threshold = 0.73
 
                 def append_answer(catgry: str, rank: str):
-                    total_answer_lists_by_category[catgry][rank][field].append(ans_student)
+                    total_answer_lists_by_category[catgry][rank][fld].append(ans_student)
 
                 append_answer('all', 'all_rank')
                 if rank_ratio_all and 0 <= rank_ratio_all <= top_rank_threshold:
@@ -556,7 +555,7 @@ def get_total_count_dict_by_category(exam_vars: CommandPredictExamVars, total_an
         for rank, value2 in value1.items():
             for field, answer_lists in value2.items():
                 p_count = problem_count[field]
-                if answer_lists:
+                if answer_lists and field != exam_vars.final_field:
                     distributions = [Counter() for _ in range(p_count)]
                     for lst in answer_lists:
                         for i, value in enumerate(lst):
