@@ -443,15 +443,16 @@ class PredictExamVars:
                         if ans_official:
                             prediction_is_correct = ans_official == ans_predict
                             answer_predict['prediction_is_correct'] = ans_official == ans_predict
-                            if 1 <= ans_official <= 5:
-                                result = ans_student == ans_official
-                                rate_correct = round(answer_predict['count'][ans_official] * 100 / count_total, 1)
-                            else:
-                                ans_official_list = [int(ans) for ans in str(ans_official)]
-                                result = ans_student in ans_official_list
-                                rate_correct = round(sum(
-                                    answer_predict['count'][ans] for ans in ans_official_list) * 100 / count_total, 1)
-                            data_answer_official[field_idx][no_idx]['rate_correct'] = rate_correct
+                            if count_total:
+                                if 1 <= ans_official <= 5:
+                                    result = ans_student == ans_official
+                                    rate_correct = round(answer_predict['count'][ans_official] * 100 / count_total, 1)
+                                else:
+                                    ans_official_list = [int(ans) for ans in str(ans_official)]
+                                    result = ans_student in ans_official_list
+                                    rate_correct = round(sum(
+                                        answer_predict['count'][ans] for ans in ans_official_list) * 100 / count_total, 1)
+                                data_answer_official[field_idx][no_idx]['rate_correct'] = rate_correct
 
                     answer_predict['prediction_is_correct'] = prediction_is_correct
                     data_answer_student[field_idx][no_idx].update({
