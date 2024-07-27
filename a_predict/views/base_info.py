@@ -549,16 +549,27 @@ class PredictExamVars:
                 sorted_scores = sorted(score_list[fld], reverse=True)
 
                 student_score = student.data[fld_idx][-2]
-                rank = sorted_scores.index(student_score) + 1
-                top_10_threshold = max(1, int(participants * 0.1))
-                top_20_threshold = max(1, int(participants * 0.2))
+                try:
+                    rank = sorted_scores.index(student_score) + 1
+                    max_score = round(sorted_scores[0], 1)
+                    top_10_threshold = max(1, int(participants * 0.1))
+                    top_20_threshold = max(1, int(participants * 0.2))
+                    top_score_10 = round(sorted_scores[top_10_threshold - 1], 1)
+                    top_score_20 = round(sorted_scores[top_20_threshold - 1], 1)
+                    avg_score = round(sum(score_list[fld]) / participants if participants else 0, 1)
+                except ValueError:
+                    rank = None
+                    max_score = None
+                    top_score_10 = None
+                    top_score_20 = None
+                    avg_score = None
 
                 stat_data[fld_idx].update({
                     'rank': rank, 'score': round(student_score, 1), 'participants': participants,
-                    'max_score': round(sorted_scores[0], 1),
-                    'top_score_10': round(sorted_scores[top_10_threshold - 1], 1),
-                    'top_score_20': round(sorted_scores[top_20_threshold - 1], 1),
-                    'avg_score': round(sum(score_list[fld]) / participants if participants else 0, 1),
+                    'max_score': max_score,
+                    'top_score_10': top_score_10,
+                    'top_score_20': top_score_20,
+                    'avg_score': avg_score,
                 })
         return stat_data
 
