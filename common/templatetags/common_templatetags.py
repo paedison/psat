@@ -33,6 +33,6 @@ def to_int(value) -> int:
 
 @register.filter
 def percentageby(content, arg: int) -> float | str:
-    if content:
+    if content and arg:
         return content * 100 / arg
     return '-'
