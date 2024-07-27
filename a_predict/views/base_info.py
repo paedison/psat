@@ -487,14 +487,15 @@ class PredictExamVars:
                 answer_cnt_sum += answer_count
 
                 correct_predict_count = correct_real_count = 0
-                for idx, answer_student in enumerate(self.data_answer_student[field_idx]):
-                    ans_student = answer_student['ans']
+                for idx, value in enumerate(self.data_answer_student[field_idx]):
+                    ans_student = value['ans']
                     ans_predict = self.data_answer_predict[field_idx][idx]['ans']
 
                     result_predict = ans_student == ans_predict
-                    answer_student['result_predict'] = result_predict
+                    value['result_predict'] = result_predict
                     correct_predict_count += 1 if result_predict else 0
-                    correct_real_count += 1 if answer_student['result_real'] else 0
+                    if is_confirmed:
+                        correct_real_count += 1 if value['result_real'] else 0
 
                 problem_count = self.problem_count[fld]
                 score_predict = correct_predict_count * 100 / problem_count
