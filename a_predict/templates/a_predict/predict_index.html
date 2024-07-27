@@ -28,16 +28,10 @@
 
 <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="iframe_container">
-                    <iframe class="iframe_content" title="YouTube video player"
-                            src="https://www.youtube.com/embed/Fal8-8NRabY?si=4765xVgFBlV_l_Kh"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowfullscreen></iframe>
-                </div>
-            </div>
-        </div>
+        {% include '_banner/predict_psat_2024_chilgeup.html' %}
+    </div>
+
+    <div class="row">
 
         <div class="col-12">
             <div class="card">
@@ -94,6 +88,19 @@
         </div>
         <div class="col-md-6">
             {% include '_banner/predict_police_2025.html' %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="iframe_container">
+                    <iframe class="iframe_content" title="YouTube video player"
+                            src="https://www.youtube.com/embed/Fal8-8NRabY?si=4765xVgFBlV_l_Kh"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
+                </div>
+            </div>
         </div>
     </div>
 </section>
