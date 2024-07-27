@@ -1,4 +1,5 @@
 import dataclasses
+import json
 from typing import Type
 
 from django.db import transaction
@@ -467,17 +468,24 @@ class PredictExamVars:
         score_predict_sum = 0
         participants = exam.participants['all']['total']
 
-        answer_count_sum = 0
-        for fld in self.score_fields:
-            field_idx = self.score_fields.index(fld)
+        answer_cnt_sum = 0
+        for field_idx, fld in enumerate(self.score_fields):
             sub, subject = self.field_vars[fld]
             is_confirmed = student.data[field_idx][1]
             score_real = student.data[field_idx][-2]
             answer_student = student.data[field_idx][-1]
-            answer_count = len([x for x in answer_student if x != 0])
-            answer_count_sum += answer_count
+
+            empty_answer_data = [
+                [0 for _ in range(self.problem_count[fld])] for fld in self.answer_fields
+            ]
+            answer_input = json.loads(self.request.COOKIES.get('answer_input', '{}')) or empty_answer_data
 
             if fld != self.final_field:
+                answer_student_cnt = len([x for x in answer_student if x != 0])
+                answer_input_cnt = len([x for x in answer_input[field_idx] if x != 0])
+                answer_count = max(answer_student_cnt, answer_input_cnt)
+                answer_cnt_sum += answer_count
+
                 correct_predict_count = 0
                 for idx, answer_student in enumerate(self.data_answer_student[field_idx]):
                     ans_student = answer_student['ans']
@@ -493,8 +501,10 @@ class PredictExamVars:
                     score_predict_sum += score_predict
             else:
                 problem_count = sum([val for val in self.problem_count.values()])
-                score_predict = score_predict_sum / 3
-                answer_count = answer_count_sum
+                score_predict = score_predict_sum
+                if self.exam_type == 'psat':
+                    score_predict = round(score_predict_sum / 3, 1)
+                answer_count = answer_cnt_sum
             url_answer_input = self.url_answer_input[field_idx] if fld in self.answer_fields else ''
 
             info_answer_student[field_idx].update({
