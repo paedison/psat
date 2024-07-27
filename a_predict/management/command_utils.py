@@ -122,14 +122,14 @@ def get_student_data_answer_lists(exam_vars: CommandPredictExamVars):
     Get answer_lists for further process(updating answer_count_model).
     """
     student_data = get_empty_model_data()
-    answer_lists: dict[str, list] = {fld: [0 for _ in range(25)] for fld in exam_vars.answer_fields}
+    total_answer_lists: dict[str, list] = {fld: [0 for _ in range(25)] for fld in exam_vars.answer_fields}
     old_students = old_predict_models.Student.objects.filter(
         exam__ex=exam_vars.exam_exam, exam__round=exam_vars.exam_round).annotate(created_at=F('timestamp'))
 
     for student in old_students:
         old_answer_data = get_old_answer_data(exam_vars, student)
         for dt in old_answer_data['data'][:-1]:
-            answer_lists[dt[0]].append(dt[-1])
+            total_answer_lists[dt[0]] = dt[-1]
 
         student_info = {}
         base_info = {
@@ -154,7 +154,7 @@ def get_student_data_answer_lists(exam_vars: CommandPredictExamVars):
         answer_fields = [key for key in answer_info.keys()]
         update_model_data(
             student_data, exam_vars.student_model, base_info, student_info, answer_fields)
-    return student_data, answer_lists
+    return student_data, total_answer_lists
 
 
 def get_answer_lists(qs_student, answer_fields):
@@ -233,15 +233,15 @@ def get_score_data_score_lists(
         for dt in student.data:
             fld = dt[0]
             correct_count = 0
-            score_unit = 4 if fld in ['heonbeob'] else 2.5
-            for idx, ans_student in enumerate(dt):
-                if fld != exam_vars.final_field:
-                    ans_official = exam.answer_official[fld][idx]
+            score_unit = exam_vars.get_score_unit(fld)
+            if fld != exam_vars.final_field:
+                answer_official = exam.answer_official[fld]
+                for i, ans_official in enumerate(answer_official):
                     if 1 <= ans_official <= 5:
-                        is_correct = ans_student == ans_official
+                        is_correct = dt[-1][i] == ans_official
                     else:
                         ans_official_list = [int(digit) for digit in str(ans_official)]
-                        is_correct = ans_student in ans_official_list
+                        is_correct = dt[-1][i] in ans_official_list
                     correct_count += 1 if is_correct else 0
 
             _score = correct_count * score_unit

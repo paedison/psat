@@ -466,14 +466,13 @@ class PredictExamVars:
     def get_info_answer_student(self, exam, student) -> list:
         info_answer_student: list[dict] = [{} for _ in self.score_fields]
 
-        score_predict_sum = 0
+        score_predict_sum = score_real_sum = 0
         participants = exam.participants['all']['total']
 
         answer_cnt_sum = 0
         for field_idx, fld in enumerate(self.score_fields):
             sub, subject = self.field_vars[fld]
             is_confirmed = student.data[field_idx][1]
-            score_real = student.data[field_idx][-2]
             answer_student = student.data[field_idx][-1]
 
             empty_answer_data = [
@@ -487,7 +486,7 @@ class PredictExamVars:
                 answer_count = max(answer_student_cnt, answer_input_cnt)
                 answer_cnt_sum += answer_count
 
-                correct_predict_count = 0
+                correct_predict_count = correct_real_count = 0
                 for idx, answer_student in enumerate(self.data_answer_student[field_idx]):
                     ans_student = answer_student['ans']
                     ans_predict = self.data_answer_predict[field_idx][idx]['ans']
@@ -495,16 +494,21 @@ class PredictExamVars:
                     result_predict = ans_student == ans_predict
                     answer_student['result_predict'] = result_predict
                     correct_predict_count += 1 if result_predict else 0
+                    correct_real_count += 1 if answer_student['result_real'] else 0
 
                 problem_count = self.problem_count[fld]
                 score_predict = correct_predict_count * 100 / problem_count
                 if fld in self.only_psat_fields + self.all_police_subject_fields:
                     score_predict_sum += score_predict
+                    score_real_sum += score_predict
+                score_real = correct_real_count * 100 / problem_count
             else:
                 problem_count = sum([val for val in self.problem_count.values()])
                 score_predict = score_predict_sum
+                score_real = score_real_sum
                 if self.exam_type == 'psat':
                     score_predict = round(score_predict_sum / 3, 1)
+                    score_real = round(score_real_sum / 3, 1)
                 answer_count = answer_cnt_sum
             url_answer_input = self.url_answer_input[field_idx] if fld in self.answer_fields else ''
 
@@ -633,7 +637,7 @@ class PredictExamVars:
             student.exam = self.exam_exam
             student.round = self.exam_round
             student.data = [
-                [fld, False, [0 for _ in range(self.problem_count[fld])]] for fld in self.answer_fields
+                [fld, False, 0, [0 for _ in range(self.problem_count[fld])]] for fld in self.answer_fields
             ]
             student.data.append([self.final_field, False, 0, []])
             student.rank = {
