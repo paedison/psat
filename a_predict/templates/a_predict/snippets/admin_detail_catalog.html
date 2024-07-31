@@ -120,16 +120,24 @@
                                     {{ stat.score|floatformat:1|default:'' }}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {{ stat.rank_total|default:'' }}
+                                    {% if stat.rank_total %}
+                                        {{ stat.rank_total|default:'' }}
+                                    {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {{ stat.rank_total|percentageby:stat.participants_total|floatformat:1|default:'' }}
+                                    {% if stat.rank_total %}
+                                        {{ stat.rank_total|percentageby:stat.participants_total|floatformat:1|default:'' }}
+                                    {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
-                                    {{ stat.rank_department|default:'' }}
+                                    {% if stat.rank_department %}
+                                        {{ stat.rank_department|default:'' }}
+                                    {% endif %}
                                 </td>
                                 <td class="text-nowrap p-2 td-left-no-border">
-                                    {{ stat.rank_department|percentageby:stat.participants_department|floatformat:1|default:'' }}
+                                    {% if stat.rank_department %}
+                                        {{ stat.rank_department|percentageby:stat.participants_department|floatformat:1|default:'' }}
+                                    {% endif %}
                                 </td>
                             {% endfor %}
                         </tr>

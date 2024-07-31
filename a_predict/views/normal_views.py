@@ -39,6 +39,8 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     if not student:
         return redirect(exam_vars.url_student_create)
 
+    if exam_vars.exam_exam == '경위':
+        exam_vars.selection = student.selection
     context = update_context_data(
         info=exam_vars.info, current_time=timezone.now(),
         title='Predict', sub_title=exam_vars.sub_title,
@@ -51,32 +53,33 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
         context = update_context_data(context, location=location)
 
     # answer_predict
-    exam_vars.data_answer_predict = exam_vars.get_data_answer_predict()
-    exam_vars.answer_confirmed = [dt[1] for dt in student.data]
+    qs_answer_count = exam_vars.get_qs_answer_count()
+    data_answer_predict = exam_vars.get_data_answer_predict(qs_answer_count)
+    answer_confirmed = [dt[1] for dt in student.data]
     if is_main or is_answer_predict or is_info_answer:
         context = update_context_data(
-            context, answer_confirmed=exam_vars.answer_confirmed,
-            data_answer_predict=exam_vars.data_answer_predict)
+            context, answer_confirmed=answer_confirmed,
+            data_answer_predict=data_answer_predict)
     if is_answer_predict:
         return render(request, 'a_predict/snippets/update_sheet_answer_predict.html', context)
 
     # answer_submit
-    exam_vars.data_answer_official_tuple = exam_vars.get_data_answer_official(exam)
-    exam_vars.data_answer_student = exam_vars.get_data_answer_student(student)
+    data_answer_official_tuple = exam_vars.get_data_answer_official(exam)
+    data_answer_student = exam_vars.get_data_answer_student(
+        student, data_answer_predict, data_answer_official_tuple[0])
     if is_main or is_answer_submit:
         context = update_context_data(
-            context, answer_confirmed=exam_vars.answer_confirmed,
-            data_answer_official=exam_vars.data_answer_official_tuple[0],
-            data_answer_student=exam_vars.data_answer_student)
+            context, answer_confirmed=answer_confirmed,
+            data_answer_official=data_answer_official_tuple[0],
+            data_answer_student=data_answer_student)
     if is_answer_submit:
         return render(request, 'a_predict/snippets/update_sheet_answer_submit.html', context)
 
     # info_answer
     student.refresh_from_db()
-    exam_vars.info_answer_student = exam_vars.get_info_answer_student(exam, student)
+    info_answer_student = exam_vars.get_info_answer_student(exam, student, data_answer_predict, data_answer_student)
     if is_main or is_info_answer:
-        context = update_context_data(
-            context, info_answer_student=exam_vars.info_answer_student)
+        context = update_context_data(context, info_answer_student=info_answer_student)
     if is_info_answer:
         return render(request, 'a_predict/snippets/update_info_answer.html', context)
 
@@ -156,7 +159,6 @@ def student_create_view(request: HtmxHttpRequest, **kwargs):
 @login_required
 def answer_input_view(request: HtmxHttpRequest, subject_field: str, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
-    field_idx = exam_vars.get_field_idx(subject_field)
     if not exam_vars:
         return redirect(exam_vars.url_index)
 
@@ -164,7 +166,10 @@ def answer_input_view(request: HtmxHttpRequest, subject_field: str, **kwargs):
     if not student:
         return redirect(exam_vars.url_student_create)
 
+    if exam_vars.exam_exam == '경위':
+        exam_vars.selection = student.selection
     exam = exam_vars.get_exam()
+    field_idx = exam_vars.get_field_idx(subject_field)
     if subject_field not in exam_vars.answer_fields or student.data[field_idx][1]:
         return redirect(exam_vars.url_detail)
 
@@ -212,60 +217,68 @@ def answer_input_view(request: HtmxHttpRequest, subject_field: str, **kwargs):
     return render(request, 'a_predict/predict_answer_input.html', context)
 
 
-@require_POST
 @login_required
 def answer_confirm_view(request: HtmxHttpRequest, subject_field: str, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
-    field_idx = exam_vars.get_field_idx(subject_field)
     student = exam_vars.get_student()
+
+    if exam_vars.exam_exam == '경위':
+        exam_vars.selection = student.selection
     exam = exam_vars.get_exam()
-
-    empty_answer_data = [
-        [0 for _ in range(exam_vars.problem_count[fld])] for fld in exam_vars.answer_fields
-    ]
-    answer_input = json.loads(request.COOKIES.get('answer_input', '{}')) or empty_answer_data
-    answer_data = answer_input[field_idx]
-
-    next_url = exam_vars.url_detail
     subject = exam_vars.field_vars[subject_field][1]
-    is_confirmed = all(answer_data) and len(answer_data) == exam_vars.problem_count[subject_field]
-    if is_confirmed:
-        student.data[field_idx] = [subject_field, True, 0, answer_data]
-        student.save()
-        student.refresh_from_db()
 
-        qs_answer_count = exam_vars.qs_answer_count.filter(subject=subject_field)
-        for answer_count in qs_answer_count:
-            ans_student = answer_data[answer_count.number - 1]
-            setattr(answer_count, f'count_{ans_student}', F(f'count_{ans_student}') + 1)
-            setattr(answer_count, f'count_total', F(f'count_total') + 1)
-            answer_count.save()
+    if request.method == 'POST':
+        empty_answer_data = [
+            [0 for _ in range(exam_vars.problem_count[fld])] for fld in exam_vars.answer_fields
+        ]
+        answer_input = json.loads(request.COOKIES.get('answer_input', '{}')) or empty_answer_data
+        field_idx = exam_vars.get_field_idx(subject_field)
+        answer_data = answer_input[field_idx]
 
-        now = datetime.now(pytz.UTC)
-        participants = exam.participants
-        d_id = str(exam_vars.department_dict[student.department])
-        all_confirmed = all(dt[1] for dt in student.data[:-1])
-
-        participants['all']['total'][subject_field] += 1
-        participants['all'][d_id][subject_field] += 1
-
-        if all_confirmed:
-            student.answer_all_confirmed_at = now
-            student.data[-1][1] = True
+        next_url = exam_vars.url_detail
+        is_confirmed = all(answer_data) and len(answer_data) == exam_vars.problem_count[subject_field]
+        if is_confirmed:
+            student.data[field_idx] = [subject_field, True, 0, answer_data]
             student.save()
-            participants['all']['total'][exam_vars.final_field] += 1
-            participants['all'][d_id][exam_vars.final_field] += 1
+            student.refresh_from_db()
 
-        if now <= exam.answer_official_opened_at:
-            participants['filtered']['total'][subject_field] += 1
-            participants['filtered'][d_id][subject_field] += 1
+            qs_answer_count = exam_vars.get_qs_answer_count().filter(subject=subject_field)
+            for answer_count in qs_answer_count:
+                ans_student = answer_data[answer_count.number - 1]
+                setattr(answer_count, f'count_{ans_student}', F(f'count_{ans_student}') + 1)
+                setattr(answer_count, f'count_total', F(f'count_total') + 1)
+                answer_count.save()
+
+            now = datetime.now(pytz.UTC)
+            participants = exam.participants
+            d_id = str(exam_vars.department_dict[student.department])
+            all_confirmed = all(dt[1] for dt in student.data[:-1])
+
+            participants['all']['total'][subject_field] += 1
+            participants['all'][d_id][subject_field] += 1
+
             if all_confirmed:
-                participants['filtered']['total'][exam_vars.final_field] += 1
-                participants['filtered'][d_id][exam_vars.final_field] += 1
+                student.answer_all_confirmed_at = now
+                student.data[-1][1] = True
+                student.save()
+                participants['all']['total'][exam_vars.final_field] += 1
+                participants['all'][d_id][exam_vars.final_field] += 1
 
-        exam.save()
-        next_url = exam_vars.get_next_url(student)
+            if now <= exam.answer_official_opened_at:
+                participants['filtered']['total'][subject_field] += 1
+                participants['filtered'][d_id][subject_field] += 1
+                if all_confirmed:
+                    participants['filtered']['total'][exam_vars.final_field] += 1
+                    participants['filtered'][d_id][exam_vars.final_field] += 1
+
+            exam.save()
+            next_url = exam_vars.get_next_url(student)
+
+        context = update_context_data(
+            header=f'{subject} 답안 제출', is_confirmed=is_confirmed, next_url=next_url)
+        return render(request, 'a_predict/snippets/modal_answer_confirmed.html', context)
 
     context = update_context_data(
-        header=f'{subject} 답안 제출', is_confirmed=is_confirmed, next_url=next_url)
+        url_answer_confirm=exam_vars.get_url_answer_confirm(subject_field),
+        header=f'{subject} 답안을 제출하시겠습니까?', verifying=True)
     return render(request, 'a_predict/snippets/modal_answer_confirmed.html', context)

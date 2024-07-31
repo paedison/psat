@@ -447,7 +447,7 @@ def get_count_lists(
     for fld in exam_vars.answer_fields:
         ans_official = exam.answer_official[fld] if fld in exam.answer_official else None
         count_lists[fld] = []
-        problem_count = exam_vars.get_problem_count(fld)
+        problem_count = exam_vars.problem_count[fld]
         for i in range(1, problem_count + 1):
             answer = ans_official[i - 1] if ans_official else 0
             problem_info = exam_vars.get_problem_info(fld, i)
@@ -456,7 +456,7 @@ def get_count_lists(
             count_lists[fld].append(append_dict)
     for fld, answer_lists in total_answer_lists.items():
         if answer_lists:
-            problem_count = exam_vars.get_problem_count(fld)
+            problem_count = exam_vars.problem_count[fld]
             distributions = [Counter() for _ in range(problem_count)]
             for i, val in enumerate(answer_lists):
                 if fld != exam_vars.final_field:

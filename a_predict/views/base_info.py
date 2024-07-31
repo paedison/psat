@@ -20,14 +20,6 @@ class PredictExamVars:
     exam_round: int
     selection: str = ''
 
-    # Template variables
-    data_answer_predict: list[list[dict]] = dataclasses.field(default_factory=list)
-    answer_confirmed: list[bool] = dataclasses.field(default_factory=list)
-    data_answer_official_tuple: tuple[list[list[dict]], bool] = dataclasses.field(default_factory=tuple)
-    data_answer_student: list[list[dict]] = dataclasses.field(default_factory=list)
-    info_answer_student: list = dataclasses.field(default_factory=list)
-    stat: dict[str, list[dict]] = dataclasses.field(default_factory=dict)
-
     # common vars
     default_count_fields = ['count_0', 'count_1', 'count_2', 'count_3', 'count_4']
     extra_count_fields = ['count_multiple', 'count_total']
@@ -47,7 +39,7 @@ class PredictExamVars:
     subject_vars = {
         '언어': ('언어논리', 'eoneo'), '자료': ('자료해석', 'jaryo'),
         '상황': ('상황판단', 'sanghwang'), '평균': ('PSAT 평균', 'psat_avg'),
-        '형사': ('형사학', 'hyeongsa'), '헌법': ('헌법', 'heonbeob'),
+        '형사': ('형사법', 'hyeongsa'), '헌법': ('헌법', 'heonbeob'),
         '경찰': ('경찰학', 'gyeongchal'), '범죄': ('범죄학', 'beomjoe'),
         '민법': ('민법총칙', 'minbeob'), '행학': ('행정학', 'haenghag'),
         '행법': ('행정법', 'haengbeob'), '총점': ('총점', 'sum'),
@@ -55,9 +47,10 @@ class PredictExamVars:
     field_vars = {
         'eoneo': ('언어', '언어논리'), 'jaryo': ('자료', '자료해석'),
         'sanghwang': ('상황', '상황판단'), 'psat_avg': ('평균', 'PSAT 평균'),
-        'hyeongsa': ('형사', '형사학'), 'heonbeob': ('헌법', '헌법'),
+        'hyeongsa': ('형사', '형사법'), 'heonbeob': ('헌법', '헌법'),
         'gyeongchal': ('경찰', '경찰학'), 'beomjoe': ('범죄', '범죄학'),
         'haengbeob': ('행법', '행정법'), 'haenghag': ('행학', '행정학'), 'minbeob': ('민법', '민법총칙'),
+        'sum': ('총점', '총점'),
     }
 
     info = {'menu': 'predict', 'view_type': 'predict'}
@@ -78,6 +71,8 @@ class PredictExamVars:
     def is_psat(self) -> bool:
         return self.exam_type == 'psat'
 
+    ##################
+    # Models & Forms
     @property
     def exam_model(self) -> Type[models.PsatExam | models.PoliceExam]:
         if self.is_psat:
@@ -119,9 +114,14 @@ class PredictExamVars:
             return forms.PsatStudentForm
         return forms.PoliceStudentForm
 
+    ##################
+    # Information Dictionary
     @property
     def exam_info(self) -> dict:
         return {'year': self.exam_year, 'exam': self.exam_exam, 'round': self.exam_round}
+
+    def get_problem_info(self, field: str, number: int) -> dict:
+        return dict(self.exam_info, **{'subject': field, 'number': number})
 
     @property
     def student_exam_info(self) -> dict:
@@ -141,16 +141,8 @@ class PredictExamVars:
         qs_department = self.department_model.objects.filter(exam=self.exam_exam).order_by('order')
         return {department.name: department.id for department in qs_department}
 
-    @property
-    def student(self) -> Type[models.PsatStudent | models.PoliceStudent]:
-        if self.request.user.is_authenticated:
-            return self.student_model.objects.filter(**self.exam_info, user=self.request.user).first()
-
-    @property
-    def qs_answer_count(self) -> QuerySet:
-        return self.answer_count_model.objects.filter(**self.exam_info).annotate(
-            no=F('number')).order_by('subject', 'number')
-
+    ##################
+    # Subject Name
     @property
     def sub_list(self) -> list[str]:
         if self.is_psat:
@@ -162,12 +154,18 @@ class PredictExamVars:
         return police_common_sub_list + [default[self.selection]]
 
     @property
+    def admin_sub_list(self) -> list[str]:
+        if self.is_psat:
+            return self.sub_list
+        return ['형사', '헌법', '경찰', '범죄', '민법', '행학', '행법']
+
+    @property
     def subject_list(self) -> list[str]:
         if self.is_psat:
             if self.exam_exam == '칠급':
                 return ['언어논리', '상황판단', '자료해석']
             return ['헌법', '언어논리', '자료해석', '상황판단']
-        police_common = ['형사학', '헌법', '경찰학', '범죄학']
+        police_common = ['형사법', '헌법', '경찰학', '범죄학']
         default = {'haengbeob': '행정법', 'haenghag': '행정학', 'minbeob': '민법총칙'}
         return police_common + [default[self.selection]]
 
@@ -175,8 +173,10 @@ class PredictExamVars:
     def admin_subject_list(self) -> list[str]:
         if self.is_psat:
             return ['PSAT'] + self.subject_list
-        return ['총점', '형사학', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
+        return ['총점', '형사법', '헌법', '경찰학', '범죄학', '민법총칙', '행정학', '행정법']
 
+    ##################
+    # Subject Field
     @property
     def answer_fields(self) -> list[str]:
         if self.is_psat:
@@ -213,15 +213,29 @@ class PredictExamVars:
 
     @property
     def admin_score_fields(self) -> list:
-        return [self.final_field] + self.answer_fields
+        if self.is_psat:
+            return self.score_fields
+        return self.all_police_subject_fields + [self.final_field]
 
+    def get_subject_field(self, subject) -> str:
+        for fld, sub_tuple in self.field_vars.items():
+            if fld == subject or sub_tuple[0] == subject or sub_tuple[1] == subject:
+                return fld
+
+    def get_field_idx(self, field, admin=False) -> int:
+        if admin and not self.is_psat:
+            return self.admin_score_fields.index(field)
+        return self.score_fields.index(field)
+
+    ##################
+    # Problem Count
     @property
     def problem_count(self) -> dict[str, int]:
         if self.is_psat:
             if self.exam_exam == '칠급':
                 return {'eoneo': 25, 'jaryo': 25, 'sanghwang': 25}
             return {'heonbeob': 25, 'eoneo': 40, 'jaryo': 40, 'sanghwang': 40}
-        return {fld: 40 for fld in self.answer_fields}
+        return {fld: 40 for fld in self.all_subject_fields}
 
     @property
     def count_fields(self) -> list[str]:
@@ -234,6 +248,8 @@ class PredictExamVars:
     def all_count_fields(self) -> list[str]:
         return self.count_fields + ['count_multiple', 'count_total']
 
+    ##################
+    # URLs
     @property
     def url_index(self) -> str:
         return reverse('predict:index')
@@ -247,7 +263,7 @@ class PredictExamVars:
         return reverse('predict:student-create', kwargs=self.exam_url_kwargs)
 
     @property
-    def url_answer_input(self) -> list:
+    def url_answer_input_list(self) -> list:
         kwargs_dict = [dict(self.exam_url_kwargs, **{'subject_field': fld}) for fld in self.answer_fields]
         return [reverse('predict:answer-input', kwargs=kwargs) for kwargs in kwargs_dict]
 
@@ -271,6 +287,8 @@ class PredictExamVars:
     def url_admin_update(self) -> str:
         return reverse('predict:admin-update', kwargs=self.exam_url_kwargs)
 
+    ##################
+    # Template Contexts
     @property
     def sub_title(self) -> str:
         default = {
@@ -293,17 +311,25 @@ class PredictExamVars:
         return ['' for _ in self.sub_list]
 
     @property
+    def admin_icon_subject(self) -> list[str]:
+        if self.is_psat:
+            return [icon_set_new.ICON_SUBJECT[sub] for sub in self.sub_list]
+        return ['' for _ in self.admin_sub_list]
+
+    @property
     def info_tab(self) -> dict[str, str]:
         return {'id': ''.join([str(i) for i in range(len(self.score_fields))])}
 
     @property
     def answer_tab(self) -> dict[str, str]:
-        return {
-            'id': ''.join([str(i) for i in range(len(self.sub_list))]),
-            'title': self.sub_list,
-            'url_answer_input': self.url_answer_input,
-        }
+        return {'id': ''.join([str(i) for i in range(len(self.sub_list))])}
 
+    @property
+    def admin_answer_tab(self) -> dict[str, str]:
+        return {'id': ''.join([str(i) for i in range(len(self.admin_sub_list))])}
+
+    ##################
+    # Queryset
     def get_exam(self) -> models.PsatExam | models.PoliceExam:
         return self.exam_model.objects.filter(**self.exam_info).first()
 
@@ -332,20 +358,8 @@ class PredictExamVars:
         return self.answer_count_model.objects.filter(**self.exam_info).annotate(
             no=F('number')).order_by('subject', 'number')
 
-    def get_problem_info(self, field: str, number: int) -> dict:
-        return dict(self.exam_info, **{'subject': field, 'number': number})
-
-    def get_subject_field(self, subject) -> str:
-        for fld, sub_tuple in self.field_vars.items():
-            if fld == subject or sub_tuple[0] == subject or sub_tuple[1] == subject:
-                return fld
-
-    def get_problem_count(self, field) -> int:
-        if self.is_psat:
-            if self.exam_exam == '칠급' or field in ['heonbeob', '헌법']:
-                return 25
-        return 40
-
+    ##################
+    # Methods
     def get_score_unit(self, field) -> float | int:
         if self.is_psat:
             if self.exam_exam == '칠급' or field in ['heonbeob', '헌법']:
@@ -360,13 +374,9 @@ class PredictExamVars:
     def get_empty_data_answer(self) -> list[list[dict[str, int | str]]]:
         return [
             [
-                {'no': no, 'ans': 0, 'field': fld}
-                for no in range(1, self.get_problem_count(fld) + 1)
-            ] for fld in self.answer_fields
+                {'no': no, 'ans': 0, 'field': fld} for no in range(1, self.problem_count[fld] + 1)
+            ] for fld in self.all_subject_fields
         ]
-
-    def get_field_idx(self, field) -> int:
-        return self.score_fields.index(field)
 
     def get_field_name(self, subject) -> str:
         return self.subject_to_field_dict[subject]
@@ -397,12 +407,11 @@ class PredictExamVars:
                 official_answer_uploaded = False
             except KeyError:
                 official_answer_uploaded = False
-        self.data_answer_official_tuple = data_answer_official, official_answer_uploaded
         return data_answer_official, official_answer_uploaded
 
-    def get_data_answer_predict(self) -> list:
+    def get_data_answer_predict(self, qs_answer_count) -> list:
         data_answer_predict = self.get_empty_data_answer()
-        for answer_count in self.qs_answer_count:
+        for answer_count in qs_answer_count:
             field = answer_count.subject
             if field in self.answer_fields:
                 field_idx = self.answer_fields.index(field)
@@ -421,12 +430,11 @@ class PredictExamVars:
 
         return data_answer_predict
 
-    def get_data_answer_student(self, student) -> list:
+    def get_data_answer_student(self, student, data_answer_predict, data_answer_official) -> list:
         data_answer_student = self.get_empty_data_answer()
-        data_answer_official = self.data_answer_official_tuple[0]
         official_answer_uploaded = data_answer_official[1]
 
-        for field_idx, val in enumerate(self.data_answer_predict):
+        for field_idx, val in enumerate(data_answer_predict):
             is_confirmed = student.data[field_idx][1]
             if is_confirmed:
                 for no_idx, answer_predict in enumerate(val):
@@ -463,7 +471,7 @@ class PredictExamVars:
                     })
         return data_answer_student
 
-    def get_info_answer_student(self, exam, student) -> list:
+    def get_info_answer_student(self, exam, student, data_answer_predict, data_answer_student) -> list:
         info_answer_student: list[dict] = [{} for _ in self.score_fields]
 
         score_predict_sum = score_real_sum = 0
@@ -487,9 +495,9 @@ class PredictExamVars:
                 answer_cnt_sum += answer_count
 
                 correct_predict_count = correct_real_count = 0
-                for idx, value in enumerate(self.data_answer_student[field_idx]):
+                for idx, value in enumerate(data_answer_student[field_idx]):
                     ans_student = value['ans']
-                    ans_predict = self.data_answer_predict[field_idx][idx]['ans']
+                    ans_predict = data_answer_predict[field_idx][idx]['ans']
 
                     result_predict = ans_student == ans_predict
                     value['result_predict'] = result_predict
@@ -511,7 +519,7 @@ class PredictExamVars:
                     score_predict = round(score_predict_sum / 3, 1)
                     score_real = round(score_real_sum / 3, 1)
                 answer_count = answer_cnt_sum
-            url_answer_input = self.url_answer_input[field_idx] if fld in self.answer_fields else ''
+            url_answer_input = self.url_answer_input_list[field_idx] if fld in self.answer_fields else ''
 
             info_answer_student[field_idx].update({
                 'icon': icon_set_new.ICON_SUBJECT[sub],
@@ -583,20 +591,20 @@ class PredictExamVars:
             if not student.data[idx][1]:
                 url_kwargs = self.exam_url_kwargs.copy()
                 url_kwargs['subject_field'] = fld
-                return self.url_answer_input[idx]
+                return self.url_answer_input_list[idx]
         return self.url_detail
 
     def update_exam_participants(self, exam, qs_student):
         department_dict = self.department_dict
         participants = {
-            'all': {'total': {fld: 0 for fld in self.score_fields}},
-            'filtered': {'total': {fld: 0 for fld in self.score_fields}},
+            'all': {'total': {fld: 0 for fld in self.admin_score_fields}},
+            'filtered': {'total': {fld: 0 for fld in self.admin_score_fields}},
         }
         participants['all'].update({
-            d_id: {fld: 0 for fld in self.score_fields} for d_id in department_dict.values()
+            d_id: {fld: 0 for fld in self.admin_score_fields} for d_id in department_dict.values()
         })
         participants['filtered'].update({
-            d_id: {fld: 0 for fld in self.score_fields} for d_id in department_dict.values()
+            d_id: {fld: 0 for fld in self.admin_score_fields} for d_id in department_dict.values()
         })
 
         for student in qs_student:

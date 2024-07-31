@@ -44,13 +44,18 @@ def update_stat_page(exam_vars: PredictExamVars, exam, page_obj, category: str):
     for idx, obj in enumerate(page_obj):
         obj_id = obj['id'] if isinstance(obj, dict) else str(obj.id)
         stat = []
-        for fld in exam_vars.score_fields:
+        for fld in exam_vars.admin_score_fields:
+            _participants = participants[obj_id][fld] if fld in participants[obj_id] else ''
+            _max = statistics[obj_id][fld].get('max') if fld in statistics[obj_id] else ''
+            _t10 = statistics[obj_id][fld].get('t10') if fld in statistics[obj_id] else ''
+            _t20 = statistics[obj_id][fld].get('t20') if fld in statistics[obj_id] else ''
+            _avg = statistics[obj_id][fld].get('avg') if fld in statistics[obj_id] else ''
             stat_dict = {
-                'participants': participants[obj_id][fld],
-                'max': statistics[obj_id][fld].get('max'),
-                't10': statistics[obj_id][fld].get('t10'),
-                't20': statistics[obj_id][fld].get('t20'),
-                'avg': statistics[obj_id][fld].get('avg'),
+                'participants': _participants,
+                'max': _max,
+                't10': _t10,
+                't20': _t20,
+                'avg': _avg,
             }
             stat.append(stat_dict)
         if isinstance(obj, dict):
@@ -68,12 +73,16 @@ def update_catalog_page(exam_vars: PredictExamVars, exam, qs_department, page_ob
         department_id = departments[obj.department]
         obj.stat = []
         for idx, fld in enumerate(exam_vars.score_fields):
+            _rank_total = obj.rank[category]['total'][fld] if fld in obj.rank[category]['total'] else ''
+            _rank_department = obj.rank[category]['department'][fld] if fld in obj.rank[category]['department'] else ''
+            _participants_total = participants['total'][fld] if fld in participants['total'] else ''
+            _participants_department = participants[department_id][fld] if fld in participants[department_id] else ''
             obj.stat.append({
                 'score': obj.data[idx][2],
-                'rank_total': obj.rank[category]['total'][fld],
-                'rank_department': obj.rank[category]['department'][fld],
-                'participants_total': participants['total'][fld],
-                'participants_department': participants[department_id][fld],
+                'rank_total': _rank_total,
+                'rank_department': _rank_department,
+                'participants_total': _participants_total,
+                'participants_department': _participants_department,
             })
 
 
@@ -83,7 +92,7 @@ def update_answer_page(exam_vars: PredictExamVars, exam, answer_predict, page_ob
     for obj in page_obj:
         no = obj.number
         fld = obj.subject
-        fld_idx = exam_vars.get_field_idx(fld)
+        fld_idx = exam_vars.get_field_idx(fld, admin=True)
         answer_count = getattr(obj, 'all')
         if fld in answer_official:
             ans_official = answer_official[fld][no - 1]

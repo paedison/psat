@@ -66,7 +66,7 @@
 
 {% partialdef sub_answer_line %}
     {% if info_answer.field == exam_vars.final_field %}
-        <tr class="text-center cursor-pointer table-warning">
+        <tr class="text-center table-warning">
             {% partialdef snippet_confirmed_subject inline=True %}
                 <th class="text-nowrap" aria-label="과목">
                     {{ info_answer.icon|safe }} {{ info_answer.subject }}
@@ -120,39 +120,35 @@
             {% endif %}
         </tr>
     {% else %}
-        <tr class="text-center cursor-pointer" hx-get="{{ info_answer.url_answer_input }}">
-            {% if info_answer.is_confirmed %}
+        {% if info_answer.is_confirmed %}
+            <tr class="text-center">
                 {% partial snippet_confirmed_subject %}
-            {% else %}
+                {% partial snippet_confirmed_score %}
+                {% partial snippet_participants %}
+                {% partial snippet_confirmed_answers %}
+            </tr>
+        {% else %}
+            <tr class="text-center cursor-pointer" hx-get="{{ info_answer.url_answer_input }}">
                 <th class="text-nowrap" aria-label="과목">
                     <a class="text-decoration-none" href="{{ info_answer.url_answer_input }}">
                         {{ info_answer.icon|safe }} {{ info_answer.subject }}
                     </a>
                 </th>
-            {% endif %}
-
-            {% if info_answer.is_confirmed %}
-                {% partial snippet_confirmed_score %}
-            {% else %}
                 <td aria-label="점수">
                     <a href="{{ info_answer.url_answer_input }}">
                         <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
                     </a>
                 </td>
-            {% endif %}
 
-            {% partial snippet_participants %}
+                {% partial snippet_participants %}
 
-            {% if info_answer.is_confirmed %}
-                {% partial snippet_confirmed_answers %}
-            {% else %}
                 <td class="text-nowrap" aria-label="선택 답안수">
                     <a class="text-decoration-none fw-bold" href="{{ info_answer.url_answer_input }}">
                         {{ info_answer.answer_count|default:0 }} / {{ info_answer.problem_count }}
                         <span class="badge rounded-pill text-bg-danger">미제출</span>
                     </a>
                 </td>
-            {% endif %}
-        </tr>
+            </tr>
+        {% endif %}
     {% endif %}
 {% endpartialdef sub_answer_line %}

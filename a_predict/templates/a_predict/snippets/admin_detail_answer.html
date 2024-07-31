@@ -18,9 +18,9 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-            {% for id in exam_vars.answer_tab.id %}
+            {% for id in exam_vars.admin_answer_tab.id %}
                 {% cycle answer_title.0 answer_title.1 answer_title.2 answer_title.3 answer_title.4 answer_title.5 answer_title.6 as tab_title silent %}
-                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe exam_vars.icon_subject.4|safe exam_vars.icon_subject.5|safe exam_vars.icon_subject.6|safe as icon silent %}
+                {% cycle exam_vars.admin_icon_subject.0|safe exam_vars.admin_icon_subject.1|safe exam_vars.admin_icon_subject.2|safe exam_vars.admin_icon_subject.3|safe exam_vars.admin_icon_subject.4|safe exam_vars.admin_icon_subject.5|safe exam_vars.admin_icon_subject.6|safe as icon silent %}
                 {% #nav_tab prefix='Answer' id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
         </div>

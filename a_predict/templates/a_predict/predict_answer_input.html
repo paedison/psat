@@ -89,11 +89,10 @@
                         </div>
                     </div>
                     <form class="text-center mb-3">
-                        <input type="text" name="answer_id" value="{{ answer_student.id }}" aria-label="Answer ID" hidden/>
                         <button class="btn btn-primary prevent_double_click" type="submit"
                                 data-bs-toggle="modal" data-bs-target="#modalContainer"
                                 hx-target="#modalContainer" hx-push-url="false" hx-swap="innerHTML"
-                                hx-post="{{ url_answer_confirm }}">
+                                hx-get="{{ url_answer_confirm }}">
                             {{ subject }} 답안 제출
                         </button>
                     </form>

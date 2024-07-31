@@ -75,7 +75,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
         # default page settings
         pagination_url='?', header_stat=header_stat,
         header_catalog=header_catalog, header_answer=header_answer,
-        answer_title=exam_vars.sub_list, form=form,
+        answer_title=exam_vars.admin_sub_list, form=form,
     )
 
     # stat_page
@@ -122,7 +122,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
         context = update_context_data(context, **{f'{header}_page': catalog_page})
 
     qs_answer_count = exam_vars.get_qs_answer_count()
-    answer_predict = exam_vars.get_data_answer_predict()
+    answer_predict = exam_vars.get_data_answer_predict(qs_answer_count)
     for header in header_answer:
         answer_page = get_answer_page(qs_answer_count, exam_vars.all_subject_fields, page, header)
         utils.update_answer_page(exam_vars, exam, answer_predict, answer_page[0])
@@ -207,8 +207,8 @@ def update_answer_official(request, exam_vars, exam) -> tuple:
                             exam.answer_official[fld][no - 1] = int(rows[no])
                 if is_updated:
                     exam.save()
-        except ValueError:
-            pass
+        except ValueError as e:
+            print(e)
     return is_updated, message_dict[is_updated]
 
 
@@ -239,7 +239,7 @@ def update_statistics(exam_vars, exam, qs_student):
         command_utils_new.create_or_update_model(exam_vars.exam_model, ['statistics'], statistics_data)
 
         # Update answer_count_model
-        answer_lists = command_utils_new.get_answer_lists(qs_student, exam_vars.answer_fields)
+        answer_lists = command_utils_new.get_answer_lists(qs_student, exam_vars.all_subject_fields)
         count_lists = command_utils_new.get_count_lists(exam_vars, exam, answer_lists)
         answer_fields = exam_vars.count_fields + ['count_multiple', 'count_total', 'answer']
         answer_count_data = command_utils_new.get_answer_count_model_data(exam_vars, answer_fields, count_lists)

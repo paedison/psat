@@ -2,27 +2,41 @@
 
 {% #modal header=header %}
     <h5 class="modal-title mx-auto fw-bold">
-        {% if is_confirmed %}
-            <div class="py-2">
-                <h5 class="modal-title mx-auto fw-bold" hx-trigger="load delay:0.5s"
-                    hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true"
-                    hx-get="{{ next_url }}">
-                    <span class="text-success">답안이 정상적으로<br/>제출되었습니다.</span>
-                </h5>
-            </div>
-            <script>
-                function closeModal(el) {
-                    if (el) {setTimeout(function () {el.click()}, 1000)}
-                }
-                if (typeof button === 'undefined') {
-                    let button = document.querySelector('div.modal-header > .btn-close');
-                    closeModal(button);
-                } else {
-                    closeModal(button);
-                }
-            </script>
+        {% if verifying %}
+            <form class="text-center">
+                <button class="btn btn-primary prevent_double_click" type="submit"
+                        hx-target="#modalContainer" hx-push-url="false" hx-swap="innerHTML"
+                        hx-post="{{ url_answer_confirm }}">
+                    답안 제출
+                </button>
+                <button class="btn btn-outline-danger prevent_double_click" type="button"
+                        data-bs-dismiss="modal">
+                    취소
+                </button>
+            </form>
         {% else %}
-            <span class="text-danger">모든 문제의 답안을<br/>선택해주세요.</span>
+            {% if is_confirmed %}
+                <div class="py-2">
+                    <h5 class="modal-title mx-auto fw-bold" hx-trigger="load delay:0.5s"
+                        hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true"
+                        hx-get="{{ next_url }}">
+                        <span class="text-success">답안이 정상적으로<br/>제출되었습니다.</span>
+                    </h5>
+                </div>
+                <script>
+                    function closeModal(el) {
+                        if (el) {setTimeout(function () {el.click()}, 1000)}
+                    }
+                    if (typeof button === 'undefined') {
+                        let button = document.querySelector('div.modal-header > .btn-close');
+                        closeModal(button);
+                    } else {
+                        closeModal(button);
+                    }
+                </script>
+            {% else %}
+                <span class="text-danger">모든 문제의 답안을<br/>선택해주세요.</span>
+            {% endif %}
         {% endif %}
     </h5>
 {% /modal %}

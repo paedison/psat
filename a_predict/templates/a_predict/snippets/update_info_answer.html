@@ -16,7 +16,7 @@
         {{ info_answer.score_predict|floatformat:1|default:'' }}
     </div>
     <div id="{{ info_answer.field }}_participants"
-         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+         class="htmx-fade-up-in delay-2 fw-bold" hx-swap-oob="true">
         {{ info_answer.participants|default:0 }}
     </div>
 {% endpartialdef sub_answer_line %}

@@ -7,7 +7,7 @@
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
             {% for id in exam_vars.answer_tab.id %}
-                {% cycle exam_vars.answer_tab.title.0 exam_vars.answer_tab.title.1 exam_vars.answer_tab.title.2 exam_vars.answer_tab.title.3 exam_vars.answer_tab.title.4 as tab_title silent %}
+                {% cycle exam_vars.sub_list.0 exam_vars.sub_list.1 exam_vars.sub_list.2 exam_vars.sub_list.3 exam_vars.sub_list.4 as tab_title silent %}
                 {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe exam_vars.icon_subject.4|safe as icon silent %}
                 {% #nav_tab prefix='Answer' id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
             {% endfor %}
