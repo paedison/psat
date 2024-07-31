@@ -24,8 +24,8 @@
         </thead>
         <tbody>
             {% for _ in exam_vars.info_tab.id %}
-                {% cycle stat_total.0 stat_total.1 stat_total.2 stat_total.3 stat_total.4 as stat_tot silent %}
-                {% cycle stat_department.0 stat_department.1 stat_department.2 stat_department.3 stat_department.4 as stat_dep silent %}
+                {% cycle stat_total.0 stat_total.1 stat_total.2 stat_total.3 stat_total.4 stat_total.5 as stat_tot silent %}
+                {% cycle stat_department.0 stat_department.1 stat_department.2 stat_department.3 stat_department.4 stat_department.5 as stat_dep silent %}
                 {% if stat_tot %}{% partial sub_score_line %}{% endif %}
             {% endfor %}
         </tbody>
@@ -33,13 +33,14 @@
 </article>
 
 {% partialdef sub_score_line %}
-    <tr class="text-center {% if stat_tot.field == 'psat_avg' %}table-warning{% endif %}">
+    <tr class="text-center {% if stat_tot.field == exam_vars.final_field %}table-warning{% endif %}">
         <th class="text-nowrap" aria-label="과목">
-            {% if stat_tot.is_confirmed or stat_tot.field == 'psat_avg' %}
-                {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
+            {% if stat_tot.is_confirmed or stat_tot.field == exam_vars.final_field %}
+                {% if exam_vars.exam_type == 'psat' %}{{ stat_tot.icon|safe }}{% endif %}
+                {{ stat_tot.subject }}
             {% else %}
                 <a class="text-decoration-none"
-                   href="" hx-boost="true">
+                   href="{{ stat_tot.url_answer_input }}" hx-boost="true">
                     {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
                 </a>
             {% endif %}
@@ -47,11 +48,11 @@
 
         {% if not stat_tot.is_confirmed %}
             <td colspan="5">
-                {% if stat_tot.field == 'psat_avg' %}
+                {% if stat_tot.field == exam_vars.final_field %}
                     <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                 {% else %}
                     <a hx-boost="true"
-                       href="">
+                       href="{{ stat_tot.url_answer_input }}">
                         <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                     </a>
                 {% endif %}

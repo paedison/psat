@@ -69,7 +69,8 @@
         <tr class="text-center table-warning">
             {% partialdef snippet_confirmed_subject inline=True %}
                 <th class="text-nowrap" aria-label="과목">
-                    {{ info_answer.icon|safe }} {{ info_answer.subject }}
+                    {% if exam_vars.exam_type == 'psat' %}{{ info_answer.icon|safe }}{% endif %}
+                    {{ info_answer.subject }}
                 </th>
             {% endpartialdef snippet_confirmed_subject %}
 
@@ -131,7 +132,8 @@
             <tr class="text-center cursor-pointer" hx-get="{{ info_answer.url_answer_input }}">
                 <th class="text-nowrap" aria-label="과목">
                     <a class="text-decoration-none" href="{{ info_answer.url_answer_input }}">
-                        {{ info_answer.icon|safe }} {{ info_answer.subject }}
+                        {% if exam_vars.exam_type == 'psat' %}{{ info_answer.icon|safe }}{% endif %}
+                        {{ info_answer.subject }}
                     </a>
                 </th>
                 <td aria-label="점수">

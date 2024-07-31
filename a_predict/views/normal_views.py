@@ -78,6 +78,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     # info_answer
     student.refresh_from_db()
     info_answer_student = exam_vars.get_info_answer_student(exam, student, data_answer_predict, data_answer_student)
+    exam_vars.update_student_score(student, info_answer_student)
     if is_main or is_info_answer:
         context = update_context_data(context, info_answer_student=info_answer_student)
     if is_info_answer:
@@ -134,6 +135,8 @@ def student_create_view(request: HtmxHttpRequest, **kwargs):
         form = form_class(request.POST)
         if form.is_valid():
             student = form.save(commit=False)
+            if exam_vars.exam_exam == '경위':
+                exam_vars.selection = student.selection = form.cleaned_data['selection']
             student = exam_vars.create_student_instance(student)
             next_url = exam_vars.url_detail
             for dt in student.data:

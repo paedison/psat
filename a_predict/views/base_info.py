@@ -400,7 +400,7 @@ class PredictExamVars:
             official_answer_uploaded = True
             try:
                 for field, answer in exam.answer_official.items():
-                    field_idx = self.get_field_idx(field)
+                    field_idx = self.get_field_idx(field, admin=True)
                     for no, ans in enumerate(answer, start=1):
                         data_answer_official[field_idx][no - 1] = {'no': no, 'ans': ans, 'field': field}
             except IndexError:
@@ -430,15 +430,24 @@ class PredictExamVars:
 
         return data_answer_predict
 
-    def get_data_answer_student(self, student, data_answer_predict, data_answer_official) -> list:
-        data_answer_student = self.get_empty_data_answer()
+    def get_data_answer_student(
+            self, student, data_answer_predict, data_answer_official) -> list:
+        data_answer_student = [
+            [
+                {'no': no, 'ans': 0, 'field': fld} for no in range(1, self.problem_count[fld] + 1)
+            ] for fld in self.answer_fields
+        ]
         official_answer_uploaded = data_answer_official[1]
 
-        for field_idx, val in enumerate(data_answer_predict):
-            is_confirmed = student.data[field_idx][1]
+        for dt in student.data:
+            fld = dt[0]
+            fld_idx = self.get_field_idx(fld)
+            is_confirmed = dt[1]
+            answer_student = dt[-1]
             if is_confirmed:
-                for no_idx, answer_predict in enumerate(val):
-                    ans_student = student.data[field_idx][-1][no_idx]
+                for idx, ans_student in enumerate(answer_student):
+                    answer_predict = data_answer_predict[fld_idx][idx]
+                    answer_official = data_answer_official[fld_idx][idx]
                     ans_predict = answer_predict['ans']
                     count_total = answer_predict['count'][-1]
                     rate_selection = 0
@@ -447,24 +456,24 @@ class PredictExamVars:
 
                     prediction_is_correct = result = None
                     if official_answer_uploaded:
-                        ans_official = data_answer_official[field_idx][no_idx]['ans']
+                        ans_official = answer_official['ans']
                         if ans_official:
                             prediction_is_correct = ans_official == ans_predict
-                            answer_predict['prediction_is_correct'] = ans_official == ans_predict
                             if count_total:
                                 if 1 <= ans_official <= 5:
                                     result = ans_student == ans_official
-                                    rate_correct = round(answer_predict['count'][ans_official] * 100 / count_total, 1)
+                                    rate_correct = round(
+                                        answer_predict['count'][ans_official] * 100 / count_total, 1)
                                 else:
                                     ans_official_list = [int(ans) for ans in str(ans_official)]
                                     result = ans_student in ans_official_list
                                     rate_correct = round(sum(
-                                        answer_predict['count'][ans] for ans in ans_official_list) * 100 / count_total, 1)
-                                data_answer_official[field_idx][no_idx]['rate_correct'] = rate_correct
+                                        answer_predict['count'][ans] for ans in ans_official_list
+                                    ) * 100 / count_total, 1)
+                                answer_official['rate_correct'] = rate_correct
 
                     answer_predict['prediction_is_correct'] = prediction_is_correct
-                    data_answer_student[field_idx][no_idx].update({
-                        'no': no_idx + 1,
+                    data_answer_student[fld_idx][idx].update({
                         'ans': ans_student,
                         'rate_selection': rate_selection,
                         'result_real': result,
@@ -474,7 +483,8 @@ class PredictExamVars:
     def get_info_answer_student(self, exam, student, data_answer_predict, data_answer_student) -> list:
         info_answer_student: list[dict] = [{} for _ in self.score_fields]
 
-        score_predict_sum = score_real_sum = 0
+        score_predict_sum = 0
+        score_real_sum = 0
         participants = exam.participants['all']['total']
 
         answer_cnt_sum = 0
@@ -506,13 +516,16 @@ class PredictExamVars:
                         correct_real_count += 1 if value['result_real'] else 0
 
                 problem_count = self.problem_count[fld]
-                score_predict = correct_predict_count * 100 / problem_count
+                score_unit = self.get_score_unit(fld)
+                score_predict = correct_predict_count * score_unit
+                score_real = correct_real_count * score_unit
                 if fld in self.only_psat_fields + self.all_police_subject_fields:
                     score_predict_sum += score_predict
-                    score_real_sum += score_predict
-                score_real = correct_real_count * 100 / problem_count
+                    score_real_sum += score_real
             else:
-                problem_count = sum([val for val in self.problem_count.values()])
+                problem_count = sum([
+                    val for fld, val in self.problem_count.items() if fld in self.score_fields
+                ])
                 score_predict = score_predict_sum
                 score_real = score_real_sum
                 if self.exam_type == 'psat':
@@ -544,6 +557,7 @@ class PredictExamVars:
                 'rank': 0, 'score': 0, 'participants': 0,
                 'max_score': 0, 'top_score_10': 0,
                 'top_score_20': 0, 'avg_score': 0,
+                'url_answer_input': '',
             })
 
         filter_exp = {}
@@ -583,6 +597,7 @@ class PredictExamVars:
                     'top_score_10': top_score_10,
                     'top_score_20': top_score_20,
                     'avg_score': avg_score,
+                    'url_answer_input': self.get_url_answer_input(fld) if fld != self.final_field else '',
                 })
         return stat_data
 
@@ -593,6 +608,17 @@ class PredictExamVars:
                 url_kwargs['subject_field'] = fld
                 return self.url_answer_input_list[idx]
         return self.url_detail
+
+    @staticmethod
+    def update_student_score(student, info_answer_student):
+        needs_update = False
+        for idx, dt in enumerate(student.data):
+            score_real = info_answer_student[idx]['score_real']
+            if score_real and dt[2] != score_real:
+                dt[2] = score_real
+                needs_update = True
+        if needs_update:
+            student.save()
 
     def update_exam_participants(self, exam, qs_student):
         department_dict = self.department_dict

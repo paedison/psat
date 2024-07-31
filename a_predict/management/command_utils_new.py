@@ -267,32 +267,33 @@ def get_participants(exam_vars: CommandPredictExamVars, exam, qs_student):
 
     for student in qs_student:
         d_id = department_dict[student.department]
-        for fld_idx, dt in enumerate(student.data):
-            field = exam_vars.score_fields[fld_idx]
+        for dt in student.data:
+            fld = dt[0]
             is_confirmed = dt[1]
             if is_confirmed:
-                participants['all']['total'][field] += 1
-                participants['all'][d_id][field] += 1
+                participants['all']['total'][fld] += 1
+                participants['all'][d_id][fld] += 1
 
             all_confirmed_at = student.answer_all_confirmed_at
             if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
-                participants['filtered']['total'][field] += 1
-                participants['filtered'][d_id][field] += 1
+                participants['filtered']['total'][fld] += 1
+                participants['filtered'][d_id][fld] += 1
     return participants
 
 
 def get_default_dict(exam_vars: CommandPredictExamVars, default):
-    score_fields = exam_vars.score_fields
     department_dict = get_department_dict(exam_vars)
     default_dict = {
-        'all': {'total': {fld: default for fld in score_fields}},
-        'filtered': {'total': {fld: default for fld in score_fields}},
+        'all': {'total': {fld: default for fld in exam_vars.admin_score_fields}},
+        'filtered': {'total': {fld: default for fld in exam_vars.admin_score_fields}},
     }
     default_dict['all'].update({
-        d_id: {fld: default for fld in score_fields} for d_id in department_dict.values()
+        d_id: {fld: default for fld in exam_vars.admin_score_fields}
+        for d_id in department_dict.values()
     })
     default_dict['filtered'].update({
-        d_id: {fld: default for fld in score_fields} for d_id in department_dict.values()
+        d_id: {fld: default for fld in exam_vars.admin_score_fields}
+        for d_id in department_dict.values()
     })
     return default_dict
 

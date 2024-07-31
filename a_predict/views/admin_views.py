@@ -1,3 +1,5 @@
+import itertools
+
 import pandas as pd
 from django.db.models import F, Value
 from django.shortcuts import render
@@ -187,6 +189,21 @@ def update_answer_official(request, exam_vars, exam) -> tuple:
     if form.is_valid():
         uploaded_file = request.FILES['file']
         df = pd.read_excel(uploaded_file, sheet_name='정답', header=0, index_col=0)
+
+        answer_symbol = {'①': 1, '②': 2, '③': 3, '④': 4, '⑤': 5}
+        keys = list(answer_symbol.keys())
+        combinations = []
+        for i in range(1, 6):
+            combinations.extend(itertools.combinations(keys, i))
+
+        replace_dict = {}
+        for combination in combinations:
+            key = ''.join(combination)
+            value = int(''.join(str(answer_symbol[k]) for k in combination))
+            replace_dict[key] = value
+
+        df.replace(to_replace=replace_dict, inplace=True)
+        df = df.infer_objects(copy=False)
         df.fillna(value=0, inplace=True)
         answer_official = {}
         try:

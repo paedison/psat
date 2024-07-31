@@ -22,7 +22,7 @@
         </thead>
         <tbody>
             {% for _ in exam_vars.info_tab.id %}
-                {% cycle stat_data.0 stat_data.1 stat_data.2 stat_data.3 stat_data.4 as stat silent %}
+                {% cycle stat_data.0 stat_data.1 stat_data.2 stat_data.3 stat_data.4 stat_data.5 as stat silent %}
                 {% if stat %}{% partial sub_stat_line %}{% endif %}
             {% endfor %}
         </tbody>
@@ -30,9 +30,9 @@
 </article>
 
 {% partialdef sub_stat_line %}
-    <tr class="text-center {% if stat.field == 'psat_avg' %}table-warning{% endif %}">
+    <tr class="text-center {% if stat.field == exam_vars.final_field %}table-warning{% endif %}">
         <th class="text-nowrap" aria-label="과목">
-            {% if stat.is_confirmed or stat.field == 'psat_avg' %}
+            {% if stat.is_confirmed or stat.field == exam_vars.final_field %}
                 {{ stat.icon|safe }} {{ stat.subject }}
             {% else %}
                 <a class="text-decoration-none"
@@ -44,7 +44,7 @@
 
         {% if not stat.is_confirmed %}
             <td colspan="6">
-                {% if stat.field == 'psat_avg' %}
+                {% if stat.field == exam_vars.final_field %}
                     <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                 {% else %}
                     <a hx-boost="true"
