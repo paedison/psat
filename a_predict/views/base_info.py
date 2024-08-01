@@ -268,8 +268,9 @@ class PredictExamVars:
         return [reverse('predict:answer-input', kwargs=kwargs) for kwargs in kwargs_dict]
 
     def get_url_answer_input(self, subject_field) -> list:
-        kwargs = dict(self.exam_url_kwargs, **{'subject_field': subject_field})
-        return reverse('predict:answer-input', kwargs=kwargs)
+        if subject_field in self.answer_fields:
+            kwargs = dict(self.exam_url_kwargs, **{'subject_field': subject_field})
+            return reverse('predict:answer-input', kwargs=kwargs)
 
     def get_url_answer_confirm(self, subject_field) -> str:
         kwargs = dict(self.exam_url_kwargs, **{'subject_field': subject_field})
@@ -323,6 +324,10 @@ class PredictExamVars:
     @property
     def answer_tab(self) -> dict[str, str]:
         return {'id': ''.join([str(i) for i in range(len(self.sub_list))])}
+
+    @property
+    def admin_stat_tab(self) -> dict[str, str]:
+        return {'id': ''.join([str(i) for i in range(len(self.admin_subject_list))])}
 
     @property
     def admin_answer_tab(self) -> dict[str, str]:
@@ -412,9 +417,9 @@ class PredictExamVars:
     def get_data_answer_predict(self, qs_answer_count) -> list:
         data_answer_predict = self.get_empty_data_answer()
         for answer_count in qs_answer_count:
-            field = answer_count.subject
-            if field in self.answer_fields:
-                field_idx = self.answer_fields.index(field)
+            fld = answer_count.subject
+            if fld in self.all_subject_fields:
+                field_idx = self.all_subject_fields.index(fld)
                 no = answer_count.number
 
                 count_list = [getattr(answer_count, c) for c in self.count_fields]
@@ -424,7 +429,7 @@ class PredictExamVars:
                 count_list.extend([answer_count.count_multiple, answer_count.count_total])
 
                 data_answer_predict[field_idx][no - 1].update({
-                    'no': no, 'ans': ans_predict, 'field': field,
+                    'no': no, 'ans': ans_predict, 'field': fld,
                     'rate_accuracy': rate_accuracy, 'count': count_list,
                 })
 
@@ -519,9 +524,8 @@ class PredictExamVars:
                 score_unit = self.get_score_unit(fld)
                 score_predict = correct_predict_count * score_unit
                 score_real = correct_real_count * score_unit
-                if fld in self.only_psat_fields + self.all_police_subject_fields:
-                    score_predict_sum += score_predict
-                    score_real_sum += score_real
+                score_predict_sum += score_predict
+                score_real_sum += score_real
             else:
                 problem_count = sum([
                     val for fld, val in self.problem_count.items() if fld in self.score_fields
@@ -532,13 +536,13 @@ class PredictExamVars:
                     score_predict = round(score_predict_sum / 3, 1)
                     score_real = round(score_real_sum / 3, 1)
                 answer_count = answer_cnt_sum
-            url_answer_input = self.url_answer_input_list[field_idx] if fld in self.answer_fields else ''
+            url_answer_input = self.get_url_answer_input(fld)
 
             info_answer_student[field_idx].update({
                 'icon': icon_set_new.ICON_SUBJECT[sub],
                 'sub': sub, 'subject': subject, 'field': fld,
                 'is_confirmed': is_confirmed,
-                'participants': participants[fld],
+                'participants': participants.get(fld, ''),
                 'score_real': score_real, 'score_predict': score_predict,
                 'problem_count': problem_count, 'answer_count': answer_count,
                 'url_answer_input': url_answer_input,

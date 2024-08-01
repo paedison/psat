@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
         self.stdout.write('================')
         self.stdout.write('Update answer_count_model')
-        answer_lists = command_utils_new.get_answer_lists(qs_student, exam_vars.answer_fields)
+        answer_lists = command_utils_new.get_answer_lists(qs_student, exam_vars.all_subject_fields)
         count_lists = command_utils_new.get_count_lists(exam_vars, exam, answer_lists)
         answer_fields = exam_vars.count_fields + ['count_multiple', 'count_total', 'answer']
         answer_count_data = command_utils_new.get_answer_count_model_data(exam_vars, answer_fields, count_lists)

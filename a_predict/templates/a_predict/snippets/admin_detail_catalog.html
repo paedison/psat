@@ -68,7 +68,7 @@
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
-                    {% for _ in exam_vars.info_tab.id %}
+                    {% for _ in exam_vars.admin_stat_tab.id %}
                         <th class="text-primary text-nowrap p-2 td-right-no-border" rowspan="2">점수</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border" colspan="2">직렬 석차</th>
@@ -76,7 +76,7 @@
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
-                    {% for _ in exam_vars.info_tab.id %}
+                    {% for _ in exam_vars.admin_stat_tab.id %}
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">%</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
@@ -108,12 +108,12 @@
                             <td class="text-nowrap p-2">{{ obj.unit }}</td>
                             <td class="text-nowrap p-2">{{ obj.get_department_display }}</td>
 
-                            {% for _ in exam_vars.info_tab.id %}
-                                {% if exam_vars.info_tab.id|length == 4 %}
+                            {% for _ in exam_vars.admin_stat_tab.id %}
+                                {% if exam_vars.admin_stat_tab.id|length == 4 %}
                                     {% cycle obj.stat.3 obj.stat.0 obj.stat.1 obj.stat.2 as stat silent %}
-                                {% elif exam_vars.info_tab.id|length == 5 %}
+                                {% elif exam_vars.admin_stat_tab.id|length == 5 %}
                                     {% cycle obj.stat.4 obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 as stat silent %}
-                                {% elif exam_vars.info_tab.id|length == 8 %}
+                                {% elif exam_vars.admin_stat_tab.id|length == 8 %}
                                     {% cycle obj.stat.7 obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 obj.stat.5 obj.stat.6 as stat silent %}
                                 {% endif %}
                                 <td class="text-nowrap p-2 td-left-no-border td-right-no-border">

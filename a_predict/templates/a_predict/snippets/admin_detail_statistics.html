@@ -63,7 +63,7 @@
                 </tr>
 
                 <tr class="text-center table-warning align-middle">
-                    {% for _ in exam_vars.info_tab.id %}
+                    {% for _ in exam_vars.admin_stat_tab.id %}
                         <th class="text-primary text-nowrap p-2 td-right-no-border">응시<br/>인원</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">최고<br/>점수</th>
                         <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
@@ -77,13 +77,13 @@
                     {% for obj in page_obj %}
                         <tr class="text-center">
                             <td class="text-nowrap p-2">{{ obj.unit }}</td>
-                            <td class="text-nowrap p-2">{{ obj.get_name_display }}</td>
-                            {% for _ in exam_vars.info_tab.id %}
-                                {% if exam_vars.info_tab.id|length == 4 %}
+                            <td class="text-nowrap p-2">{{ obj.get_name_display|default:obj.department }}</td>
+                            {% for _ in exam_vars.admin_stat_tab.id %}
+                                {% if exam_vars.admin_stat_tab.id|length == 4 %}
                                     {% cycle obj.stat.3 obj.stat.0 obj.stat.1 obj.stat.2 as stat silent %}
-                                {% elif exam_vars.info_tab.id|length == 5 %}
+                                {% elif exam_vars.admin_stat_tab.id|length == 5 %}
                                     {% cycle obj.stat.4 obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 as stat silent %}
-                                {% elif exam_vars.info_tab.id|length == 8 %}
+                                {% elif exam_vars.admin_stat_tab.id|length == 8 %}
                                     {% cycle obj.stat.7 obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 obj.stat.5 obj.stat.6 as stat silent %}
                                 {% endif %}
                                 <td class="text-nowrap p-2 td-right-no-border">

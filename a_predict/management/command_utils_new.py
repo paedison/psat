@@ -141,51 +141,59 @@ def get_score_data_score_lists(
     })
 
     for student in qs_student:
+        all_confirmed_at = student.answer_all_confirmed_at
         d_id = exam_vars.department_model.objects.get(name=student.department).id
-        data = []
         score_sum = 0
+        needs_update = False
         for dt in student.data:
             fld = dt[0]
-            correct_count = 0
-            score_unit = exam_vars.get_score_unit(fld)
-            if fld != exam_vars.final_field:
-                answer_official = exam.answer_official[fld]
-                for i, ans_official in enumerate(answer_official):
-                    if 1 <= ans_official <= 5:
-                        is_correct = dt[-1][i] == ans_official
-                    else:
-                        ans_official_list = [int(digit) for digit in str(ans_official)]
-                        is_correct = dt[-1][i] in ans_official_list
-                    correct_count += 1 if is_correct else 0
+            is_confirmed = dt[1]
+            answer_student = dt[-1]
+            if is_confirmed:
+                if fld != exam_vars.final_field:
+                    correct_count = 0
+                    score_unit = exam_vars.get_score_unit(fld)
+                    for idx, ans_student in enumerate(answer_student):
+                        try:
+                            ans_official = exam.answer_official[fld][idx]
+                        except KeyError as e:
+                            print(e)
+                            break
 
-            _score = correct_count * score_unit
-            score_sum += _score if fld in exam_vars.only_psat_fields else 0
-            dt[2] = _score
+                        if 1 <= ans_official <= 5:
+                            is_correct = ans_student == ans_official
+                        else:
+                            ans_official_list = [int(digit) for digit in str(ans_official)]
+                            is_correct = ans_student in ans_official_list
+                        correct_count += 1 if is_correct else 0
 
-            data.append(dt)
-            score_lists['all']['total'][fld].append(_score)
-            score_lists['all'][d_id][fld].append(_score)
-            if dt[1]:
-                all_confirmed_at = student.answer_all_confirmed_at
-                if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
-                    score_lists['filtered']['total'][dt[0]].append(_score)
-                    score_lists['filtered'][d_id][dt[0]].append(_score)
+                    _score = correct_count * score_unit
+                    score_lists['all']['total'][fld].append(_score)
+                    score_lists['all'][d_id][fld].append(_score)
 
-        score_final = round(score_sum / 3, 1)
-        data[-1][2] = score_final
+                    if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
+                        score_lists['filtered']['total'][fld].append(_score)
+                        score_lists['filtered'][d_id][fld].append(_score)
 
-        score_lists['all']['total'][exam_vars.final_field].append(score_final)
-        score_lists['all'][d_id][exam_vars.final_field].append(score_final)
-        if data[-1][1]:
-            all_confirmed_at = student.answer_all_confirmed_at
-            if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
-                score_lists['filtered']['total'][exam_vars.final_field].append(score_final)
-                score_lists['filtered'][d_id][exam_vars.final_field].append(score_final)
+                    score_sum += _score
+                    if dt[2] != _score:
+                        dt[2] = _score
+                        needs_update = True
+                else:
+                    _score = round(score_sum / 3, 1) if exam_vars.exam_type == 'psat' else score_sum
+                    score_lists['all']['total'][fld].append(_score)
+                    score_lists['all'][d_id][fld].append(_score)
 
-        score_data['update_list'].append(student)
-        score_data['update_count'] += 1
+                    if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
+                        score_lists['filtered']['total'][fld].append(_score)
+                        score_lists['filtered'][d_id][fld].append(_score)
 
-        add_obj_to_model_update_data(score_data, student, {'data': data}, update_fields)
+                    if dt[2] != _score:
+                        dt[2] = _score
+                        needs_update = True
+        if needs_update:
+            score_data['update_list'].append(student)
+            score_data['update_count'] += 1
     return score_data, score_lists
 
 
@@ -204,12 +212,12 @@ def get_rank_data(exam_vars: CommandPredictExamVars, exam, qs_student, score_lis
         d_id = exam_vars.department_model.objects.get(name=student.department).id
         rank = {
             'all': {
-                'total': {field: 0 for field in exam_vars.score_fields},
-                'department': {field: 0 for field in exam_vars.score_fields},
+                'total': {fld: 0 for fld in exam_vars.score_fields},
+                'department': {fld: 0 for fld in exam_vars.score_fields},
             },
             'filtered': {
-                'total': {field: 0 for field in exam_vars.score_fields},
-                'department': {field: 0 for field in exam_vars.score_fields},
+                'total': {fld: 0 for fld in exam_vars.score_fields},
+                'department': {fld: 0 for fld in exam_vars.score_fields},
             },
         }
         for dt in student.data:
@@ -242,17 +250,19 @@ def get_confirmed_scores(
         qs_student = qs_student.filter(department=department)
 
     scores = {
-        'all': {field: [] for field in score_fields},
-        'filtered': {field: [] for field in score_fields},
+        'all': {fld: [] for fld in score_fields},
+        'filtered': {fld: [] for fld in score_fields},
     }
-    for idx, fld in enumerate(score_fields):
-        for student in qs_student:
-            if student.data[idx][1]:
-                scores['all'][fld].append(student.data[idx][2])
-
-            all_confirmed_at = student.answer_all_confirmed_at
+    for student in qs_student:
+        all_confirmed_at = student.answer_all_confirmed_at
+        for dt in student.data:
+            fld = dt[0]
+            is_confirmed = dt[1]
+            score = dt[2]
+            if is_confirmed:
+                scores['all'][fld].append(score)
             if all_confirmed_at and all_confirmed_at < exam.answer_official_opened_at:
-                scores['filtered'][fld].append(student.data[idx][2])
+                scores['filtered'][fld].append(score)
 
     sorted_scores = {
         'all': {fld: sorted(scores['all'][fld], reverse=True) for fld in score_fields},
@@ -323,15 +333,15 @@ def get_statistics(exam_vars: CommandPredictExamVars, score_lists, qs_department
     admin_score_fields = exam_vars.admin_score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
     statistics: dict[str, dict[str | int, dict]] = {
         'all': {
-            'total': {field: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for field in admin_score_fields},
+            'total': {fld: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for fld in admin_score_fields},
         },
         'filtered': {
-            'total': {field: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for field in admin_score_fields},
+            'total': {fld: {'max': 0, 't10': 0, 't20': 0, 'avg': 0} for fld in admin_score_fields},
         },
     }
     for dep in qs_department:
-        statistics['all'][dep.id] = {field: {} for field in admin_score_fields}
-        statistics['filtered'][dep.id] = {field: {} for field in admin_score_fields}
+        statistics['all'][dep.id] = {fld: {} for fld in admin_score_fields}
+        statistics['filtered'][dep.id] = {fld: {} for fld in admin_score_fields}
 
     for key, val in score_lists.items():
         for dep, scores_dict in val.items():
@@ -360,27 +370,28 @@ def get_statistics_data(exam, statistics):
 
 def get_count_lists(
         exam_vars: CommandPredictExamVars, exam, total_answer_lists: dict) -> dict[str, list]:
-    count_lists: dict[str, list] = {}
+    count_lists: dict[str, list[dict]] = {fld: [] for fld in exam_vars.all_subject_fields}
     for fld in exam_vars.all_subject_fields:
         ans_official = exam.answer_official[fld] if fld in exam.answer_official else None
         count_lists[fld] = []
         problem_count = exam_vars.problem_count[fld]
-        for i in range(1, problem_count + 1):
-            answer = ans_official[i - 1] if ans_official else 0
-            problem_info = exam_vars.get_problem_info(fld, i)
+        for no in range(1, problem_count + 1):
+            answer = ans_official[no - 1] if ans_official else 0
+            problem_info = exam_vars.get_problem_info(fld, no)
             count_fields_info = {fld: 0 for fld in exam_vars.all_count_fields}
             append_dict = dict(problem_info, **count_fields_info, **{'answer': answer})
             count_lists[fld].append(append_dict)
+
     for fld, answer_lists in total_answer_lists.items():
         if answer_lists:
             problem_count = exam_vars.problem_count[fld]
             distributions = [Counter() for _ in range(problem_count)]
             for answer_list in answer_lists:
-                for i, val in enumerate(answer_list):
+                for no, val in enumerate(answer_list):
                     if val > 5:
-                        distributions[i]['count_multiple'] += 1
+                        distributions[no]['count_multiple'] += 1
                     else:
-                        distributions[i][val] += 1
+                        distributions[no][val] += 1
 
             for idx, counter in enumerate(distributions):
                 count_dict = {f'count_{i}': counter.get(i, 0) for i in range(6)}
@@ -423,15 +434,15 @@ def get_total_answer_lists_by_category(exam_vars: CommandPredictExamVars, exam, 
         if participants_filtered:
             rank_ratio_filtered = rank_filtered_student / participants_filtered
 
-        for fld in exam_vars.all_subject_fields:
-            fld_idx = exam_vars.get_field_idx(fld) if fld in exam_vars.police_common_fields else 4
-            if student.data[fld_idx]:
-                ans_student = student.data[fld_idx][-1]
+        for dt in student.data:
+            fld = dt[0]
+            ans_student = dt[-1]
+            if ans_student:
                 top_rank_threshold = 0.27
                 mid_rank_threshold = 0.73
 
-                def append_answer(catgry: str, rank: str):
-                    total_answer_lists_by_category[catgry][rank][fld].append(ans_student)
+                def append_answer(ctgry: str, rank: str):
+                    total_answer_lists_by_category[ctgry][rank][fld].append(ans_student)
 
                 append_answer('all', 'all_rank')
                 if rank_ratio_all and 0 <= rank_ratio_all <= top_rank_threshold:
@@ -453,19 +464,20 @@ def get_total_answer_lists_by_category(exam_vars: CommandPredictExamVars, exam, 
 
 
 def get_total_count_dict_by_category(exam_vars: CommandPredictExamVars, total_answer_lists: dict):
-    total_count_dict = {}
+    total_count_dict = {
+        fld: [{} for _ in range(cnt)] for fld, cnt in exam_vars.problem_count.items()
+    }
     for fld, cnt in exam_vars.problem_count.items():
-        total_count_dict[fld] = []
-        for number in range(1, cnt + 1):
-            problem_info = exam_vars.get_problem_info(fld, number)
+        for no in range(1, cnt + 1):
+            problem_info = exam_vars.get_problem_info(fld, no)
             problem_info.update({
                 'all': {rnk: [] for rnk in exam_vars.rank_list},
                 'filtered': {rnk: [] for rnk in exam_vars.rank_list},
             })
-            total_count_dict[fld].append(problem_info)
+            total_count_dict[fld][no - 1] = problem_info
 
-    for category, value1 in total_answer_lists.items():
-        for rank, value2 in value1.items():
+    for ctgry, value1 in total_answer_lists.items():
+        for rnk, value2 in value1.items():
             for fld, answer_lists in value2.items():
                 p_count = exam_vars.problem_count[fld]
                 if answer_lists and fld != exam_vars.final_field:
@@ -481,7 +493,7 @@ def get_total_count_dict_by_category(exam_vars: CommandPredictExamVars, total_an
                         count_list = [counter.get(i, 0) for i in range(6)]
                         count_total = sum(count_list[1:])
                         count_list.extend([counter.get('count_multiple', 0), count_total])
-                        total_count_dict[fld][idx][category][rank] = count_list
+                        total_count_dict[fld][idx][ctgry][rnk] = count_list
 
     return total_count_dict
 

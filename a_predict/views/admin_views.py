@@ -79,12 +79,14 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
         header_catalog=header_catalog, header_answer=header_answer,
         answer_title=exam_vars.admin_sub_list, form=form,
     )
+    qs_answer_count = exam_vars.get_qs_answer_count()
+    qs_department = exam_vars.get_qs_department()
+    qs_student = exam_vars.get_qs_student()
 
     # stat_page
     if is_stat:
         category = hx_pagination.split('_')[1]
-        qs_department = exam_vars.get_qs_department()
-        stat_page = get_stat_page(qs_department, page)
+        stat_page = get_stat_page(qs_department, exam_vars.is_psat, page)
         utils.update_stat_page(exam_vars, exam, stat_page[0], category)
         context = update_context_data(context, **{f'{hx_pagination}_page': stat_page})
         return render(request, template_stat, context)
@@ -92,8 +94,6 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     # catalog_page
     if is_catalog:
         category = hx_pagination.split('_')[1]
-        qs_student = exam_vars.get_qs_student()
-        qs_department = exam_vars.get_qs_department()
         catalog_page = get_catalog_page(qs_student, category, page)
         utils.update_catalog_page(exam_vars, exam, qs_department, catalog_page[0], category)
         context = update_context_data(context, **{f'{hx_pagination}_page': catalog_page})
@@ -101,29 +101,25 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
 
     # answer_page
     if is_answer:
-        qs_answer_count = exam_vars.get_qs_answer_count()
-        answer_predict = exam_vars.get_data_answer_predict()
+        answer_predict = exam_vars.get_data_answer_predict(qs_answer_count)
         answer_page = get_answer_page(qs_answer_count, exam_vars.all_subject_fields, page, hx_pagination)
-        context = update_context_data(context, **{f'{hx_pagination}_page': answer_page})
         utils.update_answer_page(exam_vars, exam, answer_predict, answer_page[0])
+        context = update_context_data(context, **{f'{hx_pagination}_page': answer_page})
         return render(request, template_answer, context)
 
     # main_page
-    qs_department = exam_vars.get_qs_department()
     for header in header_stat:
         category = header.split('_')[1]
-        stat_page = get_stat_page(qs_department, page)
+        stat_page = get_stat_page(qs_department, exam_vars.is_psat, page)
         utils.update_stat_page(exam_vars, exam, stat_page[0], category)
         context = update_context_data(context, **{f'{header}_page': stat_page})
 
     for header in header_catalog:
         category = header.split('_')[1]
-        qs_student = exam_vars.get_qs_student()
         catalog_page = get_catalog_page(qs_student, category, page)
         utils.update_catalog_page(exam_vars, exam, qs_department, catalog_page[0], category)
         context = update_context_data(context, **{f'{header}_page': catalog_page})
 
-    qs_answer_count = exam_vars.get_qs_answer_count()
     answer_predict = exam_vars.get_data_answer_predict(qs_answer_count)
     for header in header_answer:
         answer_page = get_answer_page(qs_answer_count, exam_vars.all_subject_fields, page, header)
@@ -133,9 +129,12 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     return render(request, 'a_predict/predict_admin_detail.html', context)
 
 
-def get_stat_page(qs_department, page):
-    departments = [{'id': 'total', 'unit': '전체', 'department': '전체'}]
-    departments.extend(qs_department)
+def get_stat_page(qs_department, is_psat, page):
+    if is_psat:
+        departments = [{'id': 'total', 'unit': '전체', 'department': '전체'}]
+        departments.extend(qs_department)
+    else:
+        departments = [{'id': 'total', 'unit': '경위', 'department': '일반'}]
     stat_page: tuple = utils.get_page_obj_and_range(departments, page)
     return stat_page
 
