@@ -7,7 +7,6 @@ from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.views.decorators.http import require_POST
 from django_htmx.http import retarget, reswap, push_url
 
 from common.constants import icon_set_new
@@ -66,7 +65,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     # answer_submit
     data_answer_official_tuple = exam_vars.get_data_answer_official(exam)
     data_answer_student = exam_vars.get_data_answer_student(
-        student, data_answer_predict, data_answer_official_tuple[0])
+        student, data_answer_predict, data_answer_official_tuple)
     if is_main or is_answer_submit:
         context = update_context_data(
             context, answer_confirmed=answer_confirmed,
@@ -77,7 +76,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
 
     # info_answer
     student.refresh_from_db()
-    info_answer_student = exam_vars.get_info_answer_student(exam, student, data_answer_predict, data_answer_student)
+    info_answer_student = exam_vars.get_info_answer_student(exam, student, data_answer_student)
     exam_vars.update_student_score(student, info_answer_student)
     if is_main or is_info_answer:
         context = update_context_data(context, info_answer_student=info_answer_student)
