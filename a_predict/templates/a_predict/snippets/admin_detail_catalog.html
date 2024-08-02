@@ -8,8 +8,8 @@
               class="ms-auto">
             {% csrf_token %}
             <div class="btn-group">
-                <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-                   href="">
+                <a class="btn btn-sm btn-outline-secondary" title="Excel로 성적 일람표 내보내기"
+                   href="{{ exam_vars.url_admin_export_catalog }}">
                     Excel로 내보내기
                 </a>
 {#                <input name="student_ids" type="text" aria-label="Student IDs" hidden#}

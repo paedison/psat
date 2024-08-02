@@ -35,7 +35,7 @@
                             <form enctype="multipart/form-data"
                                   hx-headers='{"Hx-Admin-Update":"answer_official"}'
                                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                  hx-post="{% url 'predict:admin-update' exam_type exam.year exam.exam exam.round %}">
+                                  hx-post="{{ exam_vars.url_admin_update }}">
                                 <div class="input-group">
                                     <input type="file" name="file" class="form-control" required id="id_file">
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
@@ -47,7 +47,7 @@
                         <div class="col-md-6 d-flex justify-content-end">
                             <form hx-headers='{"Hx-Admin-Update":"statistics"}'
                                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                  hx-post="{% url 'predict:admin-update' exam_type exam.year exam.exam exam.round %}">
+                                  hx-post="{{ exam_vars.url_admin_update }}">
                                 <div class="input-group">
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">

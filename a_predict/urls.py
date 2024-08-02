@@ -10,16 +10,16 @@ admin_patterns = [
          admin_views.detail_view, name='admin-detail'),
     path('update/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
          admin_views.update_view, name='admin-update'),
+    path('export/statistics/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         admin_views.export_statistics, name='admin-export-statistics'),
+    path('export/catalog/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         admin_views.export_catalog, name='admin-export-catalog'),
+    path('export/answer/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+         admin_views.export_answer, name='admin-export-answer'),
 ]
 
 # admin_patterns = [
 #     path('<str:category>/<int:year>/<str:ex>/<int:round>/print/', admin_views.print_view, name='print'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/statistics/',
-#          admin_views.export_statistics_to_excel_view, name='export_statistics'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/analysis/',
-#          admin_views.export_analysis_to_excel_view, name='export_analysis'),
-#     path('<str:category>/<int:year>/<str:ex>/<int:round>/export/students_score/',
-#          admin_views.export_scores_to_excel_view, name='export_scores'),
 #     path('export/predict/google_sheet',
 #          admin_views.export_predict_data_to_google_sheet_view, name='export_predict_to_google'),
 # ]

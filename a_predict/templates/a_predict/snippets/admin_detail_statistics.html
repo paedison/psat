@@ -10,8 +10,8 @@
                hx-get="{% url 'predict:admin-list' %}">
                 목록
             </a>
-            <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-               href="">
+            <a class="btn btn-sm btn-outline-secondary" title="Excel로 성적 통계 내보내기"
+               href="{{ exam_vars.url_admin_export_statistics }}">
                 Excel로 내보내기
             </a>
 {#            <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"#}
@@ -77,7 +77,7 @@
                     {% for obj in page_obj %}
                         <tr class="text-center">
                             <td class="text-nowrap p-2">{{ obj.unit }}</td>
-                            <td class="text-nowrap p-2">{{ obj.get_name_display|default:obj.department }}</td>
+                            <td class="text-nowrap p-2">{{ obj.get_name_display }}</td>
                             {% for _ in exam_vars.admin_stat_tab.id %}
                                 {% if exam_vars.admin_stat_tab.id|length == 4 %}
                                     {% cycle obj.stat.3 obj.stat.0 obj.stat.1 obj.stat.2 as stat silent %}

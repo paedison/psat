@@ -1,15 +1,18 @@
+import io
 import itertools
+from urllib.parse import quote
 
 import pandas as pd
 from django.db.models import F, Value
+from django.http import FileResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
+from a_predict.management import command_utils_new
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 from .base_info import PredictExamVars
 from .. import models, utils, forms
-from a_predict.management import command_utils_new
 
 
 def list_view(request: HtmxHttpRequest):
@@ -86,7 +89,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     # stat_page
     if is_stat:
         category = hx_pagination.split('_')[1]
-        stat_page = get_stat_page(qs_department, exam_vars.is_psat, page)
+        stat_page = get_stat_page(exam_vars, page)
         utils.update_stat_page(exam_vars, exam, stat_page[0], category)
         context = update_context_data(context, **{f'{hx_pagination}_page': stat_page})
         return render(request, template_stat, context)
@@ -110,7 +113,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     # main_page
     for header in header_stat:
         category = header.split('_')[1]
-        stat_page = get_stat_page(qs_department, exam_vars.is_psat, page)
+        stat_page = get_stat_page(exam_vars, page)
         utils.update_stat_page(exam_vars, exam, stat_page[0], category)
         context = update_context_data(context, **{f'{header}_page': stat_page})
 
@@ -129,12 +132,13 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     return render(request, 'a_predict/predict_admin_detail.html', context)
 
 
-def get_stat_page(qs_department, is_psat, page):
-    if is_psat:
+def get_stat_page(exam_vars: PredictExamVars, page):
+    qs_department = exam_vars.get_qs_department()
+    if exam_vars.is_psat:
         departments = [{'id': 'total', 'unit': '전체', 'department': '전체'}]
         departments.extend(qs_department)
     else:
-        departments = [{'id': 'total', 'unit': '경위', 'department': '일반'}]
+        departments = [{'id': 'total', 'unit': '경위', 'get_name_display': '일반'}]
     stat_page: tuple = utils.get_page_obj_and_range(departments, page)
     return stat_page
 
@@ -151,6 +155,172 @@ def get_answer_page(qs_answer_count, all_subject_fields, page, header):
     qs_answer_count = qs_answer_count.filter(subject=field)
     answer_page: tuple = utils.get_page_obj_and_range(qs_answer_count, page)
     return answer_page
+
+
+def export_statistics(request: HtmxHttpRequest, **kwargs):
+    exam_vars = PredictExamVars(request, **kwargs)
+    exam = exam_vars.get_exam()
+    qs_department = exam_vars.get_qs_department()
+
+    unit = '전체' if exam_vars.is_psat else '경위'
+    department = '전체' if exam_vars.is_psat else '일반'
+    stat_all = [{'id': 'total', 'unit': unit, 'department': department}]
+    stat_filtered = [{'id': 'total', 'unit': unit, 'department': department}]
+
+    stat_all.extend(list(qs_department.values('id', 'unit', department=F('name'))))
+    stat_filtered.extend(list(qs_department.values('id', 'unit', department=F('name'))))
+    utils.update_stat_page(exam_vars, exam, stat_all, 'all')
+    utils.update_stat_page(exam_vars, exam, stat_filtered, 'filtered')
+
+    buffer = io.BytesIO()
+    df_all = get_df_for_statistics(exam_vars, stat_all)
+    df_filtered = get_df_for_statistics(exam_vars, stat_filtered)
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        df_all.to_excel(writer, sheet_name='all')
+        df_filtered.to_excel(writer, sheet_name='filtered')
+    buffer.seek(0)
+
+    filename = f'{exam_vars.sub_title}_성적 통계.xlsx'
+    filename = quote(filename)
+
+    return FileResponse(buffer, as_attachment=True, filename=filename)
+
+
+def get_df_for_statistics(exam_vars: PredictExamVars, data):
+    level0 = ['ID', '모집단위', '직렬']
+    for subject in exam_vars.admin_subject_list:
+        level0 += [subject] * 5
+    level1 = [''] * 3 + ['응시인원', '최고점수', '상위10%', '상위20%', '평균점수'] * 5
+    col = [level0, level1]
+
+    subject_num = len(exam_vars.admin_subject_list)
+    data_edited = []
+    for dt in data:
+        append_list = [dt['id'], dt['unit'], dt['department']]
+        for i in range(-1, subject_num - 1):
+            val = dt['stat'][i]
+            append_list.append(val['participants'] if val['participants'] else '')
+            append_list.append(val['max'] if val['max'] else '')
+            append_list.append(val['t10'] if val['t10'] else '')
+            append_list.append(val['t20'] if val['t20'] else '')
+            append_list.append(val['avg'] if val['avg'] else '')
+        data_edited.append(append_list)
+    df = pd.DataFrame(data=data_edited, columns=col)
+    df.set_index(('ID', ''), inplace=True)
+    return df
+
+
+def export_catalog(request: HtmxHttpRequest, **kwargs):
+    exam_vars = PredictExamVars(request, **kwargs)
+    exam = exam_vars.get_exam()
+    qs_student = exam_vars.get_qs_student()
+    qs_department = exam_vars.get_qs_department()
+
+    catalog_all = utils.get_qs_student_for_admin_views(qs_student, 'all')
+    catalog_filtered = utils.get_qs_student_for_admin_views(qs_student, 'filtered')
+    utils.update_catalog_page(exam_vars, exam, qs_department, catalog_all, 'all')
+    utils.update_catalog_page(exam_vars, exam, qs_department, catalog_filtered, 'filtered')
+
+    buffer = io.BytesIO()
+    df_all = get_df_for_catalog(exam_vars, catalog_all)
+    df_filtered = get_df_for_catalog(exam_vars, catalog_filtered)
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        df_all.to_excel(writer, sheet_name='all')
+        df_filtered.to_excel(writer, sheet_name='filtered')
+    buffer.seek(0)
+
+    filename = f'{exam_vars.sub_title}_성적 일람표.xlsx'
+    filename = quote(filename)
+
+    return FileResponse(buffer, as_attachment=True, filename=filename)
+
+
+def get_df_for_catalog(exam_vars: PredictExamVars, data):
+    level0 = ['ID', '등수', '이름', '수험번호', '모집단위', '직렬']
+    for subject in exam_vars.admin_subject_list:
+        level0 += [subject] * 5
+    level1 = [''] * 6 + ['점수', '전체 석차', '전체 석차', '직렬 석차', '직렬 석차'] * 5
+    level2 = [''] * 6 + ['', '등', '%', '등', '%'] * 5
+    col = [level0, level1, level2]
+
+    subject_num = len(exam_vars.admin_subject_list)
+    data_edited = []
+    for dt in data:
+        append_list = [dt.id, dt.stat[-1]['rank_total'], dt.name, dt.serial, dt.unit, dt.department]
+        for i in range(-1, subject_num - 1):
+            val = dt.stat[i]
+            rank_ratio_total = round(val['rank_total'] * 100 / val['participants_total'], 1) if val['participants_total'] else ''
+            rank_ratio_department = round(val['rank_department'] * 100 / val['participants_department'], 1) if val['participants_department'] else ''
+            append_list.append(val['score'] if val['score'] else '')
+            append_list.append(val['rank_total'] if val['rank_total'] else '')
+            append_list.append(rank_ratio_total)
+            append_list.append(val['rank_department'] if val['rank_department'] else '')
+            append_list.append(rank_ratio_department)
+        data_edited.append(append_list)
+    df = pd.DataFrame(data=data_edited, columns=col)
+    df.set_index(('ID', '', ''), inplace=True)
+    return df
+
+
+def export_answer(request: HtmxHttpRequest, **kwargs):
+    exam_vars = PredictExamVars(request, **kwargs)
+    exam = exam_vars.get_exam()
+    qs_answer_count = exam_vars.get_qs_answer_count()
+
+    answer_predict = exam_vars.get_data_answer_predict(qs_answer_count)
+    answer_page = {}
+    for fld in exam_vars.answer_fields:
+        subject = exam_vars.field_vars[fld][1]
+        answers = qs_answer_count.filter(subject=fld)
+        utils.update_answer_page(exam_vars, exam, answer_predict, answers)
+        answer_page[subject] = answers
+
+    buffer = io.BytesIO()
+    df_set = {}
+    for subject, page in answer_page.items():
+        df_set[subject] = get_df_for_answer(exam_vars, page)
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        for subject, df in df_set.items():
+            df.to_excel(writer, sheet_name=subject)
+    buffer.seek(0)
+
+    filename = f'{exam_vars.sub_title}_문항 분석표.xlsx'
+    filename = quote(filename)
+
+    return FileResponse(buffer, as_attachment=True, filename=filename)
+
+
+def get_df_for_answer(exam_vars: PredictExamVars, data):
+    level0 = [
+        '문제 번호', '공식 정답', '예상 정답',
+        '전체 정답률(%)', '상위권 정답률(%)', '중위권 정답률(%)', '하위권 정답률(%)', '변별도',
+    ]
+    level0 += ['답안 선택수(명)-전체'] * 5 + ['답안 선택률(%)-전체'] * 5
+    level0 += ['답안 선택수(명)-상위권'] * 5 + ['답안 선택률(%)-상위권'] * 5
+    level0 += ['답안 선택수(명)-중위권'] * 5 + ['답안 선택률(%)-중위권'] * 5
+    level0 += ['답안 선택수(명)-하위권'] * 5 + ['답안 선택률(%)-하위권'] * 5
+    level1 = [''] * 8 + ['①', '②', '③', '④', '⑤'] * 8
+    col = [level0, level1]
+
+    data_edited = []
+    for dt in data:
+        append_list = [
+            dt.number, dt.ans_official, dt.ans_predict,
+            dt.rate_all_rank, dt.rate_top_rank, dt.rate_mid_rank, dt.rate_low_rank, dt.rate_gap,
+        ]
+        for rnk in exam_vars.rank_list:
+            for i in range(1, 6):
+                count = getattr(dt, rnk)[i]
+                append_list.append(count)
+            for i in range(1, 6):
+                count = getattr(dt, rnk)[i]
+                count_total = getattr(dt, rnk)[-1]
+                rate = round(count * 100 / count_total, 1) if count_total else 0
+                append_list.append(rate)
+        data_edited.append(append_list)
+    df = pd.DataFrame(data=data_edited, columns=col)
+    df.set_index(('문제 번호', ''), inplace=True)
+    return df
 
 
 @require_POST
@@ -178,7 +348,7 @@ def update_view(request: HtmxHttpRequest, **kwargs):
     return render(request, 'a_predict/snippets/admin_modal_update.html', context)
 
 
-def update_answer_official(request, exam_vars, exam) -> tuple:
+def update_answer_official(request, exam_vars: PredictExamVars, exam) -> tuple:
     is_updated = None
     message_dict = {
         None: '에러가 발생했습니다.', True: '문제 정답을 업데이트했습니다.', False: '기존 정답 데이터와 일치합니다.'
@@ -228,7 +398,7 @@ def update_answer_official(request, exam_vars, exam) -> tuple:
     return is_updated, message_dict[is_updated]
 
 
-def update_statistics(exam_vars, exam, qs_student):
+def update_statistics(exam_vars: PredictExamVars, exam, qs_student):
     is_updated = None
     message = '정답을 업로드해주세요.'
     if exam.answer_official:
@@ -236,7 +406,7 @@ def update_statistics(exam_vars, exam, qs_student):
         message = '통계가 업데이트됐습니다.'
 
         # Update student_model for data(score)
-        score_data, score_lists = command_utils_new.get_score_data_score_lists(exam_vars, exam, qs_student, ['data'])
+        score_data, score_lists = command_utils_new.get_score_data_score_lists(exam_vars, exam, qs_student)
         command_utils_new.create_or_update_model(exam_vars.student_model, ['data'], score_data)
 
         # Update student_model for rank

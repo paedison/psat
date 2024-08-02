@@ -125,8 +125,7 @@ def get_answer_lists(qs_student, answer_fields):
     return answer_lists
 
 
-def get_score_data_score_lists(
-        exam_vars: CommandPredictExamVars, exam, qs_student, update_fields: list):
+def get_score_data_score_lists(exam_vars: PredictExamVars, exam, qs_student):
     score_data = get_empty_model_data()
     d_ids = exam_vars.department_model.objects.filter(exam=exam_vars.exam_exam).values_list('id', flat=True)
     score_lists: dict[str, dict[str, dict[str, list]]] = {
@@ -175,7 +174,9 @@ def get_score_data_score_lists(
                         score_lists['filtered']['total'][fld].append(_score)
                         score_lists['filtered'][d_id][fld].append(_score)
 
-                    score_sum += _score
+                    if exam_vars.exam_exam != '행시' or fld != 'heonbeob':
+                        score_sum += _score
+
                     if dt[2] != _score:
                         dt[2] = _score
                         needs_update = True
@@ -197,7 +198,7 @@ def get_score_data_score_lists(
     return score_data, score_lists
 
 
-def get_rank_data(exam_vars: CommandPredictExamVars, exam, qs_student, score_lists):
+def get_rank_data(exam_vars: PredictExamVars, exam, qs_student, score_lists):
     rank_data = get_empty_model_data()
 
     sorted_scores = {}
@@ -243,7 +244,7 @@ def get_rank_data(exam_vars: CommandPredictExamVars, exam, qs_student, score_lis
 
 
 def get_confirmed_scores(
-        exam_vars: CommandPredictExamVars, exam, qs_student, department: str | None = None
+        exam_vars: PredictExamVars, exam, qs_student, department: str | None = None
 ) -> dict:
     score_fields = exam_vars.score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
     if department:
@@ -271,7 +272,7 @@ def get_confirmed_scores(
     return sorted_scores
 
 
-def get_participants(exam_vars: CommandPredictExamVars, exam, qs_student):
+def get_participants(exam_vars: PredictExamVars, exam, qs_student):
     participants = get_default_dict(exam_vars, 0)
     department_dict = get_department_dict(exam_vars)
 
@@ -291,7 +292,7 @@ def get_participants(exam_vars: CommandPredictExamVars, exam, qs_student):
     return participants
 
 
-def get_default_dict(exam_vars: CommandPredictExamVars, default):
+def get_default_dict(exam_vars: PredictExamVars, default):
     department_dict = get_department_dict(exam_vars)
     default_dict = {
         'all': {'total': {fld: default for fld in exam_vars.admin_score_fields}},
@@ -308,12 +309,12 @@ def get_default_dict(exam_vars: CommandPredictExamVars, default):
     return default_dict
 
 
-def get_department_dict(exam_vars: CommandPredictExamVars):
+def get_department_dict(exam_vars: PredictExamVars):
     qs_department = get_qs_department(exam_vars)
     return {department.name: department.id for department in qs_department}
 
 
-def get_qs_department(exam_vars: CommandPredictExamVars, unit=None):
+def get_qs_department(exam_vars: PredictExamVars, unit=None):
     if unit:
         return exam_vars.department_model.objects.filter(
             exam=exam_vars.exam_exam, unit=unit).order_by('id')
@@ -329,7 +330,7 @@ def get_exam_model_data(exam, participants):
     return exam_model_data
 
 
-def get_statistics(exam_vars: CommandPredictExamVars, score_lists, qs_department):
+def get_statistics(exam_vars: PredictExamVars, score_lists, qs_department):
     admin_score_fields = exam_vars.admin_score_fields  # ['heonbeob', 'eoneo', 'jaryo', 'sanghwang', 'psat_avg']
     statistics: dict[str, dict[str | int, dict]] = {
         'all': {
@@ -369,7 +370,7 @@ def get_statistics_data(exam, statistics):
 
 
 def get_count_lists(
-        exam_vars: CommandPredictExamVars, exam, total_answer_lists: dict) -> dict[str, list]:
+        exam_vars: PredictExamVars, exam, total_answer_lists: dict) -> dict[str, list]:
     count_lists: dict[str, list[dict]] = {fld: [] for fld in exam_vars.all_subject_fields}
     for fld in exam_vars.all_subject_fields:
         ans_official = exam.answer_official[fld] if fld in exam.answer_official else None
@@ -402,7 +403,7 @@ def get_count_lists(
     return count_lists
 
 
-def get_answer_count_model_data(exam_vars: CommandPredictExamVars, matching_fields: list, all_count_dict: dict):
+def get_answer_count_model_data(exam_vars: PredictExamVars, matching_fields: list, all_count_dict: dict):
     answer_count_model_data = get_empty_model_data()
     for fld in exam_vars.all_subject_fields:
         for row in all_count_dict[fld]:
@@ -414,7 +415,7 @@ def get_answer_count_model_data(exam_vars: CommandPredictExamVars, matching_fiel
     return answer_count_model_data
 
 
-def get_total_answer_lists_by_category(exam_vars: CommandPredictExamVars, exam, qs_student):
+def get_total_answer_lists_by_category(exam_vars: PredictExamVars, exam, qs_student):
     total_answer_lists_by_category: dict[str, dict[str, dict[str, list]]] = {
         'all': {rnk: {fld: [] for fld in exam_vars.all_subject_fields}
                 for rnk in exam_vars.rank_list},
@@ -463,7 +464,7 @@ def get_total_answer_lists_by_category(exam_vars: CommandPredictExamVars, exam, 
     return total_answer_lists_by_category
 
 
-def get_total_count_dict_by_category(exam_vars: CommandPredictExamVars, total_answer_lists: dict):
+def get_total_count_dict_by_category(exam_vars: PredictExamVars, total_answer_lists: dict):
     total_count_dict = {
         fld: [{} for _ in range(cnt)] for fld, cnt in exam_vars.problem_count.items()
     }
@@ -499,7 +500,7 @@ def get_total_count_dict_by_category(exam_vars: CommandPredictExamVars, total_an
 
 
 def get_total_answer_count_model_data(
-        exam_vars: CommandPredictExamVars, matching_fields: list, all_count_dict: dict):
+        exam_vars: PredictExamVars, matching_fields: list, all_count_dict: dict):
     answer_count_model_data = get_empty_model_data()
     for fld in exam_vars.all_subject_fields:
         for data in all_count_dict[fld]:

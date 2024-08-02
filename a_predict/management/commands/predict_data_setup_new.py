@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
         self.stdout.write('================')
         self.stdout.write('Update student_model for data(score)')
-        score_data, score_lists = command_utils_new.get_score_data_score_lists(exam_vars, exam, qs_student, ['data'])
+        score_data, score_lists = command_utils_new.get_score_data_score_lists(exam_vars, exam, qs_student)
         command_utils_new.create_or_update_model(exam_vars.student_model, ['data'], score_data)
 
         self.stdout.write('================')

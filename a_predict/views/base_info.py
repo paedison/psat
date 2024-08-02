@@ -288,6 +288,18 @@ class PredictExamVars:
     def url_admin_update(self) -> str:
         return reverse('predict:admin-update', kwargs=self.exam_url_kwargs)
 
+    @property
+    def url_admin_export_statistics(self) -> str:
+        return reverse('predict:admin-export-statistics', kwargs=self.exam_url_kwargs)
+
+    @property
+    def url_admin_export_catalog(self) -> str:
+        return reverse('predict:admin-export-catalog', kwargs=self.exam_url_kwargs)
+
+    @property
+    def url_admin_export_answer(self) -> str:
+        return reverse('predict:admin-export-answer', kwargs=self.exam_url_kwargs)
+
     ##################
     # Template Contexts
     @property
@@ -659,7 +671,7 @@ class PredictExamVars:
 
     @staticmethod
     def update_rank(student, **stat):
-        rank: dict[str, dict[str,dict[str, int]]] = {
+        rank: dict[str, dict[str, dict[str, int]]] = {
             'all': {
                 'total': {s['field']: s['rank'] for s in stat['stat_total_all']},
                 'department': {s['field']: s['rank'] for s in stat['stat_department_all']},

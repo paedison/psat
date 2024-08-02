@@ -41,7 +41,7 @@ def update_stat_page(exam_vars: PredictExamVars, exam, page_obj, category: str):
     participants = exam.participants[category]
     statistics = exam.statistics[category]
     for idx, obj in enumerate(page_obj):
-        obj_id = obj['id'] if isinstance(obj, dict) else str(obj.id)
+        obj_id = str(obj['id']) if isinstance(obj, dict) else str(obj.id)
         stat = []
         for fld in exam_vars.admin_score_fields:
             _participants = participants[obj_id][fld] if fld in participants[obj_id] else ''
@@ -96,15 +96,14 @@ def update_answer_page(exam_vars: PredictExamVars, exam, answer_predict, page_ob
             ans_official = answer_official[fld][no_idx]
             obj.ans_official = ans_official
             obj.ans_predict = answer_predict[fld_idx][no_idx]['ans']
-            for fld in exam_vars.rank_list:
+            for rnk in exam_vars.rank_list:
+                ans_count = answer_count[rnk]
                 rate = 0
                 try:
-                    if answer_count[fld][-1]:
-                        rate = round(
-                            answer_count[fld][ans_official] * 100 / answer_count[fld][-1], 1
-                        )
+                    if ans_count[-1]:
+                        rate = round(ans_count[ans_official] * 100 / ans_count[-1], 1)
                 except IndexError:
                     pass
-                setattr(obj, fld, answer_count[fld])
-                setattr(obj, f'rate_{fld}', rate)
+                setattr(obj, rnk, ans_count)
+                setattr(obj, f'rate_{rnk}', rate)
             setattr(obj, 'rate_gap', obj.rate_top_rank - obj.rate_low_rank)
