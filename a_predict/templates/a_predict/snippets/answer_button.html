@@ -1,5 +1,5 @@
 {% for i in '1234' %}{% partial answer_button %}{% endfor %}
-{% if exam.exam == 'psat' %}
+{% if exam_vars.exam_type == 'psat' %}
     {% if subject_field != 'heonbeob' %}
         {% with i='5' %}{% partial answer_button %}{% endwith %}
     {% endif %}
