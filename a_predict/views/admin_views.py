@@ -10,11 +10,13 @@ from django.views.decorators.http import require_POST
 
 from a_predict.management import command_utils_new
 from common.constants import icon_set_new
+from common.decorators import only_staff_allowed
 from common.utils import HtmxHttpRequest, update_context_data
 from .base_info import PredictExamVars
 from .. import models, utils, forms
 
 
+@only_staff_allowed()
 def list_view(request: HtmxHttpRequest):
     info = {'menu': 'predict', 'view_type': 'predict'}
 
@@ -42,6 +44,7 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_predict/predict_admin_list.html', context)
 
 
+@only_staff_allowed()
 def detail_view(request: HtmxHttpRequest, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
     exam = exam_vars.get_exam()
@@ -157,6 +160,7 @@ def get_answer_page(qs_answer_count, all_subject_fields, page, header):
     return answer_page
 
 
+@only_staff_allowed()
 def export_statistics(request: HtmxHttpRequest, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
     exam = exam_vars.get_exam()
@@ -210,6 +214,7 @@ def get_df_for_statistics(exam_vars: PredictExamVars, data):
     return df
 
 
+@only_staff_allowed()
 def export_catalog(request: HtmxHttpRequest, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
     exam = exam_vars.get_exam()
@@ -262,6 +267,7 @@ def get_df_for_catalog(exam_vars: PredictExamVars, data):
     return df
 
 
+@only_staff_allowed()
 def export_answer(request: HtmxHttpRequest, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
     exam = exam_vars.get_exam()
@@ -324,6 +330,7 @@ def get_df_for_answer(exam_vars: PredictExamVars, data):
 
 
 @require_POST
+@only_staff_allowed()
 def update_view(request: HtmxHttpRequest, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
     exam = exam_vars.get_exam()
