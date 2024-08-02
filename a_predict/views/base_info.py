@@ -530,8 +530,11 @@ class PredictExamVars:
 
                 correct_predict_count = correct_real_count = 0
                 for answer_student in data_answer_student[fld_idx]:
-                    result_predict = answer_student['result_predict']
-                    result_real = answer_student['result_real']
+                    result_predict = result_real = False
+                    if 'result_predict' in answer_student:
+                        result_predict = answer_student['result_predict']
+                    if 'result_predict' in answer_student:
+                        result_real = answer_student['result_real']
                     correct_predict_count += 1 if result_predict else 0
                     if is_confirmed:
                         correct_real_count += 1 if result_real else 0
