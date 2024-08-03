@@ -22,9 +22,10 @@ def get_page_obj_and_range(page_data, page_number=1, per_page=10):
         return None, None
 
 
-def get_qs_student_for_admin_views(exam_vars, qs_student, category):
+def get_qs_student_for_admin_views(exam_vars, exam, qs_student, category):
     if category == 'filtered':
-        qs_student = qs_student.filter(answer_all_confirmed_at__isnull=False)
+        qs_student = qs_student.filter(
+            answer_all_confirmed_at__isnull=False, answer_all_confirmed_at__lte=exam.answer_official_opened_at)
     if exam_vars.is_psat:
         return qs_student.annotate(
             all_psat_rank=Cast(

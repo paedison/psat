@@ -100,7 +100,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
     # catalog_page
     if is_catalog:
         category = hx_pagination.split('_')[1]
-        catalog_page = get_catalog_page(exam_vars, qs_student, category, page)
+        catalog_page = get_catalog_page(exam_vars, exam, qs_student, category, page)
         utils.update_catalog_page(exam_vars, exam, qs_department, catalog_page[0], category)
         context = update_context_data(context, **{f'{hx_pagination}_page': catalog_page})
         return render(request, template_catalog, context)
@@ -122,7 +122,7 @@ def detail_view(request: HtmxHttpRequest, **kwargs):
 
     for header in header_catalog:
         category = header.split('_')[1]
-        catalog_page = get_catalog_page(exam_vars, qs_student, category, page)
+        catalog_page = get_catalog_page(exam_vars, exam, qs_student, category, page)
         utils.update_catalog_page(exam_vars, exam, qs_department, catalog_page[0], category)
         context = update_context_data(context, **{f'{header}_page': catalog_page})
 
@@ -146,8 +146,8 @@ def get_stat_page(exam_vars: PredictExamVars, page):
     return stat_page
 
 
-def get_catalog_page(exam_vars, qs_student, category, page):
-    qs_student = utils.get_qs_student_for_admin_views(exam_vars, qs_student, category)
+def get_catalog_page(exam_vars, exam, qs_student, category, page):
+    qs_student = utils.get_qs_student_for_admin_views(exam_vars, exam, qs_student, category)
     catalog_page: tuple = utils.get_page_obj_and_range(qs_student, page)
     return catalog_page
 
