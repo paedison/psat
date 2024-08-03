@@ -587,19 +587,20 @@ class PredictExamVars:
         if filtered:
             filter_exp['answer_all_confirmed_at__lte'] = exam.answer_official_opened_at
 
-        student_score_dict: dict[str, int | float] = {}
-        for student in qs_student:
-            for dt in student.data:
+        student_score_dict: dict[int, dict[str, int | float]] = {}
+        for stu in qs_student:
+            student_score_dict[stu.id] = {}
+            for dt in stu.data:
                 fld = dt[0]
                 is_confirmed = dt[1]
                 score = dt[2]
                 if is_confirmed and fld in score_list:
                     score_list[fld].append(score)
-                    student_score_dict[fld] = score
+                    student_score_dict[stu.id][fld] = score
 
         for fld_idx, fld in enumerate(self.score_fields):
             if score_list[fld]:
-                student_score = student_score_dict[fld]
+                student_score = student_score_dict[student.id][fld]
                 participants = len(score_list[fld])
                 sorted_scores = sorted(score_list[fld], reverse=True)
                 try:
