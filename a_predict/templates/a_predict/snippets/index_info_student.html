@@ -34,6 +34,12 @@
                     <td>{{ location.contact }}</td>
                 </tr>
             {% endif %}
+            {% if student.selection %}
+                <tr>
+                    <th class="text-nowrap px-0" scope="row">선택과목</th>
+                    <td>{{ student.get_selection_display }}</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 </div>
