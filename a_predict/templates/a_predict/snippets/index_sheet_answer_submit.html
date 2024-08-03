@@ -38,7 +38,7 @@
         <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
         <ol class="text-success small fw-bold m-0">
             {% if exam.is_collecting_answer or exam.is_answer_predict_opened %}
-                <li>정답 및 정답률은 {{ exam.answer_official_opened_at|date:'G시 i분' }}에 확인 가능합니다.</li>
+                <li>정답 및 정답률은 공식 정답이 공개되면 확인 가능합니다.</li>
             {% endif %}
             {% if exam.is_answer_official_opened %}
                 <li>정답률 = 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>

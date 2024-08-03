@@ -84,19 +84,6 @@
                             {% endfor %}
                         {% endif %}
                     {% endif %}
-                        {% if answer_predict|length == 25  %}
-                            {% for _ in '012' %}
-                                {% cycle 10 10 5 as loop_counter silent %}
-                                {% cycle 0 10 20 as loop_min silent %}
-                                {% partial answer_table_tr %}
-                            {% endfor %}
-                        {% else %}
-                            {% for _ in '0123' %}
-                                {% cycle 10 10 10 10 as loop_counter silent %}
-                                {% cycle 0 10 20 30 as loop_min silent %}
-                                {% partial answer_table_tr %}
-                            {% endfor %}
-                        {% endif %}
                 {% endif %}
             </tbody>
         </table>
