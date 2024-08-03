@@ -90,13 +90,13 @@
     </tr>
 
     {# answer_official #}
-    {% if not exam.is_answer_official_opened %}
-        <tr class="text-center" aria-label="공식 정답">
-            <td colspan="{{ loop_counter|add:1 }}" class="fw-bold text-bg-success">
-                <div class="tw-py-4">정답 공개전입니다.</div>
-            </td>
-        </tr>
-    {% else %}
+    {% if exam.is_answer_official_opened %}
+{#        <tr class="text-center" aria-label="공식 정답">#}
+{#            <td colspan="{{ loop_counter|add:1 }}" class="fw-bold text-bg-success">#}
+{#                <div class="tw-py-4">정답 공개전입니다.</div>#}
+{#            </td>#}
+{#        </tr>#}
+{#    {% else %}#}
         <tr class="text-center" aria-label="공식 정답">
             <th class="text-nowrap td-no-border" scope="row">정답</th>
             {% for answer in answer_official %}
