@@ -37,8 +37,7 @@
         <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
         <ol class="text-success small fw-bold m-0">
             {% if exam.is_collecting_answer %}
-                <li>예상 정답은 {{ exam.answer_predict_opened_at|date:'G시 i분' }}부터
-                    {{ exam.answer_official_opened_at|date:'G시 i분' }}까지만 공개됩니다.</li>
+                <li>예상 정답은 답안 수집이 어느 정도 완료된 후에 공개됩니다.</li>
             {% endif %}
             {% if exam.is_answer_predict_opened %}
                 <li>{{ current_time|date:'Y년 n월 j일 G:i' }} 기준 예상 정답입니다.</li>
