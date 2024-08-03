@@ -26,6 +26,7 @@
 
     <div class="tab-content" id="scoreSheetAllContent">
         {% for id in exam_vars.score_tab.id %}
+            {% cycle exam_vars.score_tab.prefix_all.0 exam_vars.score_tab.prefix_all.1 exam_vars.score_tab.prefix_all.2 as prefix silent %}
             {% cycle stat_total_all as stat_total silent %}
             {% cycle stat_department_all as stat_department silent %}
             {% cycle '' stat_total_all stat_department_all as stat_data silent %}

@@ -61,6 +61,7 @@ class PredictExamVars:
         'id': '012',
         'title': ['내 성적', '전체 기준', '직렬 기준'],
         'template': [score_template_table_1, score_template_table_2, score_template_table_2],
+        'prefix_all': ['my', 'total', 'department']
     }
 
     # psat/police vars
