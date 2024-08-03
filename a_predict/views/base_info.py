@@ -593,7 +593,7 @@ class PredictExamVars:
                 fld = dt[0]
                 is_confirmed = dt[1]
                 score = dt[2]
-                if is_confirmed:
+                if is_confirmed and fld in score_list:
                     score_list[fld].append(score)
                     student_score_dict[fld] = score
 
