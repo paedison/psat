@@ -221,8 +221,8 @@ def export_catalog(request: HtmxHttpRequest, **kwargs):
     qs_student = exam_vars.get_qs_student()
     qs_department = exam_vars.get_qs_department()
 
-    catalog_all = utils.get_qs_student_for_admin_views(qs_student, 'all')
-    catalog_filtered = utils.get_qs_student_for_admin_views(qs_student, 'filtered')
+    catalog_all = utils.get_qs_student_for_admin_views(exam_vars, exam, qs_student, 'all')
+    catalog_filtered = utils.get_qs_student_for_admin_views(exam_vars, exam, qs_student, 'filtered')
     utils.update_catalog_page(exam_vars, exam, qs_department, catalog_all, 'all')
     utils.update_catalog_page(exam_vars, exam, qs_department, catalog_filtered, 'filtered')
 
