@@ -254,18 +254,20 @@ def get_df_for_catalog(exam_vars: PredictExamVars, data):
         append_list = [dt.id, dt.stat[-1]['rank_total'], dt.name, dt.serial, dt.unit, dt.department]
         for i in range(-1, subject_num - 1):
             val = dt.stat[i]
-            participants_total = participants_department = 0
-            if 'participants_total' in val:
-                participants_total = val['participants_total']
-            if 'participants_department' in val:
-                participants_department = val['participants_department']
-            rank_ratio_total = round(val['rank_total'] * 100 / participants_total, 1) if participants_total else ''
-            rank_ratio_department = round(val['rank_department'] * 100 / participants_department, 1) if participants_department else ''
-            append_list.append(val['score'] if 'score' in val else '')
-            append_list.append(val['rank_total'] if 'rank_total' in val else '')
-            append_list.append(rank_ratio_total)
-            append_list.append(val['rank_department'] if 'rank_department' in val else '')
-            append_list.append(rank_ratio_department)
+
+            score = val.get('score', 0)
+            participants_total = val.get('participants_total', 0)
+            participants_department = val.get('participants_department', 0)
+            rank_total = val.get('rank_total', 0)
+            rank_department = val.get('rank_department', 0)
+            rank_ratio_total = round(rank_total * 100 / participants_total, 1) if participants_total else ''
+            rank_ratio_department = round(rank_department * 100 / participants_department, 1) if participants_department else ''
+
+            append_list.append(score or '')
+            append_list.append(rank_total or '')
+            append_list.append(rank_ratio_total or '')
+            append_list.append(rank_department or '')
+            append_list.append(rank_ratio_department or '')
         data_edited.append(append_list)
     df = pd.DataFrame(data=data_edited, columns=col)
     df.set_index(('ID', '', ''), inplace=True)
