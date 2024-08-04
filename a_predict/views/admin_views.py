@@ -243,9 +243,9 @@ def export_catalog(request: HtmxHttpRequest, **kwargs):
 def get_df_for_catalog(exam_vars: PredictExamVars, data):
     level0 = ['ID', '등수', '이름', '수험번호', '모집단위', '직렬']
     for subject in exam_vars.admin_subject_list:
-        level0 += [subject] * 5
-    level1 = [''] * 6 + ['점수', '전체 석차', '전체 석차', '직렬 석차', '직렬 석차'] * 5
-    level2 = [''] * 6 + ['', '등', '%', '등', '%'] * 5
+        level0 += [subject] * 8
+    level1 = [''] * 6 + ['점수', '전체 석차', '전체 석차', '직렬 석차', '직렬 석차'] * 8
+    level2 = [''] * 6 + ['', '등', '%', '등', '%'] * 8
     col = [level0, level1, level2]
 
     subject_num = len(exam_vars.admin_subject_list)
@@ -254,12 +254,14 @@ def get_df_for_catalog(exam_vars: PredictExamVars, data):
         append_list = [dt.id, dt.stat[-1]['rank_total'], dt.name, dt.serial, dt.unit, dt.department]
         for i in range(-1, subject_num - 1):
             val = dt.stat[i]
-            rank_ratio_total = round(val['rank_total'] * 100 / val['participants_total'], 1) if val['participants_total'] else ''
-            rank_ratio_department = round(val['rank_department'] * 100 / val['participants_department'], 1) if val['participants_department'] else ''
-            append_list.append(val['score'] if val['score'] else '')
-            append_list.append(val['rank_total'] if val['rank_total'] else '')
+            participants_total = val['participants_total'] if 'participants_total' in val else 0
+            participants_department = val['participants_department'] if 'participants_department' in val else 0
+            rank_ratio_total = round(val['rank_total'] * 100 / participants_total, 1) if participants_total else ''
+            rank_ratio_department = round(val['rank_department'] * 100 / participants_department, 1) if participants_department else ''
+            append_list.append(val['score'] if 'score' in val else '')
+            append_list.append(val['rank_total'] if 'rank_total' in val else '')
             append_list.append(rank_ratio_total)
-            append_list.append(val['rank_department'] if val['rank_department'] else '')
+            append_list.append(val['rank_department'] if 'rank_department' in val else '')
             append_list.append(rank_ratio_department)
         data_edited.append(append_list)
     df = pd.DataFrame(data=data_edited, columns=col)
