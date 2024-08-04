@@ -243,7 +243,7 @@ def export_catalog(request: HtmxHttpRequest, **kwargs):
 def get_df_for_catalog(exam_vars: PredictExamVars, data):
     level0 = ['ID', '등수', '이름', '수험번호', '모집단위', '직렬']
     for subject in exam_vars.admin_subject_list:
-        level0 += [subject] * 8
+        level0 += [subject] * 5
     level1 = [''] * 6 + ['점수', '전체 석차', '전체 석차', '직렬 석차', '직렬 석차'] * 8
     level2 = [''] * 6 + ['', '등', '%', '등', '%'] * 8
     col = [level0, level1, level2]
