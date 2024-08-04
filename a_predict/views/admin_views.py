@@ -254,8 +254,11 @@ def get_df_for_catalog(exam_vars: PredictExamVars, data):
         append_list = [dt.id, dt.stat[-1]['rank_total'], dt.name, dt.serial, dt.unit, dt.department]
         for i in range(-1, subject_num - 1):
             val = dt.stat[i]
-            participants_total = val['participants_total'] if 'participants_total' in val else 0
-            participants_department = val['participants_department'] if 'participants_department' in val else 0
+            participants_total = participants_department = 0
+            if 'participants_total' in val:
+                participants_total = val['participants_total']
+            if 'participants_department' in val:
+                participants_department = val['participants_department']
             rank_ratio_total = round(val['rank_total'] * 100 / participants_total, 1) if participants_total else ''
             rank_ratio_department = round(val['rank_department'] * 100 / participants_department, 1) if participants_department else ''
             append_list.append(val['score'] if 'score' in val else '')
