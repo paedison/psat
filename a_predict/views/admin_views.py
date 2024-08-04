@@ -260,6 +260,10 @@ def get_df_for_catalog(exam_vars: PredictExamVars, data):
             participants_department = val.get('participants_department', 0)
             rank_total = val.get('rank_total', 0)
             rank_department = val.get('rank_department', 0)
+            if isinstance(rank_total, str):
+                rank_total = int(rank_total)
+            if isinstance(rank_department, str):
+                rank_department = int(rank_department)
             rank_ratio_total = round(rank_total * 100 / participants_total, 1) if participants_total else ''
             rank_ratio_department = round(rank_department * 100 / participants_department, 1) if participants_department else ''
 
