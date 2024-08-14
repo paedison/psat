@@ -62,8 +62,8 @@ ICON_BOARD = {
 ICON_LIKE = {
     'True': '<i class="fa-solid fa-heart like_true"></i>',
     'False': '<i class="fa-solid fa-heart like_false"></i>',
-    'Filter': '<i class="fa-regular fa-heart"></i>',
-    'White': '<i class="fa-solid fa-heart text-white"></i>',
+    'filter': '<i class="fa-regular fa-heart"></i>',
+    'white': '<i class="fa-solid fa-heart text-white"></i>',
 }
 
 ICON_SOLVE = {

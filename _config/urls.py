@@ -27,7 +27,6 @@ urlpatterns = [
 
     path('score_old/', include('score.urls')),  # Old score
     path('predict_old/', include('predict.urls')),  # Old predict
-
 ]
 
 if settings.DEBUG:

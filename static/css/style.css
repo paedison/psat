@@ -5,6 +5,12 @@ h1, h2, h3, h4, h5, h6, .breadcrumb, .logo span {
 body {
     font-family: "Open Sans", "Noto Sans KR", sans-serif;
 }
+:root {
+    --bg-heonbeob: rgb(157 23 77);
+    --bg-eoneo: rgb(30 64 175);
+    --bg-jaryo: rgb(6 95 70);
+    --bg-sanghwang: rgb(146 64 14);
+}
 
 .rotate-180 {
     transform: rotate(180deg);
@@ -42,59 +48,62 @@ body {
 }
 
 /* custom icons */
-i.fa-solid.fa-heart {
-    color: #e74a3b;  /* danger(red) */
+.like_true {
+    margin: 0;
     cursor: pointer;
+    color: var(--bs-danger);
 }
-i.fa-solid.fa-star {
-    color: #f6c23e;  /* warning(yellow) */
+.rate_true {
+    margin: 0;
     cursor: pointer;
+    color: var(--bs-warning);
 }
-i.fa-solid.fa-crown {
-    color: #f6c23e;  /* warning(yellow) */
+.answer_true {
+    margin: 0;
     cursor: pointer;
+    color: var(--bs-success);
 }
-i.fa-solid.fa-file-lines {
-    color: #0d6efd;  /* primary(blue) */
+.memo_true {
+    margin: 0;
     cursor: pointer;
+    color: var(--bs-warning);
 }
-i.fa-solid.fa-circle-check {
-    color: #1cc88a;  /* success(green) */
+.answer_false {
+    margin: 0;
     cursor: pointer;
+    color: var(--bs-danger);
 }
-i.fa-solid.fa-circle-xmark {
-    color: #e74a3b;  /* danger(red) */
+.like_false, .rate_false, .answer_none, .memo_false {
+    margin: 0;
     cursor: pointer;
-}
-i.fa-solid.fa-note-sticky {
-    color: #f6c23e;  /* warning(yellow) */
-    cursor: pointer;
+    color: var(--bs-gray-300);
 }
 
 /* rate button */
-#rateButton fieldset{
+.rate_button fieldset{
     display: inline-block; /* 하위 별점 이미지들이 있는 영역만 자리를 차지함.*/
     direction: rtl; /* 이모지 순서 반전 */
     border: 0; /* 필드셋 테두리 제거 */
+    cursor: pointer;
 }
-#rateButton fieldset legend{
+.rate_button fieldset legend{
     text-align: left;
 }
-#rateButton input[type=radio]{
+.rate_button input[type=radio]{
     display: none; /* 라디오박스 감춤 */
 }
-#rateButton label{
+.rate_button label{
     color: transparent; /* 기존 이모지 컬러 제거 */
     text-shadow: 0 0 0 #ddd; /* 새 이모지 색상 부여 */
 }
-#rateButton label:hover{
-    text-shadow: 0 0 0 #f1c40f; /* 마우스 호버 */
+.rate_button label:hover{
+    text-shadow: 0 0 0 var(--bs-warning) !important; /* 마우스 호버 */
 }
-#rateButton label:hover ~ label{
-    text-shadow: 0 0 0 #f1c40f; /* 마우스 호버 뒤에오는 이모지들 */
+.rate_button label:hover ~ label{
+    text-shadow: 0 0 0 var(--bs-warning) !important; /* 마우스 호버 뒤에오는 이모지들 */
 }
-#rateButton input[type=radio]:checked ~ label{
-    text-shadow: 0 0 0 #f1c40f; /* 마우스 클릭 체크 */
+.rate_button input[type=radio]:checked ~ label{
+    text-shadow: 0 0 0 var(--bs-warning); /* 마우스 클릭 체크 */
 }
 
 
@@ -440,4 +449,23 @@ ul.errorlist>li {
     color: rgba(var(--bs-danger-rgb), 1) !important;
     text-align: left !important;
     font-weight: 700 !important;
+}
+
+
+.bg_heonbeob {
+    background-color: var(--bg-heonbeob);
+}
+.bg_eoneo {
+    background-color: var(--bg-eoneo);
+}
+.bg_jaryo {
+    background-color: var(--bg-jaryo);
+}
+.bg_sanghwang {
+    background-color: var(--bg-sanghwang);
+}
+
+
+.tagify{
+    width: 100%;
 }

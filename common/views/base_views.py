@@ -6,11 +6,6 @@ from ..utils import HtmxHttpRequest
 
 def index_view(request: HtmxHttpRequest):
     if request:
-        return redirect('predict:index')
-
-
-def index(request):
-    if request:
         return redirect('psat:base')
 
 
