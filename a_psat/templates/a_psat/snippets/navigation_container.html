@@ -1,0 +1,130 @@
+{% load static %}
+{% load i18n %}
+{% load slippers %}
+{% load psat_filter %}
+
+<article id="detailNavContainer" class="flex-nowrap input-group me-2"
+         hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <a id="problemListBtn" class="btn btn-primary"
+       hx-push-url="{% url 'psat:base' %}" href="{% url 'psat:base' %}"
+       hx-get="{% url 'psat:base' %}?{{ url_options }}">
+        {{ icon_nav.left_arrow|safe }}
+    </a>
+
+    {% if prob_prev %}
+        <a class="btn btn-primary" href="{{ prob_prev.get_absolute_url }}"
+           hx-push-url="{{ prob_prev.get_absolute_url }}"
+           hx-get="{{ prob_prev.get_absolute_url }}?{{ url_options }}">
+            {{ icon_nav.prev_prob|safe }}
+        </a>
+    {% else %}
+        <a class="btn btn-primary text-primary">{{ icon_nav.prev_prob|safe }}</a>
+    {% endif %}
+
+    {% if prob_next %}
+        <a class="btn btn-primary" href="{{ prob_next.get_absolute_url }}"
+           hx-push-url="{{ prob_next.get_absolute_url }}"
+           hx-get="{{ prob_next.get_absolute_url }}?{{ url_options }}">
+            {{ icon_nav.next_prob|safe }}
+        </a>
+    {% else %}
+        <a class="btn btn-primary text-primary">{{ icon_nav.next_prob|safe }}</a>
+    {% endif %}
+
+    {% with view_type='problem_list' list_url=list_url_problem icon=icon_nav.list %}
+        {% partial list_buttons_default %}
+    {% endwith %}
+
+    {% if user.is_authenticated %}
+        {% for _ in '12345' %}
+            {% cycle 'rate_list' 'like_list' 'solve_list' 'memo_list' 'tag_list' as view_type silent %}
+            {% cycle icon_rate_white icon_like_white icon_solve_white icon_memo_white icon_tag_white as icon silent %}
+            {% partial list_buttons_default %}
+        {% endfor %}
+    {% endif %}
+</article>
+
+{% partialdef list_buttons_default %}
+    <a id="{{ view_type }}List" class="btn btn-circle btn-primary dropdown-toggle"
+       href="" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+       hx-target="#{{ view_type }}ListContents"
+       hx-headers='{"View-Type":"{{ view_type }}"}'
+       hx-trigger="click once"
+       hx-get="">
+        <div class="text-white" data-bs-toggle="tooltip" title="{{ tooltip_title }}">
+            {{ icon|safe }}
+        </div>
+    </a>
+    <div class="dropdown-menu" aria-labelledby="{{ view_type }}List">
+        <div id="{{ view_type }}ListContents" class="dropdown p-2" role="option">
+        </div>
+    </div>
+{% endpartialdef list_buttons_default %}
+
+{% partialdef nav_problem_list %}
+    <div class="container" style="min-width: 300px;">
+        <div class="row justify-content-center p-2 text-bg-primary fw-bold">
+            {{ problem.year }}년 {{ problem.exam_name }} {{ problem.subject }}
+        </div>
+        <div class="row justify-content-center">
+            {% if problem.exam == '칠급' or problem.exam == '민경' or problem.subject == '헌법' %}
+                {% with problem_count=25 %}
+                    {% partialdef filtered_content inline=True %}
+                        {% for _ in '_'|ljust:problem_count %}
+                                <div class="col-2 text-center small p-1">
+                                    <a href="{% url 'psat:problem-detail' problem.number|subtract:problem.id|add:forloop.counter %}"
+                                       hx-boost="true"
+                                       class="p-1 dropdown-item text-nowrap text-center
+                                       {% if forloop.counter == problem.number %} text-bg-{{ color }}{% endif %}">
+                                        {{ forloop.counter }}번
+                                    </a>
+                                </div>
+                                {% if forloop.counter|divisibleby:5 %}
+                            </div>
+                            <div class="row justify-content-center">
+                                {% endif %}
+                        {% endfor %}
+                    {% endpartialdef filtered_content %}
+                {% endwith %}
+            {% else %}
+                {% with problem_count=40 %}{% partial filtered_content %}{% endwith %}
+            {% endif %}
+        </div>
+    </div>
+{% endpartialdef nav_problem_list %}
+
+{% partialdef nav_other_list %}
+    <div class="container" style="min-width: 300px;">
+        {% if list_title %}
+            <div class="row justify-content-center p-2 text-bg-{{ color }} fw-bold">
+                {{ list_title }}
+            </div>
+        {% endif %}
+        {% if not list_data %}
+            <div class="col-12 text-center text-danger p-3">자료가 없습니다.</div>
+        {% endif %}
+        {% for data in list_data %}
+            {% if forloop.counter0|divisibleby:5 %}
+                </div>
+            {% ifchanged %}
+                {% if forloop.counter0 != 0 %}
+                <hr class="m-1">
+                {% endif %}
+                <div class="row justify-content-center p-2 text-{{ color }} fw-bold">{{ data.exam_name }}</div>
+            {% endifchanged %}
+                <div class="row justify-content-center p-2">
+            {% endif %}
+            {% if data %}
+                <div class="col-2 text-center p-0">
+                    <a href="{{ data.problem_url }}" hx-get="{{ data.problem_url }}"
+                       class="p-1 dropdown-item text-nowrap text-center
+                       {% if data.problem_id == problem.id %} text-bg-{{ color }}{% endif %}">
+                        {{ data.problem_number }}번
+                    </a>
+                </div>
+            {% else %}
+                <div class="col-2 text-center p-0"> </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endpartialdef nav_other_list %}

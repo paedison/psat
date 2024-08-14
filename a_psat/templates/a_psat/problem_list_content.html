@@ -1,0 +1,90 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load crispy_forms_field %}
+{% load psat_templatetags %}
+
+<article class="table-responsive">
+    <table class="table align-middle m-0">
+        <tbody>
+            {% for problem in page_obj %}
+                {% ifchanged %}
+                    <tr class="table-warning">
+                        <td class="text-nowrap text-primary p-2">
+                            <h5 class="fw-bold m-0">{{ problem.year_exam_subject }}</h5>
+                        </td>
+                    </tr>
+                {% endifchanged %}
+                <tr>
+                    <td class="text-nowrap py-2 px-0">
+                        {% with problem_id=problem.id %}
+                            <div class="align-middle d-inline-block pe-1">
+                                <div class="d-inline-block d-sm-none">
+                                    {% partial reference %}
+                                </div>
+                                {% custom_icons user problem custom_data %}
+                            </div>
+                            <div class="d-block d-sm-none">
+                                {% partial question %}
+                            </div>
+                            <div class="d-none align-middle d-sm-inline-block" hx-push-url="true">
+                                <div class="d-inline-block pb-1 pb-md-0 pe-md-1">
+                                    {% partial reference %}
+                                </div>
+                                <div class="d-inline-block">
+                                    {% partial question %}
+                                </div>
+                            </div>
+                        {% endwith %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% if page_obj.has_next or page_obj.has_previous %}
+    {% include 'a_psat/snippets/pagination.html' with header='problem_list' %}
+{% endif %}
+
+{% partialdef reference %}
+    <a class="text-decoration-none fw-bold"
+       href="{% url 'psat:problem-detail' problem_id %}"
+       hx-get="{% url 'psat:problem-detail' problem_id %}?{{ url_options }}"
+       hx-push-url="{% url 'psat:problem-detail' problem_id %}">
+        {{ problem.reference }}
+    </a>
+    {% if problem.images.name1 == 'Preparing Image' %}
+        {{ icon_image.False|safe }}
+    {% else %}
+        <a class="text-decoration-none" href=""
+           data-bs-toggle="modal" data-bs-target="#modalContainer"
+           hx-push-url="false"
+           hx-target="#modalContainer"
+           hx-headers='{"View-Type":"image"}'
+           hx-get="{% url 'psat:problem-detail' problem_id %}">
+            {{ icon_image.True|safe }}
+        </a>
+    {% endif %}
+{% endpartialdef reference %}
+
+{% partialdef question %}
+    {% with class='d-md-none' chars=30 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
+
+    {% partialdef link_snippet %}
+        <a class="text-decoration-none {{ class }}"
+           href="{% url 'psat:problem-detail' problem_id %}"
+           hx-get="{% url 'psat:problem-detail' problem_id %}?{{ url_options }}"
+           hx-push-url="{% url 'psat:problem-detail' problem_id %}">
+            <h3 class="d-inline-block fs-6 small m-0">
+                {{ problem.question|truncatechars:chars }}
+            </h3>
+        </a>
+    {% endpartialdef link_snippet %}
+{% endpartialdef question %}

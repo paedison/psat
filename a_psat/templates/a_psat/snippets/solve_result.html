@@ -1,0 +1,12 @@
+<div id="solveResult" class="pt-2 text-center fw-bold htmx-fade-in htmx-fade-out"
+     hx-swap-oob="true">
+    {% if is_correct %}
+        <span class="text-success">정답입니다.</span>
+    {% else %}
+        <span class="text-danger">오답입니다. 다시 풀어보세요.</span>
+    {% endif %}
+</div>
+
+<button id="psatSolve{{ problem.id }}" hx-swap-oob="innerHTML">
+    {{ icon_solve|safe }}
+</button>

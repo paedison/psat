@@ -1,0 +1,169 @@
+{% extends 'list.html' %}
+{% load i18n %}
+{% load crispy_forms_field %}
+
+{% block main %}
+    {{ info|json_script:'info' }}
+    <div class="pagetitle">
+        <h1>{{ icon_menu|safe }} PSAT
+            <span class="fs-6 text-secondary">{{ title }}</span>
+        </h1>
+        <nav>
+            <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'index' %}" hx-post="{% url 'index' %}">Home</a>
+                </li>
+                {% if info.view_type %}
+                    <li class="breadcrumb-item">PSAT</li>
+                    <li class="breadcrumb-item active">{{ info.view_type|title }}</li>
+                {% else %}
+                    <li class="breadcrumb-item active">PSAT</li>
+                {% endif %}
+            </ol>
+        </nav>
+    </div><!-- Page Title End -->
+
+    <section class="section">
+        <div class="row">
+            <div class="col-12" aria-label="문제 목록">
+                <div id="problemCard" class="card htmx-fade-in"
+                     hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
+                    <div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
+                        <i class="fa-solid fa-circle-question fa-fw"></i>
+                        질문 리스트
+                        <a class="text-decoration-none ms-2" href=""
+                           hx-indicator="#commentIndicator"
+                           hx-target="#problemCard" hx-swap="innerHTML swap:0.25s"
+                           hx-get="{% url 'psat:comment-list' %}">
+                            <span class="badge rounded-pill text-bg-warning">새로고침</span>
+                        </a>
+                        <div id="commentIndicator" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div id="problemContent" class="col-12 htmx-fade-in htmx-fade-out">
+                            {% include 'a_psat/comment_list_content.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% partial list_buttons %}
+        </div>
+    </section>
+{% endblock main %}
+
+{% partialdef list_buttons %}
+    <div aria-label="버튼 모음">
+        <a id="toggleProblemBtn" class="btn btn-success px-2"
+           data-bs-toggle="tooltip" data-bs-title="{% trans 'Problem List' %}"
+           hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top"
+           href="{% url 'psat:base' %}">
+            <i class="fa-solid fa-layer-group fa-fw"></i>
+        </a>
+
+        <a id="toggleCommentBtn" class="btn btn-success px-2"
+           data-bs-toggle="tooltip" data-bs-title="{% trans 'Comment List' %}"
+           hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top"
+           href="{% url 'psat:comment-list' %}">
+            <i class="fa-solid fa-circle-question fa-fw"></i>
+        </a>
+
+        <button id="toggleCollectionBtn" class="btn btn-primary px-2"
+                data-bs-toggle="tooltip" data-bs-title="{% trans 'Collection List' %}">
+            <i class="fa-solid fa-folder-plus fa-fw"></i>
+        </button>
+    </div>
+
+    <div id="floatingCollection" class="card htmx-fade-in htmx-fade-out"
+         hx-swap="innerHTML swap:0.25s show:window:top">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <h5 id="floatingCollectionIndicator" class="card-title d-flex" style="cursor: pointer;">
+                        <i class="fa-solid fa-folder-plus me-2"></i>
+                        {% trans 'Collection List' %}
+                        <div class="ms-auto">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </h5>
+                    {% if user.is_authenticated %}
+                        <div id="collectionList" class="htmx-fade-in htmx-fade-out">
+                            <form id="collectionListForm"
+                                  class="list-group htmx-fade-out htmx-fade-in{% if collections %} sortable{% endif %}"
+                                  hx-target="this" hx-swap="innerHTML swap:0.25s"
+                                  hx-push-url="false" hx-trigger="end"
+                                  hx-post="{% url 'psat:collection-list' %}">
+                                {% include 'a_psat/collection_list.html' %}
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <a class="btn btn-outline-secondary"
+                               hx-target="body" hx-swap="innerHTML swap:0.25s"
+                               hx-get="{% url 'account_login' %}">
+                                로그인이 필요합니다.
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef list_buttons %}
+
+{% partialdef problem_filter %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                    aria-expanded="true" aria-controls="collapseOne">
+                <i class="fa-solid fa-fw fa-filter me-1"></i>
+                문제 필터
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show"
+             data-bs-parent="#problemFilter">
+            <div class="accordion-body pb-2">
+                <form class="row g-2 align-items-center justify-content-center" hx-trigger="change"
+                      hx-get="{{ request.path }}">
+                    <input id="id_data" type="text" name="keyword"
+                           value="{{ keyword }}" hidden
+                           placeholder="{% trans 'Enter search keyword' %}"
+                           title="{% trans 'Enter search keyword' %}">
+                    {% for field in form %}
+                        <div class="col-6 col-md-12 col-lg-6">
+                            {% if field.errors %}
+                                {% crispy_field field 'class' 'form-select is-invalid' %}
+                            {% else %}
+                                {% if field.value == None or field.value == '' %}
+                                    {% crispy_field field 'class' 'form-select' %}
+                                {% else %}
+                                    {% crispy_field field 'class' 'form-select option-selected' %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a type="button" class="btn btn-secondary fw-bold col-12" hx-boost="true"
+                           hx-push-url="{{ request.path }}"
+                           href="{{ request.path }}?keyword={{ keyword }}">
+                            <i class="fa-solid fa-fw fa-filter-circle-xmark"></i>
+                            필터 제거
+                        </a>
+                    </div>
+                    <div class="col-12">
+                        <a type="button" class="btn btn-success fw-bold col-12" hx-boost="true"
+                           hx-push-url="{{ request.path }}"
+                           href="{{ request.path }}">
+                            <i class="fa-solid fa-fw fa-layer-group"></i>
+                            전체 문제
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef problem_filter %}

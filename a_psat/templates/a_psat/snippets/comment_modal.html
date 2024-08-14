@@ -1,0 +1,75 @@
+{% load i18n %}
+{% load slippers %}
+
+
+{######## partials ########}
+
+{% partialdef create %}
+    {% #modal header=header size="modal-xl" %}
+        {% if parent_comment %}
+            <div class="d-flex mb-2">
+                <div class="me-auto">
+                    <span class="fw-bold">
+                        {{ parent_comment.username }}
+                    </span>
+                    <span class="small text-secondary ms-1">
+                        {{ parent_comment.timestamp|date:'n/j(D) G:i' }}
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex">
+                <div class="text-gray-900">
+                    {{ parent_comment.comment|safe }}
+                </div>
+            </div>
+        {% endif %}
+        <form hx-post="{% url 'psat:comment_create' problem_id %}"
+              hx-swap="innerHTML swap:0.25s" hx-target="#collapseCommentContent">
+            <input name="problem_id" type="hidden" value="{{ problem_id }}" aria-label="Problem ID"/>
+            <input name="parent" type="hidden" value="{{ parent_id|default:'' }}" aria-label="Parent"/>
+            {{ form.media }}
+            {{ form.comment }}
+            {{ form.errors }}
+            <div class="d-flex justify-content-end mt-2">
+                <textarea id="content_reply" name="comment" class="ckeditor-content" hidden></textarea>
+                <div class="btn-group">
+                    <button type="submit" data-bs-dismiss="modal"
+                            class="btn btn-sm btn-outline-primary ckeditor-submit">
+                        {% trans 'Create' %}
+                    </button>
+                    <button hx-get="{% url 'psat:comment_container' problem_id %}?page={{ page_obj.number }}"
+                            class="btn btn-sm btn-danger" data-bs-dismiss="modal">
+                        {% trans 'Cancel' %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    {% /modal %}
+{% endpartialdef create %}
+
+{% partialdef update %}
+    {% #modal header=header size="modal-xl" %}
+        <form hx-post="{% url 'psat:comment_update' comment.id %}"
+              hx-swap="innerHTML swap:0.25s" hx-target="#collapseCommentContent">
+            <input name="problem_id" type="hidden" value="{{ comment.problem_id }}" aria-label="Problem ID"/>
+            <input name="page" type="hidden" value="{{ page_number }}" aria-label="Page Number"/>
+            <input name="parent" type="hidden" value="{{ comment.parent_id|default:'' }}" aria-label="Parent"/>
+                {{ form.media }}
+                {{ form.comment }}
+                {{ form.errors }}
+            <textarea id="content_comment" name="comment" class="ckeditor-content" hidden></textarea>
+            <div class="d-flex justify-content-end mt-2">
+                <div class="btn-group">
+                    <button type="submit" data-bs-dismiss="modal"
+                            class="btn btn-sm btn-outline-primary ckeditor-submit">
+                        {% trans 'Update' %}
+                    </button>
+                    <button hx-get="{% url 'psat:comment_container' comment.problem_id %}?page={{ page_number }}"
+                            class="btn btn-sm btn-danger" data-bs-dismiss="modal">
+                        {% trans 'Cancel' %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    {% /modal %}
+{% endpartialdef update %}

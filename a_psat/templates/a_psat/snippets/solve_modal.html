@@ -1,0 +1,25 @@
+{% #modal header='문제 정답을 선택해주세요.' %}
+    <a class="d-block mb-2 fw-bold text-primary"
+       href="{{ problem.get_absolute_url }}">
+        {{ problem.full_reference }}
+    </a>
+
+    <form hx-target="this" hx-swap="afterend swap:0.25s">
+        <fieldset class="d-flex gap-1 justify-content-center">
+            {% for i in '1234' %}
+                {% partialdef answer_button inline=True %}
+                    <label class="btn btn-outline-success btn-circle" for="answer{{ i }}">
+                        {{ i }}
+                        <input id="answer{{ i }}" class="d-none"
+                               type="radio" name="answer" value="{{ i }}"
+                               hx-post="{{ problem.get_solve_url }}">
+                    </label>
+                {% endpartialdef %}
+            {% endfor %}
+            {% if problem.subject != '헌법' %}
+                {% with i=5 %}{% partial answer_button %}{% endwith %}
+            {% endif %}
+        </fieldset>
+    </form>
+    <div id="solveResult"></div>
+{% /modal %}

@@ -1,0 +1,53 @@
+{% load i18n %}
+{% load psat_templatetags %}
+
+<div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
+    <i class="fa-solid fa-folder-plus fa-fw"></i>
+    컬렉션 #{{ collection.order }} - {{ collection.title }}
+    <a class="text-decoration-none ms-2" href=""
+       hx-indicator="#collectionItemIndicator"
+       hx-target="#problemCard" hx-swap="innerHTML swap:0.25s"
+       hx-get="{% url 'psat:collection-detail' collection.id %}">
+        <span class="badge rounded-pill text-bg-warning">새로고침</span>
+    </a>
+    <div id="collectionItemIndicator" role="status"
+         class="htmx-indicator spinner-border text-warning spinner-border-sm">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<div class="card-body">
+    <form id="collectionItemForm" class="sortable htmx-fade-out htmx-fade-in mt-3"
+          hx-target="#problemCard" hx-swap="innerHTML swap:0.25s" hx-trigger="end"
+          hx-post="{% url 'psat:collection-detail' collection.id %}">
+        <input type="hidden" name="collection" value="{{ items.0.collection_id }}"/>
+        {% partial item_contents %}
+    </form>
+</div>
+
+{% partialdef item_contents %}
+    {% for item in items %}
+        <div class="d-flex fs-6 my-3" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            <input type="hidden" name="item" value="{{ item.id }}"/>
+            <div class="fw-bold me-2">{{ item.order }}.</div>
+            <div>
+                {% with problem=item.problem problem_id=item.problem_id %}
+                    <div class="align-middle d-inline-block fs-6 pe-1">
+                        {% custom_icons user problem custom_data %}
+{#                        {% psat_icons user problem %}#}
+                    </div>
+                    <div class="d-inline-block pe-1" hx-push-url="true">
+                        {% include 'a_psat/problem_list_content.html#reference' %}
+                    </div>
+                    <div class="d-inline-block" hx-push-url="true">
+                        {% include 'a_psat/problem_list_content.html#question' %}
+                    </div>
+                {% endwith %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="text-center text-nowrap fs-6 py-2">
+            {% trans 'No collection items available' %}
+        </div>
+    {% endfor %}
+{% endpartialdef item_contents %}

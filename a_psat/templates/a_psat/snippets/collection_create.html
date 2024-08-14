@@ -1,0 +1,16 @@
+{% load i18n %}
+
+<form class="row"
+      hx-target="{{ target|default:'#collectionListForm' }}" hx-swap="innerHTML swap:0.25s"
+      hx-headers='{"View-Type":"{{ header }}"}'
+      hx-post="{{ url }}">
+    {% if problem_id %}
+        <input type="hidden" name="problem_id" value="{{ problem_id }}">
+    {% endif %}
+    <div class="input-group">
+        {{ form.title }}
+        <button class="btn btn-outline-secondary" type="submit">
+            {% trans 'Submit' %}
+        </button>
+    </div>
+</form>
