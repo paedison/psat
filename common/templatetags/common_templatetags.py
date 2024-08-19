@@ -4,6 +4,13 @@ register = Library()
 
 
 @register.filter
+def add_space(content):  # Add Space before 1-Digit Number
+    if int(content) < 10:
+        content = " " + str(content)
+    return content
+
+
+@register.filter
 def subtract(value, arg: int) -> int:  # Subtract arg from value
     return arg - int(value)
 

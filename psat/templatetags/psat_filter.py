@@ -39,13 +39,6 @@ def percentage(content) -> float:  # Abstract content from base
     return 0
 
 
-@register.filter
-def add_space(content):  # Add Space before 1-Digit Number
-    if int(content) < 10:
-        content = " " + str(content)
-    return content
-
-
 @register.filter()
 def int2kor(value):  # Convert Integer to Korean Alphabet
     nums = [_('Sun'), _('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat')]

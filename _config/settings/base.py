@@ -98,6 +98,7 @@ INSTALLED_APPS = [
 
     # My Apps
     'common',
+    'a_psat',
     'psat',
     # 'quiz',
     'schedule',

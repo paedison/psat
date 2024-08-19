@@ -145,8 +145,8 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
         )
     )
     all_comments = utils.get_all_comments(comment_qs, pk)
-    page_obj, page_range = utils.get_page_obj_and_range(page, all_comments)
-    pagination_url = reverse('psat:comment-problem')
+    # page_obj, page_range = utils.get_page_obj_and_range(page, all_comments)
+    # pagination_url = reverse('psat:comment-problem')
 
     context = update_context_data(
         context,

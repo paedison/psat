@@ -12,7 +12,8 @@ urlpatterns = [
 
     path('notice/', include('notice.urls')),  # Notice
     path('dashboard/', include('dashboard.urls')),  # Dashboard
-    path('psat/', include('psat.urls')),  # PSAT
+    path('psat/', include('a_psat.urls')),  # PSAT
+    path('psat_old/', include('psat.urls')),  # PSAT
     path('community/', include('community.urls')),  # Community
     path('schedule/', include('schedule.urls')),  # Schedule
 
