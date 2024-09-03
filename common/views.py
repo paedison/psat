@@ -1,25 +1,48 @@
 import vanilla
 from allauth.account import views as allauth_views
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_not_required
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
-from .. import forms as common_forms
-from ..constants.icon_set import ConstantIconSet
-from ..models import User
-from ..utils import HtmxHttpRequest
+from . import forms as common_forms
+from .constants.icon_set import ConstantIconSet
+from .models import User
+from .utils import HtmxHttpRequest, update_context_data
 
 
-class OnlyLoggedInAllowedMixin(UserPassesTestMixin):
-    request: any
+@login_not_required
+def index_view(_):
+    return redirect('psat:base')
 
-    def test_func(self):
-        return self.request.user.is_authenticated
 
-    def handle_no_permission(self):
-        return redirect('index')
+@login_not_required
+def page_not_found(request, exception):
+    if exception is None:
+        return render(request, '404.html', {})
+    else:
+        return render(request, '404.html', {})
+
+
+@login_not_required
+def page_404(request):
+    return render(request, '404.html', {})
+
+
+@login_not_required
+def ads(request):
+    if request:
+        return HttpResponse("google.com, pub-3543306443016219, DIRECT, f08c47fec0942fa0")
+
+
+@login_not_required
+def privacy(request):
+    info = {'menu': 'privacy'}
+    context = update_context_data(site_name='<PAEDISON>', info=info)
+    return render(request, 'privacy.html', context)
 
 
 def add_current_url_to_context(
@@ -30,6 +53,7 @@ def add_current_url_to_context(
     return context
 
 
+@method_decorator(login_not_required, name='dispatch')
 class LoginModalView(vanilla.TemplateView):
     template_name = 'snippets/modal.html#login'
 
@@ -46,29 +70,25 @@ class LogoutModalView(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(
-            {'next': self.request.GET.get('next', '')}
-        )
+        context = update_context_data(context, next=self.request.GET.get('next', ''))
         return context
 
 
+@method_decorator(login_not_required, name='dispatch')
 class LoginView(allauth_views.LoginView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return add_current_url_to_context(context, self.request)
 
 
+@method_decorator(login_not_required, name='dispatch')
 class SignupView(allauth_views.SignupView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return add_current_url_to_context(context, self.request)
 
 
-class ProfileView(
-    OnlyLoggedInAllowedMixin,
-    ConstantIconSet,
-    vanilla.TemplateView,
-):
+class ProfileView(ConstantIconSet, vanilla.TemplateView):
     template_name = 'account/profile.html'
 
     request: any
@@ -89,10 +109,7 @@ class ProfileView(
         return context
 
 
-class UsernameChangeView(
-    OnlyLoggedInAllowedMixin,
-    vanilla.UpdateView
-):
+class UsernameChangeView(vanilla.UpdateView):
     template_name = 'account/username_change.html'
     form_class = common_forms.ChangeUsernameForm
     success_url = reverse_lazy('account_profile')
@@ -114,10 +131,7 @@ class UsernameChangeView(
         return super().form_valid(form)
 
 
-class PasswordChangeView(
-    OnlyLoggedInAllowedMixin,
-    allauth_views.PasswordChangeView
-):
+class PasswordChangeView(allauth_views.PasswordChangeView):
     success_url = reverse_lazy('account_profile')
 
 

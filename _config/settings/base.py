@@ -61,6 +61,7 @@ ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Application definition
 INSTALLED_APPS = [
+    'unfold',
     # Default  //  Django Apps
     'django.contrib.admin',
     'django.contrib.auth',
@@ -114,21 +115,23 @@ INSTALLED_APPS = [
     'a_predict',
     'score',
     'predict',
+    'a_board',
 ]
 
 MIDDLEWARE = [
     # Installed Additionally
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     "allauth.account.middleware.AccountMiddleware",
 
     # Default Django Apps
     'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -252,7 +255,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'None'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '이메일 인증'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
@@ -396,3 +399,19 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 DEBUG_TOOLBAR_CONFIG = {
     "ROOT_TAG_EXTRA_ATTRS": "hx-preserve"
 }
+DEBUG_TOOLBAR_PANELS = [
+    # 'debug_toolbar.panels.history.HistoryPanel',
+    'debug_toolbar.panels.versions.VersionsPanel',
+    'debug_toolbar.panels.timer.TimerPanel',
+    'debug_toolbar.panels.settings.SettingsPanel',
+    'debug_toolbar.panels.headers.HeadersPanel',
+    'debug_toolbar.panels.request.RequestPanel',
+    'debug_toolbar.panels.sql.SQLPanel',
+    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+    'debug_toolbar.panels.templates.TemplatesPanel',
+    'debug_toolbar.panels.alerts.AlertsPanel',
+    'debug_toolbar.panels.cache.CachePanel',
+    'debug_toolbar.panels.signals.SignalsPanel',
+    'debug_toolbar.panels.redirects.RedirectsPanel',
+    'debug_toolbar.panels.profiling.ProfilingPanel',
+]

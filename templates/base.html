@@ -40,7 +40,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"/>
 <link rel="stylesheet" type="text/css" href="{% static 'vendor/fontawesome-free/css/all.min.css' %}"/>
 <link rel="stylesheet" type="text/css" href="{% static 'vendor/nice-admin/css/style.css' %}"/>
-{#<link rel="stylesheet" type="text/css" href="{% static 'vendor/tagify/tagify.css' %}"/>#}
+<link rel="stylesheet" type="text/css" href="{% static 'vendor/tagify/tagify.css' %}"/>
 
 <!-- Template Main CSS File -->
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
@@ -55,18 +55,17 @@
 <!-- Vendor JS Files -->
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-<script src="{% static 'vendor/sortable/Sortable.min.js' %}"></script>
-<script src="{% static 'vendor/sortable/jquery-sortable.js' %}"></script>
-<script defer src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script defer src="{% static 'vendor/nice-admin/js/main.js' %}"></script>
-<script defer src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
-<script defer src="{% static 'vendor/htmx/ext/debug.js' %}"></script>
-<script defer src="{% static 'vendor/htmx/ext/event-header.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}" defer></script>
+<script src="{% static 'vendor/nice-admin/js/main.js' %}" defer></script>
+<script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
+<script src="{% static 'vendor/htmx/ext/debug.js' %}" defer></script>
+<script src="{% static 'vendor/htmx/ext/event-header.js' %}" defer></script>
 <script src="{% static 'vendor/chart.js/chart.umd.js' %}"></script>
-{#<script src="{% static 'vendor/tagify/tagify.js' %}"></script>#}
+<script src="{% static 'vendor/tagify/tagify.js' %}"></script>
 
 <!-- Template Main JS File -->
-<script defer src="{% static 'js/common.js' %}"></script>
+<script src="{% static 'js/sidebar_menu.js' %}" defer></script>
+<script src="{% static 'js/common.js' %}" defer></script>
 
 {% block extra_head %}{% endblock extra_head %}
 </head>

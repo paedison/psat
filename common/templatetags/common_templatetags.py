@@ -1,4 +1,5 @@
 from django.template import Library
+from django.utils.translation import gettext_lazy as _
 
 register = Library()
 
@@ -43,3 +44,13 @@ def percentageby(content, arg: int) -> float | str:
     if content and arg:
         return content * 100 / arg
     return '-'
+
+
+@register.filter()
+def int2kor(value):  # Convert Integer to Korean Alphabet
+    nums = [_('Sun'), _('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat')]
+    s = str(value)
+    result = ''
+    for c in s:
+        result += nums[int(c)]
+    return result

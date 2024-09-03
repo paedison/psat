@@ -1,0 +1,49 @@
+{% load static %}
+
+{% if make_form_blank %}
+    <span _="on load set the value of #commentWriteContent to ''"></span>
+{% endif %}
+
+<div class="d-flex">
+    <div class="pe-2">
+        <img src="{% static 'image/undraw_profile.jpg' %}" alt="프로필 사진" width="36" height="36">
+    </div>
+    <div class="flex-fill">
+        <div class="fw-bold small">{{ comment.user.username }}</div>
+        <div class="py-1">{{ comment.content }}</div>
+        <div class="text-secondary small">
+            {% with timestamp=comment.created_at %}
+                {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+                {{ timestamp|time:'H:i' }}
+            {% endwith %}
+        </div>
+    </div>
+
+    {% if comment.user == user %}
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item cursor-pointer" title="수정"
+                       hx-target="#comment{{ comment.id }}"
+                       hx-swap="innerHTML swap:0.25s"
+                       hx-get="{{ comment.get_update_url }}">
+                        수정
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item cursor-pointer" title="삭제"
+                       hx-target="#commentContainer"
+                       hx-swap="outerHTML swap:0.25s"
+                       hx-confirm="댓글을 삭제하시겠습니까?"
+                       hx-post="{{ comment.get_delete_url }}">
+                        삭제
+                    </a>
+                </li>
+            </ul>
+        </div>
+    {% endif %}
+</div>

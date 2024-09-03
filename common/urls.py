@@ -1,22 +1,22 @@
 from django.urls import path, include
 
-from .views import base_views, account_views
+from . import views
 
 account_urlpatterns = [
-    path("login/", account_views.LoginView.as_view(), name="account_login"),
-    path('login/modal/', account_views.login_modal, name='account_login_modal'),
-    path('logout/modal/', account_views.logout_modal, name='account_logout_modal'),
+    path("login/", views.LoginView.as_view(), name="account_login"),
+    path('login/modal/', views.login_modal, name='account_login_modal'),
+    path('logout/modal/', views.logout_modal, name='account_logout_modal'),
 
-    path('profile/', account_views.profile_view, name='account_profile'),
-    path("username/change/", account_views.username_change, name="account_change_username"),
-    path("password/change/", account_views.password_change, name="account_change_password"),
+    path('profile/', views.profile_view, name='account_profile'),
+    path("username/change/", views.username_change, name="account_change_username"),
+    path("password/change/", views.password_change, name="account_change_password"),
 ]
 
 urlpatterns = [
-    path('', base_views.index_view, name='index'),
-    path('404/', base_views.page_404, name='404'),
-    path('ads.txt', base_views.ads, name='ads'),
-    path('privacy/', base_views.privacy, name='privacy_policy'),  # Privacy Policy
+    path('', views.index_view, name='index'),
+    path('404/', views.page_404, name='404'),
+    path('ads.txt', views.ads, name='ads'),
+    path('privacy/', views.privacy, name='privacy_policy'),  # Privacy Policy
     path('account/', include(account_urlpatterns)),  # Login, Logout modal
 ]
 

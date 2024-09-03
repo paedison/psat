@@ -10,18 +10,18 @@ register = Library()
 
 @register.inclusion_tag('a_psat/templatetags/psat_icons.html')
 def custom_icons(user: User, problem: Problem, custom_data: dict):
-    def get_status(status_type, default):
+    def get_status(status_type, field=None, default: bool | int | None = False):
         for dt in custom_data[status_type]:
-            if dt[0] == problem.id:
-                default = dt[1] if len(dt) == 2 else True
+            problem_id = getattr(dt, 'problem_id', getattr(dt, 'content_object_id', ''))
+            if problem_id == problem.id:
+                default = getattr(dt, field) if field else True
         return default
-
-    is_liked = get_status('like', False)
-    rating = get_status('rate', 0)
-    is_correct = get_status('solve', None)
-    is_memoed = get_status('memo', False)
-    is_tagged = get_status('tag', False)
-    is_collected = get_status('collection', False)
+    is_liked = get_status(status_type='like', field='is_liked')
+    rating = get_status(status_type='rate', field='rating', default=0)
+    is_correct = get_status(status_type='solve', field='is_correct', default=None)
+    is_memoed = get_status('memo')
+    is_tagged = get_status('tag')
+    is_collected = get_status('collection')
 
     return update_context_data(
         user=user,

@@ -11,6 +11,8 @@ urlpatterns = [
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
 
     path('notice/', include('notice.urls')),  # Notice
+    path('board/', include('a_board.urls')),  # Board
+
     path('dashboard/', include('dashboard.urls')),  # Dashboard
     path('psat/', include('a_psat.urls')),  # PSAT
     path('psat_old/', include('psat.urls')),  # PSAT

@@ -1,15 +1,16 @@
 {% load slippers %}
 
 <!-- ======= Sidebar ======= -->
-<aside id="sidebar" class="sidebar" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+<aside id="sidebar" class="sidebar" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
     <ul id="sidebar-nav" class="sidebar-nav">
         {% partial menu_notice %}
+        {% if user.is_admin %}{% partial menu_old_notice %}{% endif %}
         {% if user.is_authenticated %}{% partial menu_dashboard %}{% endif %}
         {% partial menu_lecture %}
         {% partial menu_psat %}
         {% partial menu_predict %}
 {#        {% if user.is_admin %}{% partial menu_predict %}{% endif %}#}
-        {% partial menu_score %}
+{#        {% partial menu_score %}#}
 {#        {% if user.is_staff %}{% partial menu_score %}{% endif %}#}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
         {% if user.is_admin %}{% partial menu_old_predict %}{% endif %}
@@ -18,76 +19,74 @@
     {% partial sidebar_toggle %}
 </aside><!-- Sidebar End -->
 
-
-{######## partials ########}
-
 {% partialdef menu_notice %}
     <li class="nav-item">
-        <a id="noticeList" class="nav-link collapsed" hx-boost="true" href="{% url 'notice:base' %}">
-            <i class="fa-solid fa-fw fa-bullhorn"></i>
-            <span>Notice</span>
+        <a class="nav-link collapsed" data-menu="notice" href="{% url 'board:notice-list' %}">
+            <i class="fa-solid fa-fw fa-bullhorn"></i> Notice
         </a>
     </li><!-- Notice Nav End -->
 {% endpartialdef menu_notice %}
 
+{% partialdef menu_old_notice %}
+    <li class="nav-item">
+        <a class="nav-link collapsed" data-menu="notice-old" href="{% url 'notice:base' %}">
+            <i class="fa-solid fa-fw fa-bullhorn"></i> Notice(old)
+        </a>
+    </li><!-- Notice Nav End -->
+{% endpartialdef menu_old_notice %}
+
 {% partialdef menu_dashboard %}
     <li class="nav-item">
-        <a id="dashboardList" class="nav-link collapsed" hx-boost="true" href="{% url 'dashboard:base' %}">
-            <i class="fa-solid fa-fw fa-list"></i>
-            <span>Dashboard</span>
+        <a class="nav-link collapsed" data-menu="dashboard" href="{% url 'dashboard:base' %}">
+            <i class="fa-solid fa-fw fa-list"></i> Dashboard
         </a>
     </li><!-- Dashboard Nav End -->
 {% endpartialdef menu_dashboard %}
 
 {% partialdef menu_psat %}
     <li class="nav-item">
-        <a id="psatList" class="nav-link collapsed" hx-boost="true" href="{% url 'psat:base' %}">
-            <i class="fa-solid fa-fw fa-layer-group"></i>
-            <span>PSAT</span>
+        <a class="nav-link collapsed" data-menu="psat" href="{% url 'psat:base' %}">
+            <i class="fa-solid fa-fw fa-layer-group"></i> PSAT
         </a>
     </li><!-- PSAT Nav End -->
 {% endpartialdef menu_psat %}
 
 {% partialdef menu_predict %}
     <li class="nav-item">
-        <a id="predictList" class="nav-link collapsed" hx-boost="true" href="{% url 'predict:index' %}">
-            <i class="fa-solid fa-fw fa-arrows-up-to-line"></i>
-            <span>Predict</span>
+        <a class="nav-link collapsed" data-menu="predict" href="{% url 'predict:index' %}">
+            <i class="fa-solid fa-fw fa-arrows-up-to-line"></i> Predict
         </a>
     </li><!-- Predict Nav End -->
 {% endpartialdef menu_predict %}
 
 {% partialdef menu_old_predict %}
     <li class="nav-item">
-        <a id="predictList" class="nav-link collapsed" hx-boost="true" href="{% url 'predict_test:index' %}">
-            <i class="fa-solid fa-fw fa-arrows-up-to-line"></i>
-            <span>Predict(Old)</span>
+        <a class="nav-link collapsed" data-menu="predict-old" href="{% url 'predict_test:index' %}">
+            <i class="fa-solid fa-fw fa-arrows-up-to-line"></i> Predict(Old)
         </a>
     </li><!-- Predict Nav End -->
-{% endpartialdef menu_predict %}
+{% endpartialdef menu_old_predict %}
 
 {% partialdef menu_community %}
     <li class="nav-item">
-        <a id="communityList" class="nav-link collapsed" hx-boost="true" href="{% url 'community:base' %}">
-            <i class="fa-solid fa-fw fa-users-line"></i>
-            <span>Community</span>
+        <a class="nav-link collapsed" data-menu="community" href="{% url 'community:base' %}">
+            <i class="fa-solid fa-fw fa-users-line"></i> Community
         </a>
     </li><!-- Community Nav End -->
 {% endpartialdef menu_community %}
 
 {% partialdef menu_score %}
     <li class="nav-item" role="menuitem" aria-label="Score Menu">
-        <a class="nav-link collapsed" href="" aria-expanded="false"
-           data-bs-target="#score-nav" data-bs-toggle="collapse">
-            <i class="fa-solid fa-fw fa-chart-simple"></i>
-            <span>Score</span>
+        <a class="nav-link collapsed" href="#scoreNavContent" data-menu="score"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="scoreNavContent">
+            <i class="fa-solid fa-fw fa-chart-simple"></i> Score
             <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
         </a>
-        <ul id="score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <ul id="scoreNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
             <li>
-                <a id="primeScoreList" class="aside-nav-icon" hx-boost="true" href="{% url 'score:temporary-index' %}">
-                    <i class="fa-regular fa-fw fa-file"></i>
-                    <span>프라임 모의고사</span>
+                <a class="aside-nav-icon" data-menu-parent="score" data-menu-self="prime"
+                   href="{% url 'score:temporary-index' %}">
+                    <i class="fa-regular fa-fw fa-file"></i> 프라임 모의고사
                 </a>
             </li>
         </ul>
@@ -96,13 +95,12 @@
 
 {% partialdef menu_old_score %}
     <li class="nav-item" role="menuitem" aria-label="Score Menu">
-        <a class="nav-link collapsed" href="" aria-expanded="false"
-           data-bs-target="#old-score-nav" data-bs-toggle="collapse">
-            <i class="fa-solid fa-fw fa-chart-simple"></i>
-            <span>Score(Old)</span>
+        <a class="nav-link collapsed" href="#oldScoreNavContent" data-menu="score-old"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="oldScoreNavContent">
+            <i class="fa-solid fa-fw fa-chart-simple"></i> Score(Old)
             <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
         </a>
-        <ul id="old-score-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+        <ul id="oldScoreNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
             <li>
 {#                {% if user.is_admin %}#}
 {#                    <a id="psatScoreList" class="aside-nav-icon" hx-boost="true" href="{% url 'score_old:psat-list' %}">#}
@@ -110,29 +108,27 @@
 {#                        <span>PSAT 기출문제</span>#}
 {#                    </a>#}
 {#                {% endif %}#}
-                <a id="primeScoreList" class="aside-nav-icon" hx-boost="true" href="{% url 'score_old:prime-list' %}">
-                    <i class="fa-regular fa-fw fa-file"></i>
-                    <span>프라임 모의고사</span>
+                <a class="aside-nav-icon" data-menu-parent="score-old" data-menu-self="prime-old"
+                   href="{% url 'score_old:prime-list' %}">
+                    <i class="fa-regular fa-fw fa-file"></i> 프라임 모의고사
                 </a>
             </li>
         </ul>
     </li><!-- Score Nav End -->
-{% endpartialdef menu_score %}
+{% endpartialdef menu_old_score %}
 
 {% partialdef menu_schedule %}
     <li class="nav-item">
-        <a id="scheduleList" class="nav-link collapsed" hx-boost="true" href="{% url 'schedule:base' %}">
-            <i class="fa-regular fa-fw fa-calendar-days"></i>
-            <span>Schedule</span>
+        <a class="nav-link collapsed" data-menu="schedule" href="{% url 'schedule:base' %}">
+            <i class="fa-regular fa-fw fa-calendar-days"></i> Schedule
         </a>
     </li><!-- Schedule Nav End -->
 {% endpartialdef menu_schedule %}
 
 {% partialdef menu_lecture %}
     <li class="nav-item">
-        <a id="lectureList" class="nav-link collapsed" hx-boost="true" href="{% url 'lecture:base' %}">
-            <i class="fa-solid fa-fw fa-pen-to-square"></i>
-            <span>Lecture</span>
+        <a class="nav-link collapsed" data-menu="lecture" href="{% url 'lecture:base' %}">
+            <i class="fa-solid fa-fw fa-pen-to-square"></i> Lecture
         </a>
     </li><!-- Schedule Nav End -->
 {% endpartialdef menu_lecture %}

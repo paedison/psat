@@ -1,6 +1,7 @@
 {% #modal header='문제 난이도를 선택해주세요.' %}
-    <a class="d-block mb-2 fw-bold text-primary"
-       href="{{ problem.get_absolute_url }}">
+    <a class="d-block mb-2 fw-bold text-primary cursor-pointer"
+       data-bs-dismiss="modal" hx-target="#main" hx-swap="innerHTML swap:0.25s"
+       hx-get="{{ problem.get_absolute_url }}">
         {{ problem.full_reference }}
     </a>
 

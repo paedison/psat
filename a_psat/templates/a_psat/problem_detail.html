@@ -34,9 +34,9 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12">{% partial container_comment %}</div>
-        </div>
+{#        <div class="row">#}
+{#            <div class="col-12">{% partial container_comment %}</div>#}
+{#        </div>#}
     </section>
 
     <div id="modalContainerPsat" class="modal fade htmx-fade-in htmx-fade-out" style="display: none"
@@ -46,7 +46,7 @@
 {% endblock main %}
 
 {% partialdef container_problem %}
-    <div id="containerProblem" class="card htmx-fade-in htmx-fade-out">
+    <problem id="containerProblem" class="card htmx-fade-in htmx-fade-out">
         <div class="card-body">
             <div class="card-title mb-0 row">
                 <div class="d-flex align-items-center fs-6">
@@ -55,8 +55,11 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center fs-6">
-                    <div class="text-nowrap ms-auto">
+                    <div class="text-nowrap me-auto">
                         {% custom_icons user problem custom_data %}
+                    </div>
+                    <div class="ms-auto justify-content-end">
+                        {% include 'a_psat/snippets/solve_container.html' %}
                     </div>
                 </div>
             </div>
@@ -91,7 +94,7 @@
                 {% endif %}
             </div>
         </div>
-    </div>
+    </problem>
 {% endpartialdef container_problem %}
 
 {% partialdef container_memo %}
@@ -151,7 +154,7 @@
                                 <div class="tw-text-sm tw-mb-2 tw-px-2">
                                     <input id="problemTag{{ problem.id }}"
                                            placeholder='태그를 입력해주세요' type="hidden"
-                                           data-tagify data-problem-id="{{ problem.id }}"
+                                           data-tagify data-action="{{ problem.get_tag_url }}"
                                            data-tags="{{ tags|join:',' }}">
                                 </div>
                             {% else %}

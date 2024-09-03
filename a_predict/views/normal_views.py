@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 import pytz
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_not_required
 from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -14,6 +14,7 @@ from common.utils import HtmxHttpRequest, update_context_data
 from .base_info import PredictExamVars
 
 
+@login_not_required
 def index_view(request: HtmxHttpRequest):
     info = {'menu': 'predict', 'view_type': 'predict'}
     context = update_context_data(
@@ -106,7 +107,6 @@ def get_stat_context(exam_vars, exam, qs_student, student):
     return stat
 
 
-@login_required
 def student_create_view(request: HtmxHttpRequest, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
     exam = exam_vars.get_exam()
@@ -158,7 +158,6 @@ def student_create_view(request: HtmxHttpRequest, **kwargs):
         return render(request, 'a_predict/predict_student_create.html', context)
 
 
-@login_required
 def answer_input_view(request: HtmxHttpRequest, subject_field: str, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
     if not exam_vars:
@@ -219,7 +218,6 @@ def answer_input_view(request: HtmxHttpRequest, subject_field: str, **kwargs):
     return render(request, 'a_predict/predict_answer_input.html', context)
 
 
-@login_required
 def answer_confirm_view(request: HtmxHttpRequest, subject_field: str, **kwargs):
     exam_vars = PredictExamVars(request, **kwargs)
     student = exam_vars.get_student()

@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django_htmx.http import retarget
@@ -10,7 +10,7 @@ from .. import forms
 from .. import models
 
 BASE_INFO = {
-    'info': {'menu': 'score', 'view_type': 'primeScore'},
+    'info': {'menu': 'score', 'menu_self': 'prime'},
     'title': 'Score',
     'sub_title': '74기 대비 프라임 경위공채 전국모의고사',
     'icon_menu': icon_set_new.ICON_MENU['score'],
@@ -29,6 +29,7 @@ def get_registered_student(request):
         user=request.user, **REGISTERED_STUDENT_INFO).first()
 
 
+@login_not_required
 def index_view(request: HtmxHttpRequest):
     if request.user.is_authenticated:
         registered_student = get_registered_student(request=request)
@@ -47,7 +48,6 @@ def result_view(request: HtmxHttpRequest):
     return render(request, 'a_score/prime_police/temporary/police_result.html', context)
 
 
-@login_required
 def student_register_view(request: HtmxHttpRequest):
     registered_student = get_registered_student(request=request)
     if registered_student:

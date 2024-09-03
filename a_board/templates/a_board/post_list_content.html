@@ -1,0 +1,64 @@
+<article class="table-responsive">
+    <table class="table align-middle m-0">
+        <thead>
+            <tr>
+                <th class="text-center text-nowrap px-2">제목</th>
+                <th class="text-center text-nowrap px-2 col-1">글쓴이</th>
+                <th class="text-center text-nowrap px-2 col-1">작성일</th>
+                <th class="text-center text-nowrap px-2 col-1">조회</th>
+                <th class="text-center text-nowrap px-2 col-1">댓글</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if top_fixed %}
+                {% for post in top_fixed %}{% partial tbody %}{% endfor %}
+            {% endif %}
+
+            {% for post in page_obj %}
+                {% if not post.top_fixed %}{% partial tbody %}{% endif %}
+            {% empty %}
+                <tr>
+                    <td class="text-center text-nowrap px-2" colspan="5">
+                        추가된 자료가 없습니다.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+<section class="d-flex flex-wrap">
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'a_board/snippets/pagination.html' with header='pagination' %}
+    {% endif %}
+
+    {% if user.is_staff %}
+        <div class="ms-auto p-2">
+            <a class="btn btn-sm btn-outline-primary cursor-pointer" title="글쓰기"
+               hx-get="{{ config.url_create }}">
+                글쓰기
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% partialdef tbody %}
+    <tr class="cursor-pointer{% if post.top_fixed %} table-warning{% endif %}"
+        hx-get="{{ post.get_absolute_url }}">
+        <td class="text-start text-nowrap fw-bold px-2">
+            {% if post.top_fixed %}
+                <span class="text-danger">{{ icon_board.top_fixed|safe }}</span>
+            {% endif %}
+            {% if post.is_hidden %}
+                <span class="text-danger">{{ icon_board.is_hidden|safe }}</span>
+            {% endif %}
+            <span class="d-md-none">{{ post.title|truncatechars:30 }}</span>
+            <span class="d-none d-md-inline d-lg-none">{{ post.title|truncatechars:40 }}</span>
+            <span class="d-none d-lg-inline">{{ post.title|truncatechars:50 }}</span>
+        </td>
+        <td class="text-center text-nowrap px-2 col-1">{{ post.user.username }}</td>
+        <td class="text-center text-nowrap px-2 col-1">{{ post.created_at|date:'n/j' }}</td>
+        <td class="text-center text-nowrap px-2 col-1">{{ post.hit }}</td>
+        <td class="text-center text-nowrap px-2 col-1">{{ post.comment_count }}</td>
+    </tr>
+{% endpartialdef tbody %}

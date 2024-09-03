@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup as bs
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_not_required
 from django.db.models import F, Max, Case, When, BooleanField, Value
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
@@ -12,6 +12,7 @@ from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 
 
+@login_not_required
 def problem_list_view(request: HtmxHttpRequest):
     view_type = request.headers.get('View-Type', '')
 
@@ -54,6 +55,7 @@ def problem_list_view(request: HtmxHttpRequest):
     return render(request, 'a_psat/problem_list.html', context)
 
 
+@login_not_required
 def problem_detail_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', 'main')
     info = {'menu': 'psat'}
@@ -121,12 +123,12 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
 
     my_memo = None
     for dt in custom_data['memo']:
-        if dt[0] == problem.id:
+        if dt.problem_id == problem.id:
             my_memo = models.ProblemMemo.objects.filter(user=request.user, problem=problem).first()
 
     tags = []
     for dt in custom_data['tag']:
-        if dt[0] == problem.id:
+        if dt.content_object_id == problem.id:
             tags = models.ProblemTag.objects.filter(
                 tagged_items__user=request.user,
                 tagged_items__content_object=problem,
@@ -173,7 +175,6 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
 
 
 @require_POST
-@login_required
 def like_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
     problem_like, created = models.ProblemLike.objects.get_or_create(user=request.user, problem=problem)
@@ -187,7 +188,6 @@ def like_problem(request: HtmxHttpRequest, pk: int):
     return HttpResponse(f'{icon_like}')
 
 
-@login_required
 def rate_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
 
@@ -207,12 +207,14 @@ def rate_problem(request: HtmxHttpRequest, pk: int):
     return render(request, 'a_psat/snippets/rate_modal.html', context)
 
 
-@login_required
+@require_POST
 def solve_problem(request: HtmxHttpRequest, pk: int):
+    answer = request.POST.get('answer')
     problem = get_object_or_404(models.Problem, pk=pk)
 
-    if request.method == 'POST':
-        answer = int(request.POST.get('answer'))
+    is_correct = None
+    if answer:
+        answer = int(answer)
         is_correct = answer == problem.answer
         problem_solve = models.ProblemSolve.objects.filter(problem=problem, user=request.user)
         if problem_solve:
@@ -223,17 +225,13 @@ def solve_problem(request: HtmxHttpRequest, pk: int):
         else:
             models.ProblemSolve.objects.create(
                 problem=problem, user=request.user, answer=answer, is_correct=is_correct)
-        context = update_context_data(
-            problem=problem, is_correct=is_correct,
-            icon_solve=icon_set_new.ICON_SOLVE[f'{is_correct}'],
-        )
-        return render(request, 'a_psat/snippets/solve_result.html', context)
+    context = update_context_data(
+        problem=problem, answer=answer, is_correct=is_correct,
+        icon_solve=icon_set_new.ICON_SOLVE[f'{is_correct}'])
 
-    context = update_context_data(problem=problem)
     return render(request, 'a_psat/snippets/solve_modal.html', context)
 
 
-@login_required
 def memo_problem(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     instance = models.ProblemMemo.objects.filter(problem_id=pk, user=request.user).first()
@@ -272,12 +270,11 @@ def memo_problem(request: HtmxHttpRequest, pk: int):
 
 
 @require_POST
-@login_required
 def tag_problem(request: HtmxHttpRequest, pk: int):
-    hx_tag = request.headers.get('Hx-Tag', '')
+    view_type = request.headers.get('View-Type', '')
     problem = get_object_or_404(models.Problem, pk=pk)
 
-    if hx_tag == 'add':
+    if view_type == 'add':
         name = request.POST.get('tag')
         tag, created = models.ProblemTag.objects.get_or_create(name=name)
         tagged_problem, created = models.ProblemTaggedItem.objects.get_or_create(
@@ -287,7 +284,7 @@ def tag_problem(request: HtmxHttpRequest, pk: int):
             tagged_problem.save(message_type='recreated')
         return HttpResponse('')
 
-    if hx_tag == 'remove':
+    if view_type == 'remove':
         tagged_problem = get_object_or_404(
             models.ProblemTaggedItem,
             tag__name=request.POST.get('tag'),
@@ -298,7 +295,6 @@ def tag_problem(request: HtmxHttpRequest, pk: int):
         return HttpResponse('')
 
 
-@login_required
 def collection_list_view(request: HtmxHttpRequest):
     collections = []
     collection_ids = request.POST.getlist('collection')
@@ -314,7 +310,6 @@ def collection_list_view(request: HtmxHttpRequest):
     return render(request, 'a_psat/collection_list.html', context)
 
 
-@login_required
 def collection_create(request: HtmxHttpRequest):
     view_type = request.headers.get('View-Type', '')
 
@@ -434,7 +429,6 @@ def collect_problem(request: HtmxHttpRequest, pk: int):
         return render(request, 'a_psat/snippets/collection_modal.html', context)
 
 
-@login_required
 def comment_list_view(request: HtmxHttpRequest):
     page = int(request.GET.get('page', 1))
     comment_qs = (
@@ -459,7 +453,6 @@ def comment_list_view(request: HtmxHttpRequest):
     return render(request, 'a_psat/comment_list.html', context)
 
 
-@login_required
 def comment_create(request: HtmxHttpRequest):
     view_type = request.headers.get('View-Type', 'main')
 
@@ -543,7 +536,6 @@ def comment_detail_view(request: HtmxHttpRequest, pk: int):
     return render(request, 'a_psat/snippets/collection_item_card.html', context)
 
 
-@login_required
 def comment_problem_create(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
     reply_form = forms.ProblemCommentForm()
@@ -565,7 +557,6 @@ def comment_problem_create(request: HtmxHttpRequest, pk: int):
             return render(request, 'a_psat/snippets/comment.html', context)
 
 
-@login_required
 def comment_problem_update(request: HtmxHttpRequest, pk: int):
     comment = get_object_or_404(ProblemComment, pk=pk)
     if request.method == 'POST':
@@ -578,7 +569,6 @@ def comment_problem_update(request: HtmxHttpRequest, pk: int):
     return render(request, 'problemcomment_form.html', {'form': form})
 
 
-@login_required
 def comment_problem_delete(request: HtmxHttpRequest, pk: int):
     comment = get_object_or_404(ProblemComment, pk=pk)
     if request.method == 'POST':

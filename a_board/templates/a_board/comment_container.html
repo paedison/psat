@@ -1,0 +1,53 @@
+<section id="commentContainer" class="border-top htmx-fade-in htmx-fade-out" hx-swap="outerHTML swap:0.25s">
+    <div class="comment_option py-3">
+        <div class="comment_tab">
+            <ul class="nav nav-pills" role="tablist" hx-target="#commentContainer">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link cursor-pointer{% if order_by == 'newest' %} active{% endif %}"
+                       role="button" aria-selected="{% if order_by == 'newest' %}true{% else %}false{% endif %}"
+                       hx-get="{{ post.get_comment_list_url }}?post_id={{ post.id }}&order_by=newest">
+                        최신순
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link cursor-pointer{% if order_by == 'oldest' %} active{% endif %}"
+                       role="button" aria-selected={% if order_by == 'oldest' %}true{% else %}false{% endif %}"
+                       hx-get="{{ post.get_comment_list_url }}?post_id={{ post.id }}&order_by=oldest">
+                        등록순
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link cursor-pointer" role="button" aria-selected="false"
+                       hx-get="{{ post.get_comment_list_url }}?post_id={{ post.id }}&order_by={{ order_by|default:'newest' }}">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="commentBox" class="htmx-fade-in htmx-fade-out">
+        {% partialdef comment_box inline=True %}
+            <ul class="list-group htmx-fade-in htmx-fade-out">
+                {% if comments %}
+                    {% for comment in comments %}
+                        {% include 'a_board/snippets/comment_item.html' %}
+                    {% endfor %}
+                {% endif %}
+            </ul>
+            {% with page_obj=comments %}
+                {% if page_obj.has_next or page_obj.has_previous %}
+                    {% include 'a_board/snippets/pagination.html' with header='pagination' %}
+                {% endif %}
+            {% endwith %}
+        {% endpartialdef comment_box %}
+    </div>
+
+    <div class="CommentWriter">
+        <ul class="list-group mt-4">
+            <li id="commentForm" class="list-group-item p-3 htmx-fade-in htmx-fade-out">
+                {% include 'a_board/snippets/comment_form.html' %}
+            </li>
+        </ul>
+    </div>
+</section>

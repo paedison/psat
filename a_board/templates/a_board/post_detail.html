@@ -1,0 +1,88 @@
+{% extends 'list.html' %}
+
+{% block main %}
+    {% include 'a_board/snippets/page_title.html' %}
+
+    <section class="section">
+        <div class="row">
+            <div class="col-12" aria-label="{{ config.title.kor }}">
+                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
+                    <div class="card-header mb-0 bg-warning-subtle text-black fw-bold">
+                        {{ config.title.kor }}
+                    </div>
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        <div class="card-title d-flex justify-content-between mb-0" hx-target="#main"
+                             hx-swap="innerHTML swap:0.25s">
+                            <div aria-label="left-button">
+                                <a class="btn btn-circle btn-outline-secondary" title="목록"
+                                   hx-boost="true" href="{{ post.get_list_url }}">
+                                    {{ icon_board.list|safe }}
+                                </a>
+                                <button class="btn btn-circle btn-outline-secondary" title="다음 글"
+                                        {% if next_post %}
+                                            hx-get="{{ next_post.get_absolute_url }}"
+                                        {% else %}
+                                            disabled
+                                        {% endif %}
+                                >{{ icon_board.next|safe }}</button>
+                                <button class="btn btn-circle btn-outline-secondary" title="이전 글"
+                                        {% if prev_post %}
+                                            hx-get="{{ prev_post.get_absolute_url }}"
+                                        {% else %}
+                                            disabled
+                                        {% endif %}
+                                >{{ icon_board.prev|safe }}</button>
+                            </div>
+
+                            <div aria-label="right-button">
+                                {% if user.is_staff %}
+                                    <a class="btn btn-circle btn-outline-success" title="수정"
+                                       hx-get="{{ post.get_update_url }}">
+                                        {{ icon_board.update|safe }}
+                                    </a>
+                                    <a class="btn btn-circle btn-outline-danger" title="삭제"
+                                       hx-confirm="글을 삭제하시겠습니까?"
+                                       hx-post="{{ post.get_delete_url }}">
+                                        {{ icon_board.delete|safe }}
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <h6 class="border-top pt-2 text-primary fw-bold">
+                            {% if post.top_fixed %}
+                                <span class="text-danger">{{ icon_board.top_fixed|safe }}</span>
+                            {% endif %}
+                            {% if post.is_hidden %}
+                                <span class="text-danger">{{ icon_board.is_hidden|safe }}</span>
+                            {% endif %}
+                            {{ post.title }}
+                        </h6>
+
+                        <div class="border-bottom pb-2 small text-secondary">
+                            <span class="me-1">{{ post.user.username }}</span>
+                            <span class="me-1">조회
+                                <span class="text-danger fw-bold">{{ post.hit }}</span>
+                            </span>
+                            <span class="me-1">
+                                {% with timestamp=post.created_at %}
+                                    {{ timestamp|date:'Y.m.d' }}({{ timestamp|date:'w'|int2kor }})
+                                    {{ timestamp|time:'H:i' }}
+                                {% endwith %}
+                            </span>
+                            <span class="me-1">댓글
+                                <span class="text-danger fw-bold">{{ post.comment_count }}</span>
+                            </span>
+                        </div>
+
+                        <div class="my-4">
+                            {{ post.content|safe }}
+                        </div>
+
+                        {% include 'a_board/comment_container.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main %}

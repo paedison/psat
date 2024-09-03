@@ -5,12 +5,6 @@ h1, h2, h3, h4, h5, h6, .breadcrumb, .logo span {
 body {
     font-family: "Open Sans", "Noto Sans KR", sans-serif;
 }
-:root {
-    --bg-heonbeob: rgb(157 23 77);
-    --bg-eoneo: rgb(30 64 175);
-    --bg-jaryo: rgb(6 95 70);
-    --bg-sanghwang: rgb(146 64 14);
-}
 
 .rotate-180 {
     transform: rotate(180deg);
@@ -254,17 +248,6 @@ div.django-ckeditor-widget {
 }
 
 
-.detail-filter {
-    display: grid;
-    gap: 0.75rem;
-    grid-template-columns: repeat(5, 1fr);
-    justify-content: center;
-    justify-items: center;
-    margin: 0 1.5rem;
-    font-size: 0.9rem;
-}
-
-
 .htmx-fade-in.htmx-added {
   opacity: 0;
 }
@@ -452,20 +435,34 @@ ul.errorlist>li {
 }
 
 
-.bg_heonbeob {
-    background-color: var(--bg-heonbeob);
-}
-.bg_eoneo {
-    background-color: var(--bg-eoneo);
-}
-.bg_jaryo {
-    background-color: var(--bg-jaryo);
-}
-.bg_sanghwang {
-    background-color: var(--bg-sanghwang);
-}
-
-
 .tagify{
     width: 100%;
+}
+
+.cke_notifications_area {
+    display: none;
+}
+
+.comment_input {
+    margin: 4px 0;
+    padding: 0;
+    border: 0;
+    width: 100%;
+    font-weight: 400;
+    display: block;
+    min-height: 17px;
+    appearance: none;
+    resize: none;
+    box-sizing: border-box;
+    background: transparent;
+    outline: 0;
+    max-height: 500px;
+    overflow: hidden;
+    overflow-wrap: break-word;
+}
+
+.required-field label::after {
+    content: " *";
+    color: rgba(var(--bs-danger-rgb), 1);
+    font-weight: bold;
 }

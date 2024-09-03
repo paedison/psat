@@ -5,7 +5,7 @@ import pytz
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.templatetags.static import static
-from django.urls import reverse
+from django.urls import reverse_lazy
 from taggit.managers import TaggableManager
 from taggit.models import TaggedItemBase, TagBase
 
@@ -172,25 +172,25 @@ class Problem(models.Model):
         }
 
     def get_absolute_url(self):
-        return reverse('psat:problem-detail', args=[self.id])
+        return reverse_lazy('psat:problem-detail', args=[self.id])
 
     def get_like_url(self):
-        return reverse('psat:like-problem', args=[self.id])
+        return reverse_lazy('psat:like-problem', args=[self.id])
 
     def get_rate_url(self):
-        return reverse('psat:rate-problem', args=[self.id])
+        return reverse_lazy('psat:rate-problem', args=[self.id])
 
     def get_solve_url(self):
-        return reverse('psat:solve-problem', args=[self.id])
+        return reverse_lazy('psat:solve-problem', args=[self.id])
 
-    def get_tag_create_url(self):
-        return reverse('psat:tag-problem-create', args=[self.id])
+    def get_tag_url(self):
+        return reverse_lazy('psat:tag-problem', args=[self.id])
 
-    def get_tag_remove_url(self):
-        return reverse('psat:tag-problem-remove', args=[self.id])
+    def get_collect_url(self):
+        return reverse_lazy('psat:collect-problem', args=[self.id])
 
     def get_comment_create_url(self):
-        return reverse('psat:comment-problem-create', args=[self.id])
+        return reverse_lazy('psat:comment-problem-create', args=[self.id])
 
 
 class ProblemOpen(models.Model):

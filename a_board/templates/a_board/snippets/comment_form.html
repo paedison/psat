@@ -1,0 +1,30 @@
+{% if user.is_authenticated %}
+    <span class="fw-bold">{{ user.username }}</span>
+    <form method="post">
+        {% csrf_token %}
+        {% if form.errors.content %}
+            <div class="alert alert-danger fade show py-2 fw-bold" role="alert">
+                댓글을 입력해주세요.
+            </div>
+        {% endif %}
+        <input name="post" type="hidden" value="{{ post.id }}">
+        <textarea name="content" class="comment_input" rows="4" required
+                  aria-label="내용" placeholder="댓글을 남겨보세요"
+                  id="commentWriteContent">{{ form.content.value }}</textarea>
+        <div class="d-flex justify-content-end" hx-swap="outerHTML swap:0.25s" hx-target="#commentContainer">
+            {% if comment %}
+                <button type="submit" class="btn btn-sm btn-outline-primary" title="수정"
+                        hx-post="{{ comment.get_update_url }}">수정</button>
+            {% else %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary" title="등록"
+                        hx-post="{{ post.get_comment_create_url }}">등록</button>
+            {% endif %}
+        </div>
+    </form>
+{% else %}
+   <a class="cursor-pointer" hx-get="{% url 'account_login' %}"
+      hx-target="#main" hx-swap="outerHTML"
+      hx-confirm="로그인하시겠습니까?">
+       댓글을 작성하시려면 로그인이 필요합니다.
+   </a>
+{% endif %}
