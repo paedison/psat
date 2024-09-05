@@ -3,9 +3,9 @@
 
 <div hx-swap-oob="innerHTML:#psatMemo{{ problem.id }}">
     {% if my_memo %}
-        {{ icon_memo.true|safe }}
+        {{ icon_memo.True|safe }}
     {% else %}
-        {{ icon_memo.false|safe }}
+        {{ icon_memo.False|safe }}
     {% endif %}
 </div>
 
@@ -27,13 +27,13 @@
                         <div class="btn-group" role="group" aria-label="Memo buttons">
                             <button class="btn btn-sm btn-outline-success" title="{% trans 'Update' %}"
                                     hx-headers='{"View-Type":"update"}'
-                                    hx-get="{% url 'psat:memo-problem' my_memo.problem_id %}">
+                                    hx-get="{{ my_memo.get_memo_url }}">
                                 {{ icon_board.update|safe }} {% trans 'Update' %}
                             </button>
                             <button class="btn btn-sm btn-outline-danger"
 {#                                    hx-post=""#}
                                     hx-headers='{"View-Type":"delete"}'
-                                    hx-post="{% url 'psat:memo-problem' my_memo.problem_id %}"
+                                    hx-post="{{ my_memo.get_memo_url }}"
                                     hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
                                     title="{% trans 'Delete' %}">
                                 {{ icon_board.delete|safe }} {% trans 'Delete' %}
@@ -48,7 +48,7 @@
 
 {% partialdef create_form %}
     <form hx-headers='{"View-Type":"create"}'
-          hx-post="{% url 'psat:memo-problem' problem.id %}">
+          hx-post="{{ memo_url }}">
         {{ memo_form.media }}
         {{ memo_form.content }}
         <textarea id="content_memo" name="content" class="ckeditor-content" hidden></textarea>
@@ -64,7 +64,7 @@
 
 {% partialdef update_form %}
     <form hx-headers='{"View-Type":"update"}'
-          hx-post="{% url 'psat:memo-problem' my_memo.problem_id %}">
+          hx-post="{{ my_memo.get_memo_url }}">
         {{ memo_form.media }}
         {{ memo_form.content }}
         <textarea id="content_memo" name="content" class="ckeditor-content" hidden></textarea>
@@ -74,7 +74,7 @@
                     {% trans 'Update' %}
                 </button>
                 <button class="btn btn-sm btn-danger" hx-headers='{"View-Type":""}'
-                        hx-get="{% url 'psat:memo-problem' my_memo.problem_id %}">
+                        hx-get="{{ my_memo.get_memo_url }}">
                     {% trans 'Cancel' %}
                 </button>
             </div>

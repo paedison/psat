@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load psat_templatetags %}
 
 <div id="problemCardHeader" class="card-header htmx-fade-in htmx-fade-out">
     <i class="fa-solid fa-folder-plus fa-fw"></i>
@@ -33,8 +32,7 @@
             <div>
                 {% with problem=item.problem problem_id=item.problem_id %}
                     <div class="align-middle d-inline-block fs-6 pe-1">
-                        {% custom_icons user problem custom_data %}
-{#                        {% psat_icons user problem %}#}
+                        {% include 'a_psat/snippets/custom_icons.html' %}
                     </div>
                     <div class="d-inline-block pe-1" hx-push-url="true">
                         {% include 'a_psat/problem_list_content.html#reference' %}

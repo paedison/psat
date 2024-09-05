@@ -49,7 +49,7 @@
     <div class="search-bar">
         <form class="search-form d-flex align-items-center"
               hx-target="#main" hx-swap="innerHtml swap:0.25s"
-              hx-post="{% url 'psat:base' %}">
+              hx-post="{% url 'psat:problem-list' %}">
             <input id="id_data" type="text" name="keyword"
                    placeholder="{% trans 'Enter search keyword' %}"
                    title="{% trans 'Enter search keyword' %}">
@@ -67,13 +67,13 @@
 {% endpartialdef menu_admin %}
 
 {% partialdef menu_view_type %}
-    <div class="d-flex" hx-boost="true" hx-push-url="{% url 'psat:base' %}"
+    <div class="d-flex" hx-boost="true" hx-push-url="{% url 'psat:problem-list' %}"
          hx-target="#main" hx-swap="innerHTML swap:0.25s">
         {% for i in '1234' %}
             {% cycle '' 'likes=true' 'rates=all' 'solves=all' as view_type_option silent %}
             {% cycle 'fa-file-lines text-primary' 'fa-heart like_true' 'fa-star rate_true' 'fa-circle-check answer_true' as view_type_icon silent %}
 
-            <a class="nav-link px-1" href="{% url 'psat:base' %}?{{ view_type_option }}">
+            <a class="nav-link px-1" href="{% url 'psat:problem-list' %}?{{ view_type_option }}">
                 <i class="fa-solid fa-fw {{ view_type_icon }}"></i>
             </a>
         {% endfor %}

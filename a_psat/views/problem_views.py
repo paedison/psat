@@ -4,7 +4,7 @@ from django.db.models import F, Max, Case, When, BooleanField, Value
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
+from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
 from a_psat import models, utils, forms, filters
@@ -12,22 +12,26 @@ from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 
 
+class ProblemConfiguration:
+    menu = 'psat'
+    submenu = 'problem'
+    info = {'menu': menu, 'menu_self': submenu}
+    menu_title = {'kor': 'PSAT', 'eng': menu.capitalize()}
+    submenu_title = {'kor': '기출문제', 'eng': submenu.capitalize()}
+    url_admin = reverse_lazy(f'admin:a_psat_problem_changelist')
+    url_list = reverse_lazy(f'psat:problem-list')
+    icon_menu = icon_set_new.ICON_MENU[menu]
+
+
 @login_not_required
 def problem_list_view(request: HtmxHttpRequest):
+    config = ProblemConfiguration()
     view_type = request.headers.get('View-Type', '')
-
     exam_year = request.GET.get('year', '')
     exam_exam = request.GET.get('exam', '')
     exam_subject = request.GET.get('subject', '')
-    page = int(request.GET.get('page', 1))
-    keyword = request.GET.get('keyword', '') or request.POST.get('keyword', '')
-    likes = request.GET.get('likes', '')
-    rates = request.GET.get('rates', '')
-    solves = request.GET.get('solves', '')
-    memos = request.GET.get('memos', '')
-    tags = request.GET.get('tags', '')
+    page = request.GET.get('page', '1')
 
-    info = {'menu': 'psat'}
     sub_title = utils.get_sub_title_by_psat(exam_year, exam_exam, exam_subject)
 
     if request.user.is_authenticated:
@@ -35,35 +39,37 @@ def problem_list_view(request: HtmxHttpRequest):
     else:
         filterset = filters.AnonymousPsatFilter(data=request.GET, request=request)
 
-    url_options = (f'page={page}&keyword={keyword}&year={exam_year}&exam={exam_exam}&subject={exam_subject}'
-                   f'&likes={likes}&rates={rates}&solves={solves}&memos={memos}&tags={tags}')
     custom_data = utils.get_custom_data(request.user)
     page_obj, page_range = utils.get_page_obj_and_range(page, filterset.qs)
+    for problem in page_obj:
+        utils.get_custom_icons(problem, custom_data)
     context = update_context_data(
-        info=info, title='기출문제', sub_title=sub_title, form=filterset.form,
+        config=config, sub_title=sub_title, form=filterset.form,
         icon_menu=icon_set_new.ICON_MENU['psat'], icon_image=icon_set_new.ICON_IMAGE,
-        url_options=url_options, custom_data=custom_data,
-        page_obj=page_obj, page_range=page_range,
+        custom_data=custom_data, page_obj=page_obj, page_range=page_range,
     )
     if view_type == 'problem_list':
         return render(request, 'a_psat/problem_list_content.html', context)
 
-    collections = []
     if request.user.is_authenticated:
         collections = models.ProblemCollection.objects.filter(user=request.user).order_by('order')
+    else:
+        collections = []
+
     context = update_context_data(context, collections=collections)
     return render(request, 'a_psat/problem_list.html', context)
 
 
 @login_not_required
 def problem_detail_view(request: HtmxHttpRequest, pk: int):
+    config = ProblemConfiguration()
     view_type = request.headers.get('View-Type', 'main')
-    info = {'menu': 'psat'}
     queryset = models.Problem.objects.order_by('-year', 'id')
-    problem = get_object_or_404(queryset, pk=pk)
+    problem: models.Problem = get_object_or_404(queryset, pk=pk)
+    config.url_admin = reverse_lazy(f'admin:a_psat_problem_change', args=[pk])
     user_id = request.user.id if request.user.is_authenticated else None
 
-    context = update_context_data(info=info, problem_id=pk, problem=problem)
+    context = update_context_data(config=config, problem_id=pk, problem=problem)
 
     problem_data = queryset.filter(year=problem.year, exam=problem.exam, subject=problem.subject)
     prob_prev, prob_next = utils.get_prev_next_prob(pk, problem_data)
@@ -116,10 +122,12 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
         return render(request, template_nav_other_list, context)
 
     memo_form = forms.ProblemMemoForm()
-    comment_form = forms.ProblemCommentForm()
-    reply_form = forms.ProblemCommentForm()
+    memo_url = reverse_lazy('psat:memo-problem', args=[pk])
+    # reply_form = forms.ProblemCommentForm()
+    # comment_form = forms.ProblemCommentForm()
 
     custom_data = utils.get_custom_data(request.user)
+    utils.get_custom_icons(problem, custom_data)
 
     my_memo = None
     for dt in custom_data['memo']:
@@ -135,20 +143,20 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
                 tagged_items__active=True,
             ).values_list('name', flat=True)
 
-    page = int(request.GET.get('page', 1))
-    comment_qs = (
-        models.ProblemComment.objects.select_related('user', 'problem')
-        .annotate(
-            username=F('user__username'),
-            year=F('problem__year'),
-            exam=F('problem__exam'),
-            subject=F('problem__subject'),
-            number=F('problem__number'),
-        )
-    )
-    all_comments = utils.get_all_comments(comment_qs, pk)
+    # page = int(request.GET.get('page', 1))
+    # comment_qs = (
+    #     models.ProblemComment.objects.select_related('user', 'problem')
+    #     .annotate(
+    #         username=F('user__username'),
+    #         year=F('problem__year'),
+    #         exam=F('problem__exam'),
+    #         subject=F('problem__subject'),
+    #         number=F('problem__number'),
+    #     )
+    # )
+    # all_comments = utils.get_all_comments(comment_qs, pk)
     # page_obj, page_range = utils.get_page_obj_and_range(page, all_comments)
-    # pagination_url = reverse('psat:comment-problem')
+    # pagination_url = reverse_lazy('psat:comment-problem')
 
     context = update_context_data(
         context,
@@ -163,13 +171,13 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
         icon_memo_white=icon_set_new.ICON_MEMO['white'],
         icon_tag_white=icon_set_new.ICON_TAG['white'],
 
-        custom_data=custom_data, my_memo=my_memo, tags=tags,
-
         # navigation data
         prob_prev=prob_prev, prob_next=prob_next,
 
-        # forms
-        memo_form=memo_form, comment_form=comment_form, reply_form=reply_form,
+        # custom_data & forms
+        custom_data=custom_data, my_memo=my_memo, tags=tags,
+        memo_form=memo_form, memo_url=memo_url,
+        # comment_form=comment_form, reply_form=reply_form,
     )
     return render(request, 'a_psat/problem_detail.html', context)
 
@@ -234,38 +242,42 @@ def solve_problem(request: HtmxHttpRequest, pk: int):
 
 def memo_problem(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
-    instance = models.ProblemMemo.objects.filter(problem_id=pk, user=request.user).first()
+    problem = get_object_or_404(models.Problem, pk=pk)
+    instance = models.ProblemMemo.objects.filter(problem=problem, user=request.user).first()
+    context = update_context_data(
+        problem=problem, icon_memo=icon_set_new.ICON_MEMO, icon_board=icon_set_new.ICON_BOARD)
 
-    if view_type == 'create':
-        form = forms.ProblemMemoForm(request.POST)
-        if form.is_valid():
-            my_memo = form.save(commit=False)
+    if view_type == 'create' and request.method == 'POST':
+        create_form = forms.ProblemMemoForm(request.POST)
+        if create_form.is_valid():
+            my_memo = create_form.save(commit=False)
             my_memo.problem_id = pk
             my_memo.user = request.user
             my_memo.save()
-            context = update_context_data(my_memo=my_memo)
+            context = update_context_data(context, my_memo=my_memo)
             return render(request, 'a_psat/snippets/memo_container.html', context)
 
     if view_type == 'update':
         if request.method == 'POST':
-            form = forms.ProblemMemoForm(request.POST, instance=instance)
-            if form.is_valid():
-                my_memo = form.save()
-                context = update_context_data(my_memo=my_memo)
+            update_form = forms.ProblemMemoForm(request.POST, instance=instance)
+            if update_form.is_valid():
+                my_memo = update_form.save()
+                context = update_context_data(context, my_memo=my_memo)
                 return render(request, 'a_psat/snippets/memo_container.html', context)
         else:
-            memo_form = forms.ProblemMemoForm(instance=instance)
-            context = update_context_data(memo_form=memo_form, my_memo=instance)
+            update_base_form = forms.ProblemMemoForm(instance=instance)
+            context = update_context_data(context, memo_form=update_base_form, my_memo=instance)
             return render(request, 'a_psat/snippets/memo_container.html#update_form', context)
 
-    memo_form = forms.ProblemMemoForm()
+    blank_form = forms.ProblemMemoForm()
+    context = update_context_data(context, memo_form=blank_form)
     if view_type == 'delete' and request.method == 'POST':
         instance.delete()
-        problem = get_object_or_404(models.Problem, pk=pk)
-        context = update_context_data(problem=problem, memo_form=memo_form)
+        memo_url = reverse_lazy('psat:memo-problem', args=[pk])
+        context = update_context_data(context, memo_url=memo_url)
         return render(request, 'a_psat/snippets/memo_container.html', context)
 
-    context = update_context_data(memo_form=memo_form, my_memo=instance)
+    context = update_context_data(context, my_memo=instance)
     return render(request, 'a_psat/snippets/memo_container.html', context)
 
 
@@ -273,26 +285,27 @@ def memo_problem(request: HtmxHttpRequest, pk: int):
 def tag_problem(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     problem = get_object_or_404(models.Problem, pk=pk)
+    name = request.POST.get('tag')
 
     if view_type == 'add':
-        name = request.POST.get('tag')
-        tag, created = models.ProblemTag.objects.get_or_create(name=name)
+        tag, _ = models.ProblemTag.objects.get_or_create(name=name)
         tagged_problem, created = models.ProblemTaggedItem.objects.get_or_create(
-            tag=tag, content_object=problem, user=request.user)
+            user=request.user, content_object=problem, tag=tag)
         if not created:
             tagged_problem.active = True
-            tagged_problem.save(message_type='recreated')
-        return HttpResponse('')
+            tagged_problem.save(message_type='tagged')
 
     if view_type == 'remove':
         tagged_problem = get_object_or_404(
-            models.ProblemTaggedItem,
-            tag__name=request.POST.get('tag'),
-            content_object=problem, user=request.user,
-        )
+            models.ProblemTaggedItem, user=request.user, content_object=problem, tag__name=name)
         tagged_problem.active = False
         tagged_problem.save(message_type='removed')
-        return HttpResponse('')
+
+    is_tagged = models.ProblemTaggedItem.objects.filter(
+        user=request.user, content_object=problem, active=True).exists()
+    icon_tag = icon_set_new.ICON_TAG[f'{is_tagged}']
+    html_code = f'<span hx-swap-oob="innerHTML:#dailyTag{problem.id}">{icon_tag}</span>'
+    return HttpResponse(html_code)
 
 
 def collection_list_view(request: HtmxHttpRequest):
@@ -328,7 +341,7 @@ def collection_create(request: HtmxHttpRequest):
                 return redirect('psat:collection-list')
         else:
             form = forms.ProblemCollectionForm()
-            context = update_context_data(form=form, url=reverse('psat:collection-create'), header='create')
+            context = update_context_data(form=form, url=reverse_lazy('psat:collection-create'), header='create')
             return render(request, 'a_psat/snippets/collection_create.html', context)
 
     if view_type == 'create_in_modal':
@@ -349,7 +362,7 @@ def collection_create(request: HtmxHttpRequest):
             problem_id = request.GET.get('problem_id')
             form = forms.ProblemCollectionForm()
             context = update_context_data(
-                form=form, url=reverse('psat:collection-create'),
+                form=form, url=reverse_lazy('psat:collection-create'),
                 header='create_in_modal', problem_id=problem_id,
                 target='#modalContainer'
             )
@@ -369,7 +382,7 @@ def collection_detail_view(request: HtmxHttpRequest, pk: int):
         else:
             form = forms.ProblemCollectionForm(instance=collection)
             context = update_context_data(
-                form=form, url=reverse('psat:collection-detail', args=[pk]), header='update')
+                form=form, url=reverse_lazy('psat:collection-detail', args=[pk]), header='update')
             return render(request, 'a_psat/snippets/collection_create.html', context)
 
     if view_type == 'delete':
@@ -443,7 +456,7 @@ def comment_list_view(request: HtmxHttpRequest):
     )
     all_comments = utils.get_all_comments(comment_qs)
     page_obj, page_range = utils.get_page_obj_and_range(page, all_comments)
-    pagination_url = reverse('psat:comment-list')
+    pagination_url = reverse_lazy('psat:comment-list')
     context = update_context_data(
         page_obj=page_obj, page_range=page_range, pagination_url=pagination_url,
         form=forms.ProblemCommentForm(),
@@ -471,7 +484,7 @@ def comment_create(request: HtmxHttpRequest):
                 return redirect('psat:collection-list')
         else:
             form = forms.ProblemCollectionForm()
-            context = update_context_data(form=form, url=reverse('psat:collection-create'), header='create')
+            context = update_context_data(form=form, url=reverse_lazy('psat:collection-create'), header='create')
             return render(request, 'a_psat/snippets/collection_create.html', context)
 
     if view_type == 'create_in_modal':
@@ -492,7 +505,7 @@ def comment_create(request: HtmxHttpRequest):
             problem_id = request.GET.get('problem_id')
             form = forms.ProblemCollectionForm()
             context = update_context_data(
-                form=form, url=reverse('psat:collection-create'),
+                form=form, url=reverse_lazy('psat:collection-create'),
                 header='create_in_modal', problem_id=problem_id,
                 target='#modalContainer'
             )
@@ -512,7 +525,7 @@ def comment_detail_view(request: HtmxHttpRequest, pk: int):
         else:
             form = forms.ProblemCollectionForm(instance=collection)
             context = update_context_data(
-                form=form, url=reverse('psat:collection-detail', args=[pk]), header='update')
+                form=form, url=reverse_lazy('psat:collection-detail', args=[pk]), header='update')
             return render(request, 'a_psat/snippets/collection_create.html', context)
 
     if view_type == 'delete':

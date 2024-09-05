@@ -4,42 +4,42 @@
         <a id="psatRate{{ problem.id }}" class="htmx-fade-in htmx-fade-out"
            data-bs-toggle="modal" data-bs-target="#modalContainer"
            hx-target="#modalContainer" hx-get="{{ problem.get_rate_url }}">
-            {{ icon_rate|safe }}
+            {{ problem.icon_rate|safe }}
         </a>
 
         <a class="htmx-fade-in htmx-fade-out" hx-target="this"
            hx-post="{{ problem.get_like_url }}">
-            {{ icon_like|safe }}
+            {{ problem.icon_like|safe }}
         </a>
 
         <a id="psatSolve{{ problem.id }}" class="htmx-fade-in htmx-fade-out"
            hx-get="{{ problem.get_absolute_url }}">
-            {{ icon_solve|safe }}
+            {{ problem.icon_solve|safe }}
         </a>
 
         <a id="psatMemo{{ problem.id }}" class="htmx-fade-in htmx-fade-out"
            hx-get="{{ problem.get_absolute_url }}">
-            {{ icon_memo|safe }}
+            {{ problem.icon_memo|safe }}
         </a>
 
         <a id="psatTag{{ problem.id }}" class="htmx-fade-in htmx-fade-out"
            hx-get="{{ problem.get_absolute_url }}">
-            {{ icon_tag|safe }}
+            {{ problem.icon_tag|safe }}
         </a>
 
         <a id="psatCollection{{ problem.id }}" class="htmx-fade-in htmx-fade-out"
            data-bs-toggle="modal" data-bs-target="#modalContainer"
            hx-target="#modalContainer" hx-get="{{ problem.get_collect_url }}">
-            {{ icon_collection|safe }}
+            {{ problem.icon_collection|safe }}
         </a>
     {% else %}
         <a class="text-secondary"
            data-bs-toggle="modal" data-bs-target="#modalContainer"
            hx-target="#modalContainer" hx-get="{% url 'account_login_modal' %}">
-            {{ icon_like|safe }}
-            {{ icon_rate|safe }}
-            {{ icon_solve|safe }}
-            {{ icon_memo|safe }}
+            {{ problem.icon_like|safe }}
+            {{ problem.icon_rate|safe }}
+            {{ problem.icon_solve|safe }}
+            {{ problem.icon_memo|safe }}
         </a>
     {% endif %}
 </div>

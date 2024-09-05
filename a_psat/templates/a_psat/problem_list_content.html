@@ -1,7 +1,6 @@
 {% load i18n %}
 {% load crispy_forms_tags %}
 {% load crispy_forms_field %}
-{% load psat_templatetags %}
 
 <article class="table-responsive">
     <table class="table align-middle m-0">
@@ -21,12 +20,12 @@
                                 <div class="d-inline-block d-sm-none">
                                     {% partial reference %}
                                 </div>
-                                {% custom_icons user problem custom_data %}
+                                {% include 'a_psat/snippets/custom_icons.html' %}
                             </div>
                             <div class="d-block d-sm-none">
                                 {% partial question %}
                             </div>
-                            <div class="d-none align-middle d-sm-inline-block" hx-push-url="true">
+                            <div class="d-none align-middle d-sm-inline-block">
                                 <div class="d-inline-block pb-1 pb-md-0 pe-md-1">
                                     {% partial reference %}
                                 </div>
@@ -51,10 +50,8 @@
 {% endif %}
 
 {% partialdef reference %}
-    <a class="text-decoration-none fw-bold"
-       href="{% url 'psat:problem-detail' problem_id %}"
-       hx-get="{% url 'psat:problem-detail' problem_id %}?{{ url_options }}"
-       hx-push-url="{% url 'psat:problem-detail' problem_id %}">
+    <a class="text-decoration-none fw-bold cursor-pointer"
+       hx-get="{{ problem.get_absolute_url }}{% querystring %}">
         {{ problem.reference }}
     </a>
     {% if problem.images.name1 == 'Preparing Image' %}
@@ -69,6 +66,15 @@
             {{ icon_image.True|safe }}
         </a>
     {% endif %}
+    {% if user.is_admin %}
+        <span class="badge bg-warning-subtle border border-warning-subtle text-warning-emphasis rounded-pill">
+            정답 {{ problem.get_answer_display }}
+        </span>
+        <a class="badge bg-info-subtle border border-info-subtle text-info-emphasis rounded-pill"
+           target="#admin" href="{{ problem.get_admin_change_url }}">
+            수정
+        </a>
+    {% endif %}
 {% endpartialdef reference %}
 
 {% partialdef question %}
@@ -78,10 +84,8 @@
     {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
 
     {% partialdef link_snippet %}
-        <a class="text-decoration-none {{ class }}"
-           href="{% url 'psat:problem-detail' problem_id %}"
-           hx-get="{% url 'psat:problem-detail' problem_id %}?{{ url_options }}"
-           hx-push-url="{% url 'psat:problem-detail' problem_id %}">
+        <a class="text-decoration-none {{ class }} cursor-pointer"
+           hx-get="{{ problem.get_absolute_url }}{% querystring %}">
             <h3 class="d-inline-block fs-6 small m-0">
                 {{ problem.question|truncatechars:chars }}
             </h3>

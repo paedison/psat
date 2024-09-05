@@ -38,21 +38,30 @@ class ProblemTag(TagBase):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = verbose_name_plural = "07_태그"
         db_table = 'a_psat_problem_tag'
 
 
 class ProblemTaggedItem(TaggedItemBase):
-    created_at = models.DateTimeField(auto_now_add=True)
     tag = models.ForeignKey(ProblemTag, on_delete=models.CASCADE, related_name="tagged_items")
-    content_object = models.ForeignKey(
-        'Problem', on_delete=models.CASCADE, related_name='tagged_problems')
+    content_object = models.ForeignKey('Problem', on_delete=models.CASCADE, related_name='tagged_problems')
     user = models.ForeignKey(User, related_name='psat_tagged_items', on_delete=models.CASCADE)
     active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(null=True, blank=True)
 
     class Meta:
+        verbose_name = verbose_name_plural = "08_태그 문제"
         unique_together = ('tag', 'content_object', 'user')
         db_table = 'a_psat_problem_tagged_item'
+
+    @property
+    def tag_name(self):
+        return self.tag.name
+
+    @property
+    def reference(self):
+        return self.content_object.reference
 
     def save(self, *args, **kwargs):
         message_type = kwargs.pop('message_type', 'created')
@@ -96,6 +105,7 @@ class Problem(models.Model):
         'ProblemCollection', related_name='collected_psat_problems', through='ProblemCollectionItem')
 
     class Meta:
+        verbose_name = verbose_name_plural = "01_문제"
         ordering = ['-year', 'id']
 
     def __str__(self):
@@ -192,6 +202,9 @@ class Problem(models.Model):
     def get_comment_create_url(self):
         return reverse_lazy('psat:comment-problem-create', args=[self.id])
 
+    def get_admin_change_url(self):
+        return reverse_lazy('admin:a_psat_problem_change', args=[self.id])
+
 
 class ProblemOpen(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
@@ -200,11 +213,17 @@ class ProblemOpen(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name = verbose_name_plural = "02_확인기록"
+        ordering = ['-id']
+        db_table = 'a_psat_problem_open'
+
     def __str__(self):
         return f'[PSAT]ProblemOpen(#{self.id}):{self.problem.reference}-{self.user.username}'
 
-    class Meta:
-        db_table = 'a_psat_problem_open'
+    @property
+    def reference(self):
+        return self.problem.reference
 
 
 class ProblemLike(models.Model):
@@ -214,15 +233,20 @@ class ProblemLike(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(null=True, blank=True)
 
+    class Meta:
+        verbose_name = verbose_name_plural = "03_즐겨찾기"
+        unique_together = ['user', 'problem']
+        ordering = ['-id']
+        db_table = 'a_psat_problem_like'
+
     def __str__(self):
         if self.is_liked:
             return f'[PSAT]ProblemLike(#{self.id}):{self.problem.reference}(Liked)-{self.user.username}'
         return f'[PSAT]ProblemLike(#{self.id}):{self.problem.reference}(Unliked)-{self.user.username}'
 
-    class Meta:
-        unique_together = ['user', 'problem']
-        ordering = ['-id']
-        db_table = 'a_psat_problem_like'
+    @property
+    def reference(self):
+        return self.problem.reference
 
     def save(self, *args, **kwargs):
         message_type = kwargs.pop('message_type', 'liked')
@@ -244,13 +268,18 @@ class ProblemRate(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(null=True, blank=True)
 
-    def __str__(self):
-        return f'[PSAT]ProblemRate(#{self.id}):{self.problem.reference}({self.rating})-{self.user.username}'
-
     class Meta:
+        verbose_name = verbose_name_plural = "04_난이도"
         unique_together = ['user', 'problem']
         ordering = ['-id']
         db_table = 'a_psat_problem_rate'
+
+    def __str__(self):
+        return f'[PSAT]ProblemRate(#{self.id}):{self.problem.reference}({self.rating})-{self.user.username}'
+
+    @property
+    def reference(self):
+        return self.problem.reference
 
     def save(self, *args, **kwargs):
         message_type = kwargs.pop('message_type', 'rated')
@@ -274,15 +303,20 @@ class ProblemSolve(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(null=True, blank=True)
 
+    class Meta:
+        verbose_name = verbose_name_plural = "05_정답확인"
+        unique_together = ['user', 'problem']
+        ordering = ['-id']
+        db_table = 'a_psat_problem_solve'
+
     def __str__(self):
         if self.is_correct:
             return f'[PSAT]ProblemSolve(#{self.id}):{self.problem.reference}(Correct)-{self.user.username}'
         return f'[PSAT]ProblemSolve(#{self.id}):{self.problem.reference}(Wrong)-{self.user.username}'
 
-    class Meta:
-        unique_together = ['user', 'problem']
-        ordering = ['-id']
-        db_table = 'a_psat_problem_solve'
+    @property
+    def reference(self):
+        return self.problem.reference
 
     def save(self, *args, **kwargs):
         message_type = 'correct' if self.is_correct else 'wrong'
@@ -298,53 +332,21 @@ class ProblemMemo(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(null=True, blank=True)
 
-    def __str__(self):
-        return f'[PSAT]ProblemMemo(#{self.id}):{self.problem.reference}-{self.user.username}'
-
     class Meta:
+        verbose_name = verbose_name_plural = "06_메모"
         unique_together = ['user', 'problem']
         ordering = ['-id']
         db_table = 'a_psat_problem_memo'
 
-
-class ProblemComment(models.Model):
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_comments')
-    content = models.TextField()
-    like_users = models.ManyToManyField(
-        User, related_name='liked_psat_problem_comments', through='ProblemCommentLike')
-    parent = models.ForeignKey(
-        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='reply_comments')
-    hit = models.IntegerField(default=1, verbose_name='조회수')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
     def __str__(self):
-        prefix = '↪ ' if self.parent else ''
-        return f'{prefix}[PSAT]ProblemComment(#{self.id}):{self.problem.reference}-{self.user.username}'
+        return f'[PSAT]ProblemMemo(#{self.id}):{self.problem.reference}-{self.user.username}'
 
-    class Meta:
-        ordering = ['-id']
-        db_table = 'a_psat_problem_comment'
+    @property
+    def reference(self):
+        return self.problem.reference
 
-
-class ProblemCommentLike(models.Model):
-    comment = models.ForeignKey(ProblemComment, on_delete=models.CASCADE, related_name='likes')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_comment_likes')
-    is_liked = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    remarks = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return f'[PSAT]ProblemCommentLike(#{self.id}):{self.comment.problem.reference}-{self.user.username}'
-
-    class Meta:
-        db_table = 'a_psat_problem_comment_like'
-
-    def save(self, *args, **kwargs):
-        message_type = kwargs.pop('message_type', 'liked')
-        self.remarks = get_remarks(message_type, self.remarks)
-        super().save(*args, **kwargs)
+    def get_memo_url(self):
+        return reverse_lazy('psat:memo-problem', args=[self.problem_id])
 
 
 class ProblemCollection(models.Model):
@@ -355,6 +357,7 @@ class ProblemCollection(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        verbose_name = verbose_name_plural = "09_컬렉션"
         unique_together = [["user", "title"]]
         ordering = ['user', 'order']
         db_table = 'a_psat_problem_collection'
@@ -371,11 +374,20 @@ class ProblemCollectionItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        verbose_name = verbose_name_plural = "10_컬렉션 문제"
         ordering = ['collection__user', 'collection', 'order']
         db_table = 'a_psat_problem_collection_item'
 
     def __str__(self):
         return f'[PSAT]ProblemCollectionItem(#{self.id}):{self.collection.title}-{self.problem.reference}'
+
+    @property
+    def collect_title(self):
+        return self.collection.title
+
+    @property
+    def reference(self):
+        return self.problem.reference
 
     def set_active(self):
         self.is_active = True
@@ -384,3 +396,51 @@ class ProblemCollectionItem(models.Model):
     def set_inactive(self):
         self.is_active = False
         self.save()
+
+
+class ProblemComment(models.Model):
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_comments')
+    content = models.TextField()
+    like_users = models.ManyToManyField(
+        User, related_name='liked_psat_problem_comments', through='ProblemCommentLike')
+    parent = models.ForeignKey(
+        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='reply_comments')
+    hit = models.IntegerField(default=1, verbose_name='조회수')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-id']
+        db_table = 'a_psat_problem_comment'
+
+    def __str__(self):
+        prefix = '↪ ' if self.parent else ''
+        return f'{prefix}[PSAT]ProblemComment(#{self.id}):{self.problem.reference}-{self.user.username}'
+
+    @property
+    def reference(self):
+        return self.problem.reference
+
+
+class ProblemCommentLike(models.Model):
+    comment = models.ForeignKey(ProblemComment, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_comment_likes')
+    is_liked = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    remarks = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'a_psat_problem_comment_like'
+
+    def __str__(self):
+        return f'[PSAT]ProblemCommentLike(#{self.id}):{self.comment.problem.reference}-{self.user.username}'
+
+    @property
+    def reference(self):
+        return self.comment.problem.reference
+
+    def save(self, *args, **kwargs):
+        message_type = kwargs.pop('message_type', 'liked')
+        self.remarks = get_remarks(message_type, self.remarks)
+        super().save(*args, **kwargs)

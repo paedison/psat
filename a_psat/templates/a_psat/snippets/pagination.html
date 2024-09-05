@@ -29,14 +29,14 @@
 </nav><!-- Pagination End -->
 
 {% partialdef pagination_link %}
-    <li class="page-item {{ status }}"
+    <li class="page-item {{ status }}{% if status != 'disabled' %} cursor-pointer{% endif %}"
         {% if status == 'active' %}aria-current="page"{% endif %}>
-        <a class="page-link" href=""
+        <a class="page-link"
             {% if status == 'disabled' %}
                 tabindex="-1" aria-disabled="true"
             {% else %}
                 hx-headers='{"View-Type": "{{ header }}"}'
-                hx-get="{{ pagination_url }}?{% if url_options %}{{ url_options }}&{% endif %}page={{ page_num }}"
+                hx-get="{{ pagination_url }}{% querystring page=page_num %}"
             {% endif %}>
             {% if chevron %}
                 <i class="fa-solid fa-chevron-{{ chevron }}"></i>

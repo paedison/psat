@@ -16,7 +16,7 @@ from .utils import HtmxHttpRequest, update_context_data
 
 @login_not_required
 def index_view(_):
-    return redirect('psat:base')
+    return redirect('psat:problem-list')
 
 
 @login_not_required

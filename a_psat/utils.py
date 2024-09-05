@@ -1,7 +1,12 @@
+import os
+
 from django.core.paginator import Paginator
+from django.templatetags.static import static
 from django.urls import reverse
 
+from _config.settings.base import BASE_DIR
 from a_psat import models
+from common.constants import icon_set_new
 from common.models import User
 
 
@@ -109,6 +114,54 @@ def get_custom_data(user: User) -> dict:
     }
 
 
+def get_custom_icons(problem, custom_data: dict):
+    def get_status(status_type, field=None, default: bool | int | None = False):
+        for dt in custom_data[status_type]:
+            problem_id = getattr(dt, 'problem_id', getattr(dt, 'content_object_id', ''))
+            if problem_id == problem.id:
+                default = getattr(dt, field) if field else True
+        return default
+
+    is_liked = get_status(status_type='like', field='is_liked')
+    rating = get_status(status_type='rate', field='rating', default=0)
+    is_correct = get_status(status_type='solve', field='is_correct', default=None)
+    is_memoed = get_status('memo')
+    is_tagged = get_status('tag')
+    is_collected = get_status('collection')
+
+    problem.icon_like=icon_set_new.ICON_LIKE[f'{is_liked}']
+    problem.icon_rate=icon_set_new.ICON_RATE[f'star{rating}']
+    problem.icon_solve=icon_set_new.ICON_SOLVE[f'{is_correct}']
+    problem.icon_memo=icon_set_new.ICON_MEMO[f'{is_memoed}']
+    problem.icon_tag=icon_set_new.ICON_TAG[f'{is_tagged}']
+    problem.icon_collection=icon_set_new.ICON_COLLECTION[f'{is_collected}']
+
+
+def get_lecture_images(lecture):
+    target_folder = f'image/lecture/psat/{lecture.get_subject_display()}/{lecture.order}/'
+    image_folder_path = BASE_DIR / f'static/{target_folder}'
+    images = []
+    try:
+        files = sorted(os.listdir(image_folder_path))
+        for file in files:
+            static_path = static(f'{target_folder}/{file}')
+            images.append(static_path)
+    except FileNotFoundError:
+        pass
+    return images
+
+
+def get_memo_custom_data(user: User) -> dict:
+    if user.is_authenticated:
+        return {
+            # 'like': models.ProblemLike.objects.filter(user=user).select_related('user', 'problem'),
+            'memo': models.LectureMemo.objects.filter(user=user).select_related('user', 'lecture'),
+            'tag': models.LectureTaggedItem.objects.filter(
+                user=user, active=True).select_related('user', 'content_object'),
+        }
+    return {'memo': [], 'tag': []}
+
+
 def get_all_comments(queryset, problem_id=None):
     if problem_id:
         queryset = queryset.filter(problem_id=problem_id)
@@ -119,5 +172,3 @@ def get_all_comments(queryset, problem_id=None):
         all_comments.append(comment)
         all_comments.extend(child_comments.filter(parent=comment))
     return all_comments
-
-

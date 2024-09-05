@@ -1,24 +1,24 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import *
+from . import models
 
 
 class ProblemTagForm(forms.ModelForm):
     class Meta:
-        model = ProblemTag
+        model = models.ProblemTag
         fields = []
 
 
 class ProblemCommentForm(forms.ModelForm):
     class Meta:
-        model = ProblemComment
+        model = models.ProblemComment
         fields = ['content', 'parent']
 
 
 class ProblemMemoForm(forms.ModelForm):
     class Meta:
-        model = ProblemMemo
+        model = models.ProblemMemo
         fields = ['content']
 
 
@@ -31,5 +31,11 @@ class ProblemCollectionForm(forms.ModelForm):
     )
 
     class Meta:
-        model = ProblemCollection
+        model = models.ProblemCollection
         fields = ['title']
+
+
+class LectureMemoForm(forms.ModelForm):
+    class Meta:
+        model = models.LectureMemo
+        fields = ['content']

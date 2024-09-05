@@ -4,14 +4,14 @@
 <aside id="sidebar" class="sidebar" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
     <ul id="sidebar-nav" class="sidebar-nav">
         {% partial menu_notice %}
-        {% if user.is_admin %}{% partial menu_old_notice %}{% endif %}
         {% if user.is_authenticated %}{% partial menu_dashboard %}{% endif %}
-        {% partial menu_lecture %}
         {% partial menu_psat %}
         {% partial menu_predict %}
 {#        {% if user.is_admin %}{% partial menu_predict %}{% endif %}#}
 {#        {% partial menu_score %}#}
 {#        {% if user.is_staff %}{% partial menu_score %}{% endif %}#}
+        {% if user.is_admin %}{% partial menu_old_notice %}{% endif %}
+        {% if user.is_admin %}{% partial menu_lecture %}{% endif %}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
         {% if user.is_admin %}{% partial menu_old_predict %}{% endif %}
         {% if user.is_admin %}{% partial menu_old_score %}{% endif %}
@@ -44,10 +44,26 @@
 {% endpartialdef menu_dashboard %}
 
 {% partialdef menu_psat %}
-    <li class="nav-item">
-        <a class="nav-link collapsed" data-menu="psat" href="{% url 'psat:base' %}">
+    <li class="nav-item" role="menuitem" aria-label="PSAT Menu">
+        <a class="nav-link collapsed" href="#psatNavContent" data-menu="psat"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="psatNavContent">
             <i class="fa-solid fa-fw fa-layer-group"></i> PSAT
+            <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
         </a>
+        <ul id="psatNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="problem"
+                   href="{% url 'psat:problem-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 기출문제
+                </a>
+            </li>
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="lecture"
+                   href="{% url 'psat:lecture-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 온라인강의
+                </a>
+            </li>
+        </ul>
     </li><!-- PSAT Nav End -->
 {% endpartialdef menu_psat %}
 

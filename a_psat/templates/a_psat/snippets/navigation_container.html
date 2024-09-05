@@ -6,15 +6,15 @@
 <article id="detailNavContainer" class="flex-nowrap input-group me-2"
          hx-target="#main" hx-swap="innerHTML swap:0.25s">
     <a id="problemListBtn" class="btn btn-primary"
-       hx-push-url="{% url 'psat:base' %}" href="{% url 'psat:base' %}"
-       hx-get="{% url 'psat:base' %}?{{ url_options }}">
+       hx-push-url="{% url 'psat:problem-list' %}" href="{% url 'psat:problem-list' %}"
+       hx-get="{% url 'psat:problem-list' %}?{% querystring %}">
         {{ icon_nav.left_arrow|safe }}
     </a>
 
     {% if prob_prev %}
         <a class="btn btn-primary" href="{{ prob_prev.get_absolute_url }}"
            hx-push-url="{{ prob_prev.get_absolute_url }}"
-           hx-get="{{ prob_prev.get_absolute_url }}?{{ url_options }}">
+           hx-get="{{ prob_prev.get_absolute_url }}?{% querystring %}">
             {{ icon_nav.prev_prob|safe }}
         </a>
     {% else %}
@@ -24,7 +24,7 @@
     {% if prob_next %}
         <a class="btn btn-primary" href="{{ prob_next.get_absolute_url }}"
            hx-push-url="{{ prob_next.get_absolute_url }}"
-           hx-get="{{ prob_next.get_absolute_url }}?{{ url_options }}">
+           hx-get="{{ prob_next.get_absolute_url }}?{% querystring %}">
             {{ icon_nav.next_prob|safe }}
         </a>
     {% else %}

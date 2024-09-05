@@ -1,0 +1,29 @@
+{{ config.info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>
+        {{ config.icon_menu|safe }} {{ config.menu_title.kor }}
+        <span class="fs-6 text-secondary">
+            {% if problem %}{{ problem.full_reference }}{% else %}{{ config.submenu_title.kor }}{% endif %}
+        </span>
+    </h1>
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
+            <li class="breadcrumb-item">
+                <a href="{% url 'index' %}">Home</a>
+            </li>
+            <li class="breadcrumb-item">{{ config.menu_title.eng }}</li>
+            {% if problem %}
+                <li class="breadcrumb-item">
+                    <a href="{{ config.url_list }}">{{ config.submenu_title.eng }}</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ problem.get_absolute_url }}" class="active">{{ problem.reference }}</a>
+                </li>
+            {% else %}
+                <li class="breadcrumb-item">
+                    <a class="active" href="{{ config.url_list }}">{{ config.submenu_title.eng }}</a>
+                </li>
+            {% endif %}
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
