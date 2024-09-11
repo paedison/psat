@@ -27,18 +27,16 @@
     </table>
 </article>
 
-<section class="d-flex flex-wrap">
+<section class="d-flex">
     {% if page_obj.has_next or page_obj.has_previous %}
         {% include 'a_board/snippets/pagination.html' with header='pagination' %}
     {% endif %}
 
     {% if user.is_staff %}
-        <div class="ms-auto p-2">
-            <a class="btn btn-sm btn-outline-primary cursor-pointer" title="글쓰기"
-               hx-get="{{ config.url_create }}">
-                글쓰기
-            </a>
-        </div>
+        <button class="btn btn-outline-primary mt-3" title="글쓰기"
+           hx-get="{{ config.url_create }}">
+            글쓰기
+        </button>
     {% endif %}
 </section>
 

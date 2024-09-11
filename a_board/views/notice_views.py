@@ -32,7 +32,7 @@ def list_view(request: HtmxHttpRequest):
     context = update_context_data(
         config=config, icon_menu=icon_set_new.ICON_MENU['notice'], icon_board=icon_set_new.ICON_BOARD,
         page_obj=page_obj, page_range=page_range, top_fixed=top_fixed)
-    if view_type == 'notice_list':
+    if view_type == 'pagination':
         return render(request, 'a_board/post_list_content.html', context)
     return render(request, 'a_board/post_list.html', context)
 

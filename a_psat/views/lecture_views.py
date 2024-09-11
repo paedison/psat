@@ -1,14 +1,11 @@
-import vanilla
-
-from .viewmixins import lecture_view_mixins
-from a_psat import models, utils, forms, filters
-from common.constants import icon_set_new
-from common.utils import HtmxHttpRequest, update_context_data
-from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
+
+from a_psat import models, utils, forms
+from common.constants import icon_set_new
+from common.utils import HtmxHttpRequest, update_context_data
 
 
 class LectureConfiguration:
