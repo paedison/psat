@@ -20,6 +20,7 @@ def get_star_icons():
 ICON_MENU = {
     'admin': '<i class="fa-solid fa-fw fa-crown"></i>',
 
+    'board': '<i class="fa-solid fa-fw fa-bullhorn"></i>',
     'notice': '<i class="fa-solid fa-fw fa-bullhorn"></i>',
     'dashboard': '<i class="fa-solid fa-fw fa-list"></i>',
     'psat': '<i class="fa-solid fa-fw fa-layer-group"></i>',

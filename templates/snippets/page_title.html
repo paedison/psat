@@ -1,0 +1,33 @@
+{{ config.info|json_script:'info' }}
+<div class="pagetitle">
+    <h1>
+        {{ config.icon_menu|safe }} {{ config.menu_kor }}
+        <span class="fs-6 text-secondary">
+            {% if problem %}{{ problem.full_reference }}{% else %}{{ config.submenu_kor }}{% endif %}
+        </span>
+        {% if user.is_staff %}
+            <a class="btn btn-sm btn-outline-primary ms-1" target="admin"
+               href="{{ config.url_admin }}">
+                관리자 페이지
+            </a>
+        {% endif %}
+    </h1>
+    <nav>
+        <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+            <li class="breadcrumb-item">{{ config.menu_eng|title }}</li>
+            {% if problem %}
+                <li class="breadcrumb-item">
+                    <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ problem.get_absolute_url }}" class="active">{{ problem.reference }}</a>
+                </li>
+            {% else %}
+                <li class="breadcrumb-item">
+                    <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                </li>
+            {% endif %}
+        </ol>
+    </nav>
+</div><!-- Page Title End -->

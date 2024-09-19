@@ -46,39 +46,29 @@ $(document).ready(function() {
     });
 });
 
+function convertLinkStyle(navContent, dataMenu, dataMenuParent, dataMenuSelf) {
+    $('#sidebar .nav-link').each(function() {
+        if (navContent.length) {
+            if ($(this).attr('class') === 'nav-link') asideNav.link.call(this, dataMenu)
+        } else asideNav.link.call(this, dataMenu)
+    });
+    $('#sidebar .aside-nav-icon').each(function() {asideNav.icon.call(this, dataMenuParent, dataMenuSelf)});
+    if (!navContent.length) asideNav.hide();
+}
+
 // When clicked the main menu
 jQuery('#sidebar .nav-link').click(function () {
     let navContent = $(this).next('ul')
     let dataMenu = $(this).data('menu')
     let dataMenuParent = $(this).data('menuParent')
     let dataMenuSelf = $(this).data('menuSelf')
-
-    $('#sidebar .nav-link').each(function() {
-        if (navContent.length) {
-            if ($(this).attr('class') === 'nav-link') asideNav.link.call(this, dataMenu)
-        } else asideNav.link.call(this, dataMenu)
-    });
-    $('#sidebar .aside-nav-icon').each(function() {
-        asideNav.icon.call(this, dataMenuParent, dataMenuSelf)
-    });
-    if (!navContent.length) asideNav.hide();
+    convertLinkStyle(navContent, dataMenu, dataMenuParent, dataMenuSelf);
 });
 
-// When clicked the sub menu
-jQuery('#sidebar .aside-nav-icon').click(function () {
+// When clicked the sub menu or logo button
+jQuery('#sidebar .aside-nav-icon, #header .logo').click(function () {
+    let navContent = $(this).next('ul')
     let dataMenuParent = $(this).data('menuParent')
     let dataMenuSelf = $(this).data('menuSelf')
-
-    $('#sidebar .nav-link').each(function() {asideNav.link.call(this, dataMenuParent)});
-    $('#sidebar .aside-nav-icon').each(function() {
-        asideNav.icon.call(this, dataMenuParent, dataMenuSelf)
-    });
-    asideNav.hide();
-});
-
-// When clicked the logo
-$('#header .logo').click(function() {
-    let dataMenu = $(this).data('menu');
-    $('#sidebar .nav-link').each(function() {asideNav.link.call(this, dataMenu)});
-    $('#sidebar .aside-nav-icon').each(function() {asideNav.icon.call(this, dataMenu, '')});
+    convertLinkStyle(navContent, dataMenuParent, dataMenuParent, dataMenuSelf);
 });

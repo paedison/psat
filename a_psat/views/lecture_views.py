@@ -3,24 +3,19 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
-from a_psat import models, utils, forms
 from common.constants import icon_set_new
-from common.utils import HtmxHttpRequest, update_context_data
+from common.utils import Configuration, HtmxHttpRequest, update_context_data
+from .. import models, utils, forms
 
 
-class LectureConfiguration:
-    menu = 'psat'
-    submenu = 'lecture'
-    info = {'menu': menu, 'menu_self': submenu}
-    menu_title = {'kor': 'PSAT', 'eng': menu.capitalize()}
-    submenu_title = {'kor': '온라인강의', 'eng': submenu.capitalize()}
-    url_admin = reverse_lazy(f'admin:a_psat_lecture_changelist')
-    url_list = reverse_lazy(f'psat:lecture-list')
-    icon_menu = icon_set_new.ICON_MENU[menu]
+class ViewConfiguration(Configuration):
+    menu_eng, menu_kor = 'psat', 'PSAT'
+    submenu_eng, submenu_kor = 'lecture', '온라인강의'
+    url_list = reverse_lazy('psat:lecture-list')
 
 
 def lecture_list_view(request: HtmxHttpRequest):
-    config = LectureConfiguration()
+    config = ViewConfiguration()
     lectures = models.Lecture.objects.order_by_subject_code()
     context = update_context_data(
         config=config, lectures=lectures, icon_menu=icon_set_new.ICON_MENU['psat'])
@@ -28,7 +23,7 @@ def lecture_list_view(request: HtmxHttpRequest):
 
 
 def lecture_detail_view(request: HtmxHttpRequest, pk: int):
-    config = LectureConfiguration()
+    config = ViewConfiguration()
     queryset = models.Lecture.objects.order_by_subject_code()
     lecture: models.Lecture = get_object_or_404(queryset, pk=pk)
     prev_lec, next_lec = utils.get_prev_next_prob(pk, queryset)

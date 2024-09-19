@@ -24,6 +24,20 @@ def number_choice() -> list:
     return [(number, f'{number}번') for number in range(1, 41)]
 
 
+def answer_choice() -> dict:
+    return {
+        1: '①', 2: '②', 3: '③', 4: '④', 5: '⑤',
+        12: '①②', 13: '①③', 14: '①④', 15: '①⑤',
+        23: '②③', 24: '②④', 25: '②⑤',
+        34: '③④', 35: '③⑤', 45: '④⑤',
+        123: '①②③', 124: '①②④', 125: '①②⑤',
+        134: '①③④', 135: '①③⑤', 145: '①④⑤',
+        234: '②③④', 235: '②③⑤', 245: '②④⑤', 345: '③④⑤',
+        1234: '①②③④', 1235: '①②③⑤', 1245: '①②④⑤', 1345: '①③④⑤',
+        12345: '①②③④⑤',
+    }
+
+
 def get_remarks(message_type: str, remarks: str | None) -> str:
     utc_now = datetime.now(pytz.UTC).strftime('%Y-%m-%d %H:%M')
     separator = '|' if remarks else ''
@@ -46,13 +60,12 @@ class ProblemTaggedItem(TaggedItemBase):
     tag = models.ForeignKey(ProblemTag, on_delete=models.CASCADE, related_name="tagged_items")
     content_object = models.ForeignKey('Problem', on_delete=models.CASCADE, related_name='tagged_problems')
     user = models.ForeignKey(User, related_name='psat_tagged_items', on_delete=models.CASCADE)
-    active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    remarks = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = verbose_name_plural = "08_태그 문제"
-        unique_together = ('tag', 'content_object', 'user')
+        ordering = ['-id']
         db_table = 'a_psat_problem_tagged_item'
 
     @property
@@ -62,11 +75,6 @@ class ProblemTaggedItem(TaggedItemBase):
     @property
     def reference(self):
         return self.content_object.reference
-
-    def save(self, *args, **kwargs):
-        message_type = kwargs.pop('message_type', 'created')
-        self.remarks = get_remarks(message_type, self.remarks)
-        super().save(*args, **kwargs)
 
 
 class Problem(models.Model):
@@ -88,14 +96,14 @@ class Problem(models.Model):
     year = models.IntegerField(choices=year_choice, default=datetime.now().year)
     exam = models.CharField(max_length=2, choices=ExamChoice, default=ExamChoice.HAENGSI)
     subject = models.CharField(max_length=2, choices=SubjectChoice, default=SubjectChoice.EONEO)
+    paper_type = models.CharField(max_length=2, default='')
     number = models.IntegerField(choices=number_choice, default=1)
-    answer = models.IntegerField()
+    answer = models.IntegerField(choices=answer_choice, default=1)
     question = models.TextField()
     data = models.TextField()
 
     tags = TaggableManager(through=ProblemTaggedItem, blank=True)
 
-    open_users = models.ManyToManyField(User, related_name='opened_psat_problems', through='ProblemOpen')
     like_users = models.ManyToManyField(User, related_name='liked_psat_problems', through='ProblemLike')
     rate_users = models.ManyToManyField(User, related_name='rated_psat_problems', through='ProblemRate')
     solve_users = models.ManyToManyField(User, related_name='solved_psat_problems', through='ProblemSolve')
@@ -118,6 +126,10 @@ class Problem(models.Model):
     @property
     def reference(self):
         return f'{self.year}{self.exam[0]}{self.subject[0]}-{self.number:02}'
+
+    @property
+    def reference2(self):
+        return f'{self.year}{self.exam[0]}{self.subject[0]}{self.paper_type[0]}-{self.number:02}'
 
     @property
     def year_exam_subject(self):
@@ -208,7 +220,7 @@ class Problem(models.Model):
 
 class ProblemOpen(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_opens')
+    user_id = models.IntegerField(blank=True, null=True)
     ip_address = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -219,7 +231,7 @@ class ProblemOpen(models.Model):
         db_table = 'a_psat_problem_open'
 
     def __str__(self):
-        return f'[PSAT]ProblemOpen(#{self.id}):{self.problem.reference}-{self.user.username}'
+        return f'[PSAT]ProblemOpen(#{self.id}):{self.problem.reference}-{self.user_id}'
 
     @property
     def reference(self):
@@ -229,13 +241,12 @@ class ProblemOpen(models.Model):
 class ProblemLike(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_likes')
-    is_liked = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    remarks = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_liked = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = verbose_name_plural = "03_즐겨찾기"
-        unique_together = ['user', 'problem']
         ordering = ['-id']
         db_table = 'a_psat_problem_like'
 
@@ -248,11 +259,6 @@ class ProblemLike(models.Model):
     def reference(self):
         return self.problem.reference
 
-    def save(self, *args, **kwargs):
-        message_type = kwargs.pop('message_type', 'liked')
-        self.remarks = get_remarks(message_type, self.remarks)
-        super().save(*args, **kwargs)
-
 
 class ProblemRate(models.Model):
     class Ratings(models.IntegerChoices):
@@ -264,13 +270,12 @@ class ProblemRate(models.Model):
 
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='rates')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_rates')
-    rating = models.IntegerField(choices=Ratings.choices)
     created_at = models.DateTimeField(auto_now_add=True)
-    remarks = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    rating = models.IntegerField(choices=Ratings.choices)
 
     class Meta:
         verbose_name = verbose_name_plural = "04_난이도"
-        unique_together = ['user', 'problem']
         ordering = ['-id']
         db_table = 'a_psat_problem_rate'
 
@@ -280,12 +285,6 @@ class ProblemRate(models.Model):
     @property
     def reference(self):
         return self.problem.reference
-
-    def save(self, *args, **kwargs):
-        message_type = kwargs.pop('message_type', 'rated')
-        message_type = f'{message_type}({self.rating})'
-        self.remarks = get_remarks(message_type, self.remarks)
-        super().save(*args, **kwargs)
 
 
 class ProblemSolve(models.Model):
@@ -298,14 +297,13 @@ class ProblemSolve(models.Model):
 
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='solves')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_solves')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
     answer = models.IntegerField(choices=Answers.choices)
     is_correct = models.BooleanField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    remarks = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = verbose_name_plural = "05_정답확인"
-        unique_together = ['user', 'problem']
         ordering = ['-id']
         db_table = 'a_psat_problem_solve'
 
@@ -318,23 +316,16 @@ class ProblemSolve(models.Model):
     def reference(self):
         return self.problem.reference
 
-    def save(self, *args, **kwargs):
-        message_type = 'correct' if self.is_correct else 'wrong'
-        message_type = f'{message_type}({self.answer})'
-        self.remarks = get_remarks(message_type, self.remarks)
-        super().save(*args, **kwargs)
-
 
 class ProblemMemo(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='memos')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_memos')
-    content = RichTextField(config_name='minimal')
     created_at = models.DateTimeField(auto_now_add=True)
-    remarks = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    content = RichTextField(config_name='minimal')
 
     class Meta:
         verbose_name = verbose_name_plural = "06_메모"
-        unique_together = ['user', 'problem']
         ordering = ['-id']
         db_table = 'a_psat_problem_memo'
 
@@ -354,12 +345,11 @@ class ProblemCollection(models.Model):
     title = models.CharField(max_length=20)
     order = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = verbose_name_plural = "09_컬렉션"
-        unique_together = [["user", "title"]]
-        ordering = ['user', 'order']
+        ordering = ['-id']
         db_table = 'a_psat_problem_collection'
 
     def __str__(self):
@@ -371,11 +361,11 @@ class ProblemCollectionItem(models.Model):
     collection = models.ForeignKey(ProblemCollection, on_delete=models.CASCADE, related_name='collection_items')
     order = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = verbose_name_plural = "10_컬렉션 문제"
-        ordering = ['collection__user', 'collection', 'order']
+        ordering = ['-id']
         db_table = 'a_psat_problem_collection_item'
 
     def __str__(self):
@@ -388,14 +378,6 @@ class ProblemCollectionItem(models.Model):
     @property
     def reference(self):
         return self.problem.reference
-
-    def set_active(self):
-        self.is_active = True
-        self.save()
-
-    def set_inactive(self):
-        self.is_active = False
-        self.save()
 
 
 class ProblemComment(models.Model):
@@ -439,8 +421,3 @@ class ProblemCommentLike(models.Model):
     @property
     def reference(self):
         return self.comment.problem.reference
-
-    def save(self, *args, **kwargs):
-        message_type = kwargs.pop('message_type', 'liked')
-        self.remarks = get_remarks(message_type, self.remarks)
-        super().save(*args, **kwargs)

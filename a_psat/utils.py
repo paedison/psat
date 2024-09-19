@@ -1,6 +1,7 @@
 import os
 
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.templatetags.static import static
 from django.urls import reverse
 
@@ -92,22 +93,52 @@ def get_list_data(custom_data) -> list:
         if num_empty_instances < 5:
             items.extend([None] * num_empty_instances)
         for i in range(0, len(items), 5):
-            row = items[i:i+5]
+            row = items[i:i + 5]
             organized_list.extend(row)
     return organized_list
 
 
+def create_new_custom_record(request, problem, model, **kwargs):
+    base_info = {'problem': problem, 'user': request.user, 'is_active': True}
+    latest_record = model.objects.filter(**base_info).first()
+    if latest_record:
+        if isinstance(latest_record, models.ProblemLike):
+            kwargs = {'is_liked': not latest_record.is_liked}
+        with transaction.atomic():
+            new_record = model.objects.create(**base_info, **kwargs)
+            latest_record.is_active = False
+            latest_record.save()
+    else:
+        new_record = model.objects.create(**base_info, **kwargs)
+    return new_record
+
+
+def create_new_collection(request, form):
+    my_collection = form.save(commit=False)
+    collection_counts = models.ProblemCollection.objects.filter(user=request.user, is_active=True).count()
+    my_collection.user = request.user
+    my_collection.order = collection_counts + 1
+    my_collection.save()
+
+
 def get_custom_data(user: User) -> dict:
+    def get_filtered_qs(model, *args):
+        if not args:
+            args = ['user', 'problem']
+        qs = model.objects.filter(is_active=True).select_related(*args)
+
+        if model == models.ProblemCollectionItem:
+            return qs.filter(collection__user=user)
+        return qs.filter(user=user)
+
     if user.is_authenticated:
         return {
-            'like': models.ProblemLike.objects.filter(user=user).select_related('user', 'problem'),
-            'rate': models.ProblemRate.objects.filter(user=user).select_related('user', 'problem'),
-            'solve': models.ProblemSolve.objects.filter(user=user).select_related('user', 'problem'),
-            'memo': models.ProblemMemo.objects.filter(user=user).select_related('user', 'problem'),
-            'tag': models.ProblemTaggedItem.objects.filter(
-                user=user, active=True).select_related('user', 'content_object'),
-            'collection': models.ProblemCollectionItem.objects.filter(
-                collection__user=user).select_related('collection__user', 'problem'),
+            'like': get_filtered_qs(models.ProblemLike),
+            'rate': get_filtered_qs(models.ProblemRate),
+            'solve': get_filtered_qs(models.ProblemSolve),
+            'memo': get_filtered_qs(models.ProblemMemo),
+            'tag': get_filtered_qs(models.ProblemTaggedItem, *['user', 'content_object']),
+            'collection': get_filtered_qs(models.ProblemCollectionItem, *['collection__user', 'problem']),
         }
     return {
         'like': [], 'rate': [], 'solve': [], 'memo': [], 'tag': [], 'collection': [],
@@ -129,12 +160,12 @@ def get_custom_icons(problem, custom_data: dict):
     is_tagged = get_status('tag')
     is_collected = get_status('collection')
 
-    problem.icon_like=icon_set_new.ICON_LIKE[f'{is_liked}']
-    problem.icon_rate=icon_set_new.ICON_RATE[f'star{rating}']
-    problem.icon_solve=icon_set_new.ICON_SOLVE[f'{is_correct}']
-    problem.icon_memo=icon_set_new.ICON_MEMO[f'{is_memoed}']
-    problem.icon_tag=icon_set_new.ICON_TAG[f'{is_tagged}']
-    problem.icon_collection=icon_set_new.ICON_COLLECTION[f'{is_collected}']
+    problem.icon_like = icon_set_new.ICON_LIKE[f'{is_liked}']
+    problem.icon_rate = icon_set_new.ICON_RATE[f'star{rating}']
+    problem.icon_solve = icon_set_new.ICON_SOLVE[f'{is_correct}']
+    problem.icon_memo = icon_set_new.ICON_MEMO[f'{is_memoed}']
+    problem.icon_tag = icon_set_new.ICON_TAG[f'{is_tagged}']
+    problem.icon_collection = icon_set_new.ICON_COLLECTION[f'{is_collected}']
 
 
 def get_lecture_images(lecture):

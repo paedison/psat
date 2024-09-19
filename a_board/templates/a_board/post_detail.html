@@ -1,14 +1,14 @@
 {% extends 'list.html' %}
 
 {% block main %}
-    {% include 'a_board/snippets/page_title.html' %}
+    {% include 'snippets/page_title.html' %}
 
     <section class="section">
         <div class="row">
-            <div class="col-12" aria-label="{{ config.title.kor }}">
+            <div class="col-12" aria-label="{{ config.submenu_kor }}">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
                     <div class="card-header mb-0 bg-warning-subtle text-black fw-bold">
-                        {{ config.title.kor }}
+                        {{ config.submenu_kor }}
                     </div>
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         <div class="card-title d-flex justify-content-between mb-0" hx-target="#main"

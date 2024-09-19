@@ -4,7 +4,7 @@
 {% load psat_filter %}
 
 {% block main %}
-    {% include 'a_psat/page_title.html' %}
+    {% include 'snippets/page_title.html' %}
 
     <section class="section">
         <div class="row">
@@ -135,6 +135,7 @@
                                 <div class="tw-text-sm tw-mb-2 tw-px-2">
                                     <input id="problemTag{{ problem.id }}"
                                            placeholder='태그를 입력해주세요' type="hidden"
+                                           data-tag-target="#psatTag{{ problem.id }}"
                                            data-tagify data-action="{{ problem.get_tag_url }}"
                                            data-tags="{{ tags|join:',' }}">
                                 </div>

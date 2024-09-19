@@ -1,31 +1,26 @@
 from bs4 import BeautifulSoup as bs
 from django.contrib.auth.decorators import login_not_required
-from django.db.models import F, Max, Case, When, BooleanField, Value
-from django.db.models.functions import Coalesce
+from django.db import transaction
+from django.db.models import F, Case, When, BooleanField
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
-from a_psat import models, utils, forms, filters
 from common.constants import icon_set_new
-from common.utils import HtmxHttpRequest, update_context_data
+from common.utils import Configuration, HtmxHttpRequest, update_context_data
+from .. import models, utils, forms, filters
 
 
-class ProblemConfiguration:
-    menu = 'psat'
-    submenu = 'problem'
-    info = {'menu': menu, 'menu_self': submenu}
-    menu_title = {'kor': 'PSAT', 'eng': menu.capitalize()}
-    submenu_title = {'kor': '기출문제', 'eng': submenu.capitalize()}
-    url_admin = reverse_lazy(f'admin:a_psat_problem_changelist')
-    url_list = reverse_lazy(f'psat:problem-list')
-    icon_menu = icon_set_new.ICON_MENU[menu]
+class ViewConfiguration(Configuration):
+    menu_eng, menu_kor = 'psat', 'PSAT'
+    submenu_eng, submenu_kor = 'problem', '기출문제'
+    url_list = reverse_lazy('psat:problem-list')
 
 
 @login_not_required
 def problem_list_view(request: HtmxHttpRequest):
-    config = ProblemConfiguration()
+    config = ViewConfiguration()
     view_type = request.headers.get('View-Type', '')
     exam_year = request.GET.get('year', '')
     exam_exam = request.GET.get('exam', '')
@@ -62,7 +57,7 @@ def problem_list_view(request: HtmxHttpRequest):
 
 @login_not_required
 def problem_detail_view(request: HtmxHttpRequest, pk: int):
-    config = ProblemConfiguration()
+    config = ViewConfiguration()
     view_type = request.headers.get('View-Type', 'main')
     queryset = models.Problem.objects.order_by('-year', 'id')
     problem: models.Problem = get_object_or_404(queryset, pk=pk)
@@ -140,7 +135,7 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
             tags = models.ProblemTag.objects.filter(
                 tagged_items__user=request.user,
                 tagged_items__content_object=problem,
-                tagged_items__active=True,
+                tagged_items__is_active=True,
             ).values_list('name', flat=True)
 
     # page = int(request.GET.get('page', 1))
@@ -185,14 +180,8 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
 @require_POST
 def like_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
-    problem_like, created = models.ProblemLike.objects.get_or_create(user=request.user, problem=problem)
-    is_liked = True
-    if not created:
-        is_liked = not problem_like.is_liked
-        problem_like.is_liked = is_liked
-        message_type = 'liked' if is_liked else 'unliked'
-        problem_like.save(message_type=message_type)
-    icon_like = icon_set_new.ICON_LIKE[f'{is_liked}']
+    new_record = utils.create_new_custom_record(request, problem, models.ProblemLike)
+    icon_like = icon_set_new.ICON_LIKE[f'{new_record.is_liked}']
     return HttpResponse(f'{icon_like}')
 
 
@@ -201,13 +190,8 @@ def rate_problem(request: HtmxHttpRequest, pk: int):
 
     if request.method == 'POST':
         rating = request.POST.get('rating')
-        problem_rate = models.ProblemRate.objects.filter(user=request.user, problem=problem)
-        if problem_rate:
-            problem_rate = problem_rate.first()
-            problem_rate.rating = rating
-            problem_rate.save(message_type='rerated')
-        else:
-            models.ProblemRate.objects.create(user=request.user, problem=problem, rating=rating)
+        _ = utils.create_new_custom_record(
+            request, problem, models.ProblemRate, **{'rating': rating})
         icon_rate = icon_set_new.ICON_RATE[f'star{rating}']
         return HttpResponse(icon_rate)
 
@@ -224,15 +208,8 @@ def solve_problem(request: HtmxHttpRequest, pk: int):
     if answer:
         answer = int(answer)
         is_correct = answer == problem.answer
-        problem_solve = models.ProblemSolve.objects.filter(problem=problem, user=request.user)
-        if problem_solve:
-            problem_solve = problem_solve.first()
-            problem_solve.answer = answer
-            problem_solve.is_correct = is_correct
-            problem_solve.save()
-        else:
-            models.ProblemSolve.objects.create(
-                problem=problem, user=request.user, answer=answer, is_correct=is_correct)
+        _ = utils.create_new_custom_record(
+            request, problem, models.ProblemSolve, **{'answer': answer, 'is_correct': is_correct})
     context = update_context_data(
         problem=problem, answer=answer, is_correct=is_correct,
         icon_solve=icon_set_new.ICON_SOLVE[f'{is_correct}'])
@@ -243,7 +220,6 @@ def solve_problem(request: HtmxHttpRequest, pk: int):
 def memo_problem(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     problem = get_object_or_404(models.Problem, pk=pk)
-    instance = models.ProblemMemo.objects.filter(problem=problem, user=request.user).first()
     context = update_context_data(
         problem=problem, icon_memo=icon_set_new.ICON_MEMO, icon_board=icon_set_new.ICON_BOARD)
 
@@ -257,27 +233,32 @@ def memo_problem(request: HtmxHttpRequest, pk: int):
             context = update_context_data(context, my_memo=my_memo)
             return render(request, 'a_psat/snippets/memo_container.html', context)
 
+    latest_record = models.ProblemMemo.objects.filter(problem=problem, user=request.user, is_active=True).first()
+
     if view_type == 'update':
         if request.method == 'POST':
-            update_form = forms.ProblemMemoForm(request.POST, instance=instance)
+            update_form = forms.ProblemMemoForm(request.POST, instance=latest_record)
             if update_form.is_valid():
-                my_memo = update_form.save()
+                content = update_form.cleaned_data['content']
+                my_memo = utils.create_new_custom_record(
+                    request, problem, models.ProblemMemo, **{'content': content})
                 context = update_context_data(context, my_memo=my_memo)
                 return render(request, 'a_psat/snippets/memo_container.html', context)
         else:
-            update_base_form = forms.ProblemMemoForm(instance=instance)
-            context = update_context_data(context, memo_form=update_base_form, my_memo=instance)
+            update_base_form = forms.ProblemMemoForm(instance=latest_record)
+            context = update_context_data(context, memo_form=update_base_form, my_memo=latest_record)
             return render(request, 'a_psat/snippets/memo_container.html#update_form', context)
 
     blank_form = forms.ProblemMemoForm()
     context = update_context_data(context, memo_form=blank_form)
     if view_type == 'delete' and request.method == 'POST':
-        instance.delete()
+        latest_record.is_active = False
+        latest_record.save()
         memo_url = reverse_lazy('psat:memo-problem', args=[pk])
         context = update_context_data(context, memo_url=memo_url)
         return render(request, 'a_psat/snippets/memo_container.html', context)
 
-    context = update_context_data(context, my_memo=instance)
+    context = update_context_data(context, my_memo=latest_record)
     return render(request, 'a_psat/snippets/memo_container.html', context)
 
 
@@ -286,26 +267,20 @@ def tag_problem(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     problem = get_object_or_404(models.Problem, pk=pk)
     name = request.POST.get('tag')
+    base_info = {'content_object': problem, 'user': request.user, 'is_active': True}
 
     if view_type == 'add':
         tag, _ = models.ProblemTag.objects.get_or_create(name=name)
-        tagged_problem, created = models.ProblemTaggedItem.objects.get_or_create(
-            user=request.user, content_object=problem, tag=tag)
-        if not created:
-            tagged_problem.active = True
-            tagged_problem.save(message_type='tagged')
+        tagged_problem, _ = models.ProblemTaggedItem.objects.get_or_create(tag=tag, **base_info)
 
     if view_type == 'remove':
-        tagged_problem = get_object_or_404(
-            models.ProblemTaggedItem, user=request.user, content_object=problem, tag__name=name)
-        tagged_problem.active = False
-        tagged_problem.save(message_type='removed')
+        tagged_problem = get_object_or_404(models.ProblemTaggedItem, tag__name=name, **base_info)
+        tagged_problem.is_active = False
+        tagged_problem.save()
 
-    is_tagged = models.ProblemTaggedItem.objects.filter(
-        user=request.user, content_object=problem, active=True).exists()
+    is_tagged = models.ProblemTaggedItem.objects.filter(**base_info).exists()
     icon_tag = icon_set_new.ICON_TAG[f'{is_tagged}']
-    html_code = f'<span hx-swap-oob="innerHTML:#dailyTag{problem.id}">{icon_tag}</span>'
-    return HttpResponse(html_code)
+    return HttpResponse(icon_tag)
 
 
 def collection_list_view(request: HtmxHttpRequest):
@@ -313,12 +288,12 @@ def collection_list_view(request: HtmxHttpRequest):
     collection_ids = request.POST.getlist('collection')
     if collection_ids:
         for idx, pk in enumerate(collection_ids, start=1):
-            collection = models.ProblemCollection.objects.get(pk=pk)
+            collection = models.ProblemCollection.objects.get(pk=pk, is_active=True)
             collection.order = idx
             collection.save()
             collections.append(collection)
     else:
-        collections = models.ProblemCollection.objects.filter(user=request.user)
+        collections = models.ProblemCollection.objects.filter(user=request.user, is_active=True).order_by('order')
     context = update_context_data(collections=collections)
     return render(request, 'a_psat/collection_list.html', context)
 
@@ -330,14 +305,7 @@ def collection_create(request: HtmxHttpRequest):
         if request.method == 'POST':
             form = forms.ProblemCollectionForm(request.POST)
             if form.is_valid():
-                my_collection = form.save(commit=False)
-                existing_collections = models.ProblemCollection.objects.filter(user=request.user)
-                max_order = 1
-                if existing_collections:
-                    max_order = existing_collections.aggregate(max_order=Max('order'))['max_order'] + 1
-                my_collection.user = request.user
-                my_collection.order = max_order
-                my_collection.save()
+                utils.create_new_collection(request, form)
                 return redirect('psat:collection-list')
         else:
             form = forms.ProblemCollectionForm()
@@ -349,29 +317,20 @@ def collection_create(request: HtmxHttpRequest):
             problem_id = request.POST.get('problem_id')
             form = forms.ProblemCollectionForm(request.POST)
             if form.is_valid():
-                my_collection = form.save(commit=False)
-                existing_collections = models.ProblemCollection.objects.filter(user=request.user)
-                max_order = 1
-                if existing_collections:
-                    max_order = existing_collections.aggregate(max_order=Max('order'))['max_order'] + 1
-                my_collection.user = request.user
-                my_collection.order = max_order
-                my_collection.save()
+                utils.create_new_collection(request, form)
                 return redirect('psat:collect-problem', pk=problem_id)
         else:
             problem_id = request.GET.get('problem_id')
             form = forms.ProblemCollectionForm()
             context = update_context_data(
                 form=form, url=reverse_lazy('psat:collection-create'),
-                header='create_in_modal', problem_id=problem_id,
-                target='#modalContainer'
-            )
+                header='create_in_modal', problem_id=problem_id, target='#modalContainer')
             return render(request, 'a_psat/snippets/collection_create.html', context)
 
 
 def collection_detail_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
-    collection = get_object_or_404(models.ProblemCollection, pk=pk)
+    collection = get_object_or_404(models.ProblemCollection, pk=pk, is_active=True)
 
     if view_type == 'update':
         if request.method == 'POST':
@@ -386,58 +345,64 @@ def collection_detail_view(request: HtmxHttpRequest, pk: int):
             return render(request, 'a_psat/snippets/collection_create.html', context)
 
     if view_type == 'delete':
-        collection.delete()
-        collections = models.ProblemCollection.objects.filter(user_id=request.user.id)
-        if collections:
-            for idx, col in enumerate(collections, start=1):
-                col.order = idx
-                col.save()
+        with transaction.atomic():
+            collection.order = 0
+            collection.is_active = False
+            collection.save()
+            collections = models.ProblemCollection.objects.filter(user=request.user, is_active=True).order_by('order')
+            if collections:
+                for idx, col in enumerate(collections, start=1):
+                    col.order = idx
+                    col.save()
         return redirect('psat:collection-list')
 
-    item_ids = request.POST.getlist('item')
-    if item_ids:
-        for idx, item_pk in enumerate(item_ids, start=1):
-            item = models.ProblemCollectionItem.objects.select_related('problem').get(pk=item_pk)
-            item.order = idx
-            item.save()
-    items = models.ProblemCollectionItem.objects.filter(collection=collection)
+    item_pks = request.POST.getlist('item')
+    if item_pks:
+        with transaction.atomic():
+            for idx, item_pk in enumerate(item_pks, start=1):
+                item = get_object_or_404(models.ProblemCollectionItem, pk=item_pk, is_active=True)
+                item.order = idx
+                item.save()
+
+    items = models.ProblemCollectionItem.objects.filter(collection=collection, is_active=True).order_by('order')
     custom_data = utils.get_custom_data(request.user)
-    context = update_context_data(collection=collection, items=items, custom_data=custom_data)
+    for it in items:
+        utils.get_custom_icons(it.problem, custom_data)
+
+    context = update_context_data(collection=collection, custom_data=custom_data, items=items)
     return render(request, 'a_psat/snippets/collection_item_card.html', context)
 
 
 def collect_problem(request: HtmxHttpRequest, pk: int):
     if request.method == 'POST':
         collection_id = request.POST.get('collection_id')
-        collection = get_object_or_404(models.ProblemCollection, id=collection_id)
+        collection = get_object_or_404(models.ProblemCollection, id=collection_id, is_active=True)
+
+        base_info = {'collection': collection, 'is_active': True}
+        items = models.ProblemCollectionItem.objects.filter(**base_info).order_by('order')
+
         is_checked = request.POST.get('is_checked')
-
-        max_order = models.ProblemCollectionItem.objects.filter(
-            collection=collection).aggregate(
-            max_order=Coalesce(Max('order'), Value(0)))['max_order'] + 1
-
         if is_checked:
-            item = models.ProblemCollectionItem.objects.create(
-                collection=collection, problem_id=pk, order=max_order)
+            item = models.ProblemCollectionItem.objects.create(problem_id=pk, order=items.count() + 1, **base_info)
         else:
-            item = get_object_or_404(models.ProblemCollectionItem, collection=collection, problem_id=pk)
-            item.delete()
-            items = models.ProblemCollectionItem.objects.filter(collection=collection)
-            if items:
-                for idx, it in enumerate(items, start=1):
-                    it.order = idx
-                    it.save()
-        is_active = True if item else False
-        return HttpResponse(icon_set_new.ICON_COLLECTION[f'{is_active}'])
+            with transaction.atomic():
+                item = get_object_or_404(models.ProblemCollectionItem, problem_id=pk, **base_info)
+                item.order = 0
+                item.is_active = False
+                item.save()
+                if items:
+                    for idx, it in enumerate(items, start=1):
+                        it.order = idx
+                        it.save()
+        return HttpResponse(icon_set_new.ICON_COLLECTION[f'{item.is_active}'])
 
     else:
         collection_ids = models.ProblemCollectionItem.objects.filter(
-            collection__user_id=request.user.id, problem_id=pk
+            collection__user=request.user, problem_id=pk, is_active=True,
         ).values_list('collection_id', flat=True).distinct()
-        item_exists_case = Case(
-            When(id__in=collection_ids, then=1), default=0, output_field=BooleanField())
+        item_exists = Case(When(id__in=collection_ids, then=1), default=0, output_field=BooleanField())
         collections = models.ProblemCollection.objects.filter(
-            user_id=request.user.id).annotate(item_exists=item_exists_case)
+            user=request.user, is_active=True).order_by('order').annotate(item_exists=item_exists)
         context = update_context_data(problem_id=pk, collections=collections)
         return render(request, 'a_psat/snippets/collection_modal.html', context)
 
@@ -467,86 +432,11 @@ def comment_list_view(request: HtmxHttpRequest):
 
 
 def comment_create(request: HtmxHttpRequest):
-    view_type = request.headers.get('View-Type', 'main')
-
-    if view_type == 'create':
-        if request.method == 'POST':
-            form = forms.ProblemCollectionForm(request.POST)
-            if form.is_valid():
-                my_collection = form.save(commit=False)
-                existing_collections = models.ProblemCollection.objects.filter(user=request.user)
-                max_order = 1
-                if existing_collections:
-                    max_order = existing_collections.aggregate(max_order=Max('order'))['max_order'] + 1
-                my_collection.user = request.user
-                my_collection.order = max_order
-                my_collection.save()
-                return redirect('psat:collection-list')
-        else:
-            form = forms.ProblemCollectionForm()
-            context = update_context_data(form=form, url=reverse_lazy('psat:collection-create'), header='create')
-            return render(request, 'a_psat/snippets/collection_create.html', context)
-
-    if view_type == 'create_in_modal':
-        if request.method == 'POST':
-            problem_id = request.POST.get('problem_id')
-            form = forms.ProblemCollectionForm(request.POST)
-            if form.is_valid():
-                my_collection = form.save(commit=False)
-                existing_collections = models.ProblemCollection.objects.filter(user=request.user)
-                max_order = 1
-                if existing_collections:
-                    max_order = existing_collections.aggregate(max_order=Max('order'))['max_order'] + 1
-                my_collection.user = request.user
-                my_collection.order = max_order
-                my_collection.save()
-                return redirect('psat:collect-problem', pk=problem_id)
-        else:
-            problem_id = request.GET.get('problem_id')
-            form = forms.ProblemCollectionForm()
-            context = update_context_data(
-                form=form, url=reverse_lazy('psat:collection-create'),
-                header='create_in_modal', problem_id=problem_id,
-                target='#modalContainer'
-            )
-            return render(request, 'a_psat/snippets/collection_create.html', context)
+    pass
 
 
 def comment_detail_view(request: HtmxHttpRequest, pk: int):
-    view_type = request.headers.get('View-Type', '')
-    collection = get_object_or_404(models.ProblemCollection, pk=pk)
-
-    if view_type == 'update':
-        if request.method == 'POST':
-            form = forms.ProblemCollectionForm(request.POST, instance=collection)
-            if form.is_valid():
-                form.save()
-                return redirect('psat:collection-list')
-        else:
-            form = forms.ProblemCollectionForm(instance=collection)
-            context = update_context_data(
-                form=form, url=reverse_lazy('psat:collection-detail', args=[pk]), header='update')
-            return render(request, 'a_psat/snippets/collection_create.html', context)
-
-    if view_type == 'delete':
-        collection.delete()
-        collections = models.ProblemCollection.objects.filter(user_id=request.user.id)
-        if collections:
-            for idx, col in enumerate(collections, start=1):
-                col.order = idx
-                col.save()
-        return redirect('psat:collection-list')
-
-    item_ids = request.POST.getlist('item')
-    if item_ids:
-        for idx, item_pk in enumerate(item_ids, start=1):
-            item = models.ProblemCollectionItem.objects.select_related('problem').get(pk=item_pk)
-            item.order = idx
-            item.save()
-    items = models.ProblemCollectionItem.objects.filter(collection=collection)
-    custom_data = utils.get_custom_data(request.user)
-    context = update_context_data(collection=collection, items=items, custom_data=custom_data)
-    return render(request, 'a_psat/snippets/collection_item_card.html', context)
+    pass
 
 
 def comment_problem_create(request: HtmxHttpRequest, pk: int):
@@ -571,19 +461,19 @@ def comment_problem_create(request: HtmxHttpRequest, pk: int):
 
 
 def comment_problem_update(request: HtmxHttpRequest, pk: int):
-    comment = get_object_or_404(ProblemComment, pk=pk)
+    comment = get_object_or_404(models.ProblemComment, pk=pk)
     if request.method == 'POST':
-        form = ProblemCommentForm(request.POST, instance=comment)
+        form = forms.ProblemCommentForm(request.POST, instance=comment)
         if form.is_valid():
             form.save()
             return redirect('problemcomment-list')
     else:
-        form = ProblemCommentForm(instance=comment)
+        form = forms.ProblemCommentForm(instance=comment)
     return render(request, 'problemcomment_form.html', {'form': form})
 
 
 def comment_problem_delete(request: HtmxHttpRequest, pk: int):
-    comment = get_object_or_404(ProblemComment, pk=pk)
+    comment = get_object_or_404(models.ProblemComment, pk=pk)
     if request.method == 'POST':
         comment.delete()
         return redirect('problemcomment-list')

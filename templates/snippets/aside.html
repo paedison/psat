@@ -4,7 +4,7 @@
 <aside id="sidebar" class="sidebar" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
     <ul id="sidebar-nav" class="sidebar-nav">
         {% partial menu_notice %}
-        {% if user.is_authenticated %}{% partial menu_dashboard %}{% endif %}
+        {% if user.is_admin %}{% partial menu_dashboard %}{% endif %}
         {% partial menu_psat %}
         {% partial menu_predict %}
 {#        {% if user.is_admin %}{% partial menu_predict %}{% endif %}#}
@@ -20,11 +20,21 @@
 </aside><!-- Sidebar End -->
 
 {% partialdef menu_notice %}
-    <li class="nav-item">
-        <a class="nav-link collapsed" data-menu="notice" href="{% url 'board:notice-list' %}">
-            <i class="fa-solid fa-fw fa-bullhorn"></i> Notice
+    <li class="nav-item" role="menuitem" aria-label="PSAT Menu">
+        <a class="nav-link collapsed" href="#boardNavContent" data-menu="board"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="boardNavContent">
+            <i class="fa-solid fa-fw fa-bullhorn"></i> 게시판
+            <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
         </a>
-    </li><!-- Notice Nav End -->
+        <ul id="boardNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="board" data-menu-self="notice"
+                   href="{% url 'board:notice-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 공지사항
+                </a>
+            </li>
+        </ul>
+    </li>
 {% endpartialdef menu_notice %}
 
 {% partialdef menu_old_notice %}
@@ -32,15 +42,15 @@
         <a class="nav-link collapsed" data-menu="notice-old" href="{% url 'notice:base' %}">
             <i class="fa-solid fa-fw fa-bullhorn"></i> Notice(old)
         </a>
-    </li><!-- Notice Nav End -->
+    </li>
 {% endpartialdef menu_old_notice %}
 
 {% partialdef menu_dashboard %}
     <li class="nav-item">
         <a class="nav-link collapsed" data-menu="dashboard" href="{% url 'dashboard:base' %}">
-            <i class="fa-solid fa-fw fa-list"></i> Dashboard
+            <i class="fa-solid fa-fw fa-list"></i> 대시보드
         </a>
-    </li><!-- Dashboard Nav End -->
+    </li>
 {% endpartialdef menu_dashboard %}
 
 {% partialdef menu_psat %}
@@ -64,15 +74,15 @@
                 </a>
             </li>
         </ul>
-    </li><!-- PSAT Nav End -->
+    </li>
 {% endpartialdef menu_psat %}
 
 {% partialdef menu_predict %}
     <li class="nav-item">
         <a class="nav-link collapsed" data-menu="predict" href="{% url 'predict:index' %}">
-            <i class="fa-solid fa-fw fa-arrows-up-to-line"></i> Predict
+            <i class="fa-solid fa-fw fa-arrows-up-to-line"></i> 성적예측
         </a>
-    </li><!-- Predict Nav End -->
+    </li>
 {% endpartialdef menu_predict %}
 
 {% partialdef menu_old_predict %}
@@ -80,7 +90,7 @@
         <a class="nav-link collapsed" data-menu="predict-old" href="{% url 'predict_test:index' %}">
             <i class="fa-solid fa-fw fa-arrows-up-to-line"></i> Predict(Old)
         </a>
-    </li><!-- Predict Nav End -->
+    </li>
 {% endpartialdef menu_old_predict %}
 
 {% partialdef menu_community %}
@@ -88,7 +98,7 @@
         <a class="nav-link collapsed" data-menu="community" href="{% url 'community:base' %}">
             <i class="fa-solid fa-fw fa-users-line"></i> Community
         </a>
-    </li><!-- Community Nav End -->
+    </li>
 {% endpartialdef menu_community %}
 
 {% partialdef menu_score %}
@@ -106,7 +116,7 @@
                 </a>
             </li>
         </ul>
-    </li><!-- Score Nav End -->
+    </li>
 {% endpartialdef menu_score %}
 
 {% partialdef menu_old_score %}
@@ -130,7 +140,7 @@
                 </a>
             </li>
         </ul>
-    </li><!-- Score Nav End -->
+    </li>
 {% endpartialdef menu_old_score %}
 
 {% partialdef menu_schedule %}
@@ -138,15 +148,15 @@
         <a class="nav-link collapsed" data-menu="schedule" href="{% url 'schedule:base' %}">
             <i class="fa-regular fa-fw fa-calendar-days"></i> Schedule
         </a>
-    </li><!-- Schedule Nav End -->
+    </li>
 {% endpartialdef menu_schedule %}
 
 {% partialdef menu_lecture %}
     <li class="nav-item">
         <a class="nav-link collapsed" data-menu="lecture" href="{% url 'lecture:base' %}">
-            <i class="fa-solid fa-fw fa-pen-to-square"></i> Lecture
+            <i class="fa-solid fa-fw fa-pen-to-square"></i> Lecture (Old)
         </a>
-    </li><!-- Schedule Nav End -->
+    </li>
 {% endpartialdef menu_lecture %}
 
 {% partialdef sidebar_toggle %}

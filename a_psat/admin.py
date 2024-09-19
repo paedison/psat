@@ -19,32 +19,32 @@ class ProblemAdmin(ModelAdmin):
 
 @admin.register(models.ProblemOpen)
 class ProblemOpenAdmin(ModelAdmin):
-    list_display = list_display_links = ['id', 'created_at', 'user', 'reference', 'ip_address']
-    fields = ['user', 'reference', 'ip_address', 'remarks']
+    list_display = list_display_links = ['id', 'created_at', 'user_id', 'reference', 'ip_address']
+    fields = ['user_id', 'reference', 'ip_address']
 
 
 @admin.register(models.ProblemLike)
 class ProblemLikeAdmin(ModelAdmin):
     list_display = list_display_links = ['id', 'created_at', 'user', 'reference', 'is_liked']
-    fields = ['user', 'problem', 'is_liked', 'remarks']
+    fields = ['user', 'problem', 'is_liked']
 
 
 @admin.register(models.ProblemRate)
 class ProblemRateAdmin(ModelAdmin):
     list_display = list_display_links = ['id', 'created_at', 'user', 'reference', 'rating']
-    fields = ['user', 'problem', 'rating', 'remarks']
+    fields = ['user', 'problem', 'rating']
 
 
 @admin.register(models.ProblemSolve)
 class ProblemSolveAdmin(ModelAdmin):
     list_display = list_display_links = ['id', 'created_at', 'user', 'reference', 'answer', 'is_correct']
-    fields = ['user', 'problem', 'answer', 'is_correct', 'remarks']
+    fields = ['user', 'problem', 'answer', 'is_correct']
 
 
 @admin.register(models.ProblemMemo)
 class ProblemMemoAdmin(ModelAdmin):
     list_display = list_display_links = ['id', 'created_at', 'user', 'reference', 'content']
-    fields = ['user', 'problem', 'content', 'remarks']
+    fields = ['user', 'problem', 'content']
 
 
 @admin.register(models.ProblemTag)
@@ -56,7 +56,7 @@ class ProblemTagAdmin(ModelAdmin):
 @admin.register(models.ProblemTaggedItem)
 class ProblemTaggedItemAdmin(ModelAdmin):
     list_display = list_display_links = ['id', 'created_at', 'user', 'reference', 'tag_name']
-    fields = ['user', 'content_object', 'tag', 'active', 'remarks']
+    fields = ['user', 'content_object', 'tag', 'active']
 
 
 @admin.register(models.ProblemCollection)
@@ -68,15 +68,35 @@ class ProblemCollectionAdmin(ModelAdmin):
 @admin.register(models.ProblemCollectionItem)
 class ProblemCollectionItemAdmin(ModelAdmin):
     list_display = list_display_links = ['id', 'created_at', 'reference', 'collect_title', 'order']
-    fields = ['collect', 'problem', 'order', 'remarks']
+    fields = ['collect', 'problem', 'order']
 
 
-# admin.site.register(models.ProblemOpen)
-# admin.site.register(models.ProblemLike)
-# admin.site.register(models.ProblemRate)
-# admin.site.register(models.ProblemSolve)
-# admin.site.register(models.ProblemMemo)
-# admin.site.register(models.ProblemTag)
-# admin.site.register(models.ProblemComment)
-# admin.site.register(models.ProblemCollection)
-# admin.site.register(models.ProblemCollectionItem)
+@admin.register(models.Lecture)
+class LectureAdmin(ModelAdmin):
+    list_display = list_display_links = ['id', 'subject', 'title', 'sub_title', 'youtube_id', 'order', 'created_at']
+    list_filter = ['subject', 'title', 'sub_title', 'youtube_id', 'order']
+
+
+@admin.register(models.LectureOpen)
+class LectureOpenAdmin(ModelAdmin):
+    pass
+
+
+@admin.register(models.LectureLike)
+class LectureLikeAdmin(ModelAdmin):
+    pass
+
+
+@admin.register(models.LectureMemo)
+class LectureMemoAdmin(ModelAdmin):
+    pass
+
+
+@admin.register(models.LectureTag)
+class LectureTagAdmin(ModelAdmin):
+    pass
+
+
+@admin.register(models.LectureTaggedItem)
+class LectureTaggedItemAdmin(ModelAdmin):
+    pass

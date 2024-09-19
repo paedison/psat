@@ -36,7 +36,7 @@
     <div class="d-flex align-items-center justify-content-between">
         <a class="logo d-flex align-items-center" role="banner"
            hx-target="#main" hx-swap="innerHTML swap:0.25s"
-           hx-boost="true" data-target="#predictList"
+           hx-boost="true" data-menu-parent="psat" data-menu-self="problem"
            href="{% url 'index' %}">
             <img src="{% static 'favicon/favicon-32x32.png' %}" alt="Logo">
             <span class="d-none d-sm-block">Paedison</span>

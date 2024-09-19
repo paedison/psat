@@ -1,0 +1,10 @@
+.django-ckeditor-widget {
+    width: 100%;
+}
+.cke_notifications_area {
+    display: none;
+}
+.selector {
+    max-width: 100% !important;
+    height: 600px;
+}

@@ -7,30 +7,27 @@ from django.views.decorators.http import require_POST
 from django_htmx.http import retarget, reswap
 
 from common.constants import icon_set_new
-from common.utils import update_context_data, HtmxHttpRequest
-from a_board import models, utils, forms
+from common.utils import Configuration, HtmxHttpRequest, update_context_data
+from .. import models, utils, forms
 
 
-class NoticeConfiguration:
-    menu = 'notice'
-    info = {'menu': menu}
-    title = {'kor': '공지사항', 'eng': menu.capitalize()}
-    url_admin = reverse_lazy(f'admin:a_board_notice_changelist')
-    url_list = reverse_lazy(f'board:notice-list')
-    url_create = reverse_lazy(f'board:notice-create')
-    url = {'admin': url_admin, 'list': url_list, 'create': url_create}
+class ViewConfiguration(Configuration):
+    menu_eng, menu_kor = 'board', '게시판'
+    submenu_eng, submenu_kor = 'notice', '공지사항'
+    url_list = reverse_lazy('board:notice-list')
+    url_create = reverse_lazy('board:notice-create')
 
 
 @login_not_required
 def list_view(request: HtmxHttpRequest):
-    config = NoticeConfiguration()
+    config = ViewConfiguration()
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', '1')
     queryset = utils.get_queryset(request, models.Notice)
     page_obj, page_range = utils.get_paginator_info(queryset, page_number)
     top_fixed = utils.get_filtered_queryset(request, models.Notice, top_fixed=True)
     context = update_context_data(
-        config=config, icon_menu=icon_set_new.ICON_MENU['notice'], icon_board=icon_set_new.ICON_BOARD,
+        config=config, icon_board=icon_set_new.ICON_BOARD,
         page_obj=page_obj, page_range=page_range, top_fixed=top_fixed)
     if view_type == 'pagination':
         return render(request, 'a_board/post_list_content.html', context)
@@ -39,7 +36,7 @@ def list_view(request: HtmxHttpRequest):
 
 @login_not_required
 def detail_view(request: HtmxHttpRequest, pk: int):
-    config = NoticeConfiguration()
+    config = ViewConfiguration(pk)
     queryset = utils.get_queryset(request, models.Notice)
     post: models.Notice = get_object_or_404(queryset, pk=pk)
 
@@ -62,7 +59,7 @@ def detail_view(request: HtmxHttpRequest, pk: int):
 
 
 def create_view(request: HtmxHttpRequest):
-    config = NoticeConfiguration()
+    config = ViewConfiguration()
     context = update_context_data(
         config=config, icon_menu=icon_set_new.ICON_MENU['notice'], icon_board=icon_set_new.ICON_BOARD)
     if request.method == 'POST':
@@ -79,7 +76,7 @@ def create_view(request: HtmxHttpRequest):
 
 
 def update_view(request: HtmxHttpRequest, pk: int):
-    config = NoticeConfiguration()
+    config = ViewConfiguration()
     instance = get_object_or_404(models.Notice, pk=pk)
     context = update_context_data(
         config=config, icon_menu=icon_set_new.ICON_MENU['notice'], icon_board=icon_set_new.ICON_BOARD)
