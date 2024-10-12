@@ -1,0 +1,48 @@
+{% load static %}
+<div style="max-width:740px;margin:0 auto;padding:0.5rem;background:#f8f8f8;border:1px solid #f0f0f0;letter-spacing:-1px">
+    <div style="margin:0 auto;background:#fff">
+        <div style="text-align:center;padding:2rem 2rem 0">
+            <h1 style="margin-bottom:2rem">
+                <img style="width: 100%" src="{{ request.get_host }}{% static 'favicon/logo_typo.png' %}" alt="Logo" />
+            </h1>
+            <div style="text-align:center">
+                <h2 style="font-size:2rem;color:#222;font-weight:600">paedison.com 회원 가입을 환영합니다.</h2>
+                <p style="margin: 2rem 0; font-size:1rem;color:#666;line-height:1.6rem">
+                    안녕하세요. <b style="color:#000">{{ user.username }}</b>님 <br>
+                    paedison.com 회원으로 가입해 주셔서 감사드립니다.<br><br>
+                    현재 paedison.com에서는 PSAT 기출문제 확인을 비롯하여 난이도 및 즐겨찾기 설정,<br>
+                    태그 및 메모 작성 등의 기능을 제공하고 있습니다.<br><br>
+                    정상적인 사이트 이용을 위하여 아래 <span style="background:#217CBC;color:#fff">&nbsp;이메일 인증&nbsp;</span> 버튼을 클릭해주세요.<br>
+                    최종 합격을 위해 노력하는 <b style="color:#000">{{ user.username }}</b>님을 위해 항상 응원하겠습니다.<br>
+                    감사합니다.<br>
+                </p>
+                <div style="overflow:hidden;margin:2rem 0;text-align:center">
+                    <a href="{{ activate_url }}" style="padding:1rem 2rem;display:inline-block;background:#217CBC;text-align:center;font-size:1.2rem;color:#fff;text-decoration:none" target="_blank">
+                        이메일 인증
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div style="margin:2rem">
+            <table style="border-collapse:collapse;border-spacing:0;width:100%;border-top:2px solid #000;background-color:#fff">
+                <tr>
+                    <th style="padding:1rem 2rem;border-top:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;font-weight:400;color:#666;background-color:#f8f8f8">아이디</th>
+                    <td style="padding:1rem 2rem;border-top:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;font-weight:600;text-align:left;color:#222">{{ user.username }}</td>
+                </tr>
+                <tr>
+                    <th style="padding:1rem 2rem;border-top:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;font-weight:400;color:#666;background-color:#f8f8f8">이메일</th>
+                    <td style="padding:1rem 2rem;border-top:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;font-weight:600;text-align:left;color:#222">{{ user.email }}</td>
+                </tr>
+            </table>
+            <p style="color:#d32424;line-height:1.6rem">※ 사이트 로그인 시에는 이메일을 이용해주세요.</p>
+        </div>
+{#        <div style="text-align:center;padding:1rem 1rem 0.5rem 1rem;background:#f8f8f8;font-size:12px;font-weight:500;color:#222">#}
+{#            <p style="margin:0;">#}
+{#                본 메일은 발신전용 입니다. 문의는 온라인 고객센터 또는 각 지점으로 해주십시오.<br><br>#}
+{#                <span style="color:#666">서울특별시 마포구 큰우물로 76 고려빌딩 402호 ㈜피투피시스템즈 <br>#}
+{#                대표전화:02-312-1317 FAX:02-363-1026</span><br><br>#}
+{#                ⓒpaedison.com. All right reserved.#}
+{#            </p>#}
+{#        </div>#}
+    </div>
+</div>

@@ -1,47 +1,42 @@
-{% extends "account/base.html" %}
-{% load static %}
+{% extends "account/base_entrance.html" %}
 {% load i18n %}
-{% load widget_tweaks %}
-
 {% load account socialaccount %}
 {% providers_media_js %}
 
+{% block head_title %}{% trans "Sign Up" %}{% endblock head_title %}
 {% block body_title %}{% trans "Sign Up" %}{% endblock body_title %}
 
-{% block content %}
+{% block body_content %}
+    <script id="info" type="application/json">{"menu": "account"}</script>
+    <div class="col-12">
+        <div class="alert alert-danger text-center fw-bold small alert-dismissible fade show"
+             role="alert">
+            <span class="text-danger">*</span> 표시가 된 부분은 필수 입력 항목입니다.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+
     <form method="post" action="{% url 'account_signup' %}" class="row g-3">
         {% csrf_token %}
-        <div class="col-12">
-            <div class="form-floating">
-                {% render_field form.email class="form-control form-control-sm" %}
-                <label for="id_email">{% trans 'E-mail' %}</label>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="form-floating">
-                {% render_field form.username class="form-control form-control-sm" %}
-                <label for="id_username">{% trans 'Username' %}</label>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="form-floating">
-                {% render_field form.password1 class="form-control form-control-sm" %}
-                <label for="id_password1">{% trans 'Password' %}</label>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="form-floating">
-                {% render_field form.password2 class="form-control form-control-sm" %}
-                <label for="id_password2">{% trans 'Password (confirmation)' %}</label>
-            </div>
-        </div>
-
         {% if redirect_field_value %}
             <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
         {% endif %}
+
+        {% for field in form %}
+            {% if field.name != 'address' %}
+                <div class="col-12 form-field-container">
+                    <div class="form-floating required-field">
+                        {{ field }}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    </div>
+                    {% if field.help_text %}
+                        {{ field.help_text }}
+                    {% endif %}
+                </div>
+            {% else %}
+                {{ field }}
+            {% endif %}
+        {% endfor %}
 
         <div class="col-12">
             <button class="btn btn-primary w-100" type="submit">
@@ -59,14 +54,12 @@
         </div>
     </form>
 
-        <div class="col-12">
-            <div class="alert alert-danger text-center fw-bold small alert-dismissible fade show"
-                 role="alert">
-                {% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+    <div class="col-12">
+        <div class="alert alert-danger text-center fw-bold small alert-dismissible fade show mb-0" role="alert">
+            {% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-
-{% endblock content %}
+    </div>
+{% endblock body_content %}
 
 {% block footer %}{% endblock footer %}

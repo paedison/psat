@@ -1,7 +1,5 @@
-{% load i18n %}{% autoescape off %}{% blocktrans with site_name=current_site.name %}Hello from {{ site_name }}!{% endblocktrans %}
+안녕하세요. 'Paedison.com(http://paedison.com)'입니다.
 
-{% block content %}{% endblock %}
+{% block content %}{% endblock content %}
 
-{% blocktrans with site_name=current_site.name site_domain=current_site.domain %}Thank you for using {{ site_name }}!
-{{ site_domain }}{% endblocktrans %}
-{% endautoescape %}
+'Paedison.com' 서비스를 이용해주셔서 감사합니다.

@@ -43,34 +43,60 @@ class UserChangeForm(forms.ModelForm):
 class LoginForm(allauth_forms.LoginForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.label_suffix = ''
+        self.fields['login'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password'].widget.attrs.update({'class': 'form-control'})
+        self.fields['remember'].label = '이메일 저장'
+        self.fields['remember'].widget.attrs.update({'class': 'form-check-input'})
 
 
-class ChangeUsernameForm(forms.ModelForm):
+class SignupForm(allauth_forms.SignupForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({'class': 'form-control'})
+        self.fields['username'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
+
+
+class ChangeUsernameForm(forms.Form):
     username = forms.CharField(
         label=_('Enter New Username'),
         widget=forms.TextInput(
             attrs={
-                "placeholder": _('Enter New Username'),
+                'placeholder': _('Enter New Username'),
+                'class': 'form-control'
             }
         )
     )
-
-    class Meta:
-        model = User
-        fields = ('username',)
+    password = forms.CharField(
+        label=_('Current Password'),
+        widget=forms.PasswordInput(
+            attrs={
+                'placeholder': _('Current Password'),
+                'class': 'form-control'
+            }
+        )
+    )
 
 
 class ChangePasswordForm(allauth_forms.ChangePasswordForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.label_suffix = ''
+        self.fields['oldpassword'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
 
 
-class PostForm:
-    pass
+class ResetPasswordForm(allauth_forms.ResetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({'class': 'form-control'})
 
 
-class CommentForm:
-    pass
+class ResetPasswordKeyForm(allauth_forms.ResetPasswordKeyForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control'})

@@ -219,6 +219,19 @@ TAGGIT_LIMIT = 50
 TAGGIT_TAG_LIST_ORDER_BY = 'name'
 
 
+SITE_ID = 1  # 사이트 아이디 기본값
+
+
+# Email Backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER')
+
+
 # DJango-allauth Package Settings
 AUTHENTICATION_BACKENDS = [
     # Needed to log in by username in Django admin, regardless of `allauth`
@@ -242,32 +255,32 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+ACCOUNT_ADAPTER = 'common.adapters.AccountAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
-ACCOUNT_EMAIL_SUBJECT_PREFIX = '이메일 인증'
+ACCOUNT_EMAIL_SUBJECT_PREFIX = '[paedison.com] '
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_FORMS = {
     'login': 'common.forms.LoginForm',
-    'change_password': 'common.forms.ChangePasswordForm'
+    'signup': 'common.forms.SignupForm',
+    'change_password': 'common.forms.ChangePasswordForm',
+    'reset_password': 'common.forms.ResetPasswordForm',
+    'reset_password_from_key': 'common.forms.ResetPasswordKeyForm',
 }
-ACCOUNT_SESSION_REMEMBER = True
-
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_PORT = env('EMAIL_PORT')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = env('EMAIL_USE_TLS')
-DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER')
-
-SITE_ID = 1  # 사이트 아이디 기본값
+ACCOUNT_SESSION_COOKIE_AGE = 1209600
+ACCOUNT_SIGNUP_FORM_HONEYPOT_FIELD = 'address'
 
 LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+ACCOUNT_USERNAME_BLACKLIST = [
+    'admin', 'administrator', 'account', 'accounts',
+    'category', 'post', 'inbox', 'check_in_as_boss',
+    'dashboard', 'profile', 'official', 'daily', 'common', 'notice', 'police',
+]
 
 
 # Custom User Model
