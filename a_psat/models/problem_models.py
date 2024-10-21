@@ -20,6 +20,27 @@ def year_choice() -> list:
     return choice
 
 
+def exam_choice() -> dict:
+    return {
+        '행시': '5급공채/행정고시',
+        '입시': '입법고시',
+        '칠급': '7급공채',
+        '칠예': '7급공채 예시',
+        '민경': '민간경력',
+        '외시': '외교원/외무고시',
+        '견습': '견습',
+    }
+
+
+def subject_choice() -> dict:
+    return {
+        '헌법': '헌법',
+        '언어': '언어논리',
+        '자료': '자료해석',
+        '상황': '상황판단',
+    }
+
+
 def number_choice() -> list:
     return [(number, f'{number}번') for number in range(1, 41)]
 
@@ -46,6 +67,38 @@ def get_remarks(message_type: str, remarks: str | None) -> str:
     else:
         remarks = f"{message_type}_at:{utc_now}"
     return remarks
+
+
+class Psat(models.Model):
+    year = models.IntegerField(choices=year_choice, default=datetime.now().year, verbose_name='연도')
+    exam = models.CharField(max_length=2, choices=exam_choice, default='행시', verbose_name='시험')
+    order = models.IntegerField(verbose_name='순서')
+    is_active = models.BooleanField(default=False, verbose_name='활성')
+
+    class Meta:
+        verbose_name = verbose_name_plural = "00_PSAT"
+        ordering = ['-year', 'order']
+
+    def __str__(self):
+        return f'[PSAT]Psat(#{self.id}):{self.year}-{self.order}-{self.exam}'
+
+    @property
+    def reference(self):
+        return f'{self.year}{self.exam}'
+
+    @property
+    def full_reference(self):
+        return ' '.join([self.get_year_display(), self.exam_name])
+
+    @property
+    def exam_name(self):
+        if self.exam == '행시':
+            return '행정고시' if self.year < 2011 else '5급공채'
+        if self.exam == '외시':
+            return '외교원' if self.year == 2013 else '외무고시'
+        if self.exam == '칠급':
+            return '7급공채 모의고사' if self.year == 2020 else '7급공채'
+        return self.get_exam_display()
 
 
 class ProblemTag(TagBase):
@@ -93,14 +146,15 @@ class Problem(models.Model):
         JARYO = '자료', '자료해석'
         SANGHWANG = '상황', '상황판단'
 
-    year = models.IntegerField(choices=year_choice, default=datetime.now().year)
-    exam = models.CharField(max_length=2, choices=ExamChoice, default=ExamChoice.HAENGSI)
-    subject = models.CharField(max_length=2, choices=SubjectChoice, default=SubjectChoice.EONEO)
-    paper_type = models.CharField(max_length=2, default='')
-    number = models.IntegerField(choices=number_choice, default=1)
-    answer = models.IntegerField(choices=answer_choice, default=1)
-    question = models.TextField()
-    data = models.TextField()
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='psats', verbose_name='PSAT')
+    year = models.IntegerField(choices=year_choice, default=datetime.now().year, verbose_name='연도')
+    exam = models.CharField(max_length=2, choices=ExamChoice, default=ExamChoice.HAENGSI, verbose_name='시험')
+    subject = models.CharField(max_length=2, choices=SubjectChoice, default=SubjectChoice.EONEO, verbose_name='과목')
+    paper_type = models.CharField(max_length=2, default='', verbose_name='책형')
+    number = models.IntegerField(choices=number_choice, default=1, verbose_name='번호')
+    answer = models.IntegerField(choices=answer_choice, default=1, verbose_name='정답')
+    question = models.TextField(verbose_name='발문')
+    data = models.TextField(verbose_name='자료')
 
     tags = TaggableManager(through=ProblemTaggedItem, blank=True)
 
