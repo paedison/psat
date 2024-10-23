@@ -4,6 +4,23 @@ from django.utils.translation import gettext_lazy as _
 from . import models
 
 
+class ExamForm(forms.ModelForm):
+    answer_file = forms.FileField(
+        label='정답 파일',
+        widget=forms.FileInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = models.Psat
+        fields = ['year', 'exam', 'order', 'is_active']
+        widgets = {
+            'year': forms.Select(attrs={'class': 'form-select'}),
+            'exam': forms.Select(attrs={'class': 'form-select'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
 class ProblemTagForm(forms.ModelForm):
     class Meta:
         model = models.ProblemTag

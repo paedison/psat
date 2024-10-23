@@ -30,9 +30,9 @@ def problem_list_view(request: HtmxHttpRequest):
     sub_title = utils.get_sub_title_by_psat(exam_year, exam_exam, exam_subject)
 
     if request.user.is_authenticated:
-        filterset = filters.PsatFilter(data=request.GET, request=request)
+        filterset = filters.ProblemFilter(data=request.GET, request=request)
     else:
-        filterset = filters.AnonymousPsatFilter(data=request.GET, request=request)
+        filterset = filters.AnonymousProblemFilter(data=request.GET, request=request)
 
     custom_data = utils.get_custom_data(request.user)
     page_obj, page_range = utils.get_page_obj_and_range(page, filterset.qs)

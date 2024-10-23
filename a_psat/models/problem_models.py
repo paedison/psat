@@ -78,6 +78,9 @@ class Psat(models.Model):
     class Meta:
         verbose_name = verbose_name_plural = "00_PSAT"
         ordering = ['-year', 'order']
+        constraints = [
+            models.UniqueConstraint(fields=['year', 'exam'], name='unique_psat')
+        ]
 
     def __str__(self):
         return f'[PSAT]Psat(#{self.id}):{self.year}-{self.order}-{self.exam}'
@@ -131,25 +134,10 @@ class ProblemTaggedItem(TaggedItemBase):
 
 
 class Problem(models.Model):
-    class ExamChoice(models.TextChoices):
-        HAENGSI = '행시', '5급공채/행정고시'
-        IPSI = '입시', '입법고시'
-        CHILGEUP = '칠급', '7급공채'
-        CHILYE = '칠예', '7급공채 예시'
-        MINGYUNG = '민경', '민간경력'
-        OESI = '외시', '외교원/외무고시'
-        GYUNSEUP = '견습', '견습'
-
-    class SubjectChoice(models.TextChoices):
-        HEONBEOB = '헌법', '헌법'
-        EONEO = '언어', '언어논리'
-        JARYO = '자료', '자료해석'
-        SANGHWANG = '상황', '상황판단'
-
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='psats', verbose_name='PSAT')
     year = models.IntegerField(choices=year_choice, default=datetime.now().year, verbose_name='연도')
-    exam = models.CharField(max_length=2, choices=ExamChoice, default=ExamChoice.HAENGSI, verbose_name='시험')
-    subject = models.CharField(max_length=2, choices=SubjectChoice, default=SubjectChoice.EONEO, verbose_name='과목')
+    exam = models.CharField(max_length=2, choices=exam_choice, default='행시', verbose_name='시험')
+    subject = models.CharField(max_length=2, choices=subject_choice, default='언어', verbose_name='과목')
     paper_type = models.CharField(max_length=2, default='', verbose_name='책형')
     number = models.IntegerField(choices=number_choice, default=1, verbose_name='번호')
     answer = models.IntegerField(choices=answer_choice, default=1, verbose_name='정답')

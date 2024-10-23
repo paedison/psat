@@ -28,3 +28,16 @@ def only_staff_allowed():
                 return redirect('index')
         return _wrapped_view
     return decorator
+
+
+def admin_required(view_func):
+    """
+    Decorator that requires the user to be an admin.
+    """
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_admin:
+            return view_func(request, *args, **kwargs)
+        else:
+            return redirect('index')
+    return _wrapped_view

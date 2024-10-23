@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import problem_views, lecture_views
+from .views import problem_views, lecture_views, admin_views
 
 app_name = 'psat'
 
@@ -41,10 +41,18 @@ lecture_patterns = [
     path('tag/<int:pk>/', lecture_views.tag_lecture, name='tag-lecture'),
 ]
 
+admin_patterns = [
+    path('', admin_views.admin_list_view, name='admin-list'),
+    path('create/exam/', admin_views.exam_create_view, name='admin-exam-create'),
+    # path('answer/<int:pk>/', admin_views.answer_detail_view, name='staff-answer-detail'),
+    # path('answer/update/<int:pk>/', admin_views.answer_update_view, name='staff-answer-update'),
+]
+
 urlpatterns = [
     path('', problem_views.problem_list_view, name='base'),
     path('problem/', include(problem_patterns)),
     path('collection/', include(collection_patterns)),
     # path('comment/', include(comment_patterns)),
     path('lecture/', include(lecture_patterns)),
+    path('admin/', include(admin_patterns)),
 ]

@@ -4,6 +4,15 @@ from unfold.admin import ModelAdmin
 from . import models
 
 
+@admin.register(models.Psat)
+class PsatAdmin(ModelAdmin):
+    list_display = list_display_links = ['id', 'year', 'exam', 'order', 'is_active']
+    list_filter = ['year', 'exam', 'is_active']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+
 @admin.register(models.Problem)
 class ProblemAdmin(ModelAdmin):
     list_display = list_display_links = ['id', 'year', 'exam', 'subject', 'number', 'answer', 'question']
@@ -12,9 +21,6 @@ class ProblemAdmin(ModelAdmin):
     save_on_top = True
     search_fields = ['data']
     show_full_result_count = True
-
-    class Media:
-        css = {'all': ['css/admin_custom.css']}
 
 
 @admin.register(models.ProblemOpen)

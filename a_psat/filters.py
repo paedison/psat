@@ -1,22 +1,6 @@
-from datetime import datetime
-
 import django_filters
 
-from a_psat import models as psat_models
-
-
-current_year = datetime.now().year
-
-
-def year_choice() -> list:
-    choice = [(year, f'{year}년') for year in range(2004, current_year + 1)]
-    choice.reverse()
-    return choice
-
-
-def number_choice() -> list:
-    return [(number, f'{number}번') for number in range(1, 41)]
-
+from . import models
 
 CHOICES_LIKE = (
     ('all', '즐겨찾기 지정'),
@@ -53,28 +37,53 @@ CHOICES_COMMENT = (
 )
 
 
-class AnonymousPsatFilter(django_filters.FilterSet):
+class PsatFilter(django_filters.FilterSet):
     year = django_filters.ChoiceFilter(
         field_name='year',
         label='',
         empty_label='[전체 연도]',
-        choices=year_choice,
+        choices=models.year_choice,
     )
     exam = django_filters.ChoiceFilter(
         field_name='exam',
         label='',
         empty_label='[전체 시험]',
-        choices=psat_models.Problem.ExamChoice,
+        choices=models.exam_choice,
+    )
+    is_active = django_filters.ChoiceFilter(
+        field_name='is_active',
+        label='',
+        empty_label='[활성 상태]',
+        choices={'활성': True, '비활성': False},
+    )
+
+    class Meta:
+        model = models.Psat
+        fields = ['year', 'exam']
+
+
+class AnonymousProblemFilter(django_filters.FilterSet):
+    year = django_filters.ChoiceFilter(
+        field_name='year',
+        label='',
+        empty_label='[전체 연도]',
+        choices=models.year_choice,
+    )
+    exam = django_filters.ChoiceFilter(
+        field_name='exam',
+        label='',
+        empty_label='[전체 시험]',
+        choices=models.exam_choice,
     )
     subject = django_filters.ChoiceFilter(
         field_name='subject',
         label='',
         empty_label='[전체 과목]',
-        choices=psat_models.Problem.SubjectChoice,
+        choices=models.subject_choice,
     )
 
     class Meta:
-        model = psat_models.Problem
+        model = models.Problem
         fields = ['year', 'exam', 'subject']
 
     @property
@@ -89,7 +98,7 @@ class AnonymousPsatFilter(django_filters.FilterSet):
         return queryset
 
 
-class PsatFilter(AnonymousPsatFilter):
+class ProblemFilter(AnonymousProblemFilter):
     likes = django_filters.ChoiceFilter(
         label='',
         empty_label='[즐겨찾기]',
@@ -128,7 +137,7 @@ class PsatFilter(AnonymousPsatFilter):
     )
 
     class Meta:
-        model = psat_models.Problem
+        model = models.Problem
         fields = [
             'year', 'exam', 'subject',
             'likes', 'rates', 'solves', 'memos', 'tags'
@@ -190,11 +199,11 @@ class AnonymousPsatDetailFilter(django_filters.FilterSet):
     problem = django_filters.ChoiceFilter(
         field_name='problem',
         label='',
-        choices=year_choice,
+        choices=models.year_choice,
     )
 
     class Meta:
-        model = psat_models.Problem
+        model = models.Problem
         fields = ['problem']
 
     @property

@@ -61,6 +61,14 @@
             <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
         </a>
         <ul id="psatNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            {% if user.is_admin %}
+                <li>
+                    <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="admin"
+                       href="{% url 'psat:admin-list' %}">
+                        <i class="fa-regular fa-fw fa-square"></i> 관리자 메뉴
+                    </a>
+                </li>
+            {% endif %}
             <li>
                 <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="problem"
                    href="{% url 'psat:problem-list' %}">
