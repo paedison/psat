@@ -7,6 +7,17 @@
 
     <section class="section">
         <div class="row">
+            <div class="col-12" aria-label="공식 정답">
+                <div id="problemCard" class="card htmx-fade-in"
+                     hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
+                    {% include 'a_psat/admin_problem_list_answer.html' %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="row">
             <div class="col-12" aria-label="문제 목록">
                 <div id="problemCard" class="card htmx-fade-in"
                      hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
@@ -29,69 +40,9 @@
                     </div>
                 </div>
             </div>
-            {% partial list_buttons %}
         </div>
     </section>
 {% endblock main %}
-
-{% partialdef list_buttons %}
-    <div aria-label="버튼 모음">
-        <a id="toggleProblemBtn" class="btn btn-success px-2"
-           data-bs-toggle="tooltip" data-bs-title="{% trans 'Problem List' %}"
-           hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top"
-           href="{% url 'psat:problem-list' %}">
-            <i class="fa-solid fa-layer-group fa-fw"></i>
-        </a>
-
-{#        <a id="toggleCommentBtn" class="btn btn-success px-2"#}
-{#           data-bs-toggle="tooltip" data-bs-title="{% trans 'Comment List' %}"#}
-{#           hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top"#}
-{#           href="{% url 'psat:comment-list' %}">#}
-{#            <i class="fa-solid fa-circle-question fa-fw"></i>#}
-{#        </a>#}
-
-        <button id="toggleCollectionBtn" class="btn btn-primary px-2"
-                data-bs-toggle="tooltip" data-bs-title="{% trans 'Collection List' %}">
-            <i class="fa-solid fa-folder-plus fa-fw"></i>
-        </button>
-    </div>
-
-    <div id="floatingCollection" class="card htmx-fade-in htmx-fade-out"
-         hx-swap="innerHTML swap:0.25s show:window:top">
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-12">
-                    <h5 id="floatingCollectionIndicator" class="card-title d-flex" style="cursor: pointer;">
-                        <i class="fa-solid fa-folder-plus me-2"></i>
-                        {% trans 'Collection List' %}
-                        <div class="ms-auto">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </div>
-                    </h5>
-                    {% if user.is_authenticated %}
-                        <div id="collectionList" class="htmx-fade-in htmx-fade-out">
-                            <form id="collectionListForm"
-                                  class="list-group htmx-fade-out htmx-fade-in{% if collections %} sortable{% endif %}"
-                                  hx-target="this" hx-swap="innerHTML swap:0.25s"
-                                  hx-push-url="false" hx-trigger="end"
-                                  hx-post="{% url 'psat:collection-list' %}">
-                                {% include 'a_psat/collection_list.html' %}
-                            </form>
-                        </div>
-                    {% else %}
-                        <div class="text-center">
-                            <a class="btn btn-outline-secondary"
-                               hx-target="body" hx-swap="innerHTML swap:0.25s"
-                               hx-get="{% url 'account_login' %}">
-                                로그인이 필요합니다.
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-{% endpartialdef list_buttons %}
 
 {% partialdef problem_filter %}
     <div class="accordion-item">

@@ -15,7 +15,7 @@ from common.models import User
 
 
 def year_choice() -> list:
-    choice = [(year, f'{year}년') for year in range(2004, datetime.now().year + 1)]
+    choice = [(year, f'{year}년') for year in range(2004, datetime.now().year + 2)]
     choice.reverse()
     return choice
 
@@ -79,7 +79,7 @@ class Psat(models.Model):
         verbose_name = verbose_name_plural = "00_PSAT"
         ordering = ['-year', 'order']
         constraints = [
-            models.UniqueConstraint(fields=['year', 'exam'], name='unique_psat')
+            models.UniqueConstraint(fields=['year', 'exam'], name='unique_psat'),
         ]
 
     def __str__(self):
@@ -102,6 +102,16 @@ class Psat(models.Model):
         if self.exam == '칠급':
             return '7급공채 모의고사' if self.year == 2020 else '7급공채'
         return self.get_exam_display()
+
+    @staticmethod
+    def get_admin_menu_url():
+        return reverse_lazy('psat:admin-menu')
+
+    def get_admin_problem_list_url(self):
+        return reverse_lazy('psat:admin-problem-list', args=[self.id])
+
+    def get_admin_psat_active_url(self):
+        return reverse_lazy('psat:admin-psat-active', args=[self.id])
 
 
 class ProblemTag(TagBase):
@@ -134,15 +144,15 @@ class ProblemTaggedItem(TaggedItemBase):
 
 
 class Problem(models.Model):
-    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='psats', verbose_name='PSAT')
-    year = models.IntegerField(choices=year_choice, default=datetime.now().year, verbose_name='연도')
-    exam = models.CharField(max_length=2, choices=exam_choice, default='행시', verbose_name='시험')
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='problems', verbose_name='PSAT')
+    # year = models.IntegerField(choices=year_choice, default=datetime.now().year, verbose_name='연도')
+    # exam = models.CharField(max_length=2, choices=exam_choice, default='행시', verbose_name='시험')
     subject = models.CharField(max_length=2, choices=subject_choice, default='언어', verbose_name='과목')
     paper_type = models.CharField(max_length=2, default='', verbose_name='책형')
     number = models.IntegerField(choices=number_choice, default=1, verbose_name='번호')
     answer = models.IntegerField(choices=answer_choice, default=1, verbose_name='정답')
-    question = models.TextField(verbose_name='발문')
-    data = models.TextField(verbose_name='자료')
+    question = models.TextField(default='', verbose_name='발문')
+    data = models.TextField(default='', verbose_name='자료')
 
     tags = TaggableManager(through=ProblemTaggedItem, blank=True)
 
@@ -156,38 +166,33 @@ class Problem(models.Model):
 
     class Meta:
         verbose_name = verbose_name_plural = "01_문제"
-        ordering = ['-year', 'id']
+        ordering = ['psat', 'id']
+        constraints = [
+            models.UniqueConstraint(fields=['psat', 'subject', 'number'], name='unique_problem'),
+        ]
 
     def __str__(self):
         return f'[PSAT]Problem(#{self.id}):{self.reference}'
 
     @property
     def year_ex_sub(self):
-        return f'{self.year}{self.exam}{self.subject}'
+        return f'{self.psat.year}{self.psat.exam}{self.subject}'
+
+    @property
+    def _reference(self):
+        return f'{self.psat.year}{self.psat.exam[0]}{self.subject[0]}'
 
     @property
     def reference(self):
-        return f'{self.year}{self.exam[0]}{self.subject[0]}-{self.number:02}'
+        return f'{self._reference}-{self.number:02}'
 
     @property
     def reference2(self):
-        return f'{self.year}{self.exam[0]}{self.subject[0]}{self.paper_type[0]}-{self.number:02}'
+        return f'{self._reference}{self.paper_type[0]}-{self.number:02}'
 
     @property
     def year_exam_subject(self):
-        return ' '.join([self.get_year_display(), self.exam_name, self.get_subject_display()])
-
-    @property
-    def exam_name(self):
-        if self.exam == '행시':
-            return '행정고시' if self.year < 2011 else '5급공채'
-        if self.exam == '외시':
-            return '외교원' if self.year == 2013 else '외무고시'
-        if self.exam == '칠급':
-            return '7급공채 모의고사' if self.year == 2020 else '7급공채'
-        if self.exam == '칠예':
-            return '7급공채 예시'
-        return self.get_exam_display()
+        return ' '.join([self.psat.get_year_display(), self.psat.exam_name, self.get_subject_display()])
 
     @property
     def full_reference(self):
@@ -198,19 +203,23 @@ class Problem(models.Model):
         def get_image_path_and_name(number):
             filename = f'PSAT{self.year_ex_sub}{self.number:02}-{number}.png'
             image_exists = os.path.exists(
-                os.path.join(BASE_DIR, 'static', 'image', 'PSAT', str(self.year), filename))
+                os.path.join(BASE_DIR, 'static', 'image', 'PSAT', str(self.psat.year), filename))
             path = name = ''
             if number == 1:
                 path = static('image/preparing.png')
                 name = 'Preparing Image'
             if image_exists:
-                path = static(f'image/PSAT/{self.year}/{filename}')
+                path = static(f'image/PSAT/{self.psat.year}/{filename}')
                 name = f'Problem Image {number}'
             return path, name
 
         path1, name1 = get_image_path_and_name(1)
         path2, name2 = get_image_path_and_name(2)
         return {'path1': path1, 'path2': path2, 'name1': name1, 'name2': name2}
+
+    @property
+    def has_image(self):
+        return self.images['name1'] != 'Preparing Image'
 
     @property
     def bg_color(self):

@@ -8,13 +8,20 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
 from common.constants import icon_set_new
-from common.utils import Configuration, HtmxHttpRequest, update_context_data
+from common.utils import HtmxHttpRequest, update_context_data
 from .. import models, utils, forms, filters
 
 
-class ViewConfiguration(Configuration):
-    menu_eng, menu_kor = 'psat', 'PSAT'
-    submenu_eng, submenu_kor = 'problem', '기출문제'
+class ViewConfiguration:
+    menu = menu_eng = 'psat'
+    menu_kor = 'PSAT'
+    submenu = submenu_eng = 'problem'
+    submenu_kor = '기출문제'
+    info = {'menu': menu, 'menu_self': submenu}
+    icon_menu = icon_set_new.ICON_MENU[menu_eng]
+    menu_title = {'kor': 'PSAT', 'eng': menu.capitalize()}
+    submenu_title = {'kor': '기출문제', 'eng': submenu.capitalize()}
+    url_admin = reverse_lazy('admin:a_psat_problem_changelist')
     url_list = reverse_lazy('psat:problem-list')
 
 
@@ -40,7 +47,7 @@ def problem_list_view(request: HtmxHttpRequest):
         utils.get_custom_icons(problem, custom_data)
     context = update_context_data(
         config=config, sub_title=sub_title, form=filterset.form,
-        icon_menu=icon_set_new.ICON_MENU['psat'], icon_image=icon_set_new.ICON_IMAGE,
+        icon_image=icon_set_new.ICON_IMAGE,
         custom_data=custom_data, page_obj=page_obj, page_range=page_range,
     )
     if view_type == 'problem_list':
@@ -59,14 +66,14 @@ def problem_list_view(request: HtmxHttpRequest):
 def problem_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     view_type = request.headers.get('View-Type', 'main')
-    queryset = models.Problem.objects.order_by('-year', 'id')
+    queryset = models.Problem.objects.all()
     problem: models.Problem = get_object_or_404(queryset, pk=pk)
     config.url_admin = reverse_lazy(f'admin:a_psat_problem_change', args=[pk])
     user_id = request.user.id if request.user.is_authenticated else None
 
     context = update_context_data(config=config, problem_id=pk, problem=problem)
 
-    problem_data = queryset.filter(year=problem.year, exam=problem.exam, subject=problem.subject)
+    problem_data = queryset.filter(psat__year=problem.psat.year, psat__exam=problem.psat.exam, subject=problem.subject)
     prob_prev, prob_next = utils.get_prev_next_prob(pk, problem_data)
 
     template_nav = 'a_psat/snippets/navigation_container.html'
@@ -271,7 +278,7 @@ def tag_problem(request: HtmxHttpRequest, pk: int):
 
     if view_type == 'add':
         tag, _ = models.ProblemTag.objects.get_or_create(name=name)
-        tagged_problem, _ = models.ProblemTaggedItem.objects.get_or_create(tag=tag, **base_info)
+        models.ProblemTaggedItem.objects.create(tag=tag, **base_info)
 
     if view_type == 'remove':
         tagged_problem = get_object_or_404(models.ProblemTaggedItem, tag__name=name, **base_info)
@@ -383,7 +390,7 @@ def collect_problem(request: HtmxHttpRequest, pk: int):
 
         is_checked = request.POST.get('is_checked')
         if is_checked:
-            item = models.ProblemCollectionItem.objects.create(problem_id=pk, order=items.count() + 1, **base_info)
+            models.ProblemCollectionItem.objects.create(problem_id=pk, order=items.count() + 1, **base_info)
         else:
             with transaction.atomic():
                 item = get_object_or_404(models.ProblemCollectionItem, problem_id=pk, **base_info)
@@ -394,7 +401,9 @@ def collect_problem(request: HtmxHttpRequest, pk: int):
                     for idx, it in enumerate(items, start=1):
                         it.order = idx
                         it.save()
-        return HttpResponse(icon_set_new.ICON_COLLECTION[f'{item.is_active}'])
+        is_active = models.ProblemCollectionItem.objects.filter(
+            collection__user=request.user, problem_id=pk, is_active=True).exists()
+        return HttpResponse(icon_set_new.ICON_COLLECTION[f'{is_active}'])
 
     else:
         collection_ids = models.ProblemCollectionItem.objects.filter(

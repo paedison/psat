@@ -42,10 +42,12 @@ lecture_patterns = [
 ]
 
 admin_patterns = [
-    path('', admin_views.admin_list_view, name='admin-list'),
-    path('create/exam/', admin_views.exam_create_view, name='admin-exam-create'),
+    path('', admin_views.admin_menu_view, name='admin-menu'),
+    path('<int:pk>/', admin_views.admin_problem_list_view, name='admin-problem-list'),
+    path('psat/create/', admin_views.psat_create_view, name='admin-psat-create'),
+    path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
+    path('problem/update/', admin_views.problem_update_view, name='admin-problem-update'),
     # path('answer/<int:pk>/', admin_views.answer_detail_view, name='staff-answer-detail'),
-    # path('answer/update/<int:pk>/', admin_views.answer_update_view, name='staff-answer-update'),
 ]
 
 urlpatterns = [

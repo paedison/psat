@@ -1,6 +1,6 @@
 import django_filters
 
-from . import models
+from .models import problem_models
 
 CHOICES_LIKE = (
     ('all', '즐겨찾기 지정'),
@@ -24,15 +24,15 @@ CHOICES_SOLVE = (
     ('none', '정답 미확인'),
 )
 CHOICES_MEMO = (
-    ('true', '메모 작성'),
+    ('all', '메모 작성'),
     ('none', '메모 미작성'),
 )
 CHOICES_TAG = (
-    ('true', '태그 작성'),
+    ('all', '태그 작성'),
     ('none', '태그 미작성'),
 )
 CHOICES_COMMENT = (
-    ('true', '코멘트 작성'),
+    ('all', '코멘트 작성'),
     ('none', '코멘트 미작성'),
 )
 
@@ -42,57 +42,61 @@ class PsatFilter(django_filters.FilterSet):
         field_name='year',
         label='',
         empty_label='[전체 연도]',
-        choices=models.year_choice,
+        choices=problem_models.year_choice,
     )
     exam = django_filters.ChoiceFilter(
         field_name='exam',
         label='',
         empty_label='[전체 시험]',
-        choices=models.exam_choice,
+        choices=problem_models.exam_choice,
     )
     is_active = django_filters.ChoiceFilter(
         field_name='is_active',
         label='',
         empty_label='[활성 상태]',
-        choices={'활성': True, '비활성': False},
+        choices={'True': '활성', 'False': '비활성'},
     )
 
     class Meta:
-        model = models.Psat
+        model = problem_models.Psat
         fields = ['year', 'exam']
+
+    @property
+    def qs(self):
+        return super().qs.prefetch_related('problems').order_by('-id')
 
 
 class AnonymousProblemFilter(django_filters.FilterSet):
     year = django_filters.ChoiceFilter(
-        field_name='year',
+        field_name='psat__year',
         label='',
         empty_label='[전체 연도]',
-        choices=models.year_choice,
+        choices=problem_models.year_choice,
     )
     exam = django_filters.ChoiceFilter(
-        field_name='exam',
+        field_name='psat__exam',
         label='',
         empty_label='[전체 시험]',
-        choices=models.exam_choice,
+        choices=problem_models.exam_choice,
     )
     subject = django_filters.ChoiceFilter(
         field_name='subject',
         label='',
         empty_label='[전체 과목]',
-        choices=models.subject_choice,
+        choices=problem_models.subject_choice,
     )
 
     class Meta:
-        model = models.Problem
+        model = problem_models.Problem
         fields = ['year', 'exam', 'subject']
 
     @property
     def qs(self):
         keyword = self.request.GET.get('keyword', '') or self.request.POST.get('keyword', '')
-        queryset = super().qs.prefetch_related(
+        queryset = super().qs.select_related('psat').prefetch_related(
             'like_users', 'rate_users', 'solve_users', 'memo_users', 'comment_users',
             'likes', 'rates', 'solves', 'memos', 'comments',
-        )
+        ).filter(psat__is_active=True)
         if keyword:
             return queryset.filter(data__icontains=keyword)
         return queryset
@@ -129,93 +133,70 @@ class ProblemFilter(AnonymousProblemFilter):
         choices=CHOICES_TAG,
         method='filter_tags',
     )
-    comments = django_filters.ChoiceFilter(
-        label='',
-        empty_label='[코멘트]',
-        choices=CHOICES_COMMENT,
-        method='filter_comments',
-    )
+    # comments = django_filters.ChoiceFilter(
+    #     label='',
+    #     empty_label='[코멘트]',
+    #     choices=CHOICES_COMMENT,
+    #     method='filter_comments',
+    # )
 
     class Meta:
-        model = models.Problem
+        model = problem_models.Problem
         fields = [
             'year', 'exam', 'subject',
             'likes', 'rates', 'solves', 'memos', 'tags'
         ]
 
-    def filter_likes(self, queryset, name, value):
-        filter_dict = {
-            'all': queryset.filter(like_users=self.request.user),
-            'true': queryset.filter(likes__is_liked=True, like_users=self.request.user),
-            'false': queryset.filter(likes__is_liked=False, like_users=self.request.user),
-            'none': queryset.exclude(like_users=self.request.user),
-        }
+    def get_lookup_dict(self, filter_name: str):
+        return {f'{filter_name}_users': self.request.user, f'{filter_name}s__is_active': True}
+
+    @staticmethod
+    def get_filter_dict(queryset, lookup_dict):
+        return {'all': queryset.filter(**lookup_dict), 'none': queryset.exclude(**lookup_dict)}
+
+    def filter_likes(self, queryset, _, value):
+        lookup_dict = self.get_lookup_dict('like')
+        filter_dict = self.get_filter_dict(queryset, lookup_dict)
+        filter_dict.update({
+            'true': queryset.filter(likes__is_liked=True, **lookup_dict),
+            'false': queryset.filter(likes__is_liked=False, **lookup_dict),
+        })
         return filter_dict[value]
 
-    def filter_rates(self, queryset, name, value):
-        filter_dict = {
-            'all': queryset.filter(rates__isnull=False, rate_users=self.request.user),
-            '1': queryset.filter(rates__rating=1, rate_users=self.request.user),
-            '2': queryset.filter(rates__rating=2, rate_users=self.request.user),
-            '3': queryset.filter(rates__rating=3, rate_users=self.request.user),
-            '4': queryset.filter(rates__rating=4, rate_users=self.request.user),
-            '5': queryset.filter(rates__rating=5, rate_users=self.request.user),
-            'none': queryset.exclude(rate_users=self.request.user),
-        }
+    def filter_rates(self, queryset, _, value):
+        lookup_dict = self.get_lookup_dict('rate')
+        filter_dict = self.get_filter_dict(queryset, lookup_dict)
+        filter_dict.update({
+            '1': queryset.filter(rates__rating=1, **lookup_dict),
+            '2': queryset.filter(rates__rating=2, **lookup_dict),
+            '3': queryset.filter(rates__rating=3, **lookup_dict),
+            '4': queryset.filter(rates__rating=4, **lookup_dict),
+            '5': queryset.filter(rates__rating=5, **lookup_dict),
+        })
         return filter_dict[value]
 
-    def filter_solves(self, queryset, name, value):
-        filter_dict = {
-            'all': queryset.filter(solves__isnull=False, solve_users=self.request.user),
-            'true': queryset.filter(solves__is_correct=True, solve_users=self.request.user),
-            'false': queryset.filter(solves__is_correct=False, solve_users=self.request.user),
-            'none': queryset.exclude(solve_users=self.request.user),
-        }
+    def filter_solves(self, queryset, _, value):
+        lookup_dict = self.get_lookup_dict('solve')
+        filter_dict = self.get_filter_dict(queryset, lookup_dict)
+        filter_dict.update({
+            'true': queryset.filter(solves__is_correct=True, **lookup_dict),
+            'false': queryset.filter(solves__is_correct=False, **lookup_dict),
+        })
         return filter_dict[value]
 
-    def filter_memos(self, queryset, name, value):
-        filter_dict = {
-            'true': queryset.filter(memo_users=self.request.user),
-            'none': queryset.exclude(memo_users=self.request.user),
-        }
+    def filter_memos(self, queryset, _, value):
+        lookup_dict = self.get_lookup_dict('memo')
+        filter_dict = self.get_filter_dict(queryset, lookup_dict)
         return filter_dict[value]
 
-    def filter_tags(self, queryset, name, value):
-        filter_dict = {
-            'true': queryset.filter(tag_users=self.request.user),
-            'none': queryset.exclude(tag_users=self.request.user),
-        }
+    def filter_tags(self, queryset, _, value):
+        lookup_dict = self.get_lookup_dict('tag')
+        filter_dict = self.get_filter_dict(queryset, lookup_dict)
         return filter_dict[value]
 
-    def filter_comments(self, queryset, name, value):
-        filter_dict = {
-            'true': queryset.filter(comment_users__isnull=False),
-            'none': queryset.exclude(comment_users__isnull=True),
-        }
-        return filter_dict[value]
-
-
-class AnonymousPsatDetailFilter(django_filters.FilterSet):
-    problem = django_filters.ChoiceFilter(
-        field_name='problem',
-        label='',
-        choices=models.year_choice,
-    )
-
-    class Meta:
-        model = models.Problem
-        fields = ['problem']
-
-    @property
-    def qs(self):
-        year = self.request.GET.get('year', '')
-        ex = self.request.GET.get('ex', '')
-        sub = self.request.GET.get('sub', '')
-        queryset = super().qs.prefetch_related(
-            'like_users', 'rate_users', 'solve_users', 'memo_users', 'comment_users',
-            'problemlike_set', 'problemrate_set', 'problemsolve_set',
-            'problemmemo_set', 'problemcomment_set',
-        ).filter(
-            year=year, ex=ex, sub=sub,
-        )
-        return queryset
+    # def filter_comments(self, queryset, _, value):
+    #     filter_dict = {
+    #         'all': queryset.filter(comment_users__isnull=False),
+    #         'none': queryset.exclude(comment_users__isnull=True),
+    #     }
+    #     return filter_dict[value]
