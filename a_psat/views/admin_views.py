@@ -15,8 +15,7 @@ from common import utils
 from common.constants import icon_set_new
 from common.decorators import admin_required
 from common.utils import HtmxHttpRequest, update_context_data
-from .. import utils, forms, filters
-from ..models import problem_models
+from .. import models, utils, forms, filters
 
 
 class ViewConfiguration:
@@ -81,7 +80,7 @@ def psat_create_view(request: HtmxHttpRequest):
                 try:
                     with transaction.atomic():
                         if create_list:
-                            problem_models.Problem.objects.bulk_create(create_list)
+                            models.Problem.objects.bulk_create(create_list)
                             messages['create'] = f'Successfully updated {len(create_list)} Problem instances.'
                         else:
                             messages['error'] = f'No changes were made to Problem instances.'
@@ -105,14 +104,14 @@ def psat_create_view(request: HtmxHttpRequest):
     return render(request, 'a_psat/admin_exam_create.html', context)
 
 
-def append_create_list(create_list: list, psat: problem_models.Psat, problem_count: int, *subject_list):
+def append_create_list(create_list: list, psat: models.Psat, problem_count: int, *subject_list):
     for subject in subject_list:
         for number in range(1, problem_count + 1):
             problem_info = {'psat': psat, 'subject': subject, 'number': number}
             try:
-                problem_models.Problem.objects.get(**problem_info)
-            except problem_models.Problem.DoesNotExist:
-                create_list.append(problem_models.Problem(**problem_info))
+                models.Problem.objects.get(**problem_info)
+            except models.Problem.DoesNotExist:
+                create_list.append(models.Problem(**problem_info))
 
 
 @admin_required
@@ -120,7 +119,7 @@ def psat_active_view(request: HtmxHttpRequest, pk: int):
     if request.method == 'POST':
         form = forms.PsatActiveForm(request.POST)
         if form.is_valid():
-            psat = get_object_or_404(problem_models.Psat, pk=pk)
+            psat = get_object_or_404(models.Psat, pk=pk)
             is_active = form.cleaned_data['is_active']
             psat.is_active = is_active
             psat.save()
@@ -135,8 +134,7 @@ def problem_update_view(request: HtmxHttpRequest):
         if form.is_valid():
             year = form.cleaned_data['year']
             exam = form.cleaned_data['exam']
-            psat = get_object_or_404(problem_models.Psat, year=year, exam=exam)
-            print(psat)
+            psat = get_object_or_404(models.Psat, year=year, exam=exam)
 
             update_file = request.FILES['update_file']
             df = pd.read_excel(update_file, header=0, index_col=0)
@@ -157,8 +155,7 @@ def problem_update_view(request: HtmxHttpRequest):
             df = df.infer_objects(copy=False)
 
             for index, row in df.iterrows():
-                problem = problem_models.Problem.objects.get(
-                    psat=psat, subject=row['subject'], number=row['number'])
+                problem = models.Problem.objects.get(psat=psat, subject=row['subject'], number=row['number'])
                 problem.paper_type = row['paper_type']
                 problem.answer = row['answer']
                 problem.question = row['question']
@@ -181,13 +178,13 @@ def admin_problem_list_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     view_type = request.headers.get('View-Type', '')
     page = request.GET.get('page', '1')
-    psat = get_object_or_404(problem_models.Psat, pk=pk)
-    problems = problem_models.Problem.objects.select_related(
+    psat = get_object_or_404(models.Psat, pk=pk)
+    problems = models.Problem.objects.select_related(
         'psat').filter(psat=psat).annotate(no=F('number'), ans=F('answer'))
     config.url_admin = reverse_lazy(f'admin:a_psat_problem_changelist')
     page_obj, page_range = utils.get_page_obj_and_range(page, problems)
 
-    subject_list = problem_models.subject_choice()
+    subject_list = models.choices.subject_choice()
     problem_count = 40
     if psat.exam in ['칠급', '칠예', '민경']:
         subject_list.pop('헌법')

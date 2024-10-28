@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 
-import pytz
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.templatetags.static import static
@@ -12,71 +11,17 @@ from taggit.models import TaggedItemBase, TagBase
 from _config.settings.base import BASE_DIR
 from common.constants import icon_set_new
 from common.models import User
-
-
-def year_choice() -> list:
-    choice = [(year, f'{year}년') for year in range(2004, datetime.now().year + 2)]
-    choice.reverse()
-    return choice
-
-
-def exam_choice() -> dict:
-    return {
-        '행시': '5급공채/행정고시',
-        '입시': '입법고시',
-        '칠급': '7급공채',
-        '칠예': '7급공채 예시',
-        '민경': '민간경력',
-        '외시': '외교원/외무고시',
-        '견습': '견습',
-    }
-
-
-def subject_choice() -> dict:
-    return {
-        '헌법': '헌법',
-        '언어': '언어논리',
-        '자료': '자료해석',
-        '상황': '상황판단',
-    }
-
-
-def number_choice() -> list:
-    return [(number, f'{number}번') for number in range(1, 41)]
-
-
-def answer_choice() -> dict:
-    return {
-        1: '①', 2: '②', 3: '③', 4: '④', 5: '⑤',
-        12: '①②', 13: '①③', 14: '①④', 15: '①⑤',
-        23: '②③', 24: '②④', 25: '②⑤',
-        34: '③④', 35: '③⑤', 45: '④⑤',
-        123: '①②③', 124: '①②④', 125: '①②⑤',
-        134: '①③④', 135: '①③⑤', 145: '①④⑤',
-        234: '②③④', 235: '②③⑤', 245: '②④⑤', 345: '③④⑤',
-        1234: '①②③④', 1235: '①②③⑤', 1245: '①②④⑤', 1345: '①③④⑤',
-        12345: '①②③④⑤',
-    }
-
-
-def get_remarks(message_type: str, remarks: str | None) -> str:
-    utc_now = datetime.now(pytz.UTC).strftime('%Y-%m-%d %H:%M')
-    separator = '|' if remarks else ''
-    if remarks:
-        remarks += f"{separator}{message_type}_at:{utc_now}"
-    else:
-        remarks = f"{message_type}_at:{utc_now}"
-    return remarks
+from . import choices
 
 
 class Psat(models.Model):
-    year = models.IntegerField(choices=year_choice, default=datetime.now().year, verbose_name='연도')
-    exam = models.CharField(max_length=2, choices=exam_choice, default='행시', verbose_name='시험')
+    year = models.IntegerField(choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
+    exam = models.CharField(max_length=2, choices=choices.exam_choice, default='행시', verbose_name='시험')
     order = models.IntegerField(verbose_name='순서')
     is_active = models.BooleanField(default=False, verbose_name='활성')
 
     class Meta:
-        verbose_name = verbose_name_plural = "00_PSAT"
+        verbose_name = verbose_name_plural = "[기출문제] 00_PSAT"
         ordering = ['-year', 'order']
         constraints = [
             models.UniqueConstraint(fields=['year', 'exam'], name='unique_psat'),
@@ -118,7 +63,7 @@ class ProblemTag(TagBase):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "07_태그"
+        verbose_name = verbose_name_plural = "[기출문제] 07_태그"
         db_table = 'a_psat_problem_tag'
 
 
@@ -130,7 +75,7 @@ class ProblemTaggedItem(TaggedItemBase):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "08_태그 문제"
+        verbose_name = verbose_name_plural = "[기출문제] 08_태그된 문제"
         ordering = ['-id']
         db_table = 'a_psat_problem_tagged_item'
 
@@ -145,12 +90,10 @@ class ProblemTaggedItem(TaggedItemBase):
 
 class Problem(models.Model):
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='problems', verbose_name='PSAT')
-    # year = models.IntegerField(choices=year_choice, default=datetime.now().year, verbose_name='연도')
-    # exam = models.CharField(max_length=2, choices=exam_choice, default='행시', verbose_name='시험')
-    subject = models.CharField(max_length=2, choices=subject_choice, default='언어', verbose_name='과목')
+    subject = models.CharField(max_length=2, choices=choices.subject_choice, default='언어', verbose_name='과목')
     paper_type = models.CharField(max_length=2, default='', verbose_name='책형')
-    number = models.IntegerField(choices=number_choice, default=1, verbose_name='번호')
-    answer = models.IntegerField(choices=answer_choice, default=1, verbose_name='정답')
+    number = models.IntegerField(choices=choices.number_choice, default=1, verbose_name='번호')
+    answer = models.IntegerField(choices=choices.answer_choice, default=1, verbose_name='정답')
     question = models.TextField(default='', verbose_name='발문')
     data = models.TextField(default='', verbose_name='자료')
 
@@ -165,7 +108,7 @@ class Problem(models.Model):
         'ProblemCollection', related_name='collected_psat_problems', through='ProblemCollectionItem')
 
     class Meta:
-        verbose_name = verbose_name_plural = "01_문제"
+        verbose_name = verbose_name_plural = "[기출문제] 01_문제"
         ordering = ['psat', 'id']
         constraints = [
             models.UniqueConstraint(fields=['psat', 'subject', 'number'], name='unique_problem'),
@@ -277,7 +220,7 @@ class ProblemOpen(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "02_확인기록"
+        verbose_name = verbose_name_plural = "[기출문제] 02_확인기록"
         ordering = ['-id']
         db_table = 'a_psat_problem_open'
 
@@ -297,7 +240,7 @@ class ProblemLike(models.Model):
     is_liked = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "03_즐겨찾기"
+        verbose_name = verbose_name_plural = "[기출문제] 03_즐겨찾기"
         ordering = ['-id']
         db_table = 'a_psat_problem_like'
 
@@ -326,7 +269,7 @@ class ProblemRate(models.Model):
     rating = models.IntegerField(choices=Ratings.choices)
 
     class Meta:
-        verbose_name = verbose_name_plural = "04_난이도"
+        verbose_name = verbose_name_plural = "[기출문제] 04_난이도"
         ordering = ['-id']
         db_table = 'a_psat_problem_rate'
 
@@ -354,7 +297,7 @@ class ProblemSolve(models.Model):
     is_correct = models.BooleanField()
 
     class Meta:
-        verbose_name = verbose_name_plural = "05_정답확인"
+        verbose_name = verbose_name_plural = "[기출문제] 05_정답확인"
         ordering = ['-id']
         db_table = 'a_psat_problem_solve'
 
@@ -376,7 +319,7 @@ class ProblemMemo(models.Model):
     content = RichTextField(config_name='minimal')
 
     class Meta:
-        verbose_name = verbose_name_plural = "06_메모"
+        verbose_name = verbose_name_plural = "[기출문제] 06_메모"
         ordering = ['-id']
         db_table = 'a_psat_problem_memo'
 
@@ -399,7 +342,7 @@ class ProblemCollection(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "09_컬렉션"
+        verbose_name = verbose_name_plural = "[기출문제] 09_컬렉션"
         ordering = ['-id']
         db_table = 'a_psat_problem_collection'
 
@@ -415,7 +358,7 @@ class ProblemCollectionItem(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "10_컬렉션 문제"
+        verbose_name = verbose_name_plural = "[기출문제] 10_컬렉션 문제"
         ordering = ['-id']
         db_table = 'a_psat_problem_collection_item'
 

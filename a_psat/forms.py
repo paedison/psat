@@ -28,12 +28,12 @@ class PsatActiveForm(forms.ModelForm):
 class ProblemUpdateForm(forms.Form):
     year = forms.ChoiceField(
         label='연도',
-        choices=models.year_choice,
+        choices=models.choices.year_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     exam = forms.ChoiceField(
         label='시험',
-        choices=models.exam_choice,
+        choices=models.choices.exam_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     update_file = forms.FileField(

@@ -19,8 +19,8 @@ class ViewConfiguration:
     submenu_kor = '기출문제'
     info = {'menu': menu, 'menu_self': submenu}
     icon_menu = icon_set_new.ICON_MENU[menu_eng]
-    menu_title = {'kor': 'PSAT', 'eng': menu.capitalize()}
-    submenu_title = {'kor': '기출문제', 'eng': submenu.capitalize()}
+    menu_title = {'kor': menu_kor, 'eng': menu.capitalize()}
+    submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
     url_admin = reverse_lazy('admin:a_psat_problem_changelist')
     url_list = reverse_lazy('psat:problem-list')
 

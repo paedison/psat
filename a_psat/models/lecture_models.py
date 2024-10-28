@@ -1,3 +1,8 @@
+__all__ = [
+    'Lecture', 'LectureTag', 'LectureTaggedItem',
+    'LectureOpen', 'LectureLike', 'LectureMemo', 'LectureComment',
+]
+
 from datetime import datetime
 
 import pytz
@@ -8,10 +13,7 @@ from django.urls import reverse_lazy
 from taggit.models import TagBase, TaggedItemBase
 
 from common.models import User
-
-
-def subject_choice() -> dict:
-    return {'언어': '언어논리', '자료': '자료해석', '상황': '상황판단'}
+from . import choices
 
 
 def get_remarks(message_type: str, remarks: str | None) -> str:
@@ -28,7 +30,7 @@ class LectureTag(TagBase):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "강의 태그"
+        verbose_name = verbose_name_plural = "[온라인강의] 05_태그"
         db_table = 'a_psat_lecture_tag'
 
     def __str__(self):
@@ -44,7 +46,7 @@ class LectureTaggedItem(TaggedItemBase):
     remarks = models.TextField(null=True, blank=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "태그된 강의"
+        verbose_name = verbose_name_plural = "[온라인강의] 06_태그된 강의"
         db_table = 'a_psat_lecture_tagged_item'
         constraints = [
             models.UniqueConstraint(
@@ -86,7 +88,7 @@ class LectureManager(models.Manager):
 class Lecture(models.Model):
     objects = LectureManager()
 
-    subject = models.CharField(max_length=2, choices=subject_choice, default='언어')
+    subject = models.CharField(max_length=2, choices=choices.lecture_subject_choice, default='언어')
     title = models.CharField(max_length=20, null=True, blank=True)
     sub_title = models.CharField(max_length=50, null=True, blank=True)
     youtube_id = models.CharField(max_length=20, null=True, blank=True)
@@ -95,7 +97,7 @@ class Lecture(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = verbose_name_plural = "강의"
+        verbose_name = verbose_name_plural = "[온라인강의] 01_강의"
         ordering = ['subject', 'order']
         db_table = 'a_psat_lecture'
 
@@ -139,7 +141,7 @@ class LectureOpen(models.Model):
         return f'[PSAT]LectureOpen(#{self.id}):{self.lecture.reference}({self.user.username})'
 
     class Meta:
-        verbose_name = verbose_name_plural = "강의 확인기록"
+        verbose_name = verbose_name_plural = "[온라인강의] 02_확인기록"
         db_table = 'a_psat_lecture_open'
 
 
@@ -156,14 +158,11 @@ class LectureLike(models.Model):
         return f'[PSAT]LectureLike(#{self.id}):{self.lecture.reference}(Unliked, {self.user.username})'
 
     class Meta:
-        unique_together = ['user', 'lecture']
+        verbose_name = verbose_name_plural = "[온라인강의] 03_즐겨찾기"
         ordering = ['-id']
         db_table = 'a_psat_lecture_like'
         constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'lecture'],
-                name='unique_psat_lecture_like',
-            )
+            models.UniqueConstraint(fields=['user', 'lecture'], name='unique_psat_lecture_like'),
         ]
 
     def save(self, *args, **kwargs):
@@ -180,6 +179,7 @@ class LectureMemo(models.Model):
     remarks = models.TextField(null=True, blank=True)
 
     class Meta:
+        verbose_name = verbose_name_plural = "[온라인강의] 04_메모"
         db_table = 'a_psat_lecture_memo'
         ordering = ['-id']
         constraints = [
