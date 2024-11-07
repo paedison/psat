@@ -25,8 +25,8 @@ def get_sub_title_by_psat(exam_year, exam_exam, exam_subject, end_string='기출
     title_parts = []
     if exam_year:
         title_parts.append(f'{exam_year}년')
-    if isinstance(exam_year, str):
-        exam_year = int(exam_year)
+        if isinstance(exam_year, str):
+            exam_year = int(exam_year)
 
     if exam_exam:
         exam_dict = {
