@@ -68,6 +68,12 @@
                         <i class="fa-regular fa-fw fa-square"></i> 관리자 메뉴
                     </a>
                 </li>
+                <li>
+                    <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="admin"
+                       href="{% url 'psat:predict-index' %}">
+                        <i class="fa-regular fa-fw fa-square"></i> 합격 예측
+                    </a>
+                </li>
             {% endif %}
             <li>
                 <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="problem"

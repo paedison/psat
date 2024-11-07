@@ -1,0 +1,150 @@
+{% load psat_filter %}
+{% load humanize %}
+
+<div class="card-header">
+    <div class="d-flex align-items-center">
+        성적 일람표
+        <form method="POST" action=""
+              class="ms-auto">
+            {% csrf_token %}
+            <div class="btn-group">
+                <a class="btn btn-sm btn-outline-secondary" title="Excel로 성적 일람표 내보내기"
+                   href="{{ exam_vars.url_admin_export_catalog }}">
+                    Excel로 내보내기
+                </a>
+{#                <input name="student_ids" type="text" aria-label="Student IDs" hidden#}
+{#                       value="{% for id in student_ids %}{{ id }}{% if not forloop.last %},{% endif %}{% endfor %}"/>#}
+{#                <button class="btn btn-sm btn-outline-secondary"#}
+{#                        title="PDF로 내보내기" type="submit">#}
+{#                    PDF로 내보내기#}
+{#                </button>#}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="catalogTab" role="tablist">
+            {% for id in '01' %}
+                {% cycle '전체' '필터링' as tab_title silent %}
+                {% #nav_tab prefix='Catalog' id=id %}{{ tab_title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+    <div class="tab-content" id="catalogContent">
+        {% #nav_content prefix='Catalog' id='0' %}
+            {% partialdef catalog_all inline=True %}
+                {% with header=header_catalog.0 page_obj=catalog_all_page.0 page_range=catalog_all_page.1 %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef %}
+        {% /nav_content %}
+
+        {% #nav_content prefix='Catalog' id='1' %}
+            {% partialdef catalog_filtered inline=True %}
+                {% with header=header_catalog.1 page_obj=catalog_filtered_page.0 page_range=catalog_filtered_page.1 %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef %}
+        {% /nav_content %}
+    </div>
+</div>
+
+{% partialdef table_data %}
+    <article class="table-responsive" hx-target="#main">
+        <table class="table table-bordered table-striped small align-middle m-0">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2" rowspan="3">ID</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="3">등수</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="3">이름</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="3">모집단위</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="3">직렬</th>
+                    {% for subject in exam_vars.admin_subject_list %}
+                        <th class="text-primary text-nowrap p-2" colspan="5">{{ subject }}</th>
+                    {% endfor %}
+                </tr>
+
+                <tr class="text-center table-warning align-middle">
+                    {% for _ in exam_vars.admin_stat_tab.id %}
+                        <th class="text-primary text-nowrap p-2 td-right-no-border" rowspan="2">점수</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border" colspan="2">직렬 석차</th>
+                    {% endfor %}
+                </tr>
+
+                <tr class="text-center table-warning align-middle">
+                    {% for _ in exam_vars.admin_stat_tab.id %}
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">%</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
+                        <th class="text-primary text-nowrap p-2 td-left-no-border">%</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">{{ obj.id }}</td>
+                            <td class="text-nowrap p-2">
+                                {% if exam.exam == '칠급' %}
+                                    {{ obj.stat.3.rank_total|default:'' }}
+                                {% elif exam.exam == '행시' %}
+                                    {{ obj.stat.4.rank_total|default:'' }}
+                                {% else %}
+                                    {{ obj.stat.7.rank_total|default:'' }}
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap p-2">
+                                <a href=""
+                                   hx-boost="true" hx-push-url="true">
+                                    {{ obj.name }}
+                                </a>
+                            </td>
+                            <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                            <td class="text-nowrap p-2">{{ obj.unit }}</td>
+                            <td class="text-nowrap p-2">{{ obj.get_department_display }}</td>
+
+                            {% for _ in exam_vars.admin_stat_tab.id %}
+                                {% if exam_vars.admin_stat_tab.id|length == 4 %}
+                                    {% cycle obj.stat.3 obj.stat.0 obj.stat.1 obj.stat.2 as stat silent %}
+                                {% elif exam_vars.admin_stat_tab.id|length == 5 %}
+                                    {% cycle obj.stat.4 obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 as stat silent %}
+                                {% elif exam_vars.admin_stat_tab.id|length == 8 %}
+                                    {% cycle obj.stat.7 obj.stat.0 obj.stat.1 obj.stat.2 obj.stat.3 obj.stat.4 obj.stat.5 obj.stat.6 as stat silent %}
+                                {% endif %}
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {{ stat.score|floatformat:1|default:'' }}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {% if stat.rank_total %}
+                                        {{ stat.rank_total|default:'' }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {% if stat.rank_total %}
+                                        {{ stat.rank_total|percentageby:stat.participants_total|floatformat:1|default:'' }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                                    {% if stat.rank_department %}
+                                        {{ stat.rank_department|default:'' }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap p-2 td-left-no-border">
+                                    {% if stat.rank_department %}
+                                        {{ stat.rank_department|percentageby:stat.participants_department|floatformat:1|default:'' }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </article>
+    {% include 'a_predict/snippets/pagination.html' %}
+{% endpartialdef table_data %}

@@ -1,0 +1,65 @@
+{% load slippers %}
+{% load partials %}
+
+<div class="card-header">참여자 목록</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="studentListTab" role="tablist">
+            {% #nav_tab prefix='all_student' id='0' %}전체{% /nav_tab %}
+        </div>
+    </nav>
+    <div class="tab-content" id="answerAnalysisContent">
+        {% #nav_content prefix='all_student' id='0' %}
+            {% partialdef all_student inline=True %}
+                {% with prefix='all_student' page_obj=student_page_data.0 page_range=student_page_data.1 %}
+                    {% partial table_data %}
+                {% endwith %}
+            {% endpartialdef all_student %}
+        {% /nav_content %}
+    </div>
+</div>
+
+{% partialdef table_data %}
+        <article class="table-responsive">
+        <table class="table table-bordered table-striped small align-middle">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap p-2" rowspan="2">ID</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">User ID</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">Username</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">수험번호</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">이름</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">연도</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">시험</th>
+                    {% if obj.exam == '프모' %}
+                        <th class="text-primary text-nowrap p-2" rowspan="2">회차</th>
+                    {% endif %}
+                    <th class="text-primary text-nowrap p-2" rowspan="2">모집단위</th>
+                    <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            <td class="text-nowrap p-2">{{ obj.id }}</td>
+                            <td class="text-nowrap p-2">{{ obj.user_id }}</td>
+                            <td class="text-nowrap p-2">{{ obj.username }}</td>
+                            <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                            <td class="text-nowrap p-2">{{ obj.name }}</td>
+                            <td class="text-nowrap p-2">{{ obj.year }}</td>
+                            <td class="text-nowrap p-2">{{ obj.exam_abbr }}</td>
+                            {% if obj.exam == '프모' %}
+                                <td class="text-nowrap p-2">{{ obj.round }}</td>
+                            {% endif %}
+                            <td class="text-nowrap p-2">{{ obj.unit }}</td>
+                            <td class="text-nowrap p-2">{{ obj.get_department_display }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </article>
+    {% include 'a_predict/snippets/pagination.html' %}
+{% endpartialdef table_data %}

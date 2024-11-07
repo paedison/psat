@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import problem_views, lecture_views, admin_views
+from .views import problem_views, lecture_views, admin_views, predict_views
 
 app_name = 'psat'
 
@@ -50,6 +50,19 @@ admin_patterns = [
     # path('answer/<int:pk>/', admin_views.answer_detail_view, name='staff-answer-detail'),
 ]
 
+predict_patterns = [
+    path('', predict_views.index_view, name='predict-index'),
+    # path('<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+    #      predict_views.detail_view, name='detail'),
+    # path('student/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
+    #      predict_views.student_create_view, name='student-create'),
+    # path('answer/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
+    #      predict_views.answer_input_view, name='answer-input'),
+    # path('answer/confirm/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
+    #      predict_views.answer_confirm_view, name='answer-confirm'),
+    # path('admin/', include(admin_patterns)),
+]
+
 urlpatterns = [
     path('', problem_views.problem_list_view, name='base'),
     path('problem/', include(problem_patterns)),
@@ -57,4 +70,5 @@ urlpatterns = [
     # path('comment/', include(comment_patterns)),
     path('lecture/', include(lecture_patterns)),
     path('admin/', include(admin_patterns)),
+    path('predict/', include(predict_patterns)),
 ]

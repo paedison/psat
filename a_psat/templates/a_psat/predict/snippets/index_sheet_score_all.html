@@ -1,0 +1,50 @@
+{% load static %}
+{% load slippers %}
+
+<div class="card-header">
+    성적 예측 I
+    <span class="text-danger small">[전체 데이터]</span>
+    <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_score_spinner"
+       hx-headers='{"Hx-Update":"score_all"}' hx-get="">
+        <span class="badge rounded-pill text-bg-warning">업데이트</span>
+    </a>
+    <div id="sheet_score_spinner" role="status"
+         class="htmx-indicator spinner-border text-warning spinner-border-sm">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetAllTab" role="tablist">
+            {% for id in exam_vars.score_tab.id %}
+                {% cycle exam_vars.score_tab.title.0 exam_vars.score_tab.title.1 exam_vars.score_tab.title.2 as tab_title silent %}
+                {% #nav_tab prefix='ScoreAll' id=id %}{{ tab_title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreSheetAllContent">
+        {% for id in exam_vars.score_tab.id %}
+            {% cycle exam_vars.score_tab.prefix_all.0 exam_vars.score_tab.prefix_all.1 exam_vars.score_tab.prefix_all.2 as prefix silent %}
+            {% cycle stat_total_all as stat_total silent %}
+            {% cycle stat_department_all as stat_department silent %}
+            {% cycle '' stat_total_all stat_department_all as stat_data silent %}
+            {% cycle exam_vars.score_tab.template.0 exam_vars.score_tab.template.1 exam_vars.score_tab.template.2 as template_name silent %}
+            {% #nav_content prefix='ScoreAll' id=id %}{% include template_name %}{% /nav_content %}
+        {% endfor %}
+
+        <div>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+            <ol class="text-success small fw-bold m-0">
+                <li>답안 제출을 완료한 응시생들의 <span class="text-danger">전체 답안</span>을
+                    대상으로 분석한 자료입니다.</li>
+                <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
+                {% if not filtered_stat_total %}
+                    <li>정답 공개 전 제출 답안을 대상으로 분석한 자료는
+                        <span class="text-danger">해당 응시자에게만 공개</span>됩니다.</li>
+                {% endif %}
+            </ol>
+        </div>
+    </div>
+</div>

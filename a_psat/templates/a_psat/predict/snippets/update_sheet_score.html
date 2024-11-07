@@ -1,0 +1,69 @@
+{% load psat_filter %}
+{% load partials %}
+
+{% for id in exam_vars.score_tab.id %}
+    {% cycle exam_vars.score_tab.prefix_all.0 exam_vars.score_tab.prefix_all.1 exam_vars.score_tab.prefix_all.2 as prefix silent %}
+    {% for _ in exam_vars.info_tab.id %}
+        {% if id == '0' %}
+            {% cycle stat_total_all.0 stat_total_all.1 stat_total_all.2 stat_total_all.3 stat_total_all.4 as stat_tot silent %}
+            {% cycle stat_department_all.0 stat_department_all.1 stat_department_all.2 stat_department_all.3 stat_department_all.4 as stat_dep silent %}
+            {% partial sub_score_line %}
+        {% elif id == '1' %}
+            {% cycle stat_total_all.0 stat_total_all.1 stat_total_all.2 stat_total_all.3 stat_total_all.4 as stat silent %}
+            {% partial sub_stat_line %}
+        {% elif id == '2' %}
+            {% cycle stat_department_all.0 stat_department_all.1 stat_department_all.2 stat_department_all.3 stat_department_all.4 as stat silent %}
+            {% partial sub_stat_line %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{% partialdef sub_score_line %}
+    <div id="{{ prefix }}_my_score_{{ stat_tot.field }}"
+         class="htmx-fade-up-in delay-0 text-success fw-bold" hx-swap-oob="true">
+        {{ stat_tot.score|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_rank_total_{{ stat_tot.field }}"
+         class="htmx-fade-up-in delay-1" hx-swap-oob="true">
+        {{ stat_tot.rank }} / {{ stat_tot.participants }}
+    </div>
+    <div id="{{ prefix }}_rank_ratio_total_{{ stat_tot.field }}"
+         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+        {{ stat_tot.rank|percentageby:stat_tot.participants|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_rank_department_{{ stat_tot.field }}"
+         class="htmx-fade-up-in delay-3" hx-swap-oob="true">
+        {{ stat_dep.rank }} / {{ stat_dep.participants }}
+    </div>
+    <div id="{{ prefix }}_rank_ratio_department_{{ stat_tot.field }}"
+         class="htmx-fade-up-in delay-4" hx-swap-oob="true">
+        {{ stat_dep.rank|percentageby:stat_dep.participants|floatformat:1 }}
+    </div>
+{% endpartialdef sub_score_line %}
+
+{% partialdef sub_stat_line %}
+    <div id="{{ prefix }}_score_{{ stat.field }}"
+         class="htmx-fade-up-in delay-0 text-success fw-bold" hx-swap-oob="true">
+        {{ stat.score|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_num_students_{{ stat.field }}"
+         class="htmx-fade-up-in delay-1" hx-swap-oob="true">
+        {{ stat.participants }}
+    </div>
+    <div id="{{ prefix }}_max_score_{{ stat.field }}"
+         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+        {{ stat.max_score|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_10_{{ stat.field }}"
+         class="htmx-fade-up-in delay-3" hx-swap-oob="true">
+        {{ stat.top_score_10|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_top_score_20_{{ stat.field }}"
+         class="htmx-fade-up-in delay-4" hx-swap-oob="true">
+        {{ stat.top_score_20|floatformat:1 }}
+    </div>
+    <div id="{{ prefix }}_avg_score_{{ stat.field }}"
+         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+        {{ stat.avg_score|floatformat:1 }}
+    </div>
+{% endpartialdef sub_stat_line %}
