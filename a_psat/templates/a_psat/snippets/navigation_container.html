@@ -45,18 +45,18 @@
 </article>
 
 {% partialdef list_buttons_default %}
-    <a id="{{ view_type }}List" class="btn btn-circle btn-primary dropdown-toggle"
+    <a id="{{ view_type }}_button" class="btn btn-circle btn-primary dropdown-toggle"
        href="" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-       hx-target="#{{ view_type }}ListContents"
+       hx-target="#{{ view_type }}_contents"
        hx-headers='{"View-Type":"{{ view_type }}"}'
        hx-trigger="click once"
-       hx-get="">
+       hx-get="{% url 'psat:problem-detail' problem.id %}">
         <div class="text-white" data-bs-toggle="tooltip" title="{{ tooltip_title }}">
             {{ icon|safe }}
         </div>
     </a>
-    <div class="dropdown-menu" aria-labelledby="{{ view_type }}List">
-        <div id="{{ view_type }}ListContents" class="dropdown p-2" role="option">
+    <div class="dropdown-menu" aria-labelledby="{{ view_type }}_button">
+        <div id="{{ view_type }}_contents" class="dropdown p-2" role="option">
         </div>
     </div>
 {% endpartialdef list_buttons_default %}
@@ -64,10 +64,10 @@
 {% partialdef nav_problem_list %}
     <div class="container" style="min-width: 300px;">
         <div class="row justify-content-center p-2 text-bg-primary fw-bold">
-            {{ problem.year }}년 {{ problem.exam_name }} {{ problem.subject }}
+            {{ problem.psat.year }}년 {{ problem.psat.exam_name }} {{ problem.get_subject_display }}
         </div>
         <div class="row justify-content-center">
-            {% if problem.exam == '칠급' or problem.exam == '민경' or problem.subject == '헌법' %}
+            {% if problem.psat.exam == '칠급' or problem.psat.exam == '민경' or problem.subject == '헌법' %}
                 {% with problem_count=25 %}
                     {% partialdef filtered_content inline=True %}
                         {% for _ in '_'|ljust:problem_count %}

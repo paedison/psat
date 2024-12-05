@@ -90,28 +90,31 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
 
     if view_type == 'like_list':
         problem_data = queryset.prefetch_related('likes').filter(
-            likes__is_liked=True, likes__user_id=user_id).annotate(is_liked=F('likes__is_liked'))
+            likes__is_liked=True, likes__user_id=user_id, likes__is_active=True).annotate(
+            is_liked=F('likes__is_liked'))
         list_data = utils.get_list_data(problem_data)
         context = update_context_data(context, list_title='즐겨찾기 추가 문제', list_data=list_data, color='danger')
         return render(request, template_nav_other_list, context)
 
     if view_type == 'rate_list':
         problem_data = queryset.prefetch_related('rates').filter(
-            rates__isnull=False, rates__user_id=user_id).annotate(rating=F('rates__rating'))
+            rates__isnull=False, rates__user_id=user_id, rates__is_active=True).annotate(
+            rating=F('rates__rating'))
         list_data = utils.get_list_data(problem_data)
         context = update_context_data(context, list_title='난이도 선택 문제', list_data=list_data, color='warning')
         return render(request, template_nav_other_list, context)
 
     if view_type == 'solve_list':
         problem_data = queryset.prefetch_related('solves').filter(
-            solves__isnull=False, solves__user_id=user_id).annotate(
+            solves__isnull=False, solves__user_id=user_id, solves__is_active=True).annotate(
             user_answer=F('solves__answer'), is_correct=F('solves__is_correct'))
         list_data = utils.get_list_data(problem_data)
         context = update_context_data(context, list_title='정답 확인 문제', list_data=list_data, color='success')
         return render(request, template_nav_other_list, context)
 
     if view_type == 'memo_list':
-        problem_data = queryset.prefetch_related('memos').filter(memos__isnull=False, memos__user_id=user_id)
+        problem_data = queryset.prefetch_related('memos').filter(
+            memos__isnull=False, memos__user_id=user_id, memos__is_active=True)
         list_data = utils.get_list_data(problem_data)
         context = update_context_data(context, list_title='메모 작성 문제', list_data=list_data, color='warning')
         return render(request, template_nav_other_list, context)
