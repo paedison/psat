@@ -77,7 +77,7 @@ def get_list_data(custom_data) -> list:
     organized_dict = {}
     organized_list = []
     for prob in custom_data:
-        year, exam, subject = prob.year, prob.exam, prob.subject
+        year, exam, subject = prob.psat.year, prob.psat.exam, prob.subject
         key = f'{year}{exam[0]}{subject[0]}'
         if key not in organized_dict:
             organized_dict[key] = []
