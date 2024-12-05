@@ -1,0 +1,22 @@
+{% load psat_filter %}
+
+<div class="card-header">성적 확인</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTab" role="tablist">
+            {% for id in exam_vars.score_tab.id %}
+                {% cycle exam_vars.score_tab.title.0 exam_vars.score_tab.title.1 exam_vars.score_tab.title.2 as tab_title silent %}
+                {% #nav_tab prefix='Score' id=id %}{{ tab_title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreSheetContent">
+        {% for id in exam_vars.score_tab.id %}
+            {% cycle '' stat_total stat_department as stat_data silent %}
+            {% cycle exam_vars.score_tab.template.0 exam_vars.score_tab.template.1 exam_vars.score_tab.template.2 as template_name silent %}
+            {% #nav_content prefix='Score' id=id %}{% include template_name %}{% /nav_content %}
+        {% endfor %}
+    </div>
+</div>

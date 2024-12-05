@@ -1,0 +1,27 @@
+{% load static %}
+{% load psat_filter %}
+
+<div class="card-header">수험정보</div>
+
+<div class="card-body">
+    <table class="table">
+        <tbody>
+            <tr>
+                <th class="px-0" scope="row">수험번호</th>
+                <td>{{ student.serial }}</td>
+            </tr>
+            <tr>
+                <th class="px-0" scope="row">모집단위</th>
+                <td>{{ student.category.unit }}</td>
+            </tr>
+            <tr>
+                <th class="px-0" scope="row">직렬</th>
+                <td>{{ student.category.department }}</td>
+            </tr>
+            <tr>
+                <th class="px-0" scope="row">이름</th>
+                <td>{{ student.name }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

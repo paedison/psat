@@ -413,7 +413,7 @@ def update_result_rank_total():
                     list_update.append(result_rank_instance)
 
     update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'total']
-    bulk_create_or_update(new_prime_models.ResultScore, list_create, list_update, update_fields)
+    bulk_create_or_update(new_prime_models.ResultRankTotal, list_create, list_update, update_fields)
 
 
 def update_result_rank_category():
@@ -426,7 +426,7 @@ def run():
     # update_result_registry_model()
     # update_result_answer_model()
     # update_result_answer_count_model()
-    # update_result_score()
+    update_result_score()
     update_result_rank_total()
     update_result_rank_category()
 
