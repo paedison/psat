@@ -7,10 +7,11 @@ app_name = 'prime'
 score_patterns = [
     path('', score_views.list_view, name='score-list'),
     path('<int:pk>/', score_views.detail_view, name='score-detail'),
+    path('register/<int:pk>/', score_views.register_view, name='score-register'),
+    path('unregister/<int:pk>/', score_views.unregister_view, name='score-unregister'),
 
-    path('print/<int:pk>/', score_views.detail_print_view, name='score-print'),
+    path('print/<int:pk>/', score_views.print_view, name='score-print'),
     path('modal/<int:pk>/', score_views.modal_view, name='score-modal'),
-    path('student/register/<int:pk>/', score_views.student_register_view, name='score-student-register'),
 ]
 
 admin_patterns = [

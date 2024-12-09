@@ -8,85 +8,63 @@
 
 {% block main %}
     {% include 'snippets/page_title.html' %}
-{{ info|json_script:'info' }}
-<div class="pagetitle" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
-    <h1>{{ icon_menu|safe }} {{ title }}
-        <span class="fs-6 text-secondary">{{ sub_title }}</span>
-        {% if user.is_staff %}
-            <a class="btn btn-sm btn-outline-primary ms-2" href="">
-                관리자 페이지
-            </a>
-        {% endif %}
-    </h1>
 
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{% url 'index' %}">Home</a>
-            </li>
-            <li class="breadcrumb-item">Prime</li>
-            <li class="breadcrumb-item"><a href="{% url 'prime:score-list' %}">Score</a></li>
-            <li class="breadcrumb-item active"><a class="active" href="">제{{ exam_vars.exam_round }}회</a></li>
-        </ol>
-    </nav>
-</div><!-- Page Title End -->
-
-<section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title mb-0 text-center">
-                        <div class="d-flex">
-                            <div class="btn-group ms-auto">
-                                <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-                                   href="{{ exam_vars.url_list }}" hx-boost="true">
-                                    목록
-                                </a>
-                                <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-                                   href="" target="score_print">
-                                    인쇄하기
-                                </a>
-                            </div>
-                        </div>
-                        <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>
-                        <div class="fs-1 fw-bolder">제 {{ exam_vars.exam_round }} 회 성적표</div>
-                        {% if not student %}
-                            <div class="container p-0">
-                                <div class="container">
-                                    <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
-                                    <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
+    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-0 text-center">
+                            <div class="d-flex">
+                                <div class="btn-group ms-auto">
+                                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
+                                       href="{{ exam.get_score_list_url }}" hx-boost="true">
+                                        목록
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
+                                       href="{{ exam.get_score_print_url }}" target="score_print">
+                                        인쇄하기
+                                    </a>
                                 </div>
                             </div>
-                        {% endif %}
-                    </h5>
+                            <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>
+                            <div class="fs-1 fw-bolder">제 {{ exam.round }} 회 성적표</div>
+                            {% if not student %}
+                                <div class="container p-0">
+                                    <div class="container">
+                                        <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
+                                        <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div id="student_info" class="card htmx-fade-in htmx-fade-out">
+                    {% include 'a_prime/snippets/detail_info_student.html' %}
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
+                    {% include 'a_prime/snippets/detail_sheet_score.html' with is_confirmed=True %}
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div id="chart" class="card htmx-fade-in htmx-fade-out">
+                    {% include 'a_prime/snippets/detail_chart.html' with is_confirmed=True %}
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
+                    {% include 'a_prime/snippets/detail_sheet_answer.html' %}
                 </div>
             </div>
         </div>
-
-        <div class="col-12">
-            <div id="student_info" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_prime/snippets/detail_info_student.html' %}
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_prime/snippets/detail_sheet_score.html' with is_confirmed=True %}
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div id="chart" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_prime/snippets/detail_chart.html' with is_confirmed=True %}
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
-                {% include 'a_prime/snippets/detail_sheet_answer.html' %}
-            </div>
-        </div>
-    </div>
-</section>
+    </section>
 {% endblock main %}

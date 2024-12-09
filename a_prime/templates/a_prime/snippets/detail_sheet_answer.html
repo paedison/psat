@@ -6,22 +6,17 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswersTab" role="tablist">
-            {% for id in exam_vars.answer_tab.id %}
-                {% cycle exam_vars.sub_list.0 exam_vars.sub_list.1 exam_vars.sub_list.2 exam_vars.sub_list.3 exam_vars.sub_list.4 as tab_title silent %}
-                {% cycle exam_vars.icon_subject.0|safe exam_vars.icon_subject.1|safe exam_vars.icon_subject.2|safe exam_vars.icon_subject.3|safe exam_vars.icon_subject.4|safe as icon silent %}
-                {% #nav_tab prefix='Answer' id=id %}{{ icon }} {{ tab_title }}{% /nav_tab %}
+            {% for tab in answer_tab %}
+                {% #nav_tab prefix='Answer' id=tab.id %}{{ tab.icon|safe }} {{ tab.title }}{% /nav_tab %}
             {% endfor %}
         </div>
     </nav>
 
     <div class="tab-content" id="scoreAnswersContent">
-        {% for id in exam_vars.answer_tab.id %}
+        {% for tab in answer_tab %}
             {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
             {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
-            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 exam_vars.subject_fields.4 as field silent %}
-            {% cycle exam_vars.url_answer_input.0 exam_vars.url_answer_input.1 exam_vars.url_answer_input.2 exam_vars.url_answer_input.3 exam_vars.url_answer_input.4 as url_answer_input silent %}
-            {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
-            {% #nav_content prefix='Answer' id=id %}{% partial answer_table %}{% /nav_content %}
+            {% #nav_content prefix='Answer' id=tab.id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
     </div>
 </div>
@@ -66,24 +61,19 @@
         <th class="text-nowrap td-no-border" scope="row">정답</th>
         {% for answer in answer_official %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                <td class="td-no-border">
+                <td class="td-no-border" data-number="{{ answer.no }}">
                     {% if answer.ans_list %}
                         {% if answer.ans == 1234 or answer.ans == 12345 %}
-                            <span data-number="{{ answer.no }}"
-                                  class="badge rounded-pill text-bg-secondary">
-                                전체 정답
-                            </span>
+                            <span class="fw-bold text-success">전체<br/> 정답</span>
                         {% else %}
-                            {% for ans in answer.ans_number_list %}
-                                <button data-number="{{ answer.no }}"
-                                        class="btn btn-circle btn-sm fs-6 my-2 btn-success">
+                            {% for ans in answer.ans_list %}
+                                <button class="btn btn-circle btn-sm fs-6 my-2 btn-success">
                                     {{ ans }}
                                 </button>
                             {% endfor %}
                         {% endif %}
                     {% else %}
-                        <button data-number="{{ answer.no }}"
-                                class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                        <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
                             {{ answer.ans }}
                         </button>
                     {% endif %}
@@ -95,10 +85,8 @@
         <th class="text-nowrap" scope="row">정답률(%)</th>
         {% for answer in answer_official %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                <td>
-                    <span data-number="{{ answer.no }}" class="fw-bold text-success">
-                        {{ answer.rate_correct|floatformat:0 }}
-                    </span>
+                <td data-number="{{ answer.no }}">
+                    <span class="fw-bold text-success">{{ answer.rate_correct|floatformat:0 }}</span>
                 </td>
             {% endif %}
         {% endfor %}
@@ -112,7 +100,7 @@
                 <td class="td-no-border">
                     <button data-number="{{ answer.no }}"
                             class="btn btn-circle btn-sm fs-6 mx-1 my-2
-                        btn-{% if answer.result %}success{% else %}danger{% endif %}">
+                            btn-{% if answer.result %}success{% else %}danger{% endif %}">
                         {% if answer.ans > 0 and answer.ans < 6 %}
                             {{ answer.ans }}
                         {% endif %}
@@ -121,8 +109,6 @@
             {% endif %}
         {% endfor %}
     </tr>
-
-    {# rate_selection #}
     <tr class="text-center">
         <th class="text-nowrap" scope="row">선택률(%)</th>
         {% for answer in answer_student %}

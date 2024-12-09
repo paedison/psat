@@ -4,7 +4,7 @@
             <div class="py-4">
                 <h5 class="modal-title mx-auto fw-bold" hx-trigger="load delay:0.5s"
                     hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true"
-                    hx-get="{{ exam_vars.url_detail }}">
+                    hx-get="{{ exam.get_score_detail_url }}">
                     <span class="text-success">수험 정보가 입력되었습니다.</span>
                 </h5>
             </div>
@@ -17,7 +17,7 @@
         {% else %}
             <form id="student_info"
                   hx-swap="outerHTML swap:0.25s" hx-target="#student_info"
-                  hx-post="{{ exam_vars.url_student_register }}">
+                  hx-post="{{ exam.get_score_register_url }}">
                 {% if no_student %}
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         수험 정보를 다시 확인해주세요.

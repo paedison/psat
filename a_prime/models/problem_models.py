@@ -67,6 +67,25 @@ class Psat(models.Model):
     def get_admin_psat_active_url(self):
         return reverse_lazy('psat:admin-psat-active', args=[self.id])
 
+    @staticmethod
+    def get_score_list_url():
+        return reverse_lazy('prime:score-list')
+
+    def get_score_detail_url(self):
+        return reverse_lazy('prime:score-detail', args=[self.id])
+
+    def get_score_register_url(self):
+        return reverse_lazy('prime:score-register', args=[self.id])
+
+    def get_score_unregister_url(self):
+        return reverse_lazy('prime:score-unregister', args=[self.id])
+
+    def get_score_print_url(self):
+        return reverse_lazy('prime:score-print', args=[self.id])
+
+    def get_score_modal_url(self):
+        return reverse_lazy('prime:score-modal', args=[self.id])
+
 
 class Problem(models.Model):
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='problems', verbose_name='PSAT')

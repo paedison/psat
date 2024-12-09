@@ -98,11 +98,11 @@ class ResultScore(models.Model):
 
 class ResultRankTotal(models.Model):
     student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='rank_total')
-    subject_0 = models.FloatField(null=True, blank=True, verbose_name='헌법')
-    subject_1 = models.FloatField(null=True, blank=True, verbose_name='언어논리')
-    subject_2 = models.FloatField(null=True, blank=True, verbose_name='자료해석')
-    subject_3 = models.FloatField(null=True, blank=True, verbose_name='상황판단')
-    total = models.FloatField(null=True, blank=True, verbose_name='PSAT')
+    subject_0 = models.IntegerField(null=True, blank=True, verbose_name='헌법')
+    subject_1 = models.IntegerField(null=True, blank=True, verbose_name='언어논리')
+    subject_2 = models.IntegerField(null=True, blank=True, verbose_name='자료해석')
+    subject_3 = models.IntegerField(null=True, blank=True, verbose_name='상황판단')
+    total = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
 
     class Meta:
         verbose_name = verbose_name_plural = "[성적확인] 06_전체 등수"
@@ -114,11 +114,11 @@ class ResultRankTotal(models.Model):
 
 class ResultRankCategory(models.Model):
     student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='rank_category')
-    subject_0 = models.FloatField(null=True, blank=True, verbose_name='헌법')
-    subject_1 = models.FloatField(null=True, blank=True, verbose_name='언어논리')
-    subject_2 = models.FloatField(null=True, blank=True, verbose_name='자료해석')
-    subject_3 = models.FloatField(null=True, blank=True, verbose_name='상황판단')
-    total = models.FloatField(null=True, blank=True, verbose_name='PSAT')
+    subject_0 = models.IntegerField(null=True, blank=True, verbose_name='헌법')
+    subject_1 = models.IntegerField(null=True, blank=True, verbose_name='언어논리')
+    subject_2 = models.IntegerField(null=True, blank=True, verbose_name='자료해석')
+    subject_3 = models.IntegerField(null=True, blank=True, verbose_name='상황판단')
+    total = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
 
     class Meta:
         verbose_name = verbose_name_plural = "[성적확인] 07_직렬 등수"
