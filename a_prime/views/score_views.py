@@ -226,7 +226,13 @@ class ExamVars:
                 default=Value(False),
                 output_field=BooleanField()
             )
-        ).select_related('problem', 'problem__result_answer_count')
+        ).select_related(
+            'problem',
+            'problem__result_answer_count',
+            'problem__result_answer_count_top_rank',
+            'problem__result_answer_count_mid_rank',
+            'problem__result_answer_count_low_rank',
+        )
 
     def get_qs_answers(self, student: models.ResultStudent, stat_type: str):
         qs_answers = (
@@ -266,31 +272,57 @@ class ExamVars:
             ] for idx, sub in enumerate(self.sub_list)
         ]
 
+    @staticmethod
+    def get_answer_rate(answer_count, ans: int, count_sum: int, answer_official_list=None):
+        if answer_official_list:
+            return sum(
+                getattr(answer_count, f'count_{ans_official}') for ans_official in answer_official_list
+            ) * 100 / count_sum
+        return getattr(answer_count, f'count_{ans}') * 100 / count_sum
+
     def get_data_answer(self, qs_student_answer):
         data_answer_official = self.get_empty_data_answer()
         data_answer_student = self.get_empty_data_answer()
+
         for line in qs_student_answer:
             sub = line.problem.subject
             idx = self.sub_list.index(sub)
             field = self.subject_vars[sub][1]
             no = line.problem.number
-            answer_count = line.problem.result_answer_count
             ans_official = line.problem.answer
             ans_student = line.answer
 
+            answer_count = line.problem.result_answer_count
+            answer_count_top = line.problem.result_answer_count_top_rank
+            answer_count_mid = line.problem.result_answer_count_mid_rank
+            answer_count_low = line.problem.result_answer_count_low_rank
+
             count_sum = answer_count.count_sum
+            count_sum_top = answer_count_top.count_sum
+            count_sum_mid = answer_count_mid.count_sum
+            count_sum_low = answer_count_low.count_sum
 
             answer_official_list = []
             if 1 <= ans_official <= 5:
                 result = ans_student == ans_official
-                rate_correct = getattr(answer_count, f'count_{ans_official}') * 100 / count_sum
+                rate_correct = self.get_answer_rate(answer_count, ans_official, count_sum)
+                rate_correct_top = self.get_answer_rate(answer_count_top, ans_official, count_sum_top)
+                rate_correct_mid = self.get_answer_rate(answer_count_mid, ans_official, count_sum_mid)
+                rate_correct_low = self.get_answer_rate(answer_count_low, ans_official, count_sum_low)
             else:
                 answer_official_list = [int(digit) for digit in str(ans_official)]
                 result = ans_student in answer_official_list
-                rate_correct = sum(
-                    getattr(answer_count, f'count_{ans}') for ans in answer_official_list
-                ) * 100 / count_sum
-            rate_selection = getattr(answer_count, f'count_{ans_student}') * 100 / count_sum
+                rate_correct = self.get_answer_rate(answer_count, ans_official, count_sum, answer_official_list)
+                rate_correct_top = self.get_answer_rate(
+                    answer_count_top, ans_official, count_sum_top, answer_official_list)
+                rate_correct_mid = self.get_answer_rate(
+                    answer_count_mid, ans_official, count_sum_mid, answer_official_list)
+                rate_correct_low = self.get_answer_rate(
+                    answer_count_low, ans_official, count_sum_low, answer_official_list)
+            rate_selection = self.get_answer_rate(answer_count, ans_student, count_sum)
+            rate_selection_top = self.get_answer_rate(answer_count_top, ans_student, count_sum_top)
+            rate_selection_mid = self.get_answer_rate(answer_count_mid, ans_student, count_sum_mid)
+            rate_selection_low = self.get_answer_rate(answer_count_low, ans_student, count_sum_low)
 
             data_answer_official[idx][no - 1].update({
                 'no': no,
@@ -298,6 +330,9 @@ class ExamVars:
                 'ans_list': answer_official_list,
                 'field': field,
                 'rate_correct': rate_correct,
+                'rate_correct_top': rate_correct_top,
+                'rate_correct_mid': rate_correct_mid,
+                'rate_correct_low': rate_correct_low,
             })
             data_answer_student[idx][no - 1].update({
                 'no': no,
@@ -305,6 +340,9 @@ class ExamVars:
                 'field': field,
                 'result': result,
                 'rate_selection': rate_selection,
+                'rate_selection_top': rate_selection_top,
+                'rate_selection_mid': rate_selection_mid,
+                'rate_selection_low': rate_selection_low,
             })
         return data_answer_official, data_answer_student
 

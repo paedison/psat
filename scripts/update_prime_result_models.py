@@ -295,12 +295,27 @@ def update_result_answer_model():
     print(message)
 
 
-def update_result_answer_count_model():
+def update_result_answer_count_model(answer_count_model, rank_type=''):
     list_update = []
     list_create = []
 
+    lookup_field = f'student__rank_total__sum'
+    top_rank_threshold = 0.27
+    mid_rank_threshold = 0.73
+    participants_function = F('student__rank_total__participants')
+
+    lookup_exp = {}
+    if rank_type == 'top':
+        lookup_exp[f'{lookup_field}__lte'] = participants_function * top_rank_threshold
+    elif rank_type == 'mid':
+        lookup_exp[f'{lookup_field}__gt'] = participants_function * top_rank_threshold
+        lookup_exp[f'{lookup_field}__lte'] = participants_function * mid_rank_threshold
+    elif rank_type == 'low':
+        lookup_exp[f'{lookup_field}__gt'] = participants_function * mid_rank_threshold
+
     answer_distribution = (
-        new_prime_models.ResultAnswer.objects.values('problem_id', 'answer')
+        new_prime_models.ResultAnswer.objects.filter(**lookup_exp)
+        .values('problem_id', 'answer')
         .annotate(count=Count('id'))
         .order_by('problem_id', 'answer')
     )
@@ -325,7 +340,7 @@ def update_result_answer_count_model():
         answers['count_sum'] = sum(answers[fld] for fld in count_fields)
 
         try:
-            new_query = new_prime_models.ResultAnswerCount.objects.get(problem_id=problem_id)
+            new_query = answer_count_model.objects.get(problem_id=problem_id)
             fields_not_match = any(
                 getattr(new_query, fld) != val for fld, val in answers.items()
             )
@@ -333,12 +348,12 @@ def update_result_answer_count_model():
                 for fld, val in answers.items():
                     setattr(new_query, fld, val)
                 list_update.append(new_query)
-        except new_prime_models.ResultAnswerCount.DoesNotExist:
+        except answer_count_model.DoesNotExist:
             list_create.append(new_prime_models.ResultAnswerCount(problem_id=problem_id, **answers))
     update_fields = [
         'problem_id', 'count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_multiple', 'count_sum'
     ]
-    bulk_create_or_update(new_prime_models.ResultAnswerCount, list_create, list_update, update_fields)
+    bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
 
 
 def update_result_score():
@@ -400,6 +415,7 @@ def update_result_rank(result_rank_model, stat_type: str):
             rank_list = rank_list.filter(category=student.category)
         rank_list = rank_list.annotate(**annotate_dict)
         result_rank_instance, _ = result_rank_model.objects.get_or_create(student=student)
+        participants = rank_list.count()
 
         fields_not_match = []
         for row in rank_list:
@@ -409,14 +425,16 @@ def update_result_rank(result_rank_model, stat_type: str):
                         getattr(result_rank_instance, f'subject_{idx}') != getattr(row, f'rank_data_subject_{idx}')
                     )
                 fields_not_match.append(result_rank_instance.sum != row.rank_data_sum)
+                fields_not_match.append(result_rank_instance.participants != participants)
 
                 if any(fields_not_match):
                     for idx in range(4):
                         setattr(result_rank_instance, f'subject_{idx}', getattr(row, f'rank_data_subject_{idx}'))
                     result_rank_instance.sum = row.rank_data_sum
+                    result_rank_instance.participants = participants
                     list_update.append(result_rank_instance)
 
-    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum']
+    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'participants']
     bulk_create_or_update(result_rank_model, list_create, list_update, update_fields)
 
 
@@ -431,10 +449,13 @@ def run(*args):
         update_result_student_model()
         update_result_registry_model()
         update_result_answer_model()
-        update_result_answer_count_model()
+        update_result_answer_count_model(new_prime_models.ResultAnswerCount)
         update_result_score()
-        update_result_rank(new_prime_models.ResultRankTotal, stat_type='total')
-        update_result_rank(new_prime_models.ResultRankCategory, stat_type='department')
+        update_result_rank(new_prime_models.ResultRankTotal, 'total')
+        update_result_rank(new_prime_models.ResultRankCategory, 'department')
+        update_result_answer_count_model(new_prime_models.ResultAnswerCountTopRank, 'top')
+        update_result_answer_count_model(new_prime_models.ResultAnswerCountMidRank, 'mid')
+        update_result_answer_count_model(new_prime_models.ResultAnswerCountLowRank, 'low')
     elif 'problem' in args:
         update_problem_model()
     elif 'student' in args:
@@ -444,10 +465,14 @@ def run(*args):
     elif 'answer' in args:
         update_result_answer_model()
     elif 'answer_count' in args:
-        update_result_answer_count_model()
+        update_result_answer_count_model(new_prime_models.ResultAnswerCount)
     elif 'score' in args:
         update_result_score()
     elif 'rank_total' in args:
-        update_result_rank(new_prime_models.ResultRankTotal, stat_type='total')
+        update_result_rank(new_prime_models.ResultRankTotal, 'total')
     elif 'rank_department' in args:
-        update_result_rank(new_prime_models.ResultRankCategory, stat_type='department')
+        update_result_rank(new_prime_models.ResultRankCategory, 'department')
+    elif 'answer_count_by_rank' in args:
+        update_result_answer_count_model(new_prime_models.ResultAnswerCountTopRank, 'top')
+        update_result_answer_count_model(new_prime_models.ResultAnswerCountMidRank, 'mid')
+        update_result_answer_count_model(new_prime_models.ResultAnswerCountLowRank, 'low')

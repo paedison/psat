@@ -50,7 +50,7 @@
 
 {% partialdef answer_table_tr %}
     <tr class="text-center table-warning" aria-label="문제 번호">
-        <th class="text-nowrap" scope="row">문제 번호</th>
+        <th class="text-nowrap" colspan="2" scope="row">문제 번호</th>
         {% for _ in 'x'|ljust:loop_counter %}
             <th>{{ forloop.counter|add:loop_min }}</th>
         {% endfor %}
@@ -58,10 +58,10 @@
 
     {# answer_official #}
     <tr class="text-center" aria-label="정답">
-        <th class="text-nowrap td-no-border" scope="row">정답</th>
+        <th class="text-nowrap" colspan="2" scope="row">정답</th>
         {% for answer in answer_official %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                <td class="td-no-border" data-number="{{ answer.no }}">
+                <td data-number="{{ answer.no }}">
                     {% if answer.ans_list %}
                         {% if answer.ans == 1234 or answer.ans == 12345 %}
                             <span class="fw-bold text-success">전체<br/> 정답</span>
@@ -81,25 +81,90 @@
             {% endif %}
         {% endfor %}
     </tr>
-    <tr class="text-center" aria-label="정답률">
-        <th class="text-nowrap" scope="row">정답률(%)</th>
+
+    {% partialdef answer_rate_line_official %}
+        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+            <td data-number="{{ answer.no }}">
+                <span class="fw-bold text-success">
+                    {{ answer_rate|floatformat:0 }}
+                </span>
+            </td>
+        {% endif %}
+    {% endpartialdef answer_rate_line_official %}
+
+    {% partialdef answer_rate_line_student %}
+        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+            <td data-number="{{ answer.no }}">
+                <span class="fw-bold
+                      text-{% if answer.result %}success{% else %}danger{% endif %}">
+                    {{ answer_rate|floatformat:0 }}
+                </span>
+            </td>
+        {% endif %}
+    {% endpartialdef answer_rate_line_student %}
+
+    {% partialdef answer_rate_line_empty %}
+        <td class="td-no-border bg-success" colspan="10">
+            <span class="fw-bold text-white">통계 처리중입니다.</span>
+        </td>
+    {% endpartialdef answer_rate_line_empty %}
+
+    <tr class="text-center" aria-label="전체 정답률">
+        <th class="text-nowrap" rowspan="4" scope="row">정답률(%)</th>
+        <th class="text-nowrap td-no-border" scope="row">전체</th>
         {% for answer in answer_official %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                <td data-number="{{ answer.no }}">
-                    <span class="fw-bold text-success">{{ answer.rate_correct|floatformat:0 }}</span>
-                </td>
-            {% endif %}
+            {% with answer_rate=answer.rate_correct %}
+                {% partial answer_rate_line_official %}
+            {% endwith %}
         {% endfor %}
+    </tr>
+
+    <tr class="text-center" aria-label="상위권 정답률">
+        <th class="text-nowrap td-no-border" scope="row">상위권</th>
+        {% if answer_official.0.rate_correct_top %}
+            {% for answer in answer_official %}
+                {% with answer_rate=answer.rate_correct_top %}
+                    {% partial answer_rate_line_official %}
+                {% endwith %}
+            {% endfor %}
+        {% else %}
+            {% partial answer_rate_line_empty %}
+        {% endif %}
+    </tr>
+
+    <tr class="text-center" aria-label="중위권 정답률">
+        <th class="text-nowrap td-no-border" scope="row">중위권</th>
+        {% if answer_official.0.rate_correct_mid %}
+            {% for answer in answer_official %}
+                {% with answer_rate=answer.rate_correct_mid %}
+                    {% partial answer_rate_line_official %}
+                {% endwith %}
+            {% endfor %}
+        {% else %}
+            {% partial answer_rate_line_empty %}
+        {% endif %}
+    </tr>
+
+    <tr class="text-center" aria-label="하위권 정답률">
+        <th class="text-nowrap" scope="row">하위권</th>
+        {% if answer_official.0.rate_correct_low %}
+            {% for answer in answer_official %}
+                {% with answer_rate=answer.rate_correct_low %}
+                    {% partial answer_rate_line_official %}
+                {% endwith %}
+            {% endfor %}
+        {% else %}
+            {% partial answer_rate_line_empty %}
+        {% endif %}
     </tr>
 
     {# answer_student #}
     <tr class="text-center" aria-label="선택 답안">
-        <th class="text-nowrap td-no-border" scope="row">선택 답안</th>
+        <th class="text-nowrap" colspan="2" scope="row">선택 답안</th>
         {% for answer in answer_student %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                <td class="td-no-border">
-                    <button data-number="{{ answer.no }}"
-                            class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                <td data-number="{{ answer.no }}">
+                    <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
                             btn-{% if answer.result %}success{% else %}danger{% endif %}">
                         {% if answer.ans > 0 and answer.ans < 6 %}
                             {{ answer.ans }}
@@ -109,18 +174,53 @@
             {% endif %}
         {% endfor %}
     </tr>
-    <tr class="text-center">
-        <th class="text-nowrap" scope="row">선택률(%)</th>
+
+    <tr class="text-center" aria-label="전체 선택률">
+        <th class="text-nowrap" rowspan="4" scope="row">선택률(%)</th>
+        <th class="text-nowrap td-no-border" scope="row">전체</th>
         {% for answer in answer_student %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
-                <td>
-                    <span data-number="{{ answer.no }}"
-                          class="fw-bold
-                          text-{% if answer.result %}success{% else %}danger{% endif %}">
-                        {{ answer.rate_selection|floatformat:0 }}
-                    </span>
-                </td>
-            {% endif %}
+            {% with answer_rate=answer.rate_selection %}
+                {% partial answer_rate_line_student %}
+            {% endwith %}
         {% endfor %}
+    </tr>
+
+    <tr class="text-center" aria-label="상위권 선택률">
+        <th class="text-nowrap td-no-border" scope="row">상위권</th>
+        {% if answer_student.0.rate_selection_top %}
+            {% for answer in answer_student %}
+                {% with answer_rate=answer.rate_selection_top %}
+                    {% partial answer_rate_line_student %}
+                {% endwith %}
+            {% endfor %}
+        {% else %}
+            {% partial answer_rate_line_empty %}
+        {% endif %}
+    </tr>
+
+    <tr class="text-center" aria-label="중위권 선택률">
+        <th class="text-nowrap td-no-border" scope="row">중위권</th>
+        {% if answer_student.0.rate_selection_top %}
+            {% for answer in answer_student %}
+                {% with answer_rate=answer.rate_selection_top %}
+                    {% partial answer_rate_line_student %}
+                {% endwith %}
+            {% endfor %}
+        {% else %}
+            {% partial answer_rate_line_empty %}
+        {% endif %}
+    </tr>
+
+    <tr class="text-center" aria-label="하위권 선택률">
+        <th class="text-nowrap" scope="row">하위권</th>
+        {% if answer_student.0.rate_selection_low %}
+            {% for answer in answer_student %}
+                {% with answer_rate=answer.rate_selection_low %}
+                    {% partial answer_rate_line_student %}
+                {% endwith %}
+            {% endfor %}
+        {% else %}
+            {% partial answer_rate_line_empty %}
+        {% endif %}
     </tr>
 {% endpartialdef answer_table_tr %}
