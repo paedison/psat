@@ -2,6 +2,7 @@ import traceback
 from collections import defaultdict
 
 import django.db.utils
+from django.core.management import CommandError
 from django.db import transaction
 from django.db.models import F, Count, When, Window
 from django.db.models.functions import Rank
@@ -321,7 +322,7 @@ def update_result_answer_count_model():
                 answers[f'count_{answer}'] = count
             else:
                 answers['count_multiple'] = count
-        answers['count_total'] = sum(answers[fld] for fld in count_fields)
+        answers['count_sum'] = sum(answers[fld] for fld in count_fields)
 
         try:
             new_query = new_prime_models.ResultAnswerCount.objects.get(problem_id=problem_id)
@@ -335,7 +336,7 @@ def update_result_answer_count_model():
         except new_prime_models.ResultAnswerCount.DoesNotExist:
             list_create.append(new_prime_models.ResultAnswerCount(problem_id=problem_id, **answers))
     update_fields = [
-        'problem_id', 'count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_multiple', 'count_total'
+        'problem_id', 'count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_multiple', 'count_sum'
     ]
     bulk_create_or_update(new_prime_models.ResultAnswerCount, list_create, list_update, update_fields)
 
@@ -370,19 +371,19 @@ def update_result_score():
             score_list.append(score)
             fields_not_match.append(getattr(result_score_instance, f'subject_{idx}') != score)
 
-        if fields_not_match:
-            total = 0
+        if any(fields_not_match):
+            score_sum = 0
             for idx, score in enumerate(score_list):
-                total += score if idx > 0 else 0
+                score_sum += score if idx > 0 else 0
                 setattr(result_score_instance, f'subject_{idx}', score)
-            result_score_instance.total = total
+            result_score_instance.sum = score_sum
             list_update.append(result_score_instance)
 
-    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'total']
+    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum']
     bulk_create_or_update(new_prime_models.ResultScore, list_create, list_update, update_fields)
 
 
-def update_result_rank_total():
+def update_result_rank(result_rank_model, stat_type: str):
     list_update = []
     list_create = []
 
@@ -390,12 +391,15 @@ def update_result_rank_total():
         return Window(expression=Rank(), order_by=F(field_name).desc())
 
     annotate_dict = {f'rank_data_subject_{idx}': rank_func(f'score__subject_{idx}') for idx in range(4)}
-    annotate_dict['rank_data_total'] = rank_func('score__total')
+    annotate_dict['rank_data_sum'] = rank_func('score__sum')
 
     qs_student = new_prime_models.ResultStudent.objects.order_by('id')
     for student in qs_student:
-        rank_list = qs_student.filter(psat=student.psat).annotate(**annotate_dict)
-        result_rank_instance, _ = new_prime_models.ResultRankTotal.objects.get_or_create(student=student)
+        rank_list = qs_student.filter(psat=student.psat)
+        if stat_type == 'department':
+            rank_list = rank_list.filter(category=student.category)
+        rank_list = rank_list.annotate(**annotate_dict)
+        result_rank_instance, _ = result_rank_model.objects.get_or_create(student=student)
 
         fields_not_match = []
         for row in rank_list:
@@ -404,155 +408,46 @@ def update_result_rank_total():
                     fields_not_match.append(
                         getattr(result_rank_instance, f'subject_{idx}') != getattr(row, f'rank_data_subject_{idx}')
                     )
-                fields_not_match.append(result_rank_instance.total != row.rank_data_total)
+                fields_not_match.append(result_rank_instance.sum != row.rank_data_sum)
 
                 if any(fields_not_match):
                     for idx in range(4):
                         setattr(result_rank_instance, f'subject_{idx}', getattr(row, f'rank_data_subject_{idx}'))
-                    result_rank_instance.total = row.rank_data_total
+                    result_rank_instance.sum = row.rank_data_sum
                     list_update.append(result_rank_instance)
 
-    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'total']
-    bulk_create_or_update(new_prime_models.ResultRankTotal, list_create, list_update, update_fields)
+    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum']
+    bulk_create_or_update(result_rank_model, list_create, list_update, update_fields)
 
 
-def update_result_rank_category():
-    pass
-
-
-def run():
-    # update_problem_model()
-    # update_result_student_model()
-    # update_result_registry_model()
-    # update_result_answer_model()
-    # update_result_answer_count_model()
-    update_result_score()
-    update_result_rank_total()
-    update_result_rank_category()
-
-    # lookup_fields = {
-    #     'year': 'year',
-    #     'ex': 'exam',
-    #     'round': 'round',
-    # }
-    # update_fields = {
-    #     'predict_open_datetime': 'page_opened_at',
-    #     'start_datetime': 'exam_started_at',
-    #     'end_datetime': 'exam_finished_at',
-    #     'answer_predict_open_datetime': 'answer_predict_opened_at',
-    #     'answer_open_datetime': 'answer_official_opened_at',
-    # }
-    #
-    # qs_old_student = old_score_models.PrimeStudent.objects.annotate(
-    #     created_at=F('timestamp'),
-    #     exam=Value('프모'),
-    #     department_name=F('department__name'),
-    # )
-    #
-    # list_update = []
-    # list_create = []
-    # count_update = 0
-    # count_create = 0
-    #
-    # sub_fields = {'헌법': 'heonbeob', '언어': 'eoneo', '자료': 'jaryo', '상황': 'sanghwang'}
-    # unit_dict = {
-    #     '5급공채-일반행정': '5급공채',
-    #     '5급공채-재경': '5급공채',
-    #     '5급공채-기술직': '5급공채',
-    #     '5급공채-기타': '5급공채',
-    #     '7급공채': '7급공채',
-    #     '외교관후보자': '외교관후보자',
-    #     '지역인재 7급': '지역인재 7급',
-    #     '기타': '기타',
-    # }
-    # department_dict = {
-    #     '5급공채-일반행정': '5급 일반행정',
-    #     '5급공채-재경': '5급 재경',
-    #     '5급공채-기술직': '5급 기술',
-    #     '5급공채-기타': '5급 기타',
-    #     '7급공채': '7급 행정',
-    #     '외교관후보자': '일반외교',
-    #     '지역인재 7급': '지역인재 7급 행정',
-    #     '기타': '기타 직렬',
-    # }
-    # lookup_fields = ['id', 'created_at', 'year', 'exam', 'round', 'name', 'serial', 'password']
-    # update_fields = lookup_fields.copy()
-    # update_fields.extend(['unit', 'department', 'answer', 'answer_count'])
-    # update_fields.remove('id')
-    #
-    # qs_old_student = old_score_models.PrimeStudent.objects.annotate(
-    #     created_at=F('timestamp'),
-    #     exam=Value('프모'),
-    #     department_name=F('department__name'),
-    # )
-    #
-    # for old_student in qs_old_student:
-    #     unit = unit_dict[old_student.department_name]
-    #     department = department_dict[old_student.department_name]
-    #
-    #     qs_old_answer = old_score_models.PrimeAnswer.objects.filter(student=old_student).order_by('prime_id')
-    #     answer_dict = {'heonbeob': [], 'eoneo': [], 'jaryo': [], 'sanghwang': []}
-    #     answer_count_dict = {'heonbeob': 25, 'eoneo': 40, 'jaryo': 40, 'sanghwang': 40}
-    #
-    #     answer: old_score_models.PrimeAnswer
-    #     for answer in qs_old_answer:
-    #         field = sub_fields[answer.prime.subject.abbr]
-    #         for i in range(1, answer_count_dict[field] + 1):
-    #             ans = getattr(answer, f'prob{i}', 0)
-    #             answer_dict[field].append(ans)
-    #
-    #     try:
-    #         new_student = new_score_models.PrimePsatStudent.objects.get(id=old_student.id)
-    #         fields_not_match = any(
-    #             str(getattr(new_student, field)) != str(getattr(old_student, field)) for field in lookup_fields
-    #         )
-    #         other_fields_not_match = any([
-    #             new_student.unit != unit,
-    #             new_student.department != department,
-    #             new_student.answer != answer_dict,
-    #             new_student.answer_count != answer_count_dict,
-    #         ])
-    #         if fields_not_match or other_fields_not_match:
-    #             for field in lookup_fields:
-    #                 setattr(new_student, field, getattr(old_student, field))
-    #             new_student.answer = answer_dict
-    #             list_update.append(new_student)
-    #             count_update += 1
-    #     except new_score_models.PrimePsatStudent.DoesNotExist:
-    #         list_create.append(
-    #             new_score_models.PrimePsatStudent(
-    #                 id=old_student.id,
-    #                 created_at=old_student.created_at,
-    #
-    #                 year=old_student.year,
-    #                 exam=old_student.exam,
-    #                 round=old_student.round,
-    #
-    #                 name=old_student.name,
-    #                 serial=old_student.serial,
-    #                 unit=unit,
-    #                 department=department,
-    #
-    #                 password=old_student.password,
-    #
-    #                 answer=answer_dict,
-    #                 answer_count=answer_count_dict,
-    #             )
-    #         )
-    #         count_create += 1
-    #
-    # try:
-    #     with transaction.atomic():
-    #         if list_create:
-    #             new_score_models.PrimePsatStudent.objects.bulk_create(list_create)
-    #             message = f'Successfully created {count_create} PrimePsatStudent instances.'
-    #         elif list_update:
-    #             new_score_models.PrimePsatStudent.objects.bulk_update(list_update, update_fields)
-    #             message = f'Successfully updated {count_update} PrimePsatStudent instances.'
-    #         else:
-    #             message = f'No changes were made to PrimePsatStudent instances.'
-    # except django.db.utils.IntegrityError:
-    #     traceback_message = traceback.format_exc()
-    #     print(traceback_message)
-    #     message = f'Error occurred.'
-    # print(message)
+def run(*args):
+    if not args:
+        raise CommandError(
+            f"This script requires arguments. Please provide the necessary arguments.\n"
+            f"ex) --script-args all"
+        )
+    elif 'all' in args:
+        update_problem_model()
+        update_result_student_model()
+        update_result_registry_model()
+        update_result_answer_model()
+        update_result_answer_count_model()
+        update_result_score()
+        update_result_rank(new_prime_models.ResultRankTotal, stat_type='total')
+        update_result_rank(new_prime_models.ResultRankCategory, stat_type='department')
+    elif 'problem' in args:
+        update_problem_model()
+    elif 'student' in args:
+        update_result_student_model()
+    elif 'registry' in args:
+        update_result_registry_model()
+    elif 'answer' in args:
+        update_result_answer_model()
+    elif 'answer_count' in args:
+        update_result_answer_count_model()
+    elif 'score' in args:
+        update_result_score()
+    elif 'rank_total' in args:
+        update_result_rank(new_prime_models.ResultRankTotal, stat_type='total')
+    elif 'rank_department' in args:
+        update_result_rank(new_prime_models.ResultRankCategory, stat_type='department')

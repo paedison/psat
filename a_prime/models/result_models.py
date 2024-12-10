@@ -61,8 +61,7 @@ class ResultAnswer(models.Model):
         return f'[Prime]ResultAnswer(#{self.id}):{self.student.student_info}-{self.problem.reference}'
 
 
-class ResultAnswerCount(models.Model):
-    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count')
+class AnswerCount(models.Model):
     count_1 = models.IntegerField(default=0, verbose_name='①')
     count_2 = models.IntegerField(default=0, verbose_name='②')
     count_3 = models.IntegerField(default=0, verbose_name='③')
@@ -70,7 +69,14 @@ class ResultAnswerCount(models.Model):
     count_5 = models.IntegerField(default=0, verbose_name='⑤')
     count_0 = models.IntegerField(default=0, verbose_name='미표기')
     count_multiple = models.IntegerField(default=0, verbose_name='중복표기')
-    count_total = models.IntegerField(default=0, verbose_name='총계')
+    count_sum = models.IntegerField(default=0, verbose_name='총계')
+
+    class Meta:
+        abstract = True
+
+
+class ResultAnswerCount(AnswerCount):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count')
 
     class Meta:
         verbose_name = verbose_name_plural = "[성적확인] 04_답안 개수"
@@ -86,7 +92,7 @@ class ResultScore(models.Model):
     subject_1 = models.FloatField(null=True, blank=True, verbose_name='언어논리')
     subject_2 = models.FloatField(null=True, blank=True, verbose_name='자료해석')
     subject_3 = models.FloatField(null=True, blank=True, verbose_name='상황판단')
-    total = models.FloatField(null=True, blank=True, verbose_name='PSAT 총점')
+    sum = models.FloatField(null=True, blank=True, verbose_name='PSAT 총점')
 
     class Meta:
         verbose_name = verbose_name_plural = "[성적확인] 05_점수"
@@ -96,13 +102,19 @@ class ResultScore(models.Model):
         return f'[Prime]ResultScore(#{self.id}):{self.student.student_info}'
 
 
-class ResultRankTotal(models.Model):
-    student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='rank_total')
+class ResultRank(models.Model):
     subject_0 = models.IntegerField(null=True, blank=True, verbose_name='헌법')
     subject_1 = models.IntegerField(null=True, blank=True, verbose_name='언어논리')
     subject_2 = models.IntegerField(null=True, blank=True, verbose_name='자료해석')
     subject_3 = models.IntegerField(null=True, blank=True, verbose_name='상황판단')
-    total = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
+    sum = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
+
+    class Meta:
+        abstract = True
+
+
+class ResultRankTotal(ResultRank):
+    student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='rank_total')
 
     class Meta:
         verbose_name = verbose_name_plural = "[성적확인] 06_전체 등수"
@@ -112,13 +124,8 @@ class ResultRankTotal(models.Model):
         return f'[Prime]ResultRankTotal(#{self.id}):{self.student.student_info}'
 
 
-class ResultRankCategory(models.Model):
+class ResultRankCategory(ResultRank):
     student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='rank_category')
-    subject_0 = models.IntegerField(null=True, blank=True, verbose_name='헌법')
-    subject_1 = models.IntegerField(null=True, blank=True, verbose_name='언어논리')
-    subject_2 = models.IntegerField(null=True, blank=True, verbose_name='자료해석')
-    subject_3 = models.IntegerField(null=True, blank=True, verbose_name='상황판단')
-    total = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
 
     class Meta:
         verbose_name = verbose_name_plural = "[성적확인] 07_직렬 등수"
@@ -126,3 +133,27 @@ class ResultRankCategory(models.Model):
 
     def __str__(self):
         return f'[Prime]ResultRankCategory(#{self.id}):{self.student.student_info}'
+
+
+class ResultAnswerCountLowRank(AnswerCount):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count_low_rank')
+
+    class Meta:
+        verbose_name = verbose_name_plural = "[성적확인] 08_답안 개수(하위권)"
+        db_table = 'a_prime_result_answer_count_low_rank'
+
+
+class ResultAnswerCountMidRank(AnswerCount):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count_mid_rank')
+
+    class Meta:
+        verbose_name = verbose_name_plural = "[성적확인] 09_답안 개수(중위권)"
+        db_table = 'a_prime_result_answer_count_mid_rank'
+
+
+class ResultAnswerCountTopRank(AnswerCount):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count_top_rank')
+
+    class Meta:
+        verbose_name = verbose_name_plural = "[성적확인] 10_답안 개수(상위권)"
+        db_table = 'a_prime_result_answer_count_top_rank'

@@ -244,7 +244,7 @@ class ExamVars:
         return qs_score.values()
 
     def get_score_frequency_list(self) -> list:
-        return self.student_model.objects.filter(psat=self.exam).values_list('score__total', flat=True)
+        return self.student_model.objects.filter(psat=self.exam).values_list('score__sum', flat=True)
 
     def get_score_tab(self):
         return [
@@ -278,19 +278,19 @@ class ExamVars:
             ans_official = line.problem.answer
             ans_student = line.answer
 
-            count_total = answer_count.count_total
+            count_sum = answer_count.count_sum
 
             answer_official_list = []
             if 1 <= ans_official <= 5:
                 result = ans_student == ans_official
-                rate_correct = getattr(answer_count, f'count_{ans_official}') * 100 / count_total
+                rate_correct = getattr(answer_count, f'count_{ans_official}') * 100 / count_sum
             else:
                 answer_official_list = [int(digit) for digit in str(ans_official)]
                 result = ans_student in answer_official_list
                 rate_correct = sum(
                     getattr(answer_count, f'count_{ans}') for ans in answer_official_list
-                ) * 100 / count_total
-            rate_selection = getattr(answer_count, f'count_{ans_student}') * 100 / count_total
+                ) * 100 / count_sum
+            rate_selection = getattr(answer_count, f'count_{ans_student}') * 100 / count_sum
 
             data_answer_official[idx][no - 1].update({
                 'no': no,
@@ -330,8 +330,8 @@ class ExamVars:
                     scores[field] = [qs[f'subject_{field_idx}'] for qs in qs_score]
                     student_score = getattr(student.score, f'subject_{field_idx}')
                 else:
-                    scores[field] = [qs['total'] / 3 for qs in qs_score]
-                    student_score = student.score.total / 3
+                    scores[field] = [qs['sum'] / 3 for qs in qs_score]
+                    student_score = student.score.sum / 3
 
                 sorted_scores = sorted(scores[field], reverse=True)
                 rank = sorted_scores.index(student_score) + 1
@@ -360,7 +360,7 @@ class ExamVars:
         score_counts_list.sort()
 
         score_counts = Counter(score_counts_list)
-        student_target_score = round(student.score.total / 3, 1)
+        student_target_score = round(student.score.sum / 3, 1)
         score_colors = ['blue' if score == student_target_score else 'white' for score in score_counts.keys()]
 
         return {'score_points': dict(score_counts), 'score_colors': score_colors}

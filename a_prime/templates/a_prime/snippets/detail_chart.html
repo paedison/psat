@@ -38,7 +38,7 @@
         {{ student.score.subject_1|floatformat:1 }},
         {{ student.score.subject_2|floatformat:1 }},
         {{ student.score.subject_3|floatformat:1 }},
-        {{ student.score.total|divide:3|floatformat:1 }},
+        {{ student.score.sum|divide:3|floatformat:1 }},
     ]
     department_average = [
         {{ stat_department.subject_0.avg_score|floatformat:1 }},
