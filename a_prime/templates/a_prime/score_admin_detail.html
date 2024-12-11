@@ -1,0 +1,132 @@
+{% extends 'list.html' %}
+{% load static %}
+
+{% block head_title %}{{ sub_title }}{% endblock %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+
+{% block main %}
+    {% include 'snippets/page_title.html' %}
+
+    <section class="section">
+        <div class="row">
+            <div class="col-12" aria-label="업데이트">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">업데이트</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form enctype="multipart/form-data"
+                                      hx-headers='{"Hx-Admin-Update":"answer_official"}'
+                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                      hx-post="{{ exam_vars.url_admin_update }}">
+                                    <div class="input-group">
+                                        <input type="file" name="file" class="form-control" required id="id_file">
+                                        <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            정답 업데이트</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-6 d-flex justify-content-end">
+                                <form hx-headers='{"View-Type":"statistics"}'
+                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                      hx-post="{{ exam.get_admin_update_url }}">
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            통계 업데이트</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="성적 통계">
+                <div id="statistics" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+                    {% include 'a_prime/snippets/admin_detail_statistics.html' %}
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="성적 일람표">
+                <div id="catalog" class="card htmx-fade-in htmx-fade-out"
+                     hx-target="#catalog" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            제{{ exam.round }}회 | 성적 일람표
+                            <form method="POST" action=""
+                    {#        <form method="POST" action="{% url 'prime_admin:export_transcript' year round %}"#}
+                                  class="ms-auto">
+                                {% csrf_token %}
+                                <div class="btn-group">
+                                    <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
+                                       href="">
+                    {#                   href="{% url 'prime_admin:export_scores' year round %}">#}
+                                        Excel로 내보내기
+                                    </a>
+                                    <input name="student_ids" type="text" aria-label="Student IDs" hidden
+                                           value="{% for id in student_ids %}{{ id }}{% if not forloop.last %},{% endif %}{% endfor %}"/>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            title="PDF로 내보내기" type="submit">
+                                        PDF로 내보내기
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        {% partial search_tab %}
+                        <div id="catalogContent htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime/snippets/admin_detail_catalog.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="문항 분석표">
+                <div id="answer_analysis" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    {% include 'a_prime/snippets/admin_detail_answer.html' %}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main %}
+
+{% partialdef search_tab %}
+    <div class="d-flex">
+        <form class="d-flex align-items-center">
+            <div class="input-group mb-3">
+                <input id="id_student_name" type="text" name="student_name" class="form-control form-control-sm"
+                       placeholder="학생 이름" title="학생 이름" aria-label="학생 이름">
+                <button type="submit" title="Search" class="btn btn-sm btn-outline-secondary"
+                        hx-post="">
+    {#                        hx-post="{% url 'prime_admin:catalog_year_round' year round %}">#}
+                    {{ icon_search|safe }}
+                </button>
+            </div>
+        </form>
+        <div class="ms-auto">
+            <button id="dropdownCategoryLink" type="button"
+                    class="btn btn-sm btn-outline-primary dropdown-toggle"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                구분
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownCategoryLink">
+                <li class="text-center">
+                </li>
+                {% for category in category_list %}
+                    {% if category %}
+                        <li class="text-center">
+                            <a class="dropdown-item {% if category == current_category %}bg-primary-light{% endif %}"
+                               href="" hx-get="{{ base_url }}?category={{ category }}">
+                                {{ category }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endpartialdef search_tab %}

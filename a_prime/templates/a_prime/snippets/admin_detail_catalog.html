@@ -1,0 +1,88 @@
+{% load psat_filter %}
+{% load slippers %}
+{% load humanize %}
+{% load partials %}
+
+<article class="table-responsive htmx-fade-in htmx-fade-out">
+    <table class="table table-bordered table-striped small align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap p-2" rowspan="3">ID</th>
+                <th class="text-primary text-nowrap p-2" rowspan="3">등수</th>
+                <th class="text-primary text-nowrap p-2" rowspan="3">이름</th>
+                <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
+                <th class="text-primary text-nowrap p-2" rowspan="3">직렬</th>
+
+                <th class="text-primary text-nowrap p-2" colspan="6">PSAT</th>
+                <th class="text-primary text-nowrap p-2" colspan="5">헌법</th>
+                <th class="text-primary text-nowrap p-2" colspan="5">언어논리</th>
+                <th class="text-primary text-nowrap p-2" colspan="5">자료해석</th>
+                <th class="text-primary text-nowrap p-2" colspan="5">상황판단</th>
+            </tr>
+
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap p-2 td-right-no-border" rowspan="2">총점</th>
+                <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" rowspan="2">평균</th>
+                <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
+                <th class="text-primary text-nowrap p-2 td-left-no-border" colspan="2">직렬 석차</th>
+                {% for _ in '1234' %}
+                    <th class="text-primary text-nowrap p-2 td-right-no-border" rowspan="2">점수</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border" colspan="2">직렬 석차</th>
+                {% endfor %}
+            </tr>
+
+            <tr class="text-center table-warning align-middle">
+                {% for _ in '12345' %}
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">%</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border">%</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if catalog_page_obj %}
+                {% for obj in catalog_page_obj %}
+                    <tr class="text-center">
+                        <td class="text-nowrap p-2">{{ obj.id }}</td>
+                        <td class="text-nowrap p-2">{{ obj.rank_total.average }}</td>
+                        <td class="text-nowrap p-2">
+                            <a href=""
+{#                                <a href="{% url 'prime_admin:individual_student_print' year round obj.id %}"#}
+                               target="score_print">
+                                {{ obj.name }}
+                            </a>
+                        </td>
+                        <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                        <td class="text-nowrap p-2">{{ obj.category.department }}</td>
+
+                        <td class="text-nowrap p-2 td-right-no-border">{{ obj.score.sum|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score.sum|divide:3|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total.average }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total.average|divide:obj.rank_total.participants|percentage|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_category.average }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_category.average|divide:obj.rank_category.participants|percentage|floatformat:1 }}</td>
+
+                        {% for _ in '0123' %}
+                            {% cycle obj.score.subject_0 obj.score.subject_1 obj.score.subject_2 obj.score.subject_3 as score silent %}
+                            {% cycle obj.rank_total.subject_0 obj.rank_total.subject_1 obj.rank_total.subject_2 obj.rank_total.subject_3 as rank_total silent %}
+                            {% cycle obj.rank_category.subject_0 obj.rank_category.subject_1 obj.rank_category.subject_2 obj.rank_category.subject_3 as rank_category silent %}
+                            <td class="text-nowrap p-2 td-right-no-border">{{ score|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_total }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_total|divide:obj.rank_total.participants|percentage|floatformat:1 }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_category }}</td>
+                            <td class="text-nowrap p-2 td-left-no-border">{{ rank_category|divide:obj.rank_category.participants|percentage|floatformat:1 }}</td>
+                        {% endfor %}
+                  </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</article>
+
+{% with page_obj=catalog_page_obj page_range=catalog_page_range %}
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'a_prime/snippets/pagination.html' with header='catalog_list' %}
+    {% endif %}
+{% endwith %}

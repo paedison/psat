@@ -58,8 +58,14 @@ class Psat(models.Model):
         return self.answer_official_opened_at <= timezone.now()
 
     @staticmethod
-    def get_admin_menu_url():
-        return reverse_lazy('psat:admin-menu')
+    def get_admin_list_url():
+        return reverse_lazy('prime:score-admin-list')
+
+    def get_admin_detail_url(self):
+        return reverse_lazy('prime:score-admin-detail', args=[self.id])
+
+    def get_admin_update_url(self):
+        return reverse_lazy('prime:score-admin-update', args=[self.id])
 
     def get_admin_problem_list_url(self):
         return reverse_lazy('psat:admin-problem-list', args=[self.id])

@@ -237,7 +237,7 @@ class ResultScoreAdmin(ModelAdmin):
 class ResultRankTotalAdmin(ModelAdmin):
     list_display = list_display_links = [
         'id', 'student_id', 'year', 'round', 'name', 'department',
-        'subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'participants'
+        'subject_0', 'subject_1', 'subject_2', 'subject_3', 'average', 'participants'
     ]
     list_filter = [
         'student__psat__year',

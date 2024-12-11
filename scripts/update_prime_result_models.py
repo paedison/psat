@@ -360,6 +360,7 @@ def update_result_score():
     list_update = []
     list_create = []
     subject_list = ['헌법', '언어', '자료', '상황']
+    field_list = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'average']
 
     qs_student = new_prime_models.ResultStudent.objects.order_by('id')
     for student in qs_student:
@@ -386,15 +387,22 @@ def update_result_score():
             score_list.append(score)
             fields_not_match.append(getattr(result_score_instance, f'subject_{idx}') != score)
 
+        score_sum = 0
+        for idx, score in enumerate(score_list):
+            score_sum += score if idx > 0 else 0
+        average = round(score_sum / 3, 1)
+
+        fields_not_match.append(result_score_instance.sum != score_sum)
+        fields_not_match.append(result_score_instance.average != average)
+
         if any(fields_not_match):
-            score_sum = 0
             for idx, score in enumerate(score_list):
-                score_sum += score if idx > 0 else 0
                 setattr(result_score_instance, f'subject_{idx}', score)
             result_score_instance.sum = score_sum
+            result_score_instance.average = average
             list_update.append(result_score_instance)
 
-    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum']
+    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'average']
     bulk_create_or_update(new_prime_models.ResultScore, list_create, list_update, update_fields)
 
 
@@ -406,7 +414,7 @@ def update_result_rank(result_rank_model, stat_type: str):
         return Window(expression=Rank(), order_by=F(field_name).desc())
 
     annotate_dict = {f'rank_data_subject_{idx}': rank_func(f'score__subject_{idx}') for idx in range(4)}
-    annotate_dict['rank_data_sum'] = rank_func('score__sum')
+    annotate_dict['rank_data_average'] = rank_func('score__average')
 
     qs_student = new_prime_models.ResultStudent.objects.order_by('id')
     for student in qs_student:
@@ -424,13 +432,13 @@ def update_result_rank(result_rank_model, stat_type: str):
                     fields_not_match.append(
                         getattr(result_rank_instance, f'subject_{idx}') != getattr(row, f'rank_data_subject_{idx}')
                     )
-                fields_not_match.append(result_rank_instance.sum != row.rank_data_sum)
+                fields_not_match.append(result_rank_instance.average != row.rank_data_average)
                 fields_not_match.append(result_rank_instance.participants != participants)
 
                 if any(fields_not_match):
                     for idx in range(4):
                         setattr(result_rank_instance, f'subject_{idx}', getattr(row, f'rank_data_subject_{idx}'))
-                    result_rank_instance.sum = row.rank_data_sum
+                    result_rank_instance.average = row.rank_data_average
                     result_rank_instance.participants = participants
                     list_update.append(result_rank_instance)
 

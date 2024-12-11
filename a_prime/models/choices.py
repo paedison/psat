@@ -46,6 +46,20 @@ def department_choices() -> dict:
     }
 
 
+def statistics_department_choices() -> dict:
+    departments = department_choices()
+    departments.update({'전체': {'전체': '전체'}})
+    return departments
+
+
+def get_departments():
+    departments = []
+    for unit, department in department_choices().items():
+        for key in department.keys():
+            departments.append(key)
+    return departments
+
+
 def subject_choice() -> dict:
     return {
         '헌법': '헌법',

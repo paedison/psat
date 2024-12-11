@@ -80,7 +80,7 @@ def get_detail_context(request: HtmxHttpRequest, pk: int):
     stat_department = exam_vars.get_dict_stat_data(student, 'department')
     frequency_score = exam_vars.get_dict_frequency_score(student)
     qs_student_answer = exam_vars.get_qs_student_answer(student)
-    data_answer_official, data_answer_student = exam_vars.get_data_answer(qs_student_answer)
+    data_answers = exam_vars.get_data_answers(qs_student_answer)
 
     context = update_context_data(
         current_time=timezone.now(),
@@ -109,8 +109,7 @@ def get_detail_context(request: HtmxHttpRequest, pk: int):
         frequency_score=frequency_score,
 
         # sheet_answer: 답안 확인
-        data_answer_official=data_answer_official,
-        data_answer_student=data_answer_student,
+        data_answers=data_answers,
     )
     return context
 
@@ -266,11 +265,7 @@ class ExamVars:
         ]
 
     def get_empty_data_answer(self):
-        return [
-            [
-                {'no': no, 'ans': 0, 'field': f'subject_{idx}'} for no in range(1, self.problem_count[sub] + 1)
-            ] for idx, sub in enumerate(self.sub_list)
-        ]
+        return [[] for _ in self.sub_list]
 
     @staticmethod
     def get_answer_rate(answer_count, ans: int, count_sum: int, answer_official_list=None):
@@ -280,71 +275,43 @@ class ExamVars:
             ) * 100 / count_sum
         return getattr(answer_count, f'count_{ans}') * 100 / count_sum
 
-    def get_data_answer(self, qs_student_answer):
-        data_answer_official = self.get_empty_data_answer()
-        data_answer_student = self.get_empty_data_answer()
+    def get_data_answers(self, qs_student_answer):
+        data_answers = self.get_empty_data_answer()
 
         for line in qs_student_answer:
             sub = line.problem.subject
             idx = self.sub_list.index(sub)
             field = self.subject_vars[sub][1]
-            no = line.problem.number
             ans_official = line.problem.answer
             ans_student = line.answer
-
-            answer_count = line.problem.result_answer_count
-            answer_count_top = line.problem.result_answer_count_top_rank
-            answer_count_mid = line.problem.result_answer_count_mid_rank
-            answer_count_low = line.problem.result_answer_count_low_rank
-
-            count_sum = answer_count.count_sum
-            count_sum_top = answer_count_top.count_sum
-            count_sum_mid = answer_count_mid.count_sum
-            count_sum_low = answer_count_low.count_sum
 
             answer_official_list = []
             if 1 <= ans_official <= 5:
                 result = ans_student == ans_official
-                rate_correct = self.get_answer_rate(answer_count, ans_official, count_sum)
-                rate_correct_top = self.get_answer_rate(answer_count_top, ans_official, count_sum_top)
-                rate_correct_mid = self.get_answer_rate(answer_count_mid, ans_official, count_sum_mid)
-                rate_correct_low = self.get_answer_rate(answer_count_low, ans_official, count_sum_low)
             else:
                 answer_official_list = [int(digit) for digit in str(ans_official)]
                 result = ans_student in answer_official_list
-                rate_correct = self.get_answer_rate(answer_count, ans_official, count_sum, answer_official_list)
-                rate_correct_top = self.get_answer_rate(
-                    answer_count_top, ans_official, count_sum_top, answer_official_list)
-                rate_correct_mid = self.get_answer_rate(
-                    answer_count_mid, ans_official, count_sum_mid, answer_official_list)
-                rate_correct_low = self.get_answer_rate(
-                    answer_count_low, ans_official, count_sum_low, answer_official_list)
-            rate_selection = self.get_answer_rate(answer_count, ans_student, count_sum)
-            rate_selection_top = self.get_answer_rate(answer_count_top, ans_student, count_sum_top)
-            rate_selection_mid = self.get_answer_rate(answer_count_mid, ans_student, count_sum_mid)
-            rate_selection_low = self.get_answer_rate(answer_count_low, ans_student, count_sum_low)
 
-            data_answer_official[idx][no - 1].update({
-                'no': no,
-                'ans': ans_official,
-                'ans_list': answer_official_list,
-                'field': field,
-                'rate_correct': rate_correct,
-                'rate_correct_top': rate_correct_top,
-                'rate_correct_mid': rate_correct_mid,
-                'rate_correct_low': rate_correct_low,
-            })
-            data_answer_student[idx][no - 1].update({
-                'no': no,
-                'ans': ans_student,
-                'field': field,
-                'result': result,
-                'rate_selection': rate_selection,
-                'rate_selection_top': rate_selection_top,
-                'rate_selection_mid': rate_selection_mid,
-                'rate_selection_low': rate_selection_low,
-            })
-        return data_answer_official, data_answer_student
+            line.no = line.problem.number
+            line.ans_official = ans_official
+            line.ans_student = ans_student
+            line.ans_list = answer_official_list
+            line.field = field
+            line.result = result
+
+            line.rate_correct = line.problem.result_answer_count.get_answer_rate(ans_official)
+            line.rate_correct_top = line.problem.result_answer_count_top_rank.get_answer_rate(ans_official)
+            line.rate_correct_mid = line.problem.result_answer_count_mid_rank.get_answer_rate(ans_official)
+            line.rate_correct_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_official)
+            line.rate_gap = line.rate_correct_top - line.rate_correct_low
+
+            line.rate_selection = line.problem.result_answer_count.get_answer_rate(ans_student)
+            line.rate_selection_top = line.problem.result_answer_count_top_rank.get_answer_rate(ans_student)
+            line.rate_selection_mid = line.problem.result_answer_count_mid_rank.get_answer_rate(ans_student)
+            line.rate_selection_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_student)
+
+            data_answers[idx].append(line)
+        return data_answers
 
     def get_dict_stat_data(self, student: models.ResultStudent, stat_type: str) -> dict:
         qs_answers = self.get_qs_answers(student, stat_type)
@@ -361,15 +328,10 @@ class ExamVars:
         scores = {}
         stat_data = {}
         for field, subject_tuple in self.field_vars.items():
-            field_idx = subject_tuple[2]
             if field in participants_dict.keys():
                 participants = participants_dict[field]
-                if field != 'average':
-                    scores[field] = [qs[f'subject_{field_idx}'] for qs in qs_score]
-                    student_score = getattr(student.score, f'subject_{field_idx}')
-                else:
-                    scores[field] = [qs['sum'] / 3 for qs in qs_score]
-                    student_score = student.score.sum / 3
+                scores[field] = [qs[field] for qs in qs_score]
+                student_score = getattr(student.score, field)
 
                 sorted_scores = sorted(scores[field], reverse=True)
                 rank = sorted_scores.index(student_score) + 1

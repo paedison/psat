@@ -3,6 +3,19 @@ from django.db import models
 from . import choices
 
 
+class ResultStatistics(models.Model):
+    department = models.CharField(
+        max_length=40, choices=choices.statistics_department_choices, default='전체', verbose_name='직렬')
+    subject_0 = models.JSONField(default=dict, verbose_name='헌법')
+    subject_1 = models.JSONField(default=dict, verbose_name='언어논리')
+    subject_2 = models.JSONField(default=dict, verbose_name='자료해석')
+    subject_3 = models.JSONField(default=dict, verbose_name='상황판단')
+    average = models.JSONField(default=dict, verbose_name='PSAT')
+
+    class Meta:
+        abstract = True
+
+
 class Student(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     name = models.CharField(max_length=20, verbose_name='이름')
@@ -25,6 +38,7 @@ class Answer(models.Model):
 
 
 class AnswerCount(models.Model):
+    problem = None
     count_1 = models.IntegerField(default=0, verbose_name='①')
     count_2 = models.IntegerField(default=0, verbose_name='②')
     count_3 = models.IntegerField(default=0, verbose_name='③')
@@ -37,6 +51,16 @@ class AnswerCount(models.Model):
     class Meta:
         abstract = True
 
+    def get_answer_rate(self, ans: int):
+        if 1 <= self.problem.answer <= 5:
+            count_target = getattr(self, f'count_{ans}')
+        else:
+            answer_official_list = [int(digit) for digit in str(self.problem.answer)]
+            count_target = sum(
+                getattr(self, f'count_{ans_official}') for ans_official in answer_official_list
+            )
+        return count_target * 100 / self.count_sum
+
 
 class Score(models.Model):
     subject_0 = models.FloatField(null=True, blank=True, verbose_name='헌법')
@@ -44,6 +68,7 @@ class Score(models.Model):
     subject_2 = models.FloatField(null=True, blank=True, verbose_name='자료해석')
     subject_3 = models.FloatField(null=True, blank=True, verbose_name='상황판단')
     sum = models.FloatField(null=True, blank=True, verbose_name='PSAT 총점')
+    average = models.FloatField(null=True, blank=True, verbose_name='PSAT 평균')
 
     class Meta:
         abstract = True
@@ -54,7 +79,7 @@ class Rank(models.Model):
     subject_1 = models.IntegerField(null=True, blank=True, verbose_name='언어논리')
     subject_2 = models.IntegerField(null=True, blank=True, verbose_name='자료해석')
     subject_3 = models.IntegerField(null=True, blank=True, verbose_name='상황판단')
-    sum = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
+    average = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
     participants = models.IntegerField(null=True, blank=True, verbose_name='총 인원')
 
     class Meta:

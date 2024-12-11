@@ -15,12 +15,30 @@ score_patterns = [
 ]
 
 admin_patterns = [
-    # path('', admin_views.admin_menu_view, name='admin-menu'),
+    path('', admin_views.list_view, name='score-admin-list'),
+    path('<int:pk>/', admin_views.detail_view, name='score-admin-detail'),
+    path('update/<int:pk>/', admin_views.update_view, name='score-admin-update'),
     # path('<int:pk>/', admin_views.admin_problem_list_view, name='admin-problem-list'),
     # path('psat/create/', admin_views.psat_create_view, name='admin-psat-create'),
     # path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
     # path('problem/update/', admin_views.problem_update_view, name='admin-problem-update'),
     # path('answer/<int:pk>/', admin_views.answer_detail_view, name='staff-answer-detail'),
+
+    # path('search/<int:exam_year>/<int:exam_round>/', catalog_view, name='catalog_year_round'),
+
+    # path('print/<int:exam_year>/<int:exam_round>/',
+    #      prime_psat_admin_views.print_view, name='print'),
+    # path('print/<int:exam_year>/<int:exam_round>/<int:student_id>',
+    #      prime_psat_admin_views.individual_student_print_view, name='individual_student_print'),
+    #
+    # path('export/transcript/<int:exam_year>/<int:exam_round>/',
+    #      prime_psat_admin_views.export_transcript_to_pdf_view, name='export_transcript'),
+    # path('export/statistics/<int:exam_year>/<int:exam_round>/',
+    #      prime_psat_admin_views.export_statistics_to_excel_view, name='export_statistics'),
+    # path('export/analysis/<int:exam_year>/<int:exam_round>/',
+    #      prime_psat_admin_views.export_analysis_to_excel_view, name='export_analysis'),
+    # path('export/students_score/<int:exam_year>/<int:exam_round>/',
+    #      prime_psat_admin_views.export_scores_to_excel_view, name='export_scores'),
 ]
 
 predict_patterns = [

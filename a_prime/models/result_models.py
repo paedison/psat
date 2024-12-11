@@ -7,6 +7,20 @@ from .problem_models import Psat, Problem, Category
 verbose_name_prefix = '[성적확인] '
 
 
+class ResultStatistics(abstract_models.ResultStatistics):
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='result_statistics')
+
+    class Meta:
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}00_시험통계'
+        db_table = 'a_prime_result_statistics'
+        constraints = [
+            models.UniqueConstraint(fields=['psat', 'department'], name='unique_prime_result_statistics')
+        ]
+
+    def __str__(self):
+        return f'[Prime]ResultStatistics(#{self.id}):{self.psat.reference}'
+
+
 class ResultStudent(abstract_models.Student):
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='result_students')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='result_students')
@@ -73,10 +87,6 @@ class ResultScore(abstract_models.Score):
 
     def __str__(self):
         return f'[Prime]ResultScore(#{self.id}):{self.student.student_info}'
-
-    @property
-    def average(self):
-        return round(self.sum / 3, 1)
 
 
 class ResultRankTotal(abstract_models.Rank):
