@@ -25,6 +25,8 @@ urlpatterns = [
     # path('study/', include('study.urls')),  # Study
     path('lecture/', include('lecture.urls')),  # Lecture
 
+    path('prime/', include('a_prime.urls')),  # Prime
+
     path('score/', include('a_score.urls')),  # Score
     path('predict/', include('a_predict.urls')),  # Predict
 

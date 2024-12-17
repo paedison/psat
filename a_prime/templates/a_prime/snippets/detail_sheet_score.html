@@ -1,0 +1,20 @@
+{% load psat_filter %}
+
+<div class="card-header">성적 확인</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTab" role="tablist">
+            {% for tab in score_tab %}
+                {% #nav_tab prefix='Score' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreSheetContent">
+        {% for tab in score_tab %}
+            {% cycle '' stat_total stat_department as stat_data silent %}
+            {% #nav_content prefix='Score' id=tab.id %}{% include tab.template %}{% /nav_content %}
+        {% endfor %}
+    </div>
+</div>

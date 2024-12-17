@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+
+{% block head_title %}{{ student.serial }}_{{ student.department_name }}_{{ student.name }}_제{{ exam.round }}회_전국모의고사_성적표{% endblock head_title %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+{% block google_adsense %}{% endblock %}
+
+{% block html_body %}
+<body class="bg-white p-4">
+    {{ info|json_script:'info' }}
+    <h2 class="fw-bold text-center mb-4">{{ sub_title }} 성적표</h2>
+    <div class="mb-2">
+        <table class="table table-sm table-bordered small align-middle">
+            <tbody>
+                <tr class="text-center">
+                    <td>응시번호 : {{ student.serial }}</td>
+                    <td>직렬 : {{ student.department }}</td>
+                    <td>이름 : {{ student.name }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="mb-2">
+        <table class="table table-sm table-bordered small align-middle">
+            <thead>
+                <tr class="text-center small align-middle">
+                    <th rowspan="3">과목</th>
+                    <th colspan="5">내 성적</th>
+                    <th colspan="5">전체 기준</th>
+                    <th colspan="5">직렬 기준</th>
+                </tr>
+                <tr class="text-center small align-middle">
+                    <th rowspan="2">점수(점)</th>
+                    <th colspan="2">전체 석차</th>
+                    <th colspan="2">직렬 석차</th>
+
+                    <th rowspan="2">최고<br/>점수(점)</th>
+                    <th rowspan="2">응시자수</th>
+                    <th rowspan="2">상위<br/>10%(점)</th>
+                    <th rowspan="2">상위<br/>20%(점)</th>
+                    <th rowspan="2">평균<br/>점수(점)</th>
+
+                    <th rowspan="2">최고<br/>점수(점)</th>
+                    <th rowspan="2">응시자수</th>
+                    <th rowspan="2">상위<br/>10%(점)</th>
+                    <th rowspan="2">상위<br/>20%(점)</th>
+                    <th rowspan="2">평균<br/>점수(점)</th>
+                </tr>
+                <tr class="text-center small align-middle">
+                    <th>(등)</th>
+                    <th>(%)</th>
+                    <th>(등)</th>
+                    <th>(%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for _ in stat_total %}
+                    {% cycle stat_total.subject_0 stat_total.subject_1 stat_total.subject_2 stat_total.subject_3 stat_total.average as stat_tot silent %}
+                    {% cycle stat_department.subject_0 stat_department.subject_1 stat_department.subject_2 stat_department.subject_3 stat_department.average as stat_dep silent %}
+                    <tr class="text-center small">
+                        <th>{{ stat_tot.subject }}</th>
+                        <td>{{ stat_tot.score|floatformat:1 }}</td>
+                        <td>{{ stat_tot.rank }}</td>
+                        <td>{{ stat_tot.rank|percentageby:stat_tot.participants|floatformat:1 }}</td>
+                        <td>{{ stat_dep.rank }}</td>
+                        <td>{{ stat_dep.rank|percentageby:stat_dep.participants|floatformat:1 }}</td>
+
+                        <td>{{ stat_tot.max_score|floatformat:1 }}</td>
+                        <td>{{ stat_tot.participants }}</td>
+                        <td>{{ stat_tot.top_score_10|floatformat:1 }}</td>
+                        <td>{{ stat_tot.top_score_20|floatformat:1 }}</td>
+                        <td>{{ stat_tot.avg_score|floatformat:1 }}</td>
+
+                        <td>{{ stat_dep.max_score|floatformat:1 }}</td>
+                        <td>{{ stat_dep.participants }}</td>
+                        <td>{{ stat_dep.top_score_10|floatformat:1 }}</td>
+                        <td>{{ stat_dep.top_score_20|floatformat:1 }}</td>
+                        <td>{{ stat_dep.avg_score|floatformat:1 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mb-2">
+        <table class="table table-sm table-bordered small align-middle">
+            <thead>
+                <tr class="text-center small align-middle">
+                    <th colspan="2">과목</th>
+                    {% for _ in 'x'|ljust:40 %}
+                        <th class="text-nowrap fw-bold text-secondary">{{ forloop.counter|add:0 }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in exam_vars.sub_list %}
+                    {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
+                    <tr class="text-center small">
+                        <th class="text-nowrap align-center" rowspan="5">{{ sub }}</th>
+                        <th class="text-nowrap">정답</th>
+                        {% for answer in answers %}
+                            <td data-number="{{ answer.no }}">
+                                {% if answer.ans_official == 1234 or answer.ans_official == 12345 %}
+                                    <div class="text-nowrap">전체<br/>정답</div>
+                                {% else %}
+                                    {{ answer.ans_official_circle }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center small">
+                        <th class="text-nowrap">정답률(%)</th>
+                        {% for answer in answers %}
+                            <td data-number="{{ answer.no }}">
+                                {{ answer.rate_correct|floatformat:0 }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center small">
+                        <th class="text-nowrap">제출 답안</th>
+                        {% for answer in answers %}
+                            <td data-number="{{ answer.no }}">{{ answer.get_answer_display }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center small">
+                        <th class="text-nowrap">정오</th>
+                        {% for answer in answers %}
+                            <td data-number="{{ answer.no }}">
+                                {% if answer.result %}O{% else %}X{% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="text-center small">
+                        <th class="text-nowrap">선택률(%)</th>
+                        {% for answer in answers %}
+                            <td data-number="{{ answer.no }}">
+                                {{ answer.rate_selection|floatformat:0 }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="table-responsive">
+        {% include 'a_prime/snippets/detail_chart.html#chart_canvas' with print_class='print' %}
+    </div>
+
+    <script>
+        window.onload = function () {
+            setTimeout(function () {
+                window.print();
+            }, 1000);
+        };
+    </script>
+</body>
+{% endblock html_body %}
