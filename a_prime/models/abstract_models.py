@@ -52,14 +52,15 @@ class AnswerCount(models.Model):
         abstract = True
 
     def get_answer_rate(self, ans: int):
-        if 1 <= self.problem.answer <= 5:
-            count_target = getattr(self, f'count_{ans}')
-        else:
-            answer_official_list = [int(digit) for digit in str(self.problem.answer)]
-            count_target = sum(
-                getattr(self, f'count_{ans_official}') for ans_official in answer_official_list
-            )
-        return count_target * 100 / self.count_sum
+        if self.count_sum:
+            if 1 <= self.problem.answer <= 5:
+                count_target = getattr(self, f'count_{ans}')
+            else:
+                answer_official_list = [int(digit) for digit in str(self.problem.answer)]
+                count_target = sum(
+                    getattr(self, f'count_{ans_official}') for ans_official in answer_official_list
+                )
+            return count_target * 100 / self.count_sum
 
 
 class Score(models.Model):

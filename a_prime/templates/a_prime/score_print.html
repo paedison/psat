@@ -3,7 +3,7 @@
 {% load i18n %}
 {% load psat_filter %}
 
-{% block head_title %}{{ student.serial }}_{{ student.department_name }}_{{ student.name }}_제{{ round }}회_전국모의고사_성적표{% endblock head_title %}
+{% block head_title %}{{ student.serial }}_{{ student.department_name }}_{{ student.name }}_제{{ exam.round }}회_전국모의고사_성적표{% endblock head_title %}
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 {% block google_adsense %}{% endblock %}
 
@@ -16,7 +16,7 @@
             <tbody>
                 <tr class="text-center">
                     <td>응시번호 : {{ student.serial }}</td>
-                    <td>직렬 : {{ student.category.department }}</td>
+                    <td>직렬 : {{ student.department }}</td>
                     <td>이름 : {{ student.name }}</td>
                 </tr>
             </tbody>
@@ -95,24 +95,23 @@
             </thead>
             <tbody>
                 {% for sub in exam_vars.sub_list %}
-                    {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
-                    {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
+                    {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
                     <tr class="text-center small">
                         <th class="text-nowrap align-center" rowspan="5">{{ sub }}</th>
                         <th class="text-nowrap">정답</th>
-                        {% for answer in answer_official %}
+                        {% for answer in answers %}
                             <td data-number="{{ answer.no }}">
-                                {% if answer.ans == 1234 or answer.ans == 12345 %}
+                                {% if answer.ans_official == 1234 or answer.ans_official == 12345 %}
                                     <div class="text-nowrap">전체<br/>정답</div>
                                 {% else %}
-                                    {{ answer.ans }}
+                                    {{ answer.ans_official_circle }}
                                 {% endif %}
                             </td>
                         {% endfor %}
                     </tr>
                     <tr class="text-center small">
                         <th class="text-nowrap">정답률(%)</th>
-                        {% for answer in answer_official %}
+                        {% for answer in answers %}
                             <td data-number="{{ answer.no }}">
                                 {{ answer.rate_correct|floatformat:0 }}
                             </td>
@@ -120,15 +119,13 @@
                     </tr>
                     <tr class="text-center small">
                         <th class="text-nowrap">제출 답안</th>
-                        {% for answer in answer_student %}
-                            {% if answer.ans > 0 and answer.ans < 6 %}
-                                <td data-number="{{ answer.no }}">{{ answer.ans }}</td>
-                            {% endif %}
+                        {% for answer in answers %}
+                            <td data-number="{{ answer.no }}">{{ answer.get_answer_display }}</td>
                         {% endfor %}
                     </tr>
                     <tr class="text-center small">
                         <th class="text-nowrap">정오</th>
-                        {% for answer in answer_student %}
+                        {% for answer in answers %}
                             <td data-number="{{ answer.no }}">
                                 {% if answer.result %}O{% else %}X{% endif %}
                             </td>
@@ -136,7 +133,7 @@
                     </tr>
                     <tr class="text-center small">
                         <th class="text-nowrap">선택률(%)</th>
-                        {% for answer in answer_student %}
+                        {% for answer in answers %}
                             <td data-number="{{ answer.no }}">
                                 {{ answer.rate_selection|floatformat:0 }}
                             </td>

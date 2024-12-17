@@ -1,7 +1,5 @@
 {% load psat_filter %}
-{% load slippers %}
 {% load humanize %}
-{% load partials %}
 
 <article class="table-responsive htmx-fade-in htmx-fade-out">
     <table class="table table-bordered table-striped small align-middle m-0">
@@ -42,41 +40,43 @@
             </tr>
         </thead>
         <tbody>
-            {% if catalog_page_obj %}
-                {% for obj in catalog_page_obj %}
-                    <tr class="text-center">
-                        <td class="text-nowrap p-2">{{ obj.id }}</td>
-                        <td class="text-nowrap p-2">{{ obj.rank_total.average }}</td>
-                        <td class="text-nowrap p-2">
-                            <a href=""
+            {% for obj in catalog_page_obj %}
+                <tr class="text-center">
+                    <td class="text-nowrap p-2">{{ obj.id }}</td>
+                    <td class="text-nowrap p-2">{{ obj.rank_tot_avg }}</td>
+                    <td class="text-nowrap p-2">
+                        <a href="{% url 'prime:score-admin-student-detail' obj.id %}"
 {#                                <a href="{% url 'prime_admin:individual_student_print' year round obj.id %}"#}
-                               target="score_print">
-                                {{ obj.name }}
-                            </a>
-                        </td>
-                        <td class="text-nowrap p-2">{{ obj.serial }}</td>
-                        <td class="text-nowrap p-2">{{ obj.category.department }}</td>
+                           target="score_print">
+                            {{ obj.name }}
+                        </a>
+                    </td>
+                    <td class="text-nowrap p-2">{{ obj.serial }}</td>
+                    <td class="text-nowrap p-2">{{ obj.department }}</td>
 
-                        <td class="text-nowrap p-2 td-right-no-border">{{ obj.score.sum|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score.sum|divide:3|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total.average }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_total.average|divide:obj.rank_total.participants|percentage|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_category.average }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_category.average|divide:obj.rank_category.participants|percentage|floatformat:1 }}</td>
+                    <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_sum|floatformat:1 }}</td>
+                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score_avg|floatformat:1 }}</td>
+                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_tot_avg }}</td>
+                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_tot_avg|divide:obj.rank_tot_num|percentage|floatformat:1 }}</td>
+                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_dep_avg }}</td>
+                    <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_dep_avg|divide:obj.rank_dep_num|percentage|floatformat:1 }}</td>
 
-                        {% for _ in '0123' %}
-                            {% cycle obj.score.subject_0 obj.score.subject_1 obj.score.subject_2 obj.score.subject_3 as score silent %}
-                            {% cycle obj.rank_total.subject_0 obj.rank_total.subject_1 obj.rank_total.subject_2 obj.rank_total.subject_3 as rank_total silent %}
-                            {% cycle obj.rank_category.subject_0 obj.rank_category.subject_1 obj.rank_category.subject_2 obj.rank_category.subject_3 as rank_category silent %}
-                            <td class="text-nowrap p-2 td-right-no-border">{{ score|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_total }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_total|divide:obj.rank_total.participants|percentage|floatformat:1 }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_category }}</td>
-                            <td class="text-nowrap p-2 td-left-no-border">{{ rank_category|divide:obj.rank_category.participants|percentage|floatformat:1 }}</td>
-                        {% endfor %}
-                  </tr>
-                {% endfor %}
-            {% endif %}
+                    {% for _ in '0123' %}
+                        {% cycle obj.score_0 obj.score_1 obj.score_2 obj.score_3 as score silent %}
+                        {% cycle obj.rank_tot_0 obj.rank_tot_1 obj.rank_tot_2 obj.rank_tot_3 as rank_tot silent %}
+                        {% cycle obj.rank_dep_0 obj.rank_dep_1 obj.rank_dep_2 obj.rank_dep_3 as rank_dep silent %}
+                        <td class="text-nowrap p-2 td-right-no-border">{{ score|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_tot }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_tot|divide:obj.rank_tot_num|percentage|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_dep }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border">{{ rank_dep|divide:obj.rank_dep_num|percentage|floatformat:1 }}</td>
+                    {% endfor %}
+                </tr>
+            {% empty %}
+                <tr class="text-center">
+                    <td class="text-nowrap p-2" colspan="31">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
 </article>

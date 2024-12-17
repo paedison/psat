@@ -1,67 +1,52 @@
 {% load humanize %}
 
-<div class="card-header">
-    <div class="d-flex align-items-center">
-        <span>제{{ exam.round }}회 | 성적 통계</span>
-        <div class="btn-group ms-auto">
-            <a class="btn btn-sm btn-outline-secondary" title="목록"
-               href="">
-{#               href="{% url 'prime_admin:list' %}" hx-post="{% url 'prime_admin:list' %}">#}
-                목록
-            </a>
-            <a class="btn btn-sm btn-outline-secondary" title="인쇄하기"
-               href="" target="_blank">
-                인쇄하기
-            </a>
-            <a class="btn btn-sm btn-outline-secondary" title="Excel로 내보내기"
-               href="">
-                Excel로 내보내기
-            </a>
-        </div>
-    </div>
-</div>
+<article class="table-responsive">
+    <table class="table table-bordered table-striped small align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
+                <th class="text-primary text-nowrap p-2" rowspan="2">응시 인원</th>
+                <th class="text-primary text-nowrap p-2" colspan="4">PSAT</th>
+                <th class="text-primary text-nowrap p-2" colspan="4">헌법</th>
+                <th class="text-primary text-nowrap p-2" colspan="4">언어논리</th>
+                <th class="text-primary text-nowrap p-2" colspan="4">자료해석</th>
+                <th class="text-primary text-nowrap p-2" colspan="4">상황판단</th>
+            </tr>
 
-<div class="card-body">
-    <article class="table-responsive">
-        <table class="table table-bordered table-striped small align-middle m-0">
-            <thead>
-                <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
-                    <th class="text-primary text-nowrap p-2" rowspan="2">응시 인원</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">PSAT</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">헌법</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">언어논리</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">자료해석</th>
-                    <th class="text-primary text-nowrap p-2" colspan="4">상황판단</th>
-                </tr>
+            <tr class="text-center table-warning align-middle">
+                {% for _ in '12345' %}
+                    <th class="text-primary text-nowrap p-2 td-right-no-border">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>20%</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border">평균<br/>점수</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in statistics_page_obj %}
+                <tr class="text-center">
+                    <td class="text-nowrap p-2">{{ obj.department }}</td>
+                    <td class="text-nowrap p-2">{{ obj.average.participants|intcomma }}</td>
 
-                <tr class="text-center table-warning align-middle">
-                    {% for _ in '12345' %}
-                        <th class="text-primary text-nowrap p-2 td-right-no-border">최고<br/>점수</th>
-                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
-                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>20%</th>
-                        <th class="text-primary text-nowrap p-2 td-left-no-border">평균<br/>점수</th>
+                    {% for _ in '01234' %}
+                        {% cycle obj.average obj.subject_0 obj.subject_1 obj.subject_2 obj.subject_3 as data_stat silent %}
+                        <td class="text-nowrap p-2 td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ data_stat.t20|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border">{{ data_stat.avg|floatformat:1 }}</td>
                     {% endfor %}
                 </tr>
-            </thead>
-            <tbody>
-                {% if data_statistics %}
-                    {% for obj in data_statistics %}
-                        <tr class="text-center">
-                            <td class="text-nowrap p-2">{{ obj.department }}</td>
-                            <td class="text-nowrap p-2">{{ obj.average.participants|intcomma }}</td>
+            {% empty %}
+                <tr class="text-center">
+                    <td class="text-nowrap p-2" colspan="22">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
 
-                            {% for _ in '01234' %}
-                                {% cycle obj.average obj.subject_0 obj.subject_1 obj.subject_2 obj.subject_3 as data_stat silent %}
-                                <td class="text-nowrap p-2 td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ data_stat.t20|floatformat:1 }}</td>
-                                <td class="text-nowrap p-2 td-left-no-border">{{ data_stat.avg|floatformat:1 }}</td>
-                            {% endfor %}
-                        </tr>
-                    {% endfor %}
-                {% endif %}
-            </tbody>
-        </table>
-    </article>
-</div>
+{% with page_obj=statistics_page_obj page_range=statistics_page_range %}
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'a_prime/snippets/pagination.html' with header='statistics_list' %}
+    {% endif %}
+{% endwith %}

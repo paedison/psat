@@ -66,13 +66,13 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_prime/score_list.html', context)
 
 
-def get_detail_context(request: HtmxHttpRequest, pk: int):
+def get_detail_context(user, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
     config = ViewConfiguration()
     config.submenu_kor = f'제{exam.round}회 ' + config.submenu_kor
 
-    student = exam_vars.get_student(request.user)
+    student = exam_vars.get_student(user)
     if not student:
         return redirect('prime:score-list')
 
@@ -80,6 +80,7 @@ def get_detail_context(request: HtmxHttpRequest, pk: int):
     stat_department = exam_vars.get_dict_stat_data(student, 'department')
     frequency_score = exam_vars.get_dict_frequency_score(student)
     qs_student_answer = exam_vars.get_qs_student_answer(student)
+    # qs_problems = exam_vars.get_qs_problems_for_answer_count()
     data_answers = exam_vars.get_data_answers(qs_student_answer)
 
     context = update_context_data(
@@ -115,12 +116,12 @@ def get_detail_context(request: HtmxHttpRequest, pk: int):
 
 
 def detail_view(request: HtmxHttpRequest, pk: int):
-    context = get_detail_context(request, pk)
+    context = get_detail_context(request.user, pk)
     return render(request, 'a_prime/score_detail.html', context)
 
 
 def print_view(request: HtmxHttpRequest, pk: int):
-    context = get_detail_context(request, pk)
+    context = get_detail_context(request.user, pk)
     return render(request, 'a_prime/score_print.html', context)
 
 
@@ -181,6 +182,7 @@ class ExamVars:
     exam: models.Psat
 
     exam_model = models.Psat
+    problem_model = models.Problem
     student_model = models.ResultStudent
     answer_model = models.ResultAnswer
     answer_count_model = models.ResultAnswerCount
@@ -212,9 +214,22 @@ class ExamVars:
     score_template_table_2 = 'a_prime/snippets/detail_sheet_score_table_2.html'
 
     def get_student(self, user):
+        annotate_dict = {
+            'score_sum': F('score__sum'),
+            'rank_tot_num': F(f'rank_total__participants'),
+            'rank_dep_num': F(f'rank_category__participants'),
+        }
+        field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
+        for key, fld in field_dict.items():
+            annotate_dict[f'score_{key}'] = F(f'score__{fld}')
+            annotate_dict[f'rank_tot_{key}'] = F(f'rank_total__{fld}')
+            annotate_dict[f'rank_dep_{key}'] = F(f'rank_category__{fld}')
+
         return (
             self.student_model.objects.filter(registries__user=user, psat=self.exam)
-            .select_related('psat', 'score', 'category').order_by('id').last()
+            .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
+            .annotate(department=F('category__department'), **annotate_dict)
+            .order_by('id').last()
         )
 
     def get_qs_student_answer(self, student):
@@ -232,6 +247,28 @@ class ExamVars:
             'problem__result_answer_count_mid_rank',
             'problem__result_answer_count_low_rank',
         )
+
+    def get_qs_problems_for_answer_count(self, subject=None):
+        annotate_dict = {}
+        field_list = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
+        for fld in field_list:
+            annotate_dict[f'{fld}'] = F(f'result_answer_count__{fld}')
+            annotate_dict[f'{fld}_top'] = F(f'result_answer_count_top_rank__{fld}')
+            annotate_dict[f'{fld}_mid'] = F(f'result_answer_count_mid_rank__{fld}')
+            annotate_dict[f'{fld}_low'] = F(f'result_answer_count_low_rank__{fld}')
+        qs_problems = (
+            self.problem_model.objects.filter(psat=self.exam)
+            .order_by('subject', 'number')
+            .select_related(
+                'result_answer_count',
+                'result_answer_count_top_rank',
+                'result_answer_count_mid_rank',
+                'result_answer_count_low_rank',
+            ).annotate(**annotate_dict)
+        )
+        if subject:
+            qs_problems = qs_problems.filter(subject=subject)
+        return qs_problems
 
     def get_qs_answers(self, student: models.ResultStudent, stat_type: str):
         qs_answers = (
@@ -275,6 +312,44 @@ class ExamVars:
             ) * 100 / count_sum
         return getattr(answer_count, f'count_{ans}') * 100 / count_sum
 
+    # def get_data_answers(self, qs_student_answer):
+    #     for line in qs_student_answer:
+    #         sub = line.problem.subject
+    #         field = self.subject_vars[sub][1]
+    #         ans_official = line.problem.answer
+    #         ans_student = line.answer
+    #
+    #         answer_official_list = []
+    #         if 1 <= ans_official <= 5:
+    #             result = ans_student == ans_official
+    #         else:
+    #             answer_official_list = [int(digit) for digit in str(ans_official)]
+    #             result = ans_student in answer_official_list
+    #
+    #         line.no = line.problem.number
+    #         line.ans_official = ans_official
+    #         line.ans_official_circle = line.problem.get_answer_display
+    #         line.ans_student = ans_student
+    #         line.ans_list = answer_official_list
+    #         line.field = field
+    #         line.result = result
+    #
+    #         line.rate_correct = line.problem.result_answer_count.get_answer_rate(ans_official)
+    #         line.rate_correct_top = line.problem.result_answer_count_top_rank.get_answer_rate(ans_official)
+    #         line.rate_correct_mid = line.problem.result_answer_count_mid_rank.get_answer_rate(ans_official)
+    #         line.rate_correct_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_official)
+    #         try:
+    #             line.rate_gap = line.rate_correct_top - line.rate_correct_low
+    #         except TypeError:
+    #             line.rate_gap = None
+    #
+    #         line.rate_selection = line.problem.result_answer_count.get_answer_rate(ans_student)
+    #         line.rate_selection_top = line.problem.result_answer_count_top_rank.get_answer_rate(ans_student)
+    #         line.rate_selection_mid = line.problem.result_answer_count_mid_rank.get_answer_rate(ans_student)
+    #         line.rate_selection_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_student)
+    #
+    #     return qs_student_answer
+
     def get_data_answers(self, qs_student_answer):
         data_answers = self.get_empty_data_answer()
 
@@ -294,6 +369,7 @@ class ExamVars:
 
             line.no = line.problem.number
             line.ans_official = ans_official
+            line.ans_official_circle = line.problem.get_answer_display
             line.ans_student = ans_student
             line.ans_list = answer_official_list
             line.field = field
