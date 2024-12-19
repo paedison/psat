@@ -27,9 +27,14 @@ class ViewConfiguration:
 
 
 def get_student_dict(user, exam_list):
+    annotate_dict = {}
+    field_dict = {0: 'subject_0', 1: 'subject_1', 'sum': 'sum'}
+    for key, fld in field_dict.items():
+        annotate_dict[f'raw_score_{key}'] = F(f'score__raw_{fld}')
+        annotate_dict[f'score_{key}'] = F(f'score__{fld}')
     students = (
         models.ResultStudent.objects.filter(registries__user=user, leet__in=exam_list)
-        .select_related('leet', 'score', 'rank').order_by('id')
+        .select_related('leet', 'score', 'rank').order_by('id').annotate(**annotate_dict)
     )
     return {student.leet: student for student in students}
 
@@ -39,9 +44,9 @@ def list_view(request: HtmxHttpRequest):
     exam_list = models.Leet.objects.filter(year=2025)
 
     subjects = [
+        ('총점', 'sum'),
         ('언어이해', 'subject_0'),
         ('추리논증', 'subject_1'),
-        ('총점', 'subject_2'),
     ]
 
     page_number = request.GET.get('page', 1)
@@ -374,11 +379,11 @@ class ExamVars:
 
     def get_dict_frequency_score(self, student) -> dict:
         score_frequency_list = self.get_score_frequency_list()
-        score_counts_list = [round(score / 3, 1) for score in score_frequency_list]
+        score_counts_list = [round(score, 1) for score in score_frequency_list]
         score_counts_list.sort()
 
         score_counts = Counter(score_counts_list)
-        student_target_score = round(student.score.sum / 3, 1)
+        student_target_score = round(student.score.sum, 1)
         score_colors = ['blue' if score == student_target_score else 'white' for score in score_counts.keys()]
 
         return {'score_points': dict(score_counts), 'score_colors': score_colors}

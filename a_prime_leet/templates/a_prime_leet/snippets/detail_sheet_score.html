@@ -18,22 +18,25 @@
 
 {% partialdef score_table %}
     <article class="table-responsive">
-        <table class="table small align-middle">
+        <table class="table table-bordered small align-middle">
             <thead>
                 <tr class="text-center align-middle table-warning">
-                    <th class="text-nowrap" rowspan="2">과목</th>
+                    <th class="text-nowrap td-left-no-border" rowspan="2">과목</th>
                     <th class="text-nowrap" colspan="2">내 점수(점)</th>
                     <th class="text-nowrap" colspan="2">석차</th>
-                    <th class="text-nowrap" rowspan="2">최고 점수</th>
-                    <th class="text-nowrap" rowspan="2">상위 10%</th>
-                    <th class="text-nowrap" rowspan="2">상위 20%</th>
-                    <th class="text-nowrap" rowspan="2">평균 점수</th>
+                    <th class="text-nowrap" colspan="2">최고 점수(점)</th>
+                    <th class="text-nowrap" colspan="2">상위 10%(점)</th>
+                    <th class="text-nowrap" colspan="2">상위 20%(점)</th>
+                    <th class="text-nowrap td-right-no-border" colspan="2">평균 점수(점)</th>
                 </tr>
                 <tr class="text-center align-middle table-warning">
-                    <th class="text-nowrap">원점수</th>
-                    <th class="text-nowrap">표준점수</th>
-                    <th class="text-nowrap">(등)</th>
-                    <th class="text-nowrap">(%)</th>
+                    {% partialdef table_head inline=True %}
+                        <th class="text-nowrap td-right-no-border">원점수</th>
+                        <th class="text-nowrap td-left-no-border td-right-no-border">표준점수</th>
+                    {% endpartialdef table_head %}
+                    <th class="text-nowrap td-right-no-border">(등)</th>
+                    <th class="text-nowrap td-left-no-border">(%)</th>
+                    {% for _ in '0123' %}{% partial table_head %}{% endfor %}
                 </tr>
             </thead>
             <tbody>
@@ -48,7 +51,7 @@
 
 {% partialdef sub_score_line %}
     <tr class="text-center {% if stat.field == 'sum' %}table-warning{% endif %}">
-        <th class="text-nowrap" aria-label="과목">
+        <th class="text-nowrap td-left-no-border" aria-label="과목">
             {% if stat.is_confirmed or stat.field == 'sum' %}
                 {{ stat.icon|safe }} {{ stat.subject }}
             {% else %}
@@ -71,49 +74,73 @@
                 {% endif %}
             </td>
         {% else %}
-            <td class="text-nowrap">
+            <td class="text-nowrap td-right-no-border">
                 <div id="{{ prefix }}my_score_{{ stat.field }}"
                      class="htmx-fade-up-in delay-0 text-success fw-bold">
                     {{ stat.raw_score }}
                 </div>
             </td>
-            <td class="text-nowrap">
+            <td class="text-nowrap td-right-no-border td-left-no-border">
                 <div id="{{ prefix }}my_score_{{ stat.field }}"
                      class="htmx-fade-up-in delay-0 text-success fw-bold">
                     {{ stat.score|floatformat:1 }}
                 </div>
             </td>
-            <td class="text-nowrap">
+            <td class="text-nowrap td-right-no-border">
                 <div id="{{ prefix }}rank_{{ stat.field }}"
                      class="htmx-fade-up-in delay-1">
                     {{ stat.rank }} / {{ stat.participants }}
                 </div>
             </td>
-            <td class="text-nowrap">
+            <td class="text-nowrap td-right-no-border td-left-no-border">
                 <div id="{{ prefix }}rank_ratio_{{ stat.field }}"
                      class="htmx-fade-up-in delay-2">
                     {{ stat.rank|percentageby:stat.participants|floatformat:1 }}
                 </div>
             </td>
-            <td>
+            <td class="text-nowrap td-right-no-border">
+                <div id="{{ prefix }}_max_score_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-2">
+                    {{ stat.max_raw_score }}
+                </div>
+            </td>
+            <td class="text-nowrap td-right-no-border td-left-no-border">
                 <div id="{{ prefix }}_max_score_{{ stat.field }}"
                      class="htmx-fade-up-in delay-2">
                     {{ stat.max_score|floatformat:1 }}
                 </div>
             </td>
-            <td>
+            <td class="text-nowrap td-right-no-border">
+                <div id="{{ prefix }}_top_score_10_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-3">
+                    {{ stat.top_raw_score_10 }}
+                </div>
+            </td>
+            <td class="text-nowrap td-right-no-border td-left-no-border">
                 <div id="{{ prefix }}_top_score_10_{{ stat.field }}"
                      class="htmx-fade-up-in delay-3">
                     {{ stat.top_score_10|floatformat:1 }}
                 </div>
             </td>
-            <td>
+            <td class="text-nowrap td-right-no-border">
+                <div id="{{ prefix }}_top_score_20_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-4">
+                    {{ stat.top_raw_score_20 }}
+                </div>
+            </td>
+            <td class="text-nowrap td-right-no-border td-left-no-border">
                 <div id="{{ prefix }}_top_score_20_{{ stat.field }}"
                      class="htmx-fade-up-in delay-4">
                     {{ stat.top_score_20|floatformat:1 }}
                 </div>
             </td>
-            <td>
+            <td class="text-nowrap td-right-no-border">
+                <div id="{{ prefix }}_avg_score_{{ stat.field }}"
+                     class="htmx-fade-up-in delay-5">
+                    {{ stat.avg_raw_score|floatformat:1 }}
+                </div>
+            </td>
+            <td class="text-nowrap td-right-no-border td-left-no-border">
                 <div id="{{ prefix }}_avg_score_{{ stat.field }}"
                      class="htmx-fade-up-in delay-5">
                     {{ stat.avg_score|floatformat:1 }}

@@ -117,7 +117,7 @@
 
     chart_datasets_total = [
         {
-            label: 'PSAT 평균',
+            label: 'LEET 총점(표준점수)',
             data: Object.values(score_points),
             borderWidth: 2,
             tension: 0.4,
@@ -148,8 +148,17 @@
                 },
             },
             scales: {
-                y: {ticks: {font: {weight: 'bold'}}},
                 x: {ticks: {font: {weight: 'bold'}}},
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {weight: 'bold'},
+                        callback: function (value) {
+                            return Math.floor(value);
+                        }
+                    },
+                },
             },
         }
     }

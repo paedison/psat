@@ -26,7 +26,7 @@ class PrimeLeetStudentForm(forms.ModelForm):
         fields = ['serial', 'name', 'password']
 
 
-class UploadAnswerOfficialFileForm(forms.Form):
+class UploadFileForm(forms.Form):
     file = forms.FileField(
         label='',
         label_suffix='',

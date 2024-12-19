@@ -428,6 +428,7 @@ class ExamVars:
     score_model = models.ResultScore
     rank_model = models.ResultRank
     student_form = forms.PrimeLeetStudentForm
+    upload_file_form = forms.UploadFileForm
 
     sub_list = ['언어', '추리']
     subject_list = [models.choices.subject_choice()[key] for key in sub_list]
@@ -442,12 +443,6 @@ class ExamVars:
         'subject_1': ('추리', '추리논증', 1),
         'sum': ('총점', '총점', 2),
     }
-
-    def get_student(self, user):
-        return (
-            self.student_model.objects.filter(registries__user=user, leet=self.exam)
-            .select_related('leet', 'score', 'rank').order_by('id').last()
-        )
 
     def get_qs_student_answer(self, student):
         return models.ResultAnswer.objects.filter(
@@ -519,19 +514,6 @@ class ExamVars:
 
         return answers_page_obj_group, answers_page_range_group
 
-    def get_qs_score(self, student: models.ResultStudent, stat_type: str):
-        qs_score = self.score_model.objects.filter(student__leet=self.exam)
-        return qs_score.values()
-
-    def get_score_frequency_list(self) -> list:
-        return self.student_model.objects.filter(leet=self.exam).values_list('score__sum', flat=True)
-
-    def get_score_tab(self):
-        return [
-            {'id': '0', 'title': '내 성적', 'template': self.score_template_table_1},
-            {'id': '1', 'title': '전체 기준', 'template': self.score_template_table_2},
-        ]
-
     def get_answer_tab(self):
         answer_tab = [
             {'id': str(idx), 'title': sub, 'icon': icon_set_new.ICON_SUBJECT[sub], 'answer_count': 5}
@@ -585,12 +567,13 @@ class ExamVars:
         is_updated = None
         error = None
 
-        form = forms.UploadAnswerOfficialFileForm(request.POST, request.FILES)
+        form = self.upload_file_form(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES['file']
             df = pd.read_excel(uploaded_file, sheet_name='정답', header=0, index_col=0)
             df = df.infer_objects(copy=False)
             df.fillna(value=0, inplace=True)
+
             for subject, rows in df.items():
                 for number, answer in rows.items():
                     if answer:
@@ -629,7 +612,7 @@ class ExamVars:
         list_create = []
         error = None
 
-        form = forms.UploadAnswerOfficialFileForm(request.POST, request.FILES)
+        form = self.upload_file_form(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES['file']
             df = pd.read_excel(uploaded_file, sheet_name='마킹데이터', header=[0, 1], index_col=0)

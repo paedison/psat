@@ -74,18 +74,23 @@
                     <div class="card-body">
                         {% #responsive_table %}
                             <thead>
-                                <tr class="text-center table-warning">
-                                    <th class="text-primary text-nowrap p-2 col-1">회차</th>
-                                    <th class="text-primary text-nowrap p-2 col-1">수험번호</th>
-                                    <th class="text-primary text-nowrap p-2 col-1">직렬</th>
-                                    <th class="text-primary text-nowrap p-2 col-1">성적표</th>
-                                    <th class="text-primary text-nowrap p-2 col-1">
+                                <tr class="text-center align-middle table-warning">
+                                    <th class="text-primary text-nowrap p-2 col-1" rowspan="2">회차</th>
+                                    <th class="text-primary text-nowrap p-2 col-1" rowspan="2">수험번호</th>
+                                    <th class="text-primary text-nowrap p-2 col-1" rowspan="2">성적표</th>
+                                    <th class="text-primary text-nowrap p-2 col-1" colspan="2">총점</th>
+                                    <th class="text-primary text-nowrap p-2 col-1" colspan="2">
                                         {{ icon_subject.언어|safe }} 언어이해
                                     </th>
-                                    <th class="text-primary text-nowrap p-2 col-1">
+                                    <th class="text-primary text-nowrap p-2 col-1" colspan="2">
                                         {{ icon_subject.추리|safe }} 추리논증
                                     </th>
-                                    <th class="text-primary text-nowrap p-2 col-1">총점</th>
+                                </tr>
+                                <tr class="text-center align-middle table-warning">
+                                    {% for _ in '012' %}
+                                        <th class="text-primary text-nowrap p-2 col-1">원점수</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">표준점수</th>
+                                    {% endfor %}
                                 </tr>
                             </thead>
 
@@ -183,21 +188,6 @@
         {% endif %}
     </td>
 
-    <td class="text-nowrap p-2" aria-label="Department">
-        {% if user.is_authenticated %}
-            {% if obj.student %}
-                <a href="{{ obj.get_score_detail_url }}" hx-boost="true">{{ obj.student.category.department }}</a>
-                {% partial delete_student %}
-            {% else %}
-                {% partial input_button %}
-            {% endif %}
-        {% else %}
-            {% with class='warning' text='입력' %}
-                {% partial login_modal %}
-            {% endwith %}
-        {% endif %}
-    </td>
-
     <td class="text-nowrap p-2" aria-label="Score Sheet">
         {% if user.is_authenticated %}
             {% if obj.student %}
@@ -222,13 +212,9 @@
     </td>
 
     {% for subject in subjects %}
-        {% cycle obj.student.score.subject_0 obj.student.score.subject_1 obj.student.score.subject_2 obj.student.score.subject_3 obj.student.score.total as score silent %}
-        <td aria-label="{{ subject.0 }}">
-            {% if subject.1 == 'average' %}
-                {% if score %}{{ score|divide:3|floatformat:1 }}{% endif %}
-            {% else %}
-                {{ score|floatformat:1 }}
-            {% endif %}
-        </td>
+        {% cycle obj.student.raw_score_sum obj.student.raw_score_0 obj.student.raw_score_1 as raw_score silent %}
+        {% cycle obj.student.score_sum obj.student.score_0 obj.student.score_1 as score silent %}
+        <td aria-label="{{ subject.0 }} 원점수">{{ raw_score }}</td>
+        <td aria-label="{{ subject.0 }} 표준점수">{{ score|floatformat:1 }}</td>
     {% endfor %}
 {% endpartialdef exam_info %}
