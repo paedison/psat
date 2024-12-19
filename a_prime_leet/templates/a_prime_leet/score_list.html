@@ -70,63 +70,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">시험 목록</div>
-
                     <div class="card-body">
-                        {% #responsive_table %}
-                            <thead>
-                                <tr class="text-center align-middle table-warning">
-                                    <th class="text-primary text-nowrap p-2 col-1" rowspan="2">회차</th>
-                                    <th class="text-primary text-nowrap p-2 col-1" rowspan="2">수험번호</th>
-                                    <th class="text-primary text-nowrap p-2 col-1" rowspan="2">성적표</th>
-                                    <th class="text-primary text-nowrap p-2 col-1" colspan="2">총점</th>
-                                    <th class="text-primary text-nowrap p-2 col-1" colspan="2">
-                                        {{ icon_subject.언어|safe }} 언어이해
-                                    </th>
-                                    <th class="text-primary text-nowrap p-2 col-1" colspan="2">
-                                        {{ icon_subject.추리|safe }} 추리논증
-                                    </th>
-                                </tr>
-                                <tr class="text-center align-middle table-warning">
-                                    {% for _ in '012' %}
-                                        <th class="text-primary text-nowrap p-2 col-1">원점수</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">표준점수</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {% if page_obj %}
-                                    {% for obj in page_obj %}
-                                        <tr class="text-center">
-                                            {% partialdef exam_round inline=True %}
-                                                <td class="text-nowrap p-2">
-                                                    {% if obj.student %}
-                                                        <a href="{{ obj.get_score_detail_url }}" hx-boost="true">
-                                                            제{{ obj.round }}회
-                                                        </a>
-                                                    {% else %}
-                                                        제{{ obj.round }}회
-                                                    {% endif %}
-                                                </td>
-                                            {% endpartialdef %}
-                                            {% if current_time > obj.answer_official_opened_at %}
-                                                {% partial exam_info %}
-                                            {% else %}
-                                                <td class="text-nowrap p-2" colspan="8">
-                                                    <a class="badge rounded-pill text-bg-danger" href=""
-                                                       hx-headers='{"View-Modal":"no_open"}'
-                                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                                       data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                                       hx-get="{{ obj.get_score_modal_url }}">
-                                                        성적 공개 일시 : {{ obj.answer_official_opened_at|date:'n/d(D) H:i' }}
-                                                    </a>
-                                                </td>
-                                            {% endif %}
-                                        </tr>
-                                    {% endfor %}
-                                {% endif %}
-                            </tbody>
-                        {% /responsive_table %}
+                        {% partial exam_table %}
                     </div>
                 </div>
             </div>
@@ -148,6 +93,66 @@
         </div>
     </section>
 {% endblock main %}
+
+{% partialdef exam_table %}
+    <article class="table-responsive">
+        <table class="table table-bordered small align-middle">
+            <thead>
+                <tr class="text-center align-middle table-warning">
+                    <th class="text-primary text-nowrap td-left-no-border" rowspan="2">회차</th>
+                    <th class="text-primary text-nowrap" rowspan="2">수험번호</th>
+                    <th class="text-primary text-nowrap" rowspan="2">성적표</th>
+                    <th class="text-primary text-nowrap" colspan="2">총점</th>
+                    <th class="text-primary text-nowrap" colspan="2">
+                        {{ icon_subject.언어|safe }} 언어이해
+                    </th>
+                    <th class="text-primary text-nowrap td-right-no-border" colspan="2">
+                        {{ icon_subject.추리|safe }} 추리논증
+                    </th>
+                </tr>
+                <tr class="text-center align-middle table-warning">
+                    {% for _ in '012' %}
+                        <th class="text-primary text-nowrap td-right-no-border">원점수</th>
+                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">표준점수</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if page_obj %}
+                    {% for obj in page_obj %}
+                        <tr class="text-center">
+                            {% partialdef exam_round inline=True %}
+                                <td class="text-nowrap td-left-no-border">
+                                    {% if obj.student %}
+                                        <a href="{{ obj.get_score_detail_url }}" hx-boost="true">
+                                            제{{ obj.round }}회
+                                        </a>
+                                    {% else %}
+                                        제{{ obj.round }}회
+                                    {% endif %}
+                                </td>
+                            {% endpartialdef %}
+                            {% if current_time > obj.answer_official_opened_at %}
+                                {% partial exam_info %}
+                            {% else %}
+                                <td class="text-nowrap" colspan="8">
+                                    <a class="badge rounded-pill text-bg-danger" href=""
+                                       hx-headers='{"View-Modal":"no_open"}'
+                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                       data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                       hx-get="{{ obj.get_score_modal_url }}">
+                                        성적 공개 일시 : {{ obj.answer_official_opened_at|date:'n/d(D) H:i' }}
+                                    </a>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </article>
+{% endpartialdef exam_table %}
 
 {% partialdef exam_info %}
     <td class="text-nowrap p-2" aria-label="Serial">
@@ -214,7 +219,11 @@
     {% for subject in subjects %}
         {% cycle obj.student.raw_score_sum obj.student.raw_score_0 obj.student.raw_score_1 as raw_score silent %}
         {% cycle obj.student.score_sum obj.student.score_0 obj.student.score_1 as score silent %}
-        <td aria-label="{{ subject.0 }} 원점수">{{ raw_score }}</td>
-        <td aria-label="{{ subject.0 }} 표준점수">{{ score|floatformat:1 }}</td>
+        <td class="text-nowrap td-right-no-border" aria-label="{{ subject.0 }} 원점수">
+            {{ raw_score }}
+        </td>
+        <td class="text-nowrap td-left-no-border td-right-no-border" aria-label="{{ subject.0 }} 표준점수">
+            {{ score|floatformat:1 }}
+        </td>
     {% endfor %}
 {% endpartialdef exam_info %}
