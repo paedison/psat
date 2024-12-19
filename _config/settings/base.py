@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     'predict',
     'a_board',
     'a_prime',
+    'a_prime_leet',
 ]
 
 MIDDLEWARE = [

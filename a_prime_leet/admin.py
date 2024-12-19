@@ -5,8 +5,8 @@ from . import models
 from .models.choices import answer_choice
 
 
-@admin.register(models.Psat)
-class PsatAdmin(ModelAdmin):
+@admin.register(models.Leet)
+class LeetAdmin(ModelAdmin):
     list_display = list_display_links = ['id', 'year', 'exam', 'round', 'is_active']
     list_filter = ['year', 'exam', 'is_active']
     ordering = ['-id']
@@ -20,7 +20,7 @@ class ProblemAdmin(ModelAdmin):
     list_display = list_display_links = [
         'id', 'year', 'ex', 'subject', 'number', 'answer'
     ]
-    list_filter = ['psat__year', 'psat__exam', 'subject']
+    list_filter = ['leet__year', 'leet__exam', 'subject']
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
     search_fields = ['data']
@@ -28,23 +28,22 @@ class ProblemAdmin(ModelAdmin):
 
     @admin.display(description='연도')
     def year(self, obj):
-        return f'{obj.psat.year}'
+        return f'{obj.leet.year}'
 
     @admin.display(description='시험')
     def ex(self, obj):
-        return f'{obj.psat.exam}'
+        return f'{obj.leet.exam}'
 
 
 @admin.register(models.ResultStudent)
 class ResultStudentAdmin(ModelAdmin):
     list_display = list_display_links = [
         'id', 'created_at', 'year', 'round',
-        'name', 'serial', 'password', 'unit', 'department',
+        'name', 'serial', 'password',
     ]
     list_filter = [
-        'psat__year',
-        'psat__round',
-        'category__department',
+        'leet__year',
+        'leet__round',
     ]
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
@@ -52,31 +51,22 @@ class ResultStudentAdmin(ModelAdmin):
 
     @admin.display(description='연도')
     def year(self, obj):
-        return f'{obj.psat.year}'
+        return f'{obj.leet.year}'
 
     @admin.display(description='회차')
     def round(self, obj):
-        return f'{obj.psat.round}'
-
-    @admin.display(description='모집단위')
-    def unit(self, obj):
-        return f'{obj.category.unit}'
-
-    @admin.display(description='직렬')
-    def department(self, obj):
-        return f'{obj.category.department}'
+        return f'{obj.leet.round}'
 
 
 @admin.register(models.ResultRegistry)
 class ResultRegistryAdmin(ModelAdmin):
     list_display = list_display_links = [
         'id', 'created_at', 'user_id', 'student_id',
-        'year', 'round', 'name', 'serial', 'password', 'department',
+        'year', 'round', 'name', 'serial', 'password',
     ]
     list_filter = [
-        'student__psat__year',
-        'student__psat__round',
-        'student__category__department',
+        'student__leet__year',
+        'student__leet__round',
     ]
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
@@ -96,27 +86,22 @@ class ResultRegistryAdmin(ModelAdmin):
 
     @admin.display(description='연도')
     def year(self, obj):
-        return f'{obj.student.psat.year}'
+        return f'{obj.student.leet.year}'
 
     @admin.display(description='회차')
     def round(self, obj):
-        return f'{obj.student.psat.round}'
-
-    @admin.display(description='직렬')
-    def department(self, obj):
-        return f'{obj.student.category.department}'
+        return f'{obj.student.leet.round}'
 
 
 @admin.register(models.ResultAnswer)
 class ResultAnswerAdmin(ModelAdmin):
     list_display = list_display_links = [
-        'id', 'student_id', 'problem_id', 'year', 'round', 'name', 'department',
+        'id', 'student_id', 'problem_id', 'year', 'round', 'name',
         'subject', 'number', 'answer', 'answer_correct',
     ]
     list_filter = [
-        'student__psat__year',
-        'student__psat__round',
-        'student__category__department',
+        'student__leet__year',
+        'student__leet__round',
     ]
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
@@ -126,17 +111,13 @@ class ResultAnswerAdmin(ModelAdmin):
     def name(self, obj):
         return f'{obj.student.name}'
 
-    @admin.display(description='직렬')
-    def department(self, obj):
-        return f'{obj.student.category.department}'
-
     @admin.display(description='연도')
     def year(self, obj):
-        return f'{obj.student.psat.year}'
+        return f'{obj.student.leet.year}'
 
     @admin.display(description='회차')
     def round(self, obj):
-        return f'{obj.student.psat.round}'
+        return f'{obj.student.leet.round}'
 
     @admin.display(description='과목')
     def subject(self, obj):
@@ -161,8 +142,8 @@ class ResultAnswerCountAdmin(ModelAdmin):
         'count_0', 'count_multiple', 'count_sum',
     ]
     list_filter = [
-        'problem__psat__year',
-        'problem__psat__round',
+        'problem__leet__year',
+        'problem__leet__round',
     ]
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
@@ -170,11 +151,11 @@ class ResultAnswerCountAdmin(ModelAdmin):
 
     @admin.display(description='연도')
     def year(self, obj):
-        return f'{obj.problem.psat.year}'
+        return f'{obj.problem.leet.year}'
 
     @admin.display(description='회차')
     def round(self, obj):
-        return f'{obj.problem.psat.round}'
+        return f'{obj.problem.leet.round}'
 
     @admin.display(description='과목')
     def subject(self, obj):
@@ -193,12 +174,13 @@ class ResultAnswerCountAdmin(ModelAdmin):
 @admin.register(models.ResultScore)
 class ResultScoreAdmin(ModelAdmin):
     list_display = list_display_links = [
-        'id', 'student_id', 'year', 'round', 'name', 'department',
-        'subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'average'
+        'id', 'student_id', 'year', 'round', 'name',
+        'raw_subject_0', 'raw_subject_1', 'raw_sum',
+        'subject_0', 'subject_1', 'sum',
     ]
     list_filter = [
-        'student__psat__year',
-        'student__psat__round',
+        'student__leet__year',
+        'student__leet__round',
     ]
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
@@ -208,32 +190,24 @@ class ResultScoreAdmin(ModelAdmin):
     def name(self, obj):
         return f'{obj.student.name}'
 
-    @admin.display(description='직렬')
-    def department(self, obj):
-        return f'{obj.student.category.department}'
-
     @admin.display(description='연도')
     def year(self, obj):
-        return f'{obj.student.psat.year}'
+        return f'{obj.student.leet.year}'
 
     @admin.display(description='회차')
     def round(self, obj):
-        return f'{obj.student.psat.round}'
-
-    @admin.display(description='PSAT 평균')
-    def average(self, obj):
-        return f'{obj.average}'
+        return f'{obj.student.leet.round}'
 
 
-@admin.register(models.ResultRankTotal)
+@admin.register(models.ResultRank)
 class ResultRankTotalAdmin(ModelAdmin):
     list_display = list_display_links = [
-        'id', 'student_id', 'year', 'round', 'name', 'department',
-        'subject_0', 'subject_1', 'subject_2', 'subject_3', 'average', 'participants'
+        'id', 'student_id', 'year', 'round', 'name',
+        'subject_0', 'subject_1', 'sum', 'participants'
     ]
     list_filter = [
-        'student__psat__year',
-        'student__psat__round',
+        'student__leet__year',
+        'student__leet__round',
     ]
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
@@ -243,22 +217,13 @@ class ResultRankTotalAdmin(ModelAdmin):
     def name(self, obj):
         return f'{obj.student.name}'
 
-    @admin.display(description='직렬')
-    def department(self, obj):
-        return f'{obj.student.category.department}'
-
     @admin.display(description='연도')
     def year(self, obj):
-        return f'{obj.student.psat.year}'
+        return f'{obj.student.leet.year}'
 
     @admin.display(description='회차')
     def round(self, obj):
-        return f'{obj.student.psat.round}'
-
-
-@admin.register(models.ResultRankCategory)
-class ResultRankCategoryAdmin(ResultRankTotalAdmin):
-    pass
+        return f'{obj.student.leet.round}'
 
 
 @admin.register(models.ResultAnswerCountTopRank)

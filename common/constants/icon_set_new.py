@@ -35,6 +35,7 @@ ICON_MENU = {
     'predict': '<i class="fa-solid fa-fw fa-arrows-up-to-line"></i>',
     'score': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
     'prime': '<i class="fa-solid fa-fw fa-file"></i>',
+    'prime_leet': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
     'schedule': '<i class="fa-regular fa-fw fa-calendar-days"></i>',
 
     'qna': '<i class="fa-solid fa-fw fa-clipboard-question"></i>',
@@ -127,6 +128,7 @@ ICON_SUBJECT = {
     '언어': '<i class="fa-solid fa-fw fa-language"></i>',
     '자료': '<i class="fa-solid fa-fw fa-table-cells-large"></i>',
     '상황': '<i class="fa-solid fa-fw fa-scale-balanced"></i>',
+    '추리': '<i class="fa-solid fa-fw fa-scale-balanced"></i>',
     '피셋': '',
     '총점': '',
     '평균': '',

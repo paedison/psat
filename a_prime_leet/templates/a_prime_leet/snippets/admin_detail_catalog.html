@@ -1,0 +1,73 @@
+{% load psat_filter %}
+{% load humanize %}
+
+<article class="table-responsive htmx-fade-in htmx-fade-out">
+    <table class="table table-bordered table-striped small align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap p-2" rowspan="3">ID</th>
+                <th class="text-primary text-nowrap p-2" rowspan="3">등수</th>
+                <th class="text-primary text-nowrap p-2" rowspan="3">이름</th>
+                <th class="text-primary text-nowrap p-2" rowspan="3">수험번호</th>
+
+                <th class="text-primary text-nowrap p-2" colspan="4">총점</th>
+                <th class="text-primary text-nowrap p-2" colspan="4">언어이해</th>
+                <th class="text-primary text-nowrap p-2" colspan="4">추리논증</th>
+            </tr>
+
+            <tr class="text-center table-warning align-middle">
+                {% for _ in '012' %}
+                    <th class="text-primary text-nowrap p-2 td-right-no-border" rowspan="2">원점수</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" rowspan="2">표준점수</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border" colspan="2">석차</th>
+                {% endfor %}
+            </tr>
+
+            <tr class="text-center table-warning align-middle">
+                {% for _ in '012' %}
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">등</th>
+                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">%</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in catalog_page_obj %}
+                <tr class="text-center">
+                    <td class="text-nowrap p-2">{{ obj.id }}</td>
+                    <td class="text-nowrap p-2">{{ obj.rank_sum }}</td>
+                    <td class="text-nowrap p-2">
+                        <a href="{% url 'prime:score-admin-student-detail' obj.id %}"
+                           target="score_print">
+                            {{ obj.name }}
+                        </a>
+                    </td>
+                    <td class="text-nowrap p-2">{{ obj.serial }}</td>
+
+                    {% for _ in '012' %}
+                        {% cycle obj.raw_score_sum obj.raw_score_0 obj.raw_score_1 as raw_score silent %}
+                        {% cycle obj.score_sum obj.score_0 obj.score_1 as score silent %}
+                        {% cycle obj.rank_sum obj.rank_0 obj.rank_1 as rank silent %}
+                        <td class="text-nowrap p-2 td-right-no-border">{{ raw_score }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ score|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank|default_if_none:'' }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                            {% if obj.rank_num %}
+                                {{ rank|divide:obj.rank_num|percentage|floatformat:1 }}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% empty %}
+                <tr class="text-center">
+                    <td class="text-nowrap p-2" colspan="31">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% with page_obj=catalog_page_obj page_range=catalog_page_range %}
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'a_prime/snippets/pagination.html' with header='catalog_list' %}
+    {% endif %}
+{% endwith %}

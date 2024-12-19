@@ -26,6 +26,7 @@ urlpatterns = [
     path('lecture/', include('lecture.urls')),  # Lecture
 
     path('prime/', include('a_prime.urls')),  # Prime
+    path('prime_leet/', include('a_prime_leet.urls')),  # Prime LEET
 
     path('score/', include('a_score.urls')),  # Score
     path('predict/', include('a_predict.urls')),  # Predict
