@@ -25,7 +25,7 @@ INFO = {'menu': 'score', 'view_type': 'primeScore'}
 class ViewConfiguration:
     menu = menu_eng = 'prime'
     menu_kor = '프라임'
-    submenu = submenu_eng = 'score'
+    submenu = submenu_eng = 'admin'
     submenu_kor = '관리자 메뉴'
     info = {'menu': menu, 'menu_self': submenu}
     icon_menu = icon_set_new.ICON_MENU[menu_eng]
@@ -59,8 +59,8 @@ def list_view(request: HtmxHttpRequest):
         student_page_range=student_page_range,
     )
     if view_type == 'student_list':
-        return render(request, 'a_prime/score_admin_list.html#student_list', context)
-    return render(request, 'a_prime/score_admin_list.html', context)
+        return render(request, 'a_prime/admin_list.html#student_list', context)
+    return render(request, 'a_prime/admin_list.html', context)
 
 
 @only_staff_allowed()
@@ -130,7 +130,7 @@ def detail_view(request: HtmxHttpRequest, pk: int):
         catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
         answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
     )
-    return render(request, 'a_prime/score_admin_detail.html', context)
+    return render(request, 'a_prime/admin_detail.html', context)
 
 
 @only_staff_allowed()
@@ -177,19 +177,19 @@ def exam_create_view(request: HtmxHttpRequest):
             psat = form.save()
             exam_vars = ExamVars(psat)
 
-            exam_vars.create_problems()
+            exam_vars.create_default_problems()
+            exam_vars.create_default_statistics('result')
+            exam_vars.create_default_statistics('predict')
 
             problems = models.Problem.objects.filter(psat=psat).order_by('id')
-            exam_vars.create_answer_counts(problems, 'all')
-            exam_vars.create_answer_counts(problems, 'top')
-            exam_vars.create_answer_counts(problems, 'mid')
-            exam_vars.create_answer_counts(problems, 'low')
+            exam_vars.create_default_answer_counts(problems, 'result')
+            exam_vars.create_default_answer_counts(problems, 'predict')
 
             response = redirect('prime:score-admin-list')
             return replace_url(response, config.url_list)
         else:
             context = update_context_data(config=config, form=form)
-            return render(request, 'a_prime/admin_exam_create.html', context)
+            return render(request, 'a_prime/admin_create_exam.html', context)
 
     form = forms.PsatForm()
     context = update_context_data(config=config, form=form)
@@ -202,7 +202,7 @@ def statistics_print_view(request: HtmxHttpRequest, pk: int):
     data_statistics = models.ResultStatistics.objects.filter(psat=exam).order_by('id')
     statistics_page_obj, _ = utils.get_paginator_data(data_statistics, 1, 50)
     context = update_context_data(exam=exam, statistics_page_obj=statistics_page_obj)
-    return render(request, 'a_prime/admin_statistics_print.html', context)
+    return render(request, 'a_prime/admin_print_statistics.html', context)
 
 
 @only_staff_allowed()
@@ -212,7 +212,7 @@ def catalog_print_view(request: HtmxHttpRequest, pk: int):
     student_list = exam_vars.get_student_list()
     catalog_page_obj, _ = utils.get_paginator_data(student_list, 1, 10000)
     context = update_context_data(exam=exam, catalog_page_obj=catalog_page_obj)
-    return render(request, 'a_prime/admin_catalog_print.html', context)
+    return render(request, 'a_prime/admin_print_catalog.html', context)
 
 
 @only_staff_allowed()
@@ -223,7 +223,7 @@ def answers_print_view(request: HtmxHttpRequest, pk: int):
     answers_page_obj_group, answers_page_range_group = (
         exam_vars.get_answer_page_data(qs_problems, 1, 1000))
     context = update_context_data(exam=exam, answers_page_obj_group=answers_page_obj_group)
-    return render(request, 'a_prime/admin_answers_print.html', context)
+    return render(request, 'a_prime/admin_print_answers.html', context)
 
 
 @only_staff_allowed()
@@ -369,22 +369,22 @@ def get_response_for_excel_file(df, drop_columns, column_label, filename):
 
 def export_transcript_to_pdf_view(request: HtmxHttpRequest):
     context = update_context_data()
-    return render(request, 'a_prime/score_admin_list.html', context)
+    return render(request, 'a_prime/admin_list.html', context)
 
 
 def export_statistics_to_excel_view(request: HtmxHttpRequest):
     context = update_context_data()
-    return render(request, 'a_prime/score_admin_list.html', context)
+    return render(request, 'a_prime/admin_list.html', context)
 
 
 def export_analysis_to_excel_view(request: HtmxHttpRequest):
     context = update_context_data()
-    return render(request, 'a_prime/score_admin_list.html', context)
+    return render(request, 'a_prime/admin_list.html', context)
 
 
 def export_scores_to_excel_view(request: HtmxHttpRequest):
     context = update_context_data()
-    return render(request, 'a_prime/score_admin_list.html', context)
+    return render(request, 'a_prime/admin_list.html', context)
 
 
 @dataclasses.dataclass
@@ -393,17 +393,25 @@ class ExamVars:
 
     exam_model = models.Psat
     problem_model = models.Problem
+    category_model = models.Category
+
     statistics_model = models.ResultStatistics
-    student_model = models.ResultStudent
-    answer_model = models.ResultAnswer
     answer_count_model = models.ResultAnswerCount
     answer_count_top_model = models.ResultAnswerCountTopRank
     answer_count_mid_model = models.ResultAnswerCountMidRank
     answer_count_low_model = models.ResultAnswerCountLowRank
+
+    predict_statistics_model = models.PredictStatistics
+    predict_answer_count_model = models.PredictAnswerCount
+    predict_answer_count_top_model = models.PredictAnswerCountTopRank
+    predict_answer_count_mid_model = models.PredictAnswerCountMidRank
+    predict_answer_count_low_model = models.PredictAnswerCountLowRank
+
+    student_model = models.ResultStudent
+    answer_model = models.ResultAnswer
     score_model = models.ResultScore
     rank_total_model = models.ResultRankTotal
     rank_category_model = models.ResultRankCategory
-    student_form = forms.PrimePsatStudentForm
 
     sub_list = ['헌법', '언어', '자료', '상황']
     subject_list = [models.choices.subject_choice()[key] for key in sub_list]
@@ -677,7 +685,7 @@ class ExamVars:
 
         return is_updated, message
 
-    def create_problems(self):
+    def create_default_problems(self):
         list_create = []
         for subject in self.sub_list:
             problem_count = self.problem_count[subject]
@@ -689,19 +697,48 @@ class ExamVars:
                     list_create.append(models.Problem(**problem_info))
         bulk_create_or_update(self.problem_model, list_create, [], [])
 
-    def create_answer_counts(self, problems, count_type: str):
+    def create_default_statistics(self, statistics_type: str):
         model_dict = {
-            'all': self.answer_count_model,
-            'top': self.answer_count_top_model,
-            'mid': self.answer_count_mid_model,
-            'low': self.answer_count_low_model,
+            'result': self.statistics_model,
+            'predict': self.predict_statistics_model,
         }
-        model = model_dict.get(count_type)
+        model = model_dict.get(statistics_type)
+
+        department_list = list(
+            self.category_model.objects.order_by('order').values_list('department', flat=True))
+        department_list.insert(0, '전체')
+
         list_create = []
         if model:
-            for problem in problems:
+            for department in department_list:
                 try:
-                    model.objects.get(problem=problem)
+                    model.objects.get(psat=self.exam, department=department)
                 except model.DoesNotExist:
-                    list_create.append(model(problem=problem))
+                    list_create.append(model(psat=self.exam, department=department))
         bulk_create_or_update(model, list_create, [], [])
+
+    def create_default_answer_counts(self, problems, statistics_type: str):
+        model_dict = {
+            'result': {
+                'all': self.answer_count_model,
+                'top': self.answer_count_top_model,
+                'mid': self.answer_count_mid_model,
+                'low': self.answer_count_low_model,
+            },
+            'predict': {
+                'all': self.predict_answer_count_model,
+                'top': self.predict_answer_count_top_model,
+                'mid': self.predict_answer_count_mid_model,
+                'low': self.predict_answer_count_low_model,
+            }
+        }
+        model_set = model_dict.get(statistics_type)
+        for rank_type, model in model_set.items():
+            list_create = []
+            if model:
+                for problem in problems:
+                    try:
+                        model.objects.get(problem=problem)
+                    except model.DoesNotExist:
+                        list_create.append(model(problem=problem))
+            bulk_create_or_update(model, list_create, [], [])

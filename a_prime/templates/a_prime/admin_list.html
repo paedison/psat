@@ -1,14 +1,9 @@
-{% extends 'list.html' %}
+{% extends 'a_prime/_prime_base.html' %}
 {% load static %}
 {% load psat_filter %}
 {% load humanize %}
 
-{% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
-
-{% block main %}
-    {% include 'snippets/page_title.html' %}
-
+{% block main_content %}
     <section class="section" hx-swap="innerHTML swap:0.25s">
         <div class="row">
             <div class="col-12" aria-label="시험 목록">
@@ -36,7 +31,7 @@
             </div>
         </div>
     </section>
-{% endblock main %}
+{% endblock main_content %}
 
 {% partialdef exam_list %}
     <article class="table-responsive">

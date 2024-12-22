@@ -7,6 +7,7 @@
 {#        {% if user.is_admin %}{% partial menu_dashboard %}{% endif %}#}
         {% partial menu_psat %}
 {#        {% partial menu_predict %}#}
+        {% if user.is_admin %}{% partial menu_prime %}{% endif %}
         {% if user.is_staff %}{% partial menu_prime_leet %}{% endif %}
         {% if user.is_admin %}{% partial menu_predict %}{% endif %}
 {#        {% partial menu_score %}#}
@@ -91,6 +92,38 @@
         </ul>
     </li>
 {% endpartialdef menu_psat %}
+
+{% partialdef menu_prime %}
+    <li class="nav-item" role="menuitem" aria-label="Prime PSAT Menu">
+        <a class="nav-link collapsed" href="#primeNavContent" data-menu="prime"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="primeNavContent">
+            <i class="fa-solid fa-fw fa-chart-simple"></i> 프라임PSAT
+            <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
+        </a>
+        <ul id="primeNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            {% if user.is_staff %}
+                <li>
+                    <a class="aside-nav-icon" data-menu-parent="prime" data-menu-self="admin"
+                       href="{% url 'prime:score-admin-list' %}">
+                        <i class="fa-regular fa-fw fa-square"></i> 관리자 메뉴
+                    </a>
+                </li>
+            {% endif %}
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="prime" data-menu-self="score"
+                   href="{% url 'prime:score-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 성적 확인
+                </a>
+            </li>
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="prime" data-menu-self="predict"
+                   href="{% url 'prime:predict-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 성적 예측
+                </a>
+            </li>
+        </ul>
+    </li>
+{% endpartialdef menu_prime %}
 
 {% partialdef menu_prime_leet %}
     <li class="nav-item" role="menuitem" aria-label="Prime LEET Menu">

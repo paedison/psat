@@ -1,0 +1,82 @@
+{% extends 'a_predict/_predict_base.html' %}
+{% load static %}
+{% load partials %}
+
+{% block head_title %}{{ sub_title }}{% endblock %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+
+{% block main %}
+{{ info|json_script:'info' }}
+<div class="pagetitle" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
+    <h1>{{ icon_menu|safe }} {{ title }}
+        <span class="fs-6 text-secondary">{{ sub_title }}</span>
+        <a class="btn btn-sm btn-outline-primary ms-2" href="{{ exam_vars.url_detail }}">
+            일반 페이지
+        </a>
+    </h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ exam_vars.url_index }}">Predict</a></li>
+            <li class="breadcrumb-item"><a href="{{ exam_vars.url_admin_list }}">Admin</a></li>
+            <li class="breadcrumb-item"><a class="active" href="">{{ exam.exam_abbr }}</a></li>
+        </ol>
+    </nav>
+</div><!-- Page Title End -->
+
+<section class="section">
+    <div class="row">
+        <div class="col-12">
+            <div class="card" hx-swap="innerHTML swap:0.25s">
+                <div class="card-header">업데이트</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form enctype="multipart/form-data"
+                                  hx-headers='{"Hx-Admin-Update":"answer_official"}'
+                                  hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                  hx-post="{{ exam_vars.url_admin_update }}">
+                                <div class="input-group">
+                                    <input type="file" name="file" class="form-control" required id="id_file">
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        정답 업데이트</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6 d-flex justify-content-end">
+                            <form hx-headers='{"Hx-Admin-Update":"statistics"}'
+                                  hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                  hx-post="{{ exam_vars.url_admin_update }}">
+                                <div class="input-group">
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        통계 업데이트</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div id="statistics" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {% include 'a_predict/snippets/admin_detail_statistics.html' %}
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div id="catalog" class="card htmx-fade-in htmx-fade-out" hx-swap="innerHTML swap:0.25s">
+                {% include 'a_predict/snippets/admin_detail_catalog.html' %}
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div id="answer_analysis" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                {% include 'a_predict/snippets/admin_detail_answer.html' %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main %}

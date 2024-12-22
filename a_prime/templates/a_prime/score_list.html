@@ -1,13 +1,7 @@
-{% extends 'list.html' %}
+{% extends 'a_prime/_prime_base.html' %}
 {% load static %}
-{% load psat_filter %}
 
-{% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
-
-{% block main %}
-    {% include 'snippets/page_title.html' %}
-
+{% block main_content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
         <div class="row">
@@ -15,7 +9,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title mb-0 text-center">
-                            <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>
+                            <img src="{% static 'image/prime/2025/psat/title.jpg' %}" class="mw-100" alt="Title"/>
                             <div class="container p-0">
                                 <div class="container mb-3">
                                     <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
@@ -115,7 +109,7 @@
                                             {% else %}
                                                 <td class="text-nowrap p-2" colspan="8">
                                                     <a class="badge rounded-pill text-bg-danger" href=""
-                                                       hx-headers='{"View-Modal":"no_open"}'
+                                                       hx-headers='{"View-Type":"no_open"}'
                                                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                        data-bs-toggle="modal" data-bs-target="#modalContainer"
                                                        hx-get="{{ obj.get_score_modal_url }}">
@@ -148,7 +142,7 @@
             </div>
         </div>
     </section>
-{% endblock main %}
+{% endblock main_content %}
 
 {% partialdef exam_info %}
     <td class="text-nowrap p-2" aria-label="Serial">
@@ -167,7 +161,7 @@
             {% else %}
                 {% partialdef input_button inline=True %} {# input_button partial #}
                     <a class="badge rounded-pill text-bg-warning" href=""
-                       hx-headers='{"View-Modal":"student_register"}'
+                       hx-headers='{"View-Type":"student_register"}'
                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                        data-bs-toggle="modal" data-bs-target="#modalContainer"
                        hx-get="{{ obj.get_score_modal_url }}">
@@ -213,7 +207,7 @@
                 </a>
             {% else %}
                 <a class="badge rounded-pill text-bg-danger" href=""
-                   hx-headers='{"View-Modal":"student_register"}'
+                   hx-headers='{"View-Type":"student_register"}'
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                    data-bs-toggle="modal" data-bs-target="#modalContainer"
                    hx-get="{{ obj.get_score_modal_url }}">
@@ -228,13 +222,9 @@
     </td>
 
     {% for subject in subjects %}
-        {% cycle obj.student.score.subject_0 obj.student.score.subject_1 obj.student.score.subject_2 obj.student.score.subject_3 obj.student.score.total as score silent %}
+        {% cycle obj.student.score.subject_0 obj.student.score.subject_1 obj.student.score.subject_2 obj.student.score.subject_3 obj.student.score.average as score silent %}
         <td aria-label="{{ subject.0 }}">
-            {% if subject.1 == 'average' %}
-                {% if score %}{{ score|divide:3|floatformat:1 }}{% endif %}
-            {% else %}
-                {{ score|floatformat:1 }}
-            {% endif %}
+            {{ score|floatformat:1 }}
         </td>
     {% endfor %}
 {% endpartialdef exam_info %}

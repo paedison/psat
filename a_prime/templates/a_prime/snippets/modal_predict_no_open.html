@@ -1,0 +1,9 @@
+{% #modal header='시험 결과 안내' %}
+    <h5 class="modal-title mx-auto fw-bold">
+        <span class="text-secondary">
+            제{{ exam.round }}회 모의고사 성적 예측은<br/>
+            <span class="text-danger">{{ exam.page_opened_at|date:'n/d(D) H:i' }}</span><br/>
+            이후부터 가능합니다.
+        </span>
+    </h5>
+{% /modal %}

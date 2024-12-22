@@ -7,7 +7,7 @@ from .problem_models import Psat, Problem, Category
 verbose_name_prefix = '[성적확인] '
 
 
-class ResultStatistics(abstract_models.ResultStatistics):
+class ResultStatistics(abstract_models.Statistics):
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='result_statistics')
 
     class Meta:

@@ -1,0 +1,22 @@
+{% load psat_filter %}
+
+{% for id in exam_vars.answer_tab.id %}
+    {% cycle exam_vars.answer_tab.prefix_submit.0 exam_vars.answer_tab.prefix_submit.1 exam_vars.answer_tab.prefix_submit.2 exam_vars.answer_tab.prefix_submit.3 as prefix silent %}
+    {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 as answer_official silent %}
+    {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 as answer_student silent %}
+    {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
+
+    {% for answer in answer_official %}
+        <div id="{{ prefix }}_correct_{{ answer.no }}"
+             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+            {{ answer.rate_correct|floatformat:0 }}
+        </div>
+    {% endfor %}
+
+    {% for answer in answer_student %}
+        <div id="{{ prefix }}_selection_{{ answer.no }}"
+             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+            {{ answer.rate_selection|floatformat:0 }}
+        </div>
+    {% endfor %}
+{% endfor %}

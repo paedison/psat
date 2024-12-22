@@ -1,21 +1,35 @@
 from django.db import models
+from django.db.models.functions import Greatest
+from django.urls import reverse_lazy
 
 from common.models import User
+from . import abstract_models
 from .problem_models import Psat, Problem, Category
-from . import choices
 
 verbose_name_prefix = '[성적예측] '
 
 
-class PredictStudent(models.Model):
+class PredictStatistics(abstract_models.ExtendedStatistics):
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_statistics')
+
+    class Meta:
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}00_시험통계'
+        db_table = 'a_prime_predict_statistics'
+        constraints = [
+            models.UniqueConstraint(fields=['psat', 'department'], name='unique_prime_predict_statistics')
+        ]
+
+    def __str__(self):
+        return f'[Prime]PredictStatistics(#{self.id}):{self.psat.reference}'
+
+
+class PredictStudent(abstract_models.Student):
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_students')
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='predict_students')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prime_predict_students')
-
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
-    name = models.CharField(max_length=20, verbose_name='이름')
-    serial = models.CharField(max_length=10, verbose_name='수험번호')
-    password = models.CharField(max_length=10, null=True, blank=True, verbose_name='비밀번호')
+    is_filtered = models.BooleanField(default=False, verbose_name='필터링 여부')
+    department = ''
+    answer_count = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0, '평균': 0}
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}01_수험정보'
@@ -30,15 +44,11 @@ class PredictStudent(models.Model):
     def __str__(self):
         return f'[Prime]PredictStudent(#{self.id}):{self.psat.reference}({self.student_info})'
 
-    @property
-    def student_info(self):
-        return f'{self.serial}-{self.name}'
 
-
-class PredictAnswer(models.Model):
+class PredictAnswer(abstract_models.Answer):
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='작성 일시')
     student = models.ForeignKey(PredictStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='predict_answers')
-    answer = models.IntegerField(choices=choices.answer_choice, default=1, verbose_name='답안')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}03_답안'
@@ -51,16 +61,35 @@ class PredictAnswer(models.Model):
         return f'[Prime]PredictAnswer(#{self.id}):{self.student.student_info}-{self.problem.reference}'
 
 
-class PredictAnswerCount(models.Model):
+class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count')
-    count_1 = models.IntegerField(default=0, verbose_name='①')
-    count_2 = models.IntegerField(default=0, verbose_name='②')
-    count_3 = models.IntegerField(default=0, verbose_name='③')
-    count_4 = models.IntegerField(default=0, verbose_name='④')
-    count_5 = models.IntegerField(default=0, verbose_name='⑤')
-    count_0 = models.IntegerField(default=0, verbose_name='미표기')
-    count_multiple = models.IntegerField(default=0, verbose_name='중복표기')
-    count_total = models.IntegerField(default=0, verbose_name='총계')
+    answer_predict = models.GeneratedField(
+        expression=models.Case(
+            models.When(
+                models.Q(count_1=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(1),
+            ),
+            models.When(
+                models.Q(count_2=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(2),
+            ),
+            models.When(
+                models.Q(count_3=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(3),
+            ),
+            models.When(
+                models.Q(count_4=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(4),
+            ),
+            models.When(
+                models.Q(count_5=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(5),
+            ),
+            default=None,
+        ),
+        output_field=models.IntegerField(),
+        db_persist=True,
+    )
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}04_답안 개수'
@@ -70,13 +99,8 @@ class PredictAnswerCount(models.Model):
         return f'[Prime]PredictAnswerCount(#{self.id}):{self.problem.reference}'
 
 
-class PredictScore(models.Model):
+class PredictScore(abstract_models.Score):
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='score')
-    subject_0 = models.FloatField(null=True, blank=True, verbose_name='헌법')
-    subject_1 = models.FloatField(null=True, blank=True, verbose_name='언어논리')
-    subject_2 = models.FloatField(null=True, blank=True, verbose_name='자료해석')
-    subject_3 = models.FloatField(null=True, blank=True, verbose_name='상황판단')
-    total = models.FloatField(null=True, blank=True, verbose_name='PSAT 총점')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}05_점수'
@@ -86,18 +110,7 @@ class PredictScore(models.Model):
         return f'[Prime]PredictScore(#{self.id}):{self.student.student_info}'
 
 
-class PredictRank(models.Model):
-    subject_0 = models.IntegerField(null=True, blank=True, verbose_name='헌법')
-    subject_1 = models.IntegerField(null=True, blank=True, verbose_name='언어논리')
-    subject_2 = models.IntegerField(null=True, blank=True, verbose_name='자료해석')
-    subject_3 = models.IntegerField(null=True, blank=True, verbose_name='상황판단')
-    total = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
-
-    class Meta:
-        abstract = True
-
-
-class PredictRankTotal(PredictRank):
+class PredictRankTotal(abstract_models.ExtendedRank):
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='rank_total')
 
     class Meta:
@@ -108,7 +121,7 @@ class PredictRankTotal(PredictRank):
         return f'[Prime]PredictRankTotal(#{self.id}):{self.student.student_info}'
 
 
-class PredictRankCategory(PredictRank):
+class PredictRankCategory(abstract_models.ExtendedRank):
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='rank_category')
 
     class Meta:
@@ -119,15 +132,15 @@ class PredictRankCategory(PredictRank):
         return f'[Prime]PredictRankCategory(#{self.id}):{self.student.student_info}'
 
 
-class PredictAnswerCountLowRank(PredictAnswerCount):
-    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_low_rank')
+class PredictAnswerCountTopRank(abstract_models.ExtendedAnswerCount):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_top_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}08_답안 개수(하위권)'
-        db_table = 'a_prime_predict_answer_count_low_rank'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}08_답안 개수(상위권)'
+        db_table = 'a_prime_predict_answer_count_top_rank'
 
 
-class PredictAnswerCountMidRank(PredictAnswerCount):
+class PredictAnswerCountMidRank(abstract_models.ExtendedAnswerCount):
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_mid_rank')
 
     class Meta:
@@ -135,9 +148,9 @@ class PredictAnswerCountMidRank(PredictAnswerCount):
         db_table = 'a_prime_predict_answer_count_mid_rank'
 
 
-class PredictAnswerCountTopRank(PredictAnswerCount):
-    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_top_rank')
+class PredictAnswerCountLowRank(abstract_models.ExtendedAnswerCount):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_low_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}10_답안 개수(상위권)'
-        db_table = 'a_prime_predict_answer_count_top_rank'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}10_답안 개수(하위권)'
+        db_table = 'a_prime_predict_answer_count_low_rank'

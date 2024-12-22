@@ -3,14 +3,31 @@ from django.db import models
 from . import choices
 
 
-class ResultStatistics(models.Model):
+def get_default_statistics():
+    return {
+        "participants": 0, "max": 0, "t10": 0, "t20": 0, "avg": 0
+    }
+
+
+class Statistics(models.Model):
     department = models.CharField(
         max_length=40, choices=choices.statistics_department_choices, default='전체', verbose_name='직렬')
-    subject_0 = models.JSONField(default=dict, verbose_name='헌법')
-    subject_1 = models.JSONField(default=dict, verbose_name='언어논리')
-    subject_2 = models.JSONField(default=dict, verbose_name='자료해석')
-    subject_3 = models.JSONField(default=dict, verbose_name='상황판단')
-    average = models.JSONField(default=dict, verbose_name='PSAT')
+    subject_0 = models.JSONField(default=get_default_statistics, verbose_name='헌법')
+    subject_1 = models.JSONField(default=get_default_statistics, verbose_name='언어논리')
+    subject_2 = models.JSONField(default=get_default_statistics, verbose_name='자료해석')
+    subject_3 = models.JSONField(default=get_default_statistics, verbose_name='상황판단')
+    average = models.JSONField(default=get_default_statistics, verbose_name='PSAT')
+
+    class Meta:
+        abstract = True
+
+
+class ExtendedStatistics(Statistics):
+    filtered_subject_0 = models.JSONField(default=get_default_statistics, verbose_name='[필터링]헌법')
+    filtered_subject_1 = models.JSONField(default=get_default_statistics, verbose_name='[필터링]언어논리')
+    filtered_subject_2 = models.JSONField(default=get_default_statistics, verbose_name='[필터링]자료해석')
+    filtered_subject_3 = models.JSONField(default=get_default_statistics, verbose_name='[필터링]상황판단')
+    filtered_average = models.JSONField(default=get_default_statistics, verbose_name='[필터링]PSAT')
 
     class Meta:
         abstract = True
@@ -20,7 +37,7 @@ class Student(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     name = models.CharField(max_length=20, verbose_name='이름')
     serial = models.CharField(max_length=10, verbose_name='수험번호')
-    password = models.CharField(max_length=10, null=True, blank=True, verbose_name='비밀번호')
+    password = models.CharField(max_length=10, default=0, verbose_name='비밀번호')
 
     class Meta:
         abstract = True
@@ -63,6 +80,20 @@ class AnswerCount(models.Model):
             return count_target * 100 / self.count_sum
 
 
+class ExtendedAnswerCount(AnswerCount):
+    filtered_count_1 = models.IntegerField(default=0, verbose_name='[필터링]①')
+    filtered_count_2 = models.IntegerField(default=0, verbose_name='[필터링]②')
+    filtered_count_3 = models.IntegerField(default=0, verbose_name='[필터링]③')
+    filtered_count_4 = models.IntegerField(default=0, verbose_name='[필터링]④')
+    filtered_count_5 = models.IntegerField(default=0, verbose_name='[필터링]⑤')
+    filtered_count_0 = models.IntegerField(default=0, verbose_name='[필터링]미표기')
+    filtered_count_multiple = models.IntegerField(default=0, verbose_name='[필터링]중복표기')
+    filtered_count_sum = models.IntegerField(default=0, verbose_name='[필터링]총계')
+
+    class Meta:
+        abstract = True
+
+
 class Score(models.Model):
     subject_0 = models.FloatField(null=True, blank=True, verbose_name='헌법')
     subject_1 = models.FloatField(null=True, blank=True, verbose_name='언어논리')
@@ -91,3 +122,14 @@ class Rank(models.Model):
         if self.participants:
             return _rank / self.participants
 
+
+class ExtendedRank(Rank):
+    filtered_subject_0 = models.IntegerField(null=True, blank=True, verbose_name='[필터링]헌법')
+    filtered_subject_1 = models.IntegerField(null=True, blank=True, verbose_name='[필터링]언어논리')
+    filtered_subject_2 = models.IntegerField(null=True, blank=True, verbose_name='[필터링]자료해석')
+    filtered_subject_3 = models.IntegerField(null=True, blank=True, verbose_name='[필터링]상황판단')
+    filtered_average = models.IntegerField(null=True, blank=True, verbose_name='[필터링]PSAT')
+    filtered_participants = models.IntegerField(null=True, blank=True, verbose_name='[필터링]총 인원')
+
+    class Meta:
+        abstract = True

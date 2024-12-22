@@ -1,12 +1,7 @@
-{% extends 'list.html' %}
+{% extends 'a_prime/_prime_base.html' %}
 {% load static %}
 
-{% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
-
-{% block main %}
-    {% include 'snippets/page_title.html' %}
-
+{% block main_content %}
     <section class="section">
         <div class="row">
             <div class="col-12" aria-label="업데이트">
@@ -159,7 +154,7 @@
             </div>
         </div>
     </section>
-{% endblock main %}
+{% endblock main_content %}
 
 {% partialdef search_tab %}
     <div class="d-flex">

@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from .. import models, forms
+from .. import models, forms, utils
 
 
 class ViewConfiguration:
@@ -67,7 +67,7 @@ def list_view(request: HtmxHttpRequest):
 
 
 def get_detail_context(user, pk: int):
-    exam = get_object_or_404(models.Psat, pk=pk)
+    exam = utils.get_exam(pk)
     exam_vars = ExamVars(exam)
     config = ViewConfiguration()
     config.submenu_kor = f'제{exam.round}회 ' + config.submenu_kor
@@ -80,7 +80,6 @@ def get_detail_context(user, pk: int):
     stat_department = exam_vars.get_dict_stat_data(student, 'department')
     frequency_score = exam_vars.get_dict_frequency_score(student)
     qs_student_answer = exam_vars.get_qs_student_answer(student)
-    # qs_problems = exam_vars.get_qs_problems_for_answer_count()
     data_answers = exam_vars.get_data_answers(qs_student_answer)
 
     context = update_context_data(
@@ -126,29 +125,27 @@ def print_view(request: HtmxHttpRequest, pk: int):
 
 
 def modal_view(request: HtmxHttpRequest, pk: int):
-    exam = models.Psat.objects.get(pk=pk)
+    exam = utils.get_exam(pk)
     exam_vars = ExamVars(exam)
+    view_type = request.headers.get('View-Type', '')
 
-    hx_modal = request.headers.get('View-Modal', '')
-    is_no_open = hx_modal == 'no_open'
-    is_student_register = hx_modal == 'student_register'
+    form = exam_vars.student_form()
+    context = update_context_data(exam=exam, form=form)
+    if view_type == 'no_open':
+        return render(request, 'a_prime/snippets/modal_score_no_open.html', context)
 
-    context = update_context_data(exam=exam)
-    if is_no_open:
-        return render(request, 'a_prime/snippets/modal_no_open.html', context)
-
-    if is_student_register:
+    if view_type == 'student_register':
         context = update_context_data(
             context,
             exam_vars=exam_vars,
             header=f'{exam.year}년 대비 제{exam.round}회 프라임 모의고사 수험 정보 입력',
         )
-        return render(request, 'a_prime/snippets/modal_student_register.html', context)
+        return render(request, 'a_prime/snippets/modal_score_student_register.html', context)
 
 
 @require_POST
 def register_view(request: HtmxHttpRequest, pk: int):
-    exam = models.Psat.objects.get(pk=pk)
+    exam = utils.get_exam(pk)
     exam_vars = ExamVars(exam)
 
     form = exam_vars.student_form(data=request.POST, files=request.FILES)
@@ -160,19 +157,19 @@ def register_view(request: HtmxHttpRequest, pk: int):
         try:
             target_student = exam_vars.student_model.objects.get(
                 psat=exam, serial=serial, name=name, password=password)
-            registered_student, _ = models.ResultRegistry.objects.get_or_create(
+            registered_student, _ = exam_vars.registry_model.objects.get_or_create(
                 user=request.user, student=target_student)
             context = update_context_data(context, user_verified=True)
         except exam_vars.student_model.DoesNotExist:
             context = update_context_data(context, no_student=True)
 
-    return render(request, 'a_prime/snippets/modal_student_register.html#student_info', context)
+    return render(request, 'a_prime/snippets/modal_score_student_register.html#student_info', context)
 
 
 @require_POST
 def unregister_view(request: HtmxHttpRequest, pk: int):
-    psat = models.Psat.objects.get(pk=pk)
-    student = models.ResultRegistry.objects.get(student__psat=psat, user=request.user)
+    exam = utils.get_exam(pk)
+    student = models.ResultRegistry.objects.get(student__psat=exam, user=request.user)
     student.delete()
     return redirect('prime:score-list')
 
@@ -183,13 +180,17 @@ class ExamVars:
 
     exam_model = models.Psat
     problem_model = models.Problem
+    category_model = models.Category
+
     student_model = models.ResultStudent
+    registry_model = models.ResultRegistry
     answer_model = models.ResultAnswer
     answer_count_model = models.ResultAnswerCount
     score_model = models.ResultScore
     rank_total_model = models.ResultRankTotal
     rank_category_model = models.ResultRankCategory
-    student_form = forms.PrimePsatStudentForm
+
+    student_form = forms.PrimeResultStudentForm
 
     sub_list = ['헌법', '언어', '자료', '상황']
     subject_list = [models.choices.subject_choice()[key] for key in sub_list]

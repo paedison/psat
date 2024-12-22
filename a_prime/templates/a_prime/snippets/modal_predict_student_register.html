@@ -1,0 +1,74 @@
+{% #modal header=header size=" " %}
+    {% partialdef student_info inline=True %}
+        {% if exam.is_not_page_open %}
+            <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                    수험정보는 {{ exam.page_opened_at|date:'n/d(D) H:i' }}부터 입력 가능합니다.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% elif user_verified %}
+            <div class="py-4">
+                <h5 class="modal-title mx-auto fw-bold" hx-trigger="load delay:0.5s"
+                    hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true"
+                    hx-get="{{ exam.get_predict_detail_url }}">
+                    <span class="text-success">수험 정보가 입력되었습니다.</span>
+                </h5>
+            </div>
+            <script>
+                (function () {
+                    let button = document.querySelector('div.modal-header > .btn-close');
+                    setTimeout(function () {button.click()}, 1000);
+                })()
+            </script>
+        {% else %}
+            <form id="student_info"
+                  hx-swap="outerHTML swap:0.25s" hx-target="#student_info"
+                  hx-post="{{ exam.get_predict_register_url }}">
+                {% if no_student %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        수험 정보를 다시 확인해주세요.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+
+                <select id="id_unit" class="form-select"
+                        name="unit" aria-label="모집단위"
+                        hx-push-url="false" hx-trigger="change"
+                        hx-target="#id_department" hx-swap="outerHTML"
+                        hx-headers='{"View-Type":"department"}'
+                        hx-get="{{ exam.get_predict_register_url }}">
+                    <option value="">모집단위를 선택해주세요.</option>
+                    {% for unit in units %}
+                        {% if unit == form.unit.value %}
+                            <option value="{{ unit }}" selected>{{ unit }}</option>
+                        {% else %}
+                            <option value="{{ unit }}">{{ unit }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+
+                {% include 'a_prime/snippets/department_list.html' %}
+
+                <div class="form-floating mt-3">
+                    {{ form.serial }}
+                    <label for="{{ form.serial.id_for_label }}">{{ form.serial.label }}</label>
+                </div>
+
+                <div class="form-floating mt-3">
+                    {{ form.name }}
+                    <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                </div>
+
+                <div class="input-group mt-3">
+                    <div class="form-floating">
+                        {{ form.password }}
+                        <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                    </div>
+                    <button class="btn btn-outline-secondary" type="submit">
+                        입력
+                    </button>
+                </div>
+            </form>
+        {% endif %}
+    {% endpartialdef student_info %}
+{% /modal %}

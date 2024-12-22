@@ -1,0 +1,14 @@
+{% for stat_tot in stat_total_all %}
+    <div id="{{ stat_tot.field }}_score_predict"
+         class="htmx-fade-up-in delay-1 text-primary fw-bold" hx-swap-oob="true">
+        {{ stat_tot.score_predict|floatformat:1|default:'' }}
+    </div>
+    <div id="{{ stat_tot.field }}_score_real"
+         class="htmx-fade-up-in delay-1 text-success fw-bold" hx-swap-oob="true">
+        {{ stat_tot.score_real|floatformat:1|default:'' }}
+    </div>
+    <div id="{{ stat_tot.field }}_participants"
+         class="htmx-fade-up-in delay-2 fw-bold" hx-swap-oob="true">
+        {{ stat_tot.participants|default:0 }}
+    </div>
+{% endfor %}

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 
 from django.db import models
@@ -42,6 +42,14 @@ class Psat(models.Model):
         return timezone.now() <= self.page_opened_at
 
     @property
+    def is_not_started(self):
+        return self.page_opened_at < timezone.now() <= self.exam_started_at
+
+    @property
+    def is_going_on(self):
+        return self.exam_started_at < timezone.now() <= self.exam_finished_at
+
+    @property
     def is_not_finished(self):
         return timezone.now() <= self.exam_finished_at
 
@@ -56,6 +64,10 @@ class Psat(models.Model):
     @property
     def is_answer_official_opened(self):
         return self.answer_official_opened_at <= timezone.now()
+
+    @property
+    def is_predict_closed(self):
+        return self.answer_official_opened_at + timedelta(days=5) <= timezone.now()
 
     @staticmethod
     def get_admin_list_url():
@@ -91,6 +103,31 @@ class Psat(models.Model):
 
     def get_score_modal_url(self):
         return reverse_lazy('prime:score-modal', args=[self.id])
+
+    @staticmethod
+    def get_predict_list_url():
+        return reverse_lazy('prime:predict-list')
+
+    def get_predict_detail_url(self):
+        return reverse_lazy('prime:predict-detail', args=[self.id])
+
+    def get_predict_register_url(self):
+        return reverse_lazy('prime:predict-register', args=[self.id])
+
+    def get_predict_answer_input_url(self, subject_field):
+        return reverse_lazy('prime:predict-answer-input', args=[self.id, subject_field])
+
+    def get_predict_answer_confirm_url(self, subject_field):
+        return reverse_lazy('prime:predict-answer-confirm', args=[self.id, subject_field])
+
+    def get_predict_unregister_url(self):
+        return reverse_lazy('prime:predict-unregister', args=[self.id])
+
+    # def get_score_print_url(self):
+    #     return reverse_lazy('prime:score-print', args=[self.id])
+    #
+    def get_predict_modal_url(self):
+        return reverse_lazy('prime:predict-modal', args=[self.id])
 
 
 class Problem(models.Model):
