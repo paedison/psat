@@ -64,3 +64,12 @@ class PrimePredictStudentForm(forms.ModelForm):
         if commit:
             student.save()
         return student
+
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField(
+        label='',
+        label_suffix='',
+        widget=forms.FileInput(
+            attrs={'class': 'form-control'}),
+    )

@@ -98,6 +98,10 @@ class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
     def __str__(self):
         return f'[Prime]PredictAnswerCount(#{self.id}):{self.problem.reference}'
 
+    def get_answer_predict_rate(self):
+        if self.count_sum:
+            return getattr(self, f'count_{self.answer_predict}') * 100 / self.count_sum
+
 
 class PredictScore(abstract_models.Score):
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='score')

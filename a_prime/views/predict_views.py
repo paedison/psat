@@ -1,7 +1,7 @@
 import dataclasses
 import json
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from django.contrib.auth.decorators import login_not_required
@@ -91,12 +91,14 @@ def get_detail_context(user, pk: int):
     # data_answer_predict = exam_vars.get_data_answer_predict(qs_answer_count)
 
     qs_student_answer = exam_vars.get_qs_student_answer(student)
+    is_confirmed_data = exam_vars.get_is_confirmed_data(qs_student_answer)
 
-    stat_total_all = exam_vars.get_dict_stat_data(student, 'total', False)
-    stat_department_all = exam_vars.get_dict_stat_data(student, 'department', False)
+    stat_total_all = exam_vars.get_dict_stat_data(student, is_confirmed_data, 'total', False)
+    exam_vars.update_score_predict(stat_total_all, qs_student_answer)
+    stat_department_all = exam_vars.get_dict_stat_data(student, is_confirmed_data, 'department', False)
 
-    stat_total_filtered = exam_vars.get_dict_stat_data(student, 'total', True)
-    stat_department_filtered = exam_vars.get_dict_stat_data(student, 'department', True)
+    stat_total_filtered = exam_vars.get_dict_stat_data(student, is_confirmed_data, 'total', True)
+    stat_department_filtered = exam_vars.get_dict_stat_data(student, is_confirmed_data, 'department', True)
 
     # frequency_score = exam_vars.get_dict_frequency_score(student)
     data_answers = exam_vars.get_data_answers(qs_student_answer)
@@ -133,6 +135,7 @@ def get_detail_context(user, pk: int):
         #
         # sheet_answer: 답안 확인
         data_answers=data_answers,
+        is_confirmed_data=is_confirmed_data,
     )
     return context
 
@@ -324,11 +327,11 @@ class ExamVars:
     subject_list = [models.choices.subject_choice()[key] for key in sub_list]
     problem_count = {'헌법': 25, '언어': 40, '자료': 40, '상황': 40, '평균': 120}
     subject_vars = {
-        '헌법': ('헌법', 'subject_0'),
-        '언어': ('언어논리', 'subject_1'),
-        '자료': ('자료해석', 'subject_2'),
-        '상황': ('상황판단', 'subject_3'),
-        '평균': ('PSAT 평균', 'average'),
+        '헌법': ('헌법', 'subject_0', 0),
+        '언어': ('언어논리', 'subject_1', 1),
+        '자료': ('자료해석', 'subject_2', 2),
+        '상황': ('상황판단', 'subject_3', 3),
+        '평균': ('PSAT 평균', 'average', 4),
     }
     field_vars = {
         'subject_0': ('헌법', '헌법', 0),
@@ -342,6 +345,21 @@ class ExamVars:
     # Template constants
     score_template_table_1 = 'a_prime/snippets/predict_detail_sheet_score_table_1.html'
     score_template_table_2 = 'a_prime/snippets/predict_detail_sheet_score_table_2.html'
+
+    def get_time_schedule(self):
+        start_time = self.exam.exam_started_at
+        exam_1_end_time = start_time + timedelta(minutes=115)  # 1교시 시험 종료 시각
+        exam_2_start_time = exam_1_end_time + timedelta(minutes=95)  # 2교시 시험 시작 시각
+        exam_2_end_time = exam_2_start_time + timedelta(minutes=90)  # 2교시 시험 종료 시각
+        exam_3_start_time = exam_2_end_time + timedelta(minutes=30)  # 3교시 시험 시작 시각
+        finish_time = exam_3_start_time + timedelta(minutes=90)  # 3교시 시험 종료 시각
+        return {
+            '헌법': (start_time, exam_1_end_time),
+            '언어': (start_time, exam_1_end_time),
+            '자료': (exam_2_start_time, exam_2_end_time),
+            '상황': (exam_3_start_time, finish_time),
+            '평균': (start_time, finish_time),
+        }
 
     def get_student(self, user) -> models.PredictStudent:
         annotate_dict = {
@@ -385,6 +403,7 @@ class ExamVars:
     def get_qs_student_answer(self, student):
         return models.PredictAnswer.objects.filter(
             problem__psat=self.exam, student=student).annotate(
+            subject=F('problem__subject'),
             is_correct=Case(
                 When(answer=F('problem__answer'), then=Value(True)),
                 default=Value(False),
@@ -392,10 +411,10 @@ class ExamVars:
             )
         ).select_related(
             'problem',
-            'problem__result_answer_count',
-            'problem__result_answer_count_top_rank',
-            'problem__result_answer_count_mid_rank',
-            'problem__result_answer_count_low_rank',
+            'problem__predict_answer_count',
+            'problem__predict_answer_count_top_rank',
+            'problem__predict_answer_count_mid_rank',
+            'problem__predict_answer_count_low_rank',
         )
 
     def get_qs_answer_count(self):
@@ -424,7 +443,7 @@ class ExamVars:
             qs_problems = qs_problems.filter(subject=subject)
         return qs_problems
 
-    def get_qs_answers(self, student: models.PredictStudent, stat_type: str, is_filtered: bool):
+    def get_qs_answer_values(self, student: models.PredictStudent, stat_type: str, is_filtered: bool):
         qs_answers = (
             self.answer_model.objects.filter(problem__psat=self.exam).values('problem__subject')
             .annotate(participant_count=Count('student_id', distinct=True))
@@ -483,88 +502,125 @@ class ExamVars:
             field = self.subject_vars[sub][1]
             ans_official = line.problem.answer
             ans_student = line.answer
+            ans_predict = line.problem.predict_answer_count.answer_predict
 
             answer_official_list = []
             if 1 <= ans_official <= 5:
                 result = ans_student == ans_official
+                predict_result = ans_predict == ans_official
             else:
                 answer_official_list = [int(digit) for digit in str(ans_official)]
                 result = ans_student in answer_official_list
+                predict_result = ans_predict in answer_official_list
 
             line.no = line.problem.number
             line.ans_official = ans_official
             line.ans_official_circle = line.problem.get_answer_display
-            line.ans_student = ans_student
             line.ans_list = answer_official_list
+
+            line.ans_student = ans_student
             line.field = field
             line.result = result
 
-            line.rate_correct = line.problem.result_answer_count.get_answer_rate(ans_official)
-            line.rate_correct_top = line.problem.result_answer_count_top_rank.get_answer_rate(ans_official)
-            line.rate_correct_mid = line.problem.result_answer_count_mid_rank.get_answer_rate(ans_official)
-            line.rate_correct_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_official)
+            line.ans_predict = ans_predict
+            line.rate_accuracy = line.problem.predict_answer_count.get_answer_predict_rate()
+            line.predict_result = predict_result
+
+            line.rate_correct = line.problem.predict_answer_count.get_answer_rate(ans_official)
+            line.rate_correct_top = line.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
+            line.rate_correct_mid = line.problem.predict_answer_count_mid_rank.get_answer_rate(ans_official)
+            line.rate_correct_low = line.problem.predict_answer_count_low_rank.get_answer_rate(ans_official)
             if line.rate_correct_top is not None and line.rate_correct_low is not None:
                 line.rate_gap = line.rate_correct_top - line.rate_correct_low
             else:
                 line.rate_gap = 0
 
-            line.rate_selection = line.problem.result_answer_count.get_answer_rate(ans_student)
-            line.rate_selection_top = line.problem.result_answer_count_top_rank.get_answer_rate(ans_student)
-            line.rate_selection_mid = line.problem.result_answer_count_mid_rank.get_answer_rate(ans_student)
-            line.rate_selection_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_student)
+            line.rate_selection = line.problem.predict_answer_count.get_answer_rate(ans_student)
+            line.rate_selection_top = line.problem.predict_answer_count_top_rank.get_answer_rate(ans_student)
+            line.rate_selection_mid = line.problem.predict_answer_count_mid_rank.get_answer_rate(ans_student)
+            line.rate_selection_low = line.problem.predict_answer_count_low_rank.get_answer_rate(ans_student)
 
             data_answers[idx].append(line)
         return data_answers
 
-    def get_dict_stat_data(self, student: models.PredictStudent, stat_type: str, is_filtered: bool):
-        qs_answers = self.get_qs_answers(student, stat_type, is_filtered)
+    def update_score_predict(self, stat_total_all, qs_student_answer):
+        score_predict = {sub: 0 for sub in self.sub_list}
+        predict_correct_count_list = qs_student_answer.filter(predict_is_correct=True).values(
+            'subject').annotate(correct_counts=Count('predict_is_correct'))
+        for line in predict_correct_count_list:
+            score = 0
+            sub = line['subject']
+            problem_count = self.problem_count.get(sub)
+            if problem_count:
+                score = line['correct_counts'] * 100 / problem_count
+            score_predict[sub] = score
+
+        psat_sum = 0
+        for stat in stat_total_all:
+            sub = stat['sub']
+            if sub != '평균':
+                psat_sum += score_predict[sub] if sub != '헌법' else 0
+                stat['score_predict'] = score_predict[sub]
+            else:
+                stat['score_predict'] = psat_sum / 3
+
+    def get_is_confirmed_data(self, qs_student_answer):
+        is_confirmed_data = [False for _ in self.subject_vars.keys()]
+        is_confirmed_data.pop()
+        for answer in qs_student_answer:
+            sub = answer.subject
+            field_idx = self.subject_vars[sub][2]
+            is_confirmed_data[field_idx] = True
+            if sub in is_confirmed_data:
+                is_confirmed_data[sub] = True
+        is_confirmed_data.append(all(is_confirmed_data))  # Add is_confirmed_data for '평균'
+        return is_confirmed_data
+
+    def get_dict_stat_data(self, student: models.PredictStudent, is_confirmed_data, stat_type: str, is_filtered: bool):
+        qs_answer_values = self.get_qs_answer_values(student, stat_type, is_filtered)
         qs_score = self.get_qs_score(student, stat_type, is_filtered)
 
         stat_data = []
-        for sub, (subject, fld) in self.subject_vars.items():
+        for sub, (subject, fld, fld_idx) in self.subject_vars.items():
             url_answer_input = self.exam.get_predict_answer_input_url(fld) if sub != '평균' else ''
             stat_data.append({
-                'field': fld,
-                'sub': sub,
-                'subject': subject,
+                'field': fld, 'sub': sub, 'subject': subject,
                 'icon': icon_set_new.ICON_SUBJECT[sub],
+                'start_time': self.get_time_schedule()[sub][0],
+                'end_time': self.get_time_schedule()[sub][1],
 
                 'participants': 0,
-                'is_confirmed': False,
+                'is_confirmed': is_confirmed_data[fld_idx],
                 'url_answer_input': url_answer_input,
 
-                'score_real': 0,
-                'score_predict': 0,
+                'score_real': 0, 'score_predict': 0,
                 'problem_count': self.problem_count.get(sub),
                 'answer_count': student.answer_count.get(sub, 0),
 
-                'rank': 0,
-                'score': 0,
-                'max_score': 0,
-                'top_score_10': 0,
-                'top_score_20': 0,
-                'avg_score': 0,
+                'rank': 0, 'score': 0, 'max_score': 0,
+                'top_score_10': 0, 'top_score_20': 0, 'avg_score': 0,
             })
 
         participants_dict = {
             self.subject_vars[entry['problem__subject']][1]: entry['participant_count']
-            for entry in qs_answers
+            for entry in qs_answer_values
         }
-        max_participants = max(
+        min_participants = min(
             participants_dict.get(f'subject_{idx}', 0) for idx, _ in enumerate(self.sub_list)
         )
-        if max_participants:
-            participants_dict['average'] = max_participants
+        if min_participants:
+            participants_dict['average'] = min_participants
 
         scores = {}
+        is_confirmed_for_average = []
         for stat in stat_data:
             fld = stat['field']
             if fld in participants_dict.keys():
-                participants = participants_dict[fld]
-                stat.update({
-                    'participants': participants,
-                    'is_confirmed': True,
-                })
+                participants = participants_dict.get(fld, 0)
+                stat.update({'participants': participants})
+                is_confirmed_for_average.append(True)
+                if self.exam.is_answer_predict_opened:
+                    pass
                 if self.exam.is_answer_official_opened:
                     scores[fld] = [qs[fld] for qs in qs_score]
                     student_score = getattr(student.score, fld)
@@ -581,6 +637,7 @@ class ExamVars:
                         'top_score_20': sorted_scores[top_20_threshold - 1],
                         'avg_score': avg_score,
                     })
+
         return stat_data
 
     def get_dict_frequency_score(self, student) -> dict:

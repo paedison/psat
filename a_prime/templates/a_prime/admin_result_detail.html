@@ -4,11 +4,11 @@
 {% block main_content %}
     <section class="section">
         <div class="row">
-            <div class="col-12" aria-label="업데이트">
+            <div class="col-12" aria-label="성적 결과 업데이트">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">업데이트</div>
+                    <div class="card-header">성적 결과 업데이트</div>
                     <div class="card-body">
-                        <div class="row">
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 <form enctype="multipart/form-data"
                                       hx-headers='{"Hx-Admin-Update":"answer_official"}'
@@ -18,20 +18,55 @@
                                         <input type="file" name="file" class="form-control" required id="id_file">
                                         <button class="btn btn-outline-secondary prevent_double_click" type="submit"
                                                 data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                            정답 업데이트</button>
+                                            정답 업데이트
+                                        </button>
                                     </div>
                                 </form>
                             </div>
-                            <div class="col-md-6 d-flex justify-content-end">
-                                <form hx-headers='{"View-Type":"statistics"}'
+
+                            <div class="col-md-6">
+                                <form enctype="multipart/form-data"
+                                      hx-headers='{"View-Type":"answer_student"}'
                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                       hx-post="{{ exam.get_admin_update_url }}">
                                     <div class="input-group">
+                                        <input type="file" name="file" class="form-control" required id="id_file">
                                         <button class="btn btn-outline-secondary prevent_double_click" type="submit"
                                                 data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                            통계 업데이트</button>
+                                            제출 답안 업데이트
+                                        </button>
                                     </div>
                                 </form>
+                            </div>
+
+                            <div class="col-md-6 d-flex justify-content-end"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            hx-headers='{"View-Type":"scores"}'
+                                            hx-post="{{ exam.get_admin_update_url }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        점수 업데이트
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 d-flex justify-content-end"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            hx-headers='{"View-Type":"ranks"}'
+                                            hx-post="{{ exam.get_admin_update_url }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        등수 업데이트
+                                    </button>
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            hx-headers='{"View-Type":"statistics"}'
+                                            hx-post="{{ exam.get_admin_update_url }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        통계 업데이트
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

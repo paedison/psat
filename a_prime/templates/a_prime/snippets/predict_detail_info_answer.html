@@ -63,90 +63,93 @@
 </div>
 
 {% partialdef sub_answer_line %}
-    {% if stat_tot.field == 'average' %}
-        <tr class="text-center table-warning">
-            {% partialdef snippet_confirmed_subject inline=True %}
-                <th class="text-nowrap" aria-label="과목">
-                    {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
-                </th>
-            {% endpartialdef snippet_confirmed_subject %}
+    {% if exam_vars.current_time < stat_tot.end_time %}
+        <tr class="text-center{% if stat_tot.field == 'average' %} table-warning{% endif %}">
+            <th class="text-nowrap" aria-label="과목">
+                {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
+            </th>
 
-            {% if stat_tot.is_confirmed %}
-                {% partialdef snippet_confirmed_score inline=True %}
-                    <td aria-label="점수">
-                        {% if exam.is_not_started %} {# 시험 시작 이전 #}
-                            <span class="badge rounded-pill text-bg-primary">시험 시작 전입니다.</span>
-                        {% elif exam.is_going_on %} {# 시험 종료 이전 #}
-                            <span class="badge rounded-pill text-bg-primary">시험 진행 중입니다.</span>
-                        {% elif exam.is_collecting_answer %} {# 시험 종료 이후 ~ 예상 정답 공개 이전 #}
-                            <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
-                        {% elif exam.is_answer_predict_opened %} {# 예상 정답 공개 이후 ~ 공식 정답 공개 이전 #}
-                            <div id="{{ stat_tot.field }}_score_predict" class="htmx-fade-up-in delay-1 text-primary fw-bold">
-                                {{ stat_tot.score_predict|floatformat:1|default:'' }}
-                            </div>
-                        {% elif exam.is_answer_official_opened %} {# 공식 정답 공개 이후 #}
-                            <div id="{{ stat_tot.field }}_score_real" class="htmx-fade-up-in delay-1 text-success fw-bold">
-                                {{ stat_tot.score_real|floatformat:1|default:'' }}
-                            </div>
-                        {% endif %}
-                    </td>
-                {% endpartialdef snippet_confirmed_score %}
+            {% if exam_vars.current_time < stat_tot.start_time %}
+                <td colspan="3" aria-label="시험 시작 전">
+                    <span class="badge rounded-pill text-bg-primary">시험 시작 전입니다.</span>
+                </td>
             {% else %}
-                <td aria-label="점수">
-                    <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                <td colspan="3" aria-label="시험 진행 중">
+                    <span class="badge rounded-pill text-bg-primary">시험 진행 중입니다.</span>
                 </td>
             {% endif %}
+        </tr>
+    {% else %}
+        {% if not stat_tot.is_confirmed %}
+            <tr class="text-center{% if stat_tot.field == 'average' %} table-warning{% else %} cursor-pointer{% endif %}"
+                {% if stat_tot.field != 'average' %}hx-get="{{ stat_tot.url_answer_input }}"{% endif %}>
+                <th class="text-nowrap" aria-label="과목">
+                    {% if stat_tot.field == 'average' %}
+                        {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
+                    {% else %}
+                        <a class="text-decoration-none" href="{{ stat_tot.url_answer_input }}">
+                            {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
+                        </a>
+                    {% endif %}
+                </th>
 
-            {% partialdef snippet_participants inline=True %}
+                <td aria-label="점수">
+                    {% if stat_tot.field == 'average' %}
+                        <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                    {% else %}
+                        <a href="{{ stat_tot.url_answer_input }}">
+                            <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                        </a>
+                    {% endif %}
+                </td>
+
                 <td aria-label="총 참여자수">
                     <div id="{{ stat_tot.field }}_participants" class="htmx-fade-up-in delay-2 fw-bold">
                         {{ stat_tot.participants|default:0 }}
                     </div>
                 </td>
-            {% endpartialdef snippet_participants %}
 
-            {% if stat_tot.is_confirmed %}
-                {% partialdef snippet_confirmed_answers inline=True %}
-                    <td class="text-nowrap fw-bold" aria-label="제출 답안수">
-                        {{ stat_tot.answer_count|default:0 }} / {{ stat_tot.problem_count }}
-                        <span class="badge rounded-pill text-bg-success">제출 완료</span>
-                    </td>
-                {% endpartialdef snippet_confirmed_answers %}
-            {% else %}
-                <td class="text-nowrap fw-bold" aria-label="제출 답안수">
-                    {{ stat_tot.answer_count|default:0 }} / {{ stat_tot.problem_count }}
-                    <span class="badge rounded-pill text-bg-danger">미제출</span>
-                </td>
-            {% endif %}
-        </tr>
-    {% else %}
-        {% if stat_tot.is_confirmed %}
-            <tr class="text-center">
-                {% partial snippet_confirmed_subject %}
-                {% partial snippet_confirmed_score %}
-                {% partial snippet_participants %}
-                {% partial snippet_confirmed_answers %}
-            </tr>
-        {% else %}
-            <tr class="text-center cursor-pointer" hx-get="{{ stat_tot.url_answer_input }}">
-                <th class="text-nowrap" aria-label="과목">
-                    <a class="text-decoration-none" href="{{ stat_tot.url_answer_input }}">
-                        {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
-                    </a>
-                </th>
-                <td aria-label="점수">
-                    <a href="{{ stat_tot.url_answer_input }}">
-                        <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
-                    </a>
-                </td>
-
-                {% partial snippet_participants %}
-
-                <td class="text-nowrap" aria-label="선택 답안수">
-                    <a class="text-decoration-none fw-bold" href="{{ stat_tot.url_answer_input }}">
+                <td class="text-nowrap fw-bold" aria-label="선택 답안수">
+                    {% if stat_tot.field == 'average' %}
                         {{ stat_tot.answer_count|default:0 }} / {{ stat_tot.problem_count }}
                         <span class="badge rounded-pill text-bg-danger">미제출</span>
-                    </a>
+                    {% else %}
+                        <a class="text-decoration-none fw-bold" href="{{ stat_tot.url_answer_input }}">
+                            {{ stat_tot.answer_count|default:0 }} / {{ stat_tot.problem_count }}
+                            <span class="badge rounded-pill text-bg-danger">미제출</span>
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr class="text-center{% if stat_tot.field == 'average' %} table-warning{% endif %}">
+                <th class="text-nowrap" aria-label="과목">
+                    {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
+                </th>
+
+                <td aria-label="점수">
+                    {% if exam_vars.current_time <= exam.answer_predict_opened_at %}
+                        <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
+                    {% elif exam_vars.current_time <= exam.answer_official_opened_at %}
+                        <div id="{{ stat_tot.field }}_score_predict" class="htmx-fade-up-in delay-1 text-primary fw-bold">
+                            {{ stat_tot.score_predict|floatformat:1|default:'' }}
+                        </div>
+                    {% elif exam_vars.current_time > exam.answer_official_opened_at %}
+                        <div id="{{ stat_tot.field }}_score_real" class="htmx-fade-up-in delay-1 text-success fw-bold">
+                            {{ stat_tot.score_real|floatformat:1|default:'' }}
+                        </div>
+                    {% endif %}
+                </td>
+
+                <td aria-label="총 참여자수">
+                    <div id="{{ stat_tot.field }}_participants" class="htmx-fade-up-in delay-2 fw-bold">
+                        {{ stat_tot.participants|default:0 }}
+                    </div>
+                </td>
+
+                <td class="text-nowrap fw-bold" aria-label="선택 답안수">
+                    {{ stat_tot.answer_count|default:0 }} / {{ stat_tot.problem_count }}
+                    <span class="badge rounded-pill text-bg-success">제출 완료</span>
                 </td>
             </tr>
         {% endif %}

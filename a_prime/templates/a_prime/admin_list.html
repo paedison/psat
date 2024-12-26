@@ -38,32 +38,40 @@
         <table class="table table-bordered table-striped small align-middle">
             <thead>
                 <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap p-2">연도</th>
-                    <th class="text-primary text-nowrap p-2">회차</th>
-                    <th class="text-primary text-nowrap p-2">페이지 오픈 일시</th>
-                    <th class="text-primary text-nowrap p-2">시험 시작 일시</th>
-                    <th class="text-primary text-nowrap p-2">시험 종료 일시</th>
-                    <th class="text-primary text-nowrap p-2">예상 정답 공개 일시</th>
-                    <th class="text-primary text-nowrap p-2">공식 정답 공개 일시</th>
+                    <th class="text-primary text-nowrap">연도</th>
+                    <th class="text-primary text-nowrap">회차</th>
+                    <th class="text-primary text-nowrap">성적 예측</th>
+                    <th class="text-primary text-nowrap">성적 결과</th>
+                    <th class="text-primary text-nowrap">페이지 오픈 일시</th>
+                    <th class="text-primary text-nowrap">시험 시작 일시</th>
+                    <th class="text-primary text-nowrap">시험 종료 일시</th>
+                    <th class="text-primary text-nowrap">예상 정답 공개 일시</th>
+                    <th class="text-primary text-nowrap">공식 정답 공개 일시</th>
                 </tr>
             </thead>
             <tbody>
                 {% if exam_page_obj %}
                     {% for obj in exam_page_obj %}
                         <tr class="text-center">
-                            <td class="text-nowrap p-2">{{ obj.get_year_display }}</td>
-                            <td class="text-nowrap p-2">
-                                {{ obj.get_round_display }}
+                            <td class="text-nowrap">{{ obj.get_year_display }}</td>
+                            <td class="text-nowrap">{{ obj.get_round_display }}</td>
+                            <td class="text-nowrap">
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
-                                   href="{{ obj.get_admin_detail_url }}">
+                                   href="{{ obj.get_admin_predict_detail_url }}">
                                     클릭
                                 </a>
                             </td>
-                            <td class="text-nowrap p-2">{{ obj.page_opened_at|date:'Y.n.j(D) H:i' }}</td>
-                            <td class="text-nowrap p-2">{{ obj.exam_started_at|date:'Y.n.j(D) H:i' }}</td>
-                            <td class="text-nowrap p-2">{{ obj.exam_finished_at|date:'Y.n.j(D) H:i' }}</td>
-                            <td class="text-nowrap p-2">{{ obj.answer_predict_opened_at|date:'Y.n.j(D) H:i' }}</td>
-                            <td class="text-nowrap p-2">{{ obj.answer_official_opened_at|date:'Y.n.j(D) H:i' }}</td>
+                            <td class="text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" hx-boost="true"
+                                   href="{{ obj.get_admin_result_detail_url }}">
+                                    클릭
+                                </a>
+                            </td>
+                            <td class="text-nowrap">{{ obj.page_opened_at|date:'Y.n.j(D) H:i' }}</td>
+                            <td class="text-nowrap">{{ obj.exam_started_at|date:'Y.n.j(D) H:i' }}</td>
+                            <td class="text-nowrap">{{ obj.exam_finished_at|date:'Y.n.j(D) H:i' }}</td>
+                            <td class="text-nowrap">{{ obj.answer_predict_opened_at|date:'Y.n.j(D) H:i' }}</td>
+                            <td class="text-nowrap">{{ obj.answer_official_opened_at|date:'Y.n.j(D) H:i' }}</td>
                         </tr>
                     {% endfor %}
                 {% endif %}

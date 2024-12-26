@@ -1,21 +1,20 @@
 from django.urls import path, include
 
-from .views import score_views, predict_views, admin_views
+from .views import admin_views, score_views, predict_views
 
 app_name = 'prime'
 
 admin_patterns = [
-    path('', admin_views.list_view, name='score-admin-list'),
-    path('<int:pk>/', admin_views.detail_view, name='score-admin-detail'),
-    path('student/<int:pk>/', admin_views.student_detail_view, name='score-admin-student-detail'),
-    path('update/<int:pk>/', admin_views.update_view, name='score-admin-update'),
-
+    path('', admin_views.list_view, name='admin-list'),
     path('exam/create/', admin_views.exam_create_view, name='admin-exam-create'),
-    # path('<int:pk>/', admin_views.admin_problem_list_view, name='admin-problem-list'),
-    # path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
-    # path('problem/update/', admin_views.problem_update_view, name='admin-problem-update'),
-    # path('answer/<int:pk>/', admin_views.answer_detail_view, name='staff-answer-detail'),
+    path('update/<int:pk>/', admin_views.update_view, name='admin-update'),
 
+    path('result/<int:pk>/', admin_views.result_detail_view, name='admin-result-detail'),
+    path('result/student/<int:pk>/', admin_views.result_student_detail_view, name='admin-result-student-detail'),
+
+    path('predict/<int:pk>/', admin_views.predict_detail_view, name='admin-predict-detail'),
+
+    # path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
     # path('search/<int:exam_year>/<int:exam_round>/', catalog_view, name='catalog_year_round'),
 
     path('print/statistics/<int:pk>/', admin_views.statistics_print_view, name='admin-statistics-print'),
@@ -26,11 +25,6 @@ admin_patterns = [
     path('export/statistics/excel/<int:pk>/', admin_views.export_statistics_excel_view, name='admin-export-statistics-excel'),
     path('export/catalog/excel/<int:pk>/', admin_views.export_catalog_excel_view, name='admin-export-catalog-excel'),
     path('export/answers/excel/<int:pk>/', admin_views.export_answers_excel_view, name='admin-export-answers-excel'),
-    #
-    # path('export/transcript/<int:exam_year>/<int:exam_round>/',
-    #      prime_psat_admin_views.export_transcript_to_pdf_view, name='export_transcript'),
-    # path('export/students_score/<int:exam_year>/<int:exam_round>/',
-    #      prime_psat_admin_views.export_scores_to_excel_view, name='export_scores'),
 ]
 
 score_patterns = [

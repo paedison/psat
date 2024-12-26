@@ -24,10 +24,8 @@
 
     <div class="tab-content" id="scoreAnswerPredictContent">
         {% for tab in answer_tab %}
-            {% cycle data_answer_predict.0 data_answer_predict.1 data_answer_predict.2 data_answer_predict.3 data_answer_predict.4 as answer_predict silent %}
-            {% cycle exam_vars.subject_fields.0 exam_vars.subject_fields.1 exam_vars.subject_fields.2 exam_vars.subject_fields.3 exam_vars.subject_fields.4 as field silent %}
-            {% cycle exam_vars.url_answer_input_list.0 exam_vars.url_answer_input_list.1 exam_vars.url_answer_input_list.2 exam_vars.url_answer_input_list.3 exam_vars.url_answer_input_list.4 as url_answer_input silent %}
-            {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
+            {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 as answers silent %}
+            {% cycle is_confirmed_data.0 is_confirmed_data.1 is_confirmed_data.2 is_confirmed_data.3 as is_confirmed silent %}
             {% #nav_content prefix='AnswerPredict' id=tab.id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
     </div>
@@ -54,7 +52,7 @@
                     <tr class="text-center">
                         <th>
                             <a class="btn btn-outline-danger my-4" hx-boost="true"
-                               href="{{ url_answer_input }}">
+                               href="{{ tab.url_answer_input }}">
                                 답안을 제출해주세요.
                             </a>
                         </th>
@@ -67,7 +65,7 @@
                             </th>
                         </tr>
                     {% elif exam.is_answer_predict_opened %}
-                        {% if answer_predict|length == 25  %}
+                        {% if answers|length == 25  %}
                             {% for _ in '012' %}
                                 {% cycle 10 10 5 as loop_counter silent %}
                                 {% cycle 0 10 20 as loop_min silent %}
@@ -96,7 +94,7 @@
     </tr>
     <tr class="text-center" aria-label="예상 정답">
         <th class="text-nowrap td-no-border" scope="row">예상 정답</th>
-        {% for answer in answer_predict %}
+        {% for answer in answers %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td class="td-no-border">
                     <button data-number="{{ answer.no }}"
@@ -105,9 +103,9 @@
                             {% else %}
                             class="btn btn-circle btn-sm fs-6 mx-1 my-2 {% if answer.prediction_is_correct %}btn-success{% else %}btn-danger{% endif %}"
                             {% endif %}>
-                        <div id="{{ prefix }}_{{ answer.no }}"
+                        <div id="answerPredict{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
                              class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
-                            {{ answer.ans }}
+                            {{ answer.ans_predict }}
                         </div>
                     </button>
                 </td>
@@ -116,12 +114,12 @@
     </tr>
     <tr class="text-center" aria-label="정확도">
         <th class="text-nowrap" scope="row">정확도(%)</th>
-        {% for answer in answer_predict %}
+        {% for answer in answers %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td>
                     <div data-number="{{ answer.no }}"
-                         class="fw-bold {% if answer.prediction_is_correct %}text-success{% else %}text-danger{% endif %}">
-                        <div id="{{ prefix }}_accuracy_{{ answer.no }}"
+                         class="fw-bold {% if answer.predict_result %}text-success{% else %}text-danger{% endif %}">
+                        <div id="answerPredictAccuracy{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
                              class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                             {{ answer.rate_accuracy|floatformat:0 }}
                         </div>

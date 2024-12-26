@@ -55,7 +55,7 @@
                             <td class="text-nowrap">{{ answer.no }}</td>
                             <td class="text-nowrap">
                                 {% if answer.ans_official < 12345 %}
-                                    {{ answer.get_answer_display }}
+                                    {{ answer.problem.get_answer_display }}
                                 {% else %}
                                     전체<br/>정답
                                 {% endif %}

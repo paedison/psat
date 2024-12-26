@@ -46,6 +46,10 @@ class Psat(models.Model):
         return self.page_opened_at < timezone.now() <= self.exam_started_at
 
     @property
+    def is_started(self):
+        return self.exam_started_at < timezone.now()
+
+    @property
     def is_going_on(self):
         return self.exam_started_at < timezone.now() <= self.exam_finished_at
 
@@ -71,13 +75,19 @@ class Psat(models.Model):
 
     @staticmethod
     def get_admin_list_url():
-        return reverse_lazy('prime:score-admin-list')
+        return reverse_lazy('prime:admin-list')
 
-    def get_admin_detail_url(self):
-        return reverse_lazy('prime:score-admin-detail', args=[self.id])
+    def get_admin_result_detail_url(self):
+        return reverse_lazy('prime:admin-result-detail', args=[self.id])
+
+    def get_admin_result_student_detail_url(self):
+        return reverse_lazy('prime:admin-result-student-detail', args=[self.id])
+
+    def get_admin_predict_detail_url(self):
+        return reverse_lazy('prime:admin-predict-detail', args=[self.id])
 
     def get_admin_update_url(self):
-        return reverse_lazy('prime:score-admin-update', args=[self.id])
+        return reverse_lazy('prime:admin-update', args=[self.id])
 
     def get_admin_problem_list_url(self):
         return reverse_lazy('psat:admin-problem-list', args=[self.id])

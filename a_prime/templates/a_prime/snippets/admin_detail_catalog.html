@@ -45,9 +45,7 @@
                     <td class="text-nowrap p-2">{{ obj.id }}</td>
                     <td class="text-nowrap p-2">{{ obj.rank_tot_avg }}</td>
                     <td class="text-nowrap p-2">
-                        <a href="{% url 'prime:score-admin-student-detail' obj.id %}"
-{#                                <a href="{% url 'prime_admin:individual_student_print' year round obj.id %}"#}
-                           target="score_print">
+                        <a href="{{ obj.get_admin_result_student_detail_url }}" target="score_print">
                             {{ obj.name }}
                         </a>
                     </td>
@@ -56,20 +54,44 @@
 
                     <td class="text-nowrap p-2 td-right-no-border">{{ obj.score_sum|floatformat:1 }}</td>
                     <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.score_avg|floatformat:1 }}</td>
-                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_tot_avg }}</td>
-                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_tot_avg|divide:obj.rank_tot_num|percentage|floatformat:1 }}</td>
-                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ obj.rank_dep_avg }}</td>
-                    <td class="text-nowrap p-2 td-left-no-border">{{ obj.rank_dep_avg|divide:obj.rank_dep_num|percentage|floatformat:1 }}</td>
+                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                        {{ obj.rank_tot_avg|default_if_none:'' }}
+                    </td>
+                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                        {% if obj.rank_tot_avg and obj.rank_tot_num %}
+                            {{ obj.rank_tot_avg|divide:obj.rank_tot_num|percentage|floatformat:1 }}
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                        {{ obj.rank_dep_avg|default_if_none:'' }}
+                    </td>
+                    <td class="text-nowrap p-2 td-left-no-border">
+                        {% if obj.rank_dep_avg and obj.rank_dep_num %}
+                            {{ obj.rank_dep_avg|divide:obj.rank_dep_num|percentage|floatformat:1 }}
+                        {% endif %}
+                    </td>
 
                     {% for _ in '0123' %}
                         {% cycle obj.score_0 obj.score_1 obj.score_2 obj.score_3 as score silent %}
                         {% cycle obj.rank_tot_0 obj.rank_tot_1 obj.rank_tot_2 obj.rank_tot_3 as rank_tot silent %}
                         {% cycle obj.rank_dep_0 obj.rank_dep_1 obj.rank_dep_2 obj.rank_dep_3 as rank_dep silent %}
                         <td class="text-nowrap p-2 td-right-no-border">{{ score|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_tot }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_tot|divide:obj.rank_tot_num|percentage|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ rank_dep }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border">{{ rank_dep|divide:obj.rank_dep_num|percentage|floatformat:1 }}</td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                            {{ rank_tot|default_if_none:'' }}
+                        </td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                            {% if rank_tot and obj.rank_tot_num %}
+                                {{ rank_tot|divide:obj.rank_tot_num|percentage|floatformat:1 }}
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">
+                            {{ rank_dep|default_if_none:'' }}
+                        </td>
+                        <td class="text-nowrap p-2 td-left-no-border">
+                            {% if rank_dep and obj.rank_dep_num %}
+                                {{ rank_dep|divide:obj.rank_dep_num|percentage|floatformat:1 }}
+                            {% endif %}
+                        </td>
                     {% endfor %}
                 </tr>
             {% empty %}

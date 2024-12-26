@@ -1,0 +1,198 @@
+{% extends 'a_prime/_prime_base.html' %}
+{% load static %}
+
+{% block main_content %}
+    <section class="section">
+        <div class="row">
+            <div class="col-12" aria-label="성적 예측 업데이트">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">성적 예측 업데이트</div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6 d-flex justify-content-end"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            hx-headers='{"View-Type":"scores_predict"}'
+                                            hx-post="{{ exam.get_admin_update_url }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        예측 점수 업데이트</button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 d-flex justify-content-end"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            hx-headers='{"View-Type":"ranks_predict"}'
+                                            hx-post="{{ exam.get_admin_update_url }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        예측 등수 업데이트
+                                    </button>
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            hx-headers='{"View-Type":"statistics_predict"}'
+                                            hx-post="{{ exam.get_admin_update_url }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        예측 통계 업데이트
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="성적통계 [예측]">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <span>{{ exam.year }}년도 제{{ exam.round }}회 | 성적통계 [예측]</span>
+                            <div class="d-flex ms-auto">
+                                <div class="btn-group me-2">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       title="Excel로 내보내기" target="_blank"
+                                       href="{{ config.url_export_statistics_excel }}">
+                                        Excel로 내보내기
+                                    </a>
+                                </div>
+                                <div class="btn-group ms-auto">
+                                    <a class="btn btn-sm btn-outline-secondary" title="목록" hx-target="#main"
+                                       href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
+                                        목록
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-secondary" title="인쇄하기" target="_blank"
+                                       href="{{ config.url_statistics_print }}">
+                                        인쇄하기
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="statisticsContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime/snippets/admin_detail_statistics.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="성적일람표 [예측]">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            {{ exam.year }}년도 제{{ exam.round }}회 | 성적일람표 [예측]
+                            <div class="d-flex ms-auto">
+                                <div class="btn-group me-2">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       title="Excel로 내보내기" target="_blank"
+                                       href="{{ config.url_export_catalog_excel }}">
+                                        Excel로 내보내기
+                                    </a>
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       title="Excel로 내보내기" target="_blank"
+                                       href="{{ config.url_export_statistics_pdf }}">
+                                        PDF로 내보내기
+                                    </a>
+                                </div>
+                                <div class="btn-group">
+                                    <a class="btn btn-sm btn-outline-secondary" title="인쇄하기" target="_blank"
+                                       href="{{ config.url_catalog_print }}">
+                                        인쇄하기
+                                    </a>
+                                    <input name="student_ids" type="text" aria-label="Student IDs" hidden
+                                           value="{% for id in student_ids %}{{ id }}{% if not forloop.last %},{% endif %}{% endfor %}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% partial search_tab %}
+                        <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime/snippets/admin_detail_catalog.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="문항분석표 [예측]">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <span>{{ exam.year }}년도 제{{ exam.round }}회 | 문항분석표 [예측]</span>
+                            <div class="d-flex ms-auto">
+                                <div class="btn-group me-2">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       title="Excel로 내보내기" target="_blank"
+                                       href="{{ config.url_export_answers_excel }}">
+                                        Excel로 내보내기
+                                    </a>
+                                </div>
+                                <div class="btn-group ms-auto">
+                                    <a class="btn btn-sm btn-outline-secondary" title="인쇄하기" target="_blank"
+                                       href="{{ config.url_answers_print }}">
+                                        인쇄하기
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
+                                {% for tab in answer_tab %}
+                                    {% #nav_tab prefix='Answer' id=tab.id %}{{ tab.icon|safe }} {{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+                        <div id="answerAnalysisContent" class="tab-content">
+                            {% for tab in answer_tab %}
+                                {% cycle answers_page_obj_group.헌법 answers_page_obj_group.언어 answers_page_obj_group.자료 answers_page_obj_group.상황 as answers silent %}
+                                {% cycle answers_page_range_group.헌법 answers_page_range_group.언어 answers_page_range_group.자료 answers_page_range_group.상황 as answers_page_range silent %}
+                                {% #nav_content prefix='Answer' id=tab.id %}
+                                    {% include 'a_prime/snippets/admin_detail_answer.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+{% partialdef search_tab %}
+    <div class="d-flex">
+        <form class="d-flex align-items-center">
+            <div class="input-group mb-3">
+                <input id="id_student_name" type="text" name="student_name" class="form-control form-control-sm"
+                       placeholder="학생 이름" title="학생 이름" aria-label="학생 이름">
+                <button type="submit" title="Search" class="btn btn-sm btn-outline-secondary"
+                        hx-post="">
+    {#                        hx-post="{% url 'prime_admin:catalog_year_round' year round %}">#}
+                    {{ icon_search|safe }}
+                </button>
+            </div>
+        </form>
+        <div class="ms-auto">
+            <button id="dropdownCategoryLink" type="button"
+                    class="btn btn-sm btn-outline-primary dropdown-toggle"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                구분
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownCategoryLink">
+                <li class="text-center">
+                </li>
+                {% for category in category_list %}
+                    {% if category %}
+                        <li class="text-center">
+                            <a class="dropdown-item {% if category == current_category %}bg-primary-light{% endif %}"
+                               href="" hx-get="{{ base_url }}?category={{ category }}">
+                                {{ category }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endpartialdef search_tab %}

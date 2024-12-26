@@ -34,8 +34,10 @@
                             <a href="{{ exam.get_score_detail_url }}" class="active">{{ exam.get_round_display }}</a>
                         {% elif config.submenu == 'predict' %}
                             <a href="{{ exam.get_predict_detail_url }}" class="active">{{ exam.get_round_display }}</a>
-                        {% elif config.submenu == 'admin' %}
-                            <a href="{{ exam.get_admin_detail_url }}" class="active">{{ exam.get_round_display }}</a>
+                        {% elif config.submenu == 'admin' and config.model_type == 'result' %}
+                            <a href="{{ exam.get_admin_result_detail_url }}" class="active">{{ exam.get_round_display }}</a>
+                        {% elif config.submenu == 'admin' and config.model_type == 'predict' %}
+                            <a href="{{ exam.get_admin_predict_detail_url }}" class="active">{{ exam.get_round_display }}</a>
                         {% endif %}
                     </li>
                 {% else %}

@@ -58,32 +58,32 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if answer.ans_predict == answer.ans_official %}
-                            <button class="btn btn-circle btn-sm fs-6 btn-success">
-                                {{ answer.ans_predict }}
-                            </button>
-                        {% else %}
-                            <button class="btn btn-circle btn-sm fs-6 btn-danger">
-                                {{ answer.ans_predict }}
-                            </button>
+                        {% if answer.ans_predict %}
+                            {% if answer.ans_predict == answer.ans_official %}
+                                <button class="btn btn-circle btn-sm fs-6 btn-success">
+                                    {{ answer.ans_predict }}
+                                </button>
+                            {% else %}
+                                <button class="btn btn-circle btn-sm fs-6 btn-danger">
+                                    {{ answer.ans_predict }}
+                                </button>
+                            {% endif %}
                         {% endif %}
                     </td>
                     {% for _ in '12345' %}
                         {% cycle answer.rate_correct answer.rate_correct_top answer.rate_correct_mid answer.rate_correct_low answer.rate_gap as rate_correct silent %}
                         <td>
-                            {% if rate_correct %}
-                                {{ rate_correct|floatformat:1 }}
-                            {% endif %}
+                            {% if rate_correct %}{{ rate_correct|floatformat:1 }}{% endif %}
                         </td>
                     {% endfor %}
 
                     {% for _ in '1234' %}
-                        {% cycle answer.count_1 answer.count_1_top answer.count_1_mid answer.count_1_low as count_1 silent %}
-                        {% cycle answer.count_2 answer.count_2_top answer.count_2_mid answer.count_2_low as count_2 silent %}
-                        {% cycle answer.count_3 answer.count_3_top answer.count_3_mid answer.count_3_low as count_3 silent %}
-                        {% cycle answer.count_4 answer.count_4_top answer.count_4_mid answer.count_4_low as count_4 silent %}
-                        {% cycle answer.count_5 answer.count_5_top answer.count_5_mid answer.count_5_low as count_5 silent %}
-                        {% cycle answer.count_sum answer.count_sum_top answer.count_sum_mid answer.count_sum_low as count_sum silent %}
+                        {% cycle answer.count_1_all answer.count_1_top answer.count_1_mid answer.count_1_low as count_1 silent %}
+                        {% cycle answer.count_2_all answer.count_2_top answer.count_2_mid answer.count_2_low as count_2 silent %}
+                        {% cycle answer.count_3_all answer.count_3_top answer.count_3_mid answer.count_3_low as count_3 silent %}
+                        {% cycle answer.count_4_all answer.count_4_top answer.count_4_mid answer.count_4_low as count_4 silent %}
+                        {% cycle answer.count_5_all answer.count_5_top answer.count_5_mid answer.count_5_low as count_5 silent %}
+                        {% cycle answer.count_sum_all answer.count_sum_top answer.count_sum_mid answer.count_sum_low as count_sum silent %}
 
                         <td class="td-right-no-border">{{ count_1|default:'' }}</td>
                         <td class="td-left-no-border td-right-no-border">{{ count_2|default:'' }}</td>

@@ -6,9 +6,9 @@ from urllib.parse import quote
 import pandas as pd
 import pdfkit
 import unicodedata
-from django.contrib.sites.models import Site
-from django.db.models import Case, When, Value, BooleanField, Count, F
-from django.http import HttpResponse, HttpRequest
+from django.db.models import Case, When, Value, BooleanField, Count, F, Window
+from django.db.models.functions import Rank
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django_htmx.http import replace_url
@@ -32,7 +32,7 @@ class ViewConfiguration:
     menu_title = {'kor': menu_kor, 'eng': menu.capitalize()}
     submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
     url_admin = reverse_lazy('admin:a_prime_psat_changelist')
-    url_list = reverse_lazy('prime:score-admin-list')
+    url_list = reverse_lazy('prime:admin-list')
     url_exam_create = reverse_lazy('prime:admin-exam-create')
 
 
@@ -64,7 +64,7 @@ def list_view(request: HtmxHttpRequest):
 
 
 @only_staff_allowed()
-def detail_view(request: HtmxHttpRequest, pk: int):
+def result_detail_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', 1)
     subject = request.GET.get('subject', '')
@@ -74,6 +74,7 @@ def detail_view(request: HtmxHttpRequest, pk: int):
     exam_vars = ExamVars(exam)
     answer_tab = exam_vars.get_answer_tab()
 
+    config.model_type = 'result'
     config.url_statistics_print = reverse_lazy('prime:admin-statistics-print', args=[exam.id])
     config.url_catalog_print = reverse_lazy('prime:admin-catalog-print', args=[exam.id])
     config.url_answers_print = reverse_lazy('prime:admin-answers-print', args=[exam.id])
@@ -90,7 +91,7 @@ def detail_view(request: HtmxHttpRequest, pk: int):
         icon_search=icon_set_new.ICON_SEARCH,
     )
     if view_type == 'statistics_list':
-        data_statistics = models.ResultStatistics.objects.filter(psat=exam).order_by('id')
+        data_statistics = exam_vars.get_qs_statistics()
         statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
         context = update_context_data(
             context, statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range)
@@ -103,9 +104,9 @@ def detail_view(request: HtmxHttpRequest, pk: int):
         return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
     if view_type == 'answer_list':
         subject_idx = exam_vars.subject_vars[subject][2]
-        qs_problems = exam_vars.get_qs_problems_for_answer_count(subject)
+        qs_answer_count = exam_vars.get_qs_answer_count(subject)
         answers_page_obj_group, answers_page_range_group = (
-            exam_vars.get_answer_page_data(qs_problems, page_number, 10))
+            exam_vars.get_answer_page_data(qs_answer_count, page_number, 10))
         context = update_context_data(
             context,
             tab=answer_tab[subject_idx],
@@ -114,15 +115,15 @@ def detail_view(request: HtmxHttpRequest, pk: int):
         )
         return render(request, 'a_prime/snippets/admin_detail_answer.html', context)
 
-    data_statistics = models.ResultStatistics.objects.filter(psat=exam).order_by('id')
+    data_statistics = exam_vars.get_qs_statistics()
     statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
 
     student_list = exam_vars.get_student_list()
     catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
 
-    qs_problems = exam_vars.get_qs_problems_for_answer_count(subject)
+    qs_answer_count = exam_vars.get_qs_answer_count(subject)
     answers_page_obj_group, answers_page_range_group = (
-        exam_vars.get_answer_page_data(qs_problems, page_number, 10))
+        exam_vars.get_answer_page_data(qs_answer_count, page_number, 10))
 
     context = update_context_data(
         context,
@@ -130,11 +131,82 @@ def detail_view(request: HtmxHttpRequest, pk: int):
         catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
         answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
     )
-    return render(request, 'a_prime/admin_detail.html', context)
+    return render(request, 'a_prime/admin_result_detail.html', context)
 
 
 @only_staff_allowed()
-def student_detail_view(request: HtmxHttpRequest, pk: int):
+def predict_detail_view(request: HtmxHttpRequest, pk: int):
+    view_type = request.headers.get('View-Type', '')
+    page_number = request.GET.get('page', 1)
+    subject = request.GET.get('subject', '')
+
+    config = ViewConfiguration()
+    exam = get_object_or_404(models.Psat, pk=pk)
+    exam_vars = ExamVars(exam)
+    answer_tab = exam_vars.get_answer_tab()
+
+    config.model_type = 'predict'
+    config.url_statistics_print = reverse_lazy('prime:admin-statistics-print', args=[exam.id])
+    config.url_catalog_print = reverse_lazy('prime:admin-catalog-print', args=[exam.id])
+    config.url_answers_print = reverse_lazy('prime:admin-answers-print', args=[exam.id])
+    config.url_export_statistics_pdf = reverse_lazy('prime:admin-export-statistics-pdf', args=[exam.id])
+    config.url_export_statistics_excel = reverse_lazy('prime:admin-export-statistics-excel', args=[exam.id])
+    config.url_export_catalog_excel = reverse_lazy('prime:admin-export-catalog-excel', args=[exam.id])
+    config.url_export_answers_excel = reverse_lazy('prime:admin-export-answers-excel', args=[exam.id])
+
+    context = update_context_data(
+        config=config, exam=exam, answer_tab=answer_tab,
+        icon_menu=icon_set_new.ICON_MENU['score'],
+        icon_subject=icon_set_new.ICON_SUBJECT,
+        icon_nav=icon_set_new.ICON_NAV,
+        icon_search=icon_set_new.ICON_SEARCH,
+    )
+    if view_type == 'statistics_list':
+        data_statistics = exam_vars.get_qs_statistics('predict')
+        statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
+        context = update_context_data(
+            context, statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range)
+        return render(request, 'a_prime/snippets/admin_detail_statistics.html', context)
+    if view_type == 'catalog_list':
+        student_list = exam_vars.get_student_list('predict')
+        catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
+        context = update_context_data(
+            context, catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
+        return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
+    if view_type == 'answer_list':
+        subject_idx = exam_vars.subject_vars[subject][2]
+        qs_answer_count = exam_vars.get_qs_answer_count(subject)
+        answers_page_obj_group, answers_page_range_group = (
+            exam_vars.get_answer_page_data(qs_answer_count, page_number, 10, 'predict'))
+        context = update_context_data(
+            context,
+            tab=answer_tab[subject_idx],
+            answers=answers_page_obj_group[subject],
+            answers_page_range=answers_page_range_group[subject],
+        )
+        return render(request, 'a_prime/snippets/admin_detail_answer.html', context)
+
+    data_statistics = exam_vars.get_qs_statistics('predict')
+    statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
+
+    student_list = exam_vars.get_student_list('predict')
+    catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
+
+    qs_answer_count = exam_vars.get_qs_answer_count(subject, 'predict')
+    answers_page_obj_group, answers_page_range_group = (
+        exam_vars.get_answer_page_data(qs_answer_count, page_number, 10, 'predict'))
+
+    context = update_context_data(
+        context,
+        statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
+        catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
+        answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
+    )
+    return render(request, 'a_prime/admin_predict_detail.html', context)
+
+
+@only_staff_allowed()
+def result_student_detail_view(request: HtmxHttpRequest, pk: int):
     from .score_views import get_detail_context
     student = get_object_or_404(models.ResultStudent, pk=pk)
     registry = models.ResultRegistry.objects.filter(student=student).last()
@@ -149,19 +221,56 @@ def update_view(request: HtmxHttpRequest, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
 
-    is_answer_official = view_type == 'answer_official'
-    is_statistics = view_type == 'statistics'
-
     context = {}
-    next_url = exam.get_admin_detail_url()
-    if is_answer_official:
-        is_updated, message = update_answer_official(request, exam_vars, exam)
+    predict_headers = ['scores_predict', 'ranks_predict', 'statistics_predict']
+    if view_type in predict_headers:
+        next_url = exam.get_admin_predict_detail_url()
+    else:
+        next_url = exam.get_admin_result_detail_url()
+
+    qs_result_student = exam_vars.get_qs_student('result')
+    qs_predict_student = exam_vars.get_qs_student('predict')
+
+    if view_type == 'answer_official':
+        is_updated, message = exam_vars.update_answer_official(request)
         context = update_context_data(
             header='정답 업데이트', next_url=next_url, is_updated=is_updated, message=message)
-    if is_statistics:
+
+    if view_type == 'answer_student':
+        is_updated, message = exam_vars.update_answer_student(request)
+        context = update_context_data(
+            header='제출 답안 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'scores':
+        is_updated, message = exam_vars.update_scores(qs_result_student, exam_vars.score_model, exam_vars.answer_model)
+        context = update_context_data(
+            header='점수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'scores_predict':
+        is_updated, message = exam_vars.update_scores(
+            qs_predict_student, exam_vars.predict_score_model, exam_vars.predict_answer_model)
+        context = update_context_data(
+            header='점수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'ranks':
+        is_updated, message = exam_vars.update_ranks(qs_result_student, exam_vars.rank_total_model)
+        context = update_context_data(
+            header='등수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'ranks_predict':
+        is_updated, message = exam_vars.update_ranks(qs_predict_student, exam_vars.predict_rank_total_model)
+        context = update_context_data(
+            header='등수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'statistics':
         data_statistics = exam_vars.get_data_statistics()
         is_updated, message = exam_vars.update_statistics(data_statistics)
-        print(is_updated)
+        context = update_context_data(
+            header='통계 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'statistics_predict':
+        predict_data_statistics = exam_vars.get_data_statistics('predict')
+        is_updated, message = exam_vars.update_statistics(predict_data_statistics, 'predict')
         context = update_context_data(
             header='통계 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
@@ -185,7 +294,7 @@ def exam_create_view(request: HtmxHttpRequest):
             exam_vars.create_default_answer_counts(problems, 'result')
             exam_vars.create_default_answer_counts(problems, 'predict')
 
-            response = redirect('prime:score-admin-list')
+            response = redirect('prime:admin-list')
             return replace_url(response, config.url_list)
         else:
             context = update_context_data(config=config, form=form)
@@ -219,9 +328,9 @@ def catalog_print_view(request: HtmxHttpRequest, pk: int):
 def answers_print_view(request: HtmxHttpRequest, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
-    qs_problems = exam_vars.get_qs_problems_for_answer_count().order_by('id')
+    qs_answer_count = exam_vars.get_qs_answer_count().order_by('id')
     answers_page_obj_group, answers_page_range_group = (
-        exam_vars.get_answer_page_data(qs_problems, 1, 1000))
+        exam_vars.get_answer_page_data(qs_answer_count, 1, 1000))
     context = update_context_data(exam=exam, answers_page_obj_group=answers_page_obj_group)
     return render(request, 'a_prime/admin_print_answers.html', context)
 
@@ -241,7 +350,7 @@ def export_statistics_pdf_view(request: HtmxHttpRequest, pk: int):
             # from django.test import Client
             # client = Client()
             # resp = client.get(f'prime/admin/student/{student.id}')
-            resp = student_detail_view(request, student.id)
+            resp = result_student_detail_view(request, student.id)
             html_content = resp.content.decode('utf-8')
 
             # current_site = Site.objects.get_current()
@@ -332,19 +441,26 @@ def export_answers_excel_view(_: HtmxHttpRequest, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
 
-    qs_problems = exam_vars.get_qs_problems_for_answer_count().order_by('id')
-    df = pd.DataFrame.from_records(qs_problems.values())
+    qs_answer_count = exam_vars.get_qs_answer_count().order_by('id')
+    df = pd.DataFrame.from_records(qs_answer_count.values())
+
+    def move_column(col_name: str, loc: int):
+        col = df.pop(col_name)
+        df.insert(loc, col_name, col)
+
+    move_column('subject', 0)
+    move_column('number', 1)
+    move_column('ans_official', 2)
+    move_column('ans_predict', 3)
 
     filename = f'제{exam.round}회_전국모의고사_문항분석표.xlsx'
-    drop_columns = ['id', 'psat_id']
-    column_label = [('과목', ''), ('번호', ''), ('정답', '')]
-    count_dict = {1: '①', 2: '②', 3: '③', 4: '④', 5: '⑤', 6: '합계'}
-    for num in range(1, 7):
+    drop_columns = ['id', 'problem_id']
+    column_label = [('과목', ''), ('번호', ''), ('정답', ''), ('예상 정답', '')]
+    top_label = ['전체', '상위권', '중위권', '하위권']
+    for lbl in top_label:
         column_label.extend([
-            (count_dict[num], '전체'),
-            (count_dict[num], '상위권'),
-            (count_dict[num], '중위권'),
-            (count_dict[num], '하위권'),
+            (lbl, '①'), (lbl, '②'), (lbl, '③'), (lbl, '④'), (lbl, '⑤'),
+            (lbl, '무응답'), (lbl, '복수응답'), (lbl, '합계'),
         ])
 
     return get_response_for_excel_file(df, drop_columns, column_label, filename)
@@ -395,23 +511,31 @@ class ExamVars:
     problem_model = models.Problem
     category_model = models.Category
 
+    # Result Models
+    student_model = models.ResultStudent
+    answer_model = models.ResultAnswer
+    score_model = models.ResultScore
+    rank_total_model = models.ResultRankTotal
+    rank_category_model = models.ResultRankCategory
     statistics_model = models.ResultStatistics
     answer_count_model = models.ResultAnswerCount
     answer_count_top_model = models.ResultAnswerCountTopRank
     answer_count_mid_model = models.ResultAnswerCountMidRank
     answer_count_low_model = models.ResultAnswerCountLowRank
 
+    # Predict Models
+    predict_student_model = models.PredictStudent
+    predict_answer_model = models.PredictAnswer
+    predict_score_model = models.PredictScore
+    predict_rank_total_model = models.PredictRankTotal
+    predict_rank_category_model = models.PredictRankCategory
     predict_statistics_model = models.PredictStatistics
     predict_answer_count_model = models.PredictAnswerCount
     predict_answer_count_top_model = models.PredictAnswerCountTopRank
     predict_answer_count_mid_model = models.PredictAnswerCountMidRank
     predict_answer_count_low_model = models.PredictAnswerCountLowRank
 
-    student_model = models.ResultStudent
-    answer_model = models.ResultAnswer
-    score_model = models.ResultScore
-    rank_total_model = models.ResultRankTotal
-    rank_category_model = models.ResultRankCategory
+    upload_file_form = forms.UploadFileForm
 
     sub_list = ['헌법', '언어', '자료', '상황']
     subject_list = [models.choices.subject_choice()[key] for key in sub_list]
@@ -441,8 +565,14 @@ class ExamVars:
             .select_related('psat', 'score', 'category').order_by('id').last()
         )
 
-    def get_qs_student_answer(self, student):
-        return models.ResultAnswer.objects.filter(
+    def get_qs_student(self, model_type='result'):
+        model = self.student_model
+        if model_type == 'predict':
+            model = self.predict_student_model
+        return model.objects.filter(psat=self.exam).order_by('id')
+
+    def get_qs_student_result_answer(self, student):
+        return self.answer_model.objects.filter(
             problem__psat=self.exam, student=student).annotate(
             is_correct=Case(
                 When(answer=F('problem__answer'), then=Value(True)),
@@ -466,7 +596,10 @@ class ExamVars:
             qs_answers = qs_answers.filter(student__category__department=student.category.department)
         return qs_answers
 
-    def get_student_list(self):
+    def get_student_list(self, model_type='result'):
+        model = self.student_model
+        if model_type == 'predict':
+            model = self.predict_student_model
         annotate_dict = {
             'score_sum': F('score__sum'),
             'rank_tot_num': F(f'rank_total__participants'),
@@ -479,51 +612,48 @@ class ExamVars:
             annotate_dict[f'rank_dep_{key}'] = F(f'rank_category__{fld}')
 
         return (
-            self.student_model.objects.filter(psat=self.exam)
+            model.objects.filter(psat=self.exam)
             .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
             .order_by('psat__year', 'psat__round', 'rank_total__average')
             .annotate(department=F('category__department'), **annotate_dict)
         )
 
-    def get_qs_problems_for_answer_count(self, subject=None):
-        annotate_dict = {}
+    def get_qs_answer_count(self, subject=None, model_type='result'):
+        model = self.answer_count_model
+        if model_type == 'predict':
+            model = self.predict_answer_count_model
+        annotate_dict = {
+            'subject': F('problem__subject'),
+            'number': F('problem__number'),
+            'ans_predict': F('problem__predict_answer_count__answer_predict'),
+            'ans_official': F('problem__answer'),
+        }
         field_list = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
         for fld in field_list:
-            annotate_dict[f'{fld}'] = F(f'result_answer_count__{fld}')
-            annotate_dict[f'{fld}_top'] = F(f'result_answer_count_top_rank__{fld}')
-            annotate_dict[f'{fld}_mid'] = F(f'result_answer_count_mid_rank__{fld}')
-            annotate_dict[f'{fld}_low'] = F(f'result_answer_count_low_rank__{fld}')
-        qs_problems = (
-            self.problem_model.objects.filter(psat=self.exam)
-            .order_by('subject', 'number')
+            annotate_dict[f'{fld}_all'] = F(f'{fld}')
+            annotate_dict[f'{fld}_top'] = F(f'problem__{model_type}_answer_count_top_rank__{fld}')
+            annotate_dict[f'{fld}_mid'] = F(f'problem__{model_type}_answer_count_mid_rank__{fld}')
+            annotate_dict[f'{fld}_low'] = F(f'problem__{model_type}_answer_count_low_rank__{fld}')
+        qs_answer_count = (
+            model.objects.filter(problem__psat=self.exam)
+            .order_by('problem__subject', 'problem__number').annotate(**annotate_dict)
             .select_related(
-                'result_answer_count',
-                'result_answer_count_top_rank',
-                'result_answer_count_mid_rank',
-                'result_answer_count_low_rank',
-            ).annotate(**annotate_dict)
+                f'problem',
+                f'problem__{model_type}_answer_count',
+                f'problem__{model_type}_answer_count_top_rank',
+                f'problem__{model_type}_answer_count_mid_rank',
+                f'problem__{model_type}_answer_count_low_rank',
+            )
         )
         if subject:
-            qs_problems = qs_problems.filter(subject=subject)
-        return qs_problems
+            qs_answer_count = qs_answer_count.filter(subject=subject)
+        return qs_answer_count
 
-    def get_answer_page_data(self, qs_problems, page_number, per_page=10):
-        qs_problems_group, answers_page_obj_group, answers_page_range_group = {}, {}, {}
-
-        for problem in qs_problems:
-            if problem.subject not in qs_problems_group:
-                qs_problems_group[problem.subject] = []
-            qs_problems_group[problem.subject].append(problem)
-
-        for subject, qs_problems in qs_problems_group.items():
-            if subject not in answers_page_obj_group:
-                answers_page_obj_group[subject] = []
-                answers_page_range_group[subject] = []
-            data_answers = self.get_data_answers(qs_problems)
-            answers_page_obj_group[subject], answers_page_range_group[subject] = utils.get_paginator_data(
-                data_answers, page_number, per_page)
-
-        return answers_page_obj_group, answers_page_range_group
+    def get_qs_statistics(self, model_type='result'):
+        model = self.statistics_model
+        if model_type == 'predict':
+            model = self.predict_statistics_model
+        return model.objects.filter(psat=self.exam).order_by('id')
 
     def get_qs_score(self, student: models.ResultStudent, stat_type: str):
         qs_score = self.score_model.objects.filter(student__psat=self.exam)
@@ -557,37 +687,276 @@ class ExamVars:
             ) * 100 / count_sum
         return getattr(answer_count, f'count_{ans}') * 100 / count_sum
 
-    def get_data_answers(self, qs_problems):
-        for line in qs_problems:
-            sub = line.subject
+    def get_answer_page_data(self, qs_answer_count, page_number, per_page=10, model_type='result'):
+        qs_answer_count_group, answers_page_obj_group, answers_page_range_group = {}, {}, {}
+
+        for entry in qs_answer_count:
+            if entry.subject not in qs_answer_count_group:
+                qs_answer_count_group[entry.subject] = []
+            qs_answer_count_group[entry.subject].append(entry)
+
+        for subject, qs_answer_count in qs_answer_count_group.items():
+            if subject not in answers_page_obj_group:
+                answers_page_obj_group[subject] = []
+                answers_page_range_group[subject] = []
+            data_answers = self.get_data_answers(qs_answer_count, model_type)
+            answers_page_obj_group[subject], answers_page_range_group[subject] = utils.get_paginator_data(
+                data_answers, page_number, per_page)
+
+        return answers_page_obj_group, answers_page_range_group
+
+    def get_data_answers(self, qs_answer_count, model_type='result'):
+        for entry in qs_answer_count:
+            sub = entry.subject
             field = self.subject_vars[sub][1]
-            ans_official = line.answer
+            ans_official = entry.ans_official
 
             answer_official_list = []
             if ans_official > 5:
                 answer_official_list = [int(digit) for digit in str(ans_official)]
 
-            line.no = line.number
-            line.ans_official = ans_official
-            line.ans_official_circle = line.get_answer_display
-            line.ans_list = answer_official_list
-            line.field = field
+            entry.no = entry.number
+            entry.ans_official = ans_official
+            entry.ans_official_circle = entry.problem.get_answer_display
+            entry.ans_list = answer_official_list
+            entry.field = field
 
-            line.rate_correct = line.result_answer_count.get_answer_rate(ans_official)
-            line.rate_correct_top = line.result_answer_count_top_rank.get_answer_rate(ans_official)
-            line.rate_correct_mid = line.result_answer_count_mid_rank.get_answer_rate(ans_official)
-            line.rate_correct_low = line.result_answer_count_low_rank.get_answer_rate(ans_official)
+            if model_type == 'result':
+                entry.rate_correct = entry.get_answer_rate(ans_official)
+                entry.rate_correct_top = entry.problem.result_answer_count_top_rank.get_answer_rate(ans_official)
+                entry.rate_correct_mid = entry.problem.result_answer_count_mid_rank.get_answer_rate(ans_official)
+                entry.rate_correct_low = entry.problem.result_answer_count_low_rank.get_answer_rate(ans_official)
+            else:
+                entry.rate_correct = entry.get_answer_rate(ans_official)
+                entry.rate_correct_top = entry.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
+                entry.rate_correct_mid = entry.problem.predict_answer_count_mid_rank.get_answer_rate(ans_official)
+                entry.rate_correct_low = entry.problem.predict_answer_count_low_rank.get_answer_rate(ans_official)
             try:
-                line.rate_gap = line.rate_correct_top - line.rate_correct_low
+                entry.rate_gap = entry.rate_correct_top - entry.rate_correct_low
             except TypeError:
-                line.rate_gap = None
+                entry.rate_gap = None
 
-        return qs_problems
+        return qs_answer_count
 
-    def get_data_statistics(self):
+    def update_answer_official(self, request) -> tuple:
+        message_dict = {
+            None: '에러가 발생했습니다.',
+            True: '문제 정답을 업데이트했습니다.',
+            False: '기존 정답 데이터와 일치합니다.',
+        }
+        list_update = []
+        list_create = []
+        is_updated = None
+        error = None
+
+        form = self.upload_file_form(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = request.FILES['file']
+            df = pd.read_excel(uploaded_file, sheet_name='정답', header=0, index_col=0)
+            df = df.infer_objects(copy=False)
+            df.fillna(value=0, inplace=True)
+
+            for subject, rows in df.items():
+                for number, answer in rows.items():
+                    if answer:
+                        try:
+                            problem = self.problem_model.objects.get(
+                                psat=self.exam, subject=subject[0:2], number=number)
+                            if problem.answer != answer:
+                                problem.answer = answer
+                                list_update.append(problem)
+                        except self.problem_model.DoesNotExist:
+                            problem = self.problem_model(
+                                psat=self.exam, subject=subject, number=number, answer=answer)
+                            list_create.append(problem)
+                        except ValueError as error:
+                            print(error)
+            update_fields = ['answer']
+            bulk_create_or_update(self.problem_model, list_create, list_update, update_fields)
+
+            if any(list_create) or any(list_update):
+                is_updated = True
+            elif error:
+                is_updated = None
+            else:
+                is_updated = False
+        else:
+            print(form)
+        return is_updated, message_dict[is_updated]
+
+    def update_answer_student(self, request) -> tuple:
+        message_dict = {
+            None: '에러가 발생했습니다.',
+            True: '제출 답안을 업데이트했습니다.',
+            False: '기존 정답 데이터와 일치합니다.',
+        }
+        list_update = []
+        list_create = []
+        error = None
+
+        form = self.upload_file_form(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = request.FILES['file']
+            df = pd.read_excel(uploaded_file, sheet_name='마킹데이터', header=[0, 1], index_col=0)
+            df = df.infer_objects(copy=False)
+            df.fillna(value=0, inplace=True)
+
+            for serial, row in df.iterrows():
+                name = row[('성명', 'Unnamed: 1_level_1')]
+                password = row[('비밀번호', 'Unnamed: 3_level_1')]
+                student, _ = self.student_model.objects.get_or_create(
+                    psat=self.exam, name=name, serial=serial, password=password)
+
+                subject_vars = self.subject_vars.copy()
+                subject_vars.pop('총점')
+                for sub, sub_tuple in subject_vars.items():
+                    subject = sub_tuple[0]
+                    problem_count = self.problem_count[sub]
+                    for number in range(1, problem_count + 1):
+                        answer = row[(f'{subject} 마킹데이타', number)]
+                        try:
+                            q_student_answer = self.answer_model.objects.get(
+                                student=student,
+                                problem__subject=sub,
+                                problem__number=number,
+                            )
+                            if q_student_answer.answer != answer:
+                                q_student_answer.answer = answer
+                                list_update.append(q_student_answer)
+                        except self.answer_model.DoesNotExist:
+                            problem = self.problem_model.objects.get(
+                                psat=self.exam, subject=sub, number=number)
+                            q_student_answer = self.answer_model(
+                                student=student, problem=problem, answer=answer)
+                            list_create.append(q_student_answer)
+                        except ValueError as error:
+                            print(error)
+            update_fields = ['answer']
+            bulk_create_or_update(self.answer_model, list_create, list_update, update_fields)
+
+            if any(list_create) or any(list_update):
+                is_updated = True
+            elif error:
+                is_updated = None
+            else:
+                is_updated = False
+        else:
+            is_updated = None
+            print(form)
+        return is_updated, message_dict[is_updated]
+
+    def update_scores(self, qs_student, score_model, answer_model):
+        message_dict = {
+            None: '에러가 발생했습니다.',
+            True: '점수를 업데이트했습니다.',
+            False: '기존 점수와 일치합니다.',
+        }
+        list_update = []
+        list_create = []
+        error = None
+
+        for student in qs_student:
+            original_score_instance, _ = score_model.objects.get_or_create(student=student)
+
+            score_list = []
+            fields_not_match = []
+            for idx, sub in enumerate(self.sub_list):
+                problem_count = 25 if sub == '헌법' else 40
+                correct_count = 0
+
+                qs_answer = (
+                    answer_model.objects.filter(student=student, problem__subject=sub)
+                    .annotate(answer_correct=F('problem__answer'), answer_student=F('answer'))
+                )
+                for entry in qs_answer:
+                    correct_count += 1 if entry.answer_student == entry.answer_correct else 0
+
+                score = correct_count * 100 / problem_count
+                score_list.append(score)
+                fields_not_match.append(getattr(original_score_instance, f'subject_{idx}') != score)
+
+            score_sum = sum(score_list[1:])
+            average = round(score_sum / 3, 1)
+
+            fields_not_match.append(original_score_instance.sum != score_sum)
+            fields_not_match.append(original_score_instance.average != average)
+
+            if any(fields_not_match):
+                for idx, score in enumerate(score_list):
+                    setattr(original_score_instance, f'subject_{idx}', score)
+                original_score_instance.sum = score_sum
+                original_score_instance.average = average
+                list_update.append(original_score_instance)
+
+        update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'average']
+        bulk_create_or_update(score_model, list_create, list_update, update_fields)
+
+        if any(list_create) or any(list_update):
+            is_updated = True
+        elif error:
+            is_updated = None
+        else:
+            is_updated = False
+
+        return is_updated, message_dict[is_updated]
+
+    def update_ranks(self, qs_student, rank_total_model):
+        message_dict = {
+            None: '에러가 발생했습니다.',
+            True: '등수를 업데이트했습니다.',
+            False: '기존 등수와 일치합니다.',
+        }
+        list_create = []
+        list_update = []
+        error = None
+        subject_count = len(self.sub_list)
+
+        def rank_func(field_name) -> Window:
+            return Window(expression=Rank(), order_by=F(field_name).desc())
+
+        annotate_dict = {f'rank_{idx}': rank_func(f'score__subject_{idx}') for idx in range(subject_count)}
+        annotate_dict['rank_average'] = rank_func('score__average')
+
+        participants = qs_student.count()
+        for student in qs_student:
+            rank_list = qs_student.annotate(**annotate_dict)
+            target, _ = rank_total_model.objects.get_or_create(student=student)
+
+            fields_not_match = [target.participants != participants]
+            for row in rank_list:
+                if row.id == student.id:
+                    for idx in range(subject_count):
+                        fields_not_match.append(
+                            getattr(target, f'subject_{idx}') != getattr(row, f'rank_{idx}')
+                        )
+                    fields_not_match.append(target.average != row.rank_average)
+
+                    if any(fields_not_match):
+                        for idx in range(subject_count):
+                            setattr(target, f'subject_{idx}', getattr(row, f'rank_{idx}'))
+                        target.average = row.rank_average
+                        target.participants = participants
+                        list_update.append(target)
+
+        update_fields = ['subject_0', 'subject_1', 'average', 'participants']
+        bulk_create_or_update(rank_total_model, list_create, list_update, update_fields)
+
+        if any(list_create) or any(list_update):
+            is_updated = True
+        elif error:
+            is_updated = None
+        else:
+            is_updated = False
+
+        return is_updated, message_dict[is_updated]
+
+    def get_data_statistics(self, model_type='result'):
+        model = self.student_model
+        if model_type == 'predict':
+            model = self.predict_student_model
         qs_students = (
-            self.student_model.objects.filter(psat=self.exam)
-            .select_related('psat', 'category', 'score', 'rank_total', 'rank_total')
+            model.objects.filter(psat=self.exam)
+            .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
             .annotate(
                 department=F('category__department'),
                 subject_0=F('score__subject_0'),
@@ -646,7 +1015,11 @@ class ExamVars:
                 }
         return data_statistics
 
-    def update_statistics(self, data_statistics):
+    def update_statistics(self, data_statistics, model_type='result'):
+        model = self.statistics_model
+        if model_type == 'predict':
+            model = self.predict_statistics_model
+
         list_update = []
         list_create = []
 
@@ -665,7 +1038,7 @@ class ExamVars:
                 })
 
             try:
-                new_query = self.statistics_model.objects.get(psat=self.exam, department=department)
+                new_query = model.objects.get(psat=self.exam, department=department)
                 fields_not_match = any(
                     getattr(new_query, fld) != val for fld, val in stat_dict.items()
                 )
@@ -673,12 +1046,12 @@ class ExamVars:
                     for fld, val in stat_dict.items():
                         setattr(new_query, fld, val)
                     list_update.append(new_query)
-            except self.statistics_model.DoesNotExist:
-                list_create.append(self.statistics_model(psat=self.exam, **stat_dict))
+            except model.DoesNotExist:
+                list_create.append(model(psat=self.exam, **stat_dict))
         update_fields = [
             'department', 'subject_0', 'subject_1', 'subject_2', 'subject_3', 'average',
         ]
-        bulk_create_or_update(self.statistics_model, list_create, list_update, update_fields)
+        bulk_create_or_update(model, list_create, list_update, update_fields)
 
         is_updated = True
         message = '통계가 업데이트됐습니다.'
