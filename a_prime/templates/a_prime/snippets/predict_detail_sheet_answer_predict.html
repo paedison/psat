@@ -98,11 +98,7 @@
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td class="td-no-border">
                     <button data-number="{{ answer.no }}"
-                            {% if exam.is_answer_predict_opened %}
-                            class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success"
-                            {% else %}
-                            class="btn btn-circle btn-sm fs-6 mx-1 my-2 {% if answer.prediction_is_correct %}btn-success{% else %}btn-danger{% endif %}"
-                            {% endif %}>
+                            class="btn btn-circle btn-sm fs-6 mx-1 my-2 {% if answer.predict_is_correct %}btn-success{% else %}btn-danger{% endif %}">
                         <div id="answerPredict{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
                              class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                             {{ answer.ans_predict }}
@@ -118,7 +114,7 @@
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td>
                     <div data-number="{{ answer.no }}"
-                         class="fw-bold {% if answer.predict_result %}text-success{% else %}text-danger{% endif %}">
+                         class="fw-bold {% if answer.predict_is_correct %}text-success{% else %}text-danger{% endif %}">
                         <div id="answerPredictAccuracy{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
                              class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                             {{ answer.rate_accuracy|floatformat:0 }}

@@ -9,10 +9,8 @@ admin_patterns = [
     path('exam/create/', admin_views.exam_create_view, name='admin-exam-create'),
     path('update/<int:pk>/', admin_views.update_view, name='admin-update'),
 
-    path('result/<int:pk>/', admin_views.result_detail_view, name='admin-result-detail'),
+    path('detail/<str:model_type>/<int:pk>/', admin_views.detail_view, name='admin-detail'),
     path('result/student/<int:pk>/', admin_views.result_student_detail_view, name='admin-result-student-detail'),
-
-    path('predict/<int:pk>/', admin_views.predict_detail_view, name='admin-predict-detail'),
 
     # path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
     # path('search/<int:exam_year>/<int:exam_round>/', catalog_view, name='catalog_year_round'),

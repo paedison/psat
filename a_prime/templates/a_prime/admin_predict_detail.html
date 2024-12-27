@@ -13,10 +13,10 @@
                                  hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                 <div class="btn-group">
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                            hx-headers='{"View-Type":"scores_predict"}'
+                                            hx-headers='{"View-Type":"score_predict"}'
                                             hx-post="{{ exam.get_admin_update_url }}"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        예측 점수 업데이트</button>
+                                        점수 업데이트</button>
                                 </div>
                             </div>
 
@@ -24,16 +24,22 @@
                                  hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                 <div class="btn-group">
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                            hx-headers='{"View-Type":"ranks_predict"}'
+                                            hx-headers='{"View-Type":"rank_predict"}'
                                             hx-post="{{ exam.get_admin_update_url }}"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        예측 등수 업데이트
+                                        등수 업데이트
                                     </button>
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
                                             hx-headers='{"View-Type":"statistics_predict"}'
                                             hx-post="{{ exam.get_admin_update_url }}"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        예측 통계 업데이트
+                                        통계 업데이트
+                                    </button>
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            hx-headers='{"View-Type":"answer_count_predict"}'
+                                            hx-post="{{ exam.get_admin_update_url }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        답안분석표 업데이트
                                     </button>
                                 </div>
                             </div>

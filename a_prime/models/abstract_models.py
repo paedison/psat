@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Greatest
 
 from . import choices
 
@@ -64,6 +65,33 @@ class AnswerCount(models.Model):
     count_0 = models.IntegerField(default=0, verbose_name='미표기')
     count_multiple = models.IntegerField(default=0, verbose_name='중복표기')
     count_sum = models.IntegerField(default=0, verbose_name='총계')
+    answer_predict = models.GeneratedField(
+        expression=models.Case(
+            models.When(
+                models.Q(count_1=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(1),
+            ),
+            models.When(
+                models.Q(count_2=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(2),
+            ),
+            models.When(
+                models.Q(count_3=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(3),
+            ),
+            models.When(
+                models.Q(count_4=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(4),
+            ),
+            models.When(
+                models.Q(count_5=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
+                then=models.Value(5),
+            ),
+            default=None,
+        ),
+        output_field=models.IntegerField(),
+        db_persist=True,
+    )
 
     class Meta:
         abstract = True
@@ -78,6 +106,10 @@ class AnswerCount(models.Model):
                     getattr(self, f'count_{ans_official}') for ans_official in answer_official_list
                 )
             return count_target * 100 / self.count_sum
+
+    def get_answer_predict_rate(self):
+        if self.count_sum:
+            return getattr(self, f'count_{self.answer_predict}') * 100 / self.count_sum
 
 
 class ExtendedAnswerCount(AnswerCount):

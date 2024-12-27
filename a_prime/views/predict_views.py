@@ -408,6 +408,11 @@ class ExamVars:
                 When(answer=F('problem__answer'), then=Value(True)),
                 default=Value(False),
                 output_field=BooleanField()
+            ),
+            predict_is_correct=Case(
+                When(answer=F('problem__predict_answer_count__answer_predict'), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
             )
         ).select_related(
             'problem',

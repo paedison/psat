@@ -1,6 +1,4 @@
 from django.db import models
-from django.db.models.functions import Greatest
-from django.urls import reverse_lazy
 
 from common.models import User
 from . import abstract_models
@@ -63,33 +61,6 @@ class PredictAnswer(abstract_models.Answer):
 
 class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count')
-    answer_predict = models.GeneratedField(
-        expression=models.Case(
-            models.When(
-                models.Q(count_1=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
-                then=models.Value(1),
-            ),
-            models.When(
-                models.Q(count_2=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
-                then=models.Value(2),
-            ),
-            models.When(
-                models.Q(count_3=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
-                then=models.Value(3),
-            ),
-            models.When(
-                models.Q(count_4=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
-                then=models.Value(4),
-            ),
-            models.When(
-                models.Q(count_5=Greatest('count_1', 'count_2', 'count_3', 'count_4', 'count_5')),
-                then=models.Value(5),
-            ),
-            default=None,
-        ),
-        output_field=models.IntegerField(),
-        db_persist=True,
-    )
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}04_답안 개수'
@@ -97,10 +68,6 @@ class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
 
     def __str__(self):
         return f'[Prime]PredictAnswerCount(#{self.id}):{self.problem.reference}'
-
-    def get_answer_predict_rate(self):
-        if self.count_sum:
-            return getattr(self, f'count_{self.answer_predict}') * 100 / self.count_sum
 
 
 class PredictScore(abstract_models.Score):

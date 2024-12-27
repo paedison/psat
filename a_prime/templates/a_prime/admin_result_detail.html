@@ -43,7 +43,7 @@
                                  hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                 <div class="btn-group">
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                            hx-headers='{"View-Type":"scores"}'
+                                            hx-headers='{"View-Type":"score"}'
                                             hx-post="{{ exam.get_admin_update_url }}"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         점수 업데이트
@@ -55,7 +55,7 @@
                                  hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                 <div class="btn-group">
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                            hx-headers='{"View-Type":"ranks"}'
+                                            hx-headers='{"View-Type":"rank"}'
                                             hx-post="{{ exam.get_admin_update_url }}"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         등수 업데이트
@@ -65,6 +65,12 @@
                                             hx-post="{{ exam.get_admin_update_url }}"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         통계 업데이트
+                                    </button>
+                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                            hx-headers='{"View-Type":"answer_count"}'
+                                            hx-post="{{ exam.get_admin_update_url }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                        답안분석표 업데이트
                                     </button>
                                 </div>
                             </div>

@@ -1,11 +1,15 @@
 import dataclasses
 import io
+import traceback
 import zipfile
+from collections import defaultdict
 from urllib.parse import quote
 
+import django.db.utils
 import pandas as pd
 import pdfkit
 import unicodedata
+from django.db import transaction
 from django.db.models import Case, When, Value, BooleanField, Count, F, Window
 from django.db.models.functions import Rank
 from django.http import HttpResponse
@@ -16,7 +20,6 @@ from django_htmx.http import replace_url
 from common.constants import icon_set_new
 from common.decorators import only_staff_allowed
 from common.utils import HtmxHttpRequest, update_context_data
-from scripts.update_prime_result_models import bulk_create_or_update
 from .. import models, utils, forms
 
 INFO = {'menu': 'score', 'view_type': 'primeScore'}
@@ -64,7 +67,7 @@ def list_view(request: HtmxHttpRequest):
 
 
 @only_staff_allowed()
-def result_detail_view(request: HtmxHttpRequest, pk: int):
+def detail_view(request: HtmxHttpRequest, pk: int, model_type='result'):
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', 1)
     subject = request.GET.get('subject', '')
@@ -74,7 +77,7 @@ def result_detail_view(request: HtmxHttpRequest, pk: int):
     exam_vars = ExamVars(exam)
     answer_tab = exam_vars.get_answer_tab()
 
-    config.model_type = 'result'
+    config.model_type = model_type
     config.url_statistics_print = reverse_lazy('prime:admin-statistics-print', args=[exam.id])
     config.url_catalog_print = reverse_lazy('prime:admin-catalog-print', args=[exam.id])
     config.url_answers_print = reverse_lazy('prime:admin-answers-print', args=[exam.id])
@@ -85,28 +88,26 @@ def result_detail_view(request: HtmxHttpRequest, pk: int):
 
     context = update_context_data(
         config=config, exam=exam, answer_tab=answer_tab,
-        icon_menu=icon_set_new.ICON_MENU['score'],
-        icon_subject=icon_set_new.ICON_SUBJECT,
-        icon_nav=icon_set_new.ICON_NAV,
-        icon_search=icon_set_new.ICON_SEARCH,
+        icon_nav=icon_set_new.ICON_NAV, icon_search=icon_set_new.ICON_SEARCH,
     )
+    data_statistics = exam_vars.get_qs_statistics(model_type)
+    student_list = exam_vars.get_student_list(model_type)
+    qs_answer_count = exam_vars.get_qs_answer_count(subject, model_type)
+
     if view_type == 'statistics_list':
-        data_statistics = exam_vars.get_qs_statistics()
         statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
         context = update_context_data(
             context, statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range)
         return render(request, 'a_prime/snippets/admin_detail_statistics.html', context)
     if view_type == 'catalog_list':
-        student_list = exam_vars.get_student_list()
         catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
         context = update_context_data(
             context, catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
         return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
     if view_type == 'answer_list':
         subject_idx = exam_vars.subject_vars[subject][2]
-        qs_answer_count = exam_vars.get_qs_answer_count(subject)
         answers_page_obj_group, answers_page_range_group = (
-            exam_vars.get_answer_page_data(qs_answer_count, page_number, 10))
+            exam_vars.get_answer_page_data(qs_answer_count, page_number, 10, model_type))
         context = update_context_data(
             context,
             tab=answer_tab[subject_idx],
@@ -115,15 +116,10 @@ def result_detail_view(request: HtmxHttpRequest, pk: int):
         )
         return render(request, 'a_prime/snippets/admin_detail_answer.html', context)
 
-    data_statistics = exam_vars.get_qs_statistics()
     statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
-
-    student_list = exam_vars.get_student_list()
     catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
-
-    qs_answer_count = exam_vars.get_qs_answer_count(subject)
     answers_page_obj_group, answers_page_range_group = (
-        exam_vars.get_answer_page_data(qs_answer_count, page_number, 10))
+        exam_vars.get_answer_page_data(qs_answer_count, page_number, 10, model_type))
 
     context = update_context_data(
         context,
@@ -131,78 +127,7 @@ def result_detail_view(request: HtmxHttpRequest, pk: int):
         catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
         answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
     )
-    return render(request, 'a_prime/admin_result_detail.html', context)
-
-
-@only_staff_allowed()
-def predict_detail_view(request: HtmxHttpRequest, pk: int):
-    view_type = request.headers.get('View-Type', '')
-    page_number = request.GET.get('page', 1)
-    subject = request.GET.get('subject', '')
-
-    config = ViewConfiguration()
-    exam = get_object_or_404(models.Psat, pk=pk)
-    exam_vars = ExamVars(exam)
-    answer_tab = exam_vars.get_answer_tab()
-
-    config.model_type = 'predict'
-    config.url_statistics_print = reverse_lazy('prime:admin-statistics-print', args=[exam.id])
-    config.url_catalog_print = reverse_lazy('prime:admin-catalog-print', args=[exam.id])
-    config.url_answers_print = reverse_lazy('prime:admin-answers-print', args=[exam.id])
-    config.url_export_statistics_pdf = reverse_lazy('prime:admin-export-statistics-pdf', args=[exam.id])
-    config.url_export_statistics_excel = reverse_lazy('prime:admin-export-statistics-excel', args=[exam.id])
-    config.url_export_catalog_excel = reverse_lazy('prime:admin-export-catalog-excel', args=[exam.id])
-    config.url_export_answers_excel = reverse_lazy('prime:admin-export-answers-excel', args=[exam.id])
-
-    context = update_context_data(
-        config=config, exam=exam, answer_tab=answer_tab,
-        icon_menu=icon_set_new.ICON_MENU['score'],
-        icon_subject=icon_set_new.ICON_SUBJECT,
-        icon_nav=icon_set_new.ICON_NAV,
-        icon_search=icon_set_new.ICON_SEARCH,
-    )
-    if view_type == 'statistics_list':
-        data_statistics = exam_vars.get_qs_statistics('predict')
-        statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
-        context = update_context_data(
-            context, statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range)
-        return render(request, 'a_prime/snippets/admin_detail_statistics.html', context)
-    if view_type == 'catalog_list':
-        student_list = exam_vars.get_student_list('predict')
-        catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
-        context = update_context_data(
-            context, catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
-        return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
-    if view_type == 'answer_list':
-        subject_idx = exam_vars.subject_vars[subject][2]
-        qs_answer_count = exam_vars.get_qs_answer_count(subject)
-        answers_page_obj_group, answers_page_range_group = (
-            exam_vars.get_answer_page_data(qs_answer_count, page_number, 10, 'predict'))
-        context = update_context_data(
-            context,
-            tab=answer_tab[subject_idx],
-            answers=answers_page_obj_group[subject],
-            answers_page_range=answers_page_range_group[subject],
-        )
-        return render(request, 'a_prime/snippets/admin_detail_answer.html', context)
-
-    data_statistics = exam_vars.get_qs_statistics('predict')
-    statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
-
-    student_list = exam_vars.get_student_list('predict')
-    catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
-
-    qs_answer_count = exam_vars.get_qs_answer_count(subject, 'predict')
-    answers_page_obj_group, answers_page_range_group = (
-        exam_vars.get_answer_page_data(qs_answer_count, page_number, 10, 'predict'))
-
-    context = update_context_data(
-        context,
-        statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
-        catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
-        answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
-    )
-    return render(request, 'a_prime/admin_predict_detail.html', context)
+    return render(request, f'a_prime/admin_{model_type}_detail.html', context)
 
 
 @only_staff_allowed()
@@ -222,7 +147,9 @@ def update_view(request: HtmxHttpRequest, pk: int):
     exam_vars = ExamVars(exam)
 
     context = {}
-    predict_headers = ['scores_predict', 'ranks_predict', 'statistics_predict']
+    predict_headers = [
+        'score_predict', 'rank_predict', 'statistics_predict', 'answer_count_predict'
+    ]
     if view_type in predict_headers:
         next_url = exam.get_admin_predict_detail_url()
     else:
@@ -232,47 +159,58 @@ def update_view(request: HtmxHttpRequest, pk: int):
     qs_predict_student = exam_vars.get_qs_student('predict')
 
     if view_type == 'answer_official':
-        is_updated, message = exam_vars.update_answer_official(request)
+        is_updated, message = exam_vars.update_problem_model_for_answer_official(request)
         context = update_context_data(
             header='정답 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     if view_type == 'answer_student':
-        is_updated, message = exam_vars.update_answer_student(request)
+        is_updated, message = exam_vars.update_result_answer_model_for_answer_student(request)
         context = update_context_data(
             header='제출 답안 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
-    if view_type == 'scores':
-        is_updated, message = exam_vars.update_scores(qs_result_student, exam_vars.score_model, exam_vars.answer_model)
+    if view_type == 'score':
+        is_updated, message = exam_vars.update_score_model(qs_result_student, exam_vars.score_model,
+                                                           exam_vars.answer_model)
         context = update_context_data(
             header='점수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
-    if view_type == 'scores_predict':
-        is_updated, message = exam_vars.update_scores(
-            qs_predict_student, exam_vars.predict_score_model, exam_vars.predict_answer_model)
+    if view_type == 'score_predict':
+        is_updated, message = exam_vars.update_score_model(qs_predict_student, exam_vars.predict_score_model,
+                                                           exam_vars.predict_answer_model)
         context = update_context_data(
             header='점수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
-    if view_type == 'ranks':
-        is_updated, message = exam_vars.update_ranks(qs_result_student, exam_vars.rank_total_model)
+    if view_type == 'rank':
+        is_updated, message = exam_vars.update_rank_model(qs_result_student, exam_vars.rank_total_model)
         context = update_context_data(
             header='등수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
-    if view_type == 'ranks_predict':
-        is_updated, message = exam_vars.update_ranks(qs_predict_student, exam_vars.predict_rank_total_model)
+    if view_type == 'rank_predict':
+        is_updated, message = exam_vars.update_rank_model(qs_predict_student, exam_vars.predict_rank_total_model)
         context = update_context_data(
             header='등수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     if view_type == 'statistics':
         data_statistics = exam_vars.get_data_statistics()
-        is_updated, message = exam_vars.update_statistics(data_statistics)
+        is_updated, message = exam_vars.update_statistics_model(data_statistics)
         context = update_context_data(
             header='통계 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     if view_type == 'statistics_predict':
         predict_data_statistics = exam_vars.get_data_statistics('predict')
-        is_updated, message = exam_vars.update_statistics(predict_data_statistics, 'predict')
+        is_updated, message = exam_vars.update_statistics_model(predict_data_statistics, 'predict')
         context = update_context_data(
             header='통계 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'answer_count':
+        is_updated, message = exam_vars.update_answer_counts()
+        context = update_context_data(
+            header='문항분석표 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'answer_count_predict':
+        is_updated, message = exam_vars.update_answer_counts('predict')
+        context = update_context_data(
+            header='문항분석표 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     return render(request, 'a_prime/snippets/admin_modal_update.html', context)
 
@@ -625,7 +563,7 @@ class ExamVars:
         annotate_dict = {
             'subject': F('problem__subject'),
             'number': F('problem__number'),
-            'ans_predict': F('problem__predict_answer_count__answer_predict'),
+            'ans_predict': F(f'problem__{model_type}_answer_count__answer_predict'),
             'ans_official': F('problem__answer'),
         }
         field_list = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
@@ -738,7 +676,7 @@ class ExamVars:
 
         return qs_answer_count
 
-    def update_answer_official(self, request) -> tuple:
+    def update_problem_model_for_answer_official(self, request) -> tuple:
         message_dict = {
             None: '에러가 발생했습니다.',
             True: '문제 정답을 업데이트했습니다.',
@@ -746,8 +684,6 @@ class ExamVars:
         }
         list_update = []
         list_create = []
-        is_updated = None
-        error = None
 
         form = self.upload_file_form(request.POST, request.FILES)
         if form.is_valid():
@@ -772,19 +708,13 @@ class ExamVars:
                         except ValueError as error:
                             print(error)
             update_fields = ['answer']
-            bulk_create_or_update(self.problem_model, list_create, list_update, update_fields)
-
-            if any(list_create) or any(list_update):
-                is_updated = True
-            elif error:
-                is_updated = None
-            else:
-                is_updated = False
+            is_updated = bulk_create_or_update(self.problem_model, list_create, list_update, update_fields)
         else:
+            is_updated = None
             print(form)
         return is_updated, message_dict[is_updated]
 
-    def update_answer_student(self, request) -> tuple:
+    def update_result_answer_model_for_answer_student(self, request) -> tuple:
         message_dict = {
             None: '에러가 발생했습니다.',
             True: '제출 답안을 업데이트했습니다.',
@@ -792,7 +722,6 @@ class ExamVars:
         }
         list_update = []
         list_create = []
-        error = None
 
         form = self.upload_file_form(request.POST, request.FILES)
         if form.is_valid():
@@ -832,20 +761,13 @@ class ExamVars:
                         except ValueError as error:
                             print(error)
             update_fields = ['answer']
-            bulk_create_or_update(self.answer_model, list_create, list_update, update_fields)
-
-            if any(list_create) or any(list_update):
-                is_updated = True
-            elif error:
-                is_updated = None
-            else:
-                is_updated = False
+            is_updated = bulk_create_or_update(self.answer_model, list_create, list_update, update_fields)
         else:
             is_updated = None
             print(form)
         return is_updated, message_dict[is_updated]
 
-    def update_scores(self, qs_student, score_model, answer_model):
+    def update_score_model(self, qs_student, score_model, answer_model):
         message_dict = {
             None: '에러가 발생했습니다.',
             True: '점수를 업데이트했습니다.',
@@ -853,7 +775,6 @@ class ExamVars:
         }
         list_update = []
         list_create = []
-        error = None
 
         for student in qs_student:
             original_score_instance, _ = score_model.objects.get_or_create(student=student)
@@ -889,18 +810,10 @@ class ExamVars:
                 list_update.append(original_score_instance)
 
         update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'average']
-        bulk_create_or_update(score_model, list_create, list_update, update_fields)
-
-        if any(list_create) or any(list_update):
-            is_updated = True
-        elif error:
-            is_updated = None
-        else:
-            is_updated = False
-
+        is_updated = bulk_create_or_update(score_model, list_create, list_update, update_fields)
         return is_updated, message_dict[is_updated]
 
-    def update_ranks(self, qs_student, rank_total_model):
+    def update_rank_model(self, qs_student, rank_total_model):
         message_dict = {
             None: '에러가 발생했습니다.',
             True: '등수를 업데이트했습니다.',
@@ -908,7 +821,6 @@ class ExamVars:
         }
         list_create = []
         list_update = []
-        error = None
         subject_count = len(self.sub_list)
 
         def rank_func(field_name) -> Window:
@@ -939,15 +851,7 @@ class ExamVars:
                         list_update.append(target)
 
         update_fields = ['subject_0', 'subject_1', 'average', 'participants']
-        bulk_create_or_update(rank_total_model, list_create, list_update, update_fields)
-
-        if any(list_create) or any(list_update):
-            is_updated = True
-        elif error:
-            is_updated = None
-        else:
-            is_updated = False
-
+        is_updated = bulk_create_or_update(rank_total_model, list_create, list_update, update_fields)
         return is_updated, message_dict[is_updated]
 
     def get_data_statistics(self, model_type='result'):
@@ -1015,11 +919,16 @@ class ExamVars:
                 }
         return data_statistics
 
-    def update_statistics(self, data_statistics, model_type='result'):
+    def update_statistics_model(self, data_statistics, model_type='result'):
         model = self.statistics_model
         if model_type == 'predict':
             model = self.predict_statistics_model
 
+        message_dict = {
+            None: '에러가 발생했습니다.',
+            True: '통계를 업데이트했습니다.',
+            False: '기존 통계와 일치합니다.',
+        }
         list_update = []
         list_create = []
 
@@ -1051,12 +960,110 @@ class ExamVars:
         update_fields = [
             'department', 'subject_0', 'subject_1', 'subject_2', 'subject_3', 'average',
         ]
-        bulk_create_or_update(model, list_create, list_update, update_fields)
+        is_updated = bulk_create_or_update(model, list_create, list_update, update_fields)
+        return is_updated, message_dict[is_updated]
 
-        is_updated = True
-        message = '통계가 업데이트됐습니다.'
+    def update_answer_count_model(self, model_type='result', rank_type=''):
+        if model_type == 'result':
+            answer_model = self.answer_model
+            if rank_type == 'top':
+                answer_count_model = self.answer_count_top_model
+            elif rank_type == 'mid':
+                answer_count_model = self.answer_count_mid_model
+            elif rank_type == 'low':
+                answer_count_model = self.answer_count_low_model
+            else:
+                answer_count_model = self.answer_count_model
+        else:
+            answer_model = self.predict_answer_model
+            if rank_type == 'top':
+                answer_count_model = self.predict_answer_count_top_model
+            elif rank_type == 'mid':
+                answer_count_model = self.predict_answer_count_mid_model
+            elif rank_type == 'low':
+                answer_count_model = self.predict_answer_count_low_model
+            else:
+                answer_count_model = self.predict_answer_count_model
 
-        return is_updated, message
+        list_update = []
+        list_create = []
+
+        lookup_field = f'student__rank_total__average'
+        top_rank_threshold = 0.27
+        mid_rank_threshold = 0.73
+        participants_function = F('student__rank_total__participants')
+
+        lookup_exp = {}
+        if rank_type == 'top':
+            lookup_exp[f'{lookup_field}__lte'] = participants_function * top_rank_threshold
+        elif rank_type == 'mid':
+            lookup_exp[f'{lookup_field}__gt'] = participants_function * top_rank_threshold
+            lookup_exp[f'{lookup_field}__lte'] = participants_function * mid_rank_threshold
+        elif rank_type == 'low':
+            lookup_exp[f'{lookup_field}__gt'] = participants_function * mid_rank_threshold
+
+        answer_distribution = (
+            answer_model.objects.filter(**lookup_exp)
+            .select_related('student', 'student__rank_total')
+            .values('problem_id', 'answer')
+            .annotate(count=Count('id')).order_by('problem_id', 'answer')
+        )
+        organized_distribution = defaultdict(lambda: {i: 0 for i in range(6)})
+
+        for entry in answer_distribution:
+            problem_id = entry['problem_id']
+            answer = entry['answer']
+            count = entry['count']
+            organized_distribution[problem_id][answer] = count
+
+        count_fields = [
+            'count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_multiple',
+        ]
+        for problem_id, answers_original in organized_distribution.items():
+            answers = {'count_multiple': 0}
+            for answer, count in answers_original.items():
+                if answer <= 5:
+                    answers[f'count_{answer}'] = count
+                else:
+                    answers['count_multiple'] = count
+            answers['count_sum'] = sum(answers[fld] for fld in count_fields)
+
+            try:
+                new_query = answer_count_model.objects.get(problem_id=problem_id)
+                fields_not_match = any(
+                    getattr(new_query, fld) != val for fld, val in answers.items()
+                )
+                if fields_not_match:
+                    for fld, val in answers.items():
+                        setattr(new_query, fld, val)
+                    list_update.append(new_query)
+            except answer_count_model.DoesNotExist:
+                list_create.append(answer_count_model(problem_id=problem_id, **answers))
+        update_fields = [
+            'problem_id', 'count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_multiple',
+            'count_sum'
+        ]
+        return bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
+
+    def update_answer_counts(self, model_type='result'):
+        message_dict = {
+            None: '에러가 발생했습니다.',
+            True: '제출 답안을 업데이트했습니다.',
+            False: '기존 정답 데이터와 일치합니다.',
+        }
+        is_updated_list = [
+            self.update_answer_count_model(model_type),
+            self.update_answer_count_model(model_type, 'top'),
+            self.update_answer_count_model(model_type, 'mid'),
+            self.update_answer_count_model(model_type, 'low')
+        ]
+        if None in is_updated_list:
+            is_updated = None
+        elif any(is_updated_list):
+            is_updated = True
+        else:
+            is_updated = False
+        return is_updated, message_dict[is_updated]
 
     def create_default_problems(self):
         list_create = []
@@ -1115,3 +1122,27 @@ class ExamVars:
                     except model.DoesNotExist:
                         list_create.append(model(problem=problem))
             bulk_create_or_update(model, list_create, [], [])
+
+
+def bulk_create_or_update(model, list_create, list_update, update_fields):
+    model_name = model._meta.model_name
+    try:
+        with transaction.atomic():
+            if list_create:
+                model.objects.bulk_create(list_create)
+                message = f'Successfully created {len(list_create)} {model_name} instances.'
+                is_updated = True
+            elif list_update:
+                model.objects.bulk_update(list_update, list(update_fields))
+                message = f'Successfully updated {len(list_update)} {model_name} instances.'
+                is_updated = True
+            else:
+                message = f'No changes were made to {model_name} instances.'
+                is_updated = False
+    except django.db.utils.IntegrityError:
+        traceback_message = traceback.format_exc()
+        print(traceback_message)
+        message = f'Error occurred.'
+        is_updated = None
+    print(message)
+    return is_updated
