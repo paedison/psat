@@ -274,3 +274,54 @@ class ResultAnswerCountMidRankAdmin(ResultAnswerCountAdmin):
 @admin.register(models.ResultAnswerCountLowRank)
 class ResultAnswerCountLowRankAdmin(ResultAnswerCountAdmin):
     pass
+
+
+@admin.register(models.PredictStudent)
+class PredictStudentAdmin(ResultStudentAdmin):
+    list_display = list_display_links = [
+        'id', 'created_at', 'year', 'round', 'user_id',
+        'name', 'serial', 'password', 'unit', 'department', 'is_filtered',
+    ]
+
+
+@admin.register(models.PredictAnswer)
+class PredictAnswerAdmin(ResultAnswerAdmin):
+    list_display = list_display_links = [
+        'id', 'created_at', 'student_id', 'problem_id', 'year', 'round', 'name', 'department',
+        'subject', 'number', 'answer', 'answer_correct',
+    ]
+
+
+@admin.register(models.PredictAnswerCount)
+class PredictAnswerCountAdmin(ResultAnswerCountAdmin):
+    pass
+
+
+@admin.register(models.PredictScore)
+class PredictScoreAdmin(ResultScoreAdmin):
+    pass
+
+
+@admin.register(models.PredictRankTotal)
+class PredictRankTotalAdmin(ResultRankTotalAdmin):
+    pass
+
+
+@admin.register(models.PredictRankCategory)
+class PredictRankCategoryAdmin(ResultRankTotalAdmin):
+    pass
+
+
+@admin.register(models.PredictAnswerCountTopRank)
+class PredictAnswerCountTopRankAdmin(ResultAnswerCountAdmin):
+    pass
+
+
+@admin.register(models.PredictAnswerCountMidRank)
+class PredictAnswerCountMidRankAdmin(ResultAnswerCountAdmin):
+    pass
+
+
+@admin.register(models.PredictAnswerCountLowRank)
+class PredictAnswerCountLowRankAdmin(ResultAnswerCountAdmin):
+    pass

@@ -132,11 +132,13 @@ def detail_view(request: HtmxHttpRequest, pk: int, model_type='result'):
 
 @only_staff_allowed()
 def result_student_detail_view(request: HtmxHttpRequest, pk: int):
-    from .score_views import get_detail_context
+    from .result_views import get_detail_context
     student = get_object_or_404(models.ResultStudent, pk=pk)
     registry = models.ResultRegistry.objects.filter(student=student).last()
-    context = get_detail_context(registry.user, student.psat.pk)
-    return render(request, 'a_prime/score_print.html', context)
+    context = get_detail_context(registry.user, student.psat)
+    if context is None:
+        return redirect('prime:admin-detail', args=['result', pk])
+    return render(request, 'a_prime/result_print.html', context)
 
 
 @only_staff_allowed()
@@ -169,24 +171,22 @@ def update_view(request: HtmxHttpRequest, pk: int):
             header='제출 답안 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     if view_type == 'score':
-        is_updated, message = exam_vars.update_score_model(qs_result_student, exam_vars.score_model,
-                                                           exam_vars.answer_model)
+        is_updated, message = exam_vars.update_scores(qs_result_student)
         context = update_context_data(
             header='점수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     if view_type == 'score_predict':
-        is_updated, message = exam_vars.update_score_model(qs_predict_student, exam_vars.predict_score_model,
-                                                           exam_vars.predict_answer_model)
+        is_updated, message = exam_vars.update_scores(qs_predict_student, 'predict')
         context = update_context_data(
             header='점수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     if view_type == 'rank':
-        is_updated, message = exam_vars.update_rank_model(qs_result_student, exam_vars.rank_total_model)
+        is_updated, message = exam_vars.update_ranks(qs_result_student)
         context = update_context_data(
             header='등수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     if view_type == 'rank_predict':
-        is_updated, message = exam_vars.update_rank_model(qs_predict_student, exam_vars.predict_rank_total_model)
+        is_updated, message = exam_vars.update_ranks(qs_predict_student, 'predict')
         context = update_context_data(
             header='등수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
@@ -767,12 +767,10 @@ class ExamVars:
             print(form)
         return is_updated, message_dict[is_updated]
 
-    def update_score_model(self, qs_student, score_model, answer_model):
-        message_dict = {
-            None: '에러가 발생했습니다.',
-            True: '점수를 업데이트했습니다.',
-            False: '기존 점수와 일치합니다.',
-        }
+    def update_score_model(self, qs_student, model_dict):
+        answer_model = model_dict['answer']
+        score_model = model_dict['score']
+
         list_update = []
         list_create = []
 
@@ -810,15 +808,41 @@ class ExamVars:
                 list_update.append(original_score_instance)
 
         update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'average']
-        is_updated = bulk_create_or_update(score_model, list_create, list_update, update_fields)
-        return is_updated, message_dict[is_updated]
+        return bulk_create_or_update(score_model, list_create, list_update, update_fields)
 
-    def update_rank_model(self, qs_student, rank_total_model):
+    def update_scores(self, qs_student, model_type='result'):
         message_dict = {
             None: '에러가 발생했습니다.',
-            True: '등수를 업데이트했습니다.',
-            False: '기존 등수와 일치합니다.',
+            True: '점수를 업데이트했습니다.',
+            False: '기존 점수와 일치합니다.',
         }
+
+        if model_type == 'result':
+            model_dict = {
+                'answer': self.answer_model,
+                'score': self.score_model,
+            }
+        else:
+            model_dict = {
+                'answer': self.predict_answer_model,
+                'score': self.predict_score_model,
+            }
+
+        is_updated_list = [
+            self.update_score_model(qs_student, model_dict),
+        ]
+
+        if None in is_updated_list:
+            is_updated = None
+        elif any(is_updated_list):
+            is_updated = True
+        else:
+            is_updated = False
+        return is_updated, message_dict[is_updated]
+
+    def update_rank_model(self, qs_student, model_dict, stat_type='total'):
+        rank_model = model_dict[stat_type]
+
         list_create = []
         list_update = []
         subject_count = len(self.sub_list)
@@ -832,7 +856,9 @@ class ExamVars:
         participants = qs_student.count()
         for student in qs_student:
             rank_list = qs_student.annotate(**annotate_dict)
-            target, _ = rank_total_model.objects.get_or_create(student=student)
+            if stat_type == 'department':
+                rank_list = rank_list.filter(category=student.category)
+            target, _ = rank_model.objects.get_or_create(student=student)
 
             fields_not_match = [target.participants != participants]
             for row in rank_list:
@@ -850,8 +876,37 @@ class ExamVars:
                         target.participants = participants
                         list_update.append(target)
 
-        update_fields = ['subject_0', 'subject_1', 'average', 'participants']
-        is_updated = bulk_create_or_update(rank_total_model, list_create, list_update, update_fields)
+        update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'average', 'participants']
+        return bulk_create_or_update(rank_model, list_create, list_update, update_fields)
+
+    def update_ranks(self, qs_student, model_type='result'):
+        message_dict = {
+            None: '에러가 발생했습니다.',
+            True: '등수를 업데이트했습니다.',
+            False: '기존 등수와 일치합니다.',
+        }
+        if model_type == 'result':
+            model_dict = {
+                'total': self.rank_total_model,
+                'department': self.rank_category_model,
+            }
+        else:
+            model_dict = {
+                'total': self.predict_rank_total_model,
+                'department': self.predict_rank_category_model,
+            }
+
+        is_updated_list = [
+            self.update_rank_model(qs_student, model_dict, 'total'),
+            self.update_rank_model(qs_student, model_dict, 'department'),
+        ]
+
+        if None in is_updated_list:
+            is_updated = None
+        elif any(is_updated_list):
+            is_updated = True
+        else:
+            is_updated = False
         return is_updated, message_dict[is_updated]
 
     def get_data_statistics(self, model_type='result'):
@@ -963,27 +1018,10 @@ class ExamVars:
         is_updated = bulk_create_or_update(model, list_create, list_update, update_fields)
         return is_updated, message_dict[is_updated]
 
-    def update_answer_count_model(self, model_type='result', rank_type=''):
-        if model_type == 'result':
-            answer_model = self.answer_model
-            if rank_type == 'top':
-                answer_count_model = self.answer_count_top_model
-            elif rank_type == 'mid':
-                answer_count_model = self.answer_count_mid_model
-            elif rank_type == 'low':
-                answer_count_model = self.answer_count_low_model
-            else:
-                answer_count_model = self.answer_count_model
-        else:
-            answer_model = self.predict_answer_model
-            if rank_type == 'top':
-                answer_count_model = self.predict_answer_count_top_model
-            elif rank_type == 'mid':
-                answer_count_model = self.predict_answer_count_mid_model
-            elif rank_type == 'low':
-                answer_count_model = self.predict_answer_count_low_model
-            else:
-                answer_count_model = self.predict_answer_count_model
+    @staticmethod
+    def update_answer_count_model(model_dict, rank_type='all'):
+        answer_model = model_dict['answer']
+        answer_count_model = model_dict[rank_type]
 
         list_update = []
         list_create = []
@@ -1048,15 +1086,34 @@ class ExamVars:
     def update_answer_counts(self, model_type='result'):
         message_dict = {
             None: '에러가 발생했습니다.',
-            True: '제출 답안을 업데이트했습니다.',
-            False: '기존 정답 데이터와 일치합니다.',
+            True: '문항분석표를 업데이트했습니다.',
+            False: '기존 문항분석표 데이터와 일치합니다.',
         }
+
+        if model_type == 'result':
+            model_dict = {
+                'answer': self.answer_model,
+                'all': self.answer_count_model,
+                'top': self.answer_count_top_model,
+                'mid': self.answer_count_mid_model,
+                'low': self.answer_count_low_model,
+            }
+        else:
+            model_dict = {
+                'answer': self.predict_answer_model,
+                'all': self.predict_answer_count_model,
+                'top': self.predict_answer_count_top_model,
+                'mid': self.predict_answer_count_mid_model,
+                'low': self.predict_answer_count_low_model,
+            }
+
         is_updated_list = [
-            self.update_answer_count_model(model_type),
-            self.update_answer_count_model(model_type, 'top'),
-            self.update_answer_count_model(model_type, 'mid'),
-            self.update_answer_count_model(model_type, 'low')
+            self.update_answer_count_model(model_dict, 'all'),
+            self.update_answer_count_model(model_dict, 'top'),
+            self.update_answer_count_model(model_dict, 'mid'),
+            self.update_answer_count_model(model_dict, 'low'),
         ]
+
         if None in is_updated_list:
             is_updated = None
         elif any(is_updated_list):

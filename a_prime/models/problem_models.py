@@ -30,6 +30,11 @@ class Psat(models.Model):
         return f'[Prime]Psat(#{self.id}):{self.reference}'
 
     @property
+    def score_opened_at(self):
+        score_open_date = self.answer_official_opened_at + timedelta(days=5)
+        return score_open_date.replace(hour=9)
+
+    @property
     def reference(self):
         return f'{self.year}-{self.round}'
 
@@ -71,7 +76,7 @@ class Psat(models.Model):
 
     @property
     def is_predict_closed(self):
-        return self.answer_official_opened_at + timedelta(days=5) <= timezone.now()
+        return self.score_opened_at <= timezone.now()
 
     @staticmethod
     def get_admin_list_url():
@@ -96,23 +101,23 @@ class Psat(models.Model):
         return reverse_lazy('psat:admin-psat-active', args=[self.id])
 
     @staticmethod
-    def get_score_list_url():
-        return reverse_lazy('prime:score-list')
+    def get_result_list_url():
+        return reverse_lazy('prime:result-list')
 
-    def get_score_detail_url(self):
-        return reverse_lazy('prime:score-detail', args=[self.id])
+    def get_result_detail_url(self):
+        return reverse_lazy('prime:result-detail', args=[self.id])
 
-    def get_score_register_url(self):
-        return reverse_lazy('prime:score-register', args=[self.id])
+    def get_result_register_url(self):
+        return reverse_lazy('prime:result-register', args=[self.id])
 
-    def get_score_unregister_url(self):
-        return reverse_lazy('prime:score-unregister', args=[self.id])
+    def get_result_unregister_url(self):
+        return reverse_lazy('prime:result-unregister', args=[self.id])
 
-    def get_score_print_url(self):
-        return reverse_lazy('prime:score-print', args=[self.id])
+    def get_result_print_url(self):
+        return reverse_lazy('prime:result-print', args=[self.id])
 
-    def get_score_modal_url(self):
-        return reverse_lazy('prime:score-modal', args=[self.id])
+    def get_result_modal_url(self):
+        return reverse_lazy('prime:result-modal', args=[self.id])
 
     @staticmethod
     def get_predict_list_url():
@@ -133,9 +138,6 @@ class Psat(models.Model):
     def get_predict_unregister_url(self):
         return reverse_lazy('prime:predict-unregister', args=[self.id])
 
-    # def get_score_print_url(self):
-    #     return reverse_lazy('prime:score-print', args=[self.id])
-    #
     def get_predict_modal_url(self):
         return reverse_lazy('prime:predict-modal', args=[self.id])
 

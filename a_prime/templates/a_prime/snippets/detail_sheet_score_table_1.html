@@ -1,5 +1,5 @@
 <article class="table-responsive">
-    <table class="table small align-middle">
+    <table class="table align-middle">
         <thead>
             <tr class="d-table-row d-md-none text-center align-middle table-warning">
                 <th class="text-nowrap" rowspan="2">과목</th>
@@ -58,33 +58,37 @@
             </td>
         {% else %}
             <td>
-                <div id="{{ prefix }}my_score_{{ stat_tot.field }}"
+                <div id="{{ tab.prefix }}Score{{ stat_tot.field|title }}"
                      class="htmx-fade-up-in delay-0 text-success fw-bold">
                     {{ stat_tot.score|floatformat:1 }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}rank_total_{{ stat_tot.field }}"
+                <div id="{{ tab.prefix }}RankTotal{{ stat_tot.field|title }}"
                      class="htmx-fade-up-in delay-1">
                     {{ stat_tot.rank }} / {{ stat_tot.participants }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}rank_ratio_total_{{ stat_tot.field }}"
+                <div id="{{ tab.prefix }}RankRatioTotal{{ stat_tot.field|title }}"
                      class="htmx-fade-up-in delay-2">
-                    {{ stat_tot.rank|percentageby:stat_tot.participants|floatformat:1 }}
+                    {% if stat_tot.participants %}
+                        {{ stat_tot.rank|percentageby:stat_tot.participants|floatformat:1 }}
+                    {% endif %}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}rank_department_{{ stat_tot.field }}"
+                <div id="{{ tab.prefix }}RankDepartment{{ stat_tot.field|title }}"
                      class="htmx-fade-up-in delay-3">
                     {{ stat_dep.rank }} / {{ stat_dep.participants }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}rank_ratio_department_{{ stat_tot.field }}"
+                <div id="{{ tab.prefix }}RankRatioDepartment{{ stat_tot.field|title }}"
                      class="htmx-fade-up-in delay-4">
-                    {{ stat_dep.rank|percentageby:stat_dep.participants|floatformat:1 }}
+                    {% if stat_dep.participants %}
+                        {{ stat_dep.rank|percentageby:stat_dep.participants|floatformat:1 }}
+                    {% endif %}
                 </div>
             </td>
         {% endif %}

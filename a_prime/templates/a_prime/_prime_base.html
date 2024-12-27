@@ -31,7 +31,7 @@
                     </li>
                     <li class="breadcrumb-item">
                         {% if config.submenu == 'score' %}
-                            <a href="{{ exam.get_score_detail_url }}" class="active">{{ exam.get_round_display }}</a>
+                            <a href="{{ exam.get_result_detail_url }}" class="active">{{ exam.get_round_display }}</a>
                         {% elif config.submenu == 'predict' %}
                             <a href="{{ exam.get_predict_detail_url }}" class="active">{{ exam.get_round_display }}</a>
                         {% elif config.submenu == 'admin' and config.model_type == 'result' %}
@@ -50,4 +50,21 @@
     </div><!-- Page Title End -->
     {% block main_content %}
     {% endblock main_content %}
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">시험 일정</div>
+
+            <div class="card-body">
+                <div class="container d-none d-lg-block text-center p-0">
+                    <img src="{% static 'image/prime/2025/psat/schedule_1.jpg' %}" class="mw-100" alt="Schedule"/>
+                    <img src="{% static 'image/prime/2025/psat/time_schedule_1.jpg' %}" class="mw-100" alt="Schedule"/>
+                </div>
+                <div class="container d-lg-none text-center p-0">
+                    <img src="{% static 'image/prime/2025/psat/schedule_2.jpg' %}" class="mw-100" alt="Schedule"/>
+                    <img src="{% static 'image/prime/2025/psat/time_schedule_2.jpg' %}" class="mw-100" alt="Schedule"/>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock main %}

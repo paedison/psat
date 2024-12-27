@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import admin_views, score_views, predict_views
+from .views import admin_views, result_views, predict_views
 
 app_name = 'prime'
 
@@ -25,14 +25,14 @@ admin_patterns = [
     path('export/answers/excel/<int:pk>/', admin_views.export_answers_excel_view, name='admin-export-answers-excel'),
 ]
 
-score_patterns = [
-    path('', score_views.list_view, name='score-list'),
-    path('<int:pk>/', score_views.detail_view, name='score-detail'),
-    path('register/<int:pk>/', score_views.register_view, name='score-register'),
-    path('unregister/<int:pk>/', score_views.unregister_view, name='score-unregister'),
+result_patterns = [
+    path('', result_views.list_view, name='result-list'),
+    path('<int:pk>/', result_views.detail_view, name='result-detail'),
+    path('register/<int:pk>/', result_views.register_view, name='result-register'),
+    path('unregister/<int:pk>/', result_views.unregister_view, name='result-unregister'),
 
-    path('print/<int:pk>/', score_views.print_view, name='score-print'),
-    path('modal/<int:pk>/', score_views.modal_view, name='score-modal'),
+    path('print/<int:pk>/', result_views.print_view, name='result-print'),
+    path('modal/<int:pk>/', result_views.modal_view, name='result-modal'),
 ]
 
 predict_patterns = [
@@ -50,6 +50,6 @@ predict_patterns = [
 
 urlpatterns = [
     path('admin/', include(admin_patterns)),
-    path('score/', include(score_patterns)),
+    path('result/', include(result_patterns)),
     path('predict/', include(predict_patterns)),
 ]

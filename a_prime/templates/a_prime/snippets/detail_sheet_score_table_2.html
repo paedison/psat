@@ -1,5 +1,5 @@
 <article class="table-responsive">
-    <table class="table small align-middle">
+    <table class="table align-middle">
         <thead>
             <tr class="d-table-row d-md-none text-center align-middle table-warning">
                 <th class="text-nowrap">과목</th>
@@ -55,37 +55,37 @@
             </td>
         {% else %}
             <td>
-                <div id="{{ prefix }}_score_{{ stat.field }}"
+                <div id="{{ tab.prefix }}Score{{ stat.field|title }}"
                      class="htmx-fade-up-in delay-0 text-success fw-bold">
                     {{ stat.score|floatformat:1 }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}_num_students_{{ stat.field }}"
+                <div id="{{ tab.prefix }}Participants{{ stat.field|title }}"
                      class="htmx-fade-up-in delay-1">
                     {{ stat.participants }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}_max_score_{{ stat.field }}"
+                <div id="{{ tab.prefix }}MaxScore{{ stat.field|title }}"
                      class="htmx-fade-up-in delay-2">
                     {{ stat.max_score|floatformat:1 }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}_top_score_10_{{ stat.field }}"
+                <div id="{{ tab.prefix }}TopScore10{{ stat.field|title }}"
                      class="htmx-fade-up-in delay-3">
                     {{ stat.top_score_10|floatformat:1 }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}_top_score_20_{{ stat.field }}"
+                <div id="{{ tab.prefix }}TopScore20{{ stat.field|title }}"
                      class="htmx-fade-up-in delay-4">
                     {{ stat.top_score_20|floatformat:1 }}
                 </div>
             </td>
             <td>
-                <div id="{{ prefix }}_avg_score_{{ stat.field }}"
+                <div id="{{ tab.prefix }}AvgScore{{ stat.field|title }}"
                      class="htmx-fade-up-in delay-5">
                     {{ stat.avg_score|floatformat:1 }}
                 </div>

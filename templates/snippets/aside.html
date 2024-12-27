@@ -7,7 +7,8 @@
 {#        {% if user.is_admin %}{% partial menu_dashboard %}{% endif %}#}
         {% partial menu_psat %}
 {#        {% partial menu_predict %}#}
-        {% if user.is_admin %}{% partial menu_prime %}{% endif %}
+        {% partial menu_prime %}
+{#        {% if user.is_admin %}{% partial menu_prime %}{% endif %}#}
         {% if user.is_staff %}{% partial menu_prime_leet %}{% endif %}
         {% if user.is_admin %}{% partial menu_predict %}{% endif %}
 {#        {% partial menu_score %}#}
@@ -111,7 +112,7 @@
             {% endif %}
             <li>
                 <a class="aside-nav-icon" data-menu-parent="prime" data-menu-self="score"
-                   href="{% url 'prime:score-list' %}">
+                   href="{% url 'prime:result-list' %}">
                     <i class="fa-regular fa-fw fa-square"></i> 성적 확인
                 </a>
             </li>

@@ -21,13 +21,17 @@ class PsatForm(forms.ModelForm):
 
 
 class PrimeResultStudentForm(forms.ModelForm):
+    password = forms.CharField(
+        max_length=10, initial='', label='비밀번호',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '비밀번호'}),
+    )
+
     class Meta:
         model = models.ResultStudent
         fields = ['serial', 'name', 'password']
         widgets = {
             'serial': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '수험번호'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '이름'}),
-            'password': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '비밀번호'}),
         }
 
 
@@ -45,6 +49,10 @@ class PrimePredictStudentForm(forms.ModelForm):
         label='직렬',
         required=True,
     )
+    password = forms.CharField(
+        max_length=10, initial='', label='비밀번호',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '비밀번호'}),
+    )
 
     class Meta:
         model = models.PredictStudent
@@ -52,7 +60,6 @@ class PrimePredictStudentForm(forms.ModelForm):
         widgets = {
             'serial': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '수험번호'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '이름'}),
-            'password': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '비밀번호'}),
         }
 
     def save(self, commit=True):

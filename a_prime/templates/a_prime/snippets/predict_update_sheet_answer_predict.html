@@ -1,17 +1,18 @@
 {% load psat_filter %}
-{% load partials %}
 
-{% for id in exam_vars.answer_tab.id %}
-    {% cycle exam_vars.answer_tab.prefix_predict.0 exam_vars.answer_tab.prefix_predict.1 exam_vars.answer_tab.prefix_predict.2 exam_vars.answer_tab.prefix_predict.3 as prefix silent %}
-    {% cycle data_answer_predict.0 data_answer_predict.1 data_answer_predict.2 data_answer_predict.3 as answer_predict silent %}
-    {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 as is_confirmed silent %}
+{% for tab in answer_tab %}
+    {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 as answers silent %}
+    {% cycle is_confirmed_data.0 is_confirmed_data.1 is_confirmed_data.2 is_confirmed_data.3 as is_confirmed silent %}
 
-    {% for answer in answer_predict %}
-        <div id="{{ prefix }}_{{ answer.no }}"
+    {% for answer in answers %}
+        <div id="answerPredict{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
              class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
-            {{ answer.ans }}
+            <button data-number="{{ answer.no }}"
+                    class="btn btn-circle btn-sm fs-6 mx-1 my-2 {% if answer.predict_result %}btn-success{% else %}btn-danger{% endif %}">
+                {{ answer.ans_predict }}
+            </button>
         </div>
-        <div id="{{ prefix }}_accuracy_{{ answer.no }}" aria-label="정확도"
+        <div id="answerPredictAccuracy{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
              class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
             {{ answer.rate_accuracy|floatformat:0 }}
         </div>

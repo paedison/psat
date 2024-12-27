@@ -34,11 +34,13 @@ class ViewConfiguration:
 
 
 def get_student_dict(user, exam_list):
-    students = (
-        models.PredictStudent.objects.filter(user=user, psat__in=exam_list)
-        .select_related('psat', 'score', 'category').order_by('id')
-    )
-    return {student.psat: student for student in students}
+    if user.is_authenticated:
+        students = (
+            models.PredictStudent.objects.filter(user=user, psat__in=exam_list)
+            .select_related('psat', 'score', 'category').order_by('id')
+        )
+        return {student.psat: student for student in students}
+    return {}
 
 
 @login_not_required
@@ -74,33 +76,41 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_prime/predict_list.html', context)
 
 
-def get_detail_context(user, pk: int):
+def detail_view(request: HtmxHttpRequest, pk: int):
+    exam = utils.get_exam(pk)
+    if timezone.now() < exam.exam_started_at:
+        return redirect('prime:predict-list')
+
+    view_type = request.headers.get('View-Type', 'main')
     exam = utils.get_exam(pk)
     exam_vars = ExamVars(exam)
     config = ViewConfiguration()
     config.submenu_kor = f'제{exam.round}회 ' + config.submenu_kor
 
-    student = exam_vars.get_student(user)
+    student = exam_vars.get_student(request.user)
     if not student:
-        return None
+        return redirect('prime:predict-list')
 
     score_tab = exam_vars.get_score_tab()
     answer_tab = exam_vars.get_answer_tab()
 
-    qs_answer_count = exam_vars.get_qs_answer_count()
-    # data_answer_predict = exam_vars.get_data_answer_predict(qs_answer_count)
-
     qs_student_answer = exam_vars.get_qs_student_answer(student)
     is_confirmed_data = exam_vars.get_is_confirmed_data(qs_student_answer)
+    answer_data_set = exam_vars.get_input_answer_data_set(request)
 
-    stat_total_all = exam_vars.get_dict_stat_data(student, is_confirmed_data, 'total', False)
+    stat_total_all = exam_vars.get_stat_data(student, is_confirmed_data, answer_data_set, 'total', False)
     exam_vars.update_score_predict(stat_total_all, qs_student_answer)
-    stat_department_all = exam_vars.get_dict_stat_data(student, is_confirmed_data, 'department', False)
+    stat_department_all = exam_vars.get_stat_data(student, is_confirmed_data, answer_data_set, 'department', False)
 
-    stat_total_filtered = exam_vars.get_dict_stat_data(student, is_confirmed_data, 'total', True)
-    stat_department_filtered = exam_vars.get_dict_stat_data(student, is_confirmed_data, 'department', True)
+    if student.is_filtered:
+        stat_total_filtered = exam_vars.get_stat_data(student, is_confirmed_data, answer_data_set, 'total', True)
+        stat_department_filtered = exam_vars.get_stat_data(student, is_confirmed_data, answer_data_set, 'department',
+                                                           True)
+    else:
+        stat_total_filtered = {}
+        stat_department_filtered = {}
 
-    # frequency_score = exam_vars.get_dict_frequency_score(student)
+    frequency_score = exam_vars.get_dict_frequency_score(student)
     data_answers = exam_vars.get_data_answers(qs_student_answer)
 
     context = update_context_data(
@@ -126,29 +136,26 @@ def get_detail_context(user, pk: int):
         stat_total_all=stat_total_all,
         stat_department_all=stat_department_all,
 
-        # sheet_score: 성적 예측 I [Filtered]
+        # sheet_score: 성적 예측 II [Filtered]
         stat_total_filtered=stat_total_filtered,
         stat_department_filtered=stat_department_filtered,
-        #
-        # # chart: 성적 분포 차트
-        # frequency_score=frequency_score,
-        #
+
+        # chart: 성적 분포 차트
+        frequency_score=frequency_score,
+
         # sheet_answer: 답안 확인
         data_answers=data_answers,
         is_confirmed_data=is_confirmed_data,
     )
-    return context
 
-
-def detail_view(request: HtmxHttpRequest, pk: int):
-    view_type = request.headers.get('View-Type', 'main')
-    context = get_detail_context(request.user, pk)
-    if context is None:
-        return redirect('prime:predict-list')
     if view_type == 'info_answer':
         return render(request, 'a_prime/snippets/predict_update_info_answer.html', context)
     if view_type == 'score_all':
         return render(request, 'a_prime/snippets/predict_update_sheet_score.html', context)
+    if view_type == 'answer_submit':
+        return render(request, 'a_prime/snippets/predict_update_sheet_answer_submit.html', context)
+    if view_type == 'answer_predict':
+        return render(request, 'a_prime/snippets/predict_update_sheet_answer_predict.html', context)
     return render(request, 'a_prime/predict_detail.html', context)
 
 
@@ -381,17 +388,18 @@ class ExamVars:
             .order_by('id').last()
         )
 
-        qs_answer_count = (
-            student.answers
-            .values(subject=F('problem__subject'))
-            .annotate(answer_count=Count('id'))
-        )
-        average_answer_count = 0
-        for q in qs_answer_count:
-            student.answer_count[q['subject']] = q['answer_count']
-            if q['subject'] != '헌법':
-                average_answer_count += q['answer_count']
-        student.answer_count['평균'] = average_answer_count
+        if student:
+            qs_answer_count = (
+                student.answers
+                .values(subject=F('problem__subject'))
+                .annotate(answer_count=Count('id'))
+            )
+            average_answer_count = 0
+            for q in qs_answer_count:
+                student.answer_count[q['subject']] = q['answer_count']
+                if q['subject'] != '헌법':
+                    average_answer_count += q['answer_count']
+            student.answer_count['평균'] = average_answer_count
 
         return student
 
@@ -404,12 +412,12 @@ class ExamVars:
         return models.PredictAnswer.objects.filter(
             problem__psat=self.exam, student=student).annotate(
             subject=F('problem__subject'),
-            is_correct=Case(
+            result=Case(
                 When(answer=F('problem__answer'), then=Value(True)),
                 default=Value(False),
                 output_field=BooleanField()
             ),
-            predict_is_correct=Case(
+            predict_result=Case(
                 When(answer=F('problem__predict_answer_count__answer_predict'), then=Value(True)),
                 default=Value(False),
                 output_field=BooleanField()
@@ -467,14 +475,11 @@ class ExamVars:
             qs_score = qs_score.filter(student__is_filtered=True)
         return qs_score.values()
 
-    def get_score_frequency_list(self) -> list:
-        return self.student_model.objects.filter(psat=self.exam).values_list('score__sum', flat=True)
-
     def get_score_tab(self):
         return [
-            {'id': '0', 'title': '내 성적', 'template': self.score_template_table_1},
-            {'id': '1', 'title': '전체 기준', 'template': self.score_template_table_2},
-            {'id': '2', 'title': '직렬 기준', 'template': self.score_template_table_2},
+            {'id': '0', 'title': '내 성적', 'prefix': 'my', 'template': self.score_template_table_1},
+            {'id': '1', 'title': '전체 기준', 'prefix': 'total', 'template': self.score_template_table_2},
+            {'id': '2', 'title': '직렬 기준', 'prefix': 'department', 'template': self.score_template_table_2},
         ]
 
     def get_answer_tab(self):
@@ -509,27 +514,15 @@ class ExamVars:
             ans_student = line.answer
             ans_predict = line.problem.predict_answer_count.answer_predict
 
-            answer_official_list = []
-            if 1 <= ans_official <= 5:
-                result = ans_student == ans_official
-                predict_result = ans_predict == ans_official
-            else:
-                answer_official_list = [int(digit) for digit in str(ans_official)]
-                result = ans_student in answer_official_list
-                predict_result = ans_predict in answer_official_list
-
             line.no = line.problem.number
             line.ans_official = ans_official
             line.ans_official_circle = line.problem.get_answer_display
-            line.ans_list = answer_official_list
 
             line.ans_student = ans_student
             line.field = field
-            line.result = result
 
             line.ans_predict = ans_predict
             line.rate_accuracy = line.problem.predict_answer_count.get_answer_predict_rate()
-            line.predict_result = predict_result
 
             line.rate_correct = line.problem.predict_answer_count.get_answer_rate(ans_official)
             line.rate_correct_top = line.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
@@ -550,14 +543,14 @@ class ExamVars:
 
     def update_score_predict(self, stat_total_all, qs_student_answer):
         score_predict = {sub: 0 for sub in self.sub_list}
-        predict_correct_count_list = qs_student_answer.filter(predict_is_correct=True).values(
-            'subject').annotate(correct_counts=Count('predict_is_correct'))
-        for line in predict_correct_count_list:
+        predict_correct_count_list = qs_student_answer.filter(predict_result=True).values(
+            'subject').annotate(correct_counts=Count('predict_result'))
+        for entry in predict_correct_count_list:
             score = 0
-            sub = line['subject']
+            sub = entry['subject']
             problem_count = self.problem_count.get(sub)
             if problem_count:
-                score = line['correct_counts'] * 100 / problem_count
+                score = entry['correct_counts'] * 100 / problem_count
             score_predict[sub] = score
 
         psat_sum = 0
@@ -569,7 +562,7 @@ class ExamVars:
             else:
                 stat['score_predict'] = psat_sum / 3
 
-    def get_is_confirmed_data(self, qs_student_answer):
+    def get_is_confirmed_data(self, qs_student_answer) -> list:
         is_confirmed_data = [False for _ in self.subject_vars.keys()]
         is_confirmed_data.pop()
         for answer in qs_student_answer:
@@ -581,13 +574,25 @@ class ExamVars:
         is_confirmed_data.append(all(is_confirmed_data))  # Add is_confirmed_data for '평균'
         return is_confirmed_data
 
-    def get_dict_stat_data(self, student: models.PredictStudent, is_confirmed_data, stat_type: str, is_filtered: bool):
+    def get_stat_data(
+            self, student: models.PredictStudent,
+            is_confirmed_data: list,
+            answer_data_set: dict,
+            stat_type: str,
+            is_filtered: bool
+    ):
         qs_answer_values = self.get_qs_answer_values(student, stat_type, is_filtered)
         qs_score = self.get_qs_score(student, stat_type, is_filtered)
 
         stat_data = []
         for sub, (subject, fld, fld_idx) in self.subject_vars.items():
             url_answer_input = self.exam.get_predict_answer_input_url(fld) if sub != '평균' else ''
+            answer_list = answer_data_set.get(fld)
+            saved_answers = []
+            if answer_list:
+                saved_answers = [ans for ans in answer_list if ans]
+            answer_count = max(student.answer_count.get(sub, 0), len(saved_answers))
+
             stat_data.append({
                 'field': fld, 'sub': sub, 'subject': subject,
                 'icon': icon_set_new.ICON_SUBJECT[sub],
@@ -598,9 +603,9 @@ class ExamVars:
                 'is_confirmed': is_confirmed_data[fld_idx],
                 'url_answer_input': url_answer_input,
 
-                'score_real': 0, 'score_predict': 0,
+                'score_predict': 0,
                 'problem_count': self.problem_count.get(sub),
-                'answer_count': student.answer_count.get(sub, 0),
+                'answer_count': answer_count,
 
                 'rank': 0, 'score': 0, 'max_score': 0,
                 'top_score_10': 0, 'top_score_20': 0, 'avg_score': 0,
@@ -616,7 +621,7 @@ class ExamVars:
         if min_participants:
             participants_dict['average'] = min_participants
 
-        scores = {}
+        scores = {fld: [] for fld in self.field_vars.keys()}
         is_confirmed_for_average = []
         for stat in stat_data:
             fld = stat['field']
@@ -627,26 +632,32 @@ class ExamVars:
                 if self.exam.is_answer_predict_opened:
                     pass
                 if self.exam.is_answer_official_opened:
-                    scores[fld] = [qs[fld] for qs in qs_score]
+                    for qs in qs_score:
+                        fld_score = qs[fld]
+                        if fld_score is not None:
+                            scores[fld].append(fld_score)
+
                     student_score = getattr(student.score, fld)
-                    sorted_scores = sorted(scores[fld], reverse=True)
-                    rank = sorted_scores.index(student_score) + 1
-                    top_10_threshold = max(1, int(participants * 0.1))
-                    top_20_threshold = max(1, int(participants * 0.2))
-                    avg_score = sum(scores[fld]) / participants if any(scores[fld]) else 0
-                    stat.update({
-                        'rank': rank,
-                        'score': student_score,
-                        'max_score': sorted_scores[0],
-                        'top_score_10': sorted_scores[top_10_threshold - 1],
-                        'top_score_20': sorted_scores[top_20_threshold - 1],
-                        'avg_score': avg_score,
-                    })
+                    if scores[fld] and student_score:
+                        sorted_scores = sorted(scores[fld], reverse=True)
+                        rank = sorted_scores.index(student_score) + 1
+                        top_10_threshold = max(1, int(participants * 0.1))
+                        top_20_threshold = max(1, int(participants * 0.2))
+                        avg_score = sum(scores[fld]) / participants if any(scores[fld]) else 0
+                        stat.update({
+                            'rank': rank,
+                            'score': student_score,
+                            'max_score': sorted_scores[0],
+                            'top_score_10': sorted_scores[top_10_threshold - 1],
+                            'top_score_20': sorted_scores[top_20_threshold - 1],
+                            'avg_score': avg_score,
+                        })
 
         return stat_data
 
     def get_dict_frequency_score(self, student) -> dict:
-        score_frequency_list = self.get_score_frequency_list()
+        score_frequency_list = self.student_model.objects.filter(
+            psat=self.exam).values_list('score__sum', flat=True)
         score_counts_list = [round(score / 3, 1) for score in score_frequency_list]
         score_counts_list.sort()
 
@@ -656,7 +667,7 @@ class ExamVars:
 
         return {'score_points': dict(score_counts), 'score_colors': score_colors}
 
-    def get_input_answer_data_set(self, request):
+    def get_input_answer_data_set(self, request) -> dict:
         problem_count = self.problem_count.copy()
         problem_count.pop('평균')
 

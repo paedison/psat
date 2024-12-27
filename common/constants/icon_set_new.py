@@ -34,7 +34,7 @@ ICON_MENU = {
     'community': '<i class="fa-solid fa-fw fa-users-line"></i>',
     'predict': '<i class="fa-solid fa-fw fa-arrows-up-to-line"></i>',
     'score': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
-    'prime': '<i class="fa-solid fa-fw fa-file"></i>',
+    'prime': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
     'prime_leet': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
     'schedule': '<i class="fa-regular fa-fw fa-calendar-days"></i>',
 

@@ -51,14 +51,6 @@
                         {% include 'a_prime/snippets/detail_info_student.html' %}
                     </div>
                 </div>
-    {#            student_id: {{ student.id }}<br/>#}
-    {#            exam_id: {{ exam.id }}<br/>#}
-    {#            현재 시각: {{ current_time }}<br/>#}
-    {#            페이지 오픈 시각: {{ exam.page_opened_at }}<br/>#}
-    {#            시험 시작 시각: {{ exam.started_at }}<br/>#}
-    {#            시험 종료 시각: {{ exam.finished_at }}<br/>#}
-    {#            예상 정답 공개 시각: {{ exam.answer_predict_opened_at }}<br/>#}
-    {#            정답 공개 시각: {{ exam.answer_official_opened_at }}<br/>#}
 
                 <div class="col-12" aria-label="답안 제출 현황">
                     <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
@@ -66,16 +58,10 @@
                     </div>
                 </div>
 
-                <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
-                    <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_prime/snippets/predict_detail_sheet_score_all.html' %}
-                    </div>
-                </div>
-
-                {% if student.is_filtered %}
-                    <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
-                        <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                            {% include 'a_prime/snippets/predict_detail_sheet_score_filtered.html' %}
+                {% if exam.is_collecting_answer or exam.is_answer_predict_opened %}
+                    <div class="col-12" aria-label="예상 정답">
+                        <div id="info_student" class="card htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime/snippets/predict_detail_sheet_answer_predict.html' %}
                         </div>
                     </div>
                 {% endif %}
@@ -86,33 +72,26 @@
                             {% include 'a_prime/snippets/predict_detail_sheet_score_all.html' %}
                         </div>
                     </div>
-                    {% if student.answer_all_confirmed_at < exam.answer_official_opened_at %}
+                    {% if student.is_confirmed %}
                         <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
                             <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                                 {% include 'a_prime/snippets/predict_detail_sheet_score_filtered.html' %}
                             </div>
                         </div>
                     {% endif %}
-                {% endif %}
 
-                {% if exam.is_collecting_answer or exam.is_answer_predict_opened %}
-                    <div class="col-12" aria-label="예상 정답">
-                        <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                            {% include 'a_prime/snippets/predict_detail_sheet_answer_predict.html' %}
+                    <div class="col-12" aria-label="정답 확인">
+                        <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime/snippets/predict_detail_sheet_answer_submit.html' %}
                         </div>
                     </div>
-                {% endif %}
-    {#                <div class="col-12" aria-label="예상 정답">#}
-    {#                    <div id="info_student" class="card htmx-fade-in htmx-fade-out">#}
-    {#                        {% include 'a_prime/snippets/predict_detail_sheet_answer_predict.html' %}#}
-    {#                    </div>#}
-    {#                </div>#}
 
-                <div class="col-12" aria-label="정답 확인">
-                    <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_prime/snippets/predict_detail_sheet_answer_submit.html' %}
-                    </div>
-                </div>
+{#                    <div class="col-12">#}
+{#                        <div id="chart" class="card htmx-fade-in htmx-fade-out">#}
+{#                            {% include 'a_prime/snippets/detail_chart.html' with is_confirmed=True stat_total=stat_total_all stat_department=stat_department_all %}#}
+{#                        </div>#}
+{#                    </div>#}
+                {% endif %}
             {% endif %}
         </div>
     </section>

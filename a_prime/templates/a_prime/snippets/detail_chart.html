@@ -18,15 +18,17 @@
             </div>
         {% endpartialdef chart_canvas %}
     {% else %}
-        {% #responsive_table %}
-            <tbody>
-                <tr class="text-center align-middle">
-                   <th colspan="6" class="text-danger fs-6 py-4">
-                       모든 과목의 답안을 입력해주세요.
-                   </th>
-                </tr>
-            </tbody>
-        {% /responsive_table %}
+        <article class="table-responsive">
+            <table class="table align-middle">
+                <tbody>
+                    <tr class="text-center align-middle">
+                       <th colspan="6" class="text-danger fs-6 py-4">
+                           모든 과목의 답안을 입력해주세요.
+                       </th>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
     {% endif %}
 </div>
 

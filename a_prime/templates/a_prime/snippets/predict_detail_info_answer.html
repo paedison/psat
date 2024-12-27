@@ -36,8 +36,8 @@
                     </th>
 
                     <th class="text-nowrap" aria-label="선택 답안수">
-                        <span class="d-sm-none">제출 답안수<br/>(문제)</span>
-                        <span class="d-none d-sm-inline">제출 답안수(문제)</span>
+                        <span class="d-sm-none">선택 답안수<br/>(문제)</span>
+                        <span class="d-none d-sm-inline">선택 답안수(문제)</span>
                     </th>
                 </tr>
             </thead>
@@ -104,7 +104,7 @@
                 </td>
 
                 <td aria-label="총 참여자수">
-                    <div id="{{ stat_tot.field }}_participants" class="htmx-fade-up-in delay-2 fw-bold">
+                    <div id="{{ stat_tot.field }}Participants" class="htmx-fade-up-in delay-2 fw-bold">
                         {{ stat_tot.participants|default:0 }}
                     </div>
                 </td>
@@ -131,18 +131,18 @@
                     {% if exam_vars.current_time <= exam.answer_predict_opened_at %}
                         <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
                     {% elif exam_vars.current_time <= exam.answer_official_opened_at %}
-                        <div id="{{ stat_tot.field }}_score_predict" class="htmx-fade-up-in delay-1 text-primary fw-bold">
+                        <div id="{{ stat_tot.field }}ScorePredict" class="htmx-fade-up-in delay-1 text-primary fw-bold">
                             {{ stat_tot.score_predict|floatformat:1|default:'' }}
                         </div>
                     {% elif exam_vars.current_time > exam.answer_official_opened_at %}
-                        <div id="{{ stat_tot.field }}_score_real" class="htmx-fade-up-in delay-1 text-success fw-bold">
-                            {{ stat_tot.score_real|floatformat:1|default:'' }}
+                        <div id="{{ stat_tot.field }}Score" class="htmx-fade-up-in delay-1 text-success fw-bold">
+                            {{ stat_tot.score|floatformat:1|default:'' }}
                         </div>
                     {% endif %}
                 </td>
 
                 <td aria-label="총 참여자수">
-                    <div id="{{ stat_tot.field }}_participants" class="htmx-fade-up-in delay-2 fw-bold">
+                    <div id="{{ stat_tot.field }}Participants" class="htmx-fade-up-in delay-2 fw-bold">
                         {{ stat_tot.participants|default:0 }}
                     </div>
                 </td>

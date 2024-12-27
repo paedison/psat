@@ -2,18 +2,34 @@
 {% load static %}
 
 {% block main_content %}
-    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title mb-0 text-center">
                             <img src="{% static 'image/prime/2025/psat/title.jpg' %}" class="mw-100" alt="Title"/>
-                            <div class="fs-1 fw-bolder">성적 예측</div>
-                            <a class="btn btn-outline-primary ms-auto mt-4" hx-boost="true"
-                               href="{% url 'prime:result-list' %}">
-                                성적 확인 페이지로 이동
-                            </a>
+                            <div class="container p-0">
+                                <div class="container mb-3">
+                                    <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>
+                                    <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-6 text-sm-end">
+                                        <a class="btn btn-outline-danger" target="_blank"
+                                           href="https://renew.primeedunet.com/psat/product/prereg/group/147">
+                                            모의고사 신청
+                                        </a>
+                                    </div>
+                                    <div class="col-6 text-sm-start">
+                                        <a class="btn btn-outline-primary" hx-target="#main"
+                                           href="{{ config.url_predict_list }}" hx-boost="true">
+                                            성적 예측하기
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </h5>
                     </div>
                 </div>
@@ -28,23 +44,23 @@
                             <table class="table align-middle">
                                 <thead>
                                     <tr class="text-center table-warning">
-                                        <th class="text-primary text-nowrap p-2 col-1">회차</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">수험번호</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">직렬</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">성적표</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">
+                                        <th class="text-primary text-nowrap col-1">회차</th>
+                                        <th class="text-primary text-nowrap col-1">수험번호</th>
+                                        <th class="text-primary text-nowrap col-1">직렬</th>
+                                        <th class="text-primary text-nowrap col-1">성적표</th>
+                                        <th class="text-primary text-nowrap col-1">
                                             {{ icon_subject.헌법|safe }} 헌법
                                         </th>
-                                        <th class="text-primary text-nowrap p-2 col-1">
+                                        <th class="text-primary text-nowrap col-1">
                                             {{ icon_subject.언어|safe }} 언어
                                         </th>
-                                        <th class="text-primary text-nowrap p-2 col-1">
+                                        <th class="text-primary text-nowrap col-1">
                                             {{ icon_subject.자료|safe }} 자료
                                         </th>
-                                        <th class="text-primary text-nowrap p-2 col-1">
+                                        <th class="text-primary text-nowrap col-1">
                                             {{ icon_subject.상황|safe }} 상황
                                         </th>
-                                        <th class="text-primary text-nowrap p-2 col-1">PSAT 평균</th>
+                                        <th class="text-primary text-nowrap col-1">PSAT 평균</th>
                                     </tr>
                                 </thead>
 
@@ -55,7 +71,7 @@
                                                 {% partialdef exam_round inline=True %}
                                                     <td class="text-nowrap" aria-label="회차">
                                                         {% if obj.student %}
-                                                            <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
+                                                            <a href="{{ obj.get_result_detail_url }}" hx-boost="true">
                                                                 제{{ obj.round }}회
                                                             </a>
                                                         {% else %}
@@ -74,24 +90,14 @@
                                                         </a>
                                                     </td>
                                                 {% else %}
-                                                    {% if current_time < obj.page_opened_at %}
+                                                    {% if current_time < obj.score_opened_at %}
                                                         <td class="text-nowrap" colspan="8">
                                                             <a class="badge rounded-pill text-bg-danger" href=""
                                                                hx-headers='{"View-Type":"no_open"}'
                                                                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                                data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                                               hx-get="{{ obj.get_predict_modal_url }}">
-                                                                페이지 오픈 일시 : {{ obj.exam_started_at|date:'n/j(D) H:i' }}
-                                                            </a>
-                                                        </td>
-                                                    {% elif current_time > obj.score_opened_at %}
-                                                        <td class="text-nowrap" colspan="8">
-                                                            <a class="badge rounded-pill text-bg-danger" href=""
-                                                               hx-headers='{"View-Type":"no_open"}'
-                                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                                               data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                                               hx-get="{{ obj.get_predict_modal_url }}">
-                                                                성적 예측 기간이 지났습니다.
+                                                               hx-get="{{ obj.get_result_modal_url }}">
+                                                                성적 공개 일시 : {{ obj.score_opened_at|date:'n/j(D) H:i' }}
                                                             </a>
                                                         </td>
                                                     {% else %}
@@ -107,7 +113,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </section>
 {% endblock main_content %}
@@ -115,12 +120,12 @@
 {% partialdef exam_info %}
     <td class="text-nowrap" aria-label="수험번호">
         {% if obj.student %}
-            <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">{{ obj.student.serial }}</a>
+            <a href="{{ obj.get_result_detail_url }}" hx-boost="true">{{ obj.student.serial }}</a>
             {% partialdef delete_student inline=True %}
                 {% if user.is_staff %}
                     <a class="badge rounded-pill text-bg-danger"
                        hx-confirm="수험 정보를 삭제하시겠습니까?"
-                       href="" hx-post="{{ obj.get_predict_unregister_url }}">
+                       href="" hx-post="{{ obj.get_result_unregister_url }}">
                         삭제
                     </a>
                 {% endif %}
@@ -131,7 +136,7 @@
                    hx-headers='{"View-Type":"student_register"}'
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                    data-bs-toggle="modal" data-bs-target="#modalContainer"
-                   hx-get="{{ obj.get_predict_modal_url }}">
+                   hx-get="{{ obj.get_result_modal_url }}">
                     입력
                 </a>
             {% endpartialdef input_button %}
@@ -140,7 +145,7 @@
 
     <td class="text-nowrap" aria-label="직렬">
         {% if obj.student %}
-            <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">{{ obj.student.category.department }}</a>
+            <a href="{{ obj.get_result_detail_url }}" hx-boost="true">{{ obj.student.category.department }}</a>
             {% partial delete_student %}
         {% else %}
             {% partial input_button %}
@@ -150,7 +155,7 @@
     <td class="text-nowrap" aria-label="성적표">
         {% if obj.student %}
             <a class="badge rounded-pill text-bg-success" hx-boost="true"
-               href="{{ obj.get_predict_detail_url }}">
+               href="{{ obj.get_result_detail_url }}">
                 확인
             </a>
         {% else %}
@@ -158,7 +163,7 @@
                hx-headers='{"View-Type":"student_register"}'
                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                data-bs-toggle="modal" data-bs-target="#modalContainer"
-               hx-get="{{ obj.get_predict_modal_url }}">
+               hx-get="{{ obj.get_result_modal_url }}">
                 미응시
             </a>
         {% endif %}

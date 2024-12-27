@@ -1,9 +1,10 @@
 import dataclasses
 from collections import Counter
 
+from django.contrib.auth.decorators import login_not_required
 from django.core.paginator import Paginator
 from django.db.models import F, Case, When, Value, BooleanField, Count
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -23,20 +24,24 @@ class ViewConfiguration:
     menu_title = {'kor': menu_kor, 'eng': menu.capitalize()}
     submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
     url_admin = reverse_lazy('admin:a_prime_psat_changelist')
-    url_list = reverse_lazy('prime:score-list')
+    url_list = reverse_lazy('prime:result-list')
+    url_predict_list = reverse_lazy('prime:predict-list')
 
 
 def get_student_dict(user, exam_list):
-    students = (
-        models.ResultStudent.objects.filter(registries__user=user, psat__in=exam_list)
-        .select_related('psat', 'score', 'category').order_by('id')
-    )
-    return {student.psat: student for student in students}
+    if user.is_authenticated:
+        students = (
+            models.ResultStudent.objects.filter(registries__user=user, psat__in=exam_list)
+            .select_related('psat', 'score', 'category').order_by('id')
+        )
+        return {student.psat: student for student in students}
+    return {}
 
 
+@login_not_required
 def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    exam_list = models.Psat.objects.filter(year=2024)
+    exam_list = models.Psat.objects.filter(year=2025)
 
     subjects = [
         ('헌법', 'subject_0'),
@@ -53,6 +58,7 @@ def list_view(request: HtmxHttpRequest):
 
     student_dict = get_student_dict(request.user, exam_list)
     for obj in page_obj:
+        obj: models.Psat
         obj.student = student_dict.get(obj, None)
 
     context = update_context_data(
@@ -63,18 +69,17 @@ def list_view(request: HtmxHttpRequest):
         page_obj=page_obj,
         page_range=page_range
     )
-    return render(request, 'a_prime/score_list.html', context)
+    return render(request, 'a_prime/result_list.html', context)
 
 
-def get_detail_context(user, pk: int):
-    exam = utils.get_exam(pk)
+def get_detail_context(user, exam: models.Psat):
     exam_vars = ExamVars(exam)
     config = ViewConfiguration()
     config.submenu_kor = f'제{exam.round}회 ' + config.submenu_kor
 
     student = exam_vars.get_student(user)
     if not student:
-        return redirect('prime:score-list')
+        return None
 
     stat_total = exam_vars.get_dict_stat_data(student, 'total')
     stat_department = exam_vars.get_dict_stat_data(student, 'department')
@@ -115,13 +120,23 @@ def get_detail_context(user, pk: int):
 
 
 def detail_view(request: HtmxHttpRequest, pk: int):
-    context = get_detail_context(request.user, pk)
-    return render(request, 'a_prime/score_detail.html', context)
+    exam = utils.get_exam(pk)
+    if timezone.now() < exam.score_opened_at:
+        return redirect('prime:result-list')
+    context = get_detail_context(request.user, exam)
+    if context is None:
+        return redirect('prime:result-list')
+    return render(request, 'a_prime/result_detail.html', context)
 
 
 def print_view(request: HtmxHttpRequest, pk: int):
-    context = get_detail_context(request.user, pk)
-    return render(request, 'a_prime/score_print.html', context)
+    exam = utils.get_exam(pk)
+    if timezone.now() < exam.score_opened_at:
+        return redirect('prime:result-list')
+    context = get_detail_context(request.user, exam)
+    if context is None:
+        return redirect('prime:result-list')
+    return render(request, 'a_prime/result_print.html', context)
 
 
 def modal_view(request: HtmxHttpRequest, pk: int):
@@ -171,7 +186,7 @@ def unregister_view(request: HtmxHttpRequest, pk: int):
     exam = utils.get_exam(pk)
     student = models.ResultRegistry.objects.get(student__psat=exam, user=request.user)
     student.delete()
-    return redirect('prime:score-list')
+    return redirect('prime:result-list')
 
 
 @dataclasses.dataclass

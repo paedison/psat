@@ -3,7 +3,7 @@
 <div class="card-header">
     정답 확인
     <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
-       hx-headers='{"View_Type":"answer_submit"}' hx-get="">
+       hx-headers='{"View-Type":"answer_submit"}' hx-get="">
         <span class="badge rounded-pill text-bg-warning">업데이트</span>
     </a>
     <div id="sheet_answer_spinner" role="status"
@@ -26,9 +26,7 @@
             {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
             {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
             {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
-{#            {% cycle exam_vars.url_answer_input_list.0 exam_vars.url_answer_input_list.1 exam_vars.url_answer_input_list.2 exam_vars.url_answer_input_list.3 exam_vars.url_answer_input_list.4 as url_answer_input silent %}#}
             {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
-            {% cycle 'AnswerSubmit' as prefix silent %}
             {% #nav_content prefix='AnswerSubmit' id=tab.id %}{% partial answer_table %}{% /nav_content %}
         {% endfor %}
     </div>
@@ -125,7 +123,7 @@
                 {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                     <td data-number="{{ answer.no }}">
                         <div class="fw-bold text-success">
-                            <div id="{{ prefix }}RateCorrect{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
+                            <div id="answerSubmitRateCorrect{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
                                  class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                 {{ answer.rate_correct|floatformat:0 }}
                             </div>
@@ -165,14 +163,14 @@
                 <td data-number="{{ answer.no }}">
                     {% if not exam.is_answer_official_opened %}
                         <div class="fw-bold text-primary">
-                            <div id="{{ prefix }}RateSelect{{ answer.no|stringformat:'02d' }}"
+                            <div id="answerSubmitRateSelect{{ answer.no|stringformat:'02d' }}"
                                  class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                 {{ answer.rate_selection|floatformat:0 }}
                             </div>
                         </div>
                     {% else %}
                         <div class="fw-bold {% if answer.result %}text-success{% else %}text-danger{% endif %}">
-                            <div id="{{ prefix }}RateSelect{{ answer.no|stringformat:'02d' }}"
+                            <div id="answerSubmitRateSelect{{ answer.no|stringformat:'02d' }}"
                                  class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                                 {{ answer.rate_selection|floatformat:0 }}
                             </div>
