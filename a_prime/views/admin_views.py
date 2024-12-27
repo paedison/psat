@@ -78,6 +78,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, model_type='result'):
     answer_tab = exam_vars.get_answer_tab()
 
     config.model_type = model_type
+    config.url_admin_update = reverse_lazy('prime:admin-update', args=[exam.id])
     config.url_statistics_print = reverse_lazy('prime:admin-statistics-print', args=[exam.id])
     config.url_catalog_print = reverse_lazy('prime:admin-catalog-print', args=[exam.id])
     config.url_answers_print = reverse_lazy('prime:admin-answers-print', args=[exam.id])
