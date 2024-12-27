@@ -658,11 +658,11 @@ class ExamVars:
     def get_dict_frequency_score(self, student) -> dict:
         score_frequency_list = self.student_model.objects.filter(
             psat=self.exam).values_list('score__sum', flat=True)
-        score_counts_list = [round(score / 3, 1) for score in score_frequency_list]
+        score_counts_list = [round(score / 3, 1) for score in score_frequency_list if score is not None]
         score_counts_list.sort()
 
         score_counts = Counter(score_counts_list)
-        student_target_score = round(student.score.sum / 3, 1)
+        student_target_score = round(student.score.sum / 3, 1) if student.score.sum else 0
         score_colors = ['blue' if score == student_target_score else 'white' for score in score_counts.keys()]
 
         return {'score_points': dict(score_counts), 'score_colors': score_colors}
