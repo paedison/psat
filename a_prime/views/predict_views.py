@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 import pytz
 from django.contrib.auth.decorators import login_not_required
 from django.core.paginator import Paginator
-from django.db.models import F, Case, When, Value, BooleanField, Count
+from django.db.models import F, Case, When, Value, BooleanField, Count, Window
+from django.db.models.functions import Rank
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -287,14 +288,23 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
 
         is_confirmed = all(answer_data)
         if is_confirmed:
-            exam_vars.create_confirmed_answers(student, sub, answer_data)
-            exam_vars.update_answer_counts_after_confirm(sub, answer_data)
-            answer_all_confirmed = exam_vars.answer_all_confirmed(student)
-            exam_vars.update_statistics_after_confirm(student, subject_field, answer_all_confirmed)
+            exam_vars.create_confirmed_answers(student, sub, answer_data)  # PredictAnswer 모델에 추가
+            exam_vars.update_answer_counts_after_confirm(sub, answer_data)  # PredictAnswerCount 모델 수정
+            exam_vars.update_predict_score_for_each_student(student, sub)  # PredictScore 모델 수정
 
-            if answer_all_confirmed and not exam.is_answer_official_opened:
-                student.is_filtered = True
-                student.save()
+            qs_student = exam_vars.get_qs_student()
+            exam_vars.update_predict_rank_for_each_student(
+                qs_student, student, sub, 'total')  # PredictRankTotal 모델 수정
+            exam_vars.update_predict_rank_for_each_student(
+                qs_student, student, sub, 'department')  # PredictRankDepartment 모델 수정
+            answer_all_confirmed = exam_vars.answer_all_confirmed(student)  # 전체 답안 제출 여부 확인
+            exam_vars.update_statistics_after_confirm(
+                student, subject_field, answer_all_confirmed)  # PredictStatistics 모델 수정
+
+            if answer_all_confirmed:
+                if not exam.is_answer_official_opened:
+                    student.is_filtered = True
+                    student.save()
 
         # Load student instance after save
         student = exam_vars.get_student(request.user)
@@ -389,11 +399,8 @@ class ExamVars:
         )
 
         if student:
-            qs_answer_count = (
-                student.answers
-                .values(subject=F('problem__subject'))
-                .annotate(answer_count=Count('id'))
-            )
+            qs_answer_count = student.answers.values(
+                subject=F('problem__subject')).annotate(answer_count=Count('id'))
             average_answer_count = 0
             for q in qs_answer_count:
                 student.answer_count[q['subject']] = q['answer_count']
@@ -402,6 +409,9 @@ class ExamVars:
             student.answer_count['평균'] = average_answer_count
 
         return student
+
+    def get_qs_student(self):
+        return self.student_model.objects.filter(psat=self.exam).order_by('id')
 
     def get_qs_category(self, unit=None):
         if unit:
@@ -729,3 +739,65 @@ class ExamVars:
 
         get_statistics_and_edit_participants('전체')
         get_statistics_and_edit_participants(student.department)
+
+    def update_predict_score_for_each_student(self, student, sub: str):
+        field = self.subject_vars[sub][1]
+        problem_count = self.problem_count.get(sub)
+        qs_answer = (
+            self.answer_model.objects.filter(student=student, problem__subject=sub)
+            .annotate(answer_correct=F('problem__answer'), answer_student=F('answer'))
+        )
+
+        correct_count = 0
+        for entry in qs_answer:
+            correct_count += 1 if entry.answer_student == entry.answer_correct else 0
+
+        score = correct_count * 100 / problem_count
+        setattr(student.score, field, score)
+        score_list = [
+            sco for sco in [student.score.subject_1, student.score.subject_2, student.score.subject_3]
+            if sco is not None
+        ]
+        score_sum = sum(score_list) if score_list else None
+        score_average = score_sum / 3 if score_sum else None
+
+        student.score.sum = score_sum
+        student.score.average = score_average
+        student.score.save()
+
+    def update_predict_rank_for_each_student(self, qs_student, student, sub, stat_type: str):
+        _, field, field_idx = self.subject_vars.get(sub)
+        field_average = 'average'
+
+        rank_model = self.rank_total_model
+        if stat_type == 'department':
+            rank_model = self.rank_category_model
+
+        def rank_func(field_name) -> Window:
+            return Window(expression=Rank(), order_by=F(field_name).desc())
+
+        annotate_dict = {
+            f'rank_{field_idx}': rank_func(f'score__{field}'),
+            'rank_average': rank_func(f'score__{field_average}')
+        }
+
+        rank_list = qs_student.annotate(**annotate_dict)
+        if stat_type == 'department':
+            rank_list = rank_list.filter(category=student.category)
+        participants = rank_list.count()
+
+        target, _ = rank_model.objects.get_or_create(student=student)
+        fields_not_match = [target.participants != participants]
+
+        for entry in rank_list:
+            if entry.id == student.id:
+                score_for_field = getattr(entry, f'rank_{field_idx}')
+                score_for_average = getattr(entry, f'rank_average')
+                fields_not_match.append(getattr(target, field) != score_for_field)
+                fields_not_match.append(target.average != entry.rank_average)
+
+                if any(fields_not_match):
+                    target.participants = participants
+                    setattr(target, field, score_for_field)
+                    setattr(target, field_average, score_for_average)
+                    target.save()
