@@ -10,19 +10,28 @@ admin_patterns = [
     path('update/<int:pk>/', admin_views.update_view, name='admin-update'),
 
     path('detail/<str:model_type>/<int:pk>/', admin_views.detail_view, name='admin-detail'),
-    path('result/student/<int:pk>/', admin_views.result_student_detail_view, name='admin-result-student-detail'),
+    path('result/student/<int:pk>/',
+         admin_views.result_student_detail_view, name='admin-result-student-detail'),
 
     # path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
     # path('search/<int:exam_year>/<int:exam_round>/', catalog_view, name='catalog_year_round'),
 
-    path('print/statistics/<int:pk>/', admin_views.statistics_print_view, name='admin-statistics-print'),
-    path('print/catalog/<int:pk>/', admin_views.catalog_print_view, name='admin-catalog-print'),
-    path('print/answers/<int:pk>/', admin_views.answers_print_view, name='admin-answers-print'),
+    path('print/statistics/<str:model_type>/<int:pk>/',
+         admin_views.statistics_print_view, name='admin-statistics-print'),
+    path('print/catalog/<str:model_type>/<int:pk>/',
+         admin_views.catalog_print_view, name='admin-catalog-print'),
+    path('print/answers/<str:model_type>/<int:pk>/',
+         admin_views.answers_print_view, name='admin-answers-print'),
 
-    path('export/statistics/pdf/<int:pk>/', admin_views.export_statistics_pdf_view, name='admin-export-statistics-pdf'),
-    path('export/statistics/excel/<int:pk>/', admin_views.export_statistics_excel_view, name='admin-export-statistics-excel'),
-    path('export/catalog/excel/<int:pk>/', admin_views.export_catalog_excel_view, name='admin-export-catalog-excel'),
-    path('export/answers/excel/<int:pk>/', admin_views.export_answers_excel_view, name='admin-export-answers-excel'),
+    path('export/statistics/excel/<str:model_type>/<int:pk>/',
+         admin_views.export_statistics_excel_view, name='admin-export-statistics-excel'),
+    path('export/catalog/excel/<str:model_type>/<int:pk>/',
+         admin_views.export_catalog_excel_view, name='admin-export-catalog-excel'),
+    path('export/answers/excel/<str:model_type>/<int:pk>/',
+         admin_views.export_answers_excel_view, name='admin-export-answers-excel'),
+
+    path('export/statistics/pdf/<str:model_type>/<int:pk>/',
+         admin_views.export_statistics_pdf_view, name='admin-export-statistics-pdf'),
 ]
 
 result_patterns = [

@@ -4,80 +4,62 @@
 {% block main_content %}
     <section class="section">
         <div class="row">
-            <div class="col-12" aria-label="성적 결과 업데이트">
-                <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">성적 결과 업데이트</div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <form enctype="multipart/form-data"
-                                      hx-headers='{"View-Type":"answer_official"}'
-                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                      hx-post="{{ config.url_admin_update }}">
-                                    <div class="input-group">
-                                        <input type="file" name="file" class="form-control" required id="id_file">
-                                        <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                            정답 업데이트
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <div class="col-md-6">
-                                <form enctype="multipart/form-data"
-                                      hx-headers='{"View-Type":"answer_student"}'
-                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                      hx-post="{{ exam.get_admin_update_url }}">
-                                    <div class="input-group">
-                                        <input type="file" name="file" class="form-control" required id="id_file">
-                                        <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                            제출 답안 업데이트
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <div class="col-md-6 d-flex justify-content-end"
-                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                <div class="btn-group">
-                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                            hx-headers='{"View-Type":"score"}'
-                                            hx-post="{{ exam.get_admin_update_url }}"
-                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        점수 업데이트
-                                    </button>
+            {% if user.is_admin %}
+                <div class="col-12" aria-label="성적 결과 업데이트">
+                    <div class="card" hx-swap="innerHTML swap:0.25s">
+                        <div class="card-header">성적 결과 업데이트</div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <form enctype="multipart/form-data"
+                                          hx-headers='{"View-Type":"answer_official"}'
+                                          hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                          hx-post="{{ config.url_admin_update }}">
+                                        <div class="input-group">
+                                            <input type="file" name="file" class="form-control" required id="id_file">
+                                            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                정답 업데이트
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
-                            </div>
 
-                            <div class="col-md-6 d-flex justify-content-end"
-                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                <div class="btn-group">
-                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                            hx-headers='{"View-Type":"rank"}'
-                                            hx-post="{{ exam.get_admin_update_url }}"
-                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        등수 업데이트
-                                    </button>
-                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                            hx-headers='{"View-Type":"statistics"}'
-                                            hx-post="{{ exam.get_admin_update_url }}"
-                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        통계 업데이트
-                                    </button>
-                                    <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                            hx-headers='{"View-Type":"answer_count"}'
-                                            hx-post="{{ exam.get_admin_update_url }}"
-                                            data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                        문항분석표 업데이트
-                                    </button>
+                                <div class="col-md-6">
+                                    <form enctype="multipart/form-data"
+                                          hx-headers='{"View-Type":"answer_student"}'
+                                          hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                          hx-post="{{ exam.get_admin_update_url }}">
+                                        <div class="input-group">
+                                            <input type="file" name="file" class="form-control" required id="id_file">
+                                            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                제출 답안 업데이트
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="col-md-6 d-flex justify-content-end"
+                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                    <div class="btn-group">
+                                        {% include 'a_prime/snippets/admin_detail_update_button.html' with view_type='score' button_name='점수 업데이트' %}
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 d-flex justify-content-end"
+                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                    <div class="btn-group">
+                                        {% include 'a_prime/snippets/admin_detail_update_button.html' with view_type='rank' button_name='등수 업데이트' %}
+                                        {% include 'a_prime/snippets/admin_detail_update_button.html' with view_type='statistics' button_name='통계 업데이트' %}
+                                        {% include 'a_prime/snippets/admin_detail_update_button.html' with view_type='answer_count' button_name='문항분석표 업데이트' %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
 
             <div class="col-12" aria-label="성적통계">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
@@ -85,22 +67,13 @@
                         <div class="d-flex align-items-center">
                             <span>{{ exam.year }}년도 제{{ exam.round }}회 | 성적통계</span>
                             <div class="d-flex ms-auto">
-                                <div class="btn-group me-2">
-                                    <a class="btn btn-sm btn-outline-secondary"
-                                       title="Excel로 내보내기" target="_blank"
-                                       href="{{ config.url_export_statistics_excel }}">
-                                        Excel로 내보내기
-                                    </a>
-                                </div>
-                                <div class="btn-group ms-auto">
-                                    <a class="btn btn-sm btn-outline-secondary" title="목록" hx-target="#main"
+                                <div class="btn-group">
+                                    <a class="btn btn-outline-secondary" title="목록" hx-target="#main"
                                        href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
                                         목록
                                     </a>
-                                    <a class="btn btn-sm btn-outline-secondary" title="인쇄하기" target="_blank"
-                                       href="{{ config.url_statistics_print }}">
-                                        인쇄하기
-                                    </a>
+                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_statistics_excel %}
+                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_statistics_print %}
                                 </div>
                             </div>
                         </div>
@@ -119,25 +92,10 @@
                         <div class="d-flex align-items-center">
                             {{ exam.year }}년도 제{{ exam.round }}회 | 성적일람표
                             <div class="d-flex ms-auto">
-                                <div class="btn-group me-2">
-                                    <a class="btn btn-sm btn-outline-secondary"
-                                       title="Excel로 내보내기" target="_blank"
-                                       href="{{ config.url_export_catalog_excel }}">
-                                        Excel로 내보내기
-                                    </a>
-                                    <a class="btn btn-sm btn-outline-secondary"
-                                       title="Excel로 내보내기" target="_blank"
-                                       href="{{ config.url_export_statistics_pdf }}">
-                                        PDF로 내보내기
-                                    </a>
-                                </div>
                                 <div class="btn-group">
-                                    <a class="btn btn-sm btn-outline-secondary" title="인쇄하기" target="_blank"
-                                       href="{{ config.url_catalog_print }}">
-                                        인쇄하기
-                                    </a>
-                                    <input name="student_ids" type="text" aria-label="Student IDs" hidden
-                                           value="{% for id in student_ids %}{{ id }}{% if not forloop.last %},{% endif %}{% endfor %}"/>
+                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
+{#                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
+                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
                                 </div>
                             </div>
                         </div>
@@ -157,18 +115,9 @@
                         <div class="d-flex align-items-center">
                             <span>{{ exam.year }}년도 제{{ exam.round }}회 | 문항분석표</span>
                             <div class="d-flex ms-auto">
-                                <div class="btn-group me-2">
-                                    <a class="btn btn-sm btn-outline-secondary"
-                                       title="Excel로 내보내기" target="_blank"
-                                       href="{{ config.url_export_answers_excel }}">
-                                        Excel로 내보내기
-                                    </a>
-                                </div>
-                                <div class="btn-group ms-auto">
-                                    <a class="btn btn-sm btn-outline-secondary" title="인쇄하기" target="_blank"
-                                       href="{{ config.url_answers_print }}">
-                                        인쇄하기
-                                    </a>
+                                <div class="btn-group">
+                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_answers_excel %}
+                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_answers_print %}
                                 </div>
                             </div>
                         </div>

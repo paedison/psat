@@ -67,7 +67,7 @@ def list_view(request: HtmxHttpRequest):
 
 
 @only_staff_allowed()
-def detail_view(request: HtmxHttpRequest, pk: int, model_type='result'):
+def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', 1)
     subject = request.GET.get('subject', '')
@@ -80,13 +80,23 @@ def detail_view(request: HtmxHttpRequest, pk: int, model_type='result'):
 
     config.model_type = model_type
     config.url_admin_update = reverse_lazy('prime:admin-update', args=[exam.id])
-    config.url_statistics_print = reverse_lazy('prime:admin-statistics-print', args=[exam.id])
-    config.url_catalog_print = reverse_lazy('prime:admin-catalog-print', args=[exam.id])
-    config.url_answers_print = reverse_lazy('prime:admin-answers-print', args=[exam.id])
-    config.url_export_statistics_pdf = reverse_lazy('prime:admin-export-statistics-pdf', args=[exam.id])
-    config.url_export_statistics_excel = reverse_lazy('prime:admin-export-statistics-excel', args=[exam.id])
-    config.url_export_catalog_excel = reverse_lazy('prime:admin-export-catalog-excel', args=[exam.id])
-    config.url_export_answers_excel = reverse_lazy('prime:admin-export-answers-excel', args=[exam.id])
+
+    config.url_statistics_print = reverse_lazy(
+        'prime:admin-statistics-print', args=[model_type, exam.id])
+    config.url_catalog_print = reverse_lazy(
+        'prime:admin-catalog-print', args=[model_type, exam.id])
+    config.url_answers_print = reverse_lazy(
+        'prime:admin-answers-print', args=[model_type, exam.id])
+
+    config.url_export_statistics_excel = reverse_lazy(
+        'prime:admin-export-statistics-excel', args=[model_type, exam.id])
+    config.url_export_catalog_excel = reverse_lazy(
+        'prime:admin-export-catalog-excel', args=[model_type, exam.id])
+    config.url_export_answers_excel = reverse_lazy(
+        'prime:admin-export-answers-excel', args=[model_type, exam.id])
+
+    config.url_export_statistics_pdf = reverse_lazy(
+        'prime:admin-export-statistics-pdf', args=[model_type, exam.id])
 
     context = update_context_data(
         config=config, exam=exam, answer_tab=answer_tab,
@@ -252,29 +262,32 @@ def exam_create_view(request: HtmxHttpRequest):
 
 
 @only_staff_allowed()
-def statistics_print_view(request: HtmxHttpRequest, pk: int):
+def statistics_print_view(request: HtmxHttpRequest, model_type: str, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
-    data_statistics = models.ResultStatistics.objects.filter(psat=exam).order_by('id')
+    statistics_model = models.ResultStatistics
+    if model_type == 'predict':
+        statistics_model = models.PredictStatistics
+    data_statistics = statistics_model.objects.filter(psat=exam).order_by('id')
     statistics_page_obj, _ = utils.get_paginator_data(data_statistics, 1, 50)
     context = update_context_data(exam=exam, statistics_page_obj=statistics_page_obj)
     return render(request, 'a_prime/admin_print_statistics.html', context)
 
 
 @only_staff_allowed()
-def catalog_print_view(request: HtmxHttpRequest, pk: int):
+def catalog_print_view(request: HtmxHttpRequest, model_type: str, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
-    student_list = exam_vars.get_student_list()
+    student_list = exam_vars.get_student_list(model_type)
     catalog_page_obj, _ = utils.get_paginator_data(student_list, 1, 10000)
     context = update_context_data(exam=exam, catalog_page_obj=catalog_page_obj)
     return render(request, 'a_prime/admin_print_catalog.html', context)
 
 
 @only_staff_allowed()
-def answers_print_view(request: HtmxHttpRequest, pk: int):
+def answers_print_view(request: HtmxHttpRequest, model_type: str, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
-    qs_answer_count = exam_vars.get_qs_answer_count().order_by('id')
+    qs_answer_count = exam_vars.get_qs_answer_count(model_type=model_type).order_by('id')
     answers_page_obj_group, answers_page_range_group = (
         exam_vars.get_answer_page_data(qs_answer_count, 1, 1000))
     context = update_context_data(exam=exam, answers_page_obj_group=answers_page_obj_group)
@@ -282,12 +295,12 @@ def answers_print_view(request: HtmxHttpRequest, pk: int):
 
 
 @only_staff_allowed()
-def export_statistics_pdf_view(request: HtmxHttpRequest, pk: int):
+def export_statistics_pdf_view(request: HtmxHttpRequest, model_type: str, pk: int):
     page_number = request.GET.get('page', 1)
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
 
-    student_list = exam_vars.get_student_list()
+    student_list = exam_vars.get_student_list(model_type)
     catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
 
     zip_buffer = io.BytesIO()
@@ -333,17 +346,32 @@ def export_statistics_pdf_view(request: HtmxHttpRequest, pk: int):
 
 
 @only_staff_allowed()
-def export_statistics_excel_view(_: HtmxHttpRequest, pk: int):
+def export_statistics_excel_view(_: HtmxHttpRequest, model_type: str, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
 
-    data_statistics = models.ResultStatistics.objects.filter(psat=exam).order_by('id')
+    statistics_model = models.ResultStatistics
+    if model_type == 'predict':
+        statistics_model = models.PredictStatistics
+
+    data_statistics = statistics_model.objects.filter(psat=exam).order_by('id')
     df = pd.DataFrame.from_records(data_statistics.values())
 
     filename = f'제{exam.round}회_전국모의고사_성적통계.xlsx'
     drop_columns = ['id', 'psat_id']
     column_label = [('직렬', '')]
-    for fld, val in exam_vars.field_vars.items():
+
+    field_vars = exam_vars.field_vars
+    if model_type == 'predict':
+        field_vars.update({
+            'filtered_subject_0': ('[필터링]헌법', '[필터링]헌법', 0),
+            'filtered_subject_1': ('[필터링]언어', '[필터링]언어논리', 1),
+            'filtered_subject_2': ('[필터링]자료', '[필터링]자료해석', 2),
+            'filtered_subject_3': ('[필터링]상황', '[필터링]상황판단', 3),
+            'filtered_average': ('[필터링]평균', '[필터링]PSAT 평균', 4),
+        })
+
+    for fld, val in field_vars.items():
         drop_columns.append(fld)
         column_label.extend([
             (val[1], '총 인원'),
@@ -359,19 +387,26 @@ def export_statistics_excel_view(_: HtmxHttpRequest, pk: int):
 
 
 @only_staff_allowed()
-def export_catalog_excel_view(_: HtmxHttpRequest, pk: int):
+def export_catalog_excel_view(_: HtmxHttpRequest, model_type: str, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
 
-    student_list = exam_vars.get_student_list()
+    student_list = exam_vars.get_student_list(model_type)
     df = pd.DataFrame.from_records(student_list.values())
 
     filename = f'제{exam.round}회_전국모의고사_성적일람표.xlsx'
+
     drop_columns = ['id', 'created_at', 'password', 'psat_id', 'category_id']
+    if model_type == 'predict':
+        drop_columns.append('user_id')
+
     column_label = [
         ('이름', ''), ('수험번호', ''), ('직렬', ''), ('PSAT 총점', ''),
         ('전체 총 인원', ''), ('직렬 총 인원', '')
     ]
+    if model_type == 'predict':
+        column_label.insert(2, ('필터링', ''))
+
     for _, val in exam_vars.field_vars.items():
         column_label.extend([
             (val[1], '점수'),
@@ -383,11 +418,11 @@ def export_catalog_excel_view(_: HtmxHttpRequest, pk: int):
 
 
 @only_staff_allowed()
-def export_answers_excel_view(_: HtmxHttpRequest, pk: int):
+def export_answers_excel_view(_: HtmxHttpRequest, model_type: str, pk: int):
     exam = get_object_or_404(models.Psat, pk=pk)
     exam_vars = ExamVars(exam)
 
-    qs_answer_count = exam_vars.get_qs_answer_count().order_by('id')
+    qs_answer_count = exam_vars.get_qs_answer_count(model_type=model_type).order_by('id')
     df = pd.DataFrame.from_records(qs_answer_count.values())
 
     def move_column(col_name: str, loc: int):
@@ -400,7 +435,12 @@ def export_answers_excel_view(_: HtmxHttpRequest, pk: int):
     move_column('ans_predict', 3)
 
     filename = f'제{exam.round}회_전국모의고사_문항분석표.xlsx'
-    drop_columns = ['id', 'problem_id']
+    drop_columns = ['id', 'problem_id', 'answer_predict']
+    if model_type == 'predict':
+        drop_columns.extend([
+            'filtered_count_1', 'filtered_count_2', 'filtered_count_3', 'filtered_count_4', 'filtered_count_5',
+            'filtered_count_0', 'filtered_count_multiple', 'filtered_count_sum',
+        ])
     column_label = [('과목', ''), ('번호', ''), ('정답', ''), ('예상 정답', '')]
     top_label = ['전체', '상위권', '중위권', '하위권']
     for lbl in top_label:
