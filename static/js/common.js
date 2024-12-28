@@ -92,3 +92,11 @@ function initializeAll() {
 }
 $(window).on('load', initializeAll);
 $(document).on('htmx:afterSettle', initializeAll);
+
+// Disable button while htmx request
+$(document).on('htmx:configRequest', function(event) {
+    $('.prevent_double_click').prop('disabled', true);
+});
+$(document).on('htmx:afterRequest', function(event) {
+    $('.prevent_double_click').prop('disabled', false);
+});

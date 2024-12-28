@@ -9,6 +9,21 @@
                     <div class="card-header">성적 예측 업데이트</div>
                     <div class="card-body">
                         <div class="row g-3">
+                            <div class="col-md-6">
+                                <form enctype="multipart/form-data"
+                                      hx-headers='{"View-Type":"answer_official"}'
+                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                      hx-post="{{ config.url_admin_update }}">
+                                    <div class="input-group">
+                                        <input type="file" name="file" class="form-control" required id="id_file">
+                                        <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            정답 업데이트
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
                             <div class="col-md-6 d-flex justify-content-end"
                                  hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                 <div class="btn-group">
@@ -17,18 +32,18 @@
                                             hx-post="{{ exam.get_admin_update_url }}"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         점수 업데이트</button>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 d-flex justify-content-end"
-                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                <div class="btn-group">
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
                                             hx-headers='{"View-Type":"rank_predict"}'
                                             hx-post="{{ exam.get_admin_update_url }}"
                                             data-bs-toggle="modal" data-bs-target="#modalContainer">
                                         등수 업데이트
                                     </button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 d-flex justify-content-end"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group">
                                     <button class="btn btn-outline-secondary prevent_double_click" type="submit"
                                             hx-headers='{"View-Type":"statistics_predict"}'
                                             hx-post="{{ exam.get_admin_update_url }}"
