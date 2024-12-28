@@ -65,6 +65,8 @@ def list_view(request: HtmxHttpRequest):
     student_dict = get_student_dict(request.user, exam_list)
     for obj in page_obj:
         obj.student = student_dict.get(obj, None)
+        answer_student_counts = models.PredictAnswer.objects.filter(student=obj.student).count()
+        obj.answer_all_confirmed = answer_student_counts == 145
 
     context = update_context_data(
         current_time=timezone.now(),
@@ -338,7 +340,7 @@ class ExamVars:
 
     student_form = forms.PrimePredictStudentForm
 
-    current_time = datetime.now(pytz.UTC)
+    current_time = datetime.now()
 
     sub_list = ['헌법', '언어', '자료', '상황']
     subject_list = [models.choices.subject_choice()[key] for key in sub_list]

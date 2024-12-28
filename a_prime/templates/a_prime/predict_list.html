@@ -164,24 +164,32 @@
         {% endif %}
     </td>
 
-    {% if current_time < obj.exam_finished_at %}
+    {% if not obj.answer_all_confirmed %}
         <td class="text-nowrap" colspan="8">
             <span class="badge rounded-pill text-bg-warning">
-                시험 종료 전입니다.
-            </span>
-        </td>
-    {% elif current_time < obj.answer_official_opened_at %}
-        <td class="text-nowrap" colspan="8">
-            <span class="badge rounded-pill text-bg-warning">
-                정답 공개 전입니다.
+                모든 답안을 제출해주세요.
             </span>
         </td>
     {% else %}
-        {% for subject in subjects %}
-            {% cycle obj.student.score.subject_0 obj.student.score.subject_1 obj.student.score.subject_2 obj.student.score.subject_3 obj.student.score.average as score silent %}
-            <td aria-label="{{ subject.0 }}">
-                {{ score|floatformat:1 }}
+        {% if current_time < obj.exam_finished_at %}
+            <td class="text-nowrap" colspan="8">
+                <span class="badge rounded-pill text-bg-warning">
+                    시험 종료 전입니다.
+                </span>
             </td>
-        {% endfor %}
+        {% elif current_time < obj.answer_official_opened_at %}
+            <td class="text-nowrap" colspan="8">
+                <span class="badge rounded-pill text-bg-warning">
+                    정답 공개 전입니다.
+                </span>
+            </td>
+        {% else %}
+            {% for subject in subjects %}
+                {% cycle obj.student.score.subject_0 obj.student.score.subject_1 obj.student.score.subject_2 obj.student.score.subject_3 obj.student.score.average as score silent %}
+                <td aria-label="{{ subject.0 }}">
+                    {{ score|floatformat:1 }}
+                </td>
+            {% endfor %}
+        {% endif %}
     {% endif %}
 {% endpartialdef exam_info %}
