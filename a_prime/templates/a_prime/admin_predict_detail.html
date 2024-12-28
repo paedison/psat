@@ -127,7 +127,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        {% partial search_tab %}
+                        {% include 'a_prime/snippets/admin_detail_search.html' %}
                         <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_prime/snippets/admin_detail_catalog.html' %}
                         </div>
@@ -180,40 +180,3 @@
         </div>
     </section>
 {% endblock main_content %}
-
-{% partialdef search_tab %}
-    <div class="d-flex">
-        <form class="d-flex align-items-center">
-            <div class="input-group mb-3">
-                <input id="id_student_name" type="text" name="student_name" class="form-control form-control-sm"
-                       placeholder="학생 이름" title="학생 이름" aria-label="학생 이름">
-                <button type="submit" title="Search" class="btn btn-sm btn-outline-secondary"
-                        hx-post="">
-    {#                        hx-post="{% url 'prime_admin:catalog_year_round' year round %}">#}
-                    {{ icon_search|safe }}
-                </button>
-            </div>
-        </form>
-        <div class="ms-auto">
-            <button id="dropdownCategoryLink" type="button"
-                    class="btn btn-sm btn-outline-primary dropdown-toggle"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                구분
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownCategoryLink">
-                <li class="text-center">
-                </li>
-                {% for category in category_list %}
-                    {% if category %}
-                        <li class="text-center">
-                            <a class="dropdown-item {% if category == current_category %}bg-primary-light{% endif %}"
-                               href="" hx-get="{{ base_url }}?category={{ category }}">
-                                {{ category }}
-                            </a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-{% endpartialdef search_tab %}

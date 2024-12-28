@@ -71,6 +71,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, model_type='result'):
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', 1)
     subject = request.GET.get('subject', '')
+    student_name = request.GET.get('student_name', '')
 
     config = ViewConfiguration()
     exam = get_object_or_404(models.Psat, pk=pk)
@@ -102,6 +103,12 @@ def detail_view(request: HtmxHttpRequest, pk: int, model_type='result'):
         return render(request, 'a_prime/snippets/admin_detail_statistics.html', context)
     if view_type == 'catalog_list':
         catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
+        context = update_context_data(
+            context, catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
+        return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
+    if view_type == 'student_search':
+        searched_student = student_list.filter(name=student_name)
+        catalog_page_obj, catalog_page_range = utils.get_paginator_data(searched_student, page_number)
         context = update_context_data(
             context, catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
         return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
