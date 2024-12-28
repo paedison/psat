@@ -134,7 +134,7 @@
                         <div id="{{ stat_tot.field }}ScorePredict" class="htmx-fade-up-in delay-1 text-primary fw-bold">
                             {{ stat_tot.score_predict|floatformat:1|default:'' }}
                         </div>
-                    {% elif exam_vars.current_time > exam.answer_official_opened_at %}
+                    {% else %}
                         <div id="{{ stat_tot.field }}Score" class="htmx-fade-up-in delay-1 text-success fw-bold">
                             {{ stat_tot.score|floatformat:1|default:'' }}
                         </div>
