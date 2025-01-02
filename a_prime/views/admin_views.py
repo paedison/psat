@@ -767,8 +767,6 @@ class ExamVars:
             True: '제출 답안을 업데이트했습니다.',
             False: '기존 정답 데이터와 일치합니다.',
         }
-        list_update = []
-        list_create = []
 
         form = self.upload_file_form(request.POST, request.FILES)
         if form.is_valid():
@@ -808,6 +806,9 @@ class ExamVars:
 
                 subject_vars = self.subject_vars.copy()
                 subject_vars.pop('평균')
+
+                list_update = []
+                list_create = []
                 for sub, sub_tuple in subject_vars.items():
                     subject = sub_tuple[0]
                     problem_count = self.problem_count[sub]
@@ -830,8 +831,10 @@ class ExamVars:
                             list_create.append(q_student_answer)
                         except ValueError as error:
                             print(error)
-            update_fields = ['answer']
-            is_updated = bulk_create_or_update(self.answer_model, list_create, list_update, update_fields)
+                update_fields = ['answer']
+                print(student.name)
+                bulk_create_or_update(self.answer_model, list_create, list_update, update_fields)
+            is_updated = True
         else:
             is_updated = None
             print(form)
