@@ -44,6 +44,26 @@ class ProblemAdmin(ModelAdmin):
         return f'{obj.psat.exam}'
 
 
+@admin.register(models.ResultStatistics)
+class ResultStatisticsAdmin(ModelAdmin):
+    list_display = list_display_links = [
+        'id', 'psat', 'department', 'subject_0', 'subject_1', 'subject_2', 'subject_3', 'average'
+    ]
+    list_filter = ['psat__year', 'psat__exam']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    search_fields = ['data']
+    show_full_result_count = True
+
+    @admin.display(description='연도')
+    def year(self, obj):
+        return f'{obj.psat.year}'
+
+    @admin.display(description='시험')
+    def ex(self, obj):
+        return f'{obj.psat.exam}'
+
+
 @admin.register(models.ResultStudent)
 class ResultStudentAdmin(ModelAdmin):
     list_display = list_display_links = [

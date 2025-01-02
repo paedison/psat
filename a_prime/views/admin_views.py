@@ -864,7 +864,8 @@ class ExamVars:
                     .annotate(answer_correct=F('problem__answer'), answer_student=F('answer'))
                 )
                 for entry in qs_answer:
-                    correct_count += 1 if entry.answer_student == entry.answer_correct else 0
+                    answer_correct_list = [int(digit) for digit in str(entry.answer_correct)]
+                    correct_count += 1 if entry.answer_student in answer_correct_list else 0
 
                 score = correct_count * 100 / problem_count
                 score_list.append(score)
