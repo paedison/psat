@@ -148,7 +148,7 @@ def modal_view(request: HtmxHttpRequest, pk: int):
     form = exam_vars.student_form()
     context = update_context_data(exam=exam, form=form)
     if view_type == 'no_open':
-        return render(request, 'a_prime/snippets/modal_score_no_open.html', context)
+        return render(request, 'a_prime/snippets/modal_result_no_open.html', context)
 
     if view_type == 'student_register':
         context = update_context_data(
@@ -156,7 +156,7 @@ def modal_view(request: HtmxHttpRequest, pk: int):
             exam_vars=exam_vars,
             header=f'{exam.year}년 대비 제{exam.round}회 프라임 모의고사 수험 정보 입력',
         )
-        return render(request, 'a_prime/snippets/modal_score_student_register.html', context)
+        return render(request, 'a_prime/snippets/modal_result_student_register.html', context)
 
 
 @require_POST
@@ -179,7 +179,7 @@ def register_view(request: HtmxHttpRequest, pk: int):
         except exam_vars.student_model.DoesNotExist:
             context = update_context_data(context, no_student=True)
 
-    return render(request, 'a_prime/snippets/modal_score_student_register.html#student_info', context)
+    return render(request, 'a_prime/snippets/modal_result_student_register.html#student_info', context)
 
 
 @require_POST

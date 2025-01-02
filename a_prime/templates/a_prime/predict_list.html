@@ -87,7 +87,7 @@
                                                     {% elif current_time > obj.score_opened_at %}
                                                         <td class="text-nowrap" colspan="8">
                                                             <a class="badge rounded-pill text-bg-danger" href=""
-                                                               hx-headers='{"View-Type":"no_open"}'
+                                                               hx-headers='{"View-Type":"no_predict"}'
                                                                hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                                                                data-bs-toggle="modal" data-bs-target="#modalContainer"
                                                                hx-get="{{ obj.get_predict_modal_url }}">

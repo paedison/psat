@@ -169,8 +169,12 @@ def modal_view(request: HtmxHttpRequest, pk: int):
 
     form = exam_vars.student_form()
     context = update_context_data(exam=exam, form=form)
+
     if view_type == 'no_open':
         return render(request, 'a_prime/snippets/modal_predict_no_open.html', context)
+
+    if view_type == 'no_predict':
+        return render(request, 'a_prime/snippets/modal_predict_no_predict.html', context)
 
     if view_type == 'student_register':
         units = models.choices.unit_choice()
@@ -180,7 +184,7 @@ def modal_view(request: HtmxHttpRequest, pk: int):
             units=units,
             header=f'{exam.year}년 대비 제{exam.round}회 프라임 모의고사 수험 정보 입력',
         )
-        return render(request, 'a_prime/snippets/modal_predict_student_register.html', context)
+        return render(request, 'a_prime/snippets/modal_predict_student_create.html', context)
 
 
 def register_view(request: HtmxHttpRequest, pk: int):
@@ -211,7 +215,7 @@ def register_view(request: HtmxHttpRequest, pk: int):
             exam_vars.score_model.objects.get_or_create(student=student)
             context = update_context_data(context, user_verified=True)
 
-    return render(request, 'a_prime/snippets/modal_predict_student_register.html#student_info', context)
+    return render(request, 'a_prime/snippets/modal_predict_student_create.html#student_info', context)
 
 
 @require_POST
