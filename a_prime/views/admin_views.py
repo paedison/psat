@@ -152,8 +152,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 def result_student_detail_view(request: HtmxHttpRequest, pk: int):
     from .result_views import get_detail_context
     student = get_object_or_404(models.ResultStudent, pk=pk)
-    registry = models.ResultRegistry.objects.filter(student=student).last()
-    context = get_detail_context(registry.user, student.psat)
+    context = get_detail_context(request.user, student.psat, student)
     if context is None:
         return redirect('prime:admin-detail', args=['result', pk])
     return render(request, 'a_prime/result_print.html', context)
@@ -774,18 +773,41 @@ class ExamVars:
         form = self.upload_file_form(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES['file']
-            df = pd.read_excel(uploaded_file, sheet_name='마킹데이터', header=[0, 1], index_col=0)
+            df = pd.read_excel(
+                uploaded_file, sheet_name='마킹데이터', header=[0, 1], index_col=0,
+                dtype={('비밀번호', 'Unnamed: 3_level_1'): str}
+            )
             df = df.infer_objects(copy=False)
             df.fillna(value=0, inplace=True)
 
+            department_dict = {
+                '5급공채_일반행정': ('5급공채', '5급 일반행정'),
+                '5급공채_재경': ('5급공채', '5급 재경'),
+                '5급공채_기술직': ('5급공채', '5급 과학기술'),
+                '5급공채_기타': ('5급공채', '5급 기타'),
+                '외교관후보자': ('외교관후보자', '일반외교'),
+                '지역인재_7급': ('지역인재 7급', '지역인재 7급 행정'),
+                '7급_공채': ('7급공채', '7급 행정'),
+                '기타': ('기타', '기타 직렬'),
+            }
             for serial, row in df.iterrows():
-                name = row[('성명', 'Unnamed: 1_level_1')]
-                password = row[('비밀번호', 'Unnamed: 3_level_1')]
-                student, _ = self.student_model.objects.get_or_create(
-                    psat=self.exam, name=name, serial=serial, password=password)
+                name = row[('성명', 'Unnamed: 1_level_1')] or '미기입자'
+                department = row[('직렬', 'Unnamed: 2_level_1')]
+                department_tuple = department_dict.get(department, '')
+                category = self.category_model.objects.get(
+                    unit=department_tuple[0], department=department_tuple[1])
+                password = row[('비밀번호', 'Unnamed: 3_level_1')] or '0000'
+                try:
+                    student = self.student_model.objects.get(
+                        psat=self.exam, name=name, serial=serial, category=category)
+                    student.password = password
+                    student.save()
+                except self.student_model.DoesNotExist:
+                    student = self.student_model.objects.create(
+                        psat=self.exam, name=name, serial=serial, category=category, password=password)
 
                 subject_vars = self.subject_vars.copy()
-                subject_vars.pop('총점')
+                subject_vars.pop('평균')
                 for sub, sub_tuple in subject_vars.items():
                     subject = sub_tuple[0]
                     problem_count = self.problem_count[sub]

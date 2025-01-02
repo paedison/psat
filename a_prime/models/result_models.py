@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse_lazy
 
 from common.models import User
 from . import abstract_models
@@ -34,6 +35,9 @@ class ResultStudent(abstract_models.Student):
 
     def __str__(self):
         return f'[Prime]ResultStudent(#{self.id}):{self.psat.reference}({self.student_info})'
+
+    def get_admin_result_student_detail_url(self):
+        return reverse_lazy('prime:admin-result-student-detail', args=[self.id])
 
 
 class ResultRegistry(models.Model):

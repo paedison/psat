@@ -72,14 +72,15 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_prime/result_list.html', context)
 
 
-def get_detail_context(user, exam: models.Psat):
+def get_detail_context(user, exam: models.Psat, student=None):
     exam_vars = ExamVars(exam)
     config = ViewConfiguration()
     config.submenu_kor = f'제{exam.round}회 ' + config.submenu_kor
 
-    student = exam_vars.get_student(user)
-    if not student:
-        return None
+    if student is None:
+        student = exam_vars.get_student(user)
+        if not student:
+            return None
 
     stat_total = exam_vars.get_dict_stat_data(student, 'total')
     stat_department = exam_vars.get_dict_stat_data(student, 'department')

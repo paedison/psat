@@ -88,9 +88,6 @@ class Psat(models.Model):
     def get_admin_result_detail_url(self):
         return reverse_lazy('prime:admin-detail', args=['result', self.id])
 
-    def get_admin_result_student_detail_url(self):
-        return reverse_lazy('prime:admin-result-student-detail', args=[self.id])
-
     def get_admin_update_url(self):
         return reverse_lazy('prime:admin-update', args=[self.id])
 
