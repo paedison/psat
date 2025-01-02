@@ -804,36 +804,39 @@ class ExamVars:
                     student = self.student_model.objects.create(
                         psat=self.exam, name=name, serial=serial, category=category, password=password)
 
-                subject_vars = self.subject_vars.copy()
-                subject_vars.pop('평균')
+                if student.answers.count() == sum(self.problem_count.values()):
+                    print('No Change')
+                else:
+                    subject_vars = self.subject_vars.copy()
+                    subject_vars.pop('평균')
 
-                list_update = []
-                list_create = []
-                for sub, sub_tuple in subject_vars.items():
-                    subject = sub_tuple[0]
-                    problem_count = self.problem_count[sub]
-                    for number in range(1, problem_count + 1):
-                        answer = row[(f'{subject} 마킹데이타', number)]
-                        try:
-                            q_student_answer = self.answer_model.objects.get(
-                                student=student,
-                                problem__subject=sub,
-                                problem__number=number,
-                            )
-                            if q_student_answer.answer != answer:
-                                q_student_answer.answer = answer
-                                list_update.append(q_student_answer)
-                        except self.answer_model.DoesNotExist:
-                            problem = self.problem_model.objects.get(
-                                psat=self.exam, subject=sub, number=number)
-                            q_student_answer = self.answer_model(
-                                student=student, problem=problem, answer=answer)
-                            list_create.append(q_student_answer)
-                        except ValueError as error:
-                            print(error)
-                update_fields = ['answer']
-                print(student.name)
-                bulk_create_or_update(self.answer_model, list_create, list_update, update_fields)
+                    list_update = []
+                    list_create = []
+                    for sub, sub_tuple in subject_vars.items():
+                        subject = sub_tuple[0]
+                        problem_count = self.problem_count[sub]
+                        for number in range(1, problem_count + 1):
+                            answer = row[(f'{subject} 마킹데이타', number)]
+                            try:
+                                q_student_answer = self.answer_model.objects.get(
+                                    student=student,
+                                    problem__subject=sub,
+                                    problem__number=number,
+                                )
+                                if q_student_answer.answer != answer:
+                                    q_student_answer.answer = answer
+                                    list_update.append(q_student_answer)
+                            except self.answer_model.DoesNotExist:
+                                problem = self.problem_model.objects.get(
+                                    psat=self.exam, subject=sub, number=number)
+                                q_student_answer = self.answer_model(
+                                    student=student, problem=problem, answer=answer)
+                                list_create.append(q_student_answer)
+                            except ValueError as error:
+                                print(error)
+                    update_fields = ['answer']
+                    print(student.name)
+                    bulk_create_or_update(self.answer_model, list_create, list_update, update_fields)
             is_updated = True
         else:
             is_updated = None
