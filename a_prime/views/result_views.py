@@ -398,10 +398,11 @@ class ExamVars:
             line.rate_correct_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_official)
             line.rate_gap = line.rate_correct_top - line.rate_correct_low
 
-            line.rate_selection = line.problem.result_answer_count.get_answer_rate(ans_student)
-            line.rate_selection_top = line.problem.result_answer_count_top_rank.get_answer_rate(ans_student)
-            line.rate_selection_mid = line.problem.result_answer_count_mid_rank.get_answer_rate(ans_student)
-            line.rate_selection_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_student)
+            if ans_student <= 5:
+                line.rate_selection = line.problem.result_answer_count.get_answer_rate(ans_student)
+                line.rate_selection_top = line.problem.result_answer_count_top_rank.get_answer_rate(ans_student)
+                line.rate_selection_mid = line.problem.result_answer_count_mid_rank.get_answer_rate(ans_student)
+                line.rate_selection_low = line.problem.result_answer_count_low_rank.get_answer_rate(ans_student)
 
             data_answers[idx].append(line)
         return data_answers
