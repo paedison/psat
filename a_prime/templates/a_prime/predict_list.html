@@ -32,18 +32,10 @@
                                         <th class="text-primary text-nowrap p-2 col-1">수험번호</th>
                                         <th class="text-primary text-nowrap p-2 col-1">직렬</th>
                                         <th class="text-primary text-nowrap p-2 col-1">성적표</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">
-                                            {{ icon_subject.헌법|safe }} 헌법
-                                        </th>
-                                        <th class="text-primary text-nowrap p-2 col-1">
-                                            {{ icon_subject.언어|safe }} 언어
-                                        </th>
-                                        <th class="text-primary text-nowrap p-2 col-1">
-                                            {{ icon_subject.자료|safe }} 자료
-                                        </th>
-                                        <th class="text-primary text-nowrap p-2 col-1">
-                                            {{ icon_subject.상황|safe }} 상황
-                                        </th>
+                                        <th class="text-primary text-nowrap p-2 col-1">헌법</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">언어</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">자료</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">상황</th>
                                         <th class="text-primary text-nowrap p-2 col-1">PSAT 평균</th>
                                     </tr>
                                 </thead>
@@ -54,7 +46,7 @@
                                             <tr class="text-center">
                                                 {% partialdef exam_round inline=True %}
                                                     <td class="text-nowrap" aria-label="회차">
-                                                        {% if obj.student %}
+                                                        {% if obj.student and not obj.is_predict_closed %}
                                                             <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
                                                                 제{{ obj.round }}회
                                                             </a>
@@ -166,9 +158,10 @@
 
     {% if not obj.answer_all_confirmed %}
         <td class="text-nowrap" colspan="8">
-            <span class="badge rounded-pill text-bg-warning">
+            <a class="badge rounded-pill text-bg-warning" hx-boost="true"
+               href="{{ obj.get_predict_detail_url }}">
                 모든 답안을 제출해주세요.
-            </span>
+            </a>
         </td>
     {% else %}
         {% if current_time < obj.exam_finished_at %}
@@ -185,7 +178,7 @@
             </td>
         {% else %}
             {% for subject in subjects %}
-                {% cycle obj.student.score.subject_0 obj.student.score.subject_1 obj.student.score.subject_2 obj.student.score.subject_3 obj.student.score.average as score silent %}
+                {% cycle obj.score_0 obj.score_1 obj.score_2 obj.score_3 obj.student.score.average as score silent %}
                 <td aria-label="{{ subject.0 }}">
                     {{ score|floatformat:1 }}
                 </td>

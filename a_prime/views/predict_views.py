@@ -1,9 +1,8 @@
 import dataclasses
 import json
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-import pytz
 from django.contrib.auth.decorators import login_not_required
 from django.core.paginator import Paginator
 from django.db.models import F, Case, When, Value, BooleanField, Count, Window
@@ -65,6 +64,8 @@ def list_view(request: HtmxHttpRequest):
     student_dict = get_student_dict(request.user, exam_list)
     for obj in page_obj:
         obj.student = student_dict.get(obj, None)
+        for idx in range(4):
+            setattr(obj, f'score_{idx}', getattr(obj.student.score, f'subject_{idx}'))
         answer_student_counts = models.PredictAnswer.objects.filter(student=obj.student).count()
         obj.answer_all_confirmed = answer_student_counts == 145
 
@@ -81,11 +82,10 @@ def list_view(request: HtmxHttpRequest):
 
 def detail_view(request: HtmxHttpRequest, pk: int):
     exam = utils.get_exam(pk)
-    if timezone.now() < exam.exam_started_at:
+    if exam.is_predict_closed:
         return redirect('prime:predict-list')
 
     view_type = request.headers.get('View-Type', 'main')
-    exam = utils.get_exam(pk)
     exam_vars = ExamVars(exam)
     config = ViewConfiguration()
     config.submenu_kor = f'제{exam.round}회 ' + config.submenu_kor
@@ -344,7 +344,7 @@ class ExamVars:
 
     student_form = forms.PrimePredictStudentForm
 
-    current_time = datetime.now()
+    current_time = timezone.now()
 
     sub_list = ['헌법', '언어', '자료', '상황']
     subject_list = [models.choices.subject_choice()[key] for key in sub_list]
