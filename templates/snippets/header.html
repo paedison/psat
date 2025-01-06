@@ -48,7 +48,7 @@
 {% partialdef search_bar %}
     <div class="search-bar">
         <form class="search-form d-flex align-items-center"
-              hx-target="#main" hx-swap="innerHtml swap:0.25s"
+              hx-target="#main" hx-swap="innerHtml swap:0.25s" hx-push-url="true"
               hx-post="{% url 'psat:problem-list' %}">
             <input id="id_data" type="text" name="keyword"
                    placeholder="{% trans 'Enter search keyword' %}"
