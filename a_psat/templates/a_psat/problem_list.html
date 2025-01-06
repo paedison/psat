@@ -107,7 +107,7 @@
              data-bs-parent="#problemFilter">
             <div class="accordion-body pb-2">
                 <form class="row g-2 align-items-center justify-content-center" hx-trigger="change"
-                      hx-get="{{ request.path }}">
+                      hx-get="{{ config.url_list }}{% querystring keyword=keyword %}">
                     <input id="id_data" type="text" name="keyword"
                            value="{{ keyword }}" hidden
                            placeholder="{% trans 'Enter search keyword' %}"

@@ -33,6 +33,7 @@ def problem_list_view(request: HtmxHttpRequest):
     exam_exam = request.GET.get('exam', '')
     exam_subject = request.GET.get('subject', '')
     page = request.GET.get('page', '1')
+    keyword = request.POST.get('keyword', '') or request.GET.get('keyword', '')
 
     sub_title = utils.get_sub_title_by_psat(exam_year, exam_exam, exam_subject)
 
@@ -48,6 +49,7 @@ def problem_list_view(request: HtmxHttpRequest):
     context = update_context_data(
         config=config, sub_title=sub_title, form=filterset.form,
         icon_image=icon_set_new.ICON_IMAGE,
+        keyword=keyword,
         custom_data=custom_data, page_obj=page_obj, page_range=page_range,
     )
     if view_type == 'problem_list':
