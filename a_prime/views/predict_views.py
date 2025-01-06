@@ -240,6 +240,10 @@ def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
     field_vars.pop('average')
     sub, subject, field_idx = field_vars[subject_field]
 
+    time_schedule = exam_vars.get_time_schedule().get(sub)
+    if exam_vars.current_time < time_schedule[0]:
+        return redirect('prime:predict-detail', pk=pk)
+
     problem_count = exam_vars.problem_count.copy()
     problem_count.pop('평균')
 
