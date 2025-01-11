@@ -65,7 +65,8 @@ def list_view(request: HtmxHttpRequest):
     for obj in page_obj:
         obj.student = student_dict.get(obj, None)
         for idx in range(4):
-            setattr(obj, f'score_{idx}', getattr(obj.student.score, f'subject_{idx}'))
+            if obj.student:
+                setattr(obj, f'score_{idx}', getattr(obj.student.score, f'subject_{idx}'))
         answer_student_counts = models.PredictAnswer.objects.filter(student=obj.student).count()
         obj.answer_all_confirmed = answer_student_counts == 145
 

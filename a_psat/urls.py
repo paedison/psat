@@ -51,7 +51,7 @@ admin_patterns = [
 ]
 
 predict_patterns = [
-    path('', predict_views.index_view, name='predict-index'),
+    path('', predict_views.list_view, name='predict-list'),
     # path('<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
     #      predict_views.detail_view, name='detail'),
     # path('student/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
