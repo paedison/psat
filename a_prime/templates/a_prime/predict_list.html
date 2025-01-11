@@ -124,7 +124,7 @@
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                    data-bs-toggle="modal" data-bs-target="#modalContainer"
                    hx-get="{{ obj.get_predict_modal_url }}">
-                    입력
+                    {{ message|default:'입력' }}
                 </a>
             {% endpartialdef input_button %}
         {% endif %}
@@ -156,7 +156,11 @@
         {% endif %}
     </td>
 
-    {% if not obj.answer_all_confirmed %}
+    {% if not obj.student %}
+        <td class="text-nowrap" colspan="8">
+            {% with message='수험 정보를 입력해주세요.' %}{% partial input_button %}{% endwith %}
+        </td>
+    {% elif not obj.answer_all_confirmed %}
         <td class="text-nowrap" colspan="8">
             <a class="badge rounded-pill text-bg-warning" hx-boost="true"
                href="{{ obj.get_predict_detail_url }}">
