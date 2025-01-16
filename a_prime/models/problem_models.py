@@ -32,7 +32,7 @@ class Psat(models.Model):
     @property
     def score_opened_at(self):
         score_open_date = self.answer_official_opened_at + timedelta(days=5)
-        return score_open_date.replace(hour=9)
+        return score_open_date.replace(hour=8)
 
     @property
     def reference(self):
