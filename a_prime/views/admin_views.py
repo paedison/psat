@@ -251,8 +251,15 @@ def exam_create_view(request: HtmxHttpRequest):
             rnd = form.cleaned_data['round']
 
             psat, _ = models.Psat.objects.get_or_create(year=year, exam=exam, round=rnd)
-            exam_vars = ExamVars(psat)
+            psat.is_active = True
+            psat.page_opened_at = form.cleaned_data['page_opened_at']
+            psat.exam_started_at = form.cleaned_data['exam_started_at']
+            psat.exam_finished_at = form.cleaned_data['exam_finished_at']
+            psat.answer_predict_opened_at = form.cleaned_data['answer_predict_opened_at']
+            psat.answer_official_opened_at = form.cleaned_data['answer_official_opened_at']
+            psat.save()
 
+            exam_vars = ExamVars(psat)
             exam_vars.create_default_problems()
             exam_vars.create_default_statistics('result')
             exam_vars.create_default_statistics('predict')

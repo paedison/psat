@@ -23,10 +23,6 @@ class PsatForm(forms.Form):
         label='회차', label_suffix='', initial=1,
         widget=forms.NumberInput(attrs={'class': 'form-control'}),
     )
-    is_active = forms.BooleanField(
-        label='활성', label_suffix='', initial=True,
-        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-    )
     page_open_date = forms.DateField(
         label='페이지 오픈일', label_suffix='', initial=timezone.now(),
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),

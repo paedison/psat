@@ -298,6 +298,7 @@ def predict_create_view(request: HtmxHttpRequest):
             original_psat = models.Psat.objects.get(year=year, exam=exam)
 
             new_predict_psat, _ = models.PredictPsat.objects.get_or_create(psat=original_psat)
+            new_predict_psat.is_active = True
             new_predict_psat.page_opened_at = form.cleaned_data['page_opened_at']
             new_predict_psat.exam_started_at = form.cleaned_data['exam_started_at']
             new_predict_psat.exam_finished_at = form.cleaned_data['exam_finished_at']

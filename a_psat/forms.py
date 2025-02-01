@@ -141,10 +141,6 @@ class PredictPsatForm(forms.Form):
         choices=models.choices.exam_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    is_active = forms.BooleanField(
-        label='활성', label_suffix='', initial=True,
-        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-    )
     page_open_date = forms.DateField(
         label='페이지 오픈일', label_suffix='', initial=timezone.now(),
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
