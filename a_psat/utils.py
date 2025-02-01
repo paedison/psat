@@ -2,6 +2,7 @@ import os
 
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from django.templatetags.static import static
 from django.urls import reverse
 
@@ -11,14 +12,15 @@ from common.constants import icon_set_new
 from common.models import User
 
 
-def get_page_obj_and_range(page_number, page_data, per_page=10):
-    paginator = Paginator(page_data, per_page)
-    try:
-        page_obj = paginator.get_page(page_number)
-        page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
-        return page_obj, page_range
-    except TypeError:
-        return None, None
+def get_paginator_data(target_data, page_number, per_page=10):
+    paginator = Paginator(target_data, per_page)
+    page_obj = paginator.get_page(page_number)
+    page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+    return page_obj, page_range
+
+
+def get_predict_exam(pk):
+    return get_object_or_404(models.PredictPsat, pk=pk)
 
 
 def get_sub_title_by_psat(exam_year, exam_exam, exam_subject, end_string='기출문제') -> str:

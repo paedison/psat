@@ -104,6 +104,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     )
     data_statistics = exam_vars.get_qs_statistics(model_type)
     student_list = exam_vars.get_student_list(model_type)
+    registry_list = exam_vars.get_qs_result_registry()
     qs_answer_count = exam_vars.get_qs_answer_count(subject, model_type)
 
     if view_type == 'statistics_list':
@@ -122,6 +123,11 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         context = update_context_data(
             context, catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
         return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
+    if view_type == 'registry_list':
+        registry_page_obj, registry_page_range = utils.get_paginator_data(registry_list, page_number)
+        context = update_context_data(
+            context, registry_page_obj=registry_page_obj, registry_page_range=registry_page_range)
+        return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
     if view_type == 'answer_list':
         subject_idx = exam_vars.subject_vars[subject][2]
         answers_page_obj_group, answers_page_range_group = (
@@ -136,6 +142,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
     statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
     catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
+    registry_page_obj, registry_page_range = utils.get_paginator_data(registry_list, page_number)
     answers_page_obj_group, answers_page_range_group = (
         exam_vars.get_answer_page_data(qs_answer_count, page_number, 10, model_type))
 
@@ -144,6 +151,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
         catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
         answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
+        registry_page_obj=registry_page_obj, registry_page_range=registry_page_range,
     )
     return render(request, f'a_prime/admin_{model_type}_detail.html', context)
 
@@ -238,7 +246,11 @@ def exam_create_view(request: HtmxHttpRequest):
     if request.method == 'POST':
         form = forms.PsatForm(request.POST, request.FILES)
         if form.is_valid():
-            psat = form.save()
+            year = form.cleaned_data['year']
+            exam = form.cleaned_data['exam']
+            rnd = form.cleaned_data['round']
+
+            psat, _ = models.Psat.objects.get_or_create(year=year, exam=exam, round=rnd)
             exam_vars = ExamVars(psat)
 
             exam_vars.create_default_problems()
@@ -257,7 +269,7 @@ def exam_create_view(request: HtmxHttpRequest):
 
     form = forms.PsatForm()
     context = update_context_data(config=config, form=form)
-    return render(request, 'a_psat/admin_exam_create.html', context)
+    return render(request, 'a_prime/admin_create_exam.html', context)
 
 
 @only_staff_allowed()
@@ -497,24 +509,25 @@ class ExamVars:
     category_model = models.Category
 
     # Result Models
+    statistics_model = models.ResultStatistics
     student_model = models.ResultStudent
+    registry_model = models.ResultRegistry
     answer_model = models.ResultAnswer
     score_model = models.ResultScore
     rank_total_model = models.ResultRankTotal
     rank_category_model = models.ResultRankCategory
-    statistics_model = models.ResultStatistics
     answer_count_model = models.ResultAnswerCount
     answer_count_top_model = models.ResultAnswerCountTopRank
     answer_count_mid_model = models.ResultAnswerCountMidRank
     answer_count_low_model = models.ResultAnswerCountLowRank
 
     # Predict Models
+    predict_statistics_model = models.PredictStatistics
     predict_student_model = models.PredictStudent
     predict_answer_model = models.PredictAnswer
     predict_score_model = models.PredictScore
     predict_rank_total_model = models.PredictRankTotal
     predict_rank_category_model = models.PredictRankCategory
-    predict_statistics_model = models.PredictStatistics
     predict_answer_count_model = models.PredictAnswerCount
     predict_answer_count_top_model = models.PredictAnswerCountTopRank
     predict_answer_count_mid_model = models.PredictAnswerCountMidRank
@@ -601,6 +614,27 @@ class ExamVars:
             .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
             .order_by('psat__year', 'psat__round', 'rank_total__average')
             .annotate(department=F('category__department'), **annotate_dict)
+        )
+
+    def get_qs_result_registry(self):
+        annotate_dict = {
+            'department': F('student__category__department'),
+            'score_sum': F('student__score__sum'),
+            'rank_tot_num': F(f'student__rank_total__participants'),
+            'rank_dep_num': F(f'student__rank_category__participants'),
+        }
+        field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
+        for key, fld in field_dict.items():
+            annotate_dict[f'score_{key}'] = F(f'student__score__{fld}')
+            annotate_dict[f'rank_tot_{key}'] = F(f'student__rank_total__{fld}')
+            annotate_dict[f'rank_dep_{key}'] = F(f'student__rank_category__{fld}')
+
+        return (
+            self.registry_model.objects.filter(student__psat=self.exam)
+            .select_related(
+                'user', 'student', 'student__psat', 'student__category',
+                'student__score', 'student__rank_total', 'student__rank_category')
+            .order_by('id').annotate(**annotate_dict)
         )
 
     def get_qs_answer_count(self, subject=None, model_type='result'):
@@ -735,7 +769,7 @@ class ExamVars:
         form = self.upload_file_form(request.POST, request.FILES)
         if form.is_valid():
             uploaded_file = request.FILES['file']
-            df = pd.read_excel(uploaded_file, sheet_name='정답', header=0, index_col=0)
+            df = pd.read_excel(uploaded_file, header=0, index_col=0)
             df = df.infer_objects(copy=False)
             df.fillna(value=0, inplace=True)
 

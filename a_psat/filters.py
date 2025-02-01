@@ -63,7 +63,7 @@ class PsatFilter(django_filters.FilterSet):
 
     @property
     def qs(self):
-        return super().qs.prefetch_related('problems').order_by('-id')
+        return super().qs.select_related('predict_psat').prefetch_related('problems').order_by('-id')
 
 
 class AnonymousProblemFilter(django_filters.FilterSet):

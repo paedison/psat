@@ -1,0 +1,20 @@
+{% load psat_filter %}
+
+{% for tab in answer_tab %}
+    {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
+    {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
+    {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
+    {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
+    {% cycle 'answerSubmit' as prefix silent %}
+
+    {% for answer in answers %}
+        <div id="answerSubmitRateCorrect{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
+             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+            {{ answer.rate_correct|floatformat:0 }}
+        </div>
+        <div id="answerSubmitRateSelect{{ answer.no|stringformat:'02d' }}"
+             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+            {{ answer.rate_selection|floatformat:0 }}
+        </div>
+    {% endfor %}
+{% endfor %}

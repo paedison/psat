@@ -4,41 +4,41 @@
     <table class="table table-bordered table-striped small align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap p-2" rowspan="2">직렬</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">응시 인원</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">PSAT</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">헌법</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">언어논리</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">자료해석</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">상황판단</th>
+                <th class="text-primary text-nowrap" rowspan="2">직렬</th>
+                <th class="text-primary text-nowrap" rowspan="2">응시 인원</th>
+                <th class="text-primary text-nowrap" colspan="4">PSAT</th>
+                <th class="text-primary text-nowrap" colspan="4">헌법</th>
+                <th class="text-primary text-nowrap" colspan="4">언어논리</th>
+                <th class="text-primary text-nowrap" colspan="4">자료해석</th>
+                <th class="text-primary text-nowrap" colspan="4">상황판단</th>
             </tr>
 
             <tr class="text-center table-warning align-middle">
                 {% for _ in '12345' %}
-                    <th class="text-primary text-nowrap p-2 td-right-no-border">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>20%</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border">평균<br/>점수</th>
+                    <th class="text-primary text-nowrap td-right-no-border">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>20%</th>
+                    <th class="text-primary text-nowrap td-left-no-border">평균<br/>점수</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for obj in statistics_page_obj %}
                 <tr class="text-center">
-                    <td class="text-nowrap p-2">{{ obj.department }}</td>
-                    <td class="text-nowrap p-2">{{ obj.average.participants|intcomma }}</td>
+                    <td class="text-nowrap">{{ obj.department }}</td>
+                    <td class="text-nowrap">{{ obj.average.participants|intcomma }}</td>
 
                     {% for _ in '01234' %}
                         {% cycle obj.average obj.subject_0 obj.subject_1 obj.subject_2 obj.subject_3 as data_stat silent %}
-                        <td class="text-nowrap p-2 td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ data_stat.t20|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border">{{ data_stat.avg|floatformat:1 }}</td>
+                        <td class="text-nowrap td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t20|floatformat:1 }}</td>
+                        <td class="text-nowrap td-left-no-border">{{ data_stat.avg|floatformat:1 }}</td>
                     {% endfor %}
                 </tr>
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap p-2" colspan="22">자료가 없습니다.</td>
+                    <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

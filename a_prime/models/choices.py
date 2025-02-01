@@ -25,7 +25,7 @@ def unit_choice() -> dict:
     }
 
 
-def department_choices() -> dict:
+def department_choice() -> dict:
     return {
         '5급공채': {
             '5급 일반행정': '5급 일반행정',
@@ -44,15 +44,15 @@ def department_choices() -> dict:
     }
 
 
-def statistics_department_choices() -> dict:
-    departments = department_choices()
+def statistics_department_choice() -> dict:
+    departments = department_choice()
     departments.update({'전체': {'전체': '전체'}})
     return departments
 
 
 def get_departments():
     departments = []
-    for unit, department in department_choices().items():
+    for unit, department in department_choice().items():
         for key in department.keys():
             departments.append(key)
     return departments

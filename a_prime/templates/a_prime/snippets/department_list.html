@@ -1,7 +1,7 @@
 <select id="id_department" class="form-select mt-3 select2-filter-style"
     name="department" aria-label="Select department">
     <option value="" selected>
-        {% if categories %}직렬을 선택해주세요.{% else %}모집 단위를 선택해주세요.{% endif %}
+        {% if categories %}직렬을 선택해주세요.{% else %}모집단위를 선택해주세요.{% endif %}
     </option>
     {% for category in categories %}
         {% if category.department == form.department.value %}

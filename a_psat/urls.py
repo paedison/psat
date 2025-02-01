@@ -42,25 +42,28 @@ lecture_patterns = [
 ]
 
 admin_patterns = [
-    path('', admin_views.admin_menu_view, name='admin-menu'),
-    path('<int:pk>/', admin_views.admin_problem_list_view, name='admin-problem-list'),
+    path('', admin_views.list_view, name='admin-list'),
+    path('<int:pk>/', admin_views.detail_view, name='admin-detail'),
     path('psat/create/', admin_views.psat_create_view, name='admin-psat-create'),
     path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
     path('problem/update/', admin_views.problem_update_view, name='admin-problem-update'),
     # path('answer/<int:pk>/', admin_views.answer_detail_view, name='staff-answer-detail'),
+
+    path('predict/create/', admin_views.predict_create_view, name='admin-predict-create'),
+    path('predict/update/<int:pk>/', admin_views.predict_update_view, name='admin-predict-update'),
 ]
 
 predict_patterns = [
     path('', predict_views.list_view, name='predict-list'),
-    # path('<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-    #      predict_views.detail_view, name='detail'),
-    # path('student/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-    #      predict_views.student_create_view, name='student-create'),
-    # path('answer/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
-    #      predict_views.answer_input_view, name='answer-input'),
-    # path('answer/confirm/<str:exam_type>/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
-    #      predict_views.answer_confirm_view, name='answer-confirm'),
-    # path('admin/', include(admin_patterns)),
+    path('<int:pk>/', predict_views.detail_view, name='predict-detail'),
+    path('register/<int:pk>/', predict_views.register_view, name='predict-register'),
+    path('unregister/<int:pk>/', predict_views.unregister_view, name='predict-unregister'),
+
+    path('modal/<int:pk>/', predict_views.modal_view, name='predict-modal'),
+    path('answer/<int:pk>/<str:subject_field>/',
+         predict_views.answer_input_view, name='predict-answer-input'),
+    path('answer/confirm/<int:pk>/<str:subject_field>/',
+         predict_views.answer_confirm_view, name='predict-answer-confirm'),
 ]
 
 urlpatterns = [

@@ -5,33 +5,33 @@
     <table class="table table-bordered table-striped small align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap p-2" rowspan="2">문제<br/>번호</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">공식<br/>정답</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">예상<br/>정답</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">전체<br/>정답률(%)</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">상위권<br/>정답률(%)</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">중위권<br/>정답률(%)</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">하위권<br/>정답률(%)</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">변별도</th>
-                <th class="text-primary text-nowrap p-2" colspan="{{ tab.answer_count }}">답안 선택수(명)-전체</th>
-                <th class="text-primary text-nowrap p-2" colspan="{{ tab.answer_count }}">답안 선택률(%)-전체</th>
-                <th class="text-primary text-nowrap p-2" colspan="{{ tab.answer_count }}">답안 선택수(명)-상위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="{{ tab.answer_count }}">답안 선택률(%)-상위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="{{ tab.answer_count }}">답안 선택수(명)-중위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="{{ tab.answer_count }}">답안 선택률(%)-중위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="{{ tab.answer_count }}">답안 선택수(명)-하위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="{{ tab.answer_count }}">답안 선택률(%)-하위권</th>
+                <th class="text-primary text-nowrap" rowspan="2">문제<br/>번호</th>
+                <th class="text-primary text-nowrap" rowspan="2">공식<br/>정답</th>
+                <th class="text-primary text-nowrap" rowspan="2">예상<br/>정답</th>
+                <th class="text-primary text-nowrap" rowspan="2">전체<br/>정답률(%)</th>
+                <th class="text-primary text-nowrap" rowspan="2">상위권<br/>정답률(%)</th>
+                <th class="text-primary text-nowrap" rowspan="2">중위권<br/>정답률(%)</th>
+                <th class="text-primary text-nowrap" rowspan="2">하위권<br/>정답률(%)</th>
+                <th class="text-primary text-nowrap" rowspan="2">변별도</th>
+                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택수(명)-전체</th>
+                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택률(%)-전체</th>
+                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택수(명)-상위권</th>
+                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택률(%)-상위권</th>
+                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택수(명)-중위권</th>
+                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택률(%)-중위권</th>
+                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택수(명)-하위권</th>
+                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택률(%)-하위권</th>
             </tr>
             <tr class="text-center table-warning align-middle">
                 {% for _ in '12345678' %}
-                    <th class="text-primary text-nowrap p-2 td-right-no-border">①</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">②</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">③</th>
+                    <th class="text-primary text-nowrap td-right-no-border">①</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">②</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">③</th>
                     {% if tab.title == '헌법' %}
-                        <th class="text-primary text-nowrap p-2 td-left-no-border">④</th>
+                        <th class="text-primary text-nowrap td-left-no-border">④</th>
                     {% else %}
-                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">④</th>
-                        <th class="text-primary text-nowrap p-2 td-left-no-border">⑤</th>
+                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">④</th>
+                        <th class="text-primary text-nowrap td-left-no-border">⑤</th>
                     {% endif %}
                 {% endfor %}
             </tr>
@@ -108,7 +108,7 @@
                 </tr>
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap p-2" colspan="40">자료가 없습니다.</td>
+                    <td class="text-nowrap" colspan="40">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

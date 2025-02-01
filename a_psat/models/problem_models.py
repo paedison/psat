@@ -49,14 +49,17 @@ class Psat(models.Model):
         return self.get_exam_display()
 
     @staticmethod
-    def get_admin_menu_url():
-        return reverse_lazy('psat:admin-menu')
-
-    def get_admin_problem_list_url(self):
-        return reverse_lazy('psat:admin-problem-list', args=[self.id])
+    def get_admin_list_url():
+        return reverse_lazy('psat:admin-list')
 
     def get_admin_psat_active_url(self):
         return reverse_lazy('psat:admin-psat-active', args=[self.id])
+
+    def get_admin_detail_url(self):
+        return reverse_lazy('psat:admin-detail', args=[self.id])
+
+    def get_admin_predict_update_url(self):
+        return reverse_lazy('psat:admin-predict-update', args=[self.id])
 
 
 class ProblemTag(TagBase):

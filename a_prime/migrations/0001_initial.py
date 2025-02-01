@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('exam', models.CharField(choices=a_prime.models.choices.exam_choice, default='프모', max_length=2, verbose_name='시험')),
                 ('unit', models.CharField(choices=a_prime.models.choices.unit_choice, default='5급 행정', max_length=20, verbose_name='모집단위')),
-                ('department', models.CharField(choices=a_prime.models.choices.department_choices, default='5급 일반행정', max_length=40, verbose_name='직렬')),
+                ('department', models.CharField(choices=a_prime.models.choices.department_choice, default='5급 일반행정', max_length=40, verbose_name='직렬')),
                 ('order', models.SmallIntegerField(default=1, verbose_name='순서')),
             ],
             options={

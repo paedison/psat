@@ -1,0 +1,112 @@
+{% load psat_filter %}
+{% load humanize %}
+
+<article class="table-responsive htmx-fade-in htmx-fade-out">
+    <table class="table table-bordered table-striped small align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap" rowspan="3">ID</th>
+                <th class="text-primary text-nowrap" rowspan="3">등록 일시</th>
+                <th class="text-primary text-nowrap" rowspan="3">사용자<br/>ID</th>
+                <th class="text-primary text-nowrap" rowspan="3">학생<br/>ID</th>
+
+                <th class="text-primary text-nowrap" rowspan="3">이름</th>
+                <th class="text-primary text-nowrap" rowspan="3">수험번호</th>
+                <th class="text-primary text-nowrap" rowspan="3">직렬</th>
+
+                <th class="text-primary text-nowrap" colspan="6">PSAT</th>
+                <th class="text-primary text-nowrap" colspan="5">헌법</th>
+                <th class="text-primary text-nowrap" colspan="5">언어논리</th>
+                <th class="text-primary text-nowrap" colspan="5">자료해석</th>
+                <th class="text-primary text-nowrap" colspan="5">상황판단</th>
+            </tr>
+
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap td-right-no-border" rowspan="2">총점</th>
+                <th class="text-primary text-nowrap td-left-no-border td-right-no-border" rowspan="2">평균</th>
+                <th class="text-primary text-nowrap td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
+                <th class="text-primary text-nowrap td-left-no-border" colspan="2">직렬 석차</th>
+                {% for _ in '1234' %}
+                    <th class="text-primary text-nowrap td-right-no-border" rowspan="2">점수</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
+                    <th class="text-primary text-nowrap td-left-no-border" colspan="2">직렬 석차</th>
+                {% endfor %}
+            </tr>
+
+            <tr class="text-center table-warning align-middle">
+                {% for _ in '12345' %}
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">등</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">%</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">등</th>
+                    <th class="text-primary text-nowrap td-left-no-border">%</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in registry_page_obj %}
+                <tr class="text-center">
+                    <td class="text-nowrap">{{ obj.id }}</td>
+                    <td class="text-nowrap">{{ obj.created_at|date:'Y.m.d G:i' }}</td>
+                    <td class="text-nowrap">{{ obj.user_id }}</td>
+                    <td class="text-nowrap">{{ obj.student_id }}</td>
+
+                    <td class="text-nowrap">{{ obj.student.name }}</td>
+                    <td class="text-nowrap">{{ obj.student.serial }}</td>
+                    <td class="text-nowrap">{{ obj.department }}</td>
+
+                    <td class="text-nowrap td-right-no-border">{{ obj.score_sum|floatformat:1 }}</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border">{{ obj.score_avg|floatformat:1 }}</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border">
+                        {{ obj.rank_tot_avg|default_if_none:'' }}
+                    </td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border">
+                        {% if obj.rank_tot_avg and obj.rank_tot_num %}
+                            {{ obj.rank_tot_avg|divide:obj.rank_tot_num|percentage|floatformat:1 }}
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border">
+                        {{ obj.rank_dep_avg|default_if_none:'' }}
+                    </td>
+                    <td class="text-nowrap td-left-no-border">
+                        {% if obj.rank_dep_avg and obj.rank_dep_num %}
+                            {{ obj.rank_dep_avg|divide:obj.rank_dep_num|percentage|floatformat:1 }}
+                        {% endif %}
+                    </td>
+
+                    {% for _ in '0123' %}
+                        {% cycle obj.score_0 obj.score_1 obj.score_2 obj.score_3 as score silent %}
+                        {% cycle obj.rank_tot_0 obj.rank_tot_1 obj.rank_tot_2 obj.rank_tot_3 as rank_tot silent %}
+                        {% cycle obj.rank_dep_0 obj.rank_dep_1 obj.rank_dep_2 obj.rank_dep_3 as rank_dep silent %}
+                        <td class="text-nowrap td-right-no-border">{{ score|floatformat:1 }}</td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">
+                            {{ rank_tot|default_if_none:'' }}
+                        </td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">
+                            {% if rank_tot and obj.rank_tot_num %}
+                                {{ rank_tot|divide:obj.rank_tot_num|percentage|floatformat:1 }}
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">
+                            {{ rank_dep|default_if_none:'' }}
+                        </td>
+                        <td class="text-nowrap td-left-no-border">
+                            {% if rank_dep and obj.rank_dep_num %}
+                                {{ rank_dep|divide:obj.rank_dep_num|percentage|floatformat:1 }}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% empty %}
+                <tr class="text-center">
+                    <td class="text-nowrap" colspan="31">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% with page_obj=registry_page_obj page_range=registry_page_range %}
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'a_prime/snippets/pagination.html' with header='registry_list' %}
+    {% endif %}
+{% endwith %}

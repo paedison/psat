@@ -38,13 +38,17 @@
                             <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                     {% endif %}
+                {% elif config.submenu == 'lecture' %}
+                    <li class="breadcrumb-item">
+                        <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                    </li>
                 {% elif config.submenu == 'predict' %}
                     {% if exam %}
                         <li class="breadcrumb-item">
                             <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="{{ exam.get_predict_detail_url }}" class="active">{{ exam.get_round_display }}</a>
+                            <a href="{{ exam.get_predict_detail_url }}" class="active">{{ exam.reference }}</a>
                         </li>
                     {% else %}
                         <li class="breadcrumb-item">
@@ -52,12 +56,12 @@
                         </li>
                     {% endif %}
                 {% elif config.submenu == 'admin' %}
-                    {% if exam %}
+                    {% if psat %}
                         <li class="breadcrumb-item">
                             <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="{{ exam.get_admin_predict_detail_url }}" class="active">{{ exam.get_round_display }}</a>
+                            <a href="{{ psat.get_admin_detail_url }}" class="active">{{ psat.reference }}</a>
                         </li>
                     {% else %}
                         <li class="breadcrumb-item">
@@ -68,4 +72,6 @@
             </ol>
         </nav>
     </div><!-- Page Title End -->
+    {% block main_content %}
+    {% endblock main_content %}
 {% endblock main %}

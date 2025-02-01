@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='ResultStatistics',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('department', models.CharField(choices=a_prime.models.choices.statistics_department_choices, default='전체', max_length=40, verbose_name='직렬')),
+                ('department', models.CharField(choices=a_prime.models.choices.statistics_department_choice, default='전체', max_length=40, verbose_name='직렬')),
                 ('subject_0', models.JSONField(default=dict, verbose_name='헌법')),
                 ('subject_1', models.JSONField(default=dict, verbose_name='언어논리')),
                 ('subject_2', models.JSONField(default=dict, verbose_name='자료해석')),

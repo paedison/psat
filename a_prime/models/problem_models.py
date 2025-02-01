@@ -8,16 +8,20 @@ from . import choices
 
 
 class Psat(models.Model):
-    year = models.IntegerField(choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
-    exam = models.CharField(max_length=2, choices=choices.exam_choice, default='프모', verbose_name='시험')
+    year = models.IntegerField(
+        choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
+    exam = models.CharField(
+        max_length=2, choices=choices.exam_choice, default='프모', verbose_name='시험')
     round = models.IntegerField(choices=choices.round_choice, verbose_name='회차')
     is_active = models.BooleanField(default=False, verbose_name='활성')
 
     page_opened_at = models.DateTimeField(default=timezone.now, verbose_name='페이지 오픈 일시')
     exam_started_at = models.DateTimeField(default=timezone.now, verbose_name='시험 시작 일시')
     exam_finished_at = models.DateTimeField(default=timezone.now, verbose_name='시험 종료 일시')
-    answer_predict_opened_at = models.DateTimeField(default=timezone.now, verbose_name='예상 정답 공개 일시')
-    answer_official_opened_at = models.DateTimeField(default=timezone.now, verbose_name='공식 정답 공개 일시')
+    answer_predict_opened_at = models.DateTimeField(
+        default=timezone.now, verbose_name='예상 정답 공개 일시')
+    answer_official_opened_at = models.DateTimeField(
+        default=timezone.now, verbose_name='공식 정답 공개 일시')
 
     class Meta:
         verbose_name = verbose_name_plural = "[프라임] 00_PSAT 모의고사"
@@ -91,12 +95,6 @@ class Psat(models.Model):
     def get_admin_update_url(self):
         return reverse_lazy('prime:admin-update', args=[self.id])
 
-    def get_admin_problem_list_url(self):
-        return reverse_lazy('psat:admin-problem-list', args=[self.id])
-
-    def get_admin_psat_active_url(self):
-        return reverse_lazy('psat:admin-psat-active', args=[self.id])
-
     @staticmethod
     def get_result_list_url():
         return reverse_lazy('prime:result-list')
@@ -140,8 +138,10 @@ class Psat(models.Model):
 
 
 class Problem(models.Model):
-    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='problems', verbose_name='PSAT')
-    subject = models.CharField(max_length=2, choices=choices.subject_choice, default='언어', verbose_name='과목')
+    psat = models.ForeignKey(
+        Psat, on_delete=models.CASCADE, related_name='problems', verbose_name='PSAT')
+    subject = models.CharField(
+        max_length=2, choices=choices.subject_choice, default='언어', verbose_name='과목')
     number = models.IntegerField(choices=choices.number_choice, default=1, verbose_name='번호')
     answer = models.IntegerField(choices=choices.answer_choice, default=1, verbose_name='정답')
 
@@ -149,7 +149,9 @@ class Problem(models.Model):
         verbose_name = verbose_name_plural = "[프라임] 01_문제"
         ordering = ['psat', 'id']
         constraints = [
-            models.UniqueConstraint(fields=['psat', 'subject', 'number'], name='unique_prime_problem'),
+            models.UniqueConstraint(
+                fields=['psat', 'subject', 'number'], name='unique_prime_problem'
+            ),
         ]
 
     def __str__(self):
@@ -169,7 +171,9 @@ class Problem(models.Model):
 
     @property
     def year_exam_subject(self):
-        return ' '.join([self.psat.get_year_display(), self.psat.get_exam_display(), self.get_subject_display()])
+        return ' '.join([
+            self.psat.get_year_display(), self.psat.get_exam_display(), self.get_subject_display()
+        ])
 
     @property
     def full_reference(self):
@@ -183,15 +187,20 @@ class Problem(models.Model):
 
 
 class Category(models.Model):
-    exam = models.CharField(max_length=2, choices=choices.exam_choice, default='프모', verbose_name='시험')
-    unit = models.CharField(max_length=20, choices=choices.unit_choice, default='5급 행정', verbose_name='모집단위')
-    department = models.CharField(max_length=40, choices=choices.department_choices, default='5급 일반행정', verbose_name='직렬')
+    exam = models.CharField(
+        max_length=2, choices=choices.exam_choice, default='프모', verbose_name='시험')
+    unit = models.CharField(
+        max_length=20, choices=choices.unit_choice, default='5급 행정', verbose_name='모집단위')
+    department = models.CharField(
+        max_length=40, choices=choices.department_choice, default='5급 일반행정', verbose_name='직렬')
     order = models.SmallIntegerField(default=1, verbose_name='순서')
 
     class Meta:
         verbose_name = verbose_name_plural = "[프라임] 03_모집단위 및 직렬"
         constraints = [
-            models.UniqueConstraint(fields=['exam', 'unit', 'department'], name='unique_prime_category'),
+            models.UniqueConstraint(
+                fields=['exam', 'unit', 'department'], name='unique_prime_category'
+            ),
         ]
 
     def __str__(self):

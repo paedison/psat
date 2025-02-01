@@ -1,0 +1,35 @@
+<div class="d-flex">
+    <form class="d-flex align-items-center"
+          hx-headers='{"View-Type":"student_search"}'
+          hx-target="#catalogContent"
+          hx-get="">
+        <div class="input-group mb-3">
+            <input id="id_student_name" type="text" name="student_name" class="form-control"
+                   placeholder="학생 이름" title="학생 이름" aria-label="학생 이름">
+            <button type="submit" title="검색" class="btn btn-sm btn-outline-secondary">
+                {{ icon_search|safe }}
+            </button>
+        </div>
+    </form>
+{#    <div class="ms-auto">#}
+{#        <button id="dropdownCategoryLink" type="button"#}
+{#                class="btn btn-sm btn-outline-primary dropdown-toggle"#}
+{#                data-bs-toggle="dropdown" aria-expanded="false">#}
+{#            구분#}
+{#        </button>#}
+{#        <ul class="dropdown-menu" aria-labelledby="dropdownCategoryLink">#}
+{#            <li class="text-center">#}
+{#            </li>#}
+{#            {% for category in category_list %}#}
+{#                {% if category %}#}
+{#                    <li class="text-center">#}
+{#                        <a class="dropdown-item {% if category == current_category %}bg-primary-light{% endif %}"#}
+{#                           href="" hx-get="{{ base_url }}?category={{ category }}">#}
+{#                            {{ category }}#}
+{#                        </a>#}
+{#                    </li>#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#    </div>#}
+</div>

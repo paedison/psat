@@ -83,7 +83,7 @@ def list_view(request: HtmxHttpRequest):
 
 def detail_view(request: HtmxHttpRequest, pk: int):
     exam = utils.get_exam(pk)
-    if exam.is_predict_closed:
+    if exam.is_predict_closed or not exam.is_active:
         return redirect('prime:predict-list')
 
     view_type = request.headers.get('View-Type', 'main')

@@ -494,7 +494,7 @@ psat:None:lecture-list → NoReverseMatch
 psat:None:lecture-detail → NoReverseMatch
 psat:None:memo-lecture → NoReverseMatch
 psat:None:tag-lecture → NoReverseMatch
-psat:None:admin-menu → NoReverseMatch
+psat:None:admin-list → NoReverseMatch
 psat:None:admin-problem-list → NoReverseMatch
 psat:None:admin-psat-create → NoReverseMatch
 psat:None:admin-psat-active → NoReverseMatch

@@ -1,6 +1,8 @@
 {% extends 'a_prime/_prime_base.html' %}
 {% load static %}
 
+{% block google_adsense %}{% endblock %}
+
 {% block main_content %}
     <section class="section">
         <div class="row">
@@ -25,17 +27,17 @@
                                     </form>
                                 </div>
 
-                                <div class="col-md-6 d-flex justify-content-end"
+                                <div class="col-md-6 d-flex"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                    <div class="btn-group">
+                                    <div class="btn-group flex-fill">
                                         {% include 'a_prime/snippets/admin_detail_update_button.html' with view_type='score_predict' button_name='점수 업데이트' %}
                                         {% include 'a_prime/snippets/admin_detail_update_button.html' with view_type='rank_predict' button_name='등수 업데이트' %}
                                     </div>
                                 </div>
 
-                                <div class="col-md-6 d-flex justify-content-end"
+                                <div class="col-md-6 d-flex"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                    <div class="btn-group">
+                                    <div class="btn-group flex-fill">
                                         {% include 'a_prime/snippets/admin_detail_update_button.html' with view_type='statistics_predict' button_name='통계 업데이트' %}
                                         {% include 'a_prime/snippets/admin_detail_update_button.html' with view_type='answer_count_predict' button_name='문항분석표 업데이트' %}
                                     </div>
@@ -48,11 +50,11 @@
 
             <div class="col-12" aria-label="성적통계 [예측]">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <span>{{ exam.year }}년도 제{{ exam.round }}회 | 성적통계 [예측]</span>
-                            <div class="d-flex ms-auto">
-                                <div class="btn-group">
+                    <div class="card-header">{{ exam.year }}년도 제{{ exam.round }}회 | 성적통계 [예측]</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
+                                <div class="btn-group flex-fill">
                                     <a class="btn btn-outline-secondary" title="목록" hx-target="#main"
                                        href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
                                         목록
@@ -62,8 +64,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
+
                         <div id="statisticsContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_prime/snippets/admin_detail_statistics.html' %}
                         </div>
@@ -73,20 +74,21 @@
 
             <div class="col-12" aria-label="성적일람표 [예측]">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            {{ exam.year }}년도 제{{ exam.round }}회 | 성적일람표 [예측]
-                            <div class="d-flex ms-auto">
-                                <div class="btn-group">
+                    <div class="card-header"> {{ exam.year }}년도 제{{ exam.round }}회 | 성적일람표 [예측]</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
                                     {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
 {#                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
                                     {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
                                 </div>
                             </div>
+                            <div class="col-md-6 col-lg-7 col-xxl-8 order-md-0 d-flex">
+                                {% include 'a_prime/snippets/admin_detail_search.html' %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        {% include 'a_prime/snippets/admin_detail_search.html' %}
+
                         <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_prime/snippets/admin_detail_catalog.html' %}
                         </div>
@@ -96,22 +98,21 @@
 
             <div class="col-12" aria-label="문항분석표 [예측]">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <span>{{ exam.year }}년도 제{{ exam.round }}회 | 문항분석표 [예측]</span>
-                            <div class="d-flex ms-auto">
-                                <div class="btn-group">
+                    <div class="card-header">{{ exam.year }}년도 제{{ exam.round }}회 | 문항분석표 [예측]</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
                                     {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_answers_excel %}
                                     {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_answers_print %}
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
+
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
                                 {% for tab in answer_tab %}
-                                    {% #nav_tab prefix='Answer' id=tab.id %}{{ tab.icon|safe }} {{ tab.title }}{% /nav_tab %}
+                                    {% #nav_tab prefix='Answer' id=tab.id %}{{ tab.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>

@@ -32,7 +32,7 @@ def problem_list_view(request: HtmxHttpRequest):
     exam_year = request.GET.get('year', '')
     exam_exam = request.GET.get('exam', '')
     exam_subject = request.GET.get('subject', '')
-    page = request.GET.get('page', '1')
+    page_number = request.GET.get('page', 1)
     keyword = request.POST.get('keyword', '') or request.GET.get('keyword', '')
 
     sub_title = utils.get_sub_title_by_psat(exam_year, exam_exam, exam_subject)
@@ -43,7 +43,7 @@ def problem_list_view(request: HtmxHttpRequest):
         filterset = filters.AnonymousProblemFilter(data=request.GET, request=request)
 
     custom_data = utils.get_custom_data(request.user)
-    page_obj, page_range = utils.get_page_obj_and_range(page, filterset.qs)
+    page_obj, page_range = utils.get_paginator_data(filterset.qs, page_number)
     for problem in page_obj:
         utils.get_custom_icons(problem, custom_data)
     context = update_context_data(
@@ -422,7 +422,7 @@ def collect_problem(request: HtmxHttpRequest, pk: int):
 
 
 def comment_list_view(request: HtmxHttpRequest):
-    page = int(request.GET.get('page', 1))
+    page_number = int(request.GET.get('page', 1))
     comment_qs = (
         models.ProblemComment.objects.select_related('user', 'problem')
         .annotate(
@@ -434,7 +434,7 @@ def comment_list_view(request: HtmxHttpRequest):
         )
     )
     all_comments = utils.get_all_comments(comment_qs)
-    page_obj, page_range = utils.get_page_obj_and_range(page, all_comments)
+    page_obj, page_range = utils.get_paginator_data(all_comments, page_number)
     pagination_url = reverse_lazy('psat:comment-list')
     context = update_context_data(
         page_obj=page_obj, page_range=page_range, pagination_url=pagination_url,

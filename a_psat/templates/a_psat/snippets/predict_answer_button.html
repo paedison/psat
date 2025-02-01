@@ -1,0 +1,13 @@
+{% for i in '1234' %}{% partial answer_button %}{% endfor %}
+{% if subject != '헌법' %}
+    {% with i='5' %}{% partial answer_button %}{% endwith %}
+{% endif %}
+
+{% partialdef answer_button %}
+    <input id="answerButton{{ answer.no|stringformat:'02d' }}-{{ i }}"
+           type="radio" class="btn-check prevent_double_click" name="answer" value="{{ i }}"
+           hx-trigger="change" hx-post=""/>
+    <label class="btn btn-circle btn-sm fs-6 {% if i|to_int == answer.ans %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+           for="answerButton{{ answer.no|stringformat:'02d' }}-{{ i }}">
+        {{ i }}</label>
+{% endpartialdef answer_button %}
