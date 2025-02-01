@@ -127,7 +127,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         registry_page_obj, registry_page_range = utils.get_paginator_data(registry_list, page_number)
         context = update_context_data(
             context, registry_page_obj=registry_page_obj, registry_page_range=registry_page_range)
-        return render(request, 'a_prime/snippets/admin_detail_catalog.html', context)
+        return render(request, 'a_prime/snippets/admin_detail_registry.html', context)
     if view_type == 'answer_list':
         subject_idx = exam_vars.subject_vars[subject][2]
         answers_page_obj_group, answers_page_range_group = (
