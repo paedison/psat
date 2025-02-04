@@ -123,3 +123,84 @@ class LectureTagAdmin(ModelAdmin):
 @admin.register(models.LectureTaggedItem)
 class LectureTaggedItemAdmin(ModelAdmin):
     pass
+
+
+@admin.register(models.PredictPsat)
+class PredictPsatAdmin(ModelAdmin):
+    list_display = list_display_links = ['id', 'year', 'ex', 'is_active']
+    list_filter = ['psat__year', 'psat__exam']
+    ordering = ['-id']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+    @admin.display(description='연도')
+    def year(self, obj):
+        return f'{obj.psat.year}'
+
+    @admin.display(description='시험')
+    def ex(self, obj):
+        return f'{obj.psat.exam}'
+
+
+@admin.register(models.PredictCategory)
+class PredictCategoryAdmin(ModelAdmin):
+    list_display = list_display_links = ['id', 'exam', 'unit', 'department', 'order']
+    ordering = ['-id']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+
+@admin.register(models.PredictStatistics)
+class PredictStatisticsAdmin(ModelAdmin):
+    list_display = list_display_links = [
+        'id', 'psat', 'department', 'subject_0', 'subject_1', 'subject_2', 'subject_3', 'average'
+    ]
+    list_filter = ['psat__year', 'psat__exam']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    search_fields = ['data']
+    show_full_result_count = True
+
+    @admin.display(description='연도')
+    def year(self, obj):
+        return f'{obj.psat.psat.year}'
+
+    @admin.display(description='시험')
+    def ex(self, obj):
+        return f'{obj.psat.psat.exam}'
+
+
+@admin.register(models.PredictStudent)
+class PredictStudentAdmin(ModelAdmin):
+    list_display = list_display_links = [
+        'id', 'created_at', 'year', 'ex', 'user_id',
+        'name', 'serial', 'password', 'unit', 'department', 'is_filtered',
+    ]
+    list_filter = [
+        'psat__year',
+        'psat__exam',
+        # 'psat__psat__year',
+        # 'psat__psat__exam',
+        'category__department',
+    ]
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+    @admin.display(description='연도')
+    def year(self, obj):
+        return f'{obj.psat.year}'
+
+    @admin.display(description='시험')
+    def ex(self, obj):
+        return f'{obj.psat.psat.exam}'
+
+    @admin.display(description='모집단위')
+    def unit(self, obj):
+        return f'{obj.category.unit}'
+
+    @admin.display(description='직렬')
+    def department(self, obj):
+        return f'{obj.category.department}'

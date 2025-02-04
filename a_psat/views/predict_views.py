@@ -26,22 +26,17 @@ class ViewConfiguration:
     menu_kor = 'PSAT'
     submenu = submenu_eng = 'predict'
     submenu_kor = '합격예측'
+
     info = {'menu': menu, 'menu_self': submenu}
     icon_menu = icon_set_new.ICON_MENU[menu_eng]
     menu_title = {'kor': menu_kor, 'eng': menu.capitalize()}
     submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
 
-    psat_year = 2024
-    psat_exam = '행시'
-
     url_admin = reverse_lazy('admin:a_psat_psat_changelist')
     url_list = reverse_lazy('psat:predict-list')
 
-    def get_psat(self):
-        return get_object_or_404(models.PredictPsat, psat__year=self.psat_year, psat__exam=self.psat_exam)
 
-
-def get_student_dict(user, exam_list):
+def get_student_dict(user, exam_list) -> dict:
     if user.is_authenticated:
         students = (
             models.PredictStudent.objects.filter(user=user, psat__in=exam_list)
@@ -54,7 +49,7 @@ def get_student_dict(user, exam_list):
 @login_not_required
 def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    exam_list = models.PredictPsat.objects.filter(psat__year=2025)
+    exam_list = models.Psat.objects.filter(predict_psat__isnull=False)
 
     subjects = [
         ('헌법', 'subject_0'),
@@ -72,10 +67,11 @@ def list_view(request: HtmxHttpRequest):
     student_dict = get_student_dict(request.user, exam_list)
     for obj in page_obj:
         obj.student = student_dict.get(obj, None)
-        for idx in range(4):
-            setattr(obj, f'score_{idx}', getattr(obj.student.score, f'subject_{idx}'))
-        answer_student_counts = models.PredictAnswer.objects.filter(student=obj.student).count()
-        obj.answer_all_confirmed = answer_student_counts == 145
+        if obj.student:
+            for idx in range(4):
+                setattr(obj, f'score_{idx}', getattr(obj.student.score, f'subject_{idx}'))
+            answer_student_counts = models.PredictAnswer.objects.filter(student=obj.student).count()
+            obj.answer_all_confirmed = answer_student_counts == 145
 
     context = update_context_data(
         current_time=timezone.now(),
@@ -89,14 +85,15 @@ def list_view(request: HtmxHttpRequest):
 
 
 def detail_view(request: HtmxHttpRequest, pk: int):
-    exam = utils.get_predict_exam(pk)
-    if exam.is_predict_closed or not exam.is_active:
+    psat = utils.get_psat(pk)
+    predict_psat = utils.get_predict_psat(psat)
+    if not predict_psat or predict_psat.is_predict_closed or not predict_psat.is_active:
         return redirect('psat:predict-list')
 
     view_type = request.headers.get('View-Type', 'main')
-    exam_vars = ExamVars(exam)
+    exam_vars = ExamVars(predict_psat)
     config = ViewConfiguration()
-    config.submenu_kor = f'{exam.psat.get_year_display()} {exam.exam_abbr} {config.submenu_kor}'
+    config.submenu_kor = f'{psat.get_year_display()} {psat.exam_abbr} {config.submenu_kor}'
 
     student = exam_vars.get_student(request.user)
     if not student:
@@ -126,10 +123,11 @@ def detail_view(request: HtmxHttpRequest, pk: int):
 
     context = update_context_data(
         current_time=timezone.now(),
-        exam=exam,
+        exam=psat,
+        predict_psat=predict_psat,
         exam_vars=exam_vars,
         config=config,
-        sub_title=f'{exam.psat.full_reference} 합격 예측',
+        sub_title=f'{psat.full_reference} 합격 예측',
 
         # icon
         icon_menu=icon_set_new.ICON_MENU,
@@ -171,8 +169,8 @@ def detail_view(request: HtmxHttpRequest, pk: int):
 
 
 def modal_view(request: HtmxHttpRequest, pk: int):
-    exam = utils.get_predict_exam(pk)
-    exam_vars = ExamVars(exam)
+    exam = utils.get_psat(pk)
+    exam_vars = ExamVars(exam.predict_psat)
     view_type = request.headers.get('View-Type', '')
 
     form = exam_vars.student_form()
@@ -190,20 +188,20 @@ def modal_view(request: HtmxHttpRequest, pk: int):
             context,
             exam_vars=exam_vars,
             units=units,
-            header=f'{exam.psat.get_year_display()} {exam.exam_abbr} 수험 정보 입력',
+            header=f'{exam.get_year_display()} {exam.exam_abbr} 수험 정보 입력',
         )
         return render(request, 'a_psat/snippets/modal_predict_student_register.html', context)
 
 
 def register_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
-    exam = utils.get_predict_exam(pk)
-    if not exam or not exam.is_active:
+    psat = utils.get_psat(pk)
+    if not psat or not psat.predict_psat or not psat.predict_psat.is_active:
         return redirect('prime:predict-list')
 
-    exam_vars = ExamVars(exam)
+    exam_vars = ExamVars(psat.predict_psat)
     form = exam_vars.student_form()
-    context = update_context_data(exam_vars=exam_vars, exam=exam, form=form)
+    context = update_context_data(exam_vars=exam_vars, exam=psat, form=form)
 
     if view_type == 'department':
         unit = request.GET.get('unit')
@@ -216,7 +214,7 @@ def register_view(request: HtmxHttpRequest, pk: int):
         if form.is_valid():
             student = form.save(commit=False)
             student.user = request.user
-            student.psat = exam
+            student.psat = psat
             student.save()
             exam_vars.rank_total_model.objects.get_or_create(student=student)
             exam_vars.rank_category_model.objects.get_or_create(student=student)
@@ -228,20 +226,23 @@ def register_view(request: HtmxHttpRequest, pk: int):
 
 @require_POST
 def unregister_view(request: HtmxHttpRequest, pk: int):
-    exam = utils.get_predict_exam(pk)
-    student = models.PredictStudent.objects.get(psat=exam, user=request.user)
+    psat = utils.get_psat(pk)
+    if not psat or not psat.predict_psat or not psat.predict_psat.is_active:
+        return redirect('psat:predict-list')
+
+    student = models.PredictStudent.objects.get(psat=psat, user=request.user)
     student.delete()
-    return redirect('prime:predict-list')
+    return redirect('psat:predict-list')
 
 
 def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
     config = ViewConfiguration()
-    exam = utils.get_predict_exam(pk)
-    if not exam or not exam.is_active:
-        return redirect('prime:predict-list')
+    psat = utils.get_psat(pk)
+    if not psat or not psat.predict_psat or not psat.predict_psat.is_active:
+        return redirect('psat:predict-list')
 
-    config.url_detail = exam.get_predict_detail_url()
-    exam_vars = ExamVars(exam)
+    config.url_detail = psat.get_predict_detail_url()
+    exam_vars = ExamVars(psat.predict_psat)
     student = exam_vars.get_student(request.user)
 
     field_vars = exam_vars.field_vars.copy()
@@ -268,7 +269,7 @@ def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
             return reswap(HttpResponse(''), 'none')
 
         answer_temporary = {'no': no, 'ans': ans}
-        context = update_context_data(subject=subject, answer=answer_temporary, exam=exam)
+        context = update_context_data(subject=subject, answer=answer_temporary, exam=psat)
         response = render(request, 'a_prime/snippets/predict_answer_button.html', context)
 
         if 1 <= no <= problem_count[sub] and 1 <= ans <= 5:
@@ -283,20 +284,20 @@ def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
         {'no': no, 'ans': ans} for no, ans in enumerate(answer_data, start=1)
     ]
     context = update_context_data(
-        exam=exam, exam_vars=exam_vars, config=config, subject=subject,
+        exam=psat, exam_vars=exam_vars, config=config, subject=subject,
         icon_subject=icon_set_new.ICON_SUBJECT[sub],
         student=student, answer_student=answer_student,
-        url_answer_confirm=exam.get_predict_answer_confirm_url(subject_field),
+        url_answer_confirm=psat.get_predict_answer_confirm_url(subject_field),
     )
     return render(request, 'a_prime/predict_answer_input.html', context)
 
 
 def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
-    exam = utils.get_predict_exam(pk)
-    if not exam or not exam.is_active:
+    psat = utils.get_psat(pk)
+    if not psat or not psat.predict_psat or not psat.predict_psat.is_active:
         return redirect('prime:predict-list')
 
-    exam_vars = ExamVars(exam)
+    exam_vars = ExamVars(psat.predict_psat)
     student = exam_vars.get_student(request.user)
     sub, subject, field_idx = exam_vars.field_vars[subject_field]
 
@@ -320,7 +321,7 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
                 student, subject_field, answer_all_confirmed)  # PredictStatistics 모델 수정
 
             if answer_all_confirmed:
-                if not exam.is_answer_official_opened:
+                if not psat.predict_psat.is_answer_official_opened:
                     student.is_filtered = True
                     student.save()
 
@@ -332,7 +333,7 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
         return render(request, 'a_predict/snippets/modal_answer_confirmed.html', context)
 
     context = update_context_data(
-        url_answer_confirm=exam.get_predict_answer_confirm_url(subject_field),
+        url_answer_confirm=psat.get_predict_answer_confirm_url(subject_field),
         header=f'{subject} 답안을 제출하시겠습니까?', verifying=True)
     return render(request, 'a_predict/snippets/modal_answer_confirmed.html', context)
 
@@ -409,7 +410,7 @@ class ExamVars:
             annotate_dict[f'rank_dep_{key}'] = F(f'rank_category__{fld}')
 
         student = (
-            self.student_model.objects.filter(user=user, psat=self.exam)
+            self.student_model.objects.filter(user=user, psat=self.exam.psat)
             .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
             .prefetch_related('answers')
             .annotate(department=F('category__department'), **annotate_dict)
@@ -429,7 +430,7 @@ class ExamVars:
         return student
 
     def get_qs_student(self):
-        return self.student_model.objects.filter(psat=self.exam).order_by('id')
+        return self.student_model.objects.filter(psat=self.exam.psat).order_by('id')
 
     def get_qs_category(self, unit=None):
         if unit:
@@ -471,7 +472,7 @@ class ExamVars:
             annotate_dict[f'{fld}_mid'] = F(f'result_answer_count_mid_rank__{fld}')
             annotate_dict[f'{fld}_low'] = F(f'result_answer_count_low_rank__{fld}')
         qs_problems = (
-            self.problem_model.objects.filter(psat=self.exam)
+            self.problem_model.objects.filter(psat=self.exam.psat)
             .order_by('subject', 'number')
             .select_related(
                 'result_answer_count',
@@ -496,7 +497,7 @@ class ExamVars:
         return qs_answers
 
     def get_qs_score(self, student: models.PredictStudent, stat_type: str, is_filtered: bool):
-        qs_score = self.score_model.objects.filter(student__psat=self.exam)
+        qs_score = self.score_model.objects.filter(student__psat=self.exam.psat)
         if stat_type == 'department':
             qs_score = qs_score.filter(student__category__department=student.category.department)
         if is_filtered:
@@ -518,7 +519,7 @@ class ExamVars:
                 'subject': self.subject_vars[sub][0],
                 'field': self.subject_vars[sub][1],
                 'icon': icon_set_new.ICON_SUBJECT[sub],
-                'url_answer_input': self.exam.get_predict_answer_input_url(
+                'url_answer_input': self.exam.psat.get_predict_answer_input_url(
                     self.subject_vars[sub][1]) if sub != '평균' else '',
             } for idx, sub in enumerate(self.sub_list)
         ]
@@ -580,7 +581,6 @@ class ExamVars:
             if problem_count:
                 score = entry['correct_counts'] * 100 / problem_count
             score_predict[sub] = score
-
         psat_sum = 0
         for stat in stat_total_all:
             sub = stat['sub']
@@ -614,7 +614,7 @@ class ExamVars:
 
         stat_data = []
         for sub, (subject, fld, fld_idx) in self.subject_vars.items():
-            url_answer_input = self.exam.get_predict_answer_input_url(fld) if sub != '평균' else ''
+            url_answer_input = self.exam.psat.get_predict_answer_input_url(fld) if sub != '평균' else ''
             answer_list = answer_data_set.get(fld)
             saved_answers = []
             if answer_list:
@@ -685,7 +685,7 @@ class ExamVars:
 
     def get_dict_frequency_score(self, student) -> dict:
         score_frequency_list = self.student_model.objects.filter(
-            psat=self.exam).values_list('score__sum', flat=True)
+            psat=self.exam.psat).values_list('score__sum', flat=True)
         score_counts_list = [round(score / 3, 1) for score in score_frequency_list if score is not None]
         score_counts_list.sort()
 
@@ -710,8 +710,8 @@ class ExamVars:
         for sub in self.sub_list:
             subject_field = self.subject_vars[sub][1]
             if student.answer_count[sub] == 0:
-                return self.exam.get_predict_answer_input_url(subject_field)
-        return self.exam.get_predict_detail_url()
+                return self.exam.psat.get_predict_answer_input_url(subject_field)
+        return self.exam.psat.get_predict_detail_url()
 
     def create_confirmed_answers(self, student, sub, answer_data):
         list_create = []
@@ -739,7 +739,7 @@ class ExamVars:
 
     def update_statistics_after_confirm(self, student, subject_field, answer_all_confirmed):
         def get_statistics_and_edit_participants(department: str):
-            stat = get_object_or_404(self.statistics_model, psat=self.exam, department=department)
+            stat = get_object_or_404(self.statistics_model, psat=self.exam.psat, department=department)
 
             # Update participants for each subject [All, Filtered]
             getattr(stat, subject_field)['participants'] += 1

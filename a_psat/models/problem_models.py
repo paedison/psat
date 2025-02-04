@@ -48,6 +48,15 @@ class Psat(models.Model):
             return '7급공채 모의고사' if self.year == 2020 else '7급공채'
         return self.get_exam_display()
 
+    @property
+    def exam_abbr(self):
+        exam_dict = {
+            '행시': '5급공채 등',
+            '입시': '입법고시',
+            '칠급': '7급공채 등',
+        }
+        return exam_dict[self.exam]
+
     @staticmethod
     def get_admin_list_url():
         return reverse_lazy('psat:admin-list')
@@ -60,6 +69,28 @@ class Psat(models.Model):
 
     def get_admin_predict_update_url(self):
         return reverse_lazy('psat:admin-predict-update', args=[self.id])
+
+    @staticmethod
+    def get_predict_list_url():
+        return reverse_lazy('psat:predict-list')
+
+    def get_predict_detail_url(self):
+        return reverse_lazy('psat:predict-detail', args=[self.id])
+
+    def get_predict_register_url(self):
+        return reverse_lazy('psat:predict-register', args=[self.id])
+
+    def get_predict_answer_input_url(self, subject_field):
+        return reverse_lazy('psat:predict-answer-input', args=[self.id, subject_field])
+
+    def get_predict_answer_confirm_url(self, subject_field):
+        return reverse_lazy('psat:predict-answer-confirm', args=[self.id, subject_field])
+
+    def get_predict_unregister_url(self):
+        return reverse_lazy('psat:predict-unregister', args=[self.id])
+
+    def get_predict_modal_url(self):
+        return reverse_lazy('psat:predict-modal', args=[self.id])
 
 
 class ProblemTag(TagBase):

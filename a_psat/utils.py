@@ -1,5 +1,6 @@
 import os
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -19,8 +20,15 @@ def get_paginator_data(target_data, page_number, per_page=10):
     return page_obj, page_range
 
 
-def get_predict_exam(pk):
-    return get_object_or_404(models.PredictPsat, pk=pk)
+def get_psat(pk):
+    return get_object_or_404(models.Psat, pk=pk)
+
+
+def get_predict_psat(psat):
+    try:
+        return psat.predict_psat
+    except ObjectDoesNotExist:
+        return None
 
 
 def get_sub_title_by_psat(exam_year, exam_exam, exam_subject, end_string='기출문제') -> str:

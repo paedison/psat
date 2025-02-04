@@ -75,10 +75,10 @@
                                                 <td class="text-nowrap" aria-label="연도">
                                                     {% if obj.student and not obj.is_predict_closed %}
                                                         <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
-                                                            {{ obj.psat.get_year_display }}
+                                                            {{ obj.get_year_display }}
                                                         </a>
                                                     {% else %}
-                                                        {{ obj.psat.get_year_display }}
+                                                        {{ obj.get_year_display }}
                                                     {% endif %}
                                                 </td>
 

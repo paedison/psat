@@ -2,11 +2,9 @@ import dataclasses
 import itertools
 import traceback
 from collections import defaultdict
-from itertools import zip_longest
 
 import django.db.utils
 import pandas as pd
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Count, Window, F
 from django.db.models.functions import Rank
@@ -198,39 +196,27 @@ def detail_view(request: HtmxHttpRequest, pk: int):
     subject = request.GET.get('subject', '')
     student_name = request.GET.get('student_name', '')
 
-    psat = get_object_or_404(models.Psat, pk=pk)
+    psat = utils.get_psat(pk)
     problems = models.Problem.objects.select_related(
         'psat').filter(psat=psat).annotate(no=F('number'), ans=F('answer'))
     page_obj, page_range = utils.get_paginator_data(problems, page_number)
 
-    subject_list = models.choices.subject_choice()
-    problem_count = 40
+    subject_list = ['헌법', '언어', '자료', '상황']
     if psat.exam in ['칠급', '칠예', '민경']:
-        subject_list.pop('헌법')
-        problem_count = 25
+        subject_list.remove('헌법')
 
-    icons = []
-    queryset_list = []
-    for sub in subject_list.keys():
-        icons.append(icon_set_new.ICON_SUBJECT[sub])
-        queryset = problems.filter(subject=sub).order_by('id')
-        queryset_list.append(list(queryset))
-    problem_list = list(zip_longest(*queryset_list, fillvalue=None))
+    queryset_dict = defaultdict(list)
+    for problem in problems.order_by('id'):
+        queryset_dict[problem.subject].append(problem)
+    answer_official_list = [queryset_dict[sub] for sub in subject_list]
 
     context = update_context_data(
-        config=config, psat=psat,
-        subjects=subject_list.values(), icons=icons,
-        problem_count=range(1, problem_count + 1),
-        problem_list=problem_list,
-        queryset_list=queryset_list,
+        config=config, psat=psat, subjects=subject_list,
+        answer_official_list=answer_official_list,
         page_obj=page_obj, page_range=page_range,
     )
 
-    try:
-        predict_psat = psat.predict_psat
-    except ObjectDoesNotExist:
-        predict_psat = None
-
+    predict_psat = utils.get_predict_psat(psat)
     if predict_psat:
         exam_vars = ExamVars(predict_psat)
         answer_tab = exam_vars.get_answer_tab()
@@ -408,11 +394,11 @@ class ExamVars:
     score_template_table_2 = 'a_psat/snippets/detail_sheet_score_table_2.html'
 
     def get_qs_student(self):
-        return self.student_model.objects.filter(psat=self.exam).order_by('id')
+        return self.student_model.objects.filter(psat=self.exam.psat).order_by('id')
 
     def get_qs_answers(self, student: models.PredictStudent, stat_type: str):
         qs_answers = (
-            self.answer_model.objects.filter(problem__psat=self.exam).values('problem__subject')
+            self.answer_model.objects.filter(problem__psat=self.exam.psat).values('problem__subject')
             .annotate(participant_count=Count('student_id', distinct=True))
         )
         if stat_type == 'department':
@@ -432,9 +418,9 @@ class ExamVars:
             annotate_dict[f'rank_dep_{key}'] = F(f'rank_category__{fld}')
 
         return (
-            self.student_model.objects.filter(psat=self.exam)
+            self.student_model.objects.filter(psat=self.exam.psat)
             .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
-            .order_by('psat__psat__year', 'psat__psat__order', 'rank_total__average')
+            .order_by('psat__year', 'psat__order', 'rank_total__average')
             .annotate(department=F('category__department'), **annotate_dict)
         )
 
@@ -467,16 +453,16 @@ class ExamVars:
         return qs_answer_count
 
     def get_qs_statistics(self):
-        return self.statistics_model.objects.filter(psat=self.exam).order_by('id')
+        return self.statistics_model.objects.filter(psat=self.exam.psat).order_by('id')
 
     def get_qs_score(self, student: models.PredictStudent, stat_type: str):
-        qs_score = self.score_model.objects.filter(student__psat=self.exam)
+        qs_score = self.score_model.objects.filter(student__psat=self.exam.psat)
         if stat_type == 'department':
             qs_score = qs_score.filter(student__category__department=student.category.department)
         return qs_score.values()
 
     def get_score_frequency_list(self) -> list:
-        return self.student_model.objects.filter(psat=self.exam).values_list('score__sum', flat=True)
+        return self.student_model.objects.filter(psat=self.exam.psat).values_list('score__sum', flat=True)
 
     def get_score_tab(self):
         return [
@@ -714,7 +700,7 @@ class ExamVars:
 
     def get_data_statistics(self):
         qs_students = (
-            self.student_model.objects.filter(psat=self.exam)
+            self.student_model.objects.filter(psat=self.exam.psat)
             .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
             .annotate(
                 department=F('category__department'),
@@ -802,7 +788,7 @@ class ExamVars:
                 })
 
             try:
-                new_query = model.objects.get(psat=self.exam, department=department)
+                new_query = model.objects.get(psat=self.exam.psat, department=department)
                 fields_not_match = any(
                     getattr(new_query, fld) != val for fld, val in stat_dict.items()
                 )
@@ -811,7 +797,7 @@ class ExamVars:
                         setattr(new_query, fld, val)
                     list_update.append(new_query)
             except model.DoesNotExist:
-                list_create.append(model(psat=self.exam, **stat_dict))
+                list_create.append(model(psat=self.exam.psat, **stat_dict))
         update_fields = [
             'department', 'subject_0', 'subject_1', 'subject_2', 'subject_3', 'average',
         ]
@@ -942,9 +928,9 @@ class ExamVars:
         if model:
             for department in department_list:
                 try:
-                    model.objects.get(psat=self.exam, department=department)
+                    model.objects.get(psat=self.exam.psat, department=department)
                 except model.DoesNotExist:
-                    list_create.append(model(psat=self.exam, department=department))
+                    list_create.append(model(psat=self.exam.psat, department=department))
         bulk_create_or_update(model, list_create, [], [])
 
 

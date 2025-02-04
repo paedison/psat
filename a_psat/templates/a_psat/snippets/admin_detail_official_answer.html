@@ -1,48 +1,24 @@
 {% load psat_filter %}
-{% load slippers %}
 
-<div class="card-header">공식 정답</div>
-
-<div class="card-body">
-    <nav>
-        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerSubmitTab" role="tablist">
-            {% for subject in subjects %}
-                {% cycle '0' '1' '2' '3' '4' as id silent %}
-                {% cycle icons.0|safe icons.1|safe icons.2|safe icons.3|safe icons.4|safe as icon silent %}
-                {% #nav_tab prefix='AnswerSubmit' id=id %}{{ icon }} {{ subject }}{% /nav_tab %}
-            {% endfor %}
-        </div>
-    </nav>
-
-    <div class="tab-content" id="scoreAnswerSubmitContent">
-        {% for answer_official in queryset_list %}
-            {% cycle '0' '1' '2' '3' '4' as id silent %}
-            {% #nav_content prefix='AnswerSubmit' id=id %}{% partial answer_table %}{% /nav_content %}
-        {% endfor %}
-    </div>
-</div>
-
-{% partialdef answer_table %}
-    <article class="table-responsive">
-        <table class="table align-middle">
-            <tbody>
-                {% if answer_official|length == 25  %}
-                    {% for _ in '012' %}
-                        {% cycle 10 10 5 as loop_counter silent %}
-                        {% cycle 0 10 20 as loop_min silent %}
-                        {% partial answer_table_tr %}
-                    {% endfor %}
-                {% else %}
-                    {% for _ in '0123' %}
-                        {% cycle 10 10 10 10 as loop_counter silent %}
-                        {% cycle 0 10 20 30 as loop_min silent %}
-                        {% partial answer_table_tr %}
-                    {% endfor %}
-                {% endif %}
-            </tbody>
-        </table>
-    </article>
-{% endpartialdef answer_table %}
+<article class="table-responsive">
+    <table class="table align-middle">
+        <tbody>
+            {% if answer_official|length == 25  %}
+                {% for _ in '012' %}
+                    {% cycle 10 10 5 as loop_counter silent %}
+                    {% cycle 0 10 20 as loop_min silent %}
+                    {% partial answer_table_tr %}
+                {% endfor %}
+            {% else %}
+                {% for _ in '0123' %}
+                    {% cycle 10 10 10 10 as loop_counter silent %}
+                    {% cycle 0 10 20 30 as loop_min silent %}
+                    {% partial answer_table_tr %}
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</article>
 
 {% partialdef answer_table_tr %}
     <tr class="text-center table-warning" aria-label="문제 번호">

@@ -128,9 +128,9 @@
                 </th>
 
                 <td aria-label="점수">
-                    {% if exam_vars.current_time <= exam.answer_predict_opened_at %}
+                    {% if predict_psat.is_not_finished or predict_psat.is_collecting_answer %}
                         <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
-                    {% elif exam_vars.current_time <= exam.answer_official_opened_at %}
+                    {% elif predict_psat.is_answer_predict_opened %}
                         <div id="{{ stat_tot.field }}ScorePredict" class="htmx-fade-up-in delay-1 text-primary fw-bold">
                             {{ stat_tot.score_predict|floatformat:1|default:'' }}
                         </div>

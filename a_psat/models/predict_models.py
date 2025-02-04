@@ -87,32 +87,6 @@ class PredictPsat(models.Model):
         }
         return exam_dict[self.psat.exam]
 
-    @staticmethod
-    def get_admin_list_url():
-        return reverse_lazy('psat:admin-list')
-
-    @staticmethod
-    def get_predict_list_url():
-        return reverse_lazy('psat:predict-list')
-
-    def get_predict_detail_url(self):
-        return reverse_lazy('psat:predict-detail', args=[self.id])
-
-    def get_predict_register_url(self):
-        return reverse_lazy('psat:predict-register', args=[self.id])
-
-    def get_predict_answer_input_url(self, subject_field):
-        return reverse_lazy('psat:predict-answer-input', args=[self.id, subject_field])
-
-    def get_predict_answer_confirm_url(self, subject_field):
-        return reverse_lazy('psat:predict-answer-confirm', args=[self.id, subject_field])
-
-    def get_predict_unregister_url(self):
-        return reverse_lazy('psat:predict-unregister', args=[self.id])
-
-    def get_predict_modal_url(self):
-        return reverse_lazy('psat:predict-modal', args=[self.id])
-
 
 class PredictCategory(models.Model):
     exam = models.CharField(
@@ -134,7 +108,7 @@ class PredictCategory(models.Model):
 
 
 class PredictStatistics(abstract_models.ExtendedStatistics):
-    psat = models.ForeignKey(PredictPsat, on_delete=models.CASCADE, related_name='predict_statistics')
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_statistics')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}02_시험통계'
@@ -150,7 +124,7 @@ class PredictStatistics(abstract_models.ExtendedStatistics):
 
 
 class PredictStudent(abstract_models.Student):
-    psat = models.ForeignKey(PredictPsat, on_delete=models.CASCADE, related_name='predict_students')
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_students')
     category = models.ForeignKey(
         PredictCategory, on_delete=models.CASCADE, related_name='predict_students')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_predict_students')
@@ -274,8 +248,7 @@ class PredictAnswerCountLowRank(abstract_models.ExtendedAnswerCount):
 
 
 class PredictLocation(models.Model):
-    psat = models.ForeignKey(
-        PredictPsat, on_delete=models.CASCADE, related_name='locations')
+    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='locations')
     category = models.ForeignKey(
         PredictCategory, on_delete=models.CASCADE, verbose_name='모집단위·직렬', related_name='locations')
     serial_start = models.IntegerField(verbose_name='시작 수험번호')

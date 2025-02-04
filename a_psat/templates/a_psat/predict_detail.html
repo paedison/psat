@@ -24,7 +24,7 @@
                 </div>
             </div>
 
-            {% if exam.is_collecting_answer or exam.is_answer_predict_opened %}
+            {% if predict_psat.is_collecting_answer or predict_psat.is_answer_predict_opened %}
                 <div class="col-12" aria-label="예상 정답">
                     <div id="info_student" class="card htmx-fade-in htmx-fade-out">
                         {% include 'a_psat/snippets/predict_detail_sheet_answer_predict.html' %}
@@ -32,13 +32,13 @@
                 </div>
             {% endif %}
 
-            {% if exam.is_answer_official_opened %}
+            {% if predict_psat.is_answer_official_opened %}
                 <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
                     <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                         {% include 'a_psat/snippets/predict_detail_sheet_score_all.html' %}
                     </div>
                 </div>
-                {% if student.is_confirmed %}
+                {% if student.is_filtered %}
                     <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
                         <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                             {% include 'a_psat/snippets/predict_detail_sheet_score_filtered.html' %}
