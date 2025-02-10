@@ -1,27 +1,21 @@
-{% extends 'list.html' %}
+{% extends 'a_psat/_psat_base.html' %}
 {% load crispy_forms_field %}
 
-{% block main %}
-    {% include 'snippets/page_title.html' %}
-
+{% block main_content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
         <div class="row">
-            <div class="col-lg-6" aria-label="{{ config.menu_title.kor }} 새 시험 추가">
+            <div class="col-lg-6" aria-label="{{ title }}">
                 <div id="examCard" class="card">
-                    <div id="examCardHeader" class="card-header">{{ config.menu_title.kor }} 문제 업데이트</div>
+                    <div id="examCardHeader" class="card-header">{{ title }}</div>
 
                     <div class="card-body htmx-fade-in htmx-fade-out">
-                        <form enctype="multipart/form-data"
-                              hx-post="{{ config.url_problem_update }}">
-                            {% if form.non_field_errors %}
-                                <ul class="errorlist nonfield mb-3">
-                                    <li>해당 정보로 입력된 시험 정보가 이미 존재합니다.</li>
-                                </ul>
-                            {% endif %}
+                        <form enctype="multipart/form-data" method="post">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
                             {% for field in form %}
                                 <div class="col-12 form-field-container">
-                                    {% if field.name == 'update_file' %}
+                                    {% if field.name == 'file' %}
                                         <div class="required-field mb-3">
                                             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                                             {{ field }}
@@ -66,4 +60,4 @@
             </div>
         </div>
     </section>
-{% endblock main %}
+{% endblock main_content %}

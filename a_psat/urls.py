@@ -1,6 +1,7 @@
 from django.urls import path, include
 
-from .views import problem_views, lecture_views, admin_views, predict_views
+from .views import problem_views, lecture_views, predict_views, study_views
+from .views.admin import admin_index_views, admin_psat_views, admin_study_views
 
 app_name = 'psat'
 
@@ -42,15 +43,30 @@ lecture_patterns = [
 ]
 
 admin_patterns = [
-    path('', admin_views.list_view, name='admin-list'),
-    path('<int:pk>/', admin_views.detail_view, name='admin-detail'),
-    path('psat/create/', admin_views.psat_create_view, name='admin-psat-create'),
-    path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
-    path('problem/update/', admin_views.problem_update_view, name='admin-problem-update'),
-    # path('answer/<int:pk>/', admin_views.answer_detail_view, name='staff-answer-detail'),
+    path('', admin_index_views.list_view, name='admin-list'),
 
-    path('predict/create/', admin_views.predict_create_view, name='admin-predict-create'),
-    path('predict/update/<int:pk>/', admin_views.predict_update_view, name='admin-predict-update'),
+    path('psat/create/', admin_index_views.psat_create_view, name='admin-psat-create'),
+    path('psat/active/<int:pk>/', admin_index_views.psat_active_view, name='admin-psat-active'),
+    path('problem/update/', admin_index_views.problem_update_view, name='admin-problem-update'),
+    path('predict/create/', admin_index_views.predict_create_view, name='admin-predict-create'),
+
+    path('study/category/create/',
+         admin_index_views.study_category_create_view, name='admin-study-category-create'),
+    path('study/problem/add/', admin_index_views.study_problem_add_view, name='admin-study-problem-add'),
+    path('study/curriculum/create/',
+         admin_index_views.study_curriculum_create_view, name='admin-study-curriculum-create'),
+    path('study/organization/create/',
+         admin_index_views.study_organization_create_view, name='admin-study-organization-create'),
+    path('study/student/add/', admin_index_views.study_student_add_view, name='admin-study-student-add'),
+    path('study/answer/add/', admin_index_views.study_answer_add_view, name='admin-study-answer-add'),
+
+    path('<int:pk>/', admin_psat_views.detail_view, name='admin-detail'),
+    path('predict/update/<int:pk>/', admin_psat_views.predict_update_view, name='admin-predict-update'),
+
+    path('study/category/<int:pk>/',
+         admin_study_views.study_category_detail_view, name='admin-study-category-detail'),
+    path('study/curriculum/<int:pk>/',
+         admin_study_views.study_curriculum_detail_view, name='admin-study-curriculum-detail'),
 ]
 
 predict_patterns = [
@@ -66,6 +82,11 @@ predict_patterns = [
          predict_views.answer_confirm_view, name='predict-answer-confirm'),
 ]
 
+study_patterns = [
+    path('', study_views.list_view, name='study-list'),
+    path('register/', study_views.register_view, name='study-register'),
+]
+
 urlpatterns = [
     path('', problem_views.problem_list_view, name='base'),
     path('problem/', include(problem_patterns)),
@@ -74,4 +95,5 @@ urlpatterns = [
     path('lecture/', include(lecture_patterns)),
     path('admin/', include(admin_patterns)),
     path('predict/', include(predict_patterns)),
+    path('study/', include(study_patterns)),
 ]

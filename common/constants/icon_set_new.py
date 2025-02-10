@@ -33,6 +33,7 @@ ICON_MENU = {
     'search': '<i class="fa-solid fa-fw fa-magnifying-glass"></i>',
     'community': '<i class="fa-solid fa-fw fa-users-line"></i>',
     'predict': '<i class="fa-solid fa-fw fa-arrows-up-to-line"></i>',
+    'study': '<i class="fa-solid fa-fw fa-school"></i>',
     'score': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
     'prime': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
     'prime_leet': '<i class="fa-solid fa-fw fa-chart-simple"></i>',

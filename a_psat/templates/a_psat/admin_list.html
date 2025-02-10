@@ -2,15 +2,23 @@
 {% load crispy_forms_field %}
 
 {% block main_content %}
-    <section class="section" hx-target="#main" hx-push-url="true" hx-swap="innerHTML swap:0.25s">
+    <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
         <div class="row">
             <div class="col-12" aria-label="합격 예측 시험 목록">
                 <div class="card">
-                    <div class="card-header">
-                        합격 예측 시험 목록 | 관리자 페이지
-                    </div>
+                    <div class="card-header">합격 예측 시험 목록 | 관리자 페이지</div>
+
                     <div class="card-body htmx-fade-in htmx-fade-out">
-                        {% partial predict_exam_list %}
+                        <div class="row flex-column flex-md-row-reverse">
+                            <div id="predictUpdate"
+                                 class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                {% partial predict_update_accordion %}
+                            </div>
+
+                            <div id="predictExamContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                {% partial predict_exam_list %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -19,22 +27,61 @@
         <div class="row">
             <div class="col-12" aria-label="PSAT 시험 목록">
                 <div class="card">
-                    <div class="card-header">
-                        {{ sub_title }} 시험 목록 | 관리자 페이지
-                    </div>
+                    <div class="card-header">{{ sub_title }} 시험 목록 | 관리자 페이지</div>
 
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         <div class="row flex-column flex-md-row-reverse">
                             <div id="examFilter"
                                  class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
-                                {% partial psat_filter %}
-                                {% partial data_update %}
-                                {% partial predict_update %}
-                                {% partial admin_page_list %}
+                                {% partial psat_filter_accordion %}
+                                {% partial data_update_accordion %}
+                                {% partial admin_page_list_accordion %}
                             </div>
 
                             <div id="examContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
                                 {% partial exam_list %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12" aria-label="스터디 PSAT 목록">
+                <div class="card">
+                    <div class="card-header">스터디 카테고리 목록 | 관리자 페이지</div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        <div class="row flex-column flex-md-row-reverse">
+                            <div id="studyPsatUpdate"
+                                 class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                {% partial study_psat_update_accordion %}
+                            </div>
+
+                            <div id="studyPsatContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                {% partial study_category_list %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12" aria-label="스터디 커리큘럼 목록">
+                <div class="card">
+                    <div class="card-header">스터디 커리큘럼 목록 | 관리자 페이지</div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        <div class="row flex-column flex-md-row-reverse">
+                            <div id="studyCurriculumUpdate"
+                                 class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                {% partial study_curriculum_update_accordion %}
+                            </div>
+
+                            <div id="studyCurriculumContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                {% partial study_curriculum_list %}
                             </div>
                         </div>
                     </div>
@@ -46,17 +93,18 @@
 
 {% partialdef predict_exam_list %}
     <article class="table-responsive">
-        <table class="table table-bordered table-striped small align-middle">
+        <table class="table table-bordered table-striped align-middle" hx-push-url="true">
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap">연도</th>
                     <th class="text-primary text-nowrap">시험</th>
-                    <th class="text-primary text-nowrap">페이지 오픈 일시</th>
-                    <th class="text-primary text-nowrap">시험 시작 일시</th>
-                    <th class="text-primary text-nowrap">시험 종료 일시</th>
-                    <th class="text-primary text-nowrap">예상 정답 공개 일시</th>
-                    <th class="text-primary text-nowrap">공식 정답 공개 일시</th>
-                    <th class="text-primary text-nowrap">합격 예측 종료 일시</th>
+                    <th class="text-primary text-nowrap">페이지<br/>오픈일</th>
+                    <th class="text-primary text-nowrap">시험일</th>
+                    <th class="text-primary text-nowrap">시험<br/>시작</th>
+                    <th class="text-primary text-nowrap">시험<br/>종료</th>
+                    <th class="text-primary text-nowrap">예상 정답<br/>공개</th>
+                    <th class="text-primary text-nowrap">공식 정답<br/>공개</th>
+                    <th class="text-primary text-nowrap">합격 예측<br/>종료일</th>
                 </tr>
             </thead>
             <tbody>
@@ -64,24 +112,187 @@
                     <tr class="text-center cursor-pointer" hx-get="{{ obj.psat.get_admin_detail_url }}">
                         <td class="text-nowrap">{{ obj.psat.get_year_display }}</td>
                         <td class="text-nowrap">{{ obj.exam_abbr }}</td>
-                        <td class="text-nowrap">{{ obj.page_opened_at|date:'Y.n.j(D) H:i' }}</td>
-                        <td class="text-nowrap">{{ obj.exam_started_at|date:'Y.n.j(D) H:i' }}</td>
-                        <td class="text-nowrap">{{ obj.exam_finished_at|date:'Y.n.j(D) H:i' }}</td>
-                        <td class="text-nowrap">{{ obj.answer_predict_opened_at|date:'Y.n.j(D) H:i' }}</td>
-                        <td class="text-nowrap">{{ obj.answer_official_opened_at|date:'Y.n.j(D) H:i' }}</td>
-                        <td class="text-nowrap">{{ obj.predict_closed_at|date:'Y.n.j(D) H:i' }}</td>
+                        <td class="text-nowrap">{{ obj.page_opened_at|date:'Y.n.j(D)' }}</td>
+                        <td class="text-nowrap">{{ obj.exam_started_at|date:'Y.n.j(D)' }}</td>
+                        <td class="text-nowrap">{{ obj.exam_started_at|date:'H:i' }}</td>
+                        <td class="text-nowrap">{{ obj.exam_finished_at|date:'H:i' }}</td>
+                        <td class="text-nowrap">{{ obj.answer_predict_opened_at|date:'H:i' }}</td>
+                        <td class="text-nowrap">{{ obj.answer_official_opened_at|date:'H:i' }}</td>
+                        <td class="text-nowrap">{{ obj.predict_closed_at|date:'Y.n.j(D)' }}</td>
                     </tr>
                 {% empty %}
                     <tr class="text-center">
-                        <td class="text-nowrap p-2" colspan="8">자료가 없습니다.</td>
+                        <td class="text-nowrap" colspan="8">자료가 없습니다.</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </article>
+
+    {% if predict_page_obj.has_next or predict_page_obj.has_previous %}
+        {% include 'a_psat/snippets/pagination.html' with header='predict_exam_list' page_obj=predict_page_obj page_range=predict_page_range %}
+    {% endif %}
 {% endpartialdef predict_exam_list %}
 
-{% partialdef psat_filter %}
+{% partialdef exam_list %}
+    <article class="table-responsive">
+        <table class="table table-striped align-middle m-0" hx-push-url="true">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap">ID</th>
+                    <th class="text-primary text-nowrap">연도</th>
+                    <th class="text-primary text-nowrap">시험</th>
+                    <th class="text-primary text-nowrap">문제 개수</th>
+                    <th class="text-primary text-nowrap">이미지 개수</th>
+                    <th class="text-primary text-nowrap">활성</th>
+                    <th class="text-primary text-nowrap">합격 예측</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for obj in page_obj %}
+                    <tr class="text-center cursor-pointer">
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_detail_url }}" aria-label="ID">
+                            {{ obj.id }}
+                        </td>
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_detail_url }}" aria-label="연도">
+                            {{ obj.get_year_display }}
+                        </td>
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_detail_url }}" aria-label="시험">
+                            {{ obj.exam_name }}
+                        </td>
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_detail_url }}" aria-label="문제 개수">
+                            {{ obj.problems.count }} / {{ obj.updated_problem_count }}
+                        </td>
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_detail_url }}" aria-label="이미지 개수">
+                            {{ obj.image_problem_count }}
+                        </td>
+                        <td class="text-nowrap" aria-label="활성">
+                            <form class="d-flex justify-content-center"
+                                  hx-trigger="change" hx-swap="none"
+                                  hx-post="{{ obj.get_admin_psat_active_url }}">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_active" value="true"
+                                           aria-label="활성"{% if obj.is_active %} checked{% endif %}>
+                                </div>
+                            </form>
+                        </td>
+                        <td class="text-nowrap" aria-label="합격 예측">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="true" disabled
+                                       aria-label="활성"{% if obj.predict_psat.is_active %} checked{% endif %}>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td class="text-center text-nowrap px-2" colspan="8">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'a_psat/snippets/pagination.html' with header='exam_list' %}
+    {% endif %}
+{% endpartialdef exam_list %}
+
+{% partialdef study_category_list %}
+    <article class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap">시즌</th>
+                    <th class="text-primary text-nowrap">종류</th>
+                    <th class="text-primary text-nowrap">카테고리명</th>
+                    <th class="text-primary text-nowrap">총 회차수</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in study_category_page_obj %}
+                    <tr class="text-center cursor-pointer" hx-get="{{ obj.get_admin_study_category_detail_url }}">
+                        <td class="text-nowrap">{{ obj.season }}</td>
+                        <td class="text-nowrap">{{ obj.study_type }}</td>
+                        <td class="text-nowrap">{{ obj.name }}</td>
+                        <td class="text-nowrap">{{ obj.psats.count }}회</td>
+                    </tr>
+                {% empty %}
+                    <tr class="text-center">
+                        <td class="text-nowrap" colspan="8">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    {% if page_obj.has_next or page_obj.has_previous %}
+        {% include 'a_psat/snippets/pagination.html' with header='study_category_list' page_obj=study_category_page_obj page_range=study_category_page_range %}
+    {% endif %}
+{% endpartialdef study_category_list %}
+
+{% partialdef study_curriculum_list %}
+    <article class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap" rowspan="2">연도</th>
+                    <th class="text-primary text-nowrap" rowspan="2">교육기관</th>
+                    <th class="text-primary text-nowrap" rowspan="2">학기</th>
+                    <th class="text-primary text-nowrap" colspan="3">커리큘럼</th>
+                </tr>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap">시즌</th>
+                    <th class="text-primary text-nowrap">종류</th>
+                    <th class="text-primary text-nowrap">이름</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in study_page_obj %}
+                    <tr class="text-center cursor-pointer" hx-get="{{ obj.psat.get_admin_detail_url }}">
+                        <td class="text-nowrap">{{ obj.get_year_display }}</td>
+                        <td class="text-nowrap">{{ obj.organization.get_name_display }}</td>
+                        <td class="text-nowrap">{{ obj.get_semester_display }}</td>
+                        <td class="text-nowrap">{{ obj.category.season }}</td>
+                        <td class="text-nowrap">{{ obj.category.study_type }}</td>
+                        <td class="text-nowrap">{{ obj.category.name }}</td>
+                    </tr>
+                {% empty %}
+                    <tr class="text-center">
+                        <td class="text-nowrap" colspan="8">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+{% endpartialdef study_curriculum_list %}
+
+{% partialdef predict_update_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapsePredictUpdate"
+                    aria-expanded="true" aria-controls="collapsePredictUpdate">
+                합격 예측 업데이트
+            </button>
+        </h2>
+        <div id="collapsePredictUpdate" class="accordion-collapse collapse show"
+             data-bs-parent="#predictUpdate">
+            <div class="accordion-body pb-2" hx-boost="true">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_predict_create  }}">PSAT 등록</a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_problem_update  }}">정답 업데이트</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef predict_update_accordion %}
+
+{% partialdef psat_filter_accordion %}
     <div class="accordion-item">
         <h2 class="accordion-header">
             <button class="accordion-button fw-bold" type="button"
@@ -99,7 +310,7 @@
                     <input id="id_data" type="text" name="keyword"
                            value="{{ keyword }}" hidden title="키워드">
                     <div class="col-6 col-md-12 col-lg-6">
-                        <a type="button" class="btn btn-secondary fw-bold col-12" hx-boost="true"
+                        <a type="button" class="btn btn-secondary fw-bold w-100" hx-boost="true"
                            hx-push-url="{{ request.path }}"
                            href="{{ request.path }}">
                             <i class="fa-solid fa-fw fa-filter-circle-xmark"></i>
@@ -123,9 +334,9 @@
             </div>
         </div>
     </div>
-{% endpartialdef psat_filter %}
+{% endpartialdef psat_filter_accordion %}
 
-{% partialdef data_update %}
+{% partialdef data_update_accordion %}
     <div class="accordion-item">
         <h2 class="accordion-header">
             <button class="accordion-button fw-bold" type="button"
@@ -139,7 +350,7 @@
             <div class="accordion-body pb-2" hx-boost="true">
                 <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
                     <div class="col-6 col-md-12 col-lg-6">
-                        <a class="btn btn-primary w-100" href="{{ config.url_psat_create  }}">PSAT 추가</a>
+                        <a class="btn btn-primary w-100" href="{{ config.url_psat_create  }}">PSAT 등록</a>
                     </div>
                     <div class="col-6 col-md-12 col-lg-6">
                         <a class="btn btn-primary w-100" href="{{ config.url_problem_update  }}">문제 업데이트</a>
@@ -148,34 +359,9 @@
             </div>
         </div>
     </div>
-{% endpartialdef data_update %}
+{% endpartialdef data_update_accordion %}
 
-{% partialdef predict_update %}
-    <div class="accordion-item">
-        <h2 class="accordion-header">
-            <button class="accordion-button fw-bold" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#collapsePredictUpdate"
-                    aria-expanded="true" aria-controls="collapsePredictUpdate">
-                합격 예측 업데이트
-            </button>
-        </h2>
-        <div id="collapsePredictUpdate" class="accordion-collapse collapse show"
-             data-bs-parent="#examFilter">
-            <div class="accordion-body pb-2" hx-boost="true">
-                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
-                    <div class="col-6 col-md-12 col-lg-6">
-                        <a class="btn btn-primary w-100" href="{{ config.url_predict_create  }}">PSAT 추가</a>
-                    </div>
-                    <div class="col-6 col-md-12 col-lg-6">
-                        <a class="btn btn-primary w-100" href="{{ config.url_problem_update  }}">정답 업데이트</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endpartialdef predict_update %}
-
-{% partialdef admin_page_list %}
+{% partialdef admin_page_list_accordion %}
     <div class="accordion-item">
         <h2 class="accordion-header">
             <button class="accordion-button fw-bold" type="button"
@@ -198,91 +384,72 @@
             </div>
         </div>
     </div>
-{% endpartialdef admin_page_list %}
+{% endpartialdef admin_page_list_accordion %}
 
-{% partialdef exam_list %}
-    <article class="table-responsive">
-        <table class="table align-middle m-0" hx-push-url="true">
-            <thead>
-                <tr class="text-center table-warning">
-                    <th class="text-primary text-nowrap p-2 col-1">ID</th>
-                    <th class="text-primary text-nowrap p-2 col-1">연도</th>
-                    <th class="text-primary text-nowrap p-2 col-1">시험</th>
-                    <th class="text-primary text-nowrap p-2 col-1">문제 개수</th>
-                    <th class="text-primary text-nowrap p-2 col-1">이미지 개수</th>
-                    <th class="text-primary text-nowrap p-2 col-1">활성</th>
-                    <th class="text-primary text-nowrap p-2 col-1">합격 예측</th>
-                </tr>
-            </thead>
+{% partialdef study_psat_update_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseStudyPsatUpdate"
+                    aria-expanded="true" aria-controls="collapseStudyPsatUpdate">
+                스터디 PSAT 업데이트
+            </button>
+        </h2>
+        <div id="collapseStudyPsatUpdate" class="accordion-collapse collapse show"
+             data-bs-parent="#studyPsatUpdate">
+            <div class="accordion-body pb-2" hx-boost="true">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_study_category_create  }}">
+                            카테고리 등록
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_study_problem_add  }}">
+                            문제 추가
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef study_psat_update_accordion %}
 
-            <tbody>
-                {% for obj in page_obj %}
-                    <tr class="text-center cursor-pointer">
-                        <td class="text-nowrap p-2" hx-get="{{ obj.get_admin_detail_url }}" aria-label="ID">
-                            {{ obj.id }}
-                        </td>
-                        <td class="text-nowrap p-2" hx-get="{{ obj.get_admin_detail_url }}" aria-label="연도">
-                            {{ obj.get_year_display }}
-                        </td>
-                        <td class="text-nowrap p-2" hx-get="{{ obj.get_admin_detail_url }}" aria-label="시험">
-                            {{ obj.exam_name }}
-                        </td>
-                        <td class="text-nowrap p-2" hx-get="{{ obj.get_admin_detail_url }}" aria-label="문제 개수">
-                            {{ obj.problems.count }} / {{ obj.updated_problem_count }}
-                        </td>
-                        <td class="text-nowrap p-2" hx-get="{{ obj.get_admin_detail_url }}" aria-label="이미지 개수">
-                            {{ obj.image_problem_count }}
-                        </td>
-                        <td class="text-nowrap p-2" aria-label="활성">
-                            <form class="d-flex justify-content-center"
-                                  hx-trigger="change" hx-swap="none"
-                                  hx-post="{{ obj.get_admin_psat_active_url }}">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="is_active" value="true"
-                                           aria-label="활성"{% if obj.is_active %} checked{% endif %}>
-                                </div>
-                            </form>
-                        </td>
-                        <td class="text-nowrap p-2" aria-label="합격 예측">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_active" value="true" disabled
-                                       aria-label="활성"{% if obj.predict_psat.is_active %} checked{% endif %}>
-                            </div>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td class="text-center text-nowrap px-2" colspan="8">자료가 없습니다.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </article>
-
-    {% if predict_page_obj.has_next or predict_page_obj.has_previous %}
-        {% include 'a_psat/snippets/pagination.html' with header='predict_exam_list' page_obj=predict_page_obj page_range=predict_page_range %}
-    {% endif %}
-{% endpartialdef exam_list %}
-
-{% partialdef reference %}
-    <a class="text-decoration-none fw-bold cursor-pointer"
-       hx-get="{% url 'daily:answer-detail' obj.id %}{% querystring %}">
-        {{ obj.full_reference }}
-    </a>
-{% endpartialdef reference %}
-
-{% partialdef question %}
-    {% with class='d-md-none' chars=30 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
-    {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
-
-    {% partialdef link_snippet %}
-        <a class="text-decoration-none {{ class }} cursor-pointer"
-           hx-get="{% url 'daily:answer-detail' obj.id %}{% querystring %}">
-            <h3 class="d-inline-block fs-6 small m-0">
-                {{ obj.question|truncatechars:chars }}
-            </h3>
-        </a>
-    {% endpartialdef link_snippet %}
-{% endpartialdef question %}
+{% partialdef study_curriculum_update_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseStudyCurriculumUpdate"
+                    aria-expanded="true" aria-controls="collapseStudyCurriculumUpdate">
+                스터디 커리큘럼 업데이트
+            </button>
+        </h2>
+        <div id="collapseStudyCurriculumUpdate" class="accordion-collapse collapse show"
+             data-bs-parent="#studyCurriculumUpdate">
+            <div class="accordion-body pb-2" hx-boost="true">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_study_organization_create  }}">
+                            교육기관 등록
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_study_curriculum_create  }}">
+                            커리큘럼 등록
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_study_student_add  }}">
+                            학생 추가
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_study_answer_add  }}">
+                            답안 추가
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef study_curriculum_update_accordion %}

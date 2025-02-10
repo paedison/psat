@@ -1,5 +1,4 @@
 import dataclasses
-import itertools
 import traceback
 from collections import defaultdict
 
@@ -8,15 +7,13 @@ import pandas as pd
 from django.db import transaction
 from django.db.models import Count, Window, F
 from django.db.models.functions import Rank
-from django.http import HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
-from django_htmx.http import replace_url
 
 from common.constants import icon_set_new
 from common.decorators import admin_required
 from common.utils import HtmxHttpRequest, update_context_data
-from .. import models, utils, forms, filters
+from ... import models, utils, forms
 
 
 class ViewConfiguration:
@@ -39,153 +36,6 @@ class ViewConfiguration:
     url_problem_update = reverse_lazy('psat:admin-problem-update')
 
     url_predict_create = reverse_lazy('psat:admin-predict-create')
-
-
-@admin_required
-def list_view(request: HtmxHttpRequest):
-    config = ViewConfiguration()
-    view_type = request.headers.get('View-Type', '')
-    exam_year = request.GET.get('year', '')
-    exam_exam = request.GET.get('exam', '')
-    page_number = request.GET.get('page', '1')
-
-    sub_title = utils.get_sub_title_by_psat(exam_year, exam_exam, '', end_string='PSAT')
-    filterset = filters.PsatFilter(data=request.GET, request=request)
-
-    page_obj, page_range = utils.get_paginator_data(filterset.qs, page_number)
-    for psat in page_obj:
-        psat.updated_problem_count = sum(1 for problem in psat.problems.all() if problem.question and problem.data)
-        psat.image_problem_count = sum(1 for problem in psat.problems.all() if problem.has_image)
-
-    predict_exam_list = models.PredictPsat.objects.all()
-    predict_page_obj, predict_page_range = utils.get_paginator_data(predict_exam_list, page_number)
-
-    context = update_context_data(
-        config=config, sub_title=sub_title, psat_form=filterset.form,
-        page_obj=page_obj, page_range=page_range,
-        predict_page_obj=predict_page_obj, predict_page_range=predict_page_range,
-    )
-    if view_type == 'exam_list':
-        template_name = 'a_psat/admin_list.html#exam_list'
-        return render(request, template_name, context)
-
-    return render(request, 'a_psat/admin_list.html', context)
-
-
-@admin_required
-def psat_create_view(request: HtmxHttpRequest):
-    config = ViewConfiguration()
-    if request.method == 'POST':
-        form = forms.PsatForm(request.POST, request.FILES)
-        if form.is_valid():
-            psat = form.save(commit=False)
-            exam = form.cleaned_data['exam']
-            exam_order = {'행시': 1, '입시':2, '칠급': 3}
-            psat.order = exam_order.get(exam)
-            psat.save()
-            create_list = []
-            if exam in ['행시', '입시']:
-                append_create_list(create_list, psat, 40, *['언어', '자료', '상황'])
-                append_create_list(create_list, psat, 25, *['헌법'])
-            elif exam in ['칠급']:
-                append_create_list(create_list, psat, 25, *['언어', '자료', '상황'])
-
-            messages = {}
-            if create_list:
-                try:
-                    with transaction.atomic():
-                        if create_list:
-                            models.Problem.objects.bulk_create(create_list)
-                            messages['create'] = f'Successfully updated {len(create_list)} Problem instances.'
-                        else:
-                            messages['error'] = f'No changes were made to Problem instances.'
-                except django.db.utils.IntegrityError:
-                    traceback_message = traceback.format_exc()
-                    print(traceback_message)
-                    messages['error'] = 'An error occurred during the transaction.'
-
-            for message in messages.values():
-                if message:
-                    print(message)
-
-            response = redirect('psat:admin-list')
-            return replace_url(response, config.url_list)
-        else:
-            context = update_context_data(config=config, form=form)
-            return render(request, 'a_psat/admin_exam_create.html', context)
-
-    form = forms.PsatForm()
-    context = update_context_data(config=config, form=form)
-    return render(request, 'a_psat/admin_exam_create.html', context)
-
-
-def append_create_list(create_list: list, psat: models.Psat, problem_count: int, *subject_list):
-    for subject in subject_list:
-        for number in range(1, problem_count + 1):
-            problem_info = {'psat': psat, 'subject': subject, 'number': number}
-            try:
-                models.Problem.objects.get(**problem_info)
-            except models.Problem.DoesNotExist:
-                create_list.append(models.Problem(**problem_info))
-
-
-@admin_required
-def psat_active_view(request: HtmxHttpRequest, pk: int):
-    if request.method == 'POST':
-        form = forms.PsatActiveForm(request.POST)
-        if form.is_valid():
-            psat = get_object_or_404(models.Psat, pk=pk)
-            is_active = form.cleaned_data['is_active']
-            psat.is_active = is_active
-            psat.save()
-    return HttpResponse('')
-
-
-@admin_required
-def problem_update_view(request: HtmxHttpRequest):
-    config = ViewConfiguration()
-    if request.method == 'POST':
-        form = forms.ProblemUpdateForm(request.POST, request.FILES)
-        if form.is_valid():
-            year = form.cleaned_data['year']
-            exam = form.cleaned_data['exam']
-            psat = get_object_or_404(models.Psat, year=year, exam=exam)
-
-            update_file = request.FILES['update_file']
-            df = pd.read_excel(update_file, header=0, index_col=0)
-
-            answer_symbol = {'①': 1, '②': 2, '③': 3, '④': 4, '⑤': 5}
-            keys = list(answer_symbol.keys())
-            combinations = []
-            for i in range(1, 6):
-                combinations.extend(itertools.combinations(keys, i))
-
-            replace_dict = {}
-            for combination in combinations:
-                key = ''.join(combination)
-                value = int(''.join(str(answer_symbol[k]) for k in combination))
-                replace_dict[key] = value
-
-            df['answer'].replace(to_replace=replace_dict, inplace=True)
-            df = df.infer_objects(copy=False)
-
-            for index, row in df.iterrows():
-                problem = models.Problem.objects.get(psat=psat, subject=row['subject'], number=row['number'])
-                problem.paper_type = row['paper_type']
-                problem.answer = row['answer']
-                problem.question = row['question']
-                problem.data = row['data']
-                problem.save()
-
-            response = redirect('psat:admin-list')
-            return replace_url(response, config.url_list)
-        else:
-            context = update_context_data(config=config, form=form)
-            return render(request, 'a_psat/admin_problem_update.html', context)
-
-    form = forms.ProblemUpdateForm()
-    context = update_context_data(config=config, form=form)
-    return render(request, 'a_psat/admin_problem_update.html', context)
 
 
 @admin_required
@@ -271,42 +121,6 @@ def detail_view(request: HtmxHttpRequest, pk: int):
             answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
         )
     return render(request, 'a_psat/admin_detail.html', context)
-
-
-@admin_required
-def predict_create_view(request: HtmxHttpRequest):
-    config = ViewConfiguration()
-    if request.method == 'POST':
-        form = forms.PredictPsatForm(request.POST, request.FILES)
-        if form.is_valid():
-            year = form.cleaned_data['year']
-            exam = form.cleaned_data['exam']
-            original_psat = models.Psat.objects.get(year=year, exam=exam)
-
-            new_predict_psat, _ = models.PredictPsat.objects.get_or_create(psat=original_psat)
-            new_predict_psat.is_active = True
-            new_predict_psat.page_opened_at = form.cleaned_data['page_opened_at']
-            new_predict_psat.exam_started_at = form.cleaned_data['exam_started_at']
-            new_predict_psat.exam_finished_at = form.cleaned_data['exam_finished_at']
-            new_predict_psat.answer_predict_opened_at = form.cleaned_data['answer_predict_opened_at']
-            new_predict_psat.answer_official_opened_at = form.cleaned_data['answer_official_opened_at']
-            new_predict_psat.predict_closed_at = form.cleaned_data['predict_closed_at']
-            new_predict_psat.save()
-
-            exam_vars = ExamVars(new_predict_psat)
-            problems = models.Problem.objects.filter(psat=original_psat).order_by('id')
-            exam_vars.create_default_answer_counts(problems)
-            exam_vars.create_default_statistics()
-
-            response = redirect('psat:admin-list')
-            return replace_url(response, config.url_list)
-        else:
-            context = update_context_data(config=config, form=form)
-            return render(request, 'a_psat/admin_predict_create.html', context)
-
-    form = forms.PredictPsatForm()
-    context = update_context_data(config=config, form=form)
-    return render(request, 'a_psat/admin_predict_create.html', context)
 
 
 @admin_required
@@ -543,8 +357,8 @@ class ExamVars:
 
         form = self.upload_file_form(request.POST, request.FILES)
         if form.is_valid():
-            uploaded_file = request.FILES['file']
-            df = pd.read_excel(uploaded_file, sheet_name='정답', header=0, index_col=0)
+            file = request.FILES['file']
+            df = pd.read_excel(file, sheet_name='정답', header=0, index_col=0)
             df = df.infer_objects(copy=False)
             df.fillna(value=0, inplace=True)
 
@@ -864,8 +678,8 @@ class ExamVars:
             except answer_count_model.DoesNotExist:
                 list_create.append(answer_count_model(problem_id=problem_id, **answers))
         update_fields = [
-            'problem_id', 'count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_multiple',
-            'count_sum'
+            'problem_id', 'count_0', 'count_1', 'count_2', 'count_3',
+            'count_4', 'count_5', 'count_multiple', 'count_sum',
         ]
         return bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
 
@@ -898,40 +712,6 @@ class ExamVars:
         else:
             is_updated = False
         return is_updated, message_dict[is_updated]
-
-    def create_default_answer_counts(self, problems):
-        model_set = {
-            'all': self.answer_count_model,
-            'top': self.answer_count_top_model,
-            'mid': self.answer_count_mid_model,
-            'low': self.answer_count_low_model,
-        }
-        for rank_type, model in model_set.items():
-            list_create = []
-            if model:
-                for problem in problems:
-                    try:
-                        model.objects.get(problem=problem)
-                    except model.DoesNotExist:
-                        list_create.append(model(problem=problem))
-            bulk_create_or_update(model, list_create, [], [])
-
-    def create_default_statistics(self):
-        model = self.statistics_model
-        department_list = list(
-            self.category_model.objects.filter(exam=self.exam.psat.exam).order_by('order')
-            .values_list('department', flat=True)
-        )
-        department_list.insert(0, '전체')
-
-        list_create = []
-        if model:
-            for department in department_list:
-                try:
-                    model.objects.get(psat=self.exam.psat, department=department)
-                except model.DoesNotExist:
-                    list_create.append(model(psat=self.exam.psat, department=department))
-        bulk_create_or_update(model, list_create, [], [])
 
 
 def bulk_create_or_update(model, list_create, list_update, update_fields):

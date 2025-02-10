@@ -1,0 +1,215 @@
+{% extends 'a_psat/_psat_base.html' %}
+{% load static %}
+
+{% block main_content %}
+    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        <div class="row">
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Sales <span>| Today</span></h5>
+
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-cart"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>145</h6>
+                                <span class="text-success small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">increase</span>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">스터디 목록</div>
+
+                    <div class="card-body">
+                        <article class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr class="text-center table-warning">
+                                        <th class="text-primary text-nowrap p-2 col-1">연도</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">구분</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">학기</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">직렬</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">성적표</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">헌법</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">언어</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">자료</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">상황</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">PSAT 평균</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% if page_obj %}
+                                        {% for obj in page_obj %}
+                                            <tr class="text-center">
+                                                <td class="text-nowrap" aria-label="연도">
+                                                    {% if obj.student and not obj.is_predict_closed %}
+                                                        <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
+                                                            {{ obj.get_year_display }}
+                                                        </a>
+                                                    {% else %}
+                                                        {{ obj.get_year_display }}
+                                                    {% endif %}
+                                                </td>
+
+                                                <td class="text-nowrap" aria-label="시험">
+                                                    {% if obj.student and not obj.is_predict_closed %}
+                                                        <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
+                                                            {{ obj.exam_abbr }}
+                                                        </a>
+                                                    {% else %}
+                                                        {{ obj.exam_abbr }}
+                                                    {% endif %}
+                                                </td>
+
+                                                {% if not user.is_authenticated %}
+                                                    <td class="text-nowrap" colspan="8">
+                                                        <a class="btn btn-outline-danger"
+                                                           hx-boost="true"
+                                                           hx-target="body" hx-swap="innerHTML swap:0.25s"
+                                                           href="{% url 'account_login' %}?next={{ request.path }}">
+                                                            로그인이 필요합니다
+                                                        </a>
+                                                    </td>
+                                                {% else %}
+                                                    {% if current_time < obj.page_opened_at %}
+                                                        <td class="text-nowrap" colspan="8">
+                                                            <a class="badge rounded-pill text-bg-danger" href=""
+                                                               hx-headers='{"View-Type":"no_open"}'
+                                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                               data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                                               hx-get="{{ obj.get_predict_modal_url }}">
+                                                                페이지 오픈 일시 : {{ obj.exam_started_at|date:'n/j(D) H:i' }}
+                                                            </a>
+                                                        </td>
+                                                    {% elif current_time > obj.score_opened_at %}
+                                                        <td class="text-nowrap" colspan="8">
+                                                            <a class="badge rounded-pill text-bg-danger" href=""
+                                                               hx-headers='{"View-Type":"no_predict"}'
+                                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                               data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                                               hx-get="{{ obj.get_predict_modal_url }}">
+                                                                성적 예측 기간이 지났습니다.
+                                                            </a>
+                                                        </td>
+                                                    {% else %}
+                                                        {% partial exam_info %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                {% include '_banner/predict_psat_2024_chilgeup.html' %}
+            </div>
+            <div class="col-md-6">
+                {% include '_banner/score_prime_police_2025.html' %}
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+{% partialdef exam_info %}
+    <td class="text-nowrap" aria-label="수험번호">
+        {% if obj.student %}
+            <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">{{ obj.student.serial }}</a>
+            {% partialdef delete_student inline=True %}
+                {% if user.is_staff %}
+                    <a class="badge rounded-pill text-bg-danger"
+                       hx-confirm="수험 정보를 삭제하시겠습니까?"
+                       href="" hx-post="{{ obj.get_predict_unregister_url }}">
+                        삭제
+                    </a>
+                {% endif %}
+            {% endpartialdef delete_student %}
+        {% else %}
+            {% partialdef input_button inline=True %}
+                <a class="badge rounded-pill text-bg-warning" href=""
+                   hx-headers='{"View-Type":"student_register"}'
+                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                   data-bs-toggle="modal" data-bs-target="#modalContainer"
+                   hx-get="{{ obj.get_predict_modal_url }}">
+                    {{ message|default:'입력' }}
+                </a>
+            {% endpartialdef input_button %}
+        {% endif %}
+    </td>
+
+    <td class="text-nowrap" aria-label="직렬">
+        {% if obj.student %}
+            <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">{{ obj.student.category.department }}</a>
+            {% partial delete_student %}
+        {% else %}
+            {% partial input_button %}
+        {% endif %}
+    </td>
+
+    <td class="text-nowrap" aria-label="성적표">
+        {% if obj.student %}
+            <a class="badge rounded-pill text-bg-success" hx-boost="true"
+               href="{{ obj.get_predict_detail_url }}">
+                확인
+            </a>
+        {% else %}
+            <a class="badge rounded-pill text-bg-danger" href=""
+               hx-headers='{"View-Type":"student_register"}'
+               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+               data-bs-toggle="modal" data-bs-target="#modalContainer"
+               hx-get="{{ obj.get_predict_modal_url }}">
+                미응시
+            </a>
+        {% endif %}
+    </td>
+
+    {% if not obj.student %}
+        <td class="text-nowrap" colspan="8">
+            {% with message='수험 정보를 입력해주세요.' %}{% partial input_button %}{% endwith %}
+        </td>
+    {% elif not obj.answer_all_confirmed %}
+        <td class="text-nowrap" colspan="8">
+            <a class="badge rounded-pill text-bg-warning" hx-boost="true"
+               href="{{ obj.get_predict_detail_url }}">
+                모든 답안을 제출해주세요.
+            </a>
+        </td>
+    {% else %}
+        {% if current_time < obj.exam_finished_at %}
+            <td class="text-nowrap" colspan="8">
+                <span class="badge rounded-pill text-bg-warning">
+                    시험 종료 전입니다.
+                </span>
+            </td>
+        {% elif current_time < obj.answer_official_opened_at %}
+            <td class="text-nowrap" colspan="8">
+                <span class="badge rounded-pill text-bg-warning">
+                    정답 공개 전입니다.
+                </span>
+            </td>
+        {% else %}
+            {% for subject in subjects %}
+                {% cycle obj.score_0 obj.score_1 obj.score_2 obj.score_3 obj.student.score.average as score silent %}
+                <td aria-label="{{ subject.0 }}">
+                    {{ score|floatformat:1 }}
+                </td>
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+{% endpartialdef exam_info %}

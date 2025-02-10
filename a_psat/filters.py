@@ -1,6 +1,7 @@
 import django_filters
 
 from . import models
+from .models import choices
 
 CHOICES_LIKE = (
     ('all', '즐겨찾기 지정'),
@@ -42,13 +43,13 @@ class PsatFilter(django_filters.FilterSet):
         field_name='year',
         label='',
         empty_label='[전체 연도]',
-        choices=models.choices.year_choice,
+        choices=choices.year_choice,
     )
     exam = django_filters.ChoiceFilter(
         field_name='exam',
         label='',
         empty_label='[전체 시험]',
-        choices=models.choices.exam_choice,
+        choices=choices.exam_choice,
     )
     is_active = django_filters.ChoiceFilter(
         field_name='is_active',
@@ -71,19 +72,19 @@ class AnonymousProblemFilter(django_filters.FilterSet):
         field_name='psat__year',
         label='',
         empty_label='[전체 연도]',
-        choices=models.choices.year_choice,
+        choices=choices.year_choice,
     )
     exam = django_filters.ChoiceFilter(
         field_name='psat__exam',
         label='',
         empty_label='[전체 시험]',
-        choices=models.choices.exam_choice,
+        choices=choices.exam_choice,
     )
     subject = django_filters.ChoiceFilter(
         field_name='subject',
         label='',
         empty_label='[전체 과목]',
-        choices=models.choices.subject_choice,
+        choices=choices.subject_choice,
     )
 
     class Meta:
@@ -200,3 +201,21 @@ class ProblemFilter(AnonymousProblemFilter):
     #         'none': queryset.exclude(comment_users__isnull=True),
     #     }
     #     return filter_dict[value]
+
+
+class StudyCurriculumFilter(django_filters.FilterSet):
+    year = django_filters.ChoiceFilter(
+        field_name='year', label='',
+        empty_label='[전체 연도]',
+        choices=choices.year_choice,
+    )
+    organization = django_filters.ChoiceFilter(
+        field_name='organization', label='',
+        empty_label='[전체 교육기관]',
+    )
+    semester = django_filters.ChoiceFilter(
+        field_name='semester', label='',
+        empty_label='[전체 학기]',
+        choices=choices.semester_choice,
+    )
+    category = django_filters

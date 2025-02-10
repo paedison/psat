@@ -204,3 +204,103 @@ class PredictStudentAdmin(ModelAdmin):
     @admin.display(description='직렬')
     def department(self, obj):
         return f'{obj.category.department}'
+
+
+@admin.register(models.StudyCategory)
+class StudyCategoryAdmin(ModelAdmin):
+    list_display = list_display_links = ['season', 'study_type', 'name']
+    list_filter = ['season', 'study_type', 'name']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+
+@admin.register(models.StudyPsat)
+class StudyPsatAdmin(ModelAdmin):
+    list_display = list_display_links = ['season', 'study_type', 'round']
+    list_filter = ['category__season', 'category__study_type']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+    @admin.display(description='시즌')
+    def season(self, obj):
+        return f'{obj.category.season}'
+
+    @admin.display(description='종류')
+    def study_type(self, obj):
+        return f'{obj.category.study_type}'
+
+
+@admin.register(models.StudyProblem)
+class StudyProblemAdmin(ModelAdmin):
+    list_display = list_display_links = ['season', 'study_type', 'round', 'number', 'reference']
+    list_filter = ['psat__category__season', 'psat__category__study_type']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+    @admin.display(description='시즌')
+    def season(self, obj):
+        return f'{obj.psat.category.season}'
+
+    @admin.display(description='종류')
+    def study_type(self, obj):
+        return f'{obj.psat.category.study_type}'
+
+    @admin.display(description='회차')
+    def round(self, obj):
+        return f'{obj.psat.round}'
+
+    @admin.display(description='출처')
+    def reference(self, obj):
+        return f'{obj.problem.reference}'
+
+
+@admin.register(models.StudyStatistics)
+class StudyStatisticsAdmin(ModelAdmin):
+    list_display = list_display_links = ['season', 'study_type', 'round']
+    list_filter = ['psat__category__season', 'psat__category__study_type']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+    @admin.display(description='시즌')
+    def season(self, obj):
+        return f'{obj.psat.category.season}'
+
+    @admin.display(description='종류')
+    def study_type(self, obj):
+        return f'{obj.psat.category.study_type}'
+
+    @admin.display(description='회차')
+    def round(self, obj):
+        return f'{obj.psat.round}'
+
+
+@admin.register(models.StudyOrganization)
+class StudyOrganizationAdmin(ModelAdmin):
+    list_display = list_display_links = ['name', 'logo']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+
+
+@admin.register(models.StudyCurriculum)
+class StudyCurriculumAdmin(ModelAdmin):
+    list_display = list_display_links = ['year', 'name', 'semester', 'season', 'study_type']
+    list_filter = ['year', 'organization__name']
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+    @admin.display(description='교육기관명')
+    def name(self, obj):
+        return f'{obj.organization.name}'
+
+    @admin.display(description='시즌')
+    def season(self, obj):
+        return f'{obj.category.season}'
+
+    @admin.display(description='종류')
+    def study_type(self, obj):
+        return f'{obj.category.study_type}'

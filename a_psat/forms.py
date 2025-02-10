@@ -40,7 +40,7 @@ class ProblemUpdateForm(forms.Form):
         choices=models.choices.exam_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    update_file = forms.FileField(
+    file = forms.FileField(
         label='문제 업데이트',
         widget=forms.FileInput(attrs={'class': 'form-control'})
     )
@@ -122,12 +122,7 @@ class PredictStudentForm(forms.ModelForm):
 
 
 class UploadFileForm(forms.Form):
-    file = forms.FileField(
-        label='',
-        label_suffix='',
-        widget=forms.FileInput(
-            attrs={'class': 'form-control'}),
-    )
+    file = forms.FileField(label='업로드 파일', widget=forms.FileInput(attrs={'class': 'form-control'}))
 
 
 class PredictPsatForm(forms.Form):
@@ -201,3 +196,70 @@ class PredictPsatForm(forms.Form):
             cleaned_data['predict_closed_at'] = get_local_time(predict_close_date)
 
         return cleaned_data
+
+
+class StudyCategoryForm(forms.Form):
+    season = forms.IntegerField(
+        label='시즌', label_suffix='', initial=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+    )
+    study_type = forms.ChoiceField(
+        label='종류', label_suffix='', initial='기본',
+        choices=models.choices.study_category_choice,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    name = forms.CharField(
+        label='카테고리명', label_suffix='',
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+    category_round = forms.IntegerField(
+        label='총 회차수', label_suffix='', initial=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+    )
+
+
+class StudyOrganizationForm(forms.ModelForm):
+    class Meta:
+        model = models.StudyOrganization
+        fields = ['name', 'logo']
+        widgets = {
+            'name': forms.Select(attrs={'class': 'form-select'}),
+            'logo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+
+class StudyCurriculumForm(forms.ModelForm):
+    class Meta:
+        model = models.StudyCurriculum
+        fields = ['year', 'organization', 'semester', 'category']
+        labels = {
+            'organization': '교육기관',
+            'category': '카테고리',
+        }
+        widgets = {
+            'year': forms.Select(attrs={'class': 'form-select'}),
+            'organization': forms.Select(attrs={'class': 'form-select'}),
+            'semester': forms.Select(attrs={'class': 'form-select'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['organization'].queryset = models.StudyOrganization.objects.all()
+        self.fields['organization'].label_from_instance = lambda obj: obj.name
+        self.fields['category'].queryset = models.StudyCategory.objects.all()
+        self.fields['category'].label_from_instance = lambda obj: obj.category_info
+
+
+class StudyAnswerForm(forms.Form):
+    curriculum = forms.ModelChoiceField(
+        label='커리큘럼',
+        queryset=models.StudyCurriculum.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    file = forms.FileField(label='업로드 파일', widget=forms.FileInput(attrs={'class': 'form-control'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['curriculum'].label_from_instance = lambda obj: obj.curriculum_info
+

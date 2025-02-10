@@ -8,11 +8,8 @@
         <div class="row">
             <div class="col-12" aria-label="시험 목록">
                 <div class="card" hx-target="#main" hx-push-url="true">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <span>시험 목록 | 관리자 페이지</span>
-                        </div>
-                    </div>
+                    <div class="card-header">시험 목록 | 관리자 페이지</div>
+
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         {% partial exam_list %}
                     </div>
@@ -40,13 +37,14 @@
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap">연도</th>
                     <th class="text-primary text-nowrap">회차</th>
-                    <th class="text-primary text-nowrap">성적 예측</th>
-                    <th class="text-primary text-nowrap">성적 결과</th>
-                    <th class="text-primary text-nowrap">페이지 오픈 일시</th>
-                    <th class="text-primary text-nowrap">시험 시작 일시</th>
-                    <th class="text-primary text-nowrap">시험 종료 일시</th>
-                    <th class="text-primary text-nowrap">예상 정답 공개 일시</th>
-                    <th class="text-primary text-nowrap">공식 정답 공개 일시</th>
+                    <th class="text-primary text-nowrap">성적<br/>예측</th>
+                    <th class="text-primary text-nowrap">성적<br/>결과</th>
+                    <th class="text-primary text-nowrap">페이지<br/>오픈일</th>
+                    <th class="text-primary text-nowrap">시험일</th>
+                    <th class="text-primary text-nowrap">시험<br/>시작</th>
+                    <th class="text-primary text-nowrap">시험<br/>종료</th>
+                    <th class="text-primary text-nowrap">예상 정답<br/>공개</th>
+                    <th class="text-primary text-nowrap">공식 정답<br/>공개</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,11 +65,12 @@
                                     클릭
                                 </a>
                             </td>
-                            <td class="text-nowrap">{{ obj.page_opened_at|date:'Y.n.j(D) H:i' }}</td>
-                            <td class="text-nowrap">{{ obj.exam_started_at|date:'Y.n.j(D) H:i' }}</td>
-                            <td class="text-nowrap">{{ obj.exam_finished_at|date:'Y.n.j(D) H:i' }}</td>
-                            <td class="text-nowrap">{{ obj.answer_predict_opened_at|date:'Y.n.j(D) H:i' }}</td>
-                            <td class="text-nowrap">{{ obj.answer_official_opened_at|date:'Y.n.j(D) H:i' }}</td>
+                            <td class="text-nowrap">{{ obj.page_opened_at|date:'Y.n.j(D)' }}</td>
+                            <td class="text-nowrap">{{ obj.exam_started_at|date:'Y.n.j(D)' }}</td>
+                            <td class="text-nowrap">{{ obj.exam_started_at|date:'H:i' }}</td>
+                            <td class="text-nowrap">{{ obj.exam_finished_at|date:'H:i' }}</td>
+                            <td class="text-nowrap">{{ obj.answer_predict_opened_at|date:'H:i' }}</td>
+                            <td class="text-nowrap">{{ obj.answer_official_opened_at|date:'H:i' }}</td>
                         </tr>
                     {% endfor %}
                 {% endif %}
@@ -79,8 +78,12 @@
         </table>
     </article>
 
-    <button class="btn btn-primary" hx-get="{{ config.url_exam_create  }}">시험 추가</button>
-    <button class="btn btn-primary" hx-get="{{ config.url_problem_update  }}">정답 업데이트</button>
+    {% if user.is_admin %}
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-primary" hx-get="{{ config.url_exam_create  }}">시험 추가</button>
+            <button class="btn btn-primary ms-2" hx-get="{{ config.url_problem_update  }}">정답 업데이트</button>
+        </div>
+    {% endif %}
 {% endpartialdef exam_list %}
 
 {% partialdef student_list %}

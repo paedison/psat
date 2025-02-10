@@ -231,3 +231,30 @@ def statistics_department_choice() -> dict:
     departments = predict_department_choice()
     departments.update({'전체': {'전체': '전체'}})
     return departments
+
+
+def study_category_choice() -> list:
+    return [
+        ('기본', '기본'),
+        ('심화', '심화'),
+    ]
+
+
+def study_round_choice() -> list:
+    return [(rnd, f'{rnd}회차') for rnd in range(1, 20)]
+
+
+def study_organization_choice() -> list:
+    return [
+        ('서울과기대', '서울과학기술대학교'),
+        ('한국외대', '한국외국어대학교'),
+        ('프라임', '프라임법학원'),
+        ('위포트', '위포트'),
+    ]
+
+
+def semester_choice() -> list:
+    return [
+        (1, '1학기'),
+        (2, '2학기'),
+    ]

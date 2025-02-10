@@ -55,6 +55,19 @@
                             <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                     {% endif %}
+                {% elif config.submenu == 'study' %}
+                    {% if student %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ exam.get_student_detail_url }}" class="active">{{ exam.reference }}</a>
+                        </li>
+                    {% else %}
+                        <li class="breadcrumb-item">
+                            <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                        </li>
+                    {% endif %}
                 {% elif config.submenu == 'admin' %}
                     {% if psat %}
                         <li class="breadcrumb-item">
