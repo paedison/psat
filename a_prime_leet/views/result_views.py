@@ -2,6 +2,7 @@ import dataclasses
 from collections import Counter
 
 import numpy as np
+from django.contrib.auth.decorators import login_not_required
 from django.core.paginator import Paginator
 from django.db.models import F, Case, When, Value, BooleanField, Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
@@ -28,18 +29,21 @@ class ViewConfiguration:
 
 
 def get_student_dict(user, exam_list):
-    annotate_dict = {}
-    field_dict = {0: 'subject_0', 1: 'subject_1', 'sum': 'sum'}
-    for key, fld in field_dict.items():
-        annotate_dict[f'raw_score_{key}'] = F(f'score__raw_{fld}')
-        annotate_dict[f'score_{key}'] = F(f'score__{fld}')
-    students = (
-        models.ResultStudent.objects.filter(registries__user=user, leet__in=exam_list)
-        .select_related('leet', 'score', 'rank').order_by('id').annotate(**annotate_dict)
-    )
-    return {student.leet: student for student in students}
+    if user.is_authenticated:
+        annotate_dict = {}
+        field_dict = {0: 'subject_0', 1: 'subject_1', 'sum': 'sum'}
+        for key, fld in field_dict.items():
+            annotate_dict[f'raw_score_{key}'] = F(f'score__raw_{fld}')
+            annotate_dict[f'score_{key}'] = F(f'score__{fld}')
+        students = (
+            models.ResultStudent.objects.filter(registries__user=user, leet__in=exam_list)
+            .select_related('leet', 'score', 'rank').order_by('id').annotate(**annotate_dict)
+        )
+        return {student.leet: student for student in students}
+    return {}
 
 
+@login_not_required
 def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     exam_list = models.Leet.objects.filter(year=2026)

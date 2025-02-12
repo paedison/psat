@@ -51,7 +51,7 @@
                         <tr class="text-center">
                             <td class="text-nowrap">{{ obj.get_year_display }}</td>
                             <td class="text-nowrap">{{ obj.exam }}</td>
-                            <td class="text-nowrap">{{ obj.get_round_display }}</td>
+                            <td class="text-nowrap">{% if obj.round %}{{ obj.round }}{% endif %}</td>
                             <td class="text-nowrap">{{ obj.name|default_if_none:'' }}</td>
                             <td class="text-nowrap">
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"

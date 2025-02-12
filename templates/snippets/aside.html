@@ -8,8 +8,7 @@
         {% partial menu_psat %}
 {#        {% partial menu_predict %}#}
         {% partial menu_prime %}
-{#        {% if user.is_admin %}{% partial menu_prime %}{% endif %}#}
-        {% if user.is_staff %}{% partial menu_prime_leet %}{% endif %}
+        {% partial menu_prime_leet %}
         {% if user.is_admin %}{% partial menu_predict %}{% endif %}
 {#        {% partial menu_score %}#}
 {#        {% if user.is_staff %}{% partial menu_score %}{% endif %}#}
