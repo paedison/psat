@@ -971,12 +971,12 @@ class ExamVars:
         annotate_dict = {f'rank_{idx}': rank_func(f'score__subject_{idx}') for idx in range(subject_count)}
         annotate_dict['rank_average'] = rank_func('score__average')
 
-        participants = qs_student.count()
         for student in qs_student:
             rank_list = qs_student.annotate(**annotate_dict)
             if stat_type == 'department':
                 rank_list = rank_list.filter(category=student.category)
             target, _ = rank_model.objects.get_or_create(student=student)
+            participants = rank_list.count()
 
             fields_not_match = [target.participants != participants]
             for row in rank_list:
@@ -1049,6 +1049,7 @@ class ExamVars:
 
         data_statistics = []
         score_list = {}
+
         for department in departments:
             data_statistics.append({'department': department, 'participants': 0})
             score_list.update({

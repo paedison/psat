@@ -149,10 +149,9 @@ def detail_view(request: HtmxHttpRequest, pk: int):
 def result_student_detail_view(request: HtmxHttpRequest, pk: int):
     from .result_views import get_detail_context
     student = get_object_or_404(models.ResultStudent, pk=pk)
-    registry = models.ResultRegistry.objects.filter(student=student).last()
-    context = get_detail_context(registry.user, student.leet, student)
+    context = get_detail_context(request.user, student.leet, student)
     if context is None:
-        return redirect('prime:admin-detail', args=['result', pk])
+        return redirect('prime_leet:admin-detail', args=[pk])
     return render(request, 'a_prime_leet/result_print.html', context)
 
 
