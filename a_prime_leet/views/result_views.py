@@ -1,8 +1,9 @@
 import dataclasses
 from collections import Counter
 
+import numpy as np
 from django.core.paginator import Paginator
-from django.db.models import F, Case, When, Value, BooleanField, Count
+from django.db.models import F, Case, When, Value, BooleanField, Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -16,14 +17,14 @@ from .. import models, forms
 class ViewConfiguration:
     menu = menu_eng = 'prime_leet'
     menu_kor = '프라임LEET'
-    submenu = submenu_eng = 'score'
-    submenu_kor = '모의고사 성적 확인'
+    submenu = submenu_eng = 'result'
+    submenu_kor = '성적 확인'
     info = {'menu': menu, 'menu_self': submenu}
     icon_menu = icon_set_new.ICON_MENU[menu_eng]
     menu_title = {'kor': menu_kor, 'eng': menu.capitalize()}
     submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
     url_admin = reverse_lazy('admin:a_prime_leet_leet_changelist')
-    url_list = reverse_lazy('prime_leet:score-list')
+    url_list = reverse_lazy('prime_leet:result-list')
 
 
 def get_student_dict(user, exam_list):
@@ -41,7 +42,7 @@ def get_student_dict(user, exam_list):
 
 def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    exam_list = models.Leet.objects.filter(year=2025)
+    exam_list = models.Leet.objects.filter(year=2026)
 
     subjects = [
         ('총점', 'sum'),
@@ -66,20 +67,21 @@ def list_view(request: HtmxHttpRequest):
         page_obj=page_obj,
         page_range=page_range
     )
-    return render(request, 'a_prime_leet/score_list.html', context)
+    return render(request, 'a_prime_leet/result_list.html', context)
 
 
-def get_detail_context(user, pk: int):
-    exam = get_object_or_404(models.Leet, pk=pk)
+def get_detail_context(user, exam: models.Leet, student=None):
     exam_vars = ExamVars(exam)
     config = ViewConfiguration()
-    config.submenu_kor = f'제{exam.round}회 ' + config.submenu_kor
 
-    student = exam_vars.get_student(user)
-    if not student:
-        return redirect('prime_leet:score-list')
+    if student is None:
+        student = exam_vars.get_student(user)
+        if not student:
+            return None
 
-    stat_data = exam_vars.get_dict_stat_data(student)
+    stat_data_total = exam_vars.get_dict_stat_data(student, 'total')
+    stat_data_1 = exam_vars.get_dict_stat_data(student, 'aspiration_1')
+    stat_data_2 = exam_vars.get_dict_stat_data(student, 'aspiration_2')
     frequency_score = exam_vars.get_dict_frequency_score(student)
     qs_student_answer = exam_vars.get_qs_student_answer(student)
     data_answers = exam_vars.get_data_answers(qs_student_answer)
@@ -89,7 +91,7 @@ def get_detail_context(user, pk: int):
         exam=exam,
         exam_vars=exam_vars,
         config=config,
-        sub_title=f'제{exam.round}회 프라임모의고사 성적표',
+        sub_title=f'{exam.name} 성적표',
 
         # icon
         icon_menu=icon_set_new.ICON_MENU,
@@ -98,12 +100,15 @@ def get_detail_context(user, pk: int):
 
         # tab variables for templates
         answer_tab=exam_vars.get_answer_tab,
+        score_tab=exam_vars.get_score_tab,
 
         # info_student: 수험 정보
         student=student,
 
         # sheet_score: 성적 확인
-        stat_data=stat_data,
+        stat_data_total=stat_data_total,
+        stat_data_1=stat_data_1,
+        stat_data_2=stat_data_2,
 
         # chart: 성적 분포 차트
         frequency_score=frequency_score,
@@ -115,13 +120,15 @@ def get_detail_context(user, pk: int):
 
 
 def detail_view(request: HtmxHttpRequest, pk: int):
-    context = get_detail_context(request.user, pk)
-    return render(request, 'a_prime_leet/score_detail.html', context)
+    exam = get_object_or_404(models.Leet, pk=pk)
+    context = get_detail_context(request.user, exam)
+    return render(request, 'a_prime_leet/result_detail.html', context)
 
 
 def print_view(request: HtmxHttpRequest, pk: int):
-    context = get_detail_context(request.user, pk)
-    return render(request, 'a_prime_leet/score_print.html', context)
+    exam = get_object_or_404(models.Leet, pk=pk)
+    context = get_detail_context(request.user, exam)
+    return render(request, 'a_prime_leet/result_print.html', context)
 
 
 def modal_view(request: HtmxHttpRequest, pk: int):
@@ -173,7 +180,7 @@ def unregister_view(request: HtmxHttpRequest, pk: int):
     leet = models.Leet.objects.get(pk=pk)
     student = models.ResultRegistry.objects.get(student__leet=leet, user=request.user)
     student.delete()
-    return redirect('prime_leet:score-list')
+    return redirect('prime_leet:result-list')
 
 
 @dataclasses.dataclass
@@ -202,6 +209,9 @@ class ExamVars:
         'subject_1': ('추리', '추리논증', 1),
         'sum': ('총점', '총점', 2),
     }
+
+    # Template constants
+    score_template_table = 'a_prime_leet/snippets/detail_sheet_score_table.html'
 
     def get_student(self, user):
         annotate_dict = {
@@ -257,24 +267,40 @@ class ExamVars:
             qs_problems = qs_problems.filter(subject=subject)
         return qs_problems
 
-    def get_qs_answers(self):
+    def get_qs_answers(self, student: models.ResultStudent, stat_type: str):
         qs_answers = (
             self.answer_model.objects.filter(problem__leet=self.exam).values('problem__subject')
             .annotate(participant_count=Count('student_id', distinct=True))
         )
+        if stat_type != 'total':
+            qs_answers = qs_answers.filter(
+                Q(student__aspiration_1=getattr(student, stat_type)) |
+                Q(student__aspiration_2=getattr(student, stat_type))
+            )
         return qs_answers
 
-    def get_qs_score(self):
+    def get_qs_score(self, student: models.ResultStudent, stat_type: str):
         qs_score = self.score_model.objects.filter(student__leet=self.exam)
+        if stat_type != 'total':
+            qs_score = qs_score.filter(
+                Q(student__aspiration_1=getattr(student, stat_type)) |
+                Q(student__aspiration_2=getattr(student, stat_type))
+            )
         return qs_score.values()
 
     def get_score_frequency_list(self) -> list:
         return self.student_model.objects.filter(leet=self.exam).values_list('score__sum', flat=True)
 
+    def get_score_tab(self):
+        return [
+            {'id': '0', 'title': '전체', 'prefix': 'total', 'template': self.score_template_table},
+            {'id': '1', 'title': '1지망', 'prefix': 'aspiration1', 'template': self.score_template_table},
+            {'id': '2', 'title': '2지망', 'prefix': 'aspiration2', 'template': self.score_template_table},
+        ]
+
     def get_answer_tab(self):
         return [
-            {'id': str(idx), 'title': sub, 'icon': icon_set_new.ICON_SUBJECT[sub]}
-            for idx, sub in enumerate(self.sub_list)
+            {'id': str(idx), 'title': subject} for idx, subject in enumerate(self.subject_list)
         ]
 
     def get_empty_data_answer(self):
@@ -327,9 +353,9 @@ class ExamVars:
             data_answers[idx].append(line)
         return data_answers
 
-    def get_dict_stat_data(self, student: models.ResultStudent) -> dict:
-        qs_answers = self.get_qs_answers()
-        qs_score = self.get_qs_score()
+    def get_dict_stat_data(self, student: models.ResultStudent, stat_type: str) -> dict:
+        qs_answers = self.get_qs_answers(student, stat_type)
+        qs_score = self.get_qs_score(student, stat_type)
 
         participants_dict = {
             self.subject_vars[entry['problem__subject']][1]: entry['participant_count']
@@ -342,7 +368,7 @@ class ExamVars:
         raw_scores = {}
         scores = {}
         stat_data = {}
-        for field, subject_tuple in self.field_vars.items():
+        for field, (sub, subject, _) in self.field_vars.items():
             if field in participants_dict.keys():
                 participants = participants_dict[field]
                 raw_scores[field] = [qs[f'raw_{field}'] for qs in qs_score]
@@ -354,14 +380,14 @@ class ExamVars:
                 sorted_scores = sorted(scores[field], reverse=True)
                 rank = sorted_scores.index(student_score) + 1
                 top_10_threshold = max(1, int(participants * 0.1))
-                top_20_threshold = max(1, int(participants * 0.2))
+                top_25_threshold = max(1, int(participants * 0.25))
+                top_50_threshold = max(1, int(participants * 0.5))
 
                 stat_data[field] = {
                     'field': field,
                     'is_confirmed': True,
-                    'sub': subject_tuple[0],
-                    'subject': subject_tuple[1],
-                    'icon': icon_set_new.ICON_SUBJECT[subject_tuple[0]],
+                    'sub': sub,
+                    'subject': subject,
                     'rank': rank,
                     'raw_score': student_raw_score,
                     'score': student_score,
@@ -370,10 +396,12 @@ class ExamVars:
                     'max_score': sorted_scores[0],
                     'top_raw_score_10': sorted_raw_scores[top_10_threshold - 1],
                     'top_score_10': sorted_scores[top_10_threshold - 1],
-                    'top_raw_score_20': sorted_raw_scores[top_20_threshold - 1],
-                    'top_score_20': sorted_scores[top_20_threshold - 1],
-                    'avg_raw_score': sum(raw_scores[field]) / participants,
-                    'avg_score': sum(scores[field]) / participants,
+                    'top_raw_score_25': sorted_raw_scores[top_25_threshold - 1],
+                    'top_score_25': sorted_scores[top_25_threshold - 1],
+                    'top_raw_score_50': sorted_raw_scores[top_50_threshold - 1],
+                    'top_score_50': sorted_scores[top_50_threshold - 1],
+                    'raw_score_avg': round(sum(raw_scores[field]) / participants, 1),
+                    'raw_score_stddev': round(np.std(np.array(sorted_raw_scores), ddof=1), 1),
                 }
         return stat_data
 

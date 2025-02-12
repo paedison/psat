@@ -5,147 +5,16 @@
 <div class="card-body">
     <nav>
         <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTab" role="tablist">
-            {% #nav_tab prefix='Score' id='0' %}내 성적{% /nav_tab %}
+            {% for tab in score_tab %}
+                {% #nav_tab prefix='Score' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+            {% endfor %}
         </div>
     </nav>
 
     <div class="tab-content" id="scoreSheetContent">
-        {% #nav_content prefix='Score' id='0' %}
-            {% partial score_table %}
-        {% /nav_content %}
+        {% for tab in score_tab %}
+            {% cycle stat_data_total stat_data_1 stat_data_2 as stat_data silent %}
+            {% #nav_content prefix='Score' id=tab.id %}{% include tab.template %}{% /nav_content %}
+        {% endfor %}
     </div>
 </div>
-
-{% partialdef score_table %}
-    <article class="table-responsive">
-        <table class="table table-bordered small align-middle">
-            <thead>
-                <tr class="text-center align-middle table-warning">
-                    <th class="text-nowrap td-left-no-border" rowspan="2">과목</th>
-                    <th class="text-nowrap" colspan="2">내 점수(점)</th>
-                    <th class="text-nowrap" colspan="2">석차</th>
-                    <th class="text-nowrap" colspan="2">최고 점수(점)</th>
-                    <th class="text-nowrap" colspan="2">상위 10%(점)</th>
-                    <th class="text-nowrap" colspan="2">상위 20%(점)</th>
-                    <th class="text-nowrap td-right-no-border" colspan="2">평균 점수(점)</th>
-                </tr>
-                <tr class="text-center align-middle table-warning">
-                    {% partialdef table_head inline=True %}
-                        <th class="text-nowrap td-right-no-border">원점수</th>
-                        <th class="text-nowrap td-left-no-border td-right-no-border">표준점수</th>
-                    {% endpartialdef table_head %}
-                    <th class="text-nowrap td-right-no-border">(등)</th>
-                    <th class="text-nowrap td-left-no-border">(%)</th>
-                    {% for _ in '0123' %}{% partial table_head %}{% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for _ in stat_data %}
-                    {% cycle stat_data.subject_0 stat_data.subject_1 stat_data.sum as stat silent %}
-                    {% if stat_data %}{% partial sub_score_line %}{% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
-    </article>
-{% endpartialdef score_table %}
-
-{% partialdef sub_score_line %}
-    <tr class="text-center {% if stat.field == 'sum' %}table-warning{% endif %}">
-        <th class="text-nowrap td-left-no-border" aria-label="과목">
-            {% if stat.is_confirmed or stat.field == 'sum' %}
-                {{ stat.icon|safe }} {{ stat.subject }}
-            {% else %}
-                <a class="text-decoration-none"
-                   href="" hx-boost="true">
-                    {{ stat.icon|safe }} {{ stat.subject }}
-                </a>
-            {% endif %}
-        </th>
-
-        {% if not stat.is_confirmed %}
-            <td class="text-nowrap" colspan="5">
-                {% if stat.field == 'sum' %}
-                    <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
-                {% else %}
-                    <a hx-boost="true"
-                       href="">
-                        <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
-                    </a>
-                {% endif %}
-            </td>
-        {% else %}
-            <td class="text-nowrap td-right-no-border">
-                <div id="{{ prefix }}my_score_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-0 text-success fw-bold">
-                    {{ stat.raw_score }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border td-left-no-border">
-                <div id="{{ prefix }}my_score_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-0 text-success fw-bold">
-                    {{ stat.score|floatformat:1 }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border">
-                <div id="{{ prefix }}rank_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-1">
-                    {{ stat.rank }} / {{ stat.participants }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border td-left-no-border">
-                <div id="{{ prefix }}rank_ratio_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-2">
-                    {{ stat.rank|percentageby:stat.participants|floatformat:1 }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border">
-                <div id="{{ prefix }}_max_score_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-2">
-                    {{ stat.max_raw_score }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border td-left-no-border">
-                <div id="{{ prefix }}_max_score_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-2">
-                    {{ stat.max_score|floatformat:1 }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border">
-                <div id="{{ prefix }}_top_score_10_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-3">
-                    {{ stat.top_raw_score_10 }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border td-left-no-border">
-                <div id="{{ prefix }}_top_score_10_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-3">
-                    {{ stat.top_score_10|floatformat:1 }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border">
-                <div id="{{ prefix }}_top_score_20_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-4">
-                    {{ stat.top_raw_score_20 }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border td-left-no-border">
-                <div id="{{ prefix }}_top_score_20_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-4">
-                    {{ stat.top_score_20|floatformat:1 }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border">
-                <div id="{{ prefix }}_avg_score_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-5">
-                    {{ stat.avg_raw_score|floatformat:1 }}
-                </div>
-            </td>
-            <td class="text-nowrap td-right-no-border td-left-no-border">
-                <div id="{{ prefix }}_avg_score_{{ stat.field }}"
-                     class="htmx-fade-up-in delay-5">
-                    {{ stat.avg_score|floatformat:1 }}
-                </div>
-            </td>
-        {% endif %}
-    </tr>
-{% endpartialdef sub_score_line %}

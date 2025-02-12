@@ -1,0 +1,163 @@
+{% extends 'a_prime_leet/_prime_leet_base.html' %}
+{% load static %}
+
+{% block google_adsense %}{% endblock %}
+
+{% block main_content %}
+    <section class="section">
+        <div class="row">
+            {% if user.is_admin %}
+                <div class="col-12" aria-label="성적 결과 업데이트">
+                    <div class="card" hx-swap="innerHTML swap:0.25s">
+                        <div class="card-header">성적 결과 업데이트</div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <form enctype="multipart/form-data"
+                                          hx-headers='{"View-Type":"answer_official"}'
+                                          hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                          hx-post="{{ exam.get_admin_update_url }}">
+                                        <div class="input-group">
+                                            <input type="file" name="file" class="form-control" required id="id_file">
+                                            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                정답 업데이트</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <form enctype="multipart/form-data"
+                                          hx-headers='{"View-Type":"answer_student"}'
+                                          hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                          hx-post="{{ exam.get_admin_update_url }}">
+                                        <div class="input-group">
+                                            <input type="file" name="file" class="form-control" required id="id_file">
+                                            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                제출 답안 업데이트</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="col-md-6 d-flex"
+                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                    <div class="btn-group flex-fill">
+                                        {% include 'a_prime_leet/snippets/admin_detail_update_button.html' with view_type='raw_score' button_name='원점수 업데이트' %}
+                                        {% include 'a_prime_leet/snippets/admin_detail_update_button.html' with view_type='score' button_name='표준점수 업데이트' %}
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 d-flex"
+                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                    <div class="btn-group flex-fill">
+                                        {% include 'a_prime_leet/snippets/admin_detail_update_button.html' with view_type='rank' button_name='등수 업데이트' %}
+                                        {% include 'a_prime_leet/snippets/admin_detail_update_button.html' with view_type='statistics' button_name='통계 업데이트' %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 d-flex"
+                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                    <div class="btn-group flex-fill">
+                                        {% include 'a_prime_leet/snippets/admin_detail_update_button.html' with view_type='answer_count' button_name='문항분석표 업데이트' %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="col-12" aria-label="성적통계">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ exam.name }} | 성적통계</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
+                                <div class="btn-group flex-fill">
+                                    <a class="btn btn-outline-secondary" title="목록" hx-target="#main"
+                                       href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
+                                        목록
+                                    </a>
+                                    {% include 'a_prime_leet/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_statistics_excel %}
+                                    {% include 'a_prime_leet/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_statistics_print %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="statisticsContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime_leet/snippets/admin_detail_statistics.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="성적일람표">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ exam.name }} | 성적일람표</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_prime_leet/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
+{#                                    {% include 'a_prime_leet/snippets/admin_detail_export_button.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
+                                    {% include 'a_prime_leet/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-7 col-xxl-8 order-md-0 d-flex">
+                                {% include 'a_prime_leet/snippets/admin_detail_search.html' %}
+                            </div>
+                        </div>
+
+                        <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime_leet/snippets/admin_detail_catalog.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="성적 확인 목록">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ exam.name }} | 성적 확인 목록</div>
+                    <div class="card-body">
+                        <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime_leet/snippets/admin_detail_registry.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="문항분석표">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ exam.name }}</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_answers_excel %}
+                                    {% include 'a_prime/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_answers_print %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
+                                {% for tab in answer_tab %}
+                                    {% #nav_tab prefix='Answer' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+                        <div id="answerAnalysisContent" class="tab-content">
+                            {% for tab in answer_tab %}
+                                {% cycle answers_page_obj_group.언어 answers_page_obj_group.추리 as answers silent %}
+                                {% cycle answers_page_range_group.언어 answers_page_range_group.추리 as answers_page_range silent %}
+                                {% #nav_content prefix='Answer' id=tab.id %}
+                                    {% include 'a_prime_leet/snippets/admin_detail_answer.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}

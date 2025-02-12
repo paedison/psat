@@ -3,13 +3,21 @@ from django.db import models
 from . import choices
 
 
+def get_default_statistics():
+    return {
+        "participants": 0, "max": 0, "t10": 0, "t25": 0, "t50": 0, "avg": 0
+    }
+
+
 class ResultStatistics(models.Model):
-    raw_subject_0 = models.JSONField(default=dict, verbose_name='언어이해 원점수')
-    raw_subject_1 = models.JSONField(default=dict, verbose_name='추리논증 원점수')
-    raw_sum = models.JSONField(default=dict, verbose_name='총점 원점수')
-    subject_0 = models.JSONField(default=dict, verbose_name='언어이해 표준점수')
-    subject_1 = models.JSONField(default=dict, verbose_name='추리논증 표준점수')
-    sum = models.JSONField(default=dict, verbose_name='총점 표준점수')
+    aspiration = models.CharField(
+        max_length=10, choices=choices.statistics_aspiration_choice, default='전체', verbose_name='지망 대학')
+    raw_subject_0 = models.JSONField(default=get_default_statistics, verbose_name='언어이해 원점수')
+    raw_subject_1 = models.JSONField(default=get_default_statistics, verbose_name='추리논증 원점수')
+    raw_sum = models.JSONField(default=get_default_statistics, verbose_name='총점 원점수')
+    subject_0 = models.JSONField(default=get_default_statistics, verbose_name='언어이해 표준점수')
+    subject_1 = models.JSONField(default=get_default_statistics, verbose_name='추리논증 표준점수')
+    sum = models.JSONField(default=get_default_statistics, verbose_name='총점 표준점수')
 
     class Meta:
         abstract = True
@@ -17,9 +25,23 @@ class ResultStatistics(models.Model):
 
 class Student(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
-    name = models.CharField(max_length=20, verbose_name='이름')
     serial = models.CharField(max_length=10, verbose_name='수험번호')
+    name = models.CharField(max_length=20, verbose_name='이름')
     password = models.CharField(max_length=10, null=True, blank=True, verbose_name='비밀번호')
+    aspiration_1 = models.CharField(
+        max_length=10, choices=choices.university_choice, null=True, blank=True, verbose_name='1지망')
+    aspiration_2 = models.CharField(
+        max_length=10, choices=choices.university_choice, null=True, blank=True, verbose_name='2지망')
+    school = models.CharField(
+        max_length=10, choices=choices.university_choice, null=True, blank=True, verbose_name='출신대학')
+    major = models.CharField(
+        max_length=5, choices=choices.major_choice, null=True, blank=True, verbose_name='전공')
+    gpa_type = models.FloatField(
+        choices=choices.gpa_type_choice, null=True, blank=True, verbose_name='학점(GPA) 종류')
+    gpa = models.FloatField(null=True, blank=True, verbose_name='학점(GPA)')
+    english_type = models.CharField(
+        max_length=10, choices=choices.english_type_choice, null=True, blank=True, verbose_name='공인 영어성적 종류')
+    english = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='공인 영어성적')
 
     class Meta:
         abstract = True

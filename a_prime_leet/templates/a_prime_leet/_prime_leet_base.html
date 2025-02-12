@@ -1,0 +1,55 @@
+{% extends 'list.html' %}
+{% load static %}
+
+{% block head_title %}{{ config.menu_kor }} {{ config.submenu_title.kor }}{% endblock %}
+{% block page_image %}
+<meta property="og:image" content="{% static 'image/prime/2025/psat/title.jpg' %}"/>
+{% endblock page_image %}
+
+{% block main %}
+    {{ config.info|json_script:'info' }}
+    <div class="pagetitle">
+        <h1>
+            {{ config.icon_menu|safe }} {{ config.menu_kor }}
+            <span class="fs-6 text-secondary">
+                {% if problem %}{{ problem.full_reference }}{% else %}{{ config.submenu_kor }}{% endif %}
+            </span>
+            {% if user.is_staff %}
+                <a class="btn btn-sm btn-outline-primary ms-1" target="admin"
+                   href="{{ config.url_admin }}">
+                    관리자 페이지
+                </a>
+            {% endif %}
+        </h1>
+        <nav>
+            <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
+                <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
+                <li class="breadcrumb-item">{{ config.menu_eng|title }}</li>
+                {% if exam %}
+                    <li class="breadcrumb-item">
+                        <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        {% if config.submenu == 'result' %}
+                            <a href="{{ exam.get_result_detail_url }}" class="active">{{ exam.abbr }}</a>
+                        {% elif config.submenu == 'predict' %}
+                            <a href="{{ exam.get_predict_detail_url }}" class="active">{{ exam.abbr }}</a>
+                        {% elif config.submenu == 'admin' %}
+                            <a href="{{ exam.get_admin_result_detail_url }}" class="active">{{ exam.abbr }}</a>
+{#                        {% elif config.submenu == 'admin' and config.model_type == 'result' %}#}
+{#                            <a href="{{ exam.get_admin_result_detail_url }}" class="active">{{ exam.get_round_display }}</a>#}
+{#                        {% elif config.submenu == 'admin' and config.model_type == 'predict' %}#}
+{#                            <a href="{{ exam.get_admin_predict_detail_url }}" class="active">{{ exam.get_round_display }}</a>#}
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li class="breadcrumb-item">
+                        <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                    </li>
+                {% endif %}
+            </ol>
+        </nav>
+    </div><!-- Page Title End -->
+    {% block main_content %}
+    {% endblock main_content %}
+{% endblock main %}

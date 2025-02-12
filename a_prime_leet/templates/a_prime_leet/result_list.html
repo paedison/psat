@@ -1,16 +1,11 @@
-{% extends 'list.html' %}
+{% extends 'a_prime_leet/_prime_leet_base.html' %}
 {% load static %}
 {% load psat_filter %}
 
-{% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
-
-{% block main %}
-    {% include 'snippets/page_title.html' %}
-
+{% block main_content %}
     <section class="section htmx-fade-in htmx-fade-out"
              hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-{#        <div class="row">#}
+        <div class="row">
 {#            <div class="col-12">#}
 {#                <div class="card">#}
 {#                    <div class="card-body">#}
@@ -71,94 +66,71 @@
                 <div class="card">
                     <div class="card-header">시험 목록</div>
                     <div class="card-body">
-                        {% partial exam_table %}
+                        <article class="table-responsive">
+                            <table class="table table-bordered align-middle">
+                                <thead>
+                                    <tr class="text-center align-middle table-warning">
+                                        <th class="text-primary text-nowrap td-left-no-border" rowspan="2">시험명</th>
+                                        <th class="text-primary text-nowrap" rowspan="2">수험번호</th>
+                                        <th class="text-primary text-nowrap" rowspan="2">성적표</th>
+                                        <th class="text-primary text-nowrap" colspan="2">총점</th>
+                                        <th class="text-primary text-nowrap" colspan="2">언어이해</th>
+                                        <th class="text-primary text-nowrap td-right-no-border" colspan="2">추리논증</th>
+                                    </tr>
+                                    <tr class="text-center align-middle table-warning">
+                                        {% for _ in '012' %}
+                                            <th class="text-primary text-nowrap td-right-no-border">원점수</th>
+                                            <th class="text-primary text-nowrap td-left-no-border td-right-no-border">표준점수</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% if page_obj %}
+                                        {% for obj in page_obj %}
+                                            <tr class="text-center">
+                                                {% partialdef exam_round inline=True %}
+                                                    <td class="text-nowrap td-left-no-border">
+                                                        {% if obj.student %}
+                                                            <a href="{{ obj.get_result_detail_url }}" hx-boost="true">
+                                                                {{ obj.name }}
+                                                            </a>
+                                                        {% else %}
+                                                            {{ obj.name }}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endpartialdef %}
+                                                {% if current_time > obj.answer_official_opened_at %}
+                                                    {% partial exam_info %}
+                                                {% else %}
+                                                    <td class="text-nowrap" colspan="8">
+                                                        <a class="badge rounded-pill text-bg-danger" href=""
+                                                           hx-headers='{"View-Modal":"no_open"}'
+                                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                           data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                                           hx-get="{{ obj.get_result_modal_url }}">
+                                                            성적 공개 일시 : {{ obj.answer_official_opened_at|date:'n/d(D) H:i' }}
+                                                        </a>
+                                                    </td>
+                                                {% endif %}
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </article>
                     </div>
                 </div>
             </div>
-
-{#            <div class="col-12">#}
-{#                <div class="card">#}
-{#                    <div class="card-header">시험 일정</div>#}
-{##}
-{#                    <div class="card-body">#}
-{#                        <div class="container d-none d-lg-block text-center p-0">#}
-{#                            <img src="{% static 'image/prime/2024/exam/schedule_1.jpg' %}" class="mw-100" alt="Schedule"/>#}
-{#                        </div>#}
-{#                        <div class="container d-lg-none text-center p-0">#}
-{#                            <img src="{% static 'image/prime/2024/exam/schedule_2.jpg' %}" class="mw-100" alt="Schedule"/>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
         </div>
     </section>
-{% endblock main %}
-
-{% partialdef exam_table %}
-    <article class="table-responsive">
-        <table class="table table-bordered small align-middle">
-            <thead>
-                <tr class="text-center align-middle table-warning">
-                    <th class="text-primary text-nowrap td-left-no-border" rowspan="2">회차</th>
-                    <th class="text-primary text-nowrap" rowspan="2">수험번호</th>
-                    <th class="text-primary text-nowrap" rowspan="2">성적표</th>
-                    <th class="text-primary text-nowrap" colspan="2">총점</th>
-                    <th class="text-primary text-nowrap" colspan="2">
-                        {{ icon_subject.언어|safe }} 언어이해
-                    </th>
-                    <th class="text-primary text-nowrap td-right-no-border" colspan="2">
-                        {{ icon_subject.추리|safe }} 추리논증
-                    </th>
-                </tr>
-                <tr class="text-center align-middle table-warning">
-                    {% for _ in '012' %}
-                        <th class="text-primary text-nowrap td-right-no-border">원점수</th>
-                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">표준점수</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-
-            <tbody>
-                {% if page_obj %}
-                    {% for obj in page_obj %}
-                        <tr class="text-center">
-                            {% partialdef exam_round inline=True %}
-                                <td class="text-nowrap td-left-no-border">
-                                    {% if obj.student %}
-                                        <a href="{{ obj.get_score_detail_url }}" hx-boost="true">
-                                            제{{ obj.round }}회
-                                        </a>
-                                    {% else %}
-                                        제{{ obj.round }}회
-                                    {% endif %}
-                                </td>
-                            {% endpartialdef %}
-                            {% if current_time > obj.answer_official_opened_at %}
-                                {% partial exam_info %}
-                            {% else %}
-                                <td class="text-nowrap" colspan="8">
-                                    <a class="badge rounded-pill text-bg-danger" href=""
-                                       hx-headers='{"View-Modal":"no_open"}'
-                                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                       data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                       hx-get="{{ obj.get_score_modal_url }}">
-                                        성적 공개 일시 : {{ obj.answer_official_opened_at|date:'n/d(D) H:i' }}
-                                    </a>
-                                </td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                {% endif %}
-            </tbody>
-        </table>
-    </article>
-{% endpartialdef exam_table %}
+{% endblock main_content %}
 
 {% partialdef exam_info %}
     <td class="text-nowrap p-2" aria-label="Serial">
         {% if user.is_authenticated %}
             {% if obj.student %}
-                <a href="{{ obj.get_score_detail_url }}" hx-boost="true">{{ obj.student.serial }}</a>
+                <a href="{{ obj.get_result_detail_url }}" hx-boost="true">{{ obj.student.serial }}</a>
                 {% partialdef delete_student inline=True %} {# delete_student partial #}
                     {% if user.is_staff %}
                         <a class="badge rounded-pill text-bg-danger"
@@ -174,7 +146,7 @@
                        hx-headers='{"View-Modal":"student_register"}'
                        hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                        data-bs-toggle="modal" data-bs-target="#modalContainer"
-                       hx-get="{{ obj.get_score_modal_url }}">
+                       hx-get="{{ obj.get_result_modal_url }}">
                         입력
                     </a>
                 {% endpartialdef input_button %}
@@ -197,7 +169,7 @@
         {% if user.is_authenticated %}
             {% if obj.student %}
                 <a class="badge rounded-pill text-bg-success" hx-boost="true"
-                   href="{{ obj.get_score_detail_url }}">
+                   href="{{ obj.get_result_detail_url }}">
                     확인
                 </a>
             {% else %}
@@ -205,7 +177,7 @@
                    hx-headers='{"View-Modal":"student_register"}'
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                    data-bs-toggle="modal" data-bs-target="#modalContainer"
-                   hx-get="{{ obj.get_score_modal_url }}">
+                   hx-get="{{ obj.get_result_modal_url }}">
                     미응시
                 </a>
             {% endif %}

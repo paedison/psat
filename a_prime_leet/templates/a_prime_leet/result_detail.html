@@ -1,14 +1,8 @@
-{% extends 'list.html' %}
+{% extends 'a_prime_leet/_prime_leet_base.html' %}
 {% load static %}
-{% load i18n %}
 {% load psat_filter %}
 
-{% block head_title %}{{ sub_title }}{% endblock %}
-{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
-
-{% block main %}
-    {% include 'snippets/page_title.html' %}
-
+{% block main_content %}
     <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
         <div class="row">
             <div class="col-12">
@@ -17,18 +11,18 @@
                         <h5 class="card-title mb-0 text-center">
                             <div class="d-flex">
                                 <div class="btn-group ms-auto">
-                                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'List' %}"
-                                       href="{{ exam.get_score_list_url }}" hx-boost="true">
+                                    <a class="btn btn-outline-secondary" title="목록"
+                                       href="{{ exam.get_result_list_url }}" hx-boost="true">
                                         목록
                                     </a>
-                                    <a class="btn btn-sm btn-outline-secondary" title="{% trans 'Print' %}"
-                                       href="{{ exam.get_score_print_url }}" target="score_print">
+                                    <a class="btn btn-outline-secondary" title="인쇄하기"
+                                       href="{{ exam.get_result_print_url }}" target="score_print">
                                         인쇄하기
                                     </a>
                                 </div>
                             </div>
 {#                            <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>#}
-                            <div class="fs-1 fw-bolder">제 {{ exam.round }} 회 성적표</div>
+                            <div class="fs-1 fw-bolder my-4">{{ exam.name }} 성적표</div>
 {#                            {% if not student %}#}
 {#                                <div class="container p-0">#}
 {#                                    <div class="container">#}
@@ -67,4 +61,4 @@
             </div>
         </div>
     </section>
-{% endblock main %}
+{% endblock main_content %}

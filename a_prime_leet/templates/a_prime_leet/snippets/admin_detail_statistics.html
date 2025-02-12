@@ -1,48 +1,52 @@
 {% load humanize %}
 
 <article class="table-responsive">
-    <table class="table table-bordered table-striped small align-middle m-0">
+    <table class="table table-bordered table-striped align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap p-2" rowspan="3">응시<br/>인원</th>
-                <th class="text-primary text-nowrap p-2" colspan="12">표준점수</th>
-                <th class="text-primary text-nowrap p-2" colspan="12">원점수</th>
+                <th class="text-primary text-nowrap" rowspan="3">지망 대학</th>
+                <th class="text-primary text-nowrap" rowspan="3">응시<br/>인원</th>
+                <th class="text-primary text-nowrap" colspan="15">표준점수(점)</th>
+                <th class="text-primary text-nowrap" colspan="15">원점수(점)</th>
             </tr>
 
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap p-2" colspan="4">총점</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">언어이해</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">추리논증</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">총점</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">언어이해</th>
-                <th class="text-primary text-nowrap p-2" colspan="4">추리논증</th>
+                <th class="text-primary text-nowrap" colspan="5">총점</th>
+                <th class="text-primary text-nowrap" colspan="5">언어이해</th>
+                <th class="text-primary text-nowrap" colspan="5">추리논증</th>
+                <th class="text-primary text-nowrap" colspan="5">총점</th>
+                <th class="text-primary text-nowrap" colspan="5">언어이해</th>
+                <th class="text-primary text-nowrap" colspan="5">추리논증</th>
             </tr>
 
             <tr class="text-center table-warning align-middle">
                 {% for _ in '012345' %}
-                    <th class="text-primary text-nowrap p-2 td-right-no-border">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">상위<br/>20%</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border">평균<br/>점수</th>
+                    <th class="text-primary text-nowrap td-right-no-border">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>25%</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>50%</th>
+                    <th class="text-primary text-nowrap td-left-no-border">평균<br/>점수</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for obj in statistics_page_obj %}
                 <tr class="text-center">
-                    <td class="text-nowrap p-2">{{ obj.sum.participants|intcomma }}</td>
+                    <td class="text-nowrap">{{ obj.aspiration }}</td>
+                    <td class="text-nowrap">{{ obj.sum.participants|intcomma }}</td>
 
                     {% for _ in '012345' %}
                         {% cycle obj.sum obj.subject_0 obj.subject_1 obj.raw_sum obj.raw_subject_0 obj.raw_subject_1 as data_stat silent %}
-                        <td class="text-nowrap p-2 td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border td-right-no-border">{{ data_stat.t20|floatformat:1 }}</td>
-                        <td class="text-nowrap p-2 td-left-no-border">{{ data_stat.avg|floatformat:1 }}</td>
+                        <td class="text-nowrap td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t25|floatformat:1 }}</td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t50|floatformat:1 }}</td>
+                        <td class="text-nowrap td-left-no-border">{{ data_stat.avg|floatformat:1 }}</td>
                     {% endfor %}
                 </tr>
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap p-2" colspan="22">자료가 없습니다.</td>
+                    <td class="text-nowrap" colspan="32">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

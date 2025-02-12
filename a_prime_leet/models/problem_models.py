@@ -8,9 +8,11 @@ from . import choices
 
 
 class Leet(models.Model):
-    year = models.IntegerField(choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
+    year = models.IntegerField(choices=choices.year_choice, default=datetime.now().year + 1, verbose_name='연도')
     exam = models.CharField(max_length=2, choices=choices.exam_choice, default='프모', verbose_name='시험')
     round = models.IntegerField(choices=choices.round_choice, verbose_name='회차')
+    name = models.CharField(max_length=30, verbose_name='시험명')
+    abbr = models.CharField(max_length=30, verbose_name='약칭')
     is_active = models.BooleanField(default=False, verbose_name='활성')
 
     page_opened_at = models.DateTimeField(default=timezone.now, verbose_name='페이지 오픈 일시')
@@ -21,9 +23,9 @@ class Leet(models.Model):
 
     class Meta:
         verbose_name = verbose_name_plural = "[프라임LEET] 00_LEET 모의고사"
-        ordering = ['-year', 'round']
+        ordering = ['-id']
         constraints = [
-            models.UniqueConstraint(fields=['year', 'exam', 'round'], name='unique_prime_leet_leet'),
+            models.UniqueConstraint(fields=['year', 'exam', 'name'], name='unique_prime_leet_leet'),
         ]
 
     def __str__(self):
@@ -59,32 +61,32 @@ class Leet(models.Model):
 
     @staticmethod
     def get_admin_list_url():
-        return reverse_lazy('prime_leet:score-admin-list')
+        return reverse_lazy('prime_leet:admin-list')
 
-    def get_admin_detail_url(self):
-        return reverse_lazy('prime_leet:score-admin-detail', args=[self.id])
+    def get_admin_result_detail_url(self):
+        return reverse_lazy('prime_leet:admin-detail', args=[self.id])
 
     def get_admin_update_url(self):
-        return reverse_lazy('prime_leet:score-admin-update', args=[self.id])
+        return reverse_lazy('prime_leet:admin-update', args=[self.id])
 
     @staticmethod
-    def get_score_list_url():
-        return reverse_lazy('prime_leet:score-list')
+    def get_result_list_url():
+        return reverse_lazy('prime_leet:result-list')
 
-    def get_score_detail_url(self):
-        return reverse_lazy('prime_leet:score-detail', args=[self.id])
+    def get_result_detail_url(self):
+        return reverse_lazy('prime_leet:result-detail', args=[self.id])
 
-    def get_score_register_url(self):
-        return reverse_lazy('prime_leet:score-register', args=[self.id])
+    def get_result_register_url(self):
+        return reverse_lazy('prime_leet:result-register', args=[self.id])
 
-    def get_score_unregister_url(self):
-        return reverse_lazy('prime_leet:score-unregister', args=[self.id])
+    def get_result_unregister_url(self):
+        return reverse_lazy('prime_leet:result-unregister', args=[self.id])
 
-    def get_score_print_url(self):
-        return reverse_lazy('prime_leet:score-print', args=[self.id])
+    def get_result_print_url(self):
+        return reverse_lazy('prime_leet:result-print', args=[self.id])
 
-    def get_score_modal_url(self):
-        return reverse_lazy('prime_leet:score-modal', args=[self.id])
+    def get_result_modal_url(self):
+        return reverse_lazy('prime_leet:result-modal', args=[self.id])
 
 
 class Problem(models.Model):

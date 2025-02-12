@@ -200,7 +200,7 @@ class ResultScoreAdmin(ModelAdmin):
 
 
 @admin.register(models.ResultRank)
-class ResultRankTotalAdmin(ModelAdmin):
+class ResultRankAdmin(ModelAdmin):
     list_display = list_display_links = [
         'id', 'student_id', 'year', 'round', 'name',
         'subject_0', 'subject_1', 'sum', 'participants'
@@ -224,6 +224,16 @@ class ResultRankTotalAdmin(ModelAdmin):
     @admin.display(description='회차')
     def round(self, obj):
         return f'{obj.student.leet.round}'
+
+
+@admin.register(models.ResultRankAspiration1)
+class ResultRankAspiration1Admin(ModelAdmin):
+    pass
+
+
+@admin.register(models.ResultRankAspiration2)
+class ResultRankAspiration2Admin(ModelAdmin):
+    pass
 
 
 @admin.register(models.ResultAnswerCountTopRank)

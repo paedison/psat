@@ -8,7 +8,7 @@ verbose_name_prefix = '[성적확인] '
 
 
 class ResultStatistics(abstract_models.ResultStatistics):
-    leet = models.OneToOneField(Leet, on_delete=models.CASCADE, related_name='result_statistics')
+    leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='result_statistics')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}00_시험통계'
@@ -89,18 +89,40 @@ class ResultRank(abstract_models.Rank):
     student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}06_등수'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}06_등수(전체)'
         db_table = 'a_prime_leet_result_rank'
 
     def __str__(self):
-        return f'[PrimeLeet]ResultRankTotal(#{self.id}):{self.student.student_info}'
+        return f'[PrimeLeet]ResultRank(#{self.id}):{self.student.student_info}'
+
+
+class ResultRankAspiration1(abstract_models.Rank):
+    student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='rank_aspiration_1')
+
+    class Meta:
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}07_등수(1지망)'
+        db_table = 'a_prime_leet_result_rank_aspiration_1'
+
+    def __str__(self):
+        return f'[PrimeLeet]ResultRankAspiration1(#{self.id}):{self.student.student_info}'
+
+
+class ResultRankAspiration2(abstract_models.Rank):
+    student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='rank_aspiration_2')
+
+    class Meta:
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}08_등수(2지망)'
+        db_table = 'a_prime_leet_result_rank_aspiration_2'
+
+    def __str__(self):
+        return f'[PrimeLeet]ResultRankAspiration1(#{self.id}):{self.student.student_info}'
 
 
 class ResultAnswerCountTopRank(abstract_models.AnswerCount):
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count_top_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}07_답안 개수(상위권)'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}09_답안 개수(상위권)'
         db_table = 'a_prime_leet_result_answer_count_top_rank'
 
 
@@ -108,7 +130,7 @@ class ResultAnswerCountMidRank(abstract_models.AnswerCount):
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count_mid_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}08_답안 개수(중위권)'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}10_답안 개수(중위권)'
         db_table = 'a_prime_leet_result_answer_count_mid_rank'
 
 
@@ -116,5 +138,5 @@ class ResultAnswerCountLowRank(abstract_models.AnswerCount):
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count_low_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}09_답안 개수(하위권)'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}11_답안 개수(하위권)'
         db_table = 'a_prime_leet_result_answer_count_low_rank'

@@ -137,14 +137,14 @@
             {% if user.is_staff %}
                 <li>
                     <a class="aside-nav-icon" data-menu-parent="prime_leet" data-menu-self="admin"
-                       href="{% url 'prime_leet:score-admin-list' %}">
+                       href="{% url 'prime_leet:admin-list' %}">
                         <i class="fa-regular fa-fw fa-square"></i> 관리자 메뉴
                     </a>
                 </li>
             {% endif %}
             <li>
-                <a class="aside-nav-icon" data-menu-parent="prime_leet" data-menu-self="score"
-                   href="{% url 'prime_leet:score-list' %}">
+                <a class="aside-nav-icon" data-menu-parent="prime_leet" data-menu-self="result"
+                   href="{% url 'prime_leet:result-list' %}">
                     <i class="fa-regular fa-fw fa-square"></i> 성적 확인
                 </a>
             </li>
