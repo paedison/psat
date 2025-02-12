@@ -747,9 +747,9 @@ class ExamVars:
                     'name': row[label_name], 'password': row[label_password],
                     'school': row[label_school], 'major': row[label_major],
                     'aspiration_1': row[label_aspiration_1], 'aspiration_2': row[label_aspiration_2],
-                    'gpa_type': row[label_gpa_type] if not row[label_gpa_type] else None,
+                    'gpa_type': row[label_gpa_type] if not np.isnan(row[label_gpa_type]) else None,
                     'gpa': row[label_gpa] if row[label_gpa] != ' .' else None,
-                    'english_type': row[label_english_type] if not row[label_english_type] else None,
+                    'english_type': row[label_english_type] if not np.isnan(row[label_english_type]) else None,
                     'english': row[label_english] if not np.isnan(row[label_english]) else None,
                 }
 
