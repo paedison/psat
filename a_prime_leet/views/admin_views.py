@@ -592,8 +592,7 @@ class ExamVars:
 
     def get_answer_tab(self):
         answer_tab = [
-            {'id': str(idx), 'title': sub, 'icon': icon_set_new.ICON_SUBJECT[sub], 'answer_count': 5}
-            for idx, sub in enumerate(self.sub_list)
+            {'id': str(idx), 'title': subject} for idx, subject in enumerate(self.subject_list)
         ]
         return answer_tab
 

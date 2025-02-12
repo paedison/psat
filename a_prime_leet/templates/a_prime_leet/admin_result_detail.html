@@ -9,7 +9,7 @@
             {% if user.is_admin %}
                 <div class="col-12" aria-label="성적 결과 업데이트">
                     <div class="card" hx-swap="innerHTML swap:0.25s">
-                        <div class="card-header">성적 결과 업데이트</div>
+                        <div class="card-header">{{ exam.name }} | 성적 결과 업데이트</div>
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -128,7 +128,7 @@
 
             <div class="col-12" aria-label="문항분석표">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ exam.name }}</div>
+                    <div class="card-header">{{ exam.name }} | 문항분석표</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">

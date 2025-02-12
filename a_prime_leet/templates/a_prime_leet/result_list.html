@@ -1,6 +1,5 @@
 {% extends 'a_prime_leet/_prime_leet_base.html' %}
 {% load static %}
-{% load psat_filter %}
 
 {% block main_content %}
     <section class="section htmx-fade-in htmx-fade-out"
@@ -100,18 +99,30 @@
                                                         {% endif %}
                                                     </td>
                                                 {% endpartialdef %}
-                                                {% if current_time > obj.answer_official_opened_at %}
-                                                    {% partial exam_info %}
-                                                {% else %}
+
+                                                {% if not user.is_authenticated %}
                                                     <td class="text-nowrap" colspan="8">
-                                                        <a class="badge rounded-pill text-bg-danger" href=""
-                                                           hx-headers='{"View-Modal":"no_open"}'
-                                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                                           data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                                           hx-get="{{ obj.get_result_modal_url }}">
-                                                            성적 공개 일시 : {{ obj.answer_official_opened_at|date:'n/d(D) H:i' }}
+                                                        <a class="btn btn-outline-danger"
+                                                           hx-boost="true"
+                                                           hx-target="body" hx-swap="innerHTML swap:0.25s"
+                                                           href="{% url 'account_login' %}?next={{ request.path }}">
+                                                            로그인이 필요합니다
                                                         </a>
                                                     </td>
+                                                {% else %}
+                                                    {% if current_time < obj.score_opened_at %}
+                                                        <td class="text-nowrap" colspan="8">
+                                                            <a class="badge rounded-pill text-bg-danger" href=""
+                                                               hx-headers='{"View-Type":"no_open"}'
+                                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                               data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                                               hx-get="{{ obj.get_result_modal_url }}">
+                                                                성적 공개 일시 : {{ obj.score_opened_at|date:'n/j(D) H:i' }}
+                                                            </a>
+                                                        </td>
+                                                    {% else %}
+                                                        {% partial exam_info %}
+                                                    {% endif %}
                                                 {% endif %}
                                             </tr>
                                         {% endfor %}
@@ -127,64 +138,45 @@
 {% endblock main_content %}
 
 {% partialdef exam_info %}
-    <td class="text-nowrap p-2" aria-label="Serial">
-        {% if user.is_authenticated %}
-            {% if obj.student %}
-                <a href="{{ obj.get_result_detail_url }}" hx-boost="true">{{ obj.student.serial }}</a>
-                {% partialdef delete_student inline=True %} {# delete_student partial #}
-                    {% if user.is_staff %}
-                        <a class="badge rounded-pill text-bg-danger"
-                           hx-confirm="수험 정보를 삭제하시겠습니까?"
-                           href="" hx-post="{{ obj.get_score_unregister_url }}">
-                            삭제
-                        </a>
-                    {% endif %}
-                {% endpartialdef delete_student %}
-            {% else %}
-                {% partialdef input_button inline=True %} {# input_button partial #}
-                    <a class="badge rounded-pill text-bg-warning" href=""
-                       hx-headers='{"View-Modal":"student_register"}'
-                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                       data-bs-toggle="modal" data-bs-target="#modalContainer"
-                       hx-get="{{ obj.get_result_modal_url }}">
-                        입력
+    <td class="text-nowrap p-2" aria-label="수험번호">
+        {% if obj.student %}
+            <a href="{{ obj.get_result_detail_url }}" hx-boost="true">{{ obj.student.serial }}</a>
+            {% partialdef delete_student inline=True %}
+                {% if user.is_staff %}
+                    <a class="badge rounded-pill text-bg-danger"
+                       hx-confirm="수험 정보를 삭제하시겠습니까?"
+                       href="" hx-post="{{ obj.get_result_unregister_url }}">
+                        삭제
                     </a>
-                {% endpartialdef input_button %}
-            {% endif %}
+                {% endif %}
+            {% endpartialdef delete_student %}
         {% else %}
-            {% with class='warning' text='입력' %}
-                {% partialdef login_modal inline=True %}
-                    <a class="badge rounded-pill text-bg-{{ class }}"
-                       hx-get="{% url 'account_login_modal' %}" href=""
-                       hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                       data-bs-toggle="modal" data-bs-target="#modalContainer">
-                        {{ text }}
-                    </a>
-                {% endpartialdef %}
-            {% endwith %}
-        {% endif %}
-    </td>
-
-    <td class="text-nowrap p-2" aria-label="Score Sheet">
-        {% if user.is_authenticated %}
-            {% if obj.student %}
-                <a class="badge rounded-pill text-bg-success" hx-boost="true"
-                   href="{{ obj.get_result_detail_url }}">
-                    확인
-                </a>
-            {% else %}
-                <a class="badge rounded-pill text-bg-danger" href=""
+            {% partialdef input_button inline=True %}
+                <a class="badge rounded-pill text-bg-warning" href=""
                    hx-headers='{"View-Modal":"student_register"}'
                    hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
                    data-bs-toggle="modal" data-bs-target="#modalContainer"
                    hx-get="{{ obj.get_result_modal_url }}">
-                    미응시
+                    입력
                 </a>
-            {% endif %}
+            {% endpartialdef input_button %}
+        {% endif %}
+    </td>
+
+    <td class="text-nowrap p-2" aria-label="성적표">
+        {% if obj.student %}
+            <a class="badge rounded-pill text-bg-success" hx-boost="true"
+               href="{{ obj.get_result_detail_url }}">
+                확인
+            </a>
         {% else %}
-            {% with class='danger' text='미응시' %}
-                {% partial login_modal %}
-            {% endwith %}
+            <a class="badge rounded-pill text-bg-danger" href=""
+               hx-headers='{"View-Modal":"student_register"}'
+               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+               data-bs-toggle="modal" data-bs-target="#modalContainer"
+               hx-get="{{ obj.get_result_modal_url }}">
+                미응시
+            </a>
         {% endif %}
     </td>
 

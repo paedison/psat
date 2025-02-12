@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 
 from django.db import models
@@ -30,6 +30,11 @@ class Leet(models.Model):
 
     def __str__(self):
         return f'[PrimeLeet]Leet(#{self.id}):{self.reference}'
+
+    @property
+    def score_opened_at(self):
+        score_open_date = self.answer_official_opened_at + timedelta(days=5)
+        return score_open_date.replace(hour=8, minute=0)
 
     @property
     def reference(self):

@@ -7,20 +7,20 @@
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap" rowspan="2">문제<br/>번호</th>
                 <th class="text-primary text-nowrap" rowspan="2">공식<br/>정답</th>
-                <th class="text-primary text-nowrap" rowspan="2">예상<br/>정답</th>
+{#                <th class="text-primary text-nowrap" rowspan="2">예상<br/>정답</th>#}
                 <th class="text-primary text-nowrap" rowspan="2">전체<br/>정답률(%)</th>
                 <th class="text-primary text-nowrap" rowspan="2">상위권<br/>정답률(%)</th>
                 <th class="text-primary text-nowrap" rowspan="2">중위권<br/>정답률(%)</th>
                 <th class="text-primary text-nowrap" rowspan="2">하위권<br/>정답률(%)</th>
                 <th class="text-primary text-nowrap" rowspan="2">변별도</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택수(명)-전체</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택률(%)-전체</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택수(명)-상위권</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택률(%)-상위권</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택수(명)-중위권</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택률(%)-중위권</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택수(명)-하위권</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">답안 선택률(%)-하위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-전체</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-전체</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-상위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-상위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-중위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-중위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-하위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-하위권</th>
             </tr>
             <tr class="text-center table-warning align-middle">
                 {% for _ in '12345678' %}
@@ -57,17 +57,17 @@
                             </button>
                         {% endif %}
                     </td>
-                    <td>
-                        {% if answer.ans_predict == answer.ans_official %}
-                            <button class="btn btn-circle btn-sm fs-6 btn-success">
-                                {{ answer.ans_predict }}
-                            </button>
-                        {% else %}
-                            <button class="btn btn-circle btn-sm fs-6 btn-danger">
-                                {{ answer.ans_predict }}
-                            </button>
-                        {% endif %}
-                    </td>
+{#                    <td>#}
+{#                        {% if answer.ans_predict == answer.ans_official %}#}
+{#                            <button class="btn btn-circle btn-sm fs-6 btn-success">#}
+{#                                {{ answer.ans_predict }}#}
+{#                            </button>#}
+{#                        {% else %}#}
+{#                            <button class="btn btn-circle btn-sm fs-6 btn-danger">#}
+{#                                {{ answer.ans_predict }}#}
+{#                            </button>#}
+{#                        {% endif %}#}
+{#                    </td>#}
                     {% for _ in '12345' %}
                         {% cycle answer.rate_correct answer.rate_correct_top answer.rate_correct_mid answer.rate_correct_low answer.rate_gap as rate_correct silent %}
                         <td>
