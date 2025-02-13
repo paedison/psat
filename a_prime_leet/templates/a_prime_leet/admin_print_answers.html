@@ -3,14 +3,14 @@
 {% load psat_filter %}
 {% load humanize %}
 
-{% block head_title %}{{ exam.year }}년도_제{{ exam.round }}회_전국모의고사_문항분석표{% endblock head_title %}
+{% block head_title %}{{ exam.name }}_문항분석표{% endblock head_title %}
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 {% block google_adsense %}{% endblock %}
 
 {% block html_body %}
 <body class="bg-white">
     {{ info|json_script:'info' }}
-    <h2 class="fw-bold text-center mb-4">{{ exam.year }}년도 제{{ exam.round }}회 전국모의고사 문항분석표</h2>
+    <h2 class="fw-bold text-center mb-4">{{ exam.name }} 문항분석표</h2>
     <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
             <thead>
@@ -55,7 +55,7 @@
                             <td class="text-nowrap">{{ answer.no }}</td>
                             <td class="text-nowrap">
                                 {% if answer.ans_official < 12345 %}
-                                    {{ answer.get_answer_display }}
+                                    {{ answer.problem.get_answer_display }}
                                 {% else %}
                                     전체<br/>정답
                                 {% endif %}

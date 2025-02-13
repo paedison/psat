@@ -249,7 +249,7 @@ def statistics_print_view(request: HtmxHttpRequest, pk: int):
     data_statistics = models.ResultStatistics.objects.filter(leet=exam).order_by('id')
     statistics_page_obj, _ = utils.get_paginator_data(data_statistics, 1, 50)
     context = update_context_data(exam=exam, statistics_page_obj=statistics_page_obj)
-    return render(request, 'a_prime_leet/admin_statistics_print.html', context)
+    return render(request, 'a_prime_leet/admin_print_statistics.html', context)
 
 
 @only_staff_allowed()
@@ -259,7 +259,7 @@ def catalog_print_view(request: HtmxHttpRequest, pk: int):
     student_list = exam_vars.get_student_list()
     catalog_page_obj, _ = utils.get_paginator_data(student_list, 1, 10000)
     context = update_context_data(exam=exam, catalog_page_obj=catalog_page_obj)
-    return render(request, 'a_prime_leet/admin_catalog_print.html', context)
+    return render(request, 'a_prime_leet/admin_print_catalog.html', context)
 
 
 @only_staff_allowed()
@@ -270,7 +270,7 @@ def answers_print_view(request: HtmxHttpRequest, pk: int):
     answers_page_obj_group, answers_page_range_group = (
         exam_vars.get_answer_page_data(qs_problems, 1, 1000))
     context = update_context_data(exam=exam, answers_page_obj_group=answers_page_obj_group)
-    return render(request, 'a_prime_leet/admin_answers_print.html', context)
+    return render(request, 'a_prime_leet/admin_print_answers.html', context)
 
 
 @only_staff_allowed()
@@ -362,17 +362,21 @@ def export_catalog_excel_view(_: HtmxHttpRequest, pk: int):
     student_list = exam_vars.get_student_list()
     df = pd.DataFrame.from_records(student_list.values())
 
-    filename = f'제{exam.round}회_전국모의고사_성적일람표.xlsx'
-    drop_columns = ['id', 'created_at', 'password', 'leet_id', 'category_id']
+    filename = f'{exam.name}_성적일람표.xlsx'
+    drop_columns = ['id', 'created_at', 'password', 'leet_id']
     column_label = [
-        ('이름', ''), ('수험번호', ''), ('직렬', ''), ('PSAT 총점', ''),
-        ('전체 총 인원', ''), ('직렬 총 인원', '')
+        ('수험번호', ''), ('이름', ''), ('1지망', ''), ('2지망', ''),
+        ('출신대학', ''), ('전공', ''), ('학점 종류', ''), ('학점', ''),
+        ('영어 종류', ''), ('영어 성적', ''),
+        ('참여자 수', '전체'), ('참여자 수', '1지망'), ('참여자 수', '2지망'),
     ]
-    for _, val in exam_vars.field_vars.items():
+    for _, (_, subject, _) in exam_vars.field_vars.items():
         column_label.extend([
-            (val[1], '점수'),
-            (val[1], '전체 등수'),
-            (val[1], '직렬 등수'),
+            (subject, '원점수'),
+            (subject, '표준점수'),
+            (subject, '전체 등수'),
+            (subject, '1지망 등수'),
+            (subject, '2지망 등수'),
         ])
 
     return get_response_for_excel_file(df, drop_columns, column_label, filename)
@@ -395,8 +399,8 @@ def export_answers_excel_view(_: HtmxHttpRequest, pk: int):
     move_column('ans_official', 2)
     # move_column('ans_predict', 3)
 
-    filename = f'제{exam.round}회_전국모의고사_문항분석표.xlsx'
-    drop_columns = ['id', 'leet_id']
+    filename = f'{exam.name}_문항분석표.xlsx'
+    drop_columns = ['id', 'problem_id']
     column_label = [('과목', ''), ('번호', ''), ('정답', '')]
     top_label = ['전체', '상위권', '중위권', '하위권']
     for lbl in top_label:

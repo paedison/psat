@@ -11,12 +11,11 @@
             </tr>
 
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap" colspan="5">총점</th>
-                <th class="text-primary text-nowrap" colspan="5">언어이해</th>
-                <th class="text-primary text-nowrap" colspan="5">추리논증</th>
-                <th class="text-primary text-nowrap" colspan="5">총점</th>
-                <th class="text-primary text-nowrap" colspan="5">언어이해</th>
-                <th class="text-primary text-nowrap" colspan="5">추리논증</th>
+                {% for _ in '01' %}
+                    <th class="text-primary text-nowrap" colspan="5">총점</th>
+                    <th class="text-primary text-nowrap" colspan="5">언어이해</th>
+                    <th class="text-primary text-nowrap" colspan="5">추리논증</th>
+                {% endfor %}
             </tr>
 
             <tr class="text-center table-warning align-middle">
