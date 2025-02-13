@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from .. import models
+from .. import models, forms
 
 
 class ViewConfiguration:
@@ -21,7 +21,9 @@ class ViewConfiguration:
     submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
 
     url_admin = reverse_lazy('admin:a_psat_psat_changelist')
-    url_list = reverse_lazy('psat:predict-list')
+    url_list = reverse_lazy('psat:study-list')
+
+    url_study_student_register = reverse_lazy('psat:study-student-register')
 
 
 def get_student_dict(user, curriculum_list) -> dict:
@@ -64,32 +66,30 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_psat/study_list.html', context)
 
 
-def register_view(request: HtmxHttpRequest, pk: int):
-    view_type = request.headers.get('View-Type', '')
-    psat = utils.get_psat(pk)
-    if not psat or not psat.predict_psat or not psat.predict_psat.is_active:
-        return redirect('prime:predict-list')
-
-    exam_vars = ExamVars(psat.predict_psat)
-    form = exam_vars.student_form()
-    context = update_context_data(exam_vars=exam_vars, exam=psat, form=form)
-
-    if view_type == 'department':
-        unit = request.GET.get('unit')
-        categories = exam_vars.get_qs_category(unit)
-        context = update_context_data(context, categories=categories)
-        return render(request, 'a_psat/snippets/predict_department_list.html', context)
+def register_view(request: HtmxHttpRequest):
+    config = ViewConfiguration()
+    title = '새 커리큘럼 등록'
+    form = forms.StudyStudentRegisterForm()
+    context = update_context_data(config=config, title=title, form=form)
 
     if request.method == 'POST':
-        form = exam_vars.student_form(request.POST)
+        form = forms.StudyStudentRegisterForm(request.POST)
         if form.is_valid():
-            student = form.save(commit=False)
-            student.user = request.user
-            student.psat = psat
-            student.save()
-            exam_vars.rank_total_model.objects.get_or_create(student=student)
-            exam_vars.rank_category_model.objects.get_or_create(student=student)
-            exam_vars.score_model.objects.get_or_create(student=student)
-            context = update_context_data(context, user_verified=True)
+            organization = form.cleaned_data['organization']
+            semester = form.cleaned_data['semester']
+            serial = form.cleaned_data['serial']
+            name = form.cleaned_data['name']
 
-    return render(request, 'a_psat/snippets/modal_predict_student_register.html#student_info', context)
+            curriculum = models.StudyCurriculum.objects.filter(
+                year=timezone.now().year, organization__name=organization, semester=semester).first()
+            print(curriculum)
+            if curriculum:
+                student, _ = models.StudyStudent.objects.get_or_create(
+                    curriculum=curriculum, serial=serial, user=request.user)
+                if student.name != name:
+                    student.name = name
+                    student.save()
+                return redirect('psat:study-list')
+        context = update_context_data(context, form=form)
+
+    return render(request, 'a_psat/admin_form.html', context)

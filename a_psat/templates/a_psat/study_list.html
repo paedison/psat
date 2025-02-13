@@ -27,7 +27,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">스터디 목록</div>
+                    <div class="card-header">커리큘럼 목록</div>
 
                     <div class="card-body">
                         <article class="table-responsive">
@@ -35,93 +35,88 @@
                                 <thead>
                                     <tr class="text-center table-warning">
                                         <th class="text-primary text-nowrap p-2 col-1">연도</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">구분</th>
+                                        <th class="text-primary text-nowrap p-2 col-1">교육기관명</th>
                                         <th class="text-primary text-nowrap p-2 col-1">학기</th>
                                         <th class="text-primary text-nowrap p-2 col-1">직렬</th>
                                         <th class="text-primary text-nowrap p-2 col-1">성적표</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">헌법</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">언어</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">자료</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">상황</th>
-                                        <th class="text-primary text-nowrap p-2 col-1">PSAT 평균</th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
-                                    {% if page_obj %}
-                                        {% for obj in page_obj %}
-                                            <tr class="text-center">
-                                                <td class="text-nowrap" aria-label="연도">
-                                                    {% if obj.student and not obj.is_predict_closed %}
-                                                        <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
-                                                            {{ obj.get_year_display }}
-                                                        </a>
-                                                    {% else %}
+                                    {% for obj in page_obj %}
+                                        <tr class="text-center">
+                                            <td class="text-nowrap" aria-label="연도">
+                                                {% if obj.student and not obj.is_predict_closed %}
+                                                    <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
                                                         {{ obj.get_year_display }}
-                                                    {% endif %}
-                                                </td>
+                                                    </a>
+                                                {% else %}
+                                                    {{ obj.get_year_display }}
+                                                {% endif %}
+                                            </td>
 
-                                                <td class="text-nowrap" aria-label="시험">
-                                                    {% if obj.student and not obj.is_predict_closed %}
-                                                        <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
-                                                            {{ obj.exam_abbr }}
-                                                        </a>
-                                                    {% else %}
+                                            <td class="text-nowrap" aria-label="시험">
+                                                {% if obj.student and not obj.is_predict_closed %}
+                                                    <a href="{{ obj.get_predict_detail_url }}" hx-boost="true">
                                                         {{ obj.exam_abbr }}
-                                                    {% endif %}
-                                                </td>
+                                                    </a>
+                                                {% else %}
+                                                    {{ obj.exam_abbr }}
+                                                {% endif %}
+                                            </td>
 
-                                                {% if not user.is_authenticated %}
+                                            {% if not user.is_authenticated %}
+                                                <td class="text-nowrap" colspan="8">
+                                                    <a class="btn btn-outline-danger"
+                                                       hx-boost="true"
+                                                       hx-target="body" hx-swap="innerHTML swap:0.25s"
+                                                       href="{% url 'account_login' %}?next={{ request.path }}">
+                                                        로그인이 필요합니다
+                                                    </a>
+                                                </td>
+                                            {% else %}
+                                                {% if current_time < obj.page_opened_at %}
                                                     <td class="text-nowrap" colspan="8">
-                                                        <a class="btn btn-outline-danger"
-                                                           hx-boost="true"
-                                                           hx-target="body" hx-swap="innerHTML swap:0.25s"
-                                                           href="{% url 'account_login' %}?next={{ request.path }}">
-                                                            로그인이 필요합니다
+                                                        <a class="badge rounded-pill text-bg-danger" href=""
+                                                           hx-headers='{"View-Type":"no_open"}'
+                                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                           data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                                           hx-get="{{ obj.get_predict_modal_url }}">
+                                                            페이지 오픈 일시 : {{ obj.exam_started_at|date:'n/j(D) H:i' }}
+                                                        </a>
+                                                    </td>
+                                                {% elif current_time > obj.score_opened_at %}
+                                                    <td class="text-nowrap" colspan="8">
+                                                        <a class="badge rounded-pill text-bg-danger" href=""
+                                                           hx-headers='{"View-Type":"no_predict"}'
+                                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                                           data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                                           hx-get="{{ obj.get_predict_modal_url }}">
+                                                            성적 예측 기간이 지났습니다.
                                                         </a>
                                                     </td>
                                                 {% else %}
-                                                    {% if current_time < obj.page_opened_at %}
-                                                        <td class="text-nowrap" colspan="8">
-                                                            <a class="badge rounded-pill text-bg-danger" href=""
-                                                               hx-headers='{"View-Type":"no_open"}'
-                                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                                               data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                                               hx-get="{{ obj.get_predict_modal_url }}">
-                                                                페이지 오픈 일시 : {{ obj.exam_started_at|date:'n/j(D) H:i' }}
-                                                            </a>
-                                                        </td>
-                                                    {% elif current_time > obj.score_opened_at %}
-                                                        <td class="text-nowrap" colspan="8">
-                                                            <a class="badge rounded-pill text-bg-danger" href=""
-                                                               hx-headers='{"View-Type":"no_predict"}'
-                                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                                               data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                                               hx-get="{{ obj.get_predict_modal_url }}">
-                                                                성적 예측 기간이 지났습니다.
-                                                            </a>
-                                                        </td>
-                                                    {% else %}
-                                                        {% partial exam_info %}
-                                                    {% endif %}
+                                                    {% partial exam_info %}
                                                 {% endif %}
-                                            </tr>
-                                        {% endfor %}
-                                    {% endif %}
+                                            {% endif %}
+                                        </tr>
+                                    {% empty %}
+                                        <tr class="text-center">
+                                            <td class="text-nowrap" colspan="5">
+                                                <a class="btn btn-outline-primary"
+                                                   hx-boost="true"
+                                                   hx-target="main" hx-swap="innerHTML swap:0.25s"
+                                                   href="{{ config.url_study_student_register }}">
+                                                    커리큘럼을 등록해주세요
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </article>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                {% include '_banner/predict_psat_2024_chilgeup.html' %}
-            </div>
-            <div class="col-md-6">
-                {% include '_banner/score_prime_police_2025.html' %}
             </div>
         </div>
     </section>

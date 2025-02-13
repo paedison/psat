@@ -139,7 +139,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('year', models.PositiveSmallIntegerField(choices=a_psat.models.choices.year_choice, default=2025, verbose_name='연도')),
-                ('semester', models.PositiveSmallIntegerField(choices=a_psat.models.choices.semester_choice, default=1, verbose_name='학기')),
+                ('semester', models.PositiveSmallIntegerField(choices=a_psat.models.choices.study_semester_choice, default=1, verbose_name='학기')),
                 ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='curriculum', to='a_psat.studycategory')),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='curriculum', to='a_psat.studyorganization')),
             ],

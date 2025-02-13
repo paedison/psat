@@ -1,0 +1,79 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load crispy_forms_field %}
+
+<article class="table-responsive">
+    <table class="table align-middle m-0">
+        <tbody>
+            {% for study_problem in page_obj %}
+                {% with problem=study_problem.problem %}
+                    <tr>
+                        <td class="text-nowrap py-2 px-0">
+                            {% with problem_id=problem.id %}
+                                <div class="align-middle d-inline-block">
+                                    {% partial reference %}
+                                </div>
+                                <div class="align-middle d-block d-sm-inline-block">
+                                    {% partial question %}
+                                </div>
+                            {% endwith %}
+                        </td>
+                    </tr>
+                {% endwith %}
+            {% empty %}
+                <tr>
+                    <td class="text-center text-nowrap px-2" colspan="5">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% if page_obj.has_next or page_obj.has_previous %}
+    {% include 'a_psat/snippets/pagination.html' with header='problem_list' %}
+{% endif %}
+
+{% partialdef reference %}
+    <span class="fw-bold">{{ study_problem.problem_info }} |</span>
+    <a class="text-decoration-none fw-bold cursor-pointer" hx-boost="true"
+       href="{{ problem.get_absolute_url }}{% querystring %}">
+        {{ problem.reference }}
+    </a>
+    {% if problem.images.name1 == 'Preparing Image' %}
+        {{ icon_image.False|safe }}
+    {% else %}
+        <a class="text-decoration-none" href=""
+           data-bs-toggle="modal" data-bs-target="#modalContainer"
+           hx-push-url="false"
+           hx-target="#modalContainer"
+           hx-headers='{"View-Type":"image"}'
+           hx-get="{% url 'psat:problem-detail' problem_id %}">
+            {{ icon_image.True|safe }}
+        </a>
+    {% endif %}
+    {% if user.is_admin %}
+        <span class="badge bg-warning-subtle border border-warning-subtle text-warning-emphasis rounded-pill">
+            정답 {{ problem.get_answer_display }}
+        </span>
+        <a class="badge bg-info-subtle border border-info-subtle text-info-emphasis rounded-pill"
+           target="#admin" href="{{ problem.get_admin_change_url }}">
+            수정
+        </a>
+    {% endif %}
+{% endpartialdef reference %}
+
+{% partialdef question %}
+    {% with class='d-md-none' chars=30 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-md-inline d-lg-none' chars=40 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-lg-inline d-xl-none' chars=50 %}{% partial link_snippet %}{% endwith %}
+    {% with class='d-none d-xl-inline' chars=60 %}{% partial link_snippet %}{% endwith %}
+
+    {% partialdef link_snippet %}
+        <a class="text-decoration-none {{ class }} cursor-pointer" hx-boost="true"
+           href="{{ problem.get_absolute_url }}{% querystring %}">
+            <h3 class="d-inline-block fs-6 small m-0">
+                {{ problem.question|truncatechars:chars }}
+            </h3>
+        </a>
+    {% endpartialdef link_snippet %}
+{% endpartialdef question %}

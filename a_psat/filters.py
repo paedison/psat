@@ -216,6 +216,6 @@ class StudyCurriculumFilter(django_filters.FilterSet):
     semester = django_filters.ChoiceFilter(
         field_name='semester', label='',
         empty_label='[전체 학기]',
-        choices=choices.semester_choice,
+        choices=choices.study_semester_choice,
     )
     category = django_filters

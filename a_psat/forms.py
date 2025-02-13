@@ -263,3 +263,35 @@ class StudyAnswerForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['curriculum'].label_from_instance = lambda obj: obj.curriculum_info
 
+
+class StudyStudentRegisterForm(forms.Form):
+    organization = forms.ChoiceField(
+        label='교육기관명', label_suffix='', initial='서울과기대',
+        choices=models.choices.study_organization_choice,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    semester = forms.ChoiceField(
+        label='학기', label_suffix='', initial=1,
+        choices=models.choices.study_semester_choice,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    serial = forms.CharField(
+        label='학번(수험번호)', label_suffix='',
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+    name = forms.CharField(
+        label='이름', label_suffix='',
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        organization = cleaned_data['organization']
+        semester = cleaned_data['semester']
+        curriculum = models.StudyCurriculum.objects.filter(
+            year=timezone.now().year, organization__name=organization, semester=semester)
+        if not curriculum.exists():
+            self.add_error('organization', '선택한 교육기관명이 맞는지 확인해주세요.')
+            self.add_error('semester', '선택한 학기가 맞는지 확인해주세요.')
+
+        return cleaned_data

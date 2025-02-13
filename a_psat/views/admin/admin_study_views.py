@@ -54,11 +54,20 @@ def study_category_detail_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', '1')
 
-    category = get_object_or_404(models.StudyCurriculum, pk=pk)
-    category: models.StudyCurriculum
+    category = get_object_or_404(models.StudyCategory, pk=pk)
+    category: models.StudyCategory
     statistics = models.StudyStatistics.objects.filter(psat__category=category)
-    context = update_context_data(config=config, category=category)
-    return render(request, 'a_psat/admin_detail.html', context)
+    problems = models.StudyProblem.objects.filter(psat__category=category)
+    page_obj, page_range = utils.get_paginator_data(problems, page_number)
+
+    context = update_context_data(
+        config=config, category=category,
+        icon_image=icon_set_new.ICON_IMAGE,
+        page_obj=page_obj, page_range=page_range,
+    )
+    if view_type == 'problem_list':
+        return render(request, 'a_psat/snippets/study_problem_list_content.html', context)
+    return render(request, 'a_psat/admin_study_category_detail.html', context)
 
 
 @admin_required
@@ -67,10 +76,12 @@ def study_curriculum_detail_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', '1')
 
-    curriculum = get_object_or_404(models.StudyCurriculum.objects.get, pk=pk)
+    curriculum = get_object_or_404(models.StudyCurriculum, pk=pk)
     curriculum: models.StudyCurriculum
     statistics = models.StudyStatistics.objects.filter(psat__category=curriculum.category)
     students = models.StudyStudent.objects.filter(curriculum=curriculum)
+    context = update_context_data(config=config, curriculum=curriculum)
+    return render(request, 'a_psat/admin_detail.html', context)
 
 
 def bulk_create_or_update(model, list_create, list_update, update_fields):

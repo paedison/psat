@@ -33,6 +33,10 @@ class StudyCategory(models.Model):
     def category_info(self):
         return f'시즌{self.season:02}{self.study_type}'
 
+    @property
+    def full_reference(self):
+        return f'시즌{self.season:02} {self.study_type} [{self.name}]'
+
     def get_admin_study_category_detail_url(self):
         return reverse_lazy('psat:admin-study-category-detail', args=[self.id])
 
@@ -93,7 +97,7 @@ class StudyProblem(models.Model):
 
     @property
     def problem_info(self):
-        return f'{self.psat.get_round_display()}-{self.get_number_display()}'
+        return f'{self.psat.round:02}회차-{self.number:02}번'
 
 
 class StudyStatistics(abstract_models.Statistics):
@@ -128,7 +132,7 @@ class StudyCurriculum(models.Model):
     year = models.PositiveSmallIntegerField(
         choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
     organization = models.ForeignKey(StudyOrganization, models.CASCADE, related_name='curriculum')
-    semester = models.PositiveSmallIntegerField(choices=choices.semester_choice, default=1, verbose_name='학기')
+    semester = models.PositiveSmallIntegerField(choices=choices.study_semester_choice, default=1, verbose_name='학기')
     category = models.ForeignKey(StudyCategory, models.CASCADE, related_name='curriculum')
 
     class Meta:
@@ -148,17 +152,24 @@ class StudyCurriculum(models.Model):
     def curriculum_info(self):
         return f'{self.organization.name}-{self.year}-{self.semester}'
 
+    @property
+    def full_reference(self):
+        return f'{self.organization.name} {self.get_year_display()}-{self.get_organization_semester()}'
+
     def get_organization_semester(self):
         if self.organization in ['프라임']:
             return f'{self.semester}순환'
         else:
             return self.get_semester_display()
 
+    def get_admin_study_curriculum_detail_url(self):
+        return reverse_lazy('psat:admin-study-curriculum-detail', args=[self.id])
+
 
 class StudyStudent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='수정 일시')
-    curriculum = models.ForeignKey(StudyCurriculum, models.CASCADE, related_name='attendances')
+    curriculum = models.ForeignKey(StudyCurriculum, models.CASCADE, related_name='students')
     serial = models.CharField(max_length=10, verbose_name='수험번호')
     name = models.CharField(max_length=20, verbose_name='이름')
     user = models.ForeignKey(
@@ -185,7 +196,7 @@ class StudyAnswer(models.Model):
     student = models.ForeignKey(StudyStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(
         StudyProblem, on_delete=models.CASCADE, related_name='university_answers')
-    answer = models.IntegerField(choices=choices.answer_choice, default=1, verbose_name='답안')
+    answer = models.IntegerField(choices=choices.answer_choice, default=0, verbose_name='답안')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}07_답안'

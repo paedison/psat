@@ -200,7 +200,7 @@
 
 {% partialdef study_category_list %}
     <article class="table-responsive">
-        <table class="table table-bordered table-striped align-middle">
+        <table class="table table-bordered table-striped align-middle" hx-push-url="true">
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap">시즌</th>
@@ -233,7 +233,7 @@
 
 {% partialdef study_curriculum_list %}
     <article class="table-responsive">
-        <table class="table table-bordered table-striped align-middle">
+        <table class="table table-bordered table-striped align-middle" hx-push-url="true">
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap" rowspan="2">연도</th>
@@ -249,7 +249,7 @@
             </thead>
             <tbody>
                 {% for obj in study_page_obj %}
-                    <tr class="text-center cursor-pointer" hx-get="{{ obj.psat.get_admin_detail_url }}">
+                    <tr class="text-center cursor-pointer" hx-get="{{ obj.get_admin_study_curriculum_detail_url }}">
                         <td class="text-nowrap">{{ obj.get_year_display }}</td>
                         <td class="text-nowrap">{{ obj.organization.get_name_display }}</td>
                         <td class="text-nowrap">{{ obj.get_semester_display }}</td>

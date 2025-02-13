@@ -38,6 +38,7 @@ def number_choice() -> list:
 
 def answer_choice() -> dict:
     return {
+        0: '',
         1: '①', 2: '②', 3: '③', 4: '④', 5: '⑤',
         12: '①②', 13: '①③', 14: '①④', 15: '①⑤',
         23: '②③', 24: '②④', 25: '②⑤',
@@ -253,7 +254,7 @@ def study_organization_choice() -> list:
     ]
 
 
-def semester_choice() -> list:
+def study_semester_choice() -> list:
     return [
         (1, '1학기'),
         (2, '2학기'),

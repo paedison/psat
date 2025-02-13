@@ -76,6 +76,24 @@
                         <li class="breadcrumb-item">
                             <a href="{{ psat.get_admin_detail_url }}" class="active">{{ psat.reference }}</a>
                         </li>
+                    {% elif category %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                        </li>
+                        <li class="breadcrumb-item"><a href="{{ config.url_list }}">Study</a></li>
+                        <li class="breadcrumb-item"><a href="{{ config.url_list }}">Category</a></li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ category.get_admin_study_category_detail_url }}" class="active">{{ category.category_info }}</a>
+                        </li>
+                    {% elif curriculum %}
+                        <li class="breadcrumb-item">
+                            <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
+                        </li>
+                        <li class="breadcrumb-item"><a href="{{ config.url_list }}">Study</a></li>
+                        <li class="breadcrumb-item"><a href="{{ config.url_list }}">Curriculum</a></li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ curriculum.get_admin_study_curriculum_detail_url }}" class="active">{{ curriculum.curriculum_info }}</a>
+                        </li>
                     {% else %}
                         <li class="breadcrumb-item">
                             <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>

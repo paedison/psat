@@ -398,7 +398,7 @@ def study_student_add_view(request: HtmxHttpRequest):
         form = forms.UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             file = request.FILES['file']
-            df = pd.read_excel(file, sheet_name='attendance', header=0)
+            df = pd.read_excel(file, sheet_name='student', header=0)
 
             study_student_dict: dict[str, models.StudyStudent] = {}
             study_students = models.StudyStudent.objects.all()

@@ -84,7 +84,7 @@ predict_patterns = [
 
 study_patterns = [
     path('', study_views.list_view, name='study-list'),
-    path('register/', study_views.register_view, name='study-register'),
+    path('student/register/', study_views.register_view, name='study-student-register'),
 ]
 
 urlpatterns = [
