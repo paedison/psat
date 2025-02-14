@@ -9,6 +9,7 @@
                 <th class="text-primary text-nowrap" rowspan="3">등수</th>
                 <th class="text-primary text-nowrap" rowspan="3">이름</th>
                 <th class="text-primary text-nowrap" rowspan="3">수험번호</th>
+                <th class="text-primary text-nowrap" rowspan="3">비밀번호</th>
                 <th class="text-primary text-nowrap" rowspan="3">직렬</th>
 
                 <th class="text-primary text-nowrap" colspan="6">PSAT</th>
@@ -50,6 +51,7 @@
                         </a>
                     </td>
                     <td class="text-nowrap">{{ obj.serial }}</td>
+                    <td class="text-nowrap">{{ obj.password }}</td>
                     <td class="text-nowrap">{{ obj.department }}</td>
 
                     <td class="text-nowrap td-right-no-border">{{ obj.score_sum|floatformat:1 }}</td>

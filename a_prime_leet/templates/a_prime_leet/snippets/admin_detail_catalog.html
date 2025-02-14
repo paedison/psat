@@ -9,6 +9,7 @@
                 <th class="text-primary text-nowrap" rowspan="3">등수</th>
                 <th class="text-primary text-nowrap" rowspan="3">이름</th>
                 <th class="text-primary text-nowrap" rowspan="3">수험번호</th>
+                <th class="text-primary text-nowrap" rowspan="3">비밀번호</th>
                 <th class="text-primary text-nowrap" rowspan="3">출신대학</th>
                 <th class="text-primary text-nowrap" rowspan="3">전공</th>
                 <th class="text-primary text-nowrap" rowspan="3">1지망</th>
@@ -51,6 +52,7 @@
                         <a href="{{ obj.get_admin_result_student_detail_url }}" target="score_print">{{ obj.name }}</a>
                     </td>
                     <td class="text-nowrap">{{ obj.serial }}</td>
+                    <td class="text-nowrap">{{ obj.password }}</td>
                     <td class="text-nowrap">{{ obj.school }}</td>
                     <td class="text-nowrap">{{ obj.major }}</td>
                     <td class="text-nowrap">{{ obj.aspiration_1 }}</td>
