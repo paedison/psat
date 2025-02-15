@@ -604,6 +604,7 @@ class ExamVars:
     ):
         qs_answer_values = self.get_qs_answer_values(student, stat_type, is_filtered)
         qs_score = self.get_qs_score(student, stat_type, is_filtered)
+        time_schedule = self.get_time_schedule()
 
         stat_data = []
         for sub, (subject, fld, fld_idx) in self.subject_vars.items():
@@ -617,8 +618,8 @@ class ExamVars:
             stat_data.append({
                 'field': fld, 'sub': sub, 'subject': subject,
                 'icon': icon_set_new.ICON_SUBJECT[sub],
-                'start_time': self.get_time_schedule()[sub][0],
-                'end_time': self.get_time_schedule()[sub][1],
+                'start_time': time_schedule[sub][0],
+                'end_time': time_schedule[sub][1],
 
                 'participants': 0,
                 'is_confirmed': is_confirmed_data[fld_idx],
