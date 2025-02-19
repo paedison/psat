@@ -62,9 +62,9 @@ def update_scores(qs_student, psats):
     is_updated_list = []
 
     # Update StudyResult for score
-    list_update = []
     for s in qs_student:
         qs_result = models.StudyResult.objects.filter(student=s, psat__in=psats, score=0)
+        list_update = []
         for r in qs_result:
             qs_answer = models.StudyAnswer.objects.filter(student=r.student, problem__psat=r.psat)
             score = 0
