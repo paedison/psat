@@ -63,20 +63,35 @@ def update_scores(qs_student, psats):
 
     # Update StudyResult for score
     list_update = []
-    qs_result = models.StudyResult.objects.filter(student__in=qs_student, psat__in=psats, score=0)
-    for r in qs_result:
-        qs_answer = models.StudyAnswer.objects.filter(student=r.student, problem__psat=r.psat)
-        score = 0
-        for a in qs_answer:
-            answer_correct_list = {int(digit) for digit in str(a.answer_correct)}
-            if a.answer in answer_correct_list:
-                score += 1
-        if score:
-            r.score = score
-            list_update.append(r)
-    is_updated_list.append(bulk_create_or_update(
-        models.StudyResult, [], list_update, ['score']))
+    for s in qs_student:
+        qs_result = models.StudyResult.objects.filter(student=s, psat__in=psats, score=0)
+        for r in qs_result:
+            qs_answer = models.StudyAnswer.objects.filter(student=r.student, problem__psat=r.psat)
+            score = 0
+            for a in qs_answer:
+                answer_correct_list = {int(digit) for digit in str(a.answer_correct)}
+                if a.answer in answer_correct_list:
+                    score += 1
+            if score:
+                r.score = score
+                list_update.append(r)
+        is_updated_list.append(bulk_create_or_update(
+            models.StudyResult, [], list_update, ['score']))
 
+    # qs_result = models.StudyResult.objects.filter(student__in=qs_student, psat__in=psats, score=0)
+    # for r in qs_result:
+    #     qs_answer = models.StudyAnswer.objects.filter(student=r.student, problem__psat=r.psat)
+    #     score = 0
+    #     for a in qs_answer:
+    #         answer_correct_list = {int(digit) for digit in str(a.answer_correct)}
+    #         if a.answer in answer_correct_list:
+    #             score += 1
+    #     if score:
+    #         r.score = score
+    #         list_update.append(r)
+    # is_updated_list.append(bulk_create_or_update(
+    #     models.StudyResult, [], list_update, ['score']))
+    #
     # Update StudyStudent for score_total
     list_update = []
     student_scores = qs_student.annotate(
