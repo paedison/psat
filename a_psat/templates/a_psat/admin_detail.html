@@ -87,16 +87,16 @@
                                 <div class="col-md-6 d-flex justify-content-end"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                     <div class="btn-group">
-                                        {% include 'a_psat/snippets/admin_detail_predict_button_update.html' with view_type='score' button_name='점수 업데이트' %}
-                                        {% include 'a_psat/snippets/admin_detail_predict_button_update.html' with view_type='rank' button_name='등수 업데이트' %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='score' button_name='점수 업데이트' update_url=config.admin_detail_button_export %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' update_url=config.admin_detail_button_export %}
                                     </div>
                                 </div>
 
                                 <div class="col-md-6 d-flex justify-content-end"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                     <div class="btn-group">
-                                        {% include 'a_psat/snippets/admin_detail_predict_button_update.html' with view_type='statistics' button_name='통계 업데이트' %}
-                                        {% include 'a_psat/snippets/admin_detail_predict_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' update_url=config.admin_detail_button_export %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' update_url=config.admin_detail_button_export %}
                                     </div>
                                 </div>
                             </div>
@@ -116,8 +116,8 @@
                                        href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
                                         목록
                                     </a>
-                                    {% include 'a_psat/snippets/admin_detail_predict_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_statistics_excel %}
-                                    {% include 'a_psat/snippets/admin_detail_predict_button_export.html' with button_name='인쇄하기' export_url=config.url_statistics_print %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_statistics_excel %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_statistics_print %}
                                 </div>
                             </div>
                         </div>
@@ -137,15 +137,15 @@
                             {{ psat.year }}년도 {{ psat.exam_name }} | 성적일람표 [예측]
                             <div class="d-flex ms-auto">
                                 <div class="btn-group">
-                                    {% include 'a_psat/snippets/admin_detail_predict_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
-{#                                    {% include 'a_psat/snippets/admin_detail_predict_button_export.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
-                                    {% include 'a_psat/snippets/admin_detail_predict_button_export.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
+{#                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
-                        {% include 'a_psat/snippets/admin_detail_predict_search.html' %}
+                        {% include 'a_psat/snippets/admin_detail_search.html' %}
                         <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_psat/snippets/admin_detail_predict_catalog.html' %}
                         </div>
@@ -160,8 +160,8 @@
                             <span>{{ psat.year }}년도 {{ psat.exam_name }} | 문항분석표 [예측]</span>
                             <div class="d-flex ms-auto">
                                 <div class="btn-group">
-                                    {% include 'a_psat/snippets/admin_detail_predict_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_answers_excel %}
-                                    {% include 'a_psat/snippets/admin_detail_predict_button_export.html' with button_name='인쇄하기' export_url=config.url_answers_print %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_answers_excel %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_answers_print %}
                                 </div>
                             </div>
                         </div>

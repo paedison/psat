@@ -1,0 +1,323 @@
+import itertools
+import traceback
+from collections import defaultdict
+
+import django.db.utils
+import pandas as pd
+from django.db import transaction
+from django.db.models import F, Value, CharField, Count, When, Case
+from django.db.models.functions import Concat
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
+
+from common.constants import icon_set_new
+from common.decorators import admin_required
+from common.utils import HtmxHttpRequest, update_context_data
+from ... import models, utils, forms, filters
+
+
+def append_list_create(model, list_create, **kwargs):
+    try:
+        model.objects.get(**kwargs)
+    except model.DoesNotExist:
+        list_create.append(model(**kwargs))
+
+
+def create_predict_answer_count_model_instances(original_psat):
+    problems = models.Problem.objects.filter(psat=original_psat).order_by('id')
+    model_list = [
+        models.PredictAnswerCount,
+        models.PredictAnswerCountTopRank,
+        models.PredictAnswerCountMidRank,
+        models.PredictAnswerCountLowRank,
+    ]
+    for model in model_list:
+        list_create = []
+        for problem in problems:
+            append_list_create(model, list_create, problem=problem)
+        bulk_create_or_update(model, list_create, [], [])
+
+
+def create_predict_statistics_model_instances(original_psat):
+    department_list = list(
+        models.PredictCategory.objects.filter(exam=original_psat.exam).order_by('order')
+        .values_list('department', flat=True)
+    )
+    department_list.insert(0, '전체')
+
+    list_create = []
+    for department in department_list:
+        append_list_create(
+            models.PredictStatistics, list_create, psat=original_psat, department=department)
+    bulk_create_or_update(models.PredictStatistics, list_create, [], [])
+
+
+def create_problem_model_instances(psat, exam):
+    list_create = []
+
+    def append_list(problem_count: int, *subject_list):
+        for subject in subject_list:
+            for number in range(1, problem_count + 1):
+                problem_info = {'psat': psat, 'subject': subject, 'number': number}
+                append_list_create(models.Problem, list_create, **problem_info)
+
+    if exam in ['행시', '입시']:
+        append_list(40, '언어', '자료', '상황')
+        append_list(25, '헌법')
+    elif exam in ['칠급']:
+        append_list(25, '언어', '자료', '상황')
+
+    bulk_create_or_update(models.Problem, list_create, [], [])
+
+
+def update_problem_count(page_obj):
+    for psat in page_obj:
+        psat.updated_problem_count = sum(1 for prob in psat.problems.all() if prob.question and prob.data)
+        psat.image_problem_count = sum(1 for prob in psat.problems.all() if prob.has_image)
+
+
+def update_category_statistics(category_page_obj):
+    for c in category_page_obj:
+        score_list = models.StudyStudent.objects.filter(
+            curriculum__category=c).values_list('score_total', flat=True)
+        participants = len(score_list)
+        sorted_scores = sorted(score_list, reverse=True)
+        if sorted_scores:
+            top_10_threshold = max(1, int(participants * 0.10))
+            top_25_threshold = max(1, int(participants * 0.25))
+            top_50_threshold = max(1, int(participants * 0.50))
+            c.max = sorted_scores[0]
+            c.t10 = sorted_scores[top_10_threshold - 1]
+            c.t25 = sorted_scores[top_25_threshold - 1]
+            c.t50 = sorted_scores[top_50_threshold - 1]
+            c.avg = round(sum(score_list) / participants, 1)
+
+
+def update_curriculum_statistics(curriculum_page_obj):
+    for c in curriculum_page_obj:
+        score_list = models.StudyStudent.objects.filter(curriculum=c).values_list('score_total', flat=True)
+        participants = len(score_list)
+        sorted_scores = sorted(score_list, reverse=True)
+        if sorted_scores:
+            top_10_threshold = max(1, int(participants * 0.10))
+            top_25_threshold = max(1, int(participants * 0.25))
+            top_50_threshold = max(1, int(participants * 0.50))
+            c.max = sorted_scores[0]
+            c.t10 = sorted_scores[top_10_threshold - 1]
+            c.t25 = sorted_scores[top_25_threshold - 1]
+            c.t50 = sorted_scores[top_50_threshold - 1]
+            c.avg = round(sum(score_list) / participants, 1)
+
+
+def upload_data_to_study_category_and_psat_model(excel_file):
+    df = pd.read_excel(excel_file, sheet_name='category', header=0, index_col=0)
+
+    for _, row in df.iterrows():
+        season = row['season']
+        study_type = row['study_type']
+        name = row['name']
+        study_round = row['round']
+        update_expr = {'name': name, 'round': study_round}
+
+        category, _ = models.StudyCategory.objects.get_or_create(season=season, study_type=study_type)
+        fields_not_match = [getattr(category, k) != v for k, v in update_expr.items()]
+        if any(fields_not_match):
+            for key, val in update_expr.items():
+                setattr(category, key, val)
+            category.save()
+
+        list_create = []
+        for rnd in range(1, study_round + 1):
+            try:
+                models.StudyPsat.objects.get(category=category, round=rnd)
+            except models.StudyPsat.DoesNotExist:
+                list_create.append(models.StudyPsat(category=category, round=rnd))
+        bulk_create_or_update(models.StudyPsat, list_create, [], [])
+
+
+def upload_data_to_study_problem_model(excel_file):
+    df = pd.read_excel(excel_file, sheet_name='problem', header=0)
+
+    psat_dict: dict[tuple, models.StudyPsat] = {}
+    for p in models.StudyPsat.objects.with_select_related():
+        psat_dict[(p.category.season, p.category.study_type, p.round)] = p
+
+    problem_dict: dict[tuple, models.StudyProblem] = {}
+    for p in models.StudyProblem.objects.with_select_related():
+        problem_dict[(p.psat.category.season, p.psat.category.study_type, p.psat.round, p.number)] = p
+
+    list_create = []
+    for _, row in df.iterrows():
+        season = row['season']
+        study_type = row['study_type']
+        study_round = row['round']
+        round_problem_number = row['round_problem_number']
+
+        year = row['year']
+        exam = row['exam']
+        subject = row['subject']
+        number = row['number']
+
+        psat_key = (season, study_type, study_round)
+        problem_key = (season, study_type, study_round, round_problem_number)
+        if psat_key in psat_dict and problem_key not in problem_dict:
+            psat = psat_dict[psat_key]
+            try:
+                problem = models.Problem.objects.get(
+                    psat__year=year, psat__exam=exam, subject=subject, number=number)
+                study_problem = models.StudyProblem(
+                    psat=psat, number=round_problem_number, problem=problem)
+                list_create.append(study_problem)
+            except models.Problem.DoesNotExist:
+                print(f'Problem with {year}{exam}{subject}-{number:02} does not exist.')
+
+    bulk_create_or_update(models.StudyProblem, list_create, [], [])
+
+
+def update_study_psat_models():
+    problem_count_list = (
+        models.StudyProblem.objects.values('psat_id', 'problem__subject')
+        .annotate(
+            subject=Case(
+                When(problem__subject='헌법', then=Value('subject_0')),
+                When(problem__subject='언어', then=Value('subject_1')),
+                When(problem__subject='자료', then=Value('subject_2')),
+                When(problem__subject='상황', then=Value('subject_3')),
+                default=Value(''),
+                output_field=CharField(),
+            ),
+            count=Count('id'))
+        .order_by('psat_id', 'subject')
+    )
+    problem_count_dict = defaultdict(dict)
+    for p in problem_count_list:
+        problem_count_dict[p['psat_id']][p['subject']] = p['count']
+    for psat in models.StudyPsat.objects.all():
+        problem_counts = problem_count_dict[psat.id]
+        problem_counts['total'] = sum(problem_counts.values())
+        psat.problem_counts = problem_counts
+        psat.save()
+
+
+def create_study_answer_count_models():
+    problems = models.StudyProblem.objects.order_by('id')
+    model_dict = {
+        'answer_count_top': models.StudyAnswerCount,
+        'answer_count_top_rank': models.StudyAnswerCountTopRank,
+        'answer_count_mid_rank': models.StudyAnswerCountMidRank,
+        'answer_count_low_rank': models.StudyAnswerCountLowRank,
+    }
+    for related_name, model in model_dict.items():
+        list_create = []
+        for problem in problems:
+            if not hasattr(problem, related_name):
+                append_list_create(model, list_create, problem=problem)
+        bulk_create_or_update(model, list_create, [], [])
+def upload_data_to_study_curriculum_model(excel_file, curriculum_dict):
+    df = pd.read_excel(excel_file, sheet_name='curriculum', header=0, index_col=0)
+
+    category_dict: dict[tuple, models.StudyCategory] = {}
+    for c in models.StudyCategory.objects.all():
+        category_dict[(c.season, c.study_type)] = c
+
+    organization_dict: dict[str, models.StudyOrganization] = {}
+    for o in models.StudyOrganization.objects.all():
+        organization_dict[o.name] = o
+
+    list_create = []
+    list_update = []
+    for _, row in df.iterrows():
+        organization_name = row['organization_name']
+        curriculum_key = (row['organization_name'], row['year'], row['semester'])
+        category_key = (row['category_season'], row['category_study_type'])
+
+        if organization_name in organization_dict.keys() and category_key in category_dict.keys():
+            organization = organization_dict[organization_name]
+            category = category_dict[category_key]
+
+            find_expr = {'organization': organization, 'year': curriculum_key[1], 'semester': curriculum_key[2]}
+            update_expr = {'category': category, 'name': row['curriculum_name']}
+
+            if curriculum_key in curriculum_dict.keys():
+                curriculum = curriculum_dict[curriculum_key]
+                fields_not_match = [getattr(curriculum, k) != v for k, v in update_expr.items()]
+                if any(fields_not_match):
+                    for key, val in update_expr.items():
+                        setattr(curriculum, key, val)
+                    list_update.append(curriculum)
+            else:
+                list_create.append(models.StudyCurriculum(**find_expr, **update_expr))
+    update_fields = ['category', 'name']
+    bulk_create_or_update(models.StudyCurriculum, list_create, list_update, update_fields)
+
+
+def upload_data_to_study_student_and_result_model(excel_file, curriculum_dict, student_dict):
+    df = pd.read_excel(
+        excel_file, sheet_name='student', header=0, index_col=0, dtype={'serial': str})
+
+    psat_dict: dict[models.StudyCategory, list[models.StudyPsat]] = {}
+    for p in models.StudyPsat.objects.with_select_related():
+        if p.category not in psat_dict.keys():
+            psat_dict[p.category] = []
+        psat_dict[p.category].append(p)
+
+    list_create = []
+    list_update = []
+    for _, row in df.iterrows():
+        year = row['year']
+        organization_name = row['organization_name']
+        semester = row['semester']
+        serial = row['serial']
+        name = row['name']
+
+        curriculum_key = (organization_name, year, semester)
+        student_key = (organization_name, year, semester, serial)
+        if student_key in student_dict.keys():
+            student = student_dict[student_key]
+            if student.name != name:
+                student.name = name
+                list_update.append(student)
+        else:
+            if curriculum_key in curriculum_dict.keys():
+                curriculum = curriculum_dict[curriculum_key]
+                list_create.append(
+                    models.StudyStudent(curriculum=curriculum, serial=serial, name=name)
+                )
+    bulk_create_or_update(models.StudyStudent, list_create, list_update, ['name'])
+
+    result_dict: dict[tuple[models.StudyStudent, models.StudyPsat], models.StudyResult] = {}
+    for r in models.StudyResult.objects.select_related('student', 'psat'):
+        result_dict[(r.student, r.psat)] = r
+
+    list_create = []
+    for s in models.StudyStudent.objects.with_select_related():
+        psats = psat_dict[s.curriculum.category]
+        for p in psats:
+            if (s, p) not in result_dict.keys():
+                list_create.append(models.StudyResult(student=s, psat=p))
+    bulk_create_or_update(models.StudyResult, list_create, [], [])
+
+
+def bulk_create_or_update(model, list_create, list_update, update_fields):
+    model_name = model._meta.model_name
+    try:
+        with transaction.atomic():
+            if list_create:
+                model.objects.bulk_create(list_create)
+                message = f'Successfully created {len(list_create)} {model_name} instances.'
+                is_updated = True
+            elif list_update:
+                model.objects.bulk_update(list_update, list(update_fields))
+                message = f'Successfully updated {len(list_update)} {model_name} instances.'
+                is_updated = True
+            else:
+                message = f'No changes were made to {model_name} instances.'
+                is_updated = False
+    except django.db.utils.IntegrityError:
+        traceback_message = traceback.format_exc()
+        print(traceback_message)
+        message = f'Error occurred.'
+        is_updated = None
+    print(message)
+    return is_updated

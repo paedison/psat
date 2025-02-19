@@ -86,6 +86,9 @@ class Psat(models.Model):
     def get_admin_list_url():
         return reverse_lazy('prime:admin-list')
 
+    def get_admin_psat_active_url(self):
+        return reverse_lazy('prime:admin-psat-active', args=[self.id])
+
     def get_admin_predict_detail_url(self):
         return reverse_lazy('prime:admin-detail', args=['predict', self.id])
 

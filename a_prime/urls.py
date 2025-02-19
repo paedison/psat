@@ -6,7 +6,8 @@ app_name = 'prime'
 
 admin_patterns = [
     path('', admin_views.list_view, name='admin-list'),
-    path('exam/create/', admin_views.exam_create_view, name='admin-exam-create'),
+    path('psat/create/', admin_views.psat_create_view, name='admin-psat-create'),
+    path('psat/active/<int:pk>/', admin_views.psat_active_view, name='admin-psat-active'),
     path('update/<int:pk>/', admin_views.update_view, name='admin-update'),
 
     path('detail/<str:model_type>/<int:pk>/', admin_views.detail_view, name='admin-detail'),

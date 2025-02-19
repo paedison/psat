@@ -1,0 +1,191 @@
+{% extends 'a_psat/_psat_base.html' %}
+{% load static %}
+{% load crispy_forms_field %}
+
+{% block main_content %}
+    <section class="section" aria-label="스터디 카테고리 업데이트">
+        <div class="row">
+            {% if user.is_admin %}
+                <div class="col-12">
+                    <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        <div class="card-header">{{ page_title }} | 업데이트</div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6 d-flex"
+                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                    <div class="btn-group flex-fill">
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='score' button_name='점수 업데이트' update_url=config.url_study_category_update %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' update_url=config.url_study_category_update %}
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 d-flex"
+                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                    <div class="btn-group flex-fill">
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' update_url=config.url_study_category_update %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' update_url=config.url_study_category_update %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="section" aria-label="회차별 통계">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ page_title }} | 회차별 통계</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
+                                <div class="btn-group flex-fill">
+                                    <a class="btn btn-outline-secondary" title="목록" hx-target="#main"
+                                       href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
+                                        목록
+                                    </a>
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_statistics_excel %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_statistics_print %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="statisticsContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_psat/snippets/admin_detail_study_statistics.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="성적일람표">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ page_title }} | 성적일람표</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
+                                    <a class="btn btn-outline-secondary" hx-headers='{"View-Type":"catalog_list"}'
+                                       hx-target="#catalogContent" hx-get="">
+                                        전체 학생
+                                    </a>
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
+{#                                    {% include 'a_prime/snippets/admin_detail_button_export.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-7 col-xxl-8 order-md-0 d-flex">
+                                {% include 'a_psat/snippets/admin_detail_search.html' %}
+                            </div>
+                        </div>
+
+                        <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_psat/snippets/admin_detail_study_catalog.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="문항분석표">
+        <div class="col-12">
+            <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div class="card-header">{{ page_title }} | 문항분석표</div>
+                <div class="card-body htmx-fade-in htmx-fade-out">
+                    <div class="row justify-content-md-end g-3 mb-3">
+                        <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                            <div class="btn-group flex-fill">
+                                {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_answers_excel %}
+                                {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_answers_print %}
+                            </div>
+                        </div>
+                    </div>
+                    <div id="answerAnalysisContent" class="htmx-fade-in htmx-fade-out">
+                        {% include 'a_psat/snippets/admin_detail_study_answer_analysis.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="문제 목록">
+        <div class="row">
+            <div class="col-12">
+                <div id="problemCard" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ page_title }} | 문제 목록</div>
+                    <div class="card-body">
+                        <div class="row flex-column flex-md-row-reverse">
+                            <div id="problemFilter"
+                                 class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                {% partial problem_filter %}
+                            </div>
+
+                            <div id="problemContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                {% include 'a_psat/snippets/study_problem_list_content.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+{% partialdef problem_filter %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                    aria-expanded="true" aria-controls="collapseOne">
+                <i class="fa-solid fa-fw fa-filter me-1"></i>
+                문제 필터
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show"
+             data-bs-parent="#problemFilter">
+            <div class="accordion-body pb-2">
+                <form class="row g-2 align-items-center justify-content-center" hx-trigger="change"
+                      hx-get="{{ request.path }}">
+                    <input id="id_data" type="text" name="keyword"
+                           value="{{ keyword }}" hidden title="키워드를 입력하세요.">
+                    {% for field in form %}
+                        <div class="col-6 col-md-12 col-lg-6">
+                            {% if field.errors %}
+                                {% crispy_field field 'class' 'form-select is-invalid' %}
+                            {% else %}
+                                {% if field.value == None or field.value == '' %}
+                                    {% crispy_field field 'class' 'form-select' %}
+                                {% else %}
+                                    {% crispy_field field 'class' 'form-select option-selected' %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a type="button" class="btn btn-secondary fw-bold col-12" hx-boost="true"
+                           hx-push-url="{{ request.path }}"
+                           href="{{ request.path }}?keyword={{ keyword }}">
+                            <i class="fa-solid fa-fw fa-filter-circle-xmark"></i>
+                            필터 제거
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a type="button" class="btn btn-success fw-bold col-12" hx-boost="true"
+                           hx-push-url="{{ request.path }}"
+                           href="{{ request.path }}">
+                            <i class="fa-solid fa-fw fa-layer-group"></i>
+                            전체 문제
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef problem_filter %}

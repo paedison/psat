@@ -43,6 +43,10 @@ class PredictPsat(models.Model):
         return f'{self.psat.year}{self.psat.exam}'
 
     @property
+    def psat_info(self):
+        return f'{self.psat.year}{self.psat.exam}'
+
+    @property
     def is_not_page_opened(self):
         return timezone.now() <= self.page_opened_at
 
@@ -122,6 +126,10 @@ class PredictStatistics(abstract_models.ExtendedStatistics):
     def __str__(self):
         return f'[PSAT]PredictStatistics(#{self.id}):{self.psat.reference}'
 
+    @property
+    def psat_info(self):
+        return f'{self.psat.year}{self.psat.exam}'
+
 
 class PredictStudent(abstract_models.Student):
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_students')
@@ -145,6 +153,10 @@ class PredictStudent(abstract_models.Student):
     def __str__(self):
         return f'[PSAT]PredictStudent(#{self.id}):{self.psat.reference}({self.student_info})'
 
+    @property
+    def psat_info(self):
+        return f'{self.psat.year}{self.psat.exam}'
+
 
 class PredictAnswer(abstract_models.Answer):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='작성 일시')
@@ -163,6 +175,18 @@ class PredictAnswer(abstract_models.Answer):
     def __str__(self):
         return f'[PSAT]PredictAnswer(#{self.id}):{self.student.student_info}-{self.problem.reference}'
 
+    @property
+    def problem_info(self):
+        return self.problem.reference
+
+    @property
+    def student_info(self):
+        return self.student.student_info
+
+    @property
+    def answer_official(self):
+        return self.problem.answer
+
 
 class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
     problem = models.OneToOneField(
@@ -175,6 +199,10 @@ class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
     def __str__(self):
         return f'[PSAT]PredictAnswerCount(#{self.id}):{self.problem.reference}'
 
+    @property
+    def problem_info(self):
+        return self.problem.reference
+
 
 class PredictScore(abstract_models.Score):
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='score')
@@ -185,6 +213,10 @@ class PredictScore(abstract_models.Score):
 
     def __str__(self):
         return f'[PSAT]PredictScore(#{self.id}):{self.student.student_info}'
+
+    @property
+    def psat_info(self):
+        return self.student.psat_info
 
 
 class PredictRankTotal(abstract_models.ExtendedRank):
@@ -198,6 +230,10 @@ class PredictRankTotal(abstract_models.ExtendedRank):
     def __str__(self):
         return f'[PSAT]PredictRankTotal(#{self.id}):{self.student.student_info}'
 
+    @property
+    def psat_info(self):
+        return self.student.psat_info
+
 
 class PredictRankCategory(abstract_models.ExtendedRank):
     student = models.OneToOneField(
@@ -209,6 +245,10 @@ class PredictRankCategory(abstract_models.ExtendedRank):
 
     def __str__(self):
         return f'[PSAT]PredictRankCategory(#{self.id}):{self.student.student_info}'
+
+    @property
+    def psat_info(self):
+        return self.student.psat_info
 
 
 class PredictAnswerCountTopRank(abstract_models.ExtendedAnswerCount):
@@ -222,6 +262,10 @@ class PredictAnswerCountTopRank(abstract_models.ExtendedAnswerCount):
     def __str__(self):
         return f'[PSAT]PredictAnswerCountTopRank(#{self.id}):{self.problem.reference}'
 
+    @property
+    def problem_info(self):
+        return self.problem.reference
+
 
 class PredictAnswerCountMidRank(abstract_models.ExtendedAnswerCount):
     problem = models.OneToOneField(
@@ -234,6 +278,10 @@ class PredictAnswerCountMidRank(abstract_models.ExtendedAnswerCount):
     def __str__(self):
         return f'[PSAT]PredictAnswerCountMidRank(#{self.id}):{self.problem.reference}'
 
+    @property
+    def problem_info(self):
+        return self.problem.reference
+
 
 class PredictAnswerCountLowRank(abstract_models.ExtendedAnswerCount):
     problem = models.OneToOneField(
@@ -245,6 +293,10 @@ class PredictAnswerCountLowRank(abstract_models.ExtendedAnswerCount):
 
     def __str__(self):
         return f'[PSAT]PredictAnswerCountLowRank(#{self.id}):{self.problem.reference}'
+
+    @property
+    def problem_info(self):
+        return self.problem.reference
 
 
 class PredictLocation(models.Model):
@@ -261,3 +313,7 @@ class PredictLocation(models.Model):
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}12_시험 장소'
         db_table = 'a_psat_predict_location'
+
+    @property
+    def psat_info(self):
+        return f'{self.psat.year}{self.psat.exam}'

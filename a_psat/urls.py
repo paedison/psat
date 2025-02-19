@@ -44,29 +44,34 @@ lecture_patterns = [
 
 admin_patterns = [
     path('', admin_index_views.list_view, name='admin-list'),
+    path('study/category/', admin_index_views.list_view, name='admin-study-category-list'),
+    path('study/curriculum/', admin_index_views.list_view, name='admin-study-curriculum-list'),
+
+    path('psat/<int:pk>/', admin_psat_views.detail_view, name='admin-detail'),
 
     path('psat/create/', admin_index_views.psat_create_view, name='admin-psat-create'),
     path('psat/active/<int:pk>/', admin_index_views.psat_active_view, name='admin-psat-active'),
     path('problem/update/', admin_index_views.problem_update_view, name='admin-problem-update'),
+
     path('predict/create/', admin_index_views.predict_create_view, name='admin-predict-create'),
+    path('predict/update/<int:pk>/', admin_psat_views.predict_update_view, name='admin-predict-update'),
+
+    path('study/<str:study_type>/<int:pk>/', admin_study_views.detail_view, name='admin-study-detail'),
 
     path('study/category/create/',
          admin_index_views.study_category_create_view, name='admin-study-category-create'),
-    path('study/problem/add/', admin_index_views.study_problem_add_view, name='admin-study-problem-add'),
+    path('study/category/upload/',
+         admin_index_views.study_category_upload_view, name='admin-study-category-upload'),
+
+    path('study/curriculum/upload/',
+         admin_index_views.study_curriculum_upload_view, name='admin-study-curriculum-upload'),
     path('study/curriculum/create/',
          admin_index_views.study_curriculum_create_view, name='admin-study-curriculum-create'),
     path('study/organization/create/',
          admin_index_views.study_organization_create_view, name='admin-study-organization-create'),
-    path('study/student/add/', admin_index_views.study_student_add_view, name='admin-study-student-add'),
     path('study/answer/add/', admin_index_views.study_answer_add_view, name='admin-study-answer-add'),
 
-    path('<int:pk>/', admin_psat_views.detail_view, name='admin-detail'),
-    path('predict/update/<int:pk>/', admin_psat_views.predict_update_view, name='admin-predict-update'),
-
-    path('study/category/<int:pk>/',
-         admin_study_views.study_category_detail_view, name='admin-study-category-detail'),
-    path('study/curriculum/<int:pk>/',
-         admin_study_views.study_curriculum_detail_view, name='admin-study-curriculum-detail'),
+    path('study/category/update/<int:pk>/', admin_study_views.category_update_view, name='admin-study-category-update'),
 ]
 
 predict_patterns = [

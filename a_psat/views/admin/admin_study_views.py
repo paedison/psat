@@ -1,19 +1,11 @@
-import dataclasses
-import traceback
-from collections import defaultdict
-
-import django.db.utils
-import pandas as pd
-from django.db import transaction
-from django.db.models import Count, Window, F
-from django.db.models.functions import Rank
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 
 from common.constants import icon_set_new
 from common.decorators import admin_required
 from common.utils import HtmxHttpRequest, update_context_data
-from ... import models, utils, forms
+from . import admin_utils
+from ... import models, utils
 
 
 class ViewConfiguration:
@@ -32,77 +24,134 @@ class ViewConfiguration:
     url_admin_problem_list = reverse_lazy('admin:a_psat_problem_changelist')
 
     url_list = reverse_lazy('psat:admin-list')
-    url_psat_create = reverse_lazy('psat:admin-psat-create')
-    url_problem_update = reverse_lazy('psat:admin-problem-update')
-
-    url_predict_create = reverse_lazy('psat:admin-predict-create')
-
-    url_study_category_detail = reverse_lazy('psat:admin-study-category-detail')
-    url_study_category_create = reverse_lazy('psat:admin-study-category-create')
-    url_study_problem_add = reverse_lazy('psat:admin-study-problem-add')
-
-    url_study_curriculum_detail = reverse_lazy('psat:admin-study-curriculum-detail')
-    url_study_organization_create = reverse_lazy('psat:admin-study-organization-create')
-    url_study_curriculum_create = reverse_lazy('psat:admin-study-curriculum-create')
-    url_study_student_add = reverse_lazy('psat:admin-study-student-add')
-    url_study_answer_add = reverse_lazy('psat:admin-study-answer-add')
 
 
-@admin_required
-def study_category_detail_view(request: HtmxHttpRequest, pk: int):
+def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
     config = ViewConfiguration()
+    config.study_type = study_type
+
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', '1')
+    student_name = request.GET.get('student_name', '')
 
-    category = get_object_or_404(models.StudyCategory, pk=pk)
-    category: models.StudyCategory
-    statistics = models.StudyStatistics.objects.filter(psat__category=category)
-    problems = models.StudyProblem.objects.filter(psat__category=category)
-    page_obj, page_range = utils.get_paginator_data(problems, page_number)
+    if study_type == 'category':
+        category = get_object_or_404(models.StudyCategory, pk=pk)
+        curriculum = None
+    else:
+        curriculum = get_object_or_404(models.StudyCurriculum, pk=pk)
+        category = curriculum.category
+
+    config.url_study_category_update = reverse_lazy('psat:admin-study-category-update', args=[category.pk])
+
+    qs_psat = models.StudyPsat.objects.get_qs_psat(category)
+    if study_type == 'category':
+        qs_student = models.StudyStudent.objects.get_qs_student_for_catalog_by_category(category)
+    else:
+        qs_student = models.StudyStudent.objects.get_qs_student_for_catalog_by_curriculum(curriculum)
+        data_statistics = admin_utils.get_data_statistics(qs_student)
+        data_statistics_by_study_round = {}
+        for d in data_statistics:
+            data_statistics_by_study_round[d['study_round']] = d
+        for p in qs_psat:
+            p.statistics = data_statistics_by_study_round.get(p.round)
+
+    qs_problem = models.StudyProblem.objects.get_qs_problem_with_answer_count(category)
+    admin_utils.update_data_answers(qs_problem)
+
+    if study_type == 'category':
+        page_title = category.full_reference
+    else:
+        page_title = curriculum.full_reference
 
     context = update_context_data(
-        config=config, category=category,
-        icon_image=icon_set_new.ICON_IMAGE,
-        page_obj=page_obj, page_range=page_range,
+        config=config, category=category, curriculum=curriculum, page_title=page_title,
+        icon_image=icon_set_new.ICON_IMAGE, icon_search=icon_set_new.ICON_SEARCH,
     )
+    if view_type == 'statistics_list':
+        category_stat = admin_utils.get_category_stat(qs_student)
+        statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_psat, page_number)
+        context = update_context_data(
+            context, category_stat=category_stat,
+            statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range
+        )
+        return render(request, 'a_psat/snippets/admin_detail_study_statistics.html', context)
+    if view_type == 'catalog_list':
+        study_rounds = '1' * category.round
+        catalog_page_obj, catalog_page_range = utils.get_paginator_data(qs_student, page_number)
+        context = update_context_data(
+            context, study_rounds=study_rounds,
+            catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
+        )
+        return render(request, 'a_psat/snippets/admin_detail_study_catalog.html', context)
+    if view_type == 'student_search':
+        study_rounds = '1' * category.round
+        if student_name:
+            searched_student = qs_student.filter(name=student_name)
+        else:
+            searched_student = qs_student
+        catalog_page_obj, catalog_page_range = utils.get_paginator_data(searched_student, page_number)
+        context = update_context_data(
+            context, study_rounds=study_rounds,
+            catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
+        return render(request, 'a_psat/snippets/admin_detail_study_catalog.html', context)
+    if view_type == 'answer_list':
+        answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number)
+        context = update_context_data(
+            context, answer_page_obj=answer_page_obj, answer_page_range=answer_page_range)
+        return render(request, 'a_psat/snippets/admin_detail_study_answer_analysis.html', context)
     if view_type == 'problem_list':
+        problem_page_obj, problem_page_range = utils.get_paginator_data(qs_problem, page_number)
+        context = update_context_data(
+            context, problem_page_obj=problem_page_obj, problem_page_range=problem_page_range)
         return render(request, 'a_psat/snippets/study_problem_list_content.html', context)
-    return render(request, 'a_psat/admin_study_category_detail.html', context)
+
+    category_stat = admin_utils.get_category_stat(qs_student)
+    study_rounds = '1' * category.round
+
+    statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_psat, page_number)
+    catalog_page_obj, catalog_page_range = utils.get_paginator_data(qs_student, page_number)
+    answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number)
+    problem_page_obj, problem_page_range = utils.get_paginator_data(qs_problem, page_number)
+    context = update_context_data(
+        context, category_stat=category_stat, study_rounds=study_rounds,
+        statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
+        catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
+        answer_page_obj=answer_page_obj, answer_page_range=answer_page_range,
+        problem_page_obj=problem_page_obj, problem_page_range=problem_page_range,
+    )
+    return render(request, f'a_psat/admin_detail_study.html', context)
 
 
 @admin_required
-def study_curriculum_detail_view(request: HtmxHttpRequest, pk: int):
-    config = ViewConfiguration()
+def category_update_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
-    page_number = request.GET.get('page', '1')
+    category = get_object_or_404(models.StudyCategory, pk=pk)
 
-    curriculum = get_object_or_404(models.StudyCurriculum, pk=pk)
-    curriculum: models.StudyCurriculum
-    statistics = models.StudyStatistics.objects.filter(psat__category=curriculum.category)
-    students = models.StudyStudent.objects.filter(curriculum=curriculum)
-    context = update_context_data(config=config, curriculum=curriculum)
-    return render(request, 'a_psat/admin_detail.html', context)
+    context = {}
+    next_url = request.headers.get('HX-Current-URL', request.META.get('HTTP_REFERER', '/'))
 
+    qs_student = models.StudyStudent.objects.get_qs_student_for_catalog_by_category(category)
+    psats = models.StudyPsat.objects.get_qs_psat(category)
 
-def bulk_create_or_update(model, list_create, list_update, update_fields):
-    model_name = model._meta.model_name
-    try:
-        with transaction.atomic():
-            if list_create:
-                model.objects.bulk_create(list_create)
-                message = f'Successfully created {len(list_create)} {model_name} instances.'
-                is_updated = True
-            elif list_update:
-                model.objects.bulk_update(list_update, list(update_fields))
-                message = f'Successfully updated {len(list_update)} {model_name} instances.'
-                is_updated = True
-            else:
-                message = f'No changes were made to {model_name} instances.'
-                is_updated = False
-    except django.db.utils.IntegrityError:
-        traceback_message = traceback.format_exc()
-        print(traceback_message)
-        message = f'Error occurred.'
-        is_updated = None
-    print(message)
-    return is_updated
+    if view_type == 'score':
+        is_updated, message = admin_utils.update_scores(qs_student, psats)
+        context = update_context_data(
+            header='점수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'rank':
+        is_updated, message = admin_utils.update_ranks(qs_student, psats)
+        context = update_context_data(
+            header='등수 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'statistics':
+        data_statistics = admin_utils.get_data_statistics(qs_student)
+        is_updated, message = admin_utils.update_statistics_model(category, data_statistics)
+        context = update_context_data(
+            header='통계 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    if view_type == 'answer_count':
+        is_updated, message = admin_utils.update_answer_counts()
+        context = update_context_data(
+            header='문항분석표 업데이트', next_url=next_url, is_updated=is_updated, message=message)
+
+    return render(request, 'a_psat/snippets/admin_modal_predict_update.html', context)

@@ -5,9 +5,11 @@ from . import choices
 
 
 def get_default_statistics():
-    return {
-        "participants": 0, "max": 0, "t10": 0, "t20": 0, "avg": 0
-    }
+    return {'participants': 0, 'max': 0, 't10': 0, 't20': 0, 'avg': 0}
+
+
+def get_default_problem_counts():
+    return {'subject_1': 0, 'subject_2': 0, 'subject_3': 0, 'total': 0}
 
 
 class Statistics(models.Model):

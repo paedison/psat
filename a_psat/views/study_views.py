@@ -30,7 +30,7 @@ def get_student_dict(user, curriculum_list) -> dict:
     if user.is_authenticated:
         students = (
             models.StudyStudent.objects.filter(user=user, curriculum__in=curriculum_list)
-            .select_related('curriculum', 'user', 'score', 'rank').order_by('id')
+            .select_related('curriculum', 'user').prefetch_related('results').order_by('id')
         )
         return {student.curriculum: student for student in students}
     return {}

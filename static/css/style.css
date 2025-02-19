@@ -466,3 +466,17 @@ ul.errorlist>li {
     color: rgba(var(--bs-danger-rgb), 1);
     font-weight: bold;
 }
+
+.card-icon {
+  font-size: 32px;
+  line-height: 0;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.study-card .card-icon {
+  color: #4154f1;
+  background: #f6f6fe;
+}

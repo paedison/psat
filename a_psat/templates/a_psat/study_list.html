@@ -2,33 +2,59 @@
 {% load static %}
 
 {% block main_content %}
-    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-        <div class="row">
-            <div class="col-md-6 col-lg-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Sales <span>| Today</span></h5>
+    {% for obj in page_obj %}
+        <section class="section" aria-label="커리큘럼 목록">
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        <div class="card-body">
+                            <h5 class="card-title">Sales <span>| Today</span></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>145</h6>
+                                    <span class="text-success small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">increase</span>
 
-                        <div class="d-flex align-items-center">
-                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="bi bi-cart"></i>
-                            </div>
-                            <div class="ps-3">
-                                <h6>145</h6>
-                                <span class="text-success small pt-1 fw-bold">12%</span> <span class="text-muted small pt-2 ps-1">increase</span>
-
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+    {% empty %}
+        <section class="section" aria-label="커리큘럼 목록">
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                        <div class="card-body">
+                            <h5 class="card-title">커리큘럼 등록</h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>등록된 커리큘럼이 없습니다</h6>
+                                    <a class="btn btn-outline-primary" hx-boost="true"
+                                       href="{{ config.url_study_student_register }}">
+                                        커리큘럼을 등록해주세요
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endfor %}
 
+    <section class="section" aria-label="커리큘럼 목록">
         <div class="row">
             <div class="col-12">
-                <div class="card">
+                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     <div class="card-header">커리큘럼 목록</div>
-
                     <div class="card-body">
                         <article class="table-responsive">
                             <table class="table align-middle">

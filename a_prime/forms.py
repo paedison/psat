@@ -76,6 +76,15 @@ class PsatForm(forms.Form):
         return cleaned_data
 
 
+class PsatActiveForm(forms.ModelForm):
+    class Meta:
+        model = models.Psat
+        fields = ['is_active']
+        widgets = {
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
 class PrimeResultStudentForm(forms.ModelForm):
     password = forms.CharField(
         max_length=10, initial='', label='비밀번호',

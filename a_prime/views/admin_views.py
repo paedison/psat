@@ -18,7 +18,7 @@ from django.urls import reverse_lazy
 from django_htmx.http import replace_url
 
 from common.constants import icon_set_new
-from common.decorators import only_staff_allowed
+from common.decorators import only_staff_allowed, admin_required
 from common.utils import HtmxHttpRequest, update_context_data
 from .. import models, utils, forms
 
@@ -36,7 +36,7 @@ class ViewConfiguration:
     submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
     url_admin = reverse_lazy('admin:a_prime_psat_changelist')
     url_list = reverse_lazy('prime:admin-list')
-    url_exam_create = reverse_lazy('prime:admin-exam-create')
+    url_psat_create = reverse_lazy('prime:admin-psat-create')
 
 
 @only_staff_allowed()
@@ -241,7 +241,7 @@ def update_view(request: HtmxHttpRequest, pk: int):
 
 
 @only_staff_allowed()
-def exam_create_view(request: HtmxHttpRequest):
+def psat_create_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     if request.method == 'POST':
         form = forms.PsatForm(request.POST, request.FILES)
@@ -277,6 +277,18 @@ def exam_create_view(request: HtmxHttpRequest):
     form = forms.PsatForm()
     context = update_context_data(config=config, form=form)
     return render(request, 'a_prime/admin_create_exam.html', context)
+
+
+@admin_required
+def psat_active_view(request: HtmxHttpRequest, pk: int):
+    if request.method == 'POST':
+        form = forms.PsatActiveForm(request.POST)
+        if form.is_valid():
+            psat = get_object_or_404(models.Psat, pk=pk)
+            is_active = form.cleaned_data['is_active']
+            psat.is_active = is_active
+            psat.save()
+    return HttpResponse('')
 
 
 @only_staff_allowed()

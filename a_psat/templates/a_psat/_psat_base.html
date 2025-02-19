@@ -76,7 +76,7 @@
                         <li class="breadcrumb-item">
                             <a href="{{ psat.get_admin_detail_url }}" class="active">{{ psat.reference }}</a>
                         </li>
-                    {% elif category %}
+                    {% elif config.study_type == 'category' %}
                         <li class="breadcrumb-item">
                             <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
@@ -85,7 +85,7 @@
                         <li class="breadcrumb-item">
                             <a href="{{ category.get_admin_study_category_detail_url }}" class="active">{{ category.category_info }}</a>
                         </li>
-                    {% elif curriculum %}
+                    {% elif config.study_type == 'curriculum' %}
                         <li class="breadcrumb-item">
                             <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
