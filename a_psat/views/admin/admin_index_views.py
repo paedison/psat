@@ -81,6 +81,7 @@ def list_view(request: HtmxHttpRequest):
         return render(request, f'{template_name}#study_category_list', context)
     elif view_type == 'study_curriculum_list':
         curriculum_page_obj, curriculum_page_range = utils.get_paginator_data(study_curriculum_list, page_number)
+        admin_index_utils.update_curriculum_statistics(curriculum_page_obj)
         context = update_context_data(
             context, curriculum_page_obj=curriculum_page_obj, curriculum_page_range=curriculum_page_range)
         return render(request, f'{template_name}#study_curriculum_list', context)
