@@ -214,6 +214,8 @@ def create_study_answer_count_models():
             if not hasattr(problem, related_name):
                 append_list_create(model, list_create, problem=problem)
         bulk_create_or_update(model, list_create, [], [])
+
+
 def upload_data_to_study_curriculum_model(excel_file, curriculum_dict):
     df = pd.read_excel(excel_file, sheet_name='curriculum', header=0, index_col=0)
 
@@ -252,15 +254,9 @@ def upload_data_to_study_curriculum_model(excel_file, curriculum_dict):
     bulk_create_or_update(models.StudyCurriculum, list_create, list_update, update_fields)
 
 
-def upload_data_to_study_student_and_result_model(excel_file, curriculum_dict, student_dict):
+def update_study_student_model(excel_file, curriculum_dict, student_dict):
     df = pd.read_excel(
         excel_file, sheet_name='student', header=0, index_col=0, dtype={'serial': str})
-
-    psat_dict: dict[models.StudyCategory, list[models.StudyPsat]] = {}
-    for p in models.StudyPsat.objects.with_select_related():
-        if p.category not in psat_dict.keys():
-            psat_dict[p.category] = []
-        psat_dict[p.category].append(p)
 
     list_create = []
     list_update = []
@@ -286,17 +282,42 @@ def upload_data_to_study_student_and_result_model(excel_file, curriculum_dict, s
                 )
     bulk_create_or_update(models.StudyStudent, list_create, list_update, ['name'])
 
-    result_dict: dict[tuple[models.StudyStudent, models.StudyPsat], models.StudyResult] = {}
-    for r in models.StudyResult.objects.select_related('student', 'psat'):
-        result_dict[(r.student, r.psat)] = r
 
-    list_create = []
-    for s in models.StudyStudent.objects.with_select_related():
-        psats = psat_dict[s.curriculum.category]
-        for p in psats:
-            if (s, p) not in result_dict.keys():
-                list_create.append(models.StudyResult(student=s, psat=p))
-    bulk_create_or_update(models.StudyResult, list_create, [], [])
+def update_study_result_model(student: models.StudyStudent | None = None):
+    if student is None:
+        # Get all StudyPsat data
+        psat_dict: dict[models.StudyCategory, list[models.StudyPsat]] = {}
+        for p in models.StudyPsat.objects.with_select_related():
+            if p.category not in psat_dict.keys():
+                psat_dict[p.category] = []
+            psat_dict[p.category].append(p)
+
+        # Get all StudyResult data
+        result_dict: dict[tuple[models.StudyStudent, models.StudyPsat], models.StudyResult] = {}
+        for r in models.StudyResult.objects.select_related('student', 'psat'):
+            result_dict[(r.student, r.psat)] = r
+
+        list_create = []
+        for s in models.StudyStudent.objects.with_select_related():
+            psats = psat_dict[s.curriculum.category]
+            for p in psats:
+                if (s, p) not in result_dict.keys():
+                    list_create.append(models.StudyResult(student=s, psat=p))
+        bulk_create_or_update(models.StudyResult, list_create, [], [])
+    else:
+        psats = models.StudyPsat.objects.filter(category=student.curriculum.category)
+        list_create = []
+        for psat in psats:
+            try:
+                models.StudyResult.objects.get(student=student, psat=psat)
+            except models.StudyResult.DoesNotExist:
+                list_create.append(models.StudyResult(student=student, psat=psat))
+        bulk_create_or_update(models.StudyResult, list_create, [], [])
+
+
+def upload_data_to_study_student_and_result_model(excel_file, curriculum_dict, student_dict):
+    update_study_student_model(excel_file, curriculum_dict, student_dict)
+    update_study_result_model()
 
 
 def bulk_create_or_update(model, list_create, list_update, update_fields):

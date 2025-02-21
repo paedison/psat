@@ -89,14 +89,12 @@
                     <i class="fa-regular fa-fw fa-square"></i> 온라인강의
                 </a>
             </li>
-            {% if request.user.is_admin %}
-                <li>
-                    <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="study"
-                       href="{% url 'psat:study-list' %}">
-                        <i class="fa-regular fa-fw fa-square"></i> 스터디
-                    </a>
-                </li>
-            {% endif %}
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="study"
+                   href="{% url 'psat:study-index' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 스터디
+                </a>
+            </li>
         </ul>
     </li>
 {% endpartialdef menu_psat %}

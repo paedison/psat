@@ -242,6 +242,34 @@ class StudyCurriculum(models.Model):
     def get_admin_study_curriculum_detail_url(self):
         return reverse_lazy('psat:admin-study-detail', args=['curriculum', self.id])
 
+    def get_study_curriculum_list_url(self):
+        return reverse_lazy('psat:study-list', args=[self.id])
+
+
+class StudyCurriculumSchedule(models.Model):
+    curriculum = models.ForeignKey(StudyCurriculum, on_delete=models.CASCADE, related_name='schedules')
+    lecture_number = models.PositiveSmallIntegerField(default=1, verbose_name='강의 주차')
+    lecture_theme = models.IntegerField(choices=choices.study_lecture_theme, default=1, verbose_name='강의 주제')
+    lecture_round = models.PositiveSmallIntegerField(
+        choices=choices.study_round_choice, null=True, blank=True, verbose_name='미니테스트 강의 회차')
+    homework_round = models.PositiveSmallIntegerField(
+        choices=choices.study_round_choice, null=True, blank=True, verbose_name='미니테스트 과제 회차')
+    lecture_open_datetime = models.DateTimeField(null=True, blank=True, verbose_name='공개 날짜')
+    homework_end_datetime = models.DateTimeField(null=True, blank=True, verbose_name='과제 마감 날짜')
+    lecture_datetime = models.DateTimeField(null=True, blank=True, verbose_name='강의 날짜')
+
+    class Meta:
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}05_커리큘럼 스케줄'
+        db_table = 'a_psat_study_curriculum_schedule'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['curriculum', 'lecture_number'], name='unique_psat_study_curriculum_schedule'
+            ),
+        ]
+
+    def __str__(self):
+        return f'[PSAT]StudyCurriculumSchedule(#{self.id}):{self.curriculum.curriculum_info}-{self.lecture_number}'
+
 
 class StudyStudentManager(models.Manager):
     def with_select_related(self):
@@ -250,7 +278,7 @@ class StudyStudentManager(models.Manager):
     @staticmethod
     def _with_prefetch_related(queryset):
         return queryset.prefetch_related(
-            models.Prefetch('results', queryset=StudyResult.objects.all(), to_attr='result_list')
+            models.Prefetch('results', queryset=StudyResult.objects.select_related('psat'), to_attr='result_list')
         )
 
     def get_qs_student_by_category(self, category):
@@ -283,7 +311,7 @@ class StudyStudent(models.Model):
     rank_total = models.PositiveIntegerField(null=True, blank=True, verbose_name='등수')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}05_학생'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}06_학생'
         db_table = 'a_psat_study_student'
         constraints = [
             models.UniqueConstraint(
@@ -317,15 +345,24 @@ class StudyStudent(models.Model):
     def get_result_list(self):
         return self.results.order_by('psat__round')
 
+    def get_study_curriculum_list_url(self):
+        return reverse_lazy('psat:study-list', args=[self.curriculum_id])
+
+
+class StudyAnswerManager(models.Manager):
+    def with_select_related(self):
+        return self.select_related('student', 'problem', 'problem__psat', 'problem__problem')
+
 
 class StudyAnswer(models.Model):
+    objects = StudyAnswerManager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     student = models.ForeignKey(StudyStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(StudyProblem, on_delete=models.CASCADE, related_name='answers')
     answer = models.IntegerField(choices=choices.answer_choice, default=0, verbose_name='답안')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}06_답안'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}07_답안'
         db_table = 'a_psat_study_answer'
         ordering = ['student', 'problem']
         constraints = [
@@ -368,7 +405,7 @@ class StudyAnswerCount(abstract_models.AnswerCount):
     problem = models.OneToOneField(StudyProblem, on_delete=models.CASCADE, related_name='answer_count')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}07_답안 개수'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}08_답안 개수'
         db_table = 'a_psat_study_answer_count'
         ordering = ['problem']
 
@@ -413,10 +450,10 @@ class StudyResult(models.Model):
     student = models.ForeignKey(StudyStudent, on_delete=models.CASCADE, related_name='results')
     psat = models.ForeignKey(StudyPsat, on_delete=models.CASCADE, related_name='results')
     rank = models.PositiveIntegerField(null=True, blank=True, verbose_name='등수')
-    score = models.PositiveSmallIntegerField(default=0, verbose_name='점수')
+    score = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='점수')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}08_성적'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}09_성적'
         db_table = 'a_psat_study_result'
         ordering = ['student']
         constraints = [
@@ -442,12 +479,18 @@ class StudyResult(models.Model):
     def psat_round(self):
         return self.psat.round
 
+    def get_answer_input_url(self):
+        return reverse_lazy('psat:study-answer-input', args=[self.id])
+
+    def get_answer_confirm_url(self):
+        return reverse_lazy('psat:study-answer-confirm', args=[self.id])
+
 
 class StudyAnswerCountTopRank(abstract_models.AnswerCount):
     problem = models.OneToOneField(StudyProblem, on_delete=models.CASCADE, related_name='answer_count_top_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}09_답안 개수(상위권)'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}10_답안 개수(상위권)'
         db_table = 'a_psat_study_answer_count_top_rank'
         ordering = ['problem']
 
@@ -467,7 +510,7 @@ class StudyAnswerCountMidRank(abstract_models.AnswerCount):
     problem = models.OneToOneField(StudyProblem, on_delete=models.CASCADE, related_name='answer_count_mid_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}10_답안 개수(중위권)'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}11_답안 개수(중위권)'
         db_table = 'a_psat_study_answer_count_mid_rank'
         ordering = ['problem']
 
@@ -484,7 +527,7 @@ class StudyAnswerCountLowRank(abstract_models.AnswerCount):
     problem = models.OneToOneField(StudyProblem, on_delete=models.CASCADE, related_name='answer_count_low_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}11_답안 개수(하위권)'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}12_답안 개수(하위권)'
         db_table = 'a_psat_study_answer_count_low_rank'
         ordering = ['problem']
 

@@ -1,5 +1,6 @@
 import itertools
 import traceback
+from datetime import timedelta, datetime
 
 import django.db.utils
 import pandas as pd
@@ -44,6 +45,7 @@ class ViewConfiguration:
     url_study_curriculum_detail = reverse_lazy('psat:admin-study-curriculum-detail')
     url_study_organization_create = reverse_lazy('psat:admin-study-organization-create')
     url_study_curriculum_create = reverse_lazy('psat:admin-study-curriculum-create')
+    url_study_student_create = reverse_lazy('psat:admin-study-student-create')
     url_study_answer_add = reverse_lazy('psat:admin-study-answer-add')
 
 
@@ -296,10 +298,12 @@ def study_curriculum_upload_view(request: HtmxHttpRequest):
             file = request.FILES['file']
             xls = pd.ExcelFile(file)
 
+            # Get all StudyCurriculum data
             curriculum_dict: dict[tuple, models.StudyCurriculum] = {}
             for c in models.StudyCurriculum.objects.with_select_related():
                 curriculum_dict[(c.organization.name, c.year, c.semester)] = c
 
+            # Get all StudyStudent data
             student_dict: dict[tuple, models.StudyStudent] = {}
             for s in models.StudyStudent.objects.with_select_related():
                 student_dict[(
@@ -416,13 +420,135 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
     if request.method == 'POST':
         form = forms.StudyCurriculumForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            year = form.cleaned_data['year']
+            organization = form.cleaned_data['organization']
+            semester = int(form.cleaned_data['semester'])
+            category = form.cleaned_data['category']
+            lecture_start_datetime = form.cleaned_data['lecture_start_datetime']
+            lecture_nums = int(form.cleaned_data['lecture_nums'])
+            curriculum_name = models.choices.study_curriculum_name()[organization.name][semester]
+
+            curriculum, _ = models.StudyCurriculum.objects.get_or_create(
+                year=year, organization=organization, semester=semester)
+            curriculum.category = category
+            curriculum.name = curriculum_name
+            curriculum.save()
+
+            list_create = []
+            list_update = []
+            if curriculum.schedules.exists():
+                for schedule in curriculum.schedules.all():
+                    schedule: models.StudyCurriculumSchedule
+                    lecture_theme = get_lecture_theme(lecture_nums, schedule.lecture_number)
+                    lecture_round, homework_round = get_lecture_and_homework_round(schedule.lecture_number)
+                    lecture_open_datetime, homework_end_datetime, lecture_datetime = get_lecture_datetimes(
+                        lecture_start_datetime, schedule.lecture_number)
+                    fields_not_match = [
+                        schedule.lecture_theme != lecture_theme,
+                        schedule.lecture_round != lecture_round,
+                        schedule.homework_round != homework_round,
+                        schedule.lecture_open_datetime != lecture_open_datetime,
+                        schedule.homework_end_datetime != homework_end_datetime,
+                        schedule.lecture_datetime != lecture_datetime,
+                    ]
+                    if any(fields_not_match):
+                        schedule.lecture_theme = lecture_theme
+                        schedule.lecture_round = lecture_round
+                        schedule.homework_round = homework_round
+                        schedule.lecture_open_datetime = lecture_open_datetime
+                        schedule.homework_end_datetime = homework_end_datetime
+                        schedule.lecture_datetime = lecture_datetime
+                        list_update.append(schedule)
+            else:
+                for lecture_number in range(1, lecture_nums + 1):
+                    lecture_theme = get_lecture_theme(lecture_nums, lecture_number)
+                    lecture_round, homework_round = get_lecture_and_homework_round(lecture_number)
+                    lecture_open_datetime, homework_end_datetime, lecture_datetime = get_lecture_datetimes(
+                        lecture_start_datetime, lecture_number)
+                    list_create.append(
+                        models.StudyCurriculumSchedule(
+                            curriculum=curriculum,
+                            lecture_number=lecture_number,
+                            lecture_theme=lecture_theme,
+                            lecture_round=lecture_round,
+                            homework_round=homework_round,
+                            lecture_open_datetime=lecture_open_datetime,
+                            homework_end_datetime=homework_end_datetime,
+                            lecture_datetime=lecture_datetime,
+                        )
+                    )
+            update_fields = [
+                'lecture_number', 'lecture_theme', 'lecture_round', 'homework_round',
+                'lecture_open_datetime', 'homework_end_datetime', 'lecture_datetime'
+            ]
+            bulk_create_or_update(models.StudyCurriculumSchedule, list_create, list_update, update_fields)
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
             return render(request, 'a_psat/admin_form.html', context)
 
     form = forms.StudyCurriculumForm()
+    context = update_context_data(context, form=form)
+    return render(request, 'a_psat/admin_form.html', context)
+
+
+def get_lecture_theme(lecture_nums, lecture_number) -> int:
+    if lecture_nums <= 15:
+        lecture_theme = lecture_number
+    else:
+        if lecture_number < 15:
+            lecture_theme = lecture_number
+        elif lecture_number == 15:
+            lecture_theme = 0
+        else:
+            lecture_theme = 15
+    return lecture_theme
+
+
+def get_lecture_and_homework_round(lecture_number) -> tuple:
+    lecture_round = None
+    homework_round = None
+    if 3 <= lecture_number <= 14:
+        lecture_round = lecture_number - 2
+    if 2 <= lecture_number <= 13:
+        homework_round = lecture_number - 1
+    return lecture_round, homework_round
+
+
+def get_lecture_datetimes(lecture_start_datetime: datetime, lecture_number) -> tuple:
+    lecture_datetime = lecture_start_datetime + timedelta(days=7) * (lecture_number - 1)
+
+    if lecture_number == 8:
+        lecture_open_datetime = lecture_datetime - timedelta(days=14)
+    else:
+        lecture_open_datetime = lecture_datetime - timedelta(days=7)
+    lecture_open_datetime = lecture_open_datetime.replace(hour=11, minute=0, second=0)
+
+    homework_end_datetime = (lecture_datetime - timedelta(days=1)).replace(
+        hour=23, minute=59, second=59, microsecond=999999)
+
+    if lecture_number == 8:
+        lecture_datetime = None
+    return lecture_open_datetime, homework_end_datetime, lecture_datetime
+
+
+@admin_required
+def study_student_create_view(request: HtmxHttpRequest):
+    config = ViewConfiguration()
+    title = 'PSAT 스터디 학생 등록'
+    context = update_context_data(config=config, title=title)
+
+    if request.method == 'POST':
+        form = forms.StudyStudentCreateForm(request.POST, request.FILES)
+        if form.is_valid():
+            student = form.save()
+            admin_index_utils.update_study_result_model(student=student)
+            return redirect(config.url_list)
+        else:
+            context = update_context_data(context, form=form)
+            return render(request, 'a_psat/admin_form.html', context)
+
+    form = forms.StudyStudentCreateForm()
     context = update_context_data(context, form=form)
     return render(request, 'a_psat/admin_form.html', context)
 

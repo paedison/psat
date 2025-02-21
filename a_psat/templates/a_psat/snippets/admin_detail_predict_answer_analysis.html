@@ -116,7 +116,5 @@
 </article>
 
 {% with page_obj=answers page_range=answers_page_range %}
-    {% if page_obj.has_next or page_obj.has_previous %}
-        {% include 'a_prime/snippets/pagination.html' with header='answer_list' %}
-    {% endif %}
+    {% include 'a_prime/snippets/pagination.html' with header='answer_list' %}
 {% endwith %}

@@ -1,12 +1,11 @@
-from datetime import time, datetime
+from datetime import time
 
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
 
-from . import models
+from . import models, utils
 
 
 class PsatForm(forms.ModelForm):
@@ -127,52 +126,44 @@ class UploadFileForm(forms.Form):
 
 class PredictPsatForm(forms.Form):
     year = forms.ChoiceField(
-        label='연도', label_suffix='', initial=timezone.now().year,
-        choices=models.choices.year_choice,
+        label='연도', initial=timezone.now().year, choices=models.choices.year_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     exam = forms.ChoiceField(
-        label='시험', label_suffix='', initial='5급공채/행정고시',
-        choices=models.choices.exam_choice,
+        label='시험', initial='5급공채/행정고시', choices=models.choices.exam_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     page_open_date = forms.DateField(
-        label='페이지 오픈일', label_suffix='', initial=timezone.now(),
+        label='페이지 오픈일', initial=timezone.now(),
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
     )
     exam_date = forms.DateField(
-        label='시험일', label_suffix='', initial=timezone.now(),
+        label='시험일', initial=timezone.now(),
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
     )
     predict_close_date = forms.DateField(
-        label='합격 예측 종료일', label_suffix='', initial=timezone.now(),
+        label='합격 예측 종료일', initial=timezone.now(),
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
     )
     exam_start_time = forms.TimeField(
-        label='시험 시작 시각', label_suffix='', initial=time(9, 0),
+        label='시험 시작 시각', initial=time(9, 0),
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
     exam_finish_time = forms.TimeField(
-        label='시험 종료 시각', label_suffix='', initial=time(18, 0),
+        label='시험 종료 시각', initial=time(18, 0),
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
     answer_predict_open_time = forms.TimeField(
-        label='예상 정답 공개 시각', label_suffix='', initial=time(18, 30),
+        label='예상 정답 공개 시각', initial=time(18, 30),
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
     answer_official_open_time = forms.TimeField(
-        label='공식 정답 공개 시각', label_suffix='', initial=time(21, 00),
+        label='공식 정답 공개 시각', initial=time(21, 00),
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
 
     def clean(self):
         cleaned_data = super().clean()
-
-        def get_local_time(target_date, target_time=time(9, 0)):
-            if not target_date:
-                raise ValidationError("Date is required for timezone conversion.")
-            target_datetime = datetime.combine(target_date, target_time)
-            return make_aware(target_datetime)
 
         try:
             page_open_date = cleaned_data['page_open_date']
@@ -186,36 +177,28 @@ class PredictPsatForm(forms.Form):
             raise ValidationError(f"Missing field: {e.args[0]}")
 
         if page_open_date:
-            cleaned_data['page_opened_at'] = get_local_time(page_open_date)
+            cleaned_data['page_opened_at'] = utils.get_local_time(page_open_date)
         if exam_date:
-            cleaned_data['exam_started_at'] = get_local_time(exam_date, exam_start_time)
-        cleaned_data['exam_finished_at'] = get_local_time(exam_date, exam_finish_time)
-        cleaned_data['answer_predict_opened_at'] = get_local_time(exam_date, answer_predict_open_time)
-        cleaned_data['answer_official_opened_at'] = get_local_time(exam_date, answer_official_open_time)
+            cleaned_data['exam_started_at'] = utils.get_local_time(exam_date, exam_start_time)
+        cleaned_data['exam_finished_at'] = utils.get_local_time(exam_date, exam_finish_time)
+        cleaned_data['answer_predict_opened_at'] = utils.get_local_time(exam_date, answer_predict_open_time)
+        cleaned_data['answer_official_opened_at'] = utils.get_local_time(exam_date, answer_official_open_time)
         if predict_close_date:
-            cleaned_data['predict_closed_at'] = get_local_time(predict_close_date)
+            cleaned_data['predict_closed_at'] = utils.get_local_time(predict_close_date)
 
         return cleaned_data
 
 
 class StudyCategoryForm(forms.Form):
     season = forms.IntegerField(
-        label='시즌', label_suffix='', initial=1,
-        widget=forms.NumberInput(attrs={'class': 'form-control'}),
-    )
+        label='시즌', initial=1, widget=forms.NumberInput(attrs={'class': 'form-control'}))
     study_type = forms.ChoiceField(
-        label='종류', label_suffix='', initial='기본',
-        choices=models.choices.study_category_choice,
+        label='종류', initial='기본', choices=models.choices.study_category_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    name = forms.CharField(
-        label='카테고리명', label_suffix='',
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-    )
+    name = forms.CharField(label='카테고리명', widget=forms.TextInput(attrs={'class': 'form-control'}))
     category_round = forms.IntegerField(
-        label='총 회차수', label_suffix='', initial=1,
-        widget=forms.NumberInput(attrs={'class': 'form-control'}),
-    )
+        label='총 회차수', initial=1, widget=forms.NumberInput(attrs={'class': 'form-control'}))
 
 
 class StudyOrganizationForm(forms.ModelForm):
@@ -228,27 +211,66 @@ class StudyOrganizationForm(forms.ModelForm):
         }
 
 
-class StudyCurriculumForm(forms.ModelForm):
+class StudyStudentCreateForm(forms.ModelForm):
     class Meta:
-        model = models.StudyCurriculum
-        fields = ['year', 'organization', 'semester', 'category']
-        labels = {
-            'organization': '교육기관',
-            'category': '카테고리',
-        }
+        model = models.StudyStudent
+        fields = ['curriculum', 'serial', 'name']
         widgets = {
-            'year': forms.Select(attrs={'class': 'form-select'}),
-            'organization': forms.Select(attrs={'class': 'form-select'}),
-            'semester': forms.Select(attrs={'class': 'form-select'}),
-            'category': forms.Select(attrs={'class': 'form-select'}),
+            'curriculum': forms.Select(attrs={'class': 'form-select'}),
+            'serial': forms.TextInput(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['organization'].queryset = models.StudyOrganization.objects.all()
+        self.fields['curriculum'].queryset = models.StudyCurriculum.objects.all()
+        self.fields['curriculum'].label_from_instance = lambda obj: obj.full_reference
+        self.fields['curriculum'].label = '커리큘럼'
+
+
+class StudyCurriculumForm(forms.Form):
+    year = forms.ChoiceField(
+        label='연도', initial=timezone.now().year, choices=models.choices.year_choice,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    organization = forms.ModelChoiceField(
+        label='교육기관', initial='서울과기대', queryset=models.StudyOrganization.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    semester = forms.ChoiceField(
+        label='학기', initial=1, choices=models.choices.study_semester_choice,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    category = forms.ModelChoiceField(
+        label='카테고리', initial='시즌02심화', queryset=models.StudyCategory.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    lecture_start_date = forms.DateField(
+        label='강의 시작일', initial=timezone.now(),
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+    )
+    lecture_start_time = forms.TimeField(
+        label='강의 시작시간', initial='10:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+    )
+    lecture_nums = forms.IntegerField(
+        label='강의 차수', initial=15,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.fields['organization'].label_from_instance = lambda obj: obj.name
         self.fields['category'].queryset = models.StudyCategory.objects.all()
         self.fields['category'].label_from_instance = lambda obj: obj.category_info
+
+    def clean(self):
+        cleaned_data = super().clean()
+        lecture_start_date = cleaned_data['lecture_start_date']
+        lecture_start_time = cleaned_data['lecture_start_time']
+        cleaned_data['lecture_start_datetime'] = utils.get_local_time(lecture_start_date, lecture_start_time)
+
+        return cleaned_data
 
 
 class StudyAnswerForm(forms.Form):
@@ -266,32 +288,25 @@ class StudyAnswerForm(forms.Form):
 
 class StudyStudentRegisterForm(forms.Form):
     organization = forms.ChoiceField(
-        label='교육기관명', label_suffix='', initial='서울과기대',
-        choices=models.choices.study_organization_choice,
+        label='교육기관명', initial='서울과기대',
+        choices=models.choices.study_student_register_organization_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     semester = forms.ChoiceField(
-        label='학기', label_suffix='', initial=1,
-        choices=models.choices.study_semester_choice,
+        label='학기', initial=1, choices=models.choices.study_semester_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    serial = forms.CharField(
-        label='학번(수험번호)', label_suffix='',
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-    )
-    name = forms.CharField(
-        label='이름', label_suffix='',
-        widget=forms.TextInput(attrs={'class': 'form-control'}),
-    )
+    serial = forms.CharField(label='학번(수험번호)', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    name = forms.CharField(label='이름', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     def clean(self):
         cleaned_data = super().clean()
         organization = cleaned_data['organization']
         semester = cleaned_data['semester']
-        curriculum = models.StudyCurriculum.objects.filter(
-            year=timezone.now().year, organization__name=organization, semester=semester)
-        if not curriculum.exists():
+        try:
+            cleaned_data['curriculum'] = models.StudyCurriculum.objects.get(
+                year=timezone.now().year, organization__name=organization, semester=semester)
+        except models.StudyCurriculum.DoesNotExist:
             self.add_error('organization', '선택한 교육기관명이 맞는지 확인해주세요.')
             self.add_error('semester', '선택한 학기가 맞는지 확인해주세요.')
-
         return cleaned_data

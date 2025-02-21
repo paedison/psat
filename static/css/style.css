@@ -432,6 +432,7 @@ ul.errorlist>li {
     color: rgba(var(--bs-danger-rgb), 1) !important;
     text-align: left !important;
     font-weight: 700 !important;
+    padding: 0;
 }
 
 
@@ -468,10 +469,10 @@ ul.errorlist>li {
 }
 
 .card-icon {
-  font-size: 32px;
+  font-size: 48px;
   line-height: 0;
-  width: 64px;
-  height: 64px;
+  width: 100px;
+  height: 100px;
   flex-shrink: 0;
   flex-grow: 0;
 }

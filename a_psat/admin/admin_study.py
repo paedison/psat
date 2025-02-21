@@ -78,6 +78,21 @@ class StudyCurriculumAdmin(ModelAdmin):
         return obj.category_info
 
 
+@admin.register(models.StudyCurriculumSchedule)
+class StudyCurriculumScheduleAdmin(ModelAdmin):
+    list_display = list_display_links = [
+        'id', 'curriculum_info', 'lecture_number', 'lecture_theme', 'lecture_round', 'homework_round',
+        'lecture_open_datetime', 'homework_end_datetime', 'lecture_datetime',
+    ]
+    show_facets = admin.ShowFacets.ALWAYS
+    save_on_top = True
+    show_full_result_count = True
+
+    @admin.display(description='커리큘럼')
+    def curriculum_info(self, obj):
+        return obj.curriculum.curriculum_info
+
+
 @admin.register(models.StudyStudent)
 class StudyStudentAdmin(ModelAdmin):
     list_display = list_display_links = [

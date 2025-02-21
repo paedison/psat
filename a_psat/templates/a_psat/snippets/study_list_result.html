@@ -1,0 +1,94 @@
+{% load humanize %}
+
+<article class="table-responsive">
+    <table class="table table-bordered table-striped align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap" rowspan="2">회차</th>
+                <th class="text-primary text-nowrap" rowspan="2">답안 제출<br/>마감일</th>
+                <th class="text-primary text-nowrap" rowspan="2">강의일</th>
+                <th class="text-primary text-nowrap" rowspan="2">등수</th>
+                <th class="text-primary text-nowrap" colspan="4">점수(점)</th>
+            </tr>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap">총점</th>
+                <th class="text-primary text-nowrap">언어</th>
+                <th class="text-primary text-nowrap">자료</th>
+                <th class="text-primary text-nowrap">상황</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="text-center">
+                <td class="text-nowrap">전체</td>
+                <td class="text-nowrap">-</td>
+                <td class="text-nowrap">-</td>
+                <td class="text-nowrap">{{ student.rank }}</td>
+                {% for _ in '0123' %}
+                    {% cycle student.score_total student.score_1 student.score_2 student.score_3 as score silent %}
+                    <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
+                <td class="text-nowrap" colspan="7"></td>
+            </tr>
+            {% for result in results %}
+                <tr class="text-center">
+                    {% if config.current_time >= result.schedule.lecture_open_datetime and config.current_time < result.schedule.homework_end_datetime %}
+                        {% if result.score %}
+                            <td class="text-nowrap">{{ result.psat.get_round_display }}</td>
+                            <td class="text-nowrap">{{ result.schedule.homework_end_datetime|date:'n/j(D)' }}</td>
+                            <td class="text-nowrap">{{ result.schedule.lecture_datetime|date:'n/j(D)' }}</td>
+                            <td class="text-nowrap">{% if result.rank %}{{ result.rank }}{% endif %}</td>
+                            {% for _ in '0123' %}
+                                {% cycle result.score result.score_dict.score_1 result.score_dict.score_2 result.score_dict.score_3 as score silent %}
+                                <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
+                            {% endfor %}
+                        {% else %}
+                            <td class="text-nowrap">
+                                <a href="{{ result.get_answer_input_url }}">
+                                    {{ result.psat.get_round_display }}
+                                </a>
+                            </td>
+                            <td class="text-nowrap">
+                                <a href="{{ result.get_answer_input_url }}">
+                                    {{ result.schedule.homework_end_datetime|date:'n/j(D)' }}
+                                </a>
+                            </td>
+                            <td class="text-nowrap">
+                                <a href="{{ result.get_answer_input_url }}">
+                                    {{ result.schedule.lecture_datetime|date:'n/j(D)' }}
+                                </a>
+                            </td>
+                            <td class="text-nowrap" colspan="5">
+                                <a href="{{ result.get_answer_input_url }}">
+                                    <span class="badge rounded-pill text-bg-danger">
+                                        {{ result.schedule.homework_end_datetime|date:'n/j(D)' }}까지 답안을 제출해주세요.
+                                    </span>
+                                </a>
+                            </td>
+                        {% endif %}
+                    {% elif config.current_time >= result.schedule.homework_end_datetime %}
+                        <td class="text-nowrap">{{ result.psat.get_round_display }}</td>
+                        <td class="text-nowrap">{{ result.schedule.homework_end_datetime|date:'n/j(D)' }}</td>
+                        <td class="text-nowrap">{{ result.schedule.lecture_datetime|date:'n/j(D)' }}</td>
+                        {% if result.score %}
+                            <td class="text-nowrap">{% if result.rank %}{{ result.rank }}{% endif %}</td>
+                            {% for _ in '0123' %}
+                                {% cycle result.score result.score_dict.score_1 result.score_dict.score_2 result.score_dict.score_3 as score silent %}
+                                <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
+                            {% endfor %}
+                        {% else %}
+                            <td class="text-nowrap" colspan="5">
+                                <span class="badge rounded-pill text-bg-warning">답안 제출 마감일이 지났습니다.</span>
+                            </td>
+                        {% endif %}
+                    {% endif %}
+                </tr>
+            {% empty %}
+                <tr class="text-center">
+                    <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>

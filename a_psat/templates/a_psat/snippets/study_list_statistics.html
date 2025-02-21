@@ -26,16 +26,19 @@
             <tr class="text-center">
                 <td class="text-nowrap" colspan="7"></td>
             </tr>
-            {% for obj in statistics_page_obj %}
-                <tr class="text-center">
-                    <td class="text-nowrap">{{ obj.get_round_display }}</td>
-                    <td class="text-nowrap">{{ obj.statistics.participants|intcomma }}</td>
-                    <td class="text-nowrap">{{ obj.statistics.max|default_if_none:'' }}</td>
-                    <td class="text-nowrap">{{ obj.statistics.t10|default_if_none:'' }}</td>
-                    <td class="text-nowrap">{{ obj.statistics.t25|default_if_none:'' }}</td>
-                    <td class="text-nowrap">{{ obj.statistics.t50|default_if_none:'' }}</td>
-                    <td class="text-nowrap">{{ obj.statistics.avg|floatformat:1 }}</td>
-                </tr>
+            {% for psat in qs_psat %}
+                {% if config.current_time >= psat.schedule.homework_end_datetime %}
+                    <tr class="text-center">
+                        <td class="text-nowrap">{{ psat.get_round_display }}</td>
+                        <td class="text-nowrap">{{ psat.statistics.participants|intcomma }}</td>
+                        <td class="text-nowrap">{{ psat.statistics.max|default_if_none:'' }}</td>
+                        <td class="text-nowrap">{{ psat.statistics.t10|default_if_none:'' }}</td>
+                        <td class="text-nowrap">{{ psat.statistics.t25|default_if_none:'' }}</td>
+                        <td class="text-nowrap">{{ psat.statistics.t50|default_if_none:'' }}</td>
+                        <td class="text-nowrap">{{ psat.statistics.avg|floatformat:1 }}</td>
+                    </tr>
+                {% else %}
+                {% endif %}
             {% empty %}
                 <tr class="text-center">
                     <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
@@ -44,7 +47,3 @@
         </tbody>
     </table>
 </article>
-
-{% with page_obj=statistics_page_obj page_range=statistics_page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header='statistics_list' %}
-{% endwith %}

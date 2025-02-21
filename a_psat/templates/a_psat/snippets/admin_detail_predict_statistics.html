@@ -46,7 +46,5 @@
 </article>
 
 {% with page_obj=statistics_page_obj page_range=statistics_page_range %}
-    {% if page_obj.has_next or page_obj.has_previous %}
-        {% include 'a_prime/snippets/pagination.html' with header='statistics_list' %}
-    {% endif %}
+    {% include 'a_prime/snippets/pagination.html' with header='statistics_list' %}
 {% endwith %}

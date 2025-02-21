@@ -1,11 +1,13 @@
 import os
+from datetime import time, datetime
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.templatetags.static import static
 from django.urls import reverse
+from django.utils.timezone import make_aware
 
 from _config.settings.base import BASE_DIR
 from a_psat import models
@@ -215,3 +217,10 @@ def get_all_comments(queryset, problem_id=None):
         all_comments.append(comment)
         all_comments.extend(child_comments.filter(parent=comment))
     return all_comments
+
+
+def get_local_time(target_date, target_time=time(9, 0)):
+    if not target_date:
+        raise ValidationError("Date is required for timezone conversion.")
+    target_datetime = datetime.combine(target_date, target_time)
+    return make_aware(target_datetime)

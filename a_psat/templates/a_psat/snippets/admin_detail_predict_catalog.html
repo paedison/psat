@@ -104,7 +104,5 @@
 </article>
 
 {% with page_obj=catalog_page_obj page_range=catalog_page_range %}
-    {% if page_obj.has_next or page_obj.has_previous %}
-        {% include 'a_prime/snippets/pagination.html' with header='catalog_list' %}
-    {% endif %}
+    {% include 'a_prime/snippets/pagination.html' with header='catalog_list' %}
 {% endwith %}

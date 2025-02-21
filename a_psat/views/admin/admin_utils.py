@@ -78,20 +78,6 @@ def update_scores(qs_student, psats):
         is_updated_list.append(bulk_create_or_update(
             models.StudyResult, [], list_update, ['score']))
 
-    # qs_result = models.StudyResult.objects.filter(student__in=qs_student, psat__in=psats, score=0)
-    # for r in qs_result:
-    #     qs_answer = models.StudyAnswer.objects.filter(student=r.student, problem__psat=r.psat)
-    #     score = 0
-    #     for a in qs_answer:
-    #         answer_correct_list = {int(digit) for digit in str(a.answer_correct)}
-    #         if a.answer in answer_correct_list:
-    #             score += 1
-    #     if score:
-    #         r.score = score
-    #         list_update.append(r)
-    # is_updated_list.append(bulk_create_or_update(
-    #     models.StudyResult, [], list_update, ['score']))
-    #
     # Update StudyStudent for score_total
     list_update = []
     student_scores = qs_student.annotate(
@@ -162,12 +148,12 @@ def get_data_statistics(qs_student):
 
     for student in qs_student:
         score_dict['전체'].append(student.score_total)
-        for result in student.result_list:
-            study_round = result.psat.round
+        for r in student.result_list:
+            study_round = r.psat.round
             if study_round not in score_dict.keys():
                 score_dict[study_round] = []
-            if result.score:
-                score_dict[study_round].append(result.score)
+            if r.score:
+                score_dict[study_round].append(r.score)
 
     for study_round, scores in score_dict.items():
         participants = len(scores)
