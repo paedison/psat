@@ -35,7 +35,7 @@ def subject_choice() -> dict:
 
 
 def lecture_subject_choice() -> dict:
-    return {'언어': '언어논리', '자료': '자료해석', '상황': '상황판단'}
+    return {'언어': '언어논리', '자료': '자료해석', '상황': '상황판단', '공부': '공부법'}
 
 
 def number_choice() -> list:

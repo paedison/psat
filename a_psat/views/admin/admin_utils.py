@@ -32,25 +32,23 @@ def update_data_answers(qs_problem):
             entry.rate_gap = None
 
 
-def get_category_stat(qs_student):
-    category_stat = (
-        qs_student.aggregate(participants=Count('id'), max=Max('score_total'), avg=Avg('score_total'))
-    )
-
-    participants = category_stat['participants']
+def get_score_stat_dict(qs_student) -> dict:
+    # stat_dict keys: participants, max, avg, t10, t25, t50
+    stat_dict = qs_student.aggregate(participants=Count('id'), max=Max('score_total'), avg=Avg('score_total'))
+    participants = stat_dict['participants']
     if participants == 0:
-        return None
+        return {}
 
-    score_list = qs_student.values_list('score_total', flat=True)
+    score_list = list(qs_student.values_list('score_total', flat=True))
 
     def get_score(rank_rate: float):
         threshold = max(1, int(participants * rank_rate))
         return score_list[threshold] if threshold < participants else None
 
-    category_stat['t10'] = get_score(0.10)
-    category_stat['t25'] = get_score(0.25)
-    category_stat['t50'] = get_score(0.50)
-    return category_stat
+    stat_dict['t10'] = get_score(0.10)
+    stat_dict['t25'] = get_score(0.25)
+    stat_dict['t50'] = get_score(0.50)
+    return stat_dict
 
 
 def update_scores(qs_student, psats):

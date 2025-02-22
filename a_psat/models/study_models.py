@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.db import models
+from django.db.models import functions
 from django.urls import reverse_lazy
 
 from common.models import User
@@ -109,25 +110,21 @@ class StudyProblemManager(models.Manager):
         return self.filter(psat__category=category).select_related(
             'psat', 'psat__category', 'problem', 'problem__psat')
 
-    def get_qs_problem_with_answer_count(self, category):
-        annotate_dict = {
-            'ans_official': models.F('problem__answer'),
-        }
+    def get_filtered_qs_by_category_annotated_with_answer_count(self, category):
+        annotate_dict = {'ans_official': models.F('problem__answer')}
         field_list = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
         for fld in field_list:
             annotate_dict[f'{fld}_all'] = models.F(f'answer_count__{fld}')
             annotate_dict[f'{fld}_top'] = models.F(f'answer_count_top_rank__{fld}')
             annotate_dict[f'{fld}_mid'] = models.F(f'answer_count_mid_rank__{fld}')
             annotate_dict[f'{fld}_low'] = models.F(f'answer_count_low_rank__{fld}')
-        qs_answer_count = (
-            self.filter(psat__category=category)
-            .order_by('psat__round', 'number').annotate(**annotate_dict)
+        return (
+            self.filter(psat__category=category).order_by('psat__round', 'number').annotate(**annotate_dict)
             .select_related(
                 'psat', 'problem', 'problem__psat', 'answer_count',
                 'answer_count_top_rank', 'answer_count_mid_rank', 'answer_count_low_rank',
             )
         )
-        return qs_answer_count
 
 
 class StudyProblem(models.Model):
@@ -246,7 +243,13 @@ class StudyCurriculum(models.Model):
         return reverse_lazy('psat:study-list', args=[self.id])
 
 
+class StudyCurriculumScheduleManager(models.Manager):
+    def with_select_related(self):
+        return self.select_related('curriculum')
+
+
 class StudyCurriculumSchedule(models.Model):
+    objects = StudyCurriculumScheduleManager()
     curriculum = models.ForeignKey(StudyCurriculum, on_delete=models.CASCADE, related_name='schedules')
     lecture_number = models.PositiveSmallIntegerField(default=1, verbose_name='강의 주차')
     lecture_theme = models.IntegerField(choices=choices.study_lecture_theme, default=1, verbose_name='강의 주제')
@@ -278,24 +281,37 @@ class StudyStudentManager(models.Manager):
     @staticmethod
     def _with_prefetch_related(queryset):
         return queryset.prefetch_related(
-            models.Prefetch('results', queryset=StudyResult.objects.select_related('psat'), to_attr='result_list')
+            models.Prefetch(
+                'results', queryset=StudyResult.objects.select_related('psat'), to_attr='result_list')
         )
 
-    def get_qs_student_by_category(self, category):
-        return self.filter(curriculum__category=category).select_related(
-            'curriculum', 'curriculum__organization', 'curriculum__category').order_by('rank_total')
+    def get_filtered_qs_by_category(self, category):
+        return self.with_select_related().filter(curriculum__category=category).order_by('rank_total')
 
-    def get_qs_student_for_catalog_by_category(self, category):
-        queryset = self.get_qs_student_by_category(category)
+    def get_filtered_qs_by_category_for_catalog(self, category):
+        queryset = self.get_filtered_qs_by_category(category)
         return self._with_prefetch_related(queryset)
 
-    def get_qs_student_by_curriculum(self, curriculum):
-        return self.filter(curriculum=curriculum).select_related(
-            'curriculum', 'curriculum__organization', 'curriculum__category').order_by('rank_total')
+    def get_filtered_qs_by_curriculum(self, curriculum):
+        return self.with_select_related().filter(curriculum=curriculum).order_by('rank_total')
 
-    def get_qs_student_for_catalog_by_curriculum(self, curriculum):
-        queryset = self.get_qs_student_by_curriculum(curriculum)
+    def get_filtered_qs_by_curriculum_for_catalog(self, curriculum):
+        queryset = self.get_filtered_qs_by_curriculum(curriculum)
         return self._with_prefetch_related(queryset)
+
+    def get_filtered_qs_by_user(self, user):
+        return (
+            self.with_select_related().filter(user=user)
+            .annotate(score_count=models.Count('results', filter=models.Q(results__score__gt=0)))
+            .order_by('-id')
+        )
+
+    def get_filtered_student(self, curriculum, user):
+        return self.with_select_related().filter(curriculum=curriculum, user=user).first()
+
+    def get_filtered_qs_by_curriculum_for_rank(self, curriculum, **kwargs):
+        return self.filter(curriculum=curriculum, **kwargs).annotate(
+            rank=models.Window(expression=functions.Rank(), order_by=[models.F('score_total').desc()]))
 
 
 class StudyStudent(models.Model):
@@ -353,6 +369,37 @@ class StudyAnswerManager(models.Manager):
     def with_select_related(self):
         return self.select_related('student', 'problem', 'problem__psat', 'problem__problem')
 
+    @staticmethod
+    def get_annotation_for_subject():
+        return models.Case(
+            models.When(problem__problem__subject='헌법', then=models.Value('subject_0')),
+            models.When(problem__problem__subject='언어', then=models.Value('subject_1')),
+            models.When(problem__problem__subject='자료', then=models.Value('subject_2')),
+            models.When(problem__problem__subject='상황', then=models.Value('subject_3')),
+            default=models.Value(''),
+            output_field=models.CharField(),
+        )
+
+    @staticmethod
+    def get_annotation_for_is_correct():
+        return models.Case(
+            models.When(answer=models.F('problem__problem__answer'), then=models.Value(True)),
+            default=models.Value(False),
+            output_field=models.BooleanField(),
+        )
+
+    def get_filtered_qs_by_student(self, student, **kwargs):
+        return (
+            self.with_select_related().filter(student=student, **kwargs)
+            .order_by('problem__psat__round', 'problem__problem__subject')
+            .annotate(
+                round=models.F('problem__psat__round'),
+                subject=self.get_annotation_for_subject(),
+                is_correct=self.get_annotation_for_is_correct(),
+            )
+            .values('round', 'subject', 'is_correct')
+        )
+
 
 class StudyAnswer(models.Model):
     objects = StudyAnswerManager()
@@ -401,7 +448,16 @@ class StudyAnswer(models.Model):
         return self.answer
 
 
+class StudyAnswerCountManager(models.Manager):
+    def with_select_related(self):
+        return self.select_related('problem', 'problem__psat', 'problem__problem')
+
+    def get_filtered_qs_by_psat(self, psat):
+        return self.filter(problem__psat=psat).annotate(no=models.F('problem__number')).order_by('no')
+
+
 class StudyAnswerCount(abstract_models.AnswerCount):
+    objects = StudyAnswerCountManager()
     problem = models.OneToOneField(StudyProblem, on_delete=models.CASCADE, related_name='answer_count')
 
     class Meta:
@@ -443,6 +499,10 @@ class StudyResultManager(models.Manager):
             'student', 'psat', 'student__curriculum',
             'student__curriculum__category', 'student__curriculum__organization',
         )
+
+    def get_filtered_qs_ordered_by_psat_round(self, curriculum, **kwargs):
+        return self.filter(student__curriculum=curriculum, **kwargs).order_by(
+            'psat__round').values('score', round=models.F('psat__round'))
 
 
 class StudyResult(models.Model):

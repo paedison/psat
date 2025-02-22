@@ -5,8 +5,7 @@ from collections import defaultdict
 import django.db.utils
 from django.contrib.auth.decorators import login_not_required
 from django.db import transaction
-from django.db.models import Count, Q, When, F, Case, Value, BooleanField, CharField, Window
-from django.db.models.functions import Rank
+from django.db.models import F
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
@@ -15,6 +14,7 @@ from django_htmx.http import reswap
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
+from lecture.models import Lecture
 from .admin import admin_utils
 from .. import models, forms, utils
 
@@ -44,11 +44,7 @@ def index_view(request: HtmxHttpRequest):
     config.url_list = config.url_index
     students = None
     if request.user.is_authenticated:
-        students = (
-            models.StudyStudent.objects.with_select_related().filter(user=request.user)
-            .annotate(score_count=Count('results', filter=Q(results__score__gt=0)))
-            .order_by('-id')
-        )
+        students = models.StudyStudent.objects.get_filtered_qs_by_user(request.user)
     context = update_context_data(config=config, students=students)
     return render(request, 'a_psat/study_index.html', context)
 
@@ -72,126 +68,184 @@ def list_view(request: HtmxHttpRequest, pk: int):
     if not curriculum:
         return redirect(config.url_index)
 
-    student = models.StudyStudent.objects.with_select_related().filter(
-        curriculum=curriculum, user=request.user).first()
+    student = models.StudyStudent.objects.get_filtered_student(curriculum=curriculum, user=request.user)
     if not student:
         return redirect(config.url_index)
 
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', '1')
-
     context = update_context_data(
-        page_title=curriculum.full_reference, config=config, curriculum=curriculum,
-    )
+        page_title=curriculum.full_reference, config=config, student=student, curriculum=curriculum)
 
-    answers = (
-        models.StudyAnswer.objects.with_select_related().filter(student=student)
-        .order_by('problem__psat__round', 'problem__problem__subject')
-        .annotate(
-            round=F('problem__psat__round'),
-            subject=Case(
-                When(problem__problem__subject='헌법', then=Value('subject_0')),
-                When(problem__problem__subject='언어', then=Value('subject_1')),
-                When(problem__problem__subject='자료', then=Value('subject_2')),
-                When(problem__problem__subject='상황', then=Value('subject_3')),
-                default=Value(''),
-                output_field=CharField(),
-            ),
-            is_correct=Case(
-                When(answer=F('problem__problem__answer'), then=Value(True)),
-                default=Value(False),
-                output_field=BooleanField(),
-            )
-        )
-        .values('round', 'subject', 'is_correct')
+    qs_schedule = models.StudyCurriculumSchedule.objects.filter(
+        curriculum=curriculum, homework_end_datetime__lte=config.current_time).order_by('-lecture_number')
+    schedule_dict = {}
+    for s in qs_schedule:
+        schedule_dict[s.lecture_round] = s
+    opened_rounds = qs_schedule.values_list('lecture_round', flat=True)
+
+    if view_type == 'lecture':
+        lecture_page_obj, lecture_page_range = get_lecture_paginator_data(qs_schedule, page_number)
+        context = update_context_data(
+            context, lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range)
+        return render(request, 'a_psat/snippets/study_list_lecture.html', context)
+
+    if view_type == 'result':
+        curriculum_stat, result_page_obj, result_page_range = get_result_paginator_data(
+            schedule_dict, student, opened_rounds, page_number)
+        context = update_context_data(
+            context, curriculum_stat=curriculum_stat,
+            result_page_obj=result_page_obj, result_page_range=result_page_range)
+        return render(request, 'a_psat/snippets/study_list_result.html', context)
+
+    if view_type == 'answer_analysis':
+        answer_page_obj, answer_page_range = get_answer_paginator_data(
+            student, opened_rounds, page_number)
+        context = update_context_data(
+            context, answer_page_obj=answer_page_obj, answer_page_range=answer_page_range)
+        return render(request, 'a_psat/snippets/study_list_answer_analysis.html', context)
+
+    lecture_page_obj, lecture_page_range = get_lecture_paginator_data(qs_schedule, page_number)
+    curriculum_stat, result_page_obj, result_page_range = get_result_paginator_data(
+        schedule_dict, student, opened_rounds, page_number)
+    answer_page_obj, answer_page_range = get_answer_paginator_data(
+        student, opened_rounds, page_number)
+    context = update_context_data(
+        context, curriculum_stat=curriculum_stat,
+        lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range,
+        result_page_obj=result_page_obj, result_page_range=result_page_range,
+        answer_page_obj=answer_page_obj, answer_page_range=answer_page_range,
     )
-    stat_dict = defaultdict(dict)
-    for i in range(4):
-        stat_dict['total'][f'score_{i}'] = 0
-    for study_round in range(1, curriculum.category.round + 1):
+    return render(request, 'a_psat/study_list.html', context)
+
+
+def get_lecture_paginator_data(qs_schedule, page_number) -> tuple:
+    lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
+
+    lecture_dict = {}
+    for e in Lecture.objects.all():
+        lecture_dict[(e.subject.abbr, e.order)] = e.id
+
+    for lec in lecture_page_obj:
+        lec: models.StudyCurriculumSchedule
+        theme = lec.get_lecture_theme_display()
+        lecture_id = color_code = None
+        if '언어' in theme:
+            color_code = 'primary'
+            lecture_id = lecture_dict[('언어', int(theme[-1]))]
+        elif '자료' in theme:
+            color_code = 'success'
+            lecture_id = lecture_dict[('자료', int(theme[-1]))]
+        elif '상황' in theme:
+            color_code = 'warning'
+            lecture_id = lecture_dict[('상황', int(theme[-1]))]
+        elif '시험' in theme:
+            color_code = 'danger'
+        lec.color_code = color_code
+        lec.lecture_topic = models.choices.study_lecture_topic().get(lec.get_lecture_theme_display())
+        if lecture_id:
+            lec.url_lecture = reverse_lazy('lecture:detail', args=[lecture_id])
+    return lecture_page_obj, lecture_page_range
+
+
+def get_result_paginator_data(schedule_dict, student, opened_rounds, page_number) -> tuple:
+    qs_result = models.StudyResult.objects.select_related('psat').filter(
+        student=student).order_by('-psat__round')
+    qs_result_opened = qs_result.filter(psat__round__in=opened_rounds)
+    result_page_obj, result_page_range = utils.get_paginator_data(qs_result_opened, page_number, 4)
+    new_opened_rounds = []
+    for r in result_page_obj:
+        new_opened_rounds.append(r.psat.round)
+
+    qs_answer = models.StudyAnswer.objects.get_filtered_qs_by_student(student)
+    score_dict = defaultdict(dict)
+    for study_round in range(student.curriculum.category.round + 1):
+        key = study_round if study_round else 'total'
         for i in range(4):
-            stat_dict[study_round][f'score_{i}'] = 0
-    for a in answers:
+            score_dict[key][f'score_{i}'] = 0
+    for a in qs_answer:
         if a['is_correct']:
             score_field = str(a['subject']).replace('subject', 'score')
-            stat_dict[a['round']][score_field] += 1
-            stat_dict['total'][score_field] += 1
+            score_dict[a['round']][score_field] += 1
+            score_dict['total'][score_field] += 1
 
-    for i in range(4):
-        setattr(student, f'score_{i}', stat_dict['total'][f'score_{i}'])
-
-    qs_score = models.StudyResult.objects.filter(student__curriculum=curriculum).order_by('psat__round').values(
-        'score', round=F('psat__round'),
-    )
-    score_dict = defaultdict(list)
+    qs_score = models.StudyResult.objects.get_filtered_qs_ordered_by_psat_round(
+        student.curriculum, psat__round__in=new_opened_rounds)
+    score_dict_for_rank = defaultdict(list)
     for s in qs_score:
         score = s['score']
         if score is not None:
-            score_dict[s['round']].append(score)
-    for rnd, score_list in score_dict.items():
-        score_dict[rnd] = sorted(score_list)
+            score_dict_for_rank[s['round']].append(score)
+    for rnd, score_list in score_dict_for_rank.items():
+        score_dict_for_rank[rnd] = sorted(score_list)
 
-    qs_rank = models.StudyStudent.objects.filter(curriculum=curriculum).annotate(
-        rank=Window(
-            expression=Rank(),
-            order_by=[F('score_total').desc()]
-        )
-    )
+    qs_rank = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_rank(student.curriculum)
     for r in qs_rank:
         if r.id == student.id:
             student.rank = r.rank
 
-    schedules = {}
-    qs_schedules = models.StudyCurriculumSchedule.objects.filter(curriculum=curriculum)
-    for s in qs_schedules:
-        schedules[s.lecture_round] = s
+    qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(student.curriculum)
+    curriculum_stat = admin_utils.get_score_stat_dict(qs_student)
+    curriculum_stat['rank'] = student.rank
+    curriculum_stat['score'] = student.score_total
+    for i in range(4):
+        curriculum_stat[f'score_{i}'] = score_dict['total'][f'score_{i}']
 
-    results = models.StudyResult.objects.select_related('psat').filter(student=student)
-    for r in results:
-        r.score_dict = stat_dict[r.psat.round]
-        rank = None
-        if r.score is not None:
-            rank = score_dict[r.psat.round].index(r.score)
-        r.rank = rank
-        r.schedule = schedules[r.psat.round]
-
-    qs_psat = models.StudyPsat.objects.get_qs_psat(curriculum.category)
-    qs_student = models.StudyStudent.objects.get_qs_student_for_catalog_by_curriculum(curriculum)
-    category_stat = admin_utils.get_category_stat(qs_student)
     data_statistics = admin_utils.get_data_statistics(qs_student)
-    data_statistics_by_study_round = {}
+    data_statistics_dict = {}
     for d in data_statistics:
-        data_statistics_by_study_round[d['study_round']] = d
-    for p in qs_psat:
-        p.statistics = data_statistics_by_study_round.get(p.round)
-        p.schedule = schedules[p.round]
+        data_statistics_dict[d['study_round']] = d
 
-    opened_rounds = qs_schedules.filter(homework_end_datetime__lte=config.current_time).values_list('lecture_round', flat=True)
-    qs_problem = models.StudyProblem.objects.get_qs_problem_with_answer_count(curriculum.category).filter(psat__round__in=opened_rounds)
-    admin_utils.update_data_answers(qs_problem)
-    if view_type == 'answer_list':
-        answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number)
-        context = update_context_data(
-            context, answer_page_obj=answer_page_obj, answer_page_range=answer_page_range)
-        return render(request, 'a_psat/snippets/admin_detail_study_answer_analysis.html', context)
+    for r in result_page_obj:
+        for key, val in score_dict[r.psat.round].items():
+            setattr(r, key, val)
+        for key, val in data_statistics_dict.get(r.psat.round).items():
+            setattr(r, key, val)
 
-    qs_answer = models.StudyAnswer.objects.with_select_related().filter(problem__psat__round__in=opened_rounds)
+        r.rank = score_dict_for_rank[r.psat.round].index(r.score) if r.score else None
+        r.schedule = schedule_dict.get(r.psat.round)
+        r.statistics = data_statistics_dict.get(r.psat.round)
+    return curriculum_stat, result_page_obj, result_page_range
+
+
+def get_answer_paginator_data(student, opened_rounds, page_number) -> tuple:
+    qs_problem = models.StudyProblem.objects.get_filtered_qs_by_category_annotated_with_answer_count(
+        student.curriculum.category).filter(psat__round__in=opened_rounds).order_by('-psat')
+    answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number)
+
+    new_opened_rounds = []
+    for a in answer_page_obj:
+        new_opened_rounds.append(a.psat.round)
+
+    qs_answer = models.StudyAnswer.objects.with_select_related().filter(
+        student=student, problem__psat__round__in=new_opened_rounds)
     answer_student_dict = defaultdict(dict)
     for a in qs_answer:
         answer_student_dict[(a.problem.psat.round, a.problem.number)] = a.answer
-    answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number)
+
     for o in answer_page_obj:
         o: models.StudyProblem
-        o.ans_official = o.answer
-        o.ans_student = answer_student_dict[(o.psat.round, o.number)]
-        o.result = o.ans_student == o.ans_official
 
-    context = update_context_data(
-        context, student=student, results=results,
-        category_stat=category_stat, qs_psat=qs_psat,
-        answer_page_obj=answer_page_obj, answer_page_range=answer_page_range,
-    )
-    return render(request, 'a_psat/study_list.html', context)
+        ans_student = answer_student_dict[(o.psat.round, o.number)]
+        ans_official = o.answer
+        answer_official_list = [int(digit) for digit in str(ans_official)]
+
+        o.no = o.number
+        o.ans_student = ans_student
+        o.ans_official = ans_official
+        o.ans_official_circle = o.problem.get_answer_display()
+        o.is_correct = ans_student in answer_official_list
+        o.ans_list = answer_official_list
+        o.rate_correct = o.answer_count.get_answer_rate(ans_official)
+        o.rate_correct_top = o.answer_count_top_rank.get_answer_rate(ans_official)
+        o.rate_correct_mid = o.answer_count_mid_rank.get_answer_rate(ans_official)
+        o.rate_correct_low = o.answer_count_low_rank.get_answer_rate(ans_official)
+        try:
+            o.rate_gap = o.rate_correct_top - o.rate_correct_low
+        except TypeError:
+            o.rate_gap = None
+
+    return answer_page_obj, answer_page_range
 
 
 def register_view(request: HtmxHttpRequest):
@@ -318,8 +372,7 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int):
                     student=result.student, problem=problem, answer=ans))
             bulk_create_or_update(models.StudyAnswer, list_create, [], [])
 
-            qs_answer_count = models.StudyAnswerCount.objects.filter(
-                problem__psat=result.psat).annotate(no=F('problem__number')).order_by('no')
+            qs_answer_count = models.StudyAnswerCount.objects.get_filtered_qs_by_psat(result.psat)
             for ac in qs_answer_count:
                 ans_student = answer_data[ac.problem.number - 1]
                 setattr(ac, f'count_{ans_student}', F(f'count_{ans_student}') + 1)

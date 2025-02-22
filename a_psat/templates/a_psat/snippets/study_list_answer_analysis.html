@@ -37,38 +37,38 @@
             </tr>
         </thead>
         <tbody>
-            {% for answer in answer_page_obj %}
+            {% for obj in answer_page_obj %}
                 <tr class="text-center">
                     <td class="text-nowrap" hx-target="#main">
-                        {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=answer problem=answer.problem problem_id=answer.problem_id %}
+                        {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}
                     </td>
                     <td class="text-wrap">
                         <button class="btn btn-circle btn-sm fs-6 btn-success">
-                            {{ answer.ans_official }}
+                            {{ obj.ans_official }}
                         </button>
                     </td>
                     <td>
-                        <button class="btn btn-circle btn-sm fs-6
-                                btn-{% if answer.result %}success{% else %}danger{% endif %}">
-                            {% if answer.ans_student > 0 and answer.ans_student < 6 %}
-                                {{ answer.ans_student }}
-                            {% endif %}
-                        </button>
+                        {% if obj.ans_student > 0 and obj.ans_student < 6 %}
+                            <button class="btn btn-circle btn-sm fs-6
+                                btn-{% if obj.is_correct %}success{% else %}danger{% endif %}">
+                                {{ obj.ans_student }}
+                            </button>
+                        {% endif %}
                     </td>
                     {% for _ in '12345' %}
-                        {% cycle answer.rate_correct answer.rate_correct_top answer.rate_correct_mid answer.rate_correct_low answer.rate_gap as rate_correct silent %}
+                        {% cycle obj.rate_correct obj.rate_correct_top obj.rate_correct_mid obj.rate_correct_low obj.rate_gap as rate_correct silent %}
                         <td>
                             {% if rate_correct %}{{ rate_correct|floatformat:1 }}{% endif %}
                         </td>
                     {% endfor %}
 
                     {% for _ in '1234' %}
-                        {% cycle answer.count_1_all answer.count_1_top answer.count_1_mid answer.count_1_low as count_1 silent %}
-                        {% cycle answer.count_2_all answer.count_2_top answer.count_2_mid answer.count_2_low as count_2 silent %}
-                        {% cycle answer.count_3_all answer.count_3_top answer.count_3_mid answer.count_3_low as count_3 silent %}
-                        {% cycle answer.count_4_all answer.count_4_top answer.count_4_mid answer.count_4_low as count_4 silent %}
-                        {% cycle answer.count_5_all answer.count_5_top answer.count_5_mid answer.count_5_low as count_5 silent %}
-                        {% cycle answer.count_sum_all answer.count_sum_top answer.count_sum_mid answer.count_sum_low as count_sum silent %}
+                        {% cycle obj.count_1_all obj.count_1_top obj.count_1_mid obj.count_1_low as count_1 silent %}
+                        {% cycle obj.count_2_all obj.count_2_top obj.count_2_mid obj.count_2_low as count_2 silent %}
+                        {% cycle obj.count_3_all obj.count_3_top obj.count_3_mid obj.count_3_low as count_3 silent %}
+                        {% cycle obj.count_4_all obj.count_4_top obj.count_4_mid obj.count_4_low as count_4 silent %}
+                        {% cycle obj.count_5_all obj.count_5_top obj.count_5_mid obj.count_5_low as count_5 silent %}
+                        {% cycle obj.count_sum_all obj.count_sum_top obj.count_sum_mid obj.count_sum_low as count_sum silent %}
 
                         <td class="td-right-no-border">{{ count_1|default:'' }}</td>
                         <td class="td-left-no-border td-right-no-border">{{ count_2|default:'' }}</td>
@@ -101,5 +101,5 @@
 </article>
 
 {% with page_obj=answer_page_obj page_range=answer_page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header='answer_list' %}
+    {% include 'a_psat/snippets/pagination.html' with header='answer_analysis' %}
 {% endwith %}

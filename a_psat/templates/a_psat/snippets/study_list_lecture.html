@@ -1,0 +1,52 @@
+{% load humanize %}
+
+<article class="table-responsive">
+    <table class="table table-bordered align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap">주차</th>
+                <th class="text-primary text-nowrap">미니테스트</th>
+                <th class="text-primary text-nowrap">강의 주제 및 토픽</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in lecture_page_obj %}
+                <tr class="{% if obj.color_code %}table-{{ obj.color_code }}{% endif %}">
+                    <th class="text-nowrap text-center small">
+                        {{ obj.lecture_number }}주차<br/>
+                        {{ obj.lecture_datetime|date:'n/j(D)' }}
+                    </th>
+                    <th class="text-nowrap text-center small">
+                        {% if obj.lecture_round %}
+                            {{ obj.lecture_round }}회차
+                        {% endif %}
+                    </th>
+                    <td class="text-nowrap">
+                        <span class="fw-bold small">[{{ obj.get_lecture_theme_display }}]</span>
+                        {% if obj.url_lecture %}
+                            <a class="btn btn-sm btn-outline-primary ms-2" href="{{ obj.url_lecture }}">온라인 강의</a>
+                        {% endif %}
+                        <ul class="list-group list-group-flush">
+                            {% for topic in obj.lecture_topic %}
+                                <li class="list-group-item bg-transparent px-0 border-0">
+                                    <span class="badge rounded-pill bg-{{ obj.color_code|default_if_none:'danger' }}{% if obj.color_code == 'warning' %} text-dark{% endif %}">
+                                        {{ topic.0 }}
+                                    </span>
+                                    <span class="small">{{ topic.1 }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr class="text-center">
+                    <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% with page_obj=lecture_page_obj page_range=lecture_page_range %}
+    {% include 'a_psat/snippets/pagination.html' with header='lecture' %}
+{% endwith %}

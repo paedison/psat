@@ -5,47 +5,10 @@
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ page_title }} | 수험정보</div>
+                    <div class="card-header">수험정보</div>
                     <div class="card-body">
-                        <div id="studentInfoContent"
-                             class="d-flex align-items-center htmx-fade-in htmx-fade-out">
-                            <div class="pe-3">
-                                <img alt="로고" width="125"
-                                     src="{{ student.curriculum.organization.logo.url }}"/>
-                            </div>
-                            <table class="table d-md-none m-0">
-                                <tbody>
-                                    <tr>
-                                        <th class="px-0" scope="row">교육기관명</th>
-                                        <td>{{ student.curriculum.organization.get_name_display }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="px-0" scope="row">학번(수험번호)</th>
-                                        <td>{{ student.serial }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="px-0 td-no-border" scope="row">이름</th>
-                                        <td class="td-no-border">{{ student.name }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <table class="table d-none d-md-table m-0">
-                                <thead>
-                                    <tr class="text-center">
-                                        <th class="col-4" scope="row">교육기관명</th>
-                                        <th class="col-4" scope="row">학번(수험번호)</th>
-                                        <th class="col-4" scope="row">이름</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="text-center">
-                                        <td class="td-no-border">{{ student.curriculum.organization.get_name_display }}</td>
-                                        <td class="td-no-border">{{ student.serial }}</td>
-                                        <td class="td-no-border">{{ student.name }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div id="studentInfoContent" class="d-flex align-items-center">
+                            {% include 'a_psat/snippets/study_list_student_info.html' %}
                         </div>
                     </div>
                 </div>
@@ -53,11 +16,26 @@
         </div>
     </section>
 
-    <section class="section" aria-label="회차별 성적">
+    <section class="section" aria-label="주차별 강의 내용">
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
-                    <div class="card-header">{{ page_title }} | 회차별 성적</div>
+                    <div class="card-header">주차별 강의 내용</div>
+                    <div class="card-body">
+                        <div id="resultContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_psat/snippets/study_list_lecture.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="미니테스트 회차별 성적 및 통계">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
+                    <div class="card-header">미니테스트 회차별 성적 및 통계</div>
                     <div class="card-body">
                         <div id="resultContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_psat/snippets/study_list_result.html' %}
@@ -75,26 +53,10 @@
         </div>
     </section>
 
-    <section class="section" aria-label="회차별 통계">
-        <div class="row">
-            <div class="col-12">
-                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ page_title }} | 회차별 통계</div>
-                    <div class="card-body">
-                        <div id="statisticsContent" class="htmx-fade-in htmx-fade-out">
-                            {% include 'a_psat/snippets/study_list_statistics.html' %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
     <section class="section" aria-label="문항분석표">
         <div class="col-12">
             <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                <div class="card-header">{{ page_title }} | 문항분석표</div>
+                <div class="card-header">미니테스트 문항분석표</div>
                 <div class="card-body htmx-fade-in htmx-fade-out">
                     <div id="answerAnalysisContent" class="htmx-fade-in htmx-fade-out">
                         {% include 'a_psat/snippets/study_list_answer_analysis.html' %}

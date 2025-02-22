@@ -45,9 +45,9 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
 
     qs_psat = models.StudyPsat.objects.get_qs_psat(category)
     if study_type == 'category':
-        qs_student = models.StudyStudent.objects.get_qs_student_for_catalog_by_category(category)
+        qs_student = models.StudyStudent.objects.get_filtered_qs_by_category_for_catalog(category)
     else:
-        qs_student = models.StudyStudent.objects.get_qs_student_for_catalog_by_curriculum(curriculum)
+        qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(curriculum)
         data_statistics = admin_utils.get_data_statistics(qs_student)
         data_statistics_by_study_round = {}
         for d in data_statistics:
@@ -55,7 +55,7 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         for p in qs_psat:
             p.statistics = data_statistics_by_study_round.get(p.round)
 
-    qs_problem = models.StudyProblem.objects.get_qs_problem_with_answer_count(category)
+    qs_problem = models.StudyProblem.objects.get_filtered_qs_by_category_annotated_with_answer_count(category)
     admin_utils.update_data_answers(qs_problem)
 
     if study_type == 'category':
@@ -68,7 +68,7 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         icon_image=icon_set_new.ICON_IMAGE, icon_search=icon_set_new.ICON_SEARCH,
     )
     if view_type == 'statistics_list':
-        category_stat = admin_utils.get_category_stat(qs_student)
+        category_stat = admin_utils.get_score_stat_dict(qs_student)
         statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_psat, page_number)
         context = update_context_data(
             context, category_stat=category_stat,
@@ -105,7 +105,7 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
             context, problem_page_obj=problem_page_obj, problem_page_range=problem_page_range)
         return render(request, 'a_psat/snippets/study_problem_list_content.html', context)
 
-    category_stat = admin_utils.get_category_stat(qs_student)
+    category_stat = admin_utils.get_score_stat_dict(qs_student)
     study_rounds = '1' * category.round
 
     statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_psat, page_number)
@@ -130,7 +130,7 @@ def category_update_view(request: HtmxHttpRequest, pk: int):
     context = {}
     next_url = request.headers.get('HX-Current-URL', request.META.get('HTTP_REFERER', '/'))
 
-    qs_student = models.StudyStudent.objects.get_qs_student_for_catalog_by_category(category)
+    qs_student = models.StudyStudent.objects.get_filtered_qs_by_category_for_catalog(category)
     psats = models.StudyPsat.objects.get_qs_psat(category)
 
     if view_type == 'score':
