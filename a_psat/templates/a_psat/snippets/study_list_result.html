@@ -26,54 +26,61 @@
         </thead>
         <tbody>
             <tr class="text-center">
-                <td class="text-nowrap">전체</td>
-                <td class="text-nowrap">-</td>
-                <td class="text-nowrap">-</td>
-                <td class="text-nowrap">{{ curriculum_stat.participants|intcomma }}</td>
-                <td class="text-nowrap">{{ curriculum_stat.rank }}</td>
+                <th class="text-nowrap">전체</th>
+                <th class="text-nowrap">-</th>
+                <th class="text-nowrap">-</th>
+                <th class="text-nowrap">{{ curriculum_stat.participants|intcomma }}</th>
+                <th class="text-nowrap">{{ curriculum_stat.rank }}</th>
                 {% for _ in '0123' %}
-                    {% cycle curriculum_stat.score curriculum_stat.score_1 curriculum_stat.score_2 curriculum_stat.score_3 as score silent %}
-                    <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
+                    {% cycle curriculum_stat.score_sum curriculum_stat.score_1 curriculum_stat.score_2 curriculum_stat.score_3 as score silent %}
+                    <th class="text-nowrap">{% if score %}{{ score }}{% endif %}</th>
                 {% endfor %}
-                <td class="text-nowrap">{{ curriculum_stat.max|default_if_none:'' }}</td>
-                <td class="text-nowrap">{{ curriculum_stat.t10|default_if_none:'' }}</td>
-                <td class="text-nowrap">{{ curriculum_stat.t25|default_if_none:'' }}</td>
-                <td class="text-nowrap">{{ curriculum_stat.t50|default_if_none:'' }}</td>
-                <td class="text-nowrap">{{ curriculum_stat.avg|floatformat:1 }}</td>
+                <th class="text-nowrap">{{ curriculum_stat.max|default_if_none:'' }}</th>
+                <th class="text-nowrap">{{ curriculum_stat.t10|default_if_none:'' }}</th>
+                <th class="text-nowrap">{{ curriculum_stat.t25|default_if_none:'' }}</th>
+                <th class="text-nowrap">{{ curriculum_stat.t50|default_if_none:'' }}</th>
+                <th class="text-nowrap">{{ curriculum_stat.avg|floatformat:1 }}</th>
             </tr>
             <tr class="text-center">
-                <td class="text-nowrap" colspan="7"></td>
+                <td class="text-nowrap" colspan="14"></td>
             </tr>
             {% for obj in result_page_obj %}
-                <tr class="text-center">
-                    {% if config.current_time >= obj.schedule.lecture_open_datetime and config.current_time < obj.schedule.homework_end_datetime %}
-                        {% if obj.score %}
-                            <td class="text-nowrap">{{ obj.psat.get_round_display }}</td>
+                {% if config.current_time >= obj.schedule.lecture_open_datetime and config.current_time < obj.schedule.homework_end_datetime %}
+                    {% if obj.score %}
+                        <tr class="text-center">
+                            <th class="text-nowrap">{{ obj.psat.get_round_display }}</th>
                             <td class="text-nowrap">{{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}</td>
                             <td class="text-nowrap">{{ obj.schedule.lecture_datetime|date:'n/j(D)' }}</td>
                             <td class="text-nowrap">{{ obj.statistics.participants|intcomma }}</td>
                             <td class="text-nowrap">{% if obj.rank %}{{ obj.rank }}{% endif %}</td>
                             {% for _ in '0123' %}
-                                {% cycle obj.score obj.score_dict.score_1 obj.score_dict.score_2 obj.score_dict.score_3 as score silent %}
+                                {% cycle obj.score_sum obj.score_1 obj.score_2 obj.score_3 as score silent %}
                                 <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
                             {% endfor %}
-                        {% else %}
-                            <td class="text-nowrap">
+                            <td class="text-nowrap">{{ obj.max|default_if_none:'' }}</td>
+                            <td class="text-nowrap">{{ obj.t10|default_if_none:'' }}</td>
+                            <td class="text-nowrap">{{ obj.t25|default_if_none:'' }}</td>
+                            <td class="text-nowrap">{{ obj.t50|default_if_none:'' }}</td>
+                            <td class="text-nowrap">{{ obj.avg|floatformat:1 }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <th class="text-nowrap text-center">
                                 <a href="{{ obj.get_answer_input_url }}">
                                     {{ obj.psat.get_round_display }}
                                 </a>
-                            </td>
-                            <td class="text-nowrap">
+                            </th>
+                            <td class="text-nowrap text-center">
                                 <a href="{{ obj.get_answer_input_url }}">
                                     {{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}
                                 </a>
                             </td>
-                            <td class="text-nowrap">
+                            <td class="text-nowrap text-center">
                                 <a href="{{ obj.get_answer_input_url }}">
                                     {{ obj.schedule.lecture_datetime|date:'n/j(D)' }}
                                 </a>
                             </td>
-                            <td class="text-nowrap">{{ obj.statistics.participants|intcomma }}</td>
+                            <td class="text-nowrap text-center">{{ obj.statistics.participants|intcomma }}</td>
                             <td class="text-nowrap" colspan="10">
                                 <a href="{{ obj.get_answer_input_url }}">
                                     <span class="badge rounded-pill text-bg-danger">
@@ -81,30 +88,32 @@
                                     </span>
                                 </a>
                             </td>
-                        {% endif %}
-                    {% elif config.current_time >= obj.schedule.homework_end_datetime %}
-                        <td class="text-nowrap">{{ obj.psat.get_round_display }}</td>
+                        </tr>
+                    {% endif %}
+                {% elif config.current_time >= obj.schedule.homework_end_datetime %}
+                    <tr class="text-center">
+                        <th class="text-nowrap">{{ obj.psat.get_round_display }}</th>
                         <td class="text-nowrap">{{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}</td>
                         <td class="text-nowrap">{{ obj.schedule.lecture_datetime|date:'n/j(D)' }}</td>
                         <td class="text-nowrap">{{ obj.statistics.participants|intcomma }}</td>
-                        {% if obj.score %}
-                            <td class="text-nowrap">{% if obj.rank %}{{ obj.rank }}{% endif %}</td>
-                            {% for _ in '0123' %}
-                                {% cycle obj.score obj.score_1 obj.score_2 obj.score_3 as score silent %}
-                                <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
-                            {% endfor %}
-                        {% else %}
+                        {% if obj.score is None %}
                             <td class="text-nowrap" colspan="5">
                                 <span class="badge rounded-pill text-bg-warning">답안 제출 마감일이 지났습니다.</span>
                             </td>
+                        {% else %}
+                            <td class="text-nowrap">{% if obj.rank %}{{ obj.rank }}{% endif %}</td>
+                            {% for _ in '0123' %}
+                                {% cycle obj.score_sum obj.score_1 obj.score_2 obj.score_3 as score silent %}
+                                <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
+                            {% endfor %}
                         {% endif %}
                         <td class="text-nowrap">{{ obj.max|default_if_none:'' }}</td>
                         <td class="text-nowrap">{{ obj.t10|default_if_none:'' }}</td>
                         <td class="text-nowrap">{{ obj.t25|default_if_none:'' }}</td>
                         <td class="text-nowrap">{{ obj.t50|default_if_none:'' }}</td>
                         <td class="text-nowrap">{{ obj.avg|floatformat:1 }}</td>
-                    {% endif %}
-                </tr>
+                    </tr>
+                {% endif %}
             {% empty %}
                 <tr class="text-center">
                     <td class="text-nowrap" colspan="22">자료가 없습니다.</td>

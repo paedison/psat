@@ -38,59 +38,72 @@
         </thead>
         <tbody>
             {% for obj in answer_page_obj %}
-                <tr class="text-center">
-                    <td class="text-nowrap" hx-target="#main">
-                        {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}
-                    </td>
-                    <td class="text-wrap">
-                        <button class="btn btn-circle btn-sm fs-6 btn-success">
-                            {{ obj.ans_official }}
-                        </button>
-                    </td>
-                    <td>
-                        {% if obj.ans_student > 0 and obj.ans_student < 6 %}
-                            <button class="btn btn-circle btn-sm fs-6
-                                btn-{% if obj.is_correct %}success{% else %}danger{% endif %}">
-                                {{ obj.ans_student }}
-                            </button>
-                        {% endif %}
-                    </td>
-                    {% for _ in '12345' %}
-                        {% cycle obj.rate_correct obj.rate_correct_top obj.rate_correct_mid obj.rate_correct_low obj.rate_gap as rate_correct silent %}
-                        <td>
-                            {% if rate_correct %}{{ rate_correct|floatformat:1 }}{% endif %}
+                {% if not obj.ans_student and config.current_time < obj.schedule.homework_end_datetime %}
+                    <tr>
+                        <td class="text-nowrap" hx-target="#main">
+                            {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}
                         </td>
-                    {% endfor %}
+                        <td class="text-wrap" colspan="47">
+                            <span class="badge rounded-pill text-bg-danger">
+                                {{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}까지 답안을 제출해주세요.
+                            </span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr class="text-center">
+                        <td class="text-nowrap" hx-target="#main">
+                            {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}
+                        </td>
+                        <td class="text-wrap">
+                            <button class="btn btn-circle btn-sm fs-6 btn-success">
+                                {{ obj.ans_official }}
+                            </button>
+                        </td>
+                        <td>
+                            {% if obj.ans_student %}
+                                <button class="btn btn-circle btn-sm fs-6
+                                    btn-{% if obj.is_correct %}success{% else %}danger{% endif %}">
+                                    {{ obj.ans_student }}
+                                </button>
+                            {% endif %}
+                        </td>
+                        {% for _ in '12345' %}
+                            {% cycle obj.rate_correct obj.rate_correct_top obj.rate_correct_mid obj.rate_correct_low obj.rate_gap as rate_correct silent %}
+                            <td>
+                                {% if rate_correct %}{{ rate_correct|floatformat:1 }}{% endif %}
+                            </td>
+                        {% endfor %}
 
-                    {% for _ in '1234' %}
-                        {% cycle obj.count_1_all obj.count_1_top obj.count_1_mid obj.count_1_low as count_1 silent %}
-                        {% cycle obj.count_2_all obj.count_2_top obj.count_2_mid obj.count_2_low as count_2 silent %}
-                        {% cycle obj.count_3_all obj.count_3_top obj.count_3_mid obj.count_3_low as count_3 silent %}
-                        {% cycle obj.count_4_all obj.count_4_top obj.count_4_mid obj.count_4_low as count_4 silent %}
-                        {% cycle obj.count_5_all obj.count_5_top obj.count_5_mid obj.count_5_low as count_5 silent %}
-                        {% cycle obj.count_sum_all obj.count_sum_top obj.count_sum_mid obj.count_sum_low as count_sum silent %}
+                        {% for _ in '1234' %}
+                            {% cycle obj.count_1_all obj.count_1_top obj.count_1_mid obj.count_1_low as count_1 silent %}
+                            {% cycle obj.count_2_all obj.count_2_top obj.count_2_mid obj.count_2_low as count_2 silent %}
+                            {% cycle obj.count_3_all obj.count_3_top obj.count_3_mid obj.count_3_low as count_3 silent %}
+                            {% cycle obj.count_4_all obj.count_4_top obj.count_4_mid obj.count_4_low as count_4 silent %}
+                            {% cycle obj.count_5_all obj.count_5_top obj.count_5_mid obj.count_5_low as count_5 silent %}
+                            {% cycle obj.count_sum_all obj.count_sum_top obj.count_sum_mid obj.count_sum_low as count_sum silent %}
 
-                        <td class="td-right-no-border">{{ count_1|default:'' }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ count_2|default:'' }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ count_3|default:'' }}</td>
-                        {% if tab.title == '헌법' %}
-                            <td class="td-left-no-border">{{ count_4|default:'' }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ count_4|default:'' }}</td>
-                            <td class="td-left-no-border">{{ count_5|default:'' }}</td>
-                        {% endif %}
+                            <td class="td-right-no-border">{{ count_1|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_2|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_3|default:'' }}</td>
+                            {% if tab.title == '헌법' %}
+                                <td class="td-left-no-border">{{ count_4|default:'' }}</td>
+                            {% else %}
+                                <td class="td-left-no-border td-right-no-border">{{ count_4|default:'' }}</td>
+                                <td class="td-left-no-border">{{ count_5|default:'' }}</td>
+                            {% endif %}
 
-                        <td class="td-right-no-border">{{ count_1|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ count_2|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                        <td class="td-left-no-border td-right-no-border">{{ count_3|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                        {% if tab.title == '헌법' %}
-                            <td class="td-left-no-border">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                        {% else %}
-                            <td class="td-left-no-border td-right-no-border">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                            <td class="td-left-no-border">{{ count_5|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                        {% endif %}
-                    {% endfor %}
-                </tr>
+                            <td class="td-right-no-border">{{ count_1|percentageby:count_sum|floatformat:1|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_2|percentageby:count_sum|floatformat:1|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_3|percentageby:count_sum|floatformat:1|default:'' }}</td>
+                            {% if tab.title == '헌법' %}
+                                <td class="td-left-no-border">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</td>
+                            {% else %}
+                                <td class="td-left-no-border td-right-no-border">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</td>
+                                <td class="td-left-no-border">{{ count_5|percentageby:count_sum|floatformat:1|default:'' }}</td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endif %}
             {% empty %}
                 <tr class="text-center">
                     <td class="text-nowrap" colspan="40">자료가 없습니다.</td>

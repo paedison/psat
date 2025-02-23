@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
+from django.utils import timezone
 
 from common.constants import icon_set_new
 from common.decorators import admin_required
@@ -9,6 +10,8 @@ from ... import models, utils
 
 
 class ViewConfiguration:
+    current_time = timezone.now()
+
     menu = menu_eng = 'psat'
     menu_kor = 'PSAT'
     submenu = submenu_eng = 'admin'
@@ -40,6 +43,7 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
     else:
         curriculum = get_object_or_404(models.StudyCurriculum, pk=pk)
         category = curriculum.category
+    qs_schedule = models.StudyCurriculumSchedule.objects.filter(curriculum=curriculum).order_by('-lecture_number')
 
     config.url_study_category_update = reverse_lazy('psat:admin-study-category-update', args=[category.pk])
 
@@ -67,6 +71,12 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         config=config, category=category, curriculum=curriculum, page_title=page_title,
         icon_image=icon_set_new.ICON_IMAGE, icon_search=icon_set_new.ICON_SEARCH,
     )
+    if view_type == 'lecture':
+        lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
+        admin_utils.update_lecture_paginator_data(lecture_page_obj)
+        context = update_context_data(
+            context, lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range)
+        return render(request, 'a_psat/snippets/study_list_lecture.html', context)
     if view_type == 'statistics_list':
         category_stat = admin_utils.get_score_stat_dict(qs_student)
         statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_psat, page_number)
@@ -108,12 +118,15 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
     category_stat = admin_utils.get_score_stat_dict(qs_student)
     study_rounds = '1' * category.round
 
+    lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
+    admin_utils.update_lecture_paginator_data(lecture_page_obj)
     statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_psat, page_number)
     catalog_page_obj, catalog_page_range = utils.get_paginator_data(qs_student, page_number)
     answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number)
     problem_page_obj, problem_page_range = utils.get_paginator_data(qs_problem, page_number)
     context = update_context_data(
         context, category_stat=category_stat, study_rounds=study_rounds,
+        lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range,
         statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
         catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
         answer_page_obj=answer_page_obj, answer_page_range=answer_page_range,

@@ -11,14 +11,20 @@
         </thead>
         <tbody>
             {% for obj in lecture_page_obj %}
-                <tr class="{% if obj.color_code %}table-{{ obj.color_code }}{% endif %}">
+                <tr{% if obj.color_code %} class="table-{{ obj.color_code }}"{% endif %}>
                     <th class="text-nowrap text-center small">
                         {{ obj.lecture_number }}주차<br/>
                         {{ obj.lecture_datetime|date:'n/j(D)' }}
                     </th>
                     <th class="text-nowrap text-center small">
                         {% if obj.lecture_round %}
-                            {{ obj.lecture_round }}회차
+                            {{ obj.lecture_round }}회차<br/>
+                            {% if config.current_time > obj.lecture_open_datetime and config.current_time <= obj.homework_end_datetime %}
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="{% url 'psat:study-answer-input-redirect' obj.curriculum.organization.name obj.curriculum.semester obj.lecture_round %}">
+                                    답안 제출
+                                </a>
+                            {% endif %}
                         {% endif %}
                     </th>
                     <td class="text-nowrap">
@@ -29,7 +35,7 @@
                         <ul class="list-group list-group-flush">
                             {% for topic in obj.lecture_topic %}
                                 <li class="list-group-item bg-transparent px-0 border-0">
-                                    <span class="badge rounded-pill bg-{{ obj.color_code|default_if_none:'danger' }}{% if obj.color_code == 'warning' %} text-dark{% endif %}">
+                                    <span class="badge rounded-pill bg-{{ obj.color_code|default_if_none:'success' }}{% if obj.color_code == 'warning' %} text-dark{% endif %}">
                                         {{ topic.0 }}
                                     </span>
                                     <span class="small">{{ topic.1 }}</span>

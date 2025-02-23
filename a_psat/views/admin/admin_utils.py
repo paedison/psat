@@ -5,8 +5,36 @@ import django.db.utils
 from django.db import transaction
 from django.db.models import Count, Window, F, Sum, Value, Max, Avg
 from django.db.models.functions import Rank, Coalesce
+from django.urls import reverse_lazy
 
 from ... import models
+
+
+def update_lecture_paginator_data(lecture_page_obj):
+    lecture_dict = {}
+    for lec in models.Lecture.objects.all():
+        lecture_dict[(lec.subject, lec.order)] = lec.id
+
+    for obj in lecture_page_obj:
+        obj: models.StudyCurriculumSchedule
+        theme = obj.get_lecture_theme_display()
+
+        lecture_id = color_code = None
+        if '언어' in theme:
+            color_code = 'primary'
+            lecture_id = lecture_dict[('언어', int(theme[-1]))]
+        elif '자료' in theme:
+            color_code = 'success'
+            lecture_id = lecture_dict[('자료', int(theme[-1]))]
+        elif '상황' in theme:
+            color_code = 'warning'
+            lecture_id = lecture_dict[('상황', int(theme[-1]))]
+        elif '시험' in theme:
+            color_code = 'danger'
+        obj.color_code = color_code
+        obj.lecture_topic = models.choices.study_lecture_topic().get(obj.get_lecture_theme_display())
+        if lecture_id:
+            obj.url_lecture = reverse_lazy('lecture:detail', args=[lecture_id])
 
 
 def update_data_answers(qs_problem):

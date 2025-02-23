@@ -3,7 +3,7 @@
 {% load crispy_forms_field %}
 
 {% block main_content %}
-    <section class="section" aria-label="스터디 카테고리 업데이트">
+    <section class="section" aria-label="업데이트">
         <div class="row">
             {% if user.is_admin %}
                 <div class="col-12">
@@ -34,11 +34,28 @@
         </div>
     </section>
 
+    {% if lecture_page_obj %}
+        <section class="section" aria-label="주차별 강의 내용">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
+                        <div class="card-header">주차별 강의 내용</div>
+                        <div class="card-body">
+                            <div id="resultContent" class="htmx-fade-in htmx-fade-out">
+                                {% include 'a_psat/snippets/study_list_lecture.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
     <section class="section" aria-label="회차별 통계">
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ page_title }} | 회차별 통계</div>
+                    <div class="card-header">회차별 통계</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
@@ -66,7 +83,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ page_title }} | 성적일람표</div>
+                    <div class="card-header">성적일람표</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
@@ -97,7 +114,7 @@
     <section class="section" aria-label="문항분석표">
         <div class="col-12">
             <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                <div class="card-header">{{ page_title }} | 문항분석표</div>
+                <div class="card-header">문항분석표</div>
                 <div class="card-body htmx-fade-in htmx-fade-out">
                     <div class="row justify-content-md-end g-3 mb-3">
                         <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
@@ -119,7 +136,7 @@
         <div class="row">
             <div class="col-12">
                 <div id="problemCard" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ page_title }} | 문제 목록</div>
+                    <div class="card-header">문제 목록</div>
                     <div class="card-body">
                         <div class="row flex-column flex-md-row-reverse">
                             <div id="problemFilter"

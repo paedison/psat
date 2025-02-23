@@ -54,12 +54,14 @@
     </section>
 
     <section class="section" aria-label="문항분석표">
-        <div class="col-12">
-            <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                <div class="card-header">미니테스트 문항분석표</div>
-                <div class="card-body htmx-fade-in htmx-fade-out">
-                    <div id="answerAnalysisContent" class="htmx-fade-in htmx-fade-out">
-                        {% include 'a_psat/snippets/study_list_answer_analysis.html' %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">미니테스트 문항분석표</div>
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        <div id="answerAnalysisContent" class="htmx-fade-in htmx-fade-out">
+                            {% include 'a_psat/snippets/study_list_answer_analysis.html' %}
+                        </div>
                     </div>
                 </div>
             </div>
