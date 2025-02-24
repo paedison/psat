@@ -95,9 +95,9 @@ study_patterns = [
     path('student/register/', study_views.register_view, name='study-student-register'),
     path('answer/<int:pk>/', study_views.answer_input_view, name='study-answer-input'),
     path('answer/confirm/<int:pk>/', study_views.answer_confirm_view, name='study-answer-confirm'),
-    path('<str:organization>/<int:semester>/',
+    path('curriculum/<str:organization>/<int:semester>/',
          study_views.list_redirect_view, name='study-list-redirect'),
-    path('<str:organization>/<int:semester>/<int:homework_round>/',
+    path('curriculum/<str:organization>/<int:semester>/<int:homework_round>/',
          study_views.answer_input_redirect_view, name='study-answer-input-redirect'),
 ]
 

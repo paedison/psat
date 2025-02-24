@@ -166,8 +166,9 @@ def get_result_paginator_data(schedule_dict, student, opened_rounds, page_number
     # 커리큘럼 기준 전체 통계
     qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(student.curriculum)
     curriculum_stat = admin_utils.get_score_stat_dict(qs_student)
-    curriculum_stat['rank'] = student.rank
-    curriculum_stat['score_sum'] = score_dict['total']['score_sum']
+    total_score_sum = score_dict['total']['score_sum']
+    curriculum_stat['score_sum'] = total_score_sum
+    curriculum_stat['rank'] = student.rank if total_score_sum else None
     for i in range(4):
         curriculum_stat[f'score_{i}'] = score_dict['total'][f'score_{i}']
 
@@ -280,10 +281,14 @@ def answer_input_redirect_view(request: HtmxHttpRequest, organization: str, seme
         context = update_context_data(context, message='등록된 커리큘럼이 없습니다.', next_url=config.url_index)
         return render(request, 'a_psat/study_redirect.html', context)
 
-    schedule = models.StudyCurriculumSchedule.objects.filter(
+    schedule: models.StudyCurriculumSchedule = models.StudyCurriculumSchedule.objects.filter(
         curriculum=curriculum, lecture_round=homework_round).first()
     if not schedule:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_index)
+        return render(request, 'a_psat/study_redirect.html', context)
+
+    if timezone.now() < schedule.lecture_open_datetime:
+        context = update_context_data(context, message='답안 제출 기간이 아닙니다.', next_url=config.url_list)
         return render(request, 'a_psat/study_redirect.html', context)
 
     if timezone.now() > schedule.homework_end_datetime:

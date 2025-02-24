@@ -30,16 +30,16 @@
                 <th class="text-nowrap">-</th>
                 <th class="text-nowrap">-</th>
                 <th class="text-nowrap">{{ curriculum_stat.participants|intcomma }}</th>
-                <th class="text-nowrap">{{ curriculum_stat.rank }}</th>
+                <th class="text-nowrap">{% if curriculum_stat.rank %}{{ curriculum_stat.rank }}{% endif %}</th>
                 {% for _ in '0123' %}
                     {% cycle curriculum_stat.score_sum curriculum_stat.score_1 curriculum_stat.score_2 curriculum_stat.score_3 as score silent %}
-                    <th class="text-nowrap">{% if score %}{{ score }}{% endif %}</th>
+                    <th class="text-nowrap">{% if score %}{{ score|default_if_none:'' }}{% endif %}</th>
                 {% endfor %}
-                <th class="text-nowrap">{{ curriculum_stat.max|default_if_none:'' }}</th>
-                <th class="text-nowrap">{{ curriculum_stat.t10|default_if_none:'' }}</th>
-                <th class="text-nowrap">{{ curriculum_stat.t25|default_if_none:'' }}</th>
-                <th class="text-nowrap">{{ curriculum_stat.t50|default_if_none:'' }}</th>
-                <th class="text-nowrap">{{ curriculum_stat.avg|floatformat:1 }}</th>
+                <th class="text-nowrap">{% if curriculum_stat.max %}{{ curriculum_stat.max }}{% endif %}</th>
+                <th class="text-nowrap">{% if curriculum_stat.t10 %}{{ curriculum_stat.t10 }}{% endif %}</th>
+                <th class="text-nowrap">{% if curriculum_stat.t25 %}{{ curriculum_stat.t25 }}{% endif %}</th>
+                <th class="text-nowrap">{% if curriculum_stat.t50 %}{{ curriculum_stat.t50 }}{% endif %}</th>
+                <th class="text-nowrap">{% if curriculum_stat.avg %}{{ curriculum_stat.avg|floatformat:1 }}{% endif %}</th>
             </tr>
             <tr class="text-center">
                 <td class="text-nowrap" colspan="14"></td>
@@ -57,11 +57,11 @@
                                 {% cycle obj.score_sum obj.score_1 obj.score_2 obj.score_3 as score silent %}
                                 <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
                             {% endfor %}
-                            <td class="text-nowrap">{{ obj.max|default_if_none:'' }}</td>
-                            <td class="text-nowrap">{{ obj.t10|default_if_none:'' }}</td>
-                            <td class="text-nowrap">{{ obj.t25|default_if_none:'' }}</td>
-                            <td class="text-nowrap">{{ obj.t50|default_if_none:'' }}</td>
-                            <td class="text-nowrap">{{ obj.avg|floatformat:1 }}</td>
+                            <td class="text-nowrap">{% if obj.max %}{{ obj.max }}{% endif %}</td>
+                            <td class="text-nowrap">{% if obj.t10 %}{{ obj.t10 }}{% endif %}</td>
+                            <td class="text-nowrap">{% if obj.t25 %}{{ obj.t25 }}{% endif %}</td>
+                            <td class="text-nowrap">{% if obj.t50 %}{{ obj.t50 }}{% endif %}</td>
+                            <td class="text-nowrap">{% if obj.avg %}{{ obj.avg|floatformat:1 }}{% endif %}</td>
                         </tr>
                     {% else %}
                         <tr>
@@ -107,11 +107,11 @@
                                 <td class="text-nowrap">{% if score %}{{ score }}{% endif %}</td>
                             {% endfor %}
                         {% endif %}
-                        <td class="text-nowrap">{{ obj.max|default_if_none:'' }}</td>
-                        <td class="text-nowrap">{{ obj.t10|default_if_none:'' }}</td>
-                        <td class="text-nowrap">{{ obj.t25|default_if_none:'' }}</td>
-                        <td class="text-nowrap">{{ obj.t50|default_if_none:'' }}</td>
-                        <td class="text-nowrap">{{ obj.avg|floatformat:1 }}</td>
+                        <td class="text-nowrap">{% if obj.max %}{{ obj.max }}{% endif %}</td>
+                        <td class="text-nowrap">{% if obj.t10 %}{{ obj.t10 }}{% endif %}</td>
+                        <td class="text-nowrap">{% if obj.t25 %}{{ obj.t25 }}{% endif %}</td>
+                        <td class="text-nowrap">{% if obj.t50 %}{{ obj.t50 }}{% endif %}</td>
+                        <td class="text-nowrap">{% if obj.avg %}{{ obj.avg|floatformat:1 }}{% endif %}</td>
                     </tr>
                 {% endif %}
             {% empty %}
