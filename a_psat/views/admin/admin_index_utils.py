@@ -307,11 +307,6 @@ def update_study_result_model(student: models.StudyStudent | None = None):
         bulk_create_or_update(models.StudyResult, list_create, [], [])
 
 
-def upload_data_to_study_student_and_result_model(excel_file, curriculum_dict, student_dict):
-    update_study_student_model(excel_file, curriculum_dict, student_dict)
-    update_study_result_model()
-
-
 def bulk_create_or_update(model, list_create, list_update, update_fields):
     model_name = model._meta.model_name
     try:

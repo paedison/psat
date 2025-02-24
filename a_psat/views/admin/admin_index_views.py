@@ -1,10 +1,7 @@
 import itertools
-import traceback
 from datetime import timedelta, datetime
 
-import django.db.utils
 import pandas as pd
-from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -313,8 +310,8 @@ def study_curriculum_upload_view(request: HtmxHttpRequest):
             if 'curriculum' in xls.sheet_names:
                 admin_index_utils.upload_data_to_study_curriculum_model(xls, curriculum_dict)
             if 'student' in xls.sheet_names:
-                admin_index_utils.upload_data_to_study_student_and_result_model(
-                    xls, curriculum_dict, student_dict)
+                admin_index_utils.update_study_student_model(xls, curriculum_dict, student_dict)
+                admin_index_utils.update_study_result_model()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -380,7 +377,8 @@ def study_answer_add_view(request: HtmxHttpRequest):
                             except ValueError as error:
                                 print(error)
 
-                bulk_create_or_update(models.StudyAnswer, list_create, list_update, ['answer'])
+                admin_index_utils.bulk_create_or_update(
+                    models.StudyAnswer, list_create, list_update, ['answer'])
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -477,7 +475,8 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
                 'lecture_number', 'lecture_theme', 'lecture_round', 'homework_round',
                 'lecture_open_datetime', 'homework_end_datetime', 'lecture_datetime'
             ]
-            bulk_create_or_update(models.StudyCurriculumSchedule, list_create, list_update, update_fields)
+            admin_index_utils.bulk_create_or_update(
+                models.StudyCurriculumSchedule, list_create, list_update, update_fields)
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -546,27 +545,3 @@ def study_student_create_view(request: HtmxHttpRequest):
     form = forms.StudyStudentCreateForm()
     context = update_context_data(context, form=form)
     return render(request, 'a_psat/admin_form.html', context)
-
-
-def bulk_create_or_update(model, list_create, list_update, update_fields):
-    model_name = model._meta.model_name
-    try:
-        with transaction.atomic():
-            if list_create:
-                model.objects.bulk_create(list_create)
-                message = f'Successfully created {len(list_create)} {model_name} instances.'
-                is_updated = True
-            elif list_update:
-                model.objects.bulk_update(list_update, list(update_fields))
-                message = f'Successfully updated {len(list_update)} {model_name} instances.'
-                is_updated = True
-            else:
-                message = f'No changes were made to {model_name} instances.'
-                is_updated = False
-    except django.db.utils.IntegrityError:
-        traceback_message = traceback.format_exc()
-        print(traceback_message)
-        message = f'Error occurred.'
-        is_updated = None
-    print(message)
-    return is_updated
