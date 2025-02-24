@@ -34,12 +34,14 @@
                         {% endif %}
                         <ul class="list-group list-group-flush">
                             {% for topic in obj.lecture_topic %}
-                                <li class="list-group-item bg-transparent px-0 border-0">
-                                    <span class="badge rounded-pill bg-{{ obj.color_code|default_if_none:'success' }}{% if obj.color_code == 'warning' %} text-dark{% endif %}">
-                                        {{ topic.0 }}
-                                    </span>
-                                    <span class="small">{{ topic.1 }}</span>
-                                </li>
+                                {% if topic.0 %}
+                                    <li class="list-group-item bg-transparent px-0 border-0">
+                                        <span class="badge rounded-pill bg-{{ obj.color_code|default_if_none:'success' }}{% if obj.color_code == 'warning' %} text-dark{% endif %}">
+                                            {{ topic.0 }}
+                                        </span>
+                                        <span class="small">{{ topic.1 }}</span>
+                                    </li>
+                                {% endif %}
                             {% endfor %}
                         </ul>
                     </td>

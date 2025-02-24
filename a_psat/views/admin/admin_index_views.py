@@ -436,13 +436,14 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
 
             list_create = []
             list_update = []
-            if curriculum.schedules.exists():
-                for schedule in curriculum.schedules.all():
-                    schedule: models.StudyCurriculumSchedule
-                    lecture_theme = get_lecture_theme(lecture_nums, schedule.lecture_number)
-                    lecture_round, homework_round = get_lecture_and_homework_round(schedule.lecture_number)
-                    lecture_open_datetime, homework_end_datetime, lecture_datetime = get_lecture_datetimes(
-                        lecture_start_datetime, schedule.lecture_number)
+            for lecture_number in range(1, lecture_nums + 1):
+                lecture_theme = get_lecture_theme(lecture_nums, lecture_number)
+                lecture_round, homework_round = get_lecture_and_homework_round(lecture_number)
+                lecture_open_datetime, homework_end_datetime, lecture_datetime = get_lecture_datetimes(
+                    lecture_start_datetime, lecture_number)
+                try:
+                    schedule = models.StudyCurriculumSchedule.objects.get(
+                        curriculum=curriculum, lecture_number=lecture_number)
                     fields_not_match = [
                         schedule.lecture_theme != lecture_theme,
                         schedule.lecture_round != lecture_round,
@@ -459,12 +460,7 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
                         schedule.homework_end_datetime = homework_end_datetime
                         schedule.lecture_datetime = lecture_datetime
                         list_update.append(schedule)
-            else:
-                for lecture_number in range(1, lecture_nums + 1):
-                    lecture_theme = get_lecture_theme(lecture_nums, lecture_number)
-                    lecture_round, homework_round = get_lecture_and_homework_round(lecture_number)
-                    lecture_open_datetime, homework_end_datetime, lecture_datetime = get_lecture_datetimes(
-                        lecture_start_datetime, lecture_number)
+                except models.StudyCurriculumSchedule.DoesNotExist:
                     list_create.append(
                         models.StudyCurriculumSchedule(
                             curriculum=curriculum,
@@ -494,15 +490,14 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
 
 def get_lecture_theme(lecture_nums, lecture_number) -> int:
     if lecture_nums <= 15:
-        lecture_theme = lecture_number
+        return lecture_number
     else:
         if lecture_number < 15:
-            lecture_theme = lecture_number
+            return lecture_number
         elif lecture_number == 15:
-            lecture_theme = 0
+            return 0
         else:
-            lecture_theme = 15
-    return lecture_theme
+            return 15
 
 
 def get_lecture_and_homework_round(lecture_number) -> tuple:
