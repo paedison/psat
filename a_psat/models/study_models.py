@@ -247,6 +247,16 @@ class StudyCurriculumScheduleManager(models.Manager):
     def with_select_related(self):
         return self.select_related('curriculum')
 
+    def get_curriculum_schedule_info(self):
+        return (
+            self.values('curriculum')
+            .annotate(
+                study_rounds=models.Count('id'),
+                earliest=models.Min('lecture_datetime'),
+                latest=models.Max('lecture_datetime'),
+            )
+        )
+
 
 class StudyCurriculumSchedule(models.Model):
     objects = StudyCurriculumScheduleManager()
@@ -279,7 +289,7 @@ class StudyStudentManager(models.Manager):
         return self.select_related('curriculum', 'curriculum__organization', 'curriculum__category')
 
     @staticmethod
-    def _with_prefetch_related(queryset):
+    def _with_prefetch_related_to_results(queryset):
         return queryset.prefetch_related(
             models.Prefetch(
                 'results', queryset=StudyResult.objects.select_related('psat'), to_attr='result_list')
@@ -290,14 +300,14 @@ class StudyStudentManager(models.Manager):
 
     def get_filtered_qs_by_category_for_catalog(self, category):
         queryset = self.get_filtered_qs_by_category(category)
-        return self._with_prefetch_related(queryset)
+        return self._with_prefetch_related_to_results(queryset)
 
     def get_filtered_qs_by_curriculum(self, curriculum):
         return self.with_select_related().filter(curriculum=curriculum).order_by('rank_total')
 
     def get_filtered_qs_by_curriculum_for_catalog(self, curriculum):
         queryset = self.get_filtered_qs_by_curriculum(curriculum)
-        return self._with_prefetch_related(queryset)
+        return self._with_prefetch_related_to_results(queryset)
 
     def get_filtered_qs_by_user(self, user):
         return (

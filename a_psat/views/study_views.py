@@ -38,10 +38,21 @@ class ViewConfiguration:
 def index_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     config.url_list = config.url_index
-    students = None
+    qs_student = None
+
+    # 로그인한 경우 수험 정보 추출
     if request.user.is_authenticated:
-        students = models.StudyStudent.objects.get_filtered_qs_by_user(request.user)
-    context = update_context_data(config=config, students=students)
+        schedule_info = {}
+        qs_curriculum_schedule_info = models.StudyCurriculumSchedule.objects.get_curriculum_schedule_info()
+        for qs_cs in qs_curriculum_schedule_info:
+            schedule_info[qs_cs['curriculum']] = qs_cs
+
+        qs_student = models.StudyStudent.objects.get_filtered_qs_by_user(request.user)
+        for qs_s in qs_student:
+            qs_s.study_rounds = schedule_info[qs_s.curriculum_id]['study_rounds']
+            qs_s.earliest_datetime = schedule_info[qs_s.curriculum_id]['earliest']
+            qs_s.latest_datetime = schedule_info[qs_s.curriculum_id]['latest']
+    context = update_context_data(config=config, students=qs_student)
     return render(request, 'a_psat/study_index.html', context)
 
 
@@ -295,7 +306,7 @@ def answer_input_redirect_view(request: HtmxHttpRequest, organization: str, seme
         context = update_context_data(context, message='답안 제출 마감일이 지났습니다.', next_url=config.url_list)
         return render(request, 'a_psat/study_redirect.html', context)
 
-    if result and result.score is not None:
+    if result.score is not None:
         context = update_context_data(context, message='답안을 이미 제출하셨습니다.', next_url=config.url_list)
         return render(request, 'a_psat/study_redirect.html', context)
 
@@ -313,13 +324,32 @@ def answer_input_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     result: models.StudyResult = models.StudyResult.objects.with_select_related().filter(
         pk=pk, student__user=request.user).first()
-    if not result or result.score is not None:
-        return redirect('psat:study-index')
+    context = update_context_data(config=config)
 
-    config.url_detail = result.student.get_study_curriculum_list_url()
+    if result is None:
+        context = update_context_data(context, message='등록된 커리큘럼이 없습니다.', next_url=config.url_index)
+        return render(request, 'a_psat/study_redirect.html', context)
+
+    config.url_list = result.student.get_study_curriculum_list_url()
+    if result.score is not None:
+        context = update_context_data(context, message='답안을 이미 제출하셨습니다.', next_url=config.url_list)
+        return render(request, 'a_psat/study_redirect.html', context)
+
     config.url_answer_confirm = result.get_answer_confirm_url()
     page_title = f'미니테스트 {result.psat.round}회차'
+
     schedule = models.StudyCurriculumSchedule.objects.filter(curriculum=result.student.curriculum).first()
+    if not schedule:
+        context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_index)
+        return render(request, 'a_psat/study_redirect.html', context)
+
+    if timezone.now() < schedule.lecture_open_datetime:
+        context = update_context_data(context, message='답안 제출 기간이 아닙니다.', next_url=config.url_list)
+        return render(request, 'a_psat/study_redirect.html', context)
+
+    if timezone.now() > schedule.homework_end_datetime:
+        context = update_context_data(context, message='답안 제출 마감일이 지났습니다.', next_url=config.url_list)
+        return render(request, 'a_psat/study_redirect.html', context)
 
     problem_count = result.psat.problems.count()
     answer_data = get_answer_data(request, problem_count)
@@ -333,8 +363,7 @@ def answer_input_view(request: HtmxHttpRequest, pk: int):
             print(e)
             return reswap(HttpResponse(''), 'none')
 
-        answer_temporary = {'no': no, 'ans': ans}
-        context = update_context_data(answer=answer_temporary)
+        context = update_context_data(context, answer={'no': no, 'ans': ans})
         response = render(request, 'a_psat/snippets/predict_answer_button.html', context)
 
         if 1 <= no <= problem_count and 1 <= ans <= 5:
@@ -347,7 +376,7 @@ def answer_input_view(request: HtmxHttpRequest, pk: int):
 
     answer_student = [{'no': no, 'ans': ans} for no, ans in enumerate(answer_data, start=1)]
     context = update_context_data(
-        config=config, page_title=page_title, schedule=schedule,
+        context, page_title=page_title, schedule=schedule,
         student=result.student, answer_student=answer_student,
     )
     return render(request, 'a_psat/study_answer_input.html', context)

@@ -4,13 +4,13 @@
     <table class="table table-bordered table-striped align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap" rowspan="2">회차</th>
+                <th class="text-primary text-nowrap td-left-no-border" rowspan="2">회차</th>
                 <th class="text-primary text-nowrap" rowspan="2">답안 제출<br/>마감일</th>
                 <th class="text-primary text-nowrap" rowspan="2">강의일</th>
                 <th class="text-primary text-nowrap" rowspan="2">응시<br/>인원<br/>(명)</th>
                 <th class="text-primary text-nowrap" rowspan="2">등수<br/>(등)</th>
                 <th class="text-primary text-nowrap" colspan="4">내 점수(점)</th>
-                <th class="text-primary text-nowrap" colspan="5">전체 통계(점)</th>
+                <th class="text-primary text-nowrap td-right-no-border" colspan="5">전체 통계(점)</th>
             </tr>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap">총점</th>
@@ -21,12 +21,12 @@
                 <th class="text-primary text-nowrap">상위 10%</th>
                 <th class="text-primary text-nowrap">상위 25%</th>
                 <th class="text-primary text-nowrap">상위 50%</th>
-                <th class="text-primary text-nowrap">평균 점수</th>
+                <th class="text-primary text-nowrap td-right-no-border">평균 점수</th>
             </tr>
         </thead>
         <tbody>
             <tr class="text-center">
-                <th class="text-nowrap">전체</th>
+                <th class="text-nowrap td-left-no-border">전체</th>
                 <th class="text-nowrap">-</th>
                 <th class="text-nowrap">-</th>
                 <th class="text-nowrap">{{ curriculum_stat.participants|intcomma }}</th>
@@ -39,16 +39,16 @@
                 <th class="text-nowrap">{% if curriculum_stat.t10 %}{{ curriculum_stat.t10 }}{% endif %}</th>
                 <th class="text-nowrap">{% if curriculum_stat.t25 %}{{ curriculum_stat.t25 }}{% endif %}</th>
                 <th class="text-nowrap">{% if curriculum_stat.t50 %}{{ curriculum_stat.t50 }}{% endif %}</th>
-                <th class="text-nowrap">{% if curriculum_stat.avg %}{{ curriculum_stat.avg|floatformat:1 }}{% endif %}</th>
+                <th class="text-nowrap td-right-no-border">{% if curriculum_stat.avg %}{{ curriculum_stat.avg|floatformat:1 }}{% endif %}</th>
             </tr>
             <tr class="text-center">
-                <td class="text-nowrap" colspan="14"></td>
+                <td class="text-nowrap td-left-no-border td-right-no-border" colspan="14"></td>
             </tr>
             {% for obj in result_page_obj %}
                 {% if config.current_time >= obj.schedule.lecture_open_datetime and config.current_time < obj.schedule.homework_end_datetime %}
                     {% if obj.score %}
                         <tr class="text-center">
-                            <th class="text-nowrap">{{ obj.psat.get_round_display }}</th>
+                            <th class="text-nowrap td-left-no-border">{{ obj.psat.get_round_display }}</th>
                             <td class="text-nowrap">{{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}</td>
                             <td class="text-nowrap">{{ obj.schedule.lecture_datetime|date:'n/j(D)' }}</td>
                             <td class="text-nowrap">{{ obj.statistics.participants|intcomma }}</td>
@@ -61,11 +61,11 @@
                             <td class="text-nowrap">{% if obj.t10 %}{{ obj.t10 }}{% endif %}</td>
                             <td class="text-nowrap">{% if obj.t25 %}{{ obj.t25 }}{% endif %}</td>
                             <td class="text-nowrap">{% if obj.t50 %}{{ obj.t50 }}{% endif %}</td>
-                            <td class="text-nowrap">{% if obj.avg %}{{ obj.avg|floatformat:1 }}{% endif %}</td>
+                            <td class="text-nowrap td-right-no-border">{% if obj.avg %}{{ obj.avg|floatformat:1 }}{% endif %}</td>
                         </tr>
                     {% else %}
                         <tr>
-                            <th class="text-nowrap text-center">
+                            <th class="text-nowrap text-center td-left-no-border">
                                 <a href="{{ obj.get_answer_input_url }}">
                                     {{ obj.psat.get_round_display }}
                                 </a>
@@ -81,7 +81,7 @@
                                 </a>
                             </td>
                             <td class="text-nowrap text-center">{{ obj.statistics.participants|intcomma }}</td>
-                            <td class="text-nowrap" colspan="10">
+                            <td class="text-nowrap td-right-no-border" colspan="10">
                                 <a href="{{ obj.get_answer_input_url }}">
                                     <span class="badge rounded-pill text-bg-danger">
                                         {{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}까지 답안을 제출해주세요.
@@ -92,7 +92,7 @@
                     {% endif %}
                 {% elif config.current_time >= obj.schedule.homework_end_datetime %}
                     <tr class="text-center">
-                        <th class="text-nowrap">{{ obj.psat.get_round_display }}</th>
+                        <th class="text-nowrap td-left-no-border">{{ obj.psat.get_round_display }}</th>
                         <td class="text-nowrap">{{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}</td>
                         <td class="text-nowrap">{{ obj.schedule.lecture_datetime|date:'n/j(D)' }}</td>
                         <td class="text-nowrap">{{ obj.statistics.participants|intcomma }}</td>
@@ -111,12 +111,12 @@
                         <td class="text-nowrap">{% if obj.t10 %}{{ obj.t10 }}{% endif %}</td>
                         <td class="text-nowrap">{% if obj.t25 %}{{ obj.t25 }}{% endif %}</td>
                         <td class="text-nowrap">{% if obj.t50 %}{{ obj.t50 }}{% endif %}</td>
-                        <td class="text-nowrap">{% if obj.avg %}{{ obj.avg|floatformat:1 }}{% endif %}</td>
+                        <td class="text-nowrap td-right-no-border">{% if obj.avg %}{{ obj.avg|floatformat:1 }}{% endif %}</td>
                     </tr>
                 {% endif %}
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="22">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

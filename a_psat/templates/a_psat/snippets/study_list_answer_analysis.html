@@ -4,7 +4,7 @@
     <table class="table table-bordered table-striped align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap" rowspan="2">문제 출처</th>
+                <th class="text-primary text-nowrap td-left-no-border" rowspan="2">문제 출처</th>
                 <th class="text-primary text-nowrap" rowspan="2">정답</th>
                 <th class="text-primary text-nowrap" rowspan="2">제출<br/>답안</th>
                 <th class="text-primary text-nowrap" colspan="5">정답률(%)</th>
@@ -15,7 +15,7 @@
                 <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-중위권</th>
                 <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-중위권</th>
                 <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-하위권</th>
-                <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-하위권</th>
+                <th class="text-primary text-nowrap td-right-no-border" colspan="5">답안 선택률(%)-하위권</th>
             </tr>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap">전체</th>
@@ -31,7 +31,7 @@
                         <th class="text-primary text-nowrap td-left-no-border">④</th>
                     {% else %}
                         <th class="text-primary text-nowrap td-left-no-border td-right-no-border">④</th>
-                        <th class="text-primary text-nowrap td-left-no-border">⑤</th>
+                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">⑤</th>
                     {% endif %}
                 {% endfor %}
             </tr>
@@ -40,7 +40,7 @@
             {% for obj in answer_page_obj %}
                 {% if not obj.ans_student and config.current_time < obj.schedule.homework_end_datetime %}
                     <tr>
-                        <td class="text-nowrap" hx-target="#main">
+                        <td class="text-nowrap td-left-no-border" hx-target="#main">
                             {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}
                         </td>
                         <td class="text-wrap" colspan="47">
@@ -51,7 +51,7 @@
                     </tr>
                 {% else %}
                     <tr class="text-center">
-                        <td class="text-nowrap" hx-target="#main">
+                        <td class="text-nowrap td-left-no-border" hx-target="#main">
                             {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}
                         </td>
                         <td class="text-wrap">
@@ -106,7 +106,7 @@
                 {% endif %}
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap" colspan="40">자료가 없습니다.</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="48">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

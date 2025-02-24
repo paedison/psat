@@ -4,15 +4,15 @@
     <table class="table table-bordered align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap">주차</th>
+                <th class="text-primary text-nowrap td-left-no-border">주차</th>
                 <th class="text-primary text-nowrap">미니테스트</th>
-                <th class="text-primary text-nowrap">강의 주제 및 토픽</th>
+                <th class="text-primary text-nowrap td-right-no-border">강의 주제 및 토픽</th>
             </tr>
         </thead>
         <tbody>
             {% for obj in lecture_page_obj %}
                 <tr{% if obj.color_code %} class="table-{{ obj.color_code }}"{% endif %}>
-                    <th class="text-nowrap text-center small">
+                    <th class="text-nowrap text-center small td-left-no-border">
                         {{ obj.lecture_number }}주차<br/>
                         {{ obj.lecture_datetime|date:'n/j(D)' }}
                     </th>
@@ -27,7 +27,7 @@
                             {% endif %}
                         {% endif %}
                     </th>
-                    <td class="text-nowrap">
+                    <td class="text-nowrap td-right-no-border">
                         <span class="fw-bold small">[{{ obj.get_lecture_theme_display }}]</span>
                         {% if obj.url_lecture %}
                             <a class="btn btn-sm btn-outline-primary ms-2" href="{{ obj.url_lecture }}">온라인 강의</a>

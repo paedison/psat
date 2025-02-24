@@ -5,11 +5,11 @@
     <section class="section" aria-label="커리큘럼 목록">
         <div class="row" hx-boost="true">
             {% for student in students %}
-                <div class="col-md-6 col-xl-4">
+                <div class="col-lg-6">
                     {% partial curriculum_card %}
                 </div>
             {% endfor %}
-            <div class="col-md-6 col-xl-4">
+            <div class="col-lg-6">
                 {% partial registry_card %}
             </div>
         </div>
@@ -18,34 +18,74 @@
 
 {% partialdef curriculum_card %}
     <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-        <div class="card-header">
-            {{ student.curriculum.full_reference }} [{{ student.curriculum.name }}]
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                {{ student.curriculum.full_reference }}
+                <div class="d-none d-sm-inline">[{{ student.curriculum.name }}]</div>
+            </div>
+            <div>
+                {% if config.current_time < student.earliest_datetime %}
+                    <span class="badge rounded-pill bg-primary fs-6">개강 전</span>
+                {% elif config.current_time > student.latest_datetime %}
+                    <span class="badge rounded-pill bg-danger fs-6">종강</span>
+                {% else %}
+                    <span class="badge rounded-pill bg-success fs-6">강의 진행중</span>
+                {% endif %}
+            </div>
         </div>
         <div class="card-body">
             <div class="d-flex align-items-center">
-                <div class="rounded-circle d-flex align-items-center justify-content-center">
-                    <img src="{{ student.curriculum.organization.logo.url }}" alt="로고" height="100"/>
+                <div class="d-flex flex-column justify-content-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center">
+                        <img src="{{ student.curriculum.organization.logo.url }}" alt="로고" height="100"/>
+                    </div>
+                    <a class="btn btn-outline-primary" hx-boost="true"
+                       href="{{ student.curriculum.get_study_curriculum_list_url }}">
+                        성적 확인
+                    </a>
                 </div>
-                <div class="ps-3">
+                <article class="table-responsive flex-fill ps-3">
                     <table class="table m-0">
                         <tbody>
-                            <tr>
-                                <th class="px-0">미니테스트</th>
+                            <tr class="d-sm-none d-lg-table-row">
+                                <th class="text-nowrap px-0">강의 기간</th>
+                                <td class="text-nowrap">
+                                    {{ student.earliest_datetime|date:'Y.n.j' }} ~ {{ student.latest_datetime|date:'Y.n.j' }}
+                                </td>
+                            </tr>
+                            <tr class="d-sm-none d-lg-table-row">
+                                <th class="text-nowrap px-0">강의 주차수</th>
+                                <td class="text-nowrap">
+                                    총 <span class="text-success fw-bold">{{ student.study_rounds|stringformat:'02d' }}</span>회
+                                </td>
+                            </tr>
+                            <tr class="d-sm-none d-lg-table-row">
+                                <th class="text-nowrap px-0">미니테스트</th>
                                 <td>총 <span class="text-success fw-bold">{{ student.curriculum.category.round|stringformat:'02d' }}</span>회</td>
                             </tr>
-                            <tr>
-                                <th class="px-0">답안 제출</th>
+                            <tr class="d-sm-none d-lg-table-row">
+                                <th class="text-nowrap px-0">답안 제출</th>
+                                <td>총 <span class="text-success fw-bold">{{ student.score_count|stringformat:'02d' }}</span>회</td>
+                            </tr>
+                            <tr class="d-none d-sm-table-row d-lg-none">
+                                <th class="text-nowrap px-0">강의 기간</th>
+                                <td class="text-nowrap">
+                                    {{ student.earliest_datetime|date:'Y.n.j' }} ~ {{ student.latest_datetime|date:'Y.n.j' }}
+                                </td>
+                                <th class="text-nowrap px-0">강의 주차수</th>
+                                <td class="text-nowrap">
+                                    총 <span class="text-success fw-bold">{{ student.study_rounds|stringformat:'02d' }}</span>회
+                                </td>
+                            </tr>
+                            <tr class="d-none d-sm-table-row d-lg-none">
+                                <th class="text-nowrap px-0">미니테스트</th>
+                                <td>총 <span class="text-success fw-bold">{{ student.curriculum.category.round|stringformat:'02d' }}</span>회</td>
+                                <th class="text-nowrap px-0">답안 제출</th>
                                 <td>총 <span class="text-success fw-bold">{{ student.score_count|stringformat:'02d' }}</span>회</td>
                             </tr>
                         </tbody>
                     </table>
-                </div>
-                <a class="btn btn-outline-primary ms-auto" hx-boost="true"
-                   href="{{ student.curriculum.get_study_curriculum_list_url }}">
-                    성적 확인
-                </a>
-            </div>
-            <div class="d-flex justify-content-end">
+                </article>
             </div>
         </div>
     </div>

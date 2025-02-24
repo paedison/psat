@@ -1,20 +1,12 @@
-import itertools
 import traceback
 from collections import defaultdict
 
 import django.db.utils
 import pandas as pd
 from django.db import transaction
-from django.db.models import F, Value, CharField, Count, When, Case
-from django.db.models.functions import Concat
-from django.http import HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.db.models import Value, CharField, Count, When, Case
 
-from common.constants import icon_set_new
-from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data
-from ... import models, utils, forms, filters
+from ... import models
 
 
 def append_list_create(model, list_create, **kwargs):
