@@ -2,62 +2,268 @@
 {% load static %}
 
 {% block main_content %}
-    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
         <div class="row">
-{#            <div class="col-12">#}
-{#                <div class="card">#}
-{#                    <div class="card-body text-center p-4">#}
-{#                        <img src="{% static 'image/prime/2025/psat/title.jpg' %}" class="mw-100" alt="Title"/>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-
-            <div class="col-12" aria-label="수험 정보">
-                <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_psat/snippets/predict_detail_info_student.html' %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center p-4">
+                        <img src="{% static 'image/predict/psat_2025_haengsi_main_cover.png' %}" class="mw-100" alt="Title"/>
+                    </div>
                 </div>
             </div>
-
-            <div class="col-12" aria-label="답안 제출 현황">
-                <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_psat/snippets/predict_detail_info_answer.html' %}
-                </div>
-            </div>
-
-            {% if predict_psat.is_collecting_answer or predict_psat.is_answer_predict_opened %}
-                <div class="col-12" aria-label="예상 정답">
-                    <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_psat/snippets/predict_detail_sheet_answer_predict.html' %}
-                    </div>
-                </div>
-            {% endif %}
-
-            {% if predict_psat.is_answer_official_opened %}
-                <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
-                    <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_psat/snippets/predict_detail_sheet_score_all.html' %}
-                    </div>
-                </div>
-                {% if student.is_filtered %}
-                    <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
-                        <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                            {% include 'a_psat/snippets/predict_detail_sheet_score_filtered.html' %}
-                        </div>
-                    </div>
-                {% endif %}
-
-                <div class="col-12" aria-label="정답 확인">
-                    <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_psat/snippets/predict_detail_sheet_answer_submit.html' %}
-                    </div>
-                </div>
-
-{#                    <div class="col-12">#}
-{#                        <div id="chart" class="card htmx-fade-in htmx-fade-out">#}
-{#                            {% include 'a_psat/snippets/detail_chart.html' with is_confirmed=True stat_total=stat_total_all stat_department=stat_department_all %}#}
-{#                        </div>#}
-{#                    </div>#}
-            {% endif %}
         </div>
     </section>
+
+    <section class="section" aria-label="수험 정보">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="infoStudent" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">수험 정보</div>
+                    <div class="card-body">
+                        {% include 'a_psat/snippets/predict_detail_info_student.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="답안 제출 현황">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        답안 제출 현황
+                        <a class="text-decoration-none ms-2" href=""
+                           hx-swap="none" hx-indicator="#stat_tot_spinner"
+                           hx-headers='{"View-Type":"info_answer"}' hx-get="">
+                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                        </a>
+                        <div id="stat_tot_spinner" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% include 'a_psat/snippets/predict_detail_info_answer.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% if psat.predict_psat.is_collecting_answer or psat.predict_psat.is_answer_predict_opened %}
+    <section class="section" aria-label="예상 정답">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="info_student" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        예상 정답
+                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#answer_predict_spinner"
+                           hx-headers='{"View-Type":"answer_predict"}' hx-get="">
+                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                        </a>
+                        <div id="answer_predict_spinner" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerPredictTab" role="tablist">
+                                {% for tab in answer_tab %}
+                                    {% #nav_tab prefix='AnswerPredict' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="scoreAnswerPredictContent">
+                            {% for tab in answer_tab %}
+                                {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 as answers silent %}
+                                {% cycle is_confirmed_data.0 is_confirmed_data.1 is_confirmed_data.2 is_confirmed_data.3 as is_confirmed silent %}
+                                {% #nav_content prefix='AnswerPredict' id=tab.id %}
+                                    {% include 'a_psat/snippets/predict_detail_sheet_answer_predict.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                {% if psat.predict_psat.is_collecting_answer %}
+                                    <li>예상 정답은 답안 수집이 어느 정도 완료된 후에 공개됩니다.</li>
+                                {% endif %}
+                                {% if psat.predict_psat.is_answer_predict_opened %}
+                                    <li>{{ config.current_time|date:'Y년 n월 j일 G:i' }} 기준 현재 예상 정답입니다.</li>
+                                {% endif %}
+                                <li>가장 많은 분들이 선택한 답안을 예상 정답으로 제시합니다.</li>
+                                <li>정확도 = 예상 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+{% if psat.predict_psat.is_answer_official_opened %}
+    <section class="section" aria-label="성적 예측 I [전체 데이터]">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        성적 예측 I
+                        <span class="text-danger small">[전체 데이터]</span>
+                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_score_spinner"
+                           hx-headers='{"View-Type":"score_all"}' hx-get="">
+                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                        </a>
+                        <div id="sheet_score_spinner" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetAllTab" role="tablist">
+                                {% for tab in score_tab %}
+                                    {% #nav_tab prefix='ScoreAll' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="scoreSheetAllContent">
+                            {% for tab in score_tab %}
+                                {% cycle stat_total_all as stat_total silent %}
+                                {% cycle stat_department_all as stat_department silent %}
+                                {% cycle '' stat_total_all stat_department_all as stat_data silent %}
+                                {% #nav_content prefix='ScoreAll' id=tab.id %}{% include tab.template %}{% /nav_content %}
+                            {% endfor %}
+
+                            <div>
+                                <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+                                <ol class="text-success small fw-bold m-0">
+                                    <li>답안 제출을 완료한 응시생들의
+                                        <span class="text-danger">전체 답안</span>을 대상으로 분석한 자료입니다.
+                                    </li>
+                                    <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
+                                    {% if not filtered_stat_total %}
+                                        <li>정답 공개 전 제출 답안을 대상으로 분석한 자료는
+                                            <span class="text-danger">해당 응시자에게만 공개</span>됩니다.
+                                        </li>
+                                    {% endif %}
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if student.is_filtered %}
+    <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        <div class="row">
+            <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
+                <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        성적 예측 II <span class="text-danger small">[정답 공개 전 데이터]</span>
+                    </div>
+
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetFilteredTab" role="tablist">
+                                {% for tab in score_tab %}
+                                    {% #nav_tab prefix='ScoreFiltered' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="scoreSheetFilteredContent">
+                            {% for tab in score_tab %}
+                                {% cycle stat_total_filtered as stat_total silent %}
+                                {% cycle stat_department_filtered as stat_department silent %}
+                                {% cycle '' stat_total_filtered stat_department_filtered as stat_data silent %}
+                                {% #nav_content prefix='ScoreFiltered' id=tab.id %}{% include tab.template %}{% /nav_content %}
+                            {% endfor %}
+
+                            <div>
+                                <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+                                <ol class="text-success small fw-bold m-0">
+                                    <li><span class="text-danger">정답 공개 전</span>에 답안 제출을 완료한 응시생들의
+                                        답안만을 대상으로 분석한 자료입니다.
+                                    </li>
+                                    <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="section" aria-label="정답 확인">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        정답 확인
+                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
+                           hx-headers='{"View-Type":"answer_submit"}' hx-get="">
+                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                        </a>
+                        <div id="sheet_answer_spinner" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerSubmitTab" role="tablist">
+                                {% for tab in answer_tab %}
+                                    {% #nav_tab prefix='AnswerSubmit' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="scoreAnswerSubmitContent">
+                            {% for tab in answer_tab %}
+                                {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
+                                {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
+                                {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
+                                {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
+                                {% #nav_content prefix='AnswerSubmit' id=tab.id %}
+                                    {% include 'a_psat/snippets/predict_detail_sheet_answer_submit.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>정답률 = 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
+                                <li>선택률 = 동일 답안 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="성적 분포 차트">
+        <div class="row" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            <div class="col-12">
+                <div id="chart" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">성적 분포 차트</div>
+                    <div class="card-body">
+                        {% include 'a_psat/snippets/predict_detail_chart.html' with stat_total=stat_total_all stat_department=stat_department_all %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endif %}
 {% endblock main_content %}

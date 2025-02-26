@@ -1,5 +1,5 @@
 <div id="navContent{{ prefix }}{{ id }}"
-     class="tab-pane fade{% if id == '0' %} show active{% endif %} htmx-fade-out"
+     class="tab-pane fade{% if id == initial|default_if_none:'0' %} show active{% endif %} htmx-fade-out"
      role="tabpanel" aria-labelledby="navTab{{ prefix }}{{ id }}">
     {{ children }}
 </div>

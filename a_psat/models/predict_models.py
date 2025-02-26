@@ -92,7 +92,15 @@ class PredictPsat(models.Model):
         return exam_dict[self.psat.exam]
 
 
+class PredictCategoryManager(models.Manager):
+    def get_filtered_qs_by_unit(self, unit=None):
+        if unit:
+            return self.filter(unit=unit).order_by('order')
+        return self.order_by('order')
+
+
 class PredictCategory(models.Model):
+    objects = PredictCategoryManager()
     exam = models.CharField(
         max_length=2, choices=choices.predict_exam_choice, default='행시', verbose_name='시험')
     unit = models.CharField(
@@ -111,7 +119,13 @@ class PredictCategory(models.Model):
         ]
 
 
+class PredictStatisticsManager(models.Manager):
+    def get_filtered_qs_by_psat(self, psat):
+        return self.filter(psat=psat).order_by('id')
+
+
 class PredictStatistics(abstract_models.ExtendedStatistics):
+    objects = PredictStatisticsManager()
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_statistics')
 
     class Meta:
@@ -131,7 +145,60 @@ class PredictStatistics(abstract_models.ExtendedStatistics):
         return f'{self.psat.year}{self.psat.exam}'
 
 
+class PredictStudentManager(models.Manager):
+    def with_select_related(self):
+        return self.select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
+
+    def get_filtered_qs_by_psat(self, psat):
+        return self.filter(psat=psat).order_by('id')
+
+    @staticmethod
+    def get_annotate_dict_for_score_and_rank():
+        annotate_dict = {
+            'score_sum': models.F('score__sum'),
+            'rank_tot_num': models.F(f'rank_total__participants'),
+            'rank_dep_num': models.F(f'rank_category__participants'),
+        }
+        field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
+        for key, fld in field_dict.items():
+            annotate_dict[f'score_{key}'] = models.F(f'score__{fld}')
+            annotate_dict[f'rank_tot_{key}'] = models.F(f'rank_total__{fld}')
+            annotate_dict[f'rank_dep_{key}'] = models.F(f'rank_category__{fld}')
+        return annotate_dict
+
+    def get_filtered_qs_student_list_by_psat(self, psat):
+        annotate_dict = self.get_annotate_dict_for_score_and_rank()
+        return (
+            self.with_select_related().filter(psat=psat)
+            .order_by('psat__year', 'psat__order', 'rank_total__average')
+            .annotate(department=models.F('category__department'), **annotate_dict)
+        )
+
+    def get_filtered_qs_by_user_and_psat_list(self, user, psat_list):
+        return self.with_select_related().filter(user=user, psat__in=psat_list).order_by('id')
+
+    def get_filtered_qs_by_psat_and_user_with_answer_count(self, user, psat):
+        annotate_dict = self.get_annotate_dict_for_score_and_rank()
+        qs_student = (
+            self.with_select_related().filter(user=user, psat=psat)
+            .prefetch_related('answers')
+            .annotate(department=models.F('category__department'), **annotate_dict)
+            .order_by('id').last()
+        )
+        if qs_student:
+            qs_answer_count = qs_student.answers.values(
+                subject=models.F('problem__subject')).annotate(answer_count=models.Count('id'))
+            average_answer_count = 0
+            for q in qs_answer_count:
+                qs_student.answer_count[q['subject']] = q['answer_count']
+                if q['subject'] != '헌법':
+                    average_answer_count += q['answer_count']
+            qs_student.answer_count['평균'] = average_answer_count
+        return qs_student
+
+
 class PredictStudent(abstract_models.Student):
+    objects = PredictStudentManager()
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_students')
     category = models.ForeignKey(
         PredictCategory, on_delete=models.CASCADE, related_name='predict_students')
@@ -143,12 +210,7 @@ class PredictStudent(abstract_models.Student):
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}03_수험정보'
         db_table = 'a_psat_predict_student'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['psat', 'category', 'user', 'name', 'serial'],
-                name='unique_psat_predict_student',
-            ),
-        ]
+        constraints = [models.UniqueConstraint(fields=['psat', 'user'], name='unique_psat_predict_student')]
 
     def __str__(self):
         return f'[PSAT]PredictStudent(#{self.id}):{self.psat.reference}({self.student_info})'
@@ -158,7 +220,50 @@ class PredictStudent(abstract_models.Student):
         return f'{self.psat.year}{self.psat.exam}'
 
 
+class PredictAnswerManager(models.Manager):
+    def with_selected_related(self):
+        return self.select_related(
+            'problem',
+            'problem__predict_answer_count',
+            'problem__predict_answer_count_top_rank',
+            'problem__predict_answer_count_mid_rank',
+            'problem__predict_answer_count_low_rank',
+        )
+
+    def get_filtered_qs_by_psat_and_student(self, student, psat):
+        return self.with_selected_related().filter(
+            student=student, problem__psat=psat).annotate(
+            subject=models.F('problem__subject'),
+            result=models.Case(
+                models.When(answer=models.F('problem__answer'), then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField()
+            ),
+            predict_result=models.Case(
+                models.When(
+                    answer=models.F('problem__predict_answer_count__answer_predict'), then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField()
+            )
+        )
+
+    def get_filtered_qs_by_student_and_sub(self, student, sub: str):
+        return self.filter(student=student, problem__subject=sub).annotate(
+            answer_correct=models.F('problem__answer'), answer_student=models.F('answer'))
+
+    def get_filtered_qs_by_psat_student_stat_type_and_is_filtered(
+            self, psat, student, stat_type='total', is_filtered=False):
+        qs = self.filter(problem__psat=psat).values('problem__subject').annotate(
+            participant_count=models.Count('student_id', distinct=True))
+        if stat_type == 'department':
+            qs = qs.filter(student__category__department=student.category.department)
+        if is_filtered:
+            qs = qs.filter(student__is_filtered=True)
+        return qs
+
+
 class PredictAnswer(abstract_models.Answer):
+    objects = PredictAnswerManager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='작성 일시')
     student = models.ForeignKey(PredictStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='predict_answers')
@@ -188,7 +293,42 @@ class PredictAnswer(abstract_models.Answer):
         return self.problem.answer
 
 
+class PredictAnswerCountManager(models.Manager):
+    def get_filtered_qs_by_psat_and_subject(self, psat, subject=None):
+        annotate_dict = {
+            'subject': models.F('problem__subject'),
+            'number': models.F('problem__number'),
+            'ans_predict': models.F(f'problem__predict_answer_count__answer_predict'),
+            'ans_official': models.F('problem__answer'),
+        }
+        field_list = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
+        for fld in field_list:
+            annotate_dict[f'{fld}_all'] = models.F(f'{fld}')
+            annotate_dict[f'{fld}_top'] = models.F(f'problem__predict_answer_count_top_rank__{fld}')
+            annotate_dict[f'{fld}_mid'] = models.F(f'problem__predict_answer_count_mid_rank__{fld}')
+            annotate_dict[f'{fld}_low'] = models.F(f'problem__predict_answer_count_low_rank__{fld}')
+        qs_answer_count = (
+            self.filter(problem__psat=psat)
+            .order_by('problem__subject', 'problem__number').annotate(**annotate_dict)
+            .select_related(
+                f'problem',
+                f'problem__predict_answer_count',
+                f'problem__predict_answer_count_top_rank',
+                f'problem__predict_answer_count_mid_rank',
+                f'problem__predict_answer_count_low_rank',
+            )
+        )
+        if subject:
+            qs_answer_count = qs_answer_count.filter(subject=subject)
+        return qs_answer_count
+
+    def get_filtered_qs_by_psat(self, psat):
+        return self.filter(problem__psat=psat).annotate(
+            no=models.F('problem__number'), sub=models.F('problem__subject')).order_by('sub', 'no')
+
+
 class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
+    objects = PredictAnswerCountManager()
     problem = models.OneToOneField(
         Problem, on_delete=models.CASCADE, related_name='predict_answer_count')
 
@@ -204,7 +344,19 @@ class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
         return self.problem.reference
 
 
+class PredictScoreManager(models.Manager):
+    def get_filtered_qs_by_psat_student_stat_type_and_is_filtered(
+            self, psat, student, stat_type='total', is_filtered=False):
+        qs = self.filter(student__psat=psat)
+        if stat_type == 'department':
+            qs_score = qs.filter(student__category__department=student.category.department)
+        if is_filtered:
+            qs_score = qs.filter(student__is_filtered=True)
+        return qs.values()
+
+
 class PredictScore(abstract_models.Score):
+    objects = PredictScoreManager()
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='score')
 
     class Meta:

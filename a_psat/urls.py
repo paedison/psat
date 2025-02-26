@@ -79,8 +79,7 @@ admin_patterns = [
 predict_patterns = [
     path('', predict_views.list_view, name='predict-list'),
     path('<int:pk>/', predict_views.detail_view, name='predict-detail'),
-    path('register/<int:pk>/', predict_views.register_view, name='predict-register'),
-    path('unregister/<int:pk>/', predict_views.unregister_view, name='predict-unregister'),
+    path('register/', predict_views.register_view, name='predict-register'),
 
     path('modal/<int:pk>/', predict_views.modal_view, name='predict-modal'),
     path('answer/<int:pk>/<str:subject_field>/',

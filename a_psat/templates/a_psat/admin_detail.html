@@ -5,26 +5,38 @@
 {% block main_content %}
     {% if predict_psat %}{% partial predict_section %}{% endif %}
 
-    <section class="section">
+    <section class="section" aria-label="공식 정답">
         <div class="row">
-            <div class="col-12" aria-label="공식 정답">
+            <div class="col-12">
                 <div id="problemCard" class="card" hx-swap="innerHTML swap:0.25s">
                     <div class="card-header">공식 정답</div>
                     <div class="card-body">
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerOfficialTab" role="tablist">
                                 {% for subject in subjects %}
-                                    {% cycle '0' '1' '2' '3' '4' as id silent %}
-                                    {% #nav_tab prefix='AnswerSubmit' id=id %}{{ subject }}{% /nav_tab %}
+                                    {% if subjects|length == 3 %}
+                                        {% cycle '1' '2' '3' as id silent %}
+                                        {% #nav_tab prefix='AnswerSubmit' id=id initial='1' %}{{ subject }}{% /nav_tab %}
+                                    {% else %}
+                                        {% cycle '0' '1' '2' '3' as id silent %}
+                                        {% #nav_tab prefix='AnswerSubmit' id=id %}{{ subject }}{% /nav_tab %}
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         </nav>
                         <div id="scoreAnswerOfficialContent" class="tab-content">
                             {% for answer_official in answer_official_list %}
-                                {% cycle '0' '1' '2' '3' '4' as id silent %}
-                                {% #nav_content prefix='AnswerSubmit' id=id %}
-                                    {% include 'a_psat/snippets/admin_detail_official_answer.html' %}
-                                {% /nav_content %}
+                                {% if answer_official_list|length == 3 %}
+                                    {% cycle '1' '2' '3' as id silent %}
+                                    {% #nav_content prefix='AnswerSubmit' id=id initial='1' %}
+                                        {% include 'a_psat/snippets/admin_detail_official_answer.html' %}
+                                    {% /nav_content %}
+                                {% else %}
+                                    {% cycle '0' '1' '2' '3' '4' as id silent %}
+                                    {% #nav_content prefix='AnswerSubmit' id=id %}
+                                        {% include 'a_psat/snippets/admin_detail_official_answer.html' %}
+                                    {% /nav_content %}
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>
@@ -33,9 +45,9 @@
         </div>
     </section>
 
-    <section class="section">
+    <section class="section" aria-label="문제 목록">
         <div class="row">
-            <div class="col-12" aria-label="문제 목록">
+            <div class="col-12">
                 <div id="problemCard" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
                     <div class="card-header">
                         {{ psat.full_reference }}
@@ -61,15 +73,15 @@
 {% endblock main_content %}
 
 {% partialdef predict_section %}
-    <section class="section">
-        <div class="row">
-            {% if user.is_admin %}
-                <div class="col-12" aria-label="합격 예측 업데이트">
+    {% if user.is_admin %}
+        <section class="section" aria-label="합격 예측 업데이트">
+            <div class="row">
+                <div class="col-12">
                     <div class="card" hx-swap="innerHTML swap:0.25s">
-                        <div class="card-header">합격 예측 업데이트</div>
+                        <div class="card-header">{{ psat.year }}년도 {{ psat.exam_name }} | 합격 예측 업데이트</div>
                         <div class="card-body">
                             <div class="row g-3">
-                                <div class="col-12">
+                                <div class="col-md-6">
                                     <form enctype="multipart/form-data"
                                           hx-headers='{"View-Type":"answer_official"}'
                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
@@ -84,34 +96,38 @@
                                     </form>
                                 </div>
 
-                                <div class="col-md-6 d-flex justify-content-end"
+                                <div class="col-md-6 d-flex"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                    <div class="btn-group">
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='score' button_name='점수 업데이트' update_url=config.admin_detail_button_export %}
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' update_url=config.admin_detail_button_export %}
+                                    <div class="btn-group flex-fill">
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='score' button_name='점수 업데이트' update_url=psat.get_admin_predict_update_url %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' update_url=psat.get_admin_predict_update_url %}
                                     </div>
                                 </div>
 
-                                <div class="col-md-6 d-flex justify-content-end"
+                                <div class="col-md-6 d-flex"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                    <div class="btn-group">
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' update_url=config.admin_detail_button_export %}
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' update_url=config.admin_detail_button_export %}
+                                    <div class="btn-group flex-fill">
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' update_url=psat.get_admin_predict_update_url %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' update_url=psat.get_admin_predict_update_url %}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            {% endif %}
+            </div>
+        </section>
+    {% endif %}
 
-            <div class="col-12" aria-label="성적통계 [예측]">
+    <section class="section" aria-label="성적통계 [예측]">
+        <div class="row">
+            <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <span>{{ psat.year }}년도 {{ psat.exam_name }} | 성적통계 [예측]</span>
-                            <div class="d-flex ms-auto">
-                                <div class="btn-group">
+                    <div class="card-header">성적통계 [예측]</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
+                                <div class="btn-group flex-fill">
                                     <a class="btn btn-outline-secondary" title="목록" hx-target="#main"
                                        href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
                                         목록
@@ -121,52 +137,56 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
                         <div id="statisticsContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_psat/snippets/admin_detail_predict_statistics.html' %}
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="col-12" aria-label="성적일람표 [예측]">
+    <section class="section" aria-label="성적일람표 [예측]">
+        <div class="row">
+            <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            {{ psat.year }}년도 {{ psat.exam_name }} | 성적일람표 [예측]
-                            <div class="d-flex ms-auto">
-                                <div class="btn-group">
+                    <div class="card-header">성적일람표 [예측]</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
                                     {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
 {#                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
                                     {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
                                 </div>
                             </div>
+                            <div class="col-md-6 col-lg-7 col-xxl-8 order-md-0 d-flex">
+                                {% include 'a_psat/snippets/admin_detail_search.html' %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        {% include 'a_psat/snippets/admin_detail_search.html' %}
                         <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_psat/snippets/admin_detail_predict_catalog.html' %}
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="col-12" aria-label="문항분석표 [예측]">
+    <section class="section" aria-label="문항분석표 [예측]">
+        <div class="row">
+            <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">
-                        <div class="d-flex align-items-center">
-                            <span>{{ psat.year }}년도 {{ psat.exam_name }} | 문항분석표 [예측]</span>
-                            <div class="d-flex ms-auto">
-                                <div class="btn-group">
+                    <div class="card-header">문항분석표 [예측]</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
                                     {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_answers_excel %}
                                     {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_answers_print %}
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
                                 {% for tab in answer_tab %}
@@ -176,11 +196,19 @@
                         </nav>
                         <div id="answerAnalysisContent" class="tab-content">
                             {% for tab in answer_tab %}
-                                {% cycle answers_page_obj_group.헌법 answers_page_obj_group.언어 answers_page_obj_group.자료 answers_page_obj_group.상황 as answers silent %}
-                                {% cycle answers_page_range_group.헌법 answers_page_range_group.언어 answers_page_range_group.자료 answers_page_range_group.상황 as answers_page_range silent %}
-                                {% #nav_content prefix='Answer' id=tab.id %}
-                                    {% include 'a_psat/snippets/admin_detail_predict_answer_analysis.html' %}
-                                {% /nav_content %}
+                                {% if answer_tab|length == 3 %}
+                                    {% cycle answers_page_obj_group.언어 answers_page_obj_group.자료 answers_page_obj_group.상황 as answers silent %}
+                                    {% cycle answers_page_range_group.언어 answers_page_range_group.자료 answers_page_range_group.상황 as answers_page_range silent %}
+                                    {% #nav_content prefix='Answer' id=tab.id initial='1' %}
+                                        {% include 'a_psat/snippets/admin_detail_predict_answer_analysis.html' %}
+                                    {% /nav_content %}
+                                {% else %}
+                                    {% cycle answers_page_obj_group.헌법 answers_page_obj_group.언어 answers_page_obj_group.자료 answers_page_obj_group.상황 as answers silent %}
+                                    {% cycle answers_page_range_group.헌법 answers_page_range_group.언어 answers_page_range_group.자료 answers_page_range_group.상황 as answers_page_range silent %}
+                                    {% #nav_content prefix='Answer' id=tab.id %}
+                                        {% include 'a_psat/snippets/admin_detail_predict_answer_analysis.html' %}
+                                    {% /nav_content %}
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>

@@ -1,0 +1,7 @@
+{% load static %}
+<div class="col-12 d-flex justify-content-center">
+    <a hx-boost="true" hx-target="#main" hx-swap="innerHTML swap:0.25s"
+       href="{% url 'psat:predict-list' %}">
+        <img src="{% static 'image/banner/predict_psat_2025_haengsi_banner.jpg' %}" height="200" class="mw-100" alt="배너"/>
+    </a>
+</div>

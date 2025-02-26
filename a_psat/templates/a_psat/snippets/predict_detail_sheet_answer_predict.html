@@ -1,88 +1,42 @@
 {% load psat_filter %}
 
-<div class="card-header">
-    예상 정답
-    <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#answer_predict_spinner"
-       hx-headers='{"View-Type":"answer_predict"}' hx-get="">
-        <span class="badge rounded-pill text-bg-warning">업데이트</span>
-    </a>
-    <div id="answer_predict_spinner" role="status"
-         class="htmx-indicator spinner-border text-warning spinner-border-sm">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
-
-<div class="card-body">
-    <nav>
-        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerPredictTab" role="tablist">
-            {% for tab in answer_tab %}
-                {% #nav_tab prefix='AnswerPredict' id=tab.id %}{{ tab.icon|safe }} {{ tab.title }}{% /nav_tab %}
-            {% endfor %}
-        </div>
-    </nav>
-
-    <div class="tab-content" id="scoreAnswerPredictContent">
-        {% for tab in answer_tab %}
-            {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 as answers silent %}
-            {% cycle is_confirmed_data.0 is_confirmed_data.1 is_confirmed_data.2 is_confirmed_data.3 as is_confirmed silent %}
-            {% #nav_content prefix='AnswerPredict' id=tab.id %}{% partial answer_table %}{% /nav_content %}
-        {% endfor %}
-    </div>
-    <div>
-        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
-        <ol class="text-success small fw-bold m-0">
-            {% if exam.is_collecting_answer %}
-                <li>예상 정답은 답안 수집이 어느 정도 완료된 후에 공개됩니다.</li>
-            {% endif %}
-            {% if exam.is_answer_predict_opened %}
-                <li>{{ current_time|date:'Y년 n월 j일 G:i' }} 기준 예상 정답입니다.</li>
-            {% endif %}
-            <li>가장 많은 분들이 선택한 답안을 예상 정답으로 제시합니다.</li>
-            <li>정확도 = 예상 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
-        </ol>
-    </div>
-</div>
-
-{% partialdef answer_table %}
-    <article class="table-responsive">
-        <table class="table align-middle">
-            <tbody>
-                {% if not is_confirmed %}
-                    <tr class="text-center">
+<article class="table-responsive">
+    <table class="table align-middle">
+        <tbody>
+            {% if not is_confirmed %}
+                <tr class="text-center">
+                    <th>
+                        <a class="btn btn-outline-danger my-4" hx-boost="true" href="{{ tab.url_answer_input }}">
+                            답안을 제출해주세요.
+                        </a>
+                    </th>
+                </tr>
+            {% else %}
+                {% if predict_psat.is_collecting_answer %}
+                    <tr class="text-center table-warning">
                         <th>
-                            <a class="btn btn-outline-danger my-4" hx-boost="true"
-                               href="{{ tab.url_answer_input }}">
-                                답안을 제출해주세요.
-                            </a>
+                            <div class="fs-5 my-4">답안 수집중입니다.</div>
                         </th>
                     </tr>
                 {% else %}
-                    {% if exam.is_collecting_answer %}
-                        <tr class="text-center">
-                            <th class="fw-bold text-bg-warning">
-                                <div class="fs-5 my-4">답안 수집중입니다.</div>
-                            </th>
-                        </tr>
+                    {% if answers|length == 25  %}
+                        {% for _ in '012' %}
+                            {% cycle 10 10 5 as loop_counter silent %}
+                            {% cycle 0 10 20 as loop_min silent %}
+                            {% partial answer_table_tr %}
+                        {% endfor %}
                     {% else %}
-                        {% if answers|length == 25  %}
-                            {% for _ in '012' %}
-                                {% cycle 10 10 5 as loop_counter silent %}
-                                {% cycle 0 10 20 as loop_min silent %}
-                                {% partial answer_table_tr %}
-                            {% endfor %}
-                        {% else %}
-                            {% for _ in '0123' %}
-                                {% cycle 10 10 10 10 as loop_counter silent %}
-                                {% cycle 0 10 20 30 as loop_min silent %}
-                                {% partial answer_table_tr %}
-                            {% endfor %}
-                        {% endif %}
+                        {% for _ in '0123' %}
+                            {% cycle 10 10 10 10 as loop_counter silent %}
+                            {% cycle 0 10 20 30 as loop_min silent %}
+                            {% partial answer_table_tr %}
+                        {% endfor %}
                     {% endif %}
                 {% endif %}
-            </tbody>
-        </table>
-    </article>
-{% endpartialdef answer_table %}
+            {% endif %}
+        </tbody>
+    </table>
+</article>
 
 {% partialdef answer_table_tr %}
     <tr class="text-center table-warning" aria-label="문제 번호">

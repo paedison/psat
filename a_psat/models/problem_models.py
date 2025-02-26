@@ -77,17 +77,15 @@ class Psat(models.Model):
     def get_predict_detail_url(self):
         return reverse_lazy('psat:predict-detail', args=[self.id])
 
-    def get_predict_register_url(self):
-        return reverse_lazy('psat:predict-register', args=[self.id])
+    @staticmethod
+    def get_predict_register_url():
+        return reverse_lazy('psat:predict-register')
 
     def get_predict_answer_input_url(self, subject_field):
         return reverse_lazy('psat:predict-answer-input', args=[self.id, subject_field])
 
     def get_predict_answer_confirm_url(self, subject_field):
         return reverse_lazy('psat:predict-answer-confirm', args=[self.id, subject_field])
-
-    def get_predict_unregister_url(self):
-        return reverse_lazy('psat:predict-unregister', args=[self.id])
 
     def get_predict_modal_url(self):
         return reverse_lazy('psat:predict-modal', args=[self.id])
@@ -122,7 +120,14 @@ class ProblemTaggedItem(TaggedItemBase):
         return self.content_object.reference
 
 
+class ProblemManager(models.Manager):
+    def get_filtered_qs_by_psat(self, psat):
+        return self.select_related('psat').filter(
+            psat=psat).annotate(no=models.F('number'), ans=models.F('answer'))
+
+
 class Problem(models.Model):
+    objects = ProblemManager()
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='problems', verbose_name='PSAT')
     subject = models.CharField(max_length=2, choices=choices.subject_choice, default='언어', verbose_name='과목')
     paper_type = models.CharField(max_length=2, default='', verbose_name='책형')

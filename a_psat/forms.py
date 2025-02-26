@@ -82,7 +82,7 @@ class LectureMemoForm(forms.ModelForm):
         fields = ['content']
 
 
-class PredictStudentForm(forms.ModelForm):
+class PredictStudentForm(forms.Form):
     unit = forms.ChoiceField(
         choices=models.choices.predict_unit_choice(),
         initial='모집단위를 선택해주세요',
@@ -96,28 +96,18 @@ class PredictStudentForm(forms.ModelForm):
         label='직렬',
         required=True,
     )
+    serial = forms.CharField(
+        max_length=10, initial='', label='수험번호',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '수험번호'}),
+    )
+    name = forms.CharField(
+        max_length=20, initial='', label='이름',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '이름'}),
+    )
     password = forms.CharField(
         max_length=10, initial='', label='비밀번호',
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '비밀번호'}),
     )
-
-    class Meta:
-        model = models.PredictStudent
-        fields = ['serial', 'name', 'password']
-        widgets = {
-            'serial': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '수험번호'}),
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '이름'}),
-        }
-
-    def save(self, commit=True):
-        unit = self.cleaned_data['unit']
-        department = self.cleaned_data['department']
-        category = models.PredictCategory.objects.get(unit=unit, department=department)
-        student = super().save(commit=False)
-        student.category = category
-        if commit:
-            student.save()
-        return student
 
 
 class UploadFileForm(forms.Form):

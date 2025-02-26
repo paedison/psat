@@ -64,7 +64,7 @@ def list_redirect_view(request: HtmxHttpRequest, organization: str, semester: in
     if curriculum is None:
         context = update_context_data(
             config=config, curriculum=curriculum, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_index)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
     return redirect('psat:study-list', curriculum.id)
 
 
@@ -74,12 +74,12 @@ def list_view(request: HtmxHttpRequest, pk: int):
     context = update_context_data(config=config, curriculum=curriculum)
     if not curriculum:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_index)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     student = models.StudyStudent.objects.get_filtered_student(curriculum=curriculum, user=request.user)
     if not student:
         context = update_context_data(context, message='등록된 커리큘럼이 없습니다.', next_url=config.url_index)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', '1')
@@ -282,7 +282,7 @@ def answer_input_redirect_view(request: HtmxHttpRequest, organization: str, seme
     context = update_context_data(config=config, curriculum=curriculum)
     if not curriculum:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_index)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     config.url_list = reverse_lazy('psat:study-list', args=[curriculum.id])
 
@@ -290,25 +290,25 @@ def answer_input_redirect_view(request: HtmxHttpRequest, organization: str, seme
     result = models.StudyResult.objects.filter(student=student, psat__round=homework_round).first()
     if student is None or result is None:
         context = update_context_data(context, message='등록된 커리큘럼이 없습니다.', next_url=config.url_index)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     schedule: models.StudyCurriculumSchedule = models.StudyCurriculumSchedule.objects.filter(
         curriculum=curriculum, lecture_round=homework_round).first()
     if not schedule:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_index)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     if timezone.now() < schedule.lecture_open_datetime:
         context = update_context_data(context, message='답안 제출 기간이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     if timezone.now() > schedule.homework_end_datetime:
         context = update_context_data(context, message='답안 제출 마감일이 지났습니다.', next_url=config.url_list)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     if result.score is not None:
         context = update_context_data(context, message='답안을 이미 제출하셨습니다.', next_url=config.url_list)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     return redirect('psat:study-answer-input', result.id)
 
@@ -328,12 +328,12 @@ def answer_input_view(request: HtmxHttpRequest, pk: int):
 
     if result is None:
         context = update_context_data(context, message='등록된 커리큘럼이 없습니다.', next_url=config.url_index)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     config.url_list = result.student.get_study_curriculum_list_url()
     if result.score is not None:
         context = update_context_data(context, message='답안을 이미 제출하셨습니다.', next_url=config.url_list)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     config.url_answer_confirm = result.get_answer_confirm_url()
     page_title = f'미니테스트 {result.psat.round}회차'
@@ -341,15 +341,15 @@ def answer_input_view(request: HtmxHttpRequest, pk: int):
     schedule = models.StudyCurriculumSchedule.objects.filter(curriculum=result.student.curriculum).first()
     if not schedule:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_index)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     if timezone.now() < schedule.lecture_open_datetime:
         context = update_context_data(context, message='답안 제출 기간이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     if timezone.now() > schedule.homework_end_datetime:
         context = update_context_data(context, message='답안 제출 마감일이 지났습니다.', next_url=config.url_list)
-        return render(request, 'a_psat/study_redirect.html', context)
+        return render(request, 'a_psat/redirect.html', context)
 
     problem_count = result.psat.problems.count()
     answer_data = get_answer_data(request, problem_count)

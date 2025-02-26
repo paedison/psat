@@ -1,0 +1,73 @@
+{% extends 'a_psat/_psat_base.html' %}
+{% load crispy_forms_field %}
+
+{% block main_content %}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
+        <div class="row">
+            <div class="col-lg-6" aria-label="{{ title }}">
+                <div id="examCard" class="card">
+                    <div id="examCardHeader" class="card-header">{{ title }}</div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        <form enctype="multipart/form-data" method="post">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
+
+                            <div class="col-12 form-field-container">
+                                <select id="id_unit" class="form-select"
+                                        name="unit" aria-label="모집단위"
+                                        hx-push-url="false" hx-trigger="change"
+                                        hx-target="#id_department" hx-swap="outerHTML"
+                                        hx-headers='{"View-Type":"department"}'
+                                        hx-get="{{ exam.get_predict_register_url }}">
+                                    <option value="">모집단위를 선택해주세요.</option>
+                                    {% for unit in units %}
+                                        {% if unit == form.unit.value %}
+                                            <option value="{{ unit }}" selected>{{ unit }}</option>
+                                        {% else %}
+                                            <option value="{{ unit }}">{{ unit }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                {% if form.unit.errors %}{{ form.unit.errors }}{% endif %}
+
+                                {% include 'a_psat/snippets/predict_department_list.html' %}
+
+                                {% for _ in '012' %}
+                                    {% cycle form.serial form.name form.password as field silent %}
+                                    <div class="form-floating mt-3">
+                                        {{ field }}
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    </div>
+                                    {% if field.errors %}{{ field.errors }}{% endif %}
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-3">
+                                <div class="btn-group" role="group" aria-label="취소·등록 버튼">
+                                    <a type="button" class="btn btn-outline-danger" hx-boost="true"
+                                       href="{{ config.url_list }}">
+                                        취소
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        등록
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div>
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>수험정보 등록시 오류가 발생한 경우에는 아래 연락처로 문의해주세요.</li>
+                                <li>카카오톡 오픈프로필: <a href="https://open.kakao.com/me/paedison" target="_blank">https://open.kakao.com/me/paedison</a> </li>
+                                <li>구글 이메일: <a href="mailto:paedison@gmail.com">paedison@gmail.com</a> </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
