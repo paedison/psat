@@ -91,8 +91,6 @@
                     <span class="badge rounded-pill bg-success fs-6">예상 정답 공개</span>
                 {% elif psat.predict_psat.is_answer_official_opened %}
                     <span class="badge rounded-pill bg-danger fs-6">합격 예측 진행중</span>
-                {% else %}
-                    <span class="badge rounded-pill bg-success fs-6">강의 진행중</span>
                 {% endif %}
             </div>
         </div>
@@ -128,11 +126,29 @@
                             </tr>
                             <tr>
                                 <th class="text-nowrap px-0">수험 번호</th>
-                                <td>{{ psat.student.serial }}</td>
+                                <td>
+                                    {% if psat.student %}
+                                        {{ psat.student.serial }}
+                                    {% else %}
+                                        <a class="badge rounded-pill text-bg-primary" hx-boost="true"
+                                           href="{{ config.url_register }}">
+                                            수험정보를 등록해주세요.
+                                        </a>
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr>
                                 <th class="text-nowrap px-0">모집 단위 및 직렬</th>
-                                <td>{{ psat.student.category.department }}</td>
+                                <td>
+                                    {% if psat.student %}
+                                        {{ psat.student.category.department }}
+                                    {% else %}
+                                        <a class="badge rounded-pill text-bg-primary" hx-boost="true"
+                                           href="{{ config.url_register }}">
+                                            수험정보를 등록해주세요.
+                                        </a>
+                                    {% endif %}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
