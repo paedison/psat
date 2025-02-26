@@ -96,15 +96,26 @@
         </div>
         <div class="card-body">
             <div class="d-flex align-items-center">
-                <div class="d-flex flex-column justify-content-center">
-                    <a class="card-icon rounded-circle d-flex align-items-center justify-content-center mb-2"
-                       href="{{ psat.get_predict_detail_url }}">
-                        <i class="fa-solid fa-fw fa-arrows-up-to-line"></i>
-                    </a>
-                    <a class="btn btn-outline-primary" hx-boost="true"
-                       href="{{ psat.get_predict_detail_url }}">
-                        성적 확인
-                    </a>
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                    {% if psat.student %}
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center mb-2"
+                           href="{{ psat.get_predict_detail_url }}">
+                            <i class="fa-solid fa-fw fa-arrows-up-to-line"></i>
+                        </a>
+                        <a class="btn btn-outline-primary" hx-boost="true"
+                           href="{{ psat.get_predict_detail_url }}">
+                            성적 확인
+                        </a>
+                    {% else %}
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center mb-2"
+                           href="{{ config.url_register }}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <a class="btn btn-outline-primary" hx-boost="true"
+                           href="{{ config.url_register }}">
+                            수험정보 등록
+                        </a>
+                    {% endif %}
                 </div>
                 <article class="table-responsive flex-fill ps-3">
                     <table class="table m-0">
