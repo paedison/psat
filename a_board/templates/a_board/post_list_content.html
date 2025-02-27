@@ -44,15 +44,17 @@
     <tr class="cursor-pointer{% if post.top_fixed %} table-warning{% endif %}"
         hx-get="{{ post.get_absolute_url }}">
         <td class="text-start text-nowrap fw-bold px-2">
-            {% if post.top_fixed %}
-                <span class="text-danger">{{ icon_board.top_fixed|safe }}</span>
-            {% endif %}
-            {% if post.is_hidden %}
-                <span class="text-danger">{{ icon_board.is_hidden|safe }}</span>
-            {% endif %}
-            <span class="d-md-none">{{ post.title|truncatechars:30 }}</span>
-            <span class="d-none d-md-inline d-lg-none">{{ post.title|truncatechars:40 }}</span>
-            <span class="d-none d-lg-inline">{{ post.title|truncatechars:50 }}</span>
+            <a hx-boost="true" href="{{ post.get_absolute_url }}">
+                {% if post.top_fixed %}
+                    <span class="text-danger">{{ icon_board.top_fixed|safe }}</span>
+                {% endif %}
+                {% if post.is_hidden %}
+                    <span class="text-danger">{{ icon_board.is_hidden|safe }}</span>
+                {% endif %}
+                <span class="d-md-none">{{ post.title|truncatechars:30 }}</span>
+                <span class="d-none d-md-inline d-lg-none">{{ post.title|truncatechars:40 }}</span>
+                <span class="d-none d-lg-inline">{{ post.title|truncatechars:50 }}</span>
+            </a>
         </td>
         <td class="text-center text-nowrap px-2 col-1">{{ post.user.username }}</td>
         <td class="text-center text-nowrap px-2 col-1">{{ post.created_at|date:'n/j' }}</td>

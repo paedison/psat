@@ -33,7 +33,7 @@
                             <textarea id="post_content" name="content" class="ckeditor-content" aria-label="내용" hidden></textarea>
 
                             <div class="d-flex align-items-center justify-content-end mt-2">
-                                {% if user.is_superuser %}
+                                {% if user.is_admin %}
                                 <div class="form-check">
                                     {{ form.is_hidden }}
                                     <label class="form-check-label small me-3" for="{{ form.is_hidden.id_for_label }}">
