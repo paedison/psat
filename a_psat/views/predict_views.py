@@ -168,6 +168,8 @@ def register_view(request: HtmxHttpRequest):
             serial = form.cleaned_data['serial']
             name = form.cleaned_data['name']
             password = form.cleaned_data['password']
+            prime_id = form.cleaned_data['prime_id']
+
             categories = models.PredictCategory.objects.get_filtered_qs_by_unit(unit)
             context = update_context_data(context, categories=categories)
 
@@ -189,7 +191,7 @@ def register_view(request: HtmxHttpRequest):
 
                 student = models.PredictStudent.objects.create(
                     psat=psat, user=request.user, category=category,
-                    serial=serial, name=name, password=password,
+                    serial=serial, name=name, password=password, prime_id=prime_id,
                 )
                 models.PredictScore.objects.create(student=student)
                 models.PredictRankTotal.objects.create(student=student)

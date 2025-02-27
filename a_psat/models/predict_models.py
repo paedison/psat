@@ -15,17 +15,14 @@ class PredictPsat(models.Model):
     page_opened_at = models.DateTimeField(default=timezone.now, verbose_name='페이지 오픈 일시')
     exam_started_at = models.DateTimeField(default=timezone.now, verbose_name='시험 시작 일시')
     exam_finished_at = models.DateTimeField(default=timezone.now, verbose_name='시험 종료 일시')
-    answer_predict_opened_at = models.DateTimeField(
-        default=timezone.now, verbose_name='예상 정답 공개 일시')
-    answer_official_opened_at = models.DateTimeField(
-        default=timezone.now, verbose_name='공식 정답 공개 일시')
-    predict_closed_at = models.DateTimeField(
-        default=timezone.now, verbose_name='합격 에측 종료 일시')
+    answer_predict_opened_at = models.DateTimeField(default=timezone.now, verbose_name='예상 정답 공개 일시')
+    answer_official_opened_at = models.DateTimeField(default=timezone.now, verbose_name='공식 정답 공개 일시')
+    predict_closed_at = models.DateTimeField(default=timezone.now, verbose_name='합격 에측 종료 일시')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}00_PSAT'
         db_table = 'a_psat_predict_psat'
-        ordering = ['-psat__year', 'exam_started_at']
+        ordering = ['-id']
 
     def __str__(self):
         return f'[PSAT]PredictPsat(#{self.id}):{self.reference}'
@@ -204,6 +201,7 @@ class PredictStudent(abstract_models.Student):
         PredictCategory, on_delete=models.CASCADE, related_name='predict_students')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_predict_students')
     is_filtered = models.BooleanField(default=False, verbose_name='필터링 여부')
+    prime_id = models.CharField(max_length=15, null=True, blank=True, verbose_name='프라임법학원 ID')
     department = ''
     answer_count = {'헌법': 0, '언어': 0, '자료': 0, '상황': 0, '평균': 0}
 

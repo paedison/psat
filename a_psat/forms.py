@@ -97,16 +97,20 @@ class PredictStudentForm(forms.Form):
         required=True,
     )
     serial = forms.CharField(
-        max_length=10, initial='', label='수험번호',
+        max_length=10, label='수험번호',
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '수험번호'}),
     )
     name = forms.CharField(
-        max_length=20, initial='', label='이름',
+        max_length=20, label='이름',
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '이름'}),
     )
     password = forms.CharField(
-        max_length=10, initial='', label='비밀번호',
+        max_length=10, label='비밀번호',
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '비밀번호'}),
+    )
+    prime_id = forms.CharField(
+        max_length=15, label='프라임법학원 ID',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '프라임법학원 ID'}),
     )
 
 

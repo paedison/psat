@@ -1,20 +1,51 @@
-<table class="table">
+<table class="table d-sm-none">
     <tbody>
         <tr>
-            <th class="px-0" scope="row">수험번호</th>
+            <th class="px-0">수험번호</th>
             <td>{{ student.serial }}</td>
         </tr>
         <tr>
-            <th class="px-0" scope="row">모집단위</th>
+            <th class="px-0">모집단위</th>
             <td>{{ student.category.unit }}</td>
         </tr>
         <tr>
-            <th class="px-0" scope="row">직렬</th>
+            <th class="px-0">직렬</th>
             <td>{{ student.category.get_department_display }}</td>
         </tr>
         <tr>
-            <th class="px-0" scope="row">이름</th>
+            <th class="px-0">이름</th>
             <td>{{ student.name }}</td>
+        </tr>
+        {% if student.prime_id %}
+            <tr>
+                <th class="px-0">프라임법학원 ID</th>
+                <td>{{ student.prime_id }}</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<table class="table d-none d-sm-table">
+    <thead>
+        <tr class="text-center table-warning">
+            <th>수험번호</th>
+            <th>모집단위</th>
+            <th>직렬</th>
+            <th>이름</th>
+            {% if student.prime_id %}
+                <th>프라임법학원 ID</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="text-center">
+            <td>{{ student.serial }}</td>
+            <td>{{ student.category.unit }}</td>
+            <td>{{ student.category.get_department_display }}</td>
+            <td>{{ student.name }}</td>
+            {% if student.prime_id %}
+                <td>{{ student.prime_id }}</td>
+            {% endif %}
         </tr>
     </tbody>
 </table>

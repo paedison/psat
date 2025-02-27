@@ -6,12 +6,11 @@
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap" rowspan="2">ID</th>
-                <th class="text-primary text-nowrap" rowspan="2">등수</th>
-                <th class="text-primary text-nowrap" rowspan="2">연도</th>
-                <th class="text-primary text-nowrap" rowspan="2">교육기관명</th>
-                <th class="text-primary text-nowrap" rowspan="2">학기</th>
+                <th class="text-primary text-nowrap" rowspan="2">전체<br/>등수</th>
+                <th class="text-primary text-nowrap" rowspan="2">커리큘럼</th>
                 <th class="text-primary text-nowrap" rowspan="2">이름</th>
                 <th class="text-primary text-nowrap" rowspan="2">수험번호</th>
+                <th class="text-primary text-nowrap" rowspan="2">사용자<br/>ID</th>
                 <th class="text-primary text-nowrap" colspan="2">전체</th>
                 {% for _ in study_rounds %}
                     <th class="text-primary text-nowrap" colspan="2">{{ forloop.counter }}회차</th>
@@ -32,21 +31,20 @@
                 <tr class="text-center">
                     <td class="text-nowrap">{{ obj.id }}</td>
                     <td class="text-nowrap">{{ obj.rank_total|default_if_none:'' }}</td>
-                    <td class="text-nowrap">{{ obj.year }}</td>
-                    <td class="text-nowrap">{{ obj.organization }}</td>
-                    <td class="text-nowrap">{{ obj.semester }}</td>
+                    <td class="text-nowrap">{{ obj.curriculum_info }}</td>
                     <td class="text-nowrap">
                         <a href="{{ obj.get_admin_result_student_detail_url }}" target="score_print">
                             {{ obj.name }}
                         </a>
                     </td>
                     <td class="text-nowrap">{{ obj.serial }}</td>
+                    <td class="text-nowrap">{{ obj.user_id|default_if_none:'' }}</td>
 
-                    <td class="text-nowrap td-right-no-border">{{ obj.score_total }}</td>
+                    <td class="text-nowrap td-right-no-border">{% if obj.score_total %}{{ obj.score_total }}{% endif %}</td>
                     <td class="text-nowrap td-left-no-border">{{ obj.rank_total|default_if_none:'' }}</td>
 
                     {% for result in obj.result_list %}
-                        <td class="text-nowrap td-right-no-border">{{ result.score }}</td>
+                        <td class="text-nowrap td-right-no-border">{{ result.score|default_if_none:'' }}</td>
                         <td class="text-nowrap td-left-no-border">{{ result.rank|default_if_none:'' }}</td>
                     {% endfor %}
                 </tr>

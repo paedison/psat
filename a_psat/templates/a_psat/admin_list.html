@@ -99,6 +99,7 @@
         <table class="table table-bordered table-striped align-middle" hx-push-url="true">
             <thead>
                 <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap td-left-no-border">ID</th>
                     <th class="text-primary text-nowrap">연도</th>
                     <th class="text-primary text-nowrap">시험</th>
                     <th class="text-primary text-nowrap">페이지<br/>오픈일</th>
@@ -107,12 +108,13 @@
                     <th class="text-primary text-nowrap">시험<br/>종료</th>
                     <th class="text-primary text-nowrap">예상 정답<br/>공개</th>
                     <th class="text-primary text-nowrap">공식 정답<br/>공개</th>
-                    <th class="text-primary text-nowrap">합격 예측<br/>종료일</th>
+                    <th class="text-primary text-nowrap td-right-no-border">합격 예측<br/>종료일</th>
                 </tr>
             </thead>
             <tbody>
                 {% for obj in predict_page_obj %}
                     <tr class="text-center cursor-pointer" hx-get="{{ obj.psat.get_admin_detail_url }}">
+                        <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
                         <td class="text-nowrap">{{ obj.psat.get_year_display }}</td>
                         <td class="text-nowrap">{{ obj.exam_abbr }}</td>
                         <td class="text-nowrap">{{ obj.page_opened_at|date:'Y.n.j(D)' }}</td>
@@ -121,7 +123,7 @@
                         <td class="text-nowrap">{{ obj.exam_finished_at|date:'H:i' }}</td>
                         <td class="text-nowrap">{{ obj.answer_predict_opened_at|date:'H:i' }}</td>
                         <td class="text-nowrap">{{ obj.answer_official_opened_at|date:'H:i' }}</td>
-                        <td class="text-nowrap">{{ obj.predict_closed_at|date:'Y.n.j(D)' }}</td>
+                        <td class="text-nowrap td-right-no-border">{{ obj.predict_closed_at|date:'Y.n.j(D)' }}</td>
                     </tr>
                 {% empty %}
                     <tr class="text-center">
@@ -204,32 +206,30 @@
         <table class="table table-bordered table-striped align-middle" hx-push-url="true">
             <thead>
                 <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap" rowspan="2">ID</th>
+                    <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
                     <th class="text-primary text-nowrap" rowspan="2">카테고리</th>
                     <th class="text-primary text-nowrap" rowspan="2">총<br/>회차수<br/>(회)</th>
                     <th class="text-primary text-nowrap" rowspan="2">총<br/>학생수<br/>(명)</th>
-                    <th class="text-primary text-nowrap" colspan="5">통계(점)</th>
+                    <th class="text-primary text-nowrap td-right-no-border" colspan="5">통계(점)</th>
                 </tr>
                 <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap">상위<br/>25%</th>
-                    <th class="text-primary text-nowrap">상위<br/>50%</th>
-                    <th class="text-primary text-nowrap">평균<br/>점수</th>
+                    {% for _ in '12345' %}
+                        {% cycle '최고<br/>점수' '상위<br/>10%' '상위<br/>25%' '상위<br/>50%' '평균<br/>점수' as th_title silent %}
+                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">{{ th_title|safe }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for obj in category_page_obj %}
                     <tr class="cursor-pointer" hx-get="{{ obj.get_admin_study_category_detail_url }}">
-                        <td class="text-center text-nowrap">{{ obj.id }}</td>
+                        <td class="text-center text-nowrap td-left-no-border">{{ obj.id }}</td>
                         <td class="text-nowrap">{{ obj.category_info }} [{{ obj.name }}]</td>
                         <td class="text-center text-nowrap">{{ obj.round }}</td>
                         <td class="text-center text-nowrap">{{ obj.student_count }}</td>
-                        <td class="text-center text-nowrap">{{ obj.max }}</td>
-                        <td class="text-center text-nowrap">{{ obj.t10 }}</td>
-                        <td class="text-center text-nowrap">{{ obj.t25 }}</td>
-                        <td class="text-center text-nowrap">{{ obj.t50 }}</td>
-                        <td class="text-center text-nowrap">{{ obj.avg }}</td>
+                        {% for _ in '12345' %}
+                            {% cycle obj.max obj.t10 obj.t25 obj.t50 obj.avg as obj_stat silent %}
+                            <td class="text-center text-nowrap td-left-no-border td-right-no-border">{% if obj_stat %}{{ obj_stat }}{% endif %}</td>
+                        {% endfor %}
                     </tr>
                 {% empty %}
                     <tr class="text-center">
@@ -250,32 +250,30 @@
         <table class="table table-bordered table-striped align-middle" hx-push-url="true">
             <thead>
                 <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap" rowspan="2">ID</th>
+                    <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
                     <th class="text-primary text-nowrap" rowspan="2">커리큘럼</th>
                     <th class="text-primary text-nowrap" rowspan="2">학생 수<br/>(명)</th>
                     <th class="text-primary text-nowrap" rowspan="2">카테고리</th>
-                    <th class="text-primary text-nowrap" colspan="5">통계(점)</th>
+                    <th class="text-primary text-nowrap td-right-no-border" colspan="5">통계(점)</th>
                 </tr>
                 <tr class="text-center table-warning align-middle">
-                    <th class="text-primary text-nowrap">최고<br/>점수</th>
-                    <th class="text-primary text-nowrap">상위<br/>10%</th>
-                    <th class="text-primary text-nowrap">상위<br/>25%</th>
-                    <th class="text-primary text-nowrap">상위<br/>50%</th>
-                    <th class="text-primary text-nowrap">평균<br/>점수</th>
+                    {% for _ in '12345' %}
+                        {% cycle '최고<br/>점수' '상위<br/>10%' '상위<br/>25%' '상위<br/>50%' '평균<br/>점수' as th_title silent %}
+                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">{{ th_title|safe }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for obj in curriculum_page_obj %}
                     <tr class="cursor-pointer" hx-get="{{ obj.get_admin_study_curriculum_detail_url }}">
-                        <td class="text-center text-nowrap">{{ obj.id }}</td>
+                        <td class="text-center text-nowrap td-left-no-border">{{ obj.id }}</td>
                         <td class="text-nowrap">{{ obj.curriculum_info }}</td>
                         <td class="text-center text-nowrap">{{ obj.student_count }}</td>
                         <td class="text-center text-nowrap">{{ obj.category_info }}</td>
-                        <td class="text-center text-nowrap">{{ obj.max }}</td>
-                        <td class="text-center text-nowrap">{{ obj.t10 }}</td>
-                        <td class="text-center text-nowrap">{{ obj.t25 }}</td>
-                        <td class="text-center text-nowrap">{{ obj.t50 }}</td>
-                        <td class="text-center text-nowrap">{{ obj.avg }}</td>
+                        {% for _ in '12345' %}
+                            {% cycle obj.max obj.t10 obj.t25 obj.t50 obj.avg as obj_stat silent %}
+                            <td class="text-center text-nowrap td-left-no-border td-right-no-border">{% if obj_stat %}{{ obj_stat }}{% endif %}</td>
+                        {% endfor %}
                     </tr>
                 {% empty %}
                     <tr class="text-center">

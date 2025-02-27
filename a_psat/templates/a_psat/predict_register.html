@@ -34,8 +34,8 @@
 
                                 {% include 'a_psat/snippets/predict_department_list.html' %}
 
-                                {% for _ in '012' %}
-                                    {% cycle form.serial form.name form.password as field silent %}
+                                {% for _ in '1234' %}
+                                    {% cycle form.serial form.name form.password form.prime_id as field silent %}
                                     <div class="form-floating mt-3">
                                         {{ field }}
                                         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -60,6 +60,12 @@
                         <div>
                             <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
                             <ol class="text-success small fw-bold m-0">
+                                <li class="text-danger">입력하신 수험정보는 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
+                                <li>프라임법학원 ID를 입력해주시면 쿠폰 이벤트에 자동 응모됩니다.</li>
+{#                                <li>프라임법학원 쿠폰 이벤트에 관한 보다 자세한 내용은#}
+{#                                    <a href="https://renew.primeedunet.com/psat/examInfo?tab=academy_notice&seq=18520"#}
+{#                                       target="_blank">여기</a>를 참고해주세요.#}
+{#                                </li>#}
                                 <li>수험정보 등록시 오류가 발생한 경우에는 아래 연락처로 문의해주세요.</li>
                                 <li>카카오톡 오픈프로필: <a href="https://open.kakao.com/me/paedison" target="_blank">https://open.kakao.com/me/paedison</a> </li>
                                 <li>구글 이메일: <a href="mailto:paedison@gmail.com">paedison@gmail.com</a> </li>
