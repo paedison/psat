@@ -5,6 +5,7 @@
     <table class="table table-bordered table-striped align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap p-2" rowspan="2">ID</th>
                 <th class="text-primary text-nowrap p-2" rowspan="2">문제 출처 및 정답</th>
                 <th class="text-primary text-nowrap p-2" rowspan="2">전체<br/>정답률(%)</th>
                 <th class="text-primary text-nowrap p-2" rowspan="2">상위권<br/>정답률(%)</th>
@@ -37,6 +38,7 @@
         <tbody>
             {% for answer in answer_page_obj %}
                 <tr class="text-center">
+                    <td class="text-nowrap">{{ answer.id }}</td>
                     <td class="text-nowrap" hx-target="#main">
                         {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=answer problem=answer.problem problem_id=answer.problem_id %}
                     </td>

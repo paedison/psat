@@ -56,7 +56,7 @@ admin_patterns = [
     path('predict/create/', admin_index_views.predict_create_view, name='admin-predict-create'),
     path('predict/update/<int:pk>/', admin_psat_views.predict_update_view, name='admin-predict-update'),
 
-    path('study/<str:study_type>/<int:pk>/', admin_study_views.detail_view, name='admin-study-detail'),
+    path('study/detail/<str:study_type>/<int:pk>/', admin_study_views.detail_view, name='admin-study-detail'),
 
     path('study/category/create/',
          admin_index_views.study_category_create_view, name='admin-study-category-create'),
@@ -74,6 +74,8 @@ admin_patterns = [
     path('study/answer/add/', admin_index_views.study_answer_add_view, name='admin-study-answer-add'),
 
     path('study/category/update/<int:pk>/', admin_study_views.category_update_view, name='admin-study-category-update'),
+
+    path('study/student/<int:pk>/', admin_study_views.student_detail_view, name='admin-study-student-detail'),
 ]
 
 predict_patterns = [
@@ -89,13 +91,13 @@ predict_patterns = [
 ]
 
 study_patterns = [
-    path('', study_views.index_view, name='study-index'),
-    path('<int:pk>/', study_views.list_view, name='study-list'),
+    path('', study_views.list_view, name='study-list'),
+    path('<int:pk>/', study_views.detail_view, name='study-detail'),
     path('student/register/', study_views.register_view, name='study-student-register'),
     path('answer/<int:pk>/', study_views.answer_input_view, name='study-answer-input'),
     path('answer/confirm/<int:pk>/', study_views.answer_confirm_view, name='study-answer-confirm'),
     path('curriculum/<str:organization>/<int:semester>/',
-         study_views.list_redirect_view, name='study-list-redirect'),
+         study_views.detail_redirect_view, name='study-detail-redirect'),
     path('curriculum/<str:organization>/<int:semester>/<int:homework_round>/',
          study_views.answer_input_redirect_view, name='study-answer-input-redirect'),
 ]

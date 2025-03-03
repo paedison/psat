@@ -55,14 +55,14 @@
                 {% elif config.submenu == 'study' %}
                     {% if student %}
                         <li class="breadcrumb-item">
-                            <a href="{{ config.url_index }}">{{ config.submenu_eng|title }}</a>
+                            <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="{{ student.get_study_curriculum_list_url }}" class="active">{{ student.curriculum.curriculum_info }}</a>
+                            <a href="{{ student.get_study_curriculum_detail_url }}" class="active">{{ student.curriculum.curriculum_info }}</a>
                         </li>
                     {% else %}
                         <li class="breadcrumb-item">
-                            <a class="active" href="{{ config.url_index }}">{{ config.submenu_eng|title }}</a>
+                            <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                     {% endif %}
                 {% elif config.submenu == 'admin' %}

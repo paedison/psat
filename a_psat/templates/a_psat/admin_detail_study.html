@@ -34,6 +34,23 @@
         </div>
     </section>
 
+    {% if schedules %}
+        <section class="section" aria-label="주차별 강의 스케줄">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
+                        <div class="card-header">주차별 강의 스케줄</div>
+                        <div class="card-body">
+                            <div id="scheduleContent" class="htmx-fade-in htmx-fade-out">
+                                {% partial curriculum_schedule %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
     {% if lecture_page_obj %}
         <section class="section" aria-label="주차별 강의 내용">
             <div class="row">
@@ -154,6 +171,53 @@
         </div>
     </section>
 {% endblock main_content %}
+
+{% partialdef curriculum_schedule %}
+    <article class="table-responsive">
+        <table class="table table-bordered align-middle m-0">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap td-left-no-border" rowspan="2">수정</th>
+                    <th class="text-primary text-nowrap" rowspan="2">ID</th>
+                    <th class="text-primary text-nowrap" rowspan="2">주차</th>
+                    <th class="text-primary text-nowrap" rowspan="2">강의 주제</th>
+                    <th class="text-primary text-nowrap" colspan="2">미니테스트</th>
+                    <th class="text-primary text-nowrap" rowspan="2">강의<br/>오픈일</th>
+                    <th class="text-primary text-nowrap" rowspan="2">강의일</th>
+                    <th class="text-primary text-nowrap td-right-no-border" rowspan="2">과제 마감일</th>
+                </tr>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap">강의</th>
+                    <th class="text-primary text-nowrap">과제</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in schedules %}
+                    <tr>
+                        <td class="text-nowrap text-center td-left-no-border">
+                            <a class="btn btn-sm btn-outline-primary" target="_blank"
+                               href="{{ obj.get_admin_change_url }}">
+                                클릭
+                            </a>
+                        </td>
+                        <td class="text-nowrap text-center td-left-no-border">{{ obj.id }}</td>
+                        <td class="text-nowrap text-center">{{ obj.lecture_number }}</td>
+                        <td class="text-nowrap text-center">{{ obj.get_lecture_theme_display }}</td>
+                        <td class="text-nowrap text-center">{{ obj.lecture_round|default_if_none:'' }}</td>
+                        <td class="text-nowrap text-center">{{ obj.homework_round|default_if_none:'' }}</td>
+                        <td class="text-nowrap text-center">{{ obj.lecture_open_datetime|date:'n/j(D) G:i' }}</td>
+                        <td class="text-nowrap text-center">{{ obj.lecture_datetime|date:'n/j(D) G:i' }}</td>
+                        <td class="text-nowrap text-center td-right-no-border">{{ obj.homework_end_datetime|date:'n/j(D) G:i' }}</td>
+                    </tr>
+                {% empty %}
+                    <tr class="text-center">
+                        <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+{% endpartialdef curriculum_schedule %}
 
 {% partialdef problem_filter %}
     <div class="accordion-item">

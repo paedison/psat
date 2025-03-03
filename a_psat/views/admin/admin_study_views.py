@@ -6,6 +6,7 @@ from common.constants import icon_set_new
 from common.decorators import admin_required
 from common.utils import HtmxHttpRequest, update_context_data
 from . import admin_utils
+from .. import study_views
 from ... import models, utils
 
 
@@ -50,8 +51,10 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
     qs_psat = models.StudyPsat.objects.get_qs_psat(category)
     if study_type == 'category':
         qs_student = models.StudyStudent.objects.get_filtered_qs_by_category_for_catalog(category)
+        result_count_dict = models.StudyResult.objects.get_result_count_dict_by_category(category)
     else:
         qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(curriculum)
+        result_count_dict = models.StudyResult.objects.get_result_count_dict_by_curriculum(curriculum)
         data_statistics = admin_utils.get_data_statistics(qs_student)
         data_statistics_by_study_round = {}
         for d in data_statistics:
@@ -88,6 +91,8 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
     if view_type == 'catalog_list':
         study_rounds = '1' * category.round
         catalog_page_obj, catalog_page_range = utils.get_paginator_data(qs_student, page_number)
+        for obj in catalog_page_obj:
+            obj.result_count = result_count_dict.get(obj.id)
         context = update_context_data(
             context, study_rounds=study_rounds,
             catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
@@ -121,11 +126,15 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
     lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
     admin_utils.update_lecture_paginator_data(lecture_page_obj)
     statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_psat, page_number)
+
     catalog_page_obj, catalog_page_range = utils.get_paginator_data(qs_student, page_number)
+    for obj in catalog_page_obj:
+        obj.result_count = result_count_dict.get(obj.id)
+
     answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number)
     problem_page_obj, problem_page_range = utils.get_paginator_data(qs_problem, page_number)
     context = update_context_data(
-        context, category_stat=category_stat, study_rounds=study_rounds,
+        context, category_stat=category_stat, study_rounds=study_rounds, schedules=qs_schedule,
         lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range,
         statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
         catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
@@ -168,3 +177,10 @@ def category_update_view(request: HtmxHttpRequest, pk: int):
             header='문항분석표 업데이트', next_url=next_url, is_updated=is_updated, message=message)
 
     return render(request, 'a_psat/snippets/admin_modal_predict_update.html', context)
+
+
+@admin_required
+def student_detail_view(request: HtmxHttpRequest, pk: int):
+    student: models.StudyStudent = models.StudyStudent.objects.filter(pk=pk).first()
+    if student:
+        return study_views.detail_view(request, student.curriculum.id, student=student)

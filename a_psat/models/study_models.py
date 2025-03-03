@@ -239,8 +239,8 @@ class StudyCurriculum(models.Model):
     def get_admin_study_curriculum_detail_url(self):
         return reverse_lazy('psat:admin-study-detail', args=['curriculum', self.id])
 
-    def get_study_curriculum_list_url(self):
-        return reverse_lazy('psat:study-list', args=[self.id])
+    def get_study_curriculum_detail_url(self):
+        return reverse_lazy('psat:study-detail', args=[self.id])
 
 
 class StudyCurriculumScheduleManager(models.Manager):
@@ -282,6 +282,9 @@ class StudyCurriculumSchedule(models.Model):
 
     def __str__(self):
         return f'[PSAT]StudyCurriculumSchedule(#{self.id}):{self.curriculum.curriculum_info}-{self.lecture_number}'
+
+    def get_admin_change_url(self):
+        return reverse_lazy('admin:a_psat_studycurriculumschedule_change', args=[self.id])
 
 
 class StudyStudentManager(models.Manager):
@@ -371,8 +374,11 @@ class StudyStudent(models.Model):
     def get_result_list(self):
         return self.results.order_by('psat__round')
 
-    def get_study_curriculum_list_url(self):
-        return reverse_lazy('psat:study-list', args=[self.curriculum_id])
+    def get_study_curriculum_detail_url(self):
+        return reverse_lazy('psat:study-detail', args=[self.curriculum_id])
+
+    def get_admin_study_student_detail_url(self):
+        return reverse_lazy('psat:admin-study-student-detail', args=[self.id])
 
 
 class StudyAnswerManager(models.Manager):
@@ -513,6 +519,16 @@ class StudyResultManager(models.Manager):
     def get_filtered_qs_ordered_by_psat_round(self, curriculum, **kwargs):
         return self.filter(student__curriculum=curriculum, **kwargs).order_by(
             'psat__round').values('score', round=models.F('psat__round'))
+
+    def get_result_count_dict_by_category(self, category):
+        queryset = self.filter(student__curriculum__category=category, score__isnull=False).values(
+            'student').annotate(result_count=models.Count('id')).order_by('student')
+        return {q['student']: q['result_count'] for q in queryset}
+
+    def get_result_count_dict_by_curriculum(self, curriculum):
+        queryset = self.filter(student__curriculum=curriculum, score__isnull=False).values(
+            'student').annotate(result_count=models.Count('id')).order_by('student')
+        return {q['student']: q['result_count'] for q in queryset}
 
 
 class StudyResult(models.Model):

@@ -88,19 +88,22 @@ def update_scores(qs_student, psats):
     is_updated_list = []
 
     # Update StudyResult for score
-    for s in qs_student:
-        qs_result = models.StudyResult.objects.filter(student=s, psat__in=psats, score=0)
+    for qs_s in qs_student:
+        qs_result = models.StudyResult.objects.filter(student=qs_s, psat__in=psats)
         list_update = []
-        for r in qs_result:
-            qs_answer = models.StudyAnswer.objects.filter(student=r.student, problem__psat=r.psat)
-            score = 0
-            for a in qs_answer:
-                answer_correct_list = {int(digit) for digit in str(a.answer_correct)}
-                if a.answer in answer_correct_list:
-                    score += 1
-            if score:
-                r.score = score
-                list_update.append(r)
+        for qs_r in qs_result:
+            qs_answer = models.StudyAnswer.objects.filter(student=qs_r.student, problem__psat=qs_r.psat)
+            if not qs_answer.exists():
+                score = None
+            else:
+                score = 0
+                for qs_a in qs_answer:
+                    answer_correct_list = {int(digit) for digit in str(qs_a.answer_correct)}
+                    if qs_a.answer in answer_correct_list:
+                        score += 1
+            if qs_r.score != score:
+                qs_r.score = score
+                list_update.append(qs_r)
         is_updated_list.append(bulk_create_or_update(
             models.StudyResult, [], list_update, ['score']))
 
