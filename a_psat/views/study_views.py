@@ -52,7 +52,7 @@ def list_view(request: HtmxHttpRequest):
             qs_s.earliest_datetime = schedule_info[qs_s.curriculum_id]['earliest']
             qs_s.latest_datetime = schedule_info[qs_s.curriculum_id]['latest']
     context = update_context_data(config=config, students=qs_student)
-    return render(request, 'a_psat/study_index.html', context)
+    return render(request, 'a_psat/study_list.html', context)
 
 
 @login_not_required
@@ -126,7 +126,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         result_page_obj=result_page_obj, result_page_range=result_page_range,
         answer_page_obj=answer_page_obj, answer_page_range=answer_page_range,
     )
-    return render(request, 'a_psat/study_list.html', context)
+    return render(request, 'a_psat/study_detail.html', context)
 
 
 def get_result_paginator_data(schedule_dict, student, opened_rounds, page_number) -> tuple:

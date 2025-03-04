@@ -1,49 +1,53 @@
-<div class="pe-3">
-    <img alt="로고" width="125"
-         src="{{ student.curriculum.organization.logo.url }}"/>
-</div>
-<table class="table d-lg-none m-0">
-    <tbody>
-        <tr>
-            <th class="px-0" scope="row">교육기관명</th>
-            <td>{{ student.curriculum.organization.get_name_display }}</td>
-        </tr>
-        <tr>
-            <th class="px-0" scope="row">강의명</th>
-            <td>{{ student.curriculum.name }}</td>
-        </tr>
-        <tr>
-            <th class="px-0" scope="row">연도 / 학기(순환)</th>
-            <td>{{ student.curriculum.year }} / {{ student.curriculum.get_organization_semester }}</td>
-        </tr>
-        <tr>
-            <th class="px-0" scope="row">학번(수험번호)</th>
-            <td>{{ student.serial }}</td>
-        </tr>
-        <tr>
-            <th class="px-0 td-no-border" scope="row">이름</th>
-            <td class="td-no-border">{{ student.name }}</td>
-        </tr>
-    </tbody>
-</table>
+<div class="d-grid d-sm-flex align-items-sm-center">
+    <div class="d-flex align-items-center justify-content-center pe-3">
+        <img alt="로고" width="125"
+             src="{{ student.curriculum.organization.logo.url }}"/>
+    </div>
+    <article class="table-responsive flex-fill ps-sm-3">
+        <table class="table d-lg-none m-0">
+            <tbody>
+                <tr>
+                    <th class="text-nowrap px-0">교육기관명</th>
+                    <td class="text-nowrap">{{ student.curriculum.organization.get_name_display }}</td>
+                </tr>
+                <tr>
+                    <th class="text-nowrap px-0">강의명</th>
+                    <td class="text-nowrap">{{ student.curriculum.name }}</td>
+                </tr>
+                <tr>
+                    <th class="text-nowrap px-0">연도 / 학기(순환)</th>
+                    <td class="text-nowrap">{{ student.curriculum.year }} / {{ student.curriculum.get_organization_semester }}</td>
+                </tr>
+                <tr>
+                    <th class="text-nowrap px-0">학번(수험번호)</th>
+                    <td class="text-nowrap">{{ student.serial }}</td>
+                </tr>
+                <tr>
+                    <th class="text-nowrap px-0 td-no-border">이름</th>
+                    <td class="text-nowrap td-no-border">{{ student.name }}</td>
+                </tr>
+            </tbody>
+        </table>
 
-<table class="table d-none d-lg-table m-0">
-    <thead>
-        <tr class="text-center">
-            <th class="col-1" scope="row">교육기관명</th>
-            <th class="col-1" scope="row">강의명</th>
-            <th class="col-1" scope="row">연도 / 학기(순환)</th>
-            <th class="col-1" scope="row">학번(수험번호)</th>
-            <th class="col-1" scope="row">이름</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr class="text-center">
-            <td class="td-no-border">{{ student.curriculum.organization.get_name_display }}</td>
-            <td class="td-no-border">{{ student.curriculum.name }}</td>
-            <td class="td-no-border">{{ student.curriculum.year }} / {{ student.curriculum.get_organization_semester }}</td>
-            <td class="td-no-border">{{ student.serial }}</td>
-            <td class="td-no-border">{{ student.name }}</td>
-        </tr>
-    </tbody>
-</table>
+        <table class="table d-none d-lg-table m-0">
+            <thead>
+                <tr class="text-center">
+                    <th class="text-nowrap col-1">교육기관명</th>
+                    <th class="text-nowrap col-1">강의명</th>
+                    <th class="text-nowrap col-1">연도 / 학기(순환)</th>
+                    <th class="text-nowrap col-1">학번(수험번호)</th>
+                    <th class="text-nowrap col-1">이름</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="text-center">
+                    <td class="text-nowrap td-no-border">{{ student.curriculum.organization.get_name_display }}</td>
+                    <td class="text-nowrap td-no-border">{{ student.curriculum.name }}</td>
+                    <td class="text-nowrap td-no-border">{{ student.curriculum.year }} / {{ student.curriculum.get_organization_semester }}</td>
+                    <td class="text-nowrap td-no-border">{{ student.serial }}</td>
+                    <td class="text-nowrap td-no-border">{{ student.name }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </article>
+</div>
