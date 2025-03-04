@@ -28,10 +28,18 @@
                         {% endif %}
                     </th>
                     <td class="text-nowrap td-right-no-border">
-                        <span class="fw-bold small">[{{ obj.get_lecture_theme_display }}]</span>
-                        {% if obj.url_lecture %}
-                            <a class="btn btn-sm btn-outline-primary ms-2" href="{{ obj.url_lecture }}">온라인 강의</a>
-                        {% endif %}
+                        <div class="d-flex align-items-center">
+                            <span class="fw-bold small">[{{ obj.get_lecture_theme_display }}]</span>
+                            {% if obj.url_lecture %}
+                                <a class="btn btn-sm btn-outline-primary ms-2" href="{{ obj.url_lecture }}">온라인 강의</a>
+                            {% endif %}
+                            {% if obj.url_lecture_list %}
+                                <span class="text-primary fw-bold small ms-2">온라인 강의</span>
+                                    {% for lecture_link in obj.url_lecture_list %}
+                                        <a class="btn btn-sm btn-outline-primary ms-2" href="{{ lecture_link }}">#{{ forloop.counter }}</a>
+                                    {% endfor %}
+                            {% endif %}
+                        </div>
                         <ul class="list-group list-group-flush">
                             {% for topic in obj.lecture_topic %}
                                 {% if topic.0 %}

@@ -34,7 +34,12 @@ def update_lecture_paginator_data(lecture_page_obj):
         obj.color_code = color_code
         obj.lecture_topic = models.choices.study_lecture_topic().get(obj.get_lecture_theme_display())
         if lecture_id:
-            obj.url_lecture = reverse_lazy('lecture:detail', args=[lecture_id])
+            obj.url_lecture = reverse_lazy('psat:lecture-detail', args=[lecture_id])
+        if '공부법' in theme:
+            lecture_ids = [lecture_dict[('공부', i)] for i in range(1, 4)]
+            obj.url_lecture_list = [
+                reverse_lazy('psat:lecture-detail', args=[l_id]) for l_id in lecture_ids
+            ]
 
 
 def update_data_answers(qs_problem):
