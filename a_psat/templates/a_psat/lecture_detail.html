@@ -1,7 +1,5 @@
 {% extends 'list.html' %}
 {% load static %}
-{% load i18n %}
-{% load psat_filter %}
 
 {% block main %}
     {% include 'snippets/page_title.html' %}
@@ -226,12 +224,12 @@
                     </h2>
                     <div class="d-flex justify-content-end mb-3">
                         <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Reload' %}"
+                            <button class="btn btn-sm btn-outline-success" title="새로고침"
                                     hx-target="#collapseCommentContent" hx-swap="innerHTL swap:0.25s"
                                     hx-get="{% url 'lecture:comment_container' lecture.id %}">
                                 <i class="fa-solid fa-rotate-right"></i> 새로고침
                             </button>
-                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Comment' %}"
+                            <button class="btn btn-sm btn-outline-success" title="질문하기"
                                     hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer"
                                     hx-get="{% url 'lecture:comment_create' lecture.id %}">
                                 {{ icon_question.filter|safe }} 질문하기
@@ -264,10 +262,10 @@
 {% partialdef need_login %}
     <ul class="list-group">
         <li class="list-group-item">
-            <a class="text-secondary" hx-target="#main"
+            <a class="text-secondary" hx-target="body"
                href="{% url 'account_login' %}" hx-boost="true"
                hx-swap="innerHTML swap:0.25s" hx-trigger="click">
-                {% trans 'Please login first.' %}
+                로그인이 필요합니다.
             </a>
         </li>
     </ul>

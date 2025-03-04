@@ -218,7 +218,7 @@
 {% partialdef need_login %}
     <ul class="list-group">
         <li class="list-group-item">
-            <a class="text-secondary" hx-target="#main"
+            <a class="text-secondary" hx-target="body"
                href="{% url 'account_login' %}" hx-boost="true"
                hx-swap="innerHTML swap:0.25s" hx-trigger="click">
                 {% trans 'Please login first.' %}

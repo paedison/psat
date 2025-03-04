@@ -23,7 +23,7 @@
     </form>
 {% else %}
    <a class="cursor-pointer" hx-get="{% url 'account_login' %}"
-      hx-target="#main" hx-swap="outerHTML"
+      hx-target="body" hx-swap="outerHTML"
       hx-confirm="로그인하시겠습니까?">
        댓글을 작성하시려면 로그인이 필요합니다.
    </a>
