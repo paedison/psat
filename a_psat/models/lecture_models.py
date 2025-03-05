@@ -76,10 +76,11 @@ class LectureManager(models.Manager):
     def order_by_subject_code(self):
         return self.get_queryset().annotate(
             subject_code=models.Case(
-                models.When(subject='언어', then=0),
-                models.When(subject='자료', then=1),
-                models.When(subject='상황', then=2),
-                default=3,
+                models.When(subject='공부', then=0),
+                models.When(subject='언어', then=1),
+                models.When(subject='자료', then=2),
+                models.When(subject='상황', then=3),
+                default=4,
                 output_field=models.IntegerField(),
             )
         ).order_by('subject_code')
