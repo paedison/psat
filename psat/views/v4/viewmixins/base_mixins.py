@@ -1,6 +1,5 @@
 from common.constants import icon_set
 from common.utils import HtmxHttpRequest
-from dashboard.models import psat_log_models
 from psat import utils
 from psat.models import psat_data_models
 from reference.models import psat_models
@@ -32,10 +31,10 @@ class DefaultModels:
     comment_model = psat_data_models.Comment
 
     # dashboard.models.psat_log_models
-    open_log_model = psat_log_models.PsatOpenLog
-    like_log_model = psat_log_models.PsatLikeLog
-    rate_log_model = psat_log_models.PsatRateLog
-    solve_log_model = psat_log_models.PsatSolveLog
+    # open_log_model = psat_log_models.PsatOpenLog
+    # like_log_model = psat_log_models.PsatLikeLog
+    # rate_log_model = psat_log_models.PsatRateLog
+    # solve_log_model = psat_log_models.PsatSolveLog
 
 
 class DefaultMethods:

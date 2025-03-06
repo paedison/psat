@@ -1,7 +1,6 @@
 from . import base_mixins
 
 from psat.models import psat_data_models
-from dashboard.models import psat_log_models
 
 
 class BaseMixIn(
@@ -37,9 +36,9 @@ class CustomUpdateViewMixIn(BaseMixIn):
         'solve': psat_data_models.Solve,
     }
     log_model_dict = {
-        'like': psat_log_models.PsatLikeLog,
-        'rate': psat_log_models.PsatRateLog,
-        'solve': psat_log_models.PsatSolveLog,
+        # 'like': psat_log_models.PsatLikeLog,
+        # 'rate': psat_log_models.PsatRateLog,
+        # 'solve': psat_log_models.PsatSolveLog,
     }
 
     def get_update_filter_by_problem(self, view_type, problem):

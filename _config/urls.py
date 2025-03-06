@@ -10,20 +10,12 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),  # CKEditor URLs
     path('__debug__/', include('debug_toolbar.urls')),  # Debug Toolbar
 
-    path('notice/', include('notice.urls')),  # Notice
     path('board/', include('a_board.urls')),  # Board
-
-    path('dashboard/', include('dashboard.urls')),  # Dashboard
     path('psat/', include('a_psat.urls')),  # PSAT
-    path('psat_old/', include('psat.urls')),  # PSAT
-    path('community/', include('community.urls')),  # Community
-    path('schedule/', include('schedule.urls')),  # Schedule
 
-    # path('quiz/', include('quiz.urls')),  # Quiz
+    path('psat_old/', include('psat.urls')),  # PSAT(Old)
+    path('schedule/', include('schedule.urls')),  # Schedule
     path('log/', include('log.urls')),  # Log
-    path('analysis/', include('analysis.urls')),  # Analysis
-    # path('study/', include('study.urls')),  # Study
-    path('lecture/', include('lecture.urls')),  # Lecture
 
     path('prime/', include('a_prime.urls')),  # Prime
     path('prime_leet/', include('a_prime_leet.urls')),  # Prime LEET

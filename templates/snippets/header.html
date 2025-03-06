@@ -98,11 +98,6 @@
         </li>
         <li><hr class="dropdown-divider"></li>
         <li class="dropdown-item d-flex align-items-center cursor-pointer"
-            hx-get="{% url 'dashboard:base' %}">
-            <i class="fa-solid fa-fw fa-list"></i> <span>Dashboard</span>
-        </li>
-        <li><hr class="dropdown-divider"></li>
-        <li class="dropdown-item d-flex align-items-center cursor-pointer"
             data-bs-toggle="modal" data-bs-target="#modalContainer"
             hx-push-url="false" hx-target="#modalContainer" hx-swap="innerHTML"
             hx-get="{% url 'account_logout_modal' %}">
