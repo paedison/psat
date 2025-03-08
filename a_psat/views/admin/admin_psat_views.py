@@ -1,12 +1,13 @@
 from collections import defaultdict
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
 from common.constants import icon_set_new
 from common.decorators import admin_required
 from common.utils import HtmxHttpRequest, update_context_data
 from . import admin_psat_utils
+from .. import predict_views
 from ... import models, utils, forms
 
 
@@ -165,3 +166,12 @@ def predict_update_view(request: HtmxHttpRequest, pk: int):
         context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
 
     return render(request, 'a_psat/snippets/admin_modal_predict_update.html', context)
+
+
+@admin_required
+def student_detail_view(request: HtmxHttpRequest, pk: int):
+    student: models.PredictStudent = models.PredictStudent.objects.filter(pk=pk).first()
+    if student:
+        student = models.PredictStudent.objects.get_filtered_qs_by_psat_and_user_with_answer_count(student.user, student.psat)
+        return predict_views.detail_view(request, student.psat.id, student=student)
+    return redirect('psat:admin-list')

@@ -55,6 +55,7 @@ admin_patterns = [
 
     path('predict/create/', admin_index_views.predict_create_view, name='admin-predict-create'),
     path('predict/update/<int:pk>/', admin_psat_views.predict_update_view, name='admin-predict-update'),
+    path('predict/student/<int:pk>/', admin_psat_views.student_detail_view, name='admin-predict-student-detail'),
 
     path('study/detail/<str:study_type>/<int:pk>/', admin_study_views.detail_view, name='admin-study-detail'),
 

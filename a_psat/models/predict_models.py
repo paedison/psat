@@ -217,6 +217,9 @@ class PredictStudent(abstract_models.Student):
     def psat_info(self):
         return f'{self.psat.year}{self.psat.exam}'
 
+    def get_admin_predict_student_detail_url(self):
+        return reverse_lazy('psat:admin-predict-student-detail', args=[self.id])
+
 
 class PredictAnswerManager(models.Manager):
     def with_selected_related(self):

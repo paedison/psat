@@ -47,7 +47,7 @@ def list_view(request: HtmxHttpRequest):
     return render(request, 'a_psat/predict_list.html', context)
 
 
-def detail_view(request: HtmxHttpRequest, pk: int):
+def detail_view(request: HtmxHttpRequest, pk: int, student=None):
     config = ViewConfiguration()
     context = update_context_data(config=config)
 
@@ -59,7 +59,8 @@ def detail_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', 'main')
     config.submenu_kor = f'{psat.get_year_display()} {psat.exam_abbr} {config.submenu_kor}'
 
-    student = models.PredictStudent.objects.get_filtered_qs_by_psat_and_user_with_answer_count(request.user, psat)
+    if student is None:
+        student = models.PredictStudent.objects.get_filtered_qs_by_psat_and_user_with_answer_count(request.user, psat)
     if not student:
         return redirect('psat:predict-list')
 
