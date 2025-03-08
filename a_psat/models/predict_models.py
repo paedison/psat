@@ -342,9 +342,9 @@ class PredictScoreManager(models.Manager):
             self, psat, student, stat_type='total', is_filtered=False):
         qs = self.filter(student__psat=psat)
         if stat_type == 'department':
-            qs_score = qs.filter(student__category__department=student.category.department)
+            qs = qs.filter(student__category__department=student.category.department)
         if is_filtered:
-            qs_score = qs.filter(student__is_filtered=True)
+            qs = qs.filter(student__is_filtered=True)
         return qs.values()
 
 

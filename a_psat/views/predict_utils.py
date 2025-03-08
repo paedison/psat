@@ -170,7 +170,7 @@ def get_stat_data(
     participants_dict = {
         subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer
     }
-    participants_dict['average'] = participants_dict[max(participants_dict)] if participants_dict else 0
+    participants_dict['average'] = participants_dict[min(participants_dict)] if participants_dict else 0
 
     field_vars = get_field_vars(psat)
     scores = {fld: [] for fld in field_vars.keys()}
