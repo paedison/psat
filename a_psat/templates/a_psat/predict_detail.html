@@ -51,7 +51,7 @@
         </div>
     </section>
 
-{% if psat.predict_psat.is_collecting_answer or psat.predict_psat.is_answer_predict_opened %}
+{% if predict_psat.is_collecting_answer or predict_psat.is_answer_predict_opened %}
     <section class="section" aria-label="예상 정답">
         <div class="row">
             <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
@@ -89,10 +89,10 @@
                         <div>
                             <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
                             <ol class="text-success small fw-bold m-0">
-                                {% if psat.predict_psat.is_collecting_answer %}
+                                {% if predict_psat.is_collecting_answer %}
                                     <li>예상 정답은 답안 수집이 어느 정도 완료된 후에 공개됩니다.</li>
                                 {% endif %}
-                                {% if psat.predict_psat.is_answer_predict_opened %}
+                                {% if predict_psat.is_answer_predict_opened %}
                                     <li>{{ config.current_time|date:'Y년 n월 j일 G:i' }} 기준 현재 예상 정답입니다.</li>
                                 {% endif %}
                                 <li>가장 많은 분들이 선택한 답안을 예상 정답으로 제시합니다.</li>
@@ -106,7 +106,7 @@
     </section>
 {% endif %}
 
-{% if psat.predict_psat.is_answer_official_opened %}
+{% if predict_psat.is_answer_official_opened %}
     <section class="section" aria-label="성적 예측 I [전체 데이터]">
         <div class="row">
             <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
