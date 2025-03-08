@@ -109,7 +109,7 @@ class PredictStudentForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '비밀번호'}),
     )
     prime_id = forms.CharField(
-        max_length=15, label='프라임법학원 ID',
+        max_length=15, label='프라임법학원 ID', required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '프라임법학원 ID'}),
     )
 
