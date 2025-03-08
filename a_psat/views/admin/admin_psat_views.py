@@ -41,20 +41,27 @@ def detail_view(request: HtmxHttpRequest, pk: int):
     student_name = request.GET.get('student_name', '')
 
     psat = utils.get_psat(pk)
-    problems = models.Problem.objects.get_filtered_qs_by_psat(psat)
-    page_obj, page_range = utils.get_paginator_data(problems, page_number)
+    qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
+    page_obj, page_range = utils.get_paginator_data(qs_problem, page_number)
 
     sub_list = admin_psat_utils.get_sub_list(psat)
     subject_vars = admin_psat_utils.get_subject_vars(psat)
 
-    queryset_dict = defaultdict(list)
-    for problem in problems.order_by('id'):
-        queryset_dict[problem.subject].append(problem)
-    answer_official_list = [queryset_dict[sub] for sub in sub_list]
+    problem_dict = defaultdict(list)
+    for qs_p in qs_problem.order_by('id'):
+        problem_dict[qs_p.subject].append(qs_p)
+    answer_official_list = [problem_dict[sub] for sub in sub_list]
+
+    qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat(psat)
+    answer_count_dict = defaultdict(list)
+    for qs_ac in qs_answer_count.order_by('id'):
+        answer_count_dict[qs_ac.sub].append(qs_ac)
+    answer_predict_list = [answer_count_dict[sub] for sub in sub_list]
 
     context = update_context_data(
         config=config, psat=psat, subjects=sub_list,
         answer_official_list=answer_official_list,
+        answer_predict_list=answer_predict_list,
         page_obj=page_obj, page_range=page_range,
     )
 
@@ -93,7 +100,7 @@ def detail_view(request: HtmxHttpRequest, pk: int):
         if view_type == 'answer_list':
             subject_idx = subject_vars[subject][2]
             answers_page_obj_group, answers_page_range_group = (
-                admin_psat_utils.get_answer_page_data(qs_answer_count, page_number, 10))
+                admin_psat_utils.get_answer_page_data(psat, qs_answer_count, page_number, 10))
             context = update_context_data(
                 context,
                 tab=answer_tab[subject_idx],
@@ -105,7 +112,7 @@ def detail_view(request: HtmxHttpRequest, pk: int):
         statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
         catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
         answers_page_obj_group, answers_page_range_group = admin_psat_utils.get_answer_page_data(
-            qs_answer_count, page_number, 10)
+            psat, qs_answer_count, page_number, 10)
 
         context = update_context_data(
             context,

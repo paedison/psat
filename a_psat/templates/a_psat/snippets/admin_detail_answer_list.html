@@ -3,7 +3,7 @@
 <article class="table-responsive">
     <table class="table align-middle">
         <tbody>
-            {% if answer_official|length == 25  %}
+            {% if answers|length == 25  %}
                 {% for _ in '012' %}
                     {% cycle 10 10 5 as loop_counter silent %}
                     {% cycle 0 10 20 as loop_min silent %}
@@ -30,7 +30,7 @@
 
     <tr class="text-center" aria-label="공식 정답">
         <th class="text-nowrap td-no-border" scope="row">정답</th>
-        {% for answer in answer_official %}
+        {% for answer in answers %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td class="td-no-border">
                     {% if answer.ans_list %}

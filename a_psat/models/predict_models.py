@@ -322,7 +322,8 @@ class PredictAnswerCountManager(models.Manager):
 
     def get_filtered_qs_by_psat(self, psat):
         return self.filter(problem__psat=psat).annotate(
-            no=models.F('problem__number'), sub=models.F('problem__subject')).order_by('sub', 'no')
+            no=models.F('problem__number'), sub=models.F('problem__subject'), ans=models.F('answer_predict'),
+        ).order_by('sub', 'no')
 
 
 class PredictAnswerCount(abstract_models.ExtendedAnswerCount):

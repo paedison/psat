@@ -59,8 +59,7 @@ def get_answer_tab(sub_list):
     return answer_tab
 
 
-def get_answer_page_data(qs_answer_count, page_number, per_page=10):
-    psat = qs_answer_count.first().problem.psat
+def get_answer_page_data(psat, qs_answer_count, page_number, per_page=10):
     subject_vars = get_subject_vars(psat)
     qs_answer_count_group, answers_page_obj_group, answers_page_range_group = {}, {}, {}
 

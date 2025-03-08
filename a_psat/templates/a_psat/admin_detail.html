@@ -16,10 +16,10 @@
                                 {% for subject in subjects %}
                                     {% if subjects|length == 3 %}
                                         {% cycle '1' '2' '3' as id silent %}
-                                        {% #nav_tab prefix='AnswerSubmit' id=id initial='1' %}{{ subject }}{% /nav_tab %}
+                                        {% #nav_tab prefix='AnswerOfficial' id=id initial='1' %}{{ subject }}{% /nav_tab %}
                                     {% else %}
                                         {% cycle '0' '1' '2' '3' as id silent %}
-                                        {% #nav_tab prefix='AnswerSubmit' id=id %}{{ subject }}{% /nav_tab %}
+                                        {% #nav_tab prefix='AnswerOfficial' id=id %}{{ subject }}{% /nav_tab %}
                                     {% endif %}
                                 {% endfor %}
                             </div>
@@ -28,13 +28,13 @@
                             {% for answer_official in answer_official_list %}
                                 {% if answer_official_list|length == 3 %}
                                     {% cycle '1' '2' '3' as id silent %}
-                                    {% #nav_content prefix='AnswerSubmit' id=id initial='1' %}
-                                        {% include 'a_psat/snippets/admin_detail_official_answer.html' %}
+                                    {% #nav_content prefix='AnswerOfficial' id=id initial='1' %}
+                                        {% include 'a_psat/snippets/admin_detail_answer_list.html' with answers=answer_official %}
                                     {% /nav_content %}
                                 {% else %}
                                     {% cycle '0' '1' '2' '3' '4' as id silent %}
-                                    {% #nav_content prefix='AnswerSubmit' id=id %}
-                                        {% include 'a_psat/snippets/admin_detail_official_answer.html' %}
+                                    {% #nav_content prefix='AnswerOfficial' id=id %}
+                                        {% include 'a_psat/snippets/admin_detail_answer_list.html' with answers=answer_official %}
                                     {% /nav_content %}
                                 {% endif %}
                             {% endfor %}
@@ -207,6 +207,46 @@
                                     {% cycle answers_page_range_group.헌법 answers_page_range_group.언어 answers_page_range_group.자료 answers_page_range_group.상황 as answers_page_range silent %}
                                     {% #nav_content prefix='Answer' id=tab.id %}
                                         {% include 'a_psat/snippets/admin_detail_predict_answer_analysis.html' %}
+                                    {% /nav_content %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="예상 정답">
+        <div class="row">
+            <div class="col-12">
+                <div id="problemCard" class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">예상 정답</div>
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerOfficialTab" role="tablist">
+                                {% for subject in subjects %}
+                                    {% if subjects|length == 3 %}
+                                        {% cycle '1' '2' '3' as id silent %}
+                                        {% #nav_tab prefix='AnswerPredict' id=id initial='1' %}{{ subject }}{% /nav_tab %}
+                                    {% else %}
+                                        {% cycle '0' '1' '2' '3' as id silent %}
+                                        {% #nav_tab prefix='AnswerPredict' id=id %}{{ subject }}{% /nav_tab %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+                        <div id="scoreAnswerPredictContent" class="tab-content">
+                            {% for answer_predict in answer_predict_list %}
+                                {% if answer_official_list|length == 3 %}
+                                    {% cycle '1' '2' '3' as id silent %}
+                                    {% #nav_content prefix='AnswerPredict' id=id initial='1' %}
+                                        {% include 'a_psat/snippets/admin_detail_answer_list.html' with answers=answer_predict %}
+                                    {% /nav_content %}
+                                {% else %}
+                                    {% cycle '0' '1' '2' '3' '4' as id silent %}
+                                    {% #nav_content prefix='AnswerPredict' id=id %}
+                                        {% include 'a_psat/snippets/admin_detail_answer_list.html' with answers=answer_predict %}
                                     {% /nav_content %}
                                 {% endif %}
                             {% endfor %}
