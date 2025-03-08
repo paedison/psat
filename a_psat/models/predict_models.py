@@ -43,39 +43,30 @@ class PredictPsat(models.Model):
     def psat_info(self):
         return f'{self.psat.year}{self.psat.exam}'
 
-    @property
     def is_not_page_opened(self):
         return timezone.now() <= self.page_opened_at
 
-    @property
     def is_not_started(self):
         return self.page_opened_at < timezone.now() <= self.exam_started_at
 
-    @property
     def is_started(self):
         return self.exam_started_at < timezone.now()
 
-    @property
     def is_going_on(self):
         return self.exam_started_at < timezone.now() <= self.exam_finished_at
 
-    @property
     def is_not_finished(self):
         return timezone.now() <= self.exam_finished_at
 
-    @property
     def is_collecting_answer(self):
         return self.exam_finished_at < timezone.now() <= self.answer_predict_opened_at
 
-    @property
     def is_answer_predict_opened(self):
         return self.answer_predict_opened_at < timezone.now() <= self.answer_official_opened_at
 
-    @property
     def is_answer_official_opened(self):
         return self.answer_official_opened_at <= timezone.now()
 
-    @property
     def is_predict_closed(self):
         return self.predict_closed_at <= timezone.now()
 
