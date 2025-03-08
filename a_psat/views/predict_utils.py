@@ -303,10 +303,10 @@ def update_score_predict(stat_total_all, qs_student_answer, psat):
 def get_time_schedule(predict_psat):
     start_time = predict_psat.exam_started_at
     exam_1_end_time = start_time + timedelta(minutes=115)  # 1교시 시험 종료 시각
-    exam_2_start_time = exam_1_end_time + timedelta(minutes=95)  # 2교시 시험 시작 시각
+    exam_2_start_time = exam_1_end_time + timedelta(minutes=110)  # 2교시 시험 시작 시각
     exam_2_end_time = exam_2_start_time + timedelta(minutes=90)  # 2교시 시험 종료 시각
-    exam_3_start_time = exam_2_end_time + timedelta(minutes=30)  # 3교시 시험 시작 시각
-    finish_time = exam_3_start_time + timedelta(minutes=90)  # 3교시 시험 종료 시각
+    exam_3_start_time = exam_2_end_time + timedelta(minutes=45)  # 3교시 시험 시작 시각
+    finish_time = predict_psat.exam_finished_at  # 3교시 시험 종료 시각
     return {
         '헌법': (start_time, exam_1_end_time),
         '언어': (start_time, exam_1_end_time),
