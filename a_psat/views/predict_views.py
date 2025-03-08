@@ -92,6 +92,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
 
     context = update_context_data(
         exam=psat, config=config, sub_title=f'{psat.full_reference} 합격 예측',
+        predict_psat=psat.predict_psat,
 
         # icon
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
