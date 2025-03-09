@@ -213,7 +213,7 @@ def get_stat_data(
 def get_dict_frequency_score(student) -> dict:
     score_frequency_list = models.PredictStudent.objects.filter(
         psat=student.psat).values_list('score__sum', flat=True)
-    score_counts_list = [round(score / 3, 1) for score in score_frequency_list if score is not None]
+    score_counts_list = [round(score / 3, 1) for score in score_frequency_list if score]
     score_counts_list.sort()
 
     score_counts = Counter(score_counts_list)

@@ -26,7 +26,9 @@
             {% for obj in stat_page_obj %}
                 <tr class="text-center">
                     <td class="text-nowrap td-left-no-border">{{ obj.department }}</td>
-                    <td class="text-nowrap">{{ obj.average.participants|intcomma }}</td>
+                    <td class="text-nowrap">
+                        {% if obj.average.participants %}{{ obj.average.participants|intcomma }}{% endif %}
+                    </td>
 
                     {% for _ in '01234' %}
                         {% cycle obj.average obj.subject_0 obj.subject_1 obj.subject_2 obj.subject_3 as data_stat silent %}
