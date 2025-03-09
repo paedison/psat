@@ -57,6 +57,20 @@ admin_patterns = [
     path('predict/update/<int:pk>/', admin_psat_views.predict_update_view, name='admin-predict-update'),
     path('predict/student/<int:pk>/', admin_psat_views.student_detail_view, name='admin-predict-student-detail'),
 
+    path('predict/print/statistics/<int:pk>/',
+         admin_psat_views.statistics_print_view, name='admin-predict-statistics-print'),
+    path('predict/print/catalog/<int:pk>/',
+         admin_psat_views.catalog_print_view, name='admin-predict-catalog-print'),
+    path('predict/print/answer/<int:pk>/',
+         admin_psat_views.answer_print_view, name='admin-predict-answer-print'),
+
+    path('predict/excel/statistics/<int:pk>/',
+         admin_psat_views.export_statistics_excel_view, name='admin-predict-statistics-excel'),
+    path('predict/excel/catalog/<int:pk>/',
+         admin_psat_views.export_catalog_excel_view, name='admin-predict-catalog-excel'),
+    path('predict/excel/answer/<int:pk>/',
+         admin_psat_views.export_answers_excel_view, name='admin-predict-answer-excel'),
+
     path('study/detail/<str:study_type>/<int:pk>/', admin_study_views.detail_view, name='admin-study-detail'),
 
     path('study/category/create/',

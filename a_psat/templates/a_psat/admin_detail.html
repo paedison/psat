@@ -132,13 +132,26 @@
                                        href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
                                         목록
                                     </a>
-                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_statistics_excel %}
-                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_statistics_print %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=psat.get_admin_predict_statistics_excel_url %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=psat.get_admin_predict_statistics_print_url %}
                                 </div>
                             </div>
                         </div>
-                        <div id="statisticsContent" class="htmx-fade-in htmx-fade-out">
-                            {% include 'a_psat/snippets/admin_detail_predict_statistics.html' %}
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
+                                {% for tab in filter_tab %}
+                                    {% #nav_tab prefix=tab.prefix id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+                        <div id="statisticsContent" class="tab-content">
+                            {% for tab in filter_tab %}
+                                {% cycle statistics_page_obj filtered_statistics_page_obj as stat_page_obj silent %}
+                                {% cycle statistics_page_range filtered_statistics_page_range as stat_page_range silent %}
+                                {% #nav_content prefix=tab.prefix id=tab.id %}
+                                    {% include 'a_psat/snippets/admin_detail_predict_statistics.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -155,9 +168,8 @@
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
                                 <div class="btn-group flex-fill">
-                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
-{#                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
-                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=psat.get_admin_predict_catalog_excel_url %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=psat.get_admin_predict_catalog_print_url %}
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-7 col-xxl-8 order-md-0 d-flex">
@@ -182,8 +194,8 @@
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
                                 <div class="btn-group flex-fill">
-                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_answers_excel %}
-                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_answers_print %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=psat.get_admin_predict_answer_excel_url %}
+                                    {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=psat.get_admin_predict_answer_print_url %}
                                 </div>
                             </div>
                         </div>

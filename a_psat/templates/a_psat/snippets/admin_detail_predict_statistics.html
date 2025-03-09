@@ -23,7 +23,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for obj in statistics_page_obj %}
+            {% for obj in stat_page_obj %}
                 <tr class="text-center">
                     <td class="text-nowrap td-left-no-border">{{ obj.department }}</td>
                     <td class="text-nowrap">{{ obj.average.participants|intcomma }}</td>
@@ -45,6 +45,6 @@
     </table>
 </article>
 
-{% with page_obj=statistics_page_obj page_range=statistics_page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header='statistics_list' %}
+{% with page_obj=stat_page_obj page_range=stat_page_range %}
+    {% include 'a_prime/snippets/pagination.html' with header=tab.header %}
 {% endwith %}

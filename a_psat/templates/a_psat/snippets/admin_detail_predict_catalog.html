@@ -7,9 +7,12 @@
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="3">ID</th>
                 <th class="text-primary text-nowrap" rowspan="3">등수</th>
-                <th class="text-primary text-nowrap" rowspan="3">이름</th>
-                <th class="text-primary text-nowrap" rowspan="3">수험번호</th>
+                <th class="text-primary text-nowrap" rowspan="3">이름<br/>(수험번호)</th>
                 <th class="text-primary text-nowrap" rowspan="3">직렬</th>
+                <th class="text-primary text-nowrap" rowspan="3">등록일시</th>
+                <th class="text-primary text-nowrap" rowspan="3">최종답안<br/>제출일시</th>
+                <th class="text-primary text-nowrap" rowspan="3">제출<br/>답안수</th>
+                <th class="text-primary text-nowrap" rowspan="3">필터링<br/>여부</th>
 
                 <th class="text-primary text-nowrap" colspan="6">PSAT</th>
                 <th class="text-primary text-nowrap" colspan="5">헌법</th>
@@ -46,11 +49,19 @@
                     <td class="text-nowrap">{{ obj.rank_tot_avg }}</td>
                     <td class="text-nowrap">
                         <a href="{{ obj.get_admin_predict_student_detail_url }}" target="score_print">
-                            {{ obj.name }}
+                            {{ obj.name }}({{ obj.serial }})
                         </a>
                     </td>
-                    <td class="text-nowrap">{{ obj.serial }}</td>
                     <td class="text-nowrap">{{ obj.department }}</td>
+                    <td class="text-nowrap">{{ obj.created_at|date:'n/j G:i' }}</td>
+                    <td class="text-nowrap">{{ obj.latest_answer_time|date:'n/j G:i' }}</td>
+                    <td class="text-nowrap">{{ obj.answer_count }}</td>
+                    <td class="text-nowrap">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="true" disabled aria-label="활성"
+                                   {% if obj.is_filtered %}checked{% endif %}>
+                        </div>
+                    </td>
 
                     <td class="text-nowrap td-right-no-border">{{ obj.score_sum|floatformat:1 }}</td>
                     <td class="text-nowrap td-left-no-border td-right-no-border">{{ obj.score_avg|floatformat:1 }}</td>

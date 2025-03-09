@@ -72,20 +72,26 @@ def detail_view(request: HtmxHttpRequest, pk: int):
     predict_psat = admin_psat_utils.get_predict_psat(psat)
     if predict_psat:
         answer_tab = admin_psat_utils.get_answer_tab(sub_list)
+        filter_tab = admin_psat_utils.get_filter_tab()
         config.url_admin_predict_update = reverse_lazy('psat:admin-predict-update', args=[pk])
 
         context = update_context_data(
-            context, predict_psat=predict_psat, answer_tab=answer_tab,
+            context, predict_psat=predict_psat, answer_tab=answer_tab, filter_tab=filter_tab,
             icon_nav=icon_set_new.ICON_NAV, icon_search=icon_set_new.ICON_SEARCH,
         )
-        data_statistics = models.PredictStatistics.objects.get_filtered_qs_by_psat(psat)
+        data_statistics, filtered_data_statistics = admin_psat_utils.get_data_statistics(psat)
         student_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
         qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat_and_subject(psat, subject)
 
-        if view_type == 'statistics_list':
-            statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
+        if view_type == 'total_statistics_list':
+            stat_page_obj, stat_page_range = utils.get_paginator_data(data_statistics, page_number)
             context = update_context_data(
-                context, statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range)
+                context, tab=filter_tab[0], stat_page_obj=stat_page_obj, stat_page_range=stat_page_range)
+            return render(request, 'a_psat/snippets/admin_detail_predict_statistics.html', context)
+        if view_type == 'filtered_statistics_list':
+            stat_page_obj, stat_page_range = utils.get_paginator_data(filtered_data_statistics, page_number)
+            context = update_context_data(
+                context, tab=filter_tab[1], stat_page_obj=stat_page_obj, stat_page_range=stat_page_range)
             return render(request, 'a_psat/snippets/admin_detail_predict_statistics.html', context)
         if view_type == 'catalog_list':
             catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
@@ -111,15 +117,22 @@ def detail_view(request: HtmxHttpRequest, pk: int):
             return render(request, 'a_psat/snippets/admin_detail_predict_answer_analysis.html', context)
 
         statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
+        filtered_statistics_page_obj, filtered_statistics_page_range = utils.get_paginator_data(
+            filtered_data_statistics, page_number)
         catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
         answers_page_obj_group, answers_page_range_group = admin_psat_utils.get_answer_page_data(
             psat, qs_answer_count, page_number, 10)
 
         context = update_context_data(
             context,
-            statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
-            catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
-            answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
+            statistics_page_obj=statistics_page_obj,
+            statistics_page_range=statistics_page_range,
+            filtered_statistics_page_obj=filtered_statistics_page_obj,
+            filtered_statistics_page_range=filtered_statistics_page_range,
+            catalog_page_obj=catalog_page_obj,
+            catalog_page_range=catalog_page_range,
+            answers_page_obj_group=answers_page_obj_group,
+            answers_page_range_group=answers_page_range_group,
         )
     return render(request, 'a_psat/admin_detail.html', context)
 
@@ -150,8 +163,8 @@ def predict_update_view(request: HtmxHttpRequest, pk: int):
         context = update_context_data(context, header='등수 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'statistics':
-        data_statistics = admin_psat_utils.get_data_statistics(psat)
-        is_updated, message = admin_psat_utils.update_statistics_model(psat, data_statistics)
+        data_statistics, filtered_data_statistics = admin_psat_utils.get_data_statistics(psat)
+        is_updated, message = admin_psat_utils.update_statistics(psat, data_statistics, filtered_data_statistics)
         context = update_context_data(context, header='통계 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'answer_count':
@@ -175,3 +188,48 @@ def student_detail_view(request: HtmxHttpRequest, pk: int):
         student = models.PredictStudent.objects.get_filtered_qs_by_psat_and_user_with_answer_count(student.user, student.psat)
         return predict_views.detail_view(request, student.psat.id, student=student)
     return redirect('psat:admin-list')
+
+
+@admin_required
+def statistics_print_view(request: HtmxHttpRequest, pk: int):
+    psat = get_object_or_404(models.Psat, pk=pk)
+    data_statistics, filtered_data_statistics = admin_psat_utils.get_data_statistics(psat)
+    context = update_context_data(
+        psat=psat, data_statistics=data_statistics, filtered_data_statistics=filtered_data_statistics)
+    return render(request, 'a_psat/admin_print_statistics.html', context)
+
+
+@admin_required
+def catalog_print_view(request: HtmxHttpRequest, pk: int):
+    psat = get_object_or_404(models.Psat, pk=pk)
+    student_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
+    context = update_context_data(psat=psat, student_list=student_list)
+    return render(request, 'a_psat/admin_print_catalog.html', context)
+
+
+@admin_required
+def answer_print_view(request: HtmxHttpRequest, pk: int):
+    psat = get_object_or_404(models.Psat, pk=pk)
+    qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat_and_subject(psat)
+    answers_page_obj_group, answers_page_range_group = admin_psat_utils.get_answer_page_data(
+        psat, qs_answer_count, 1, 1000)
+    context = update_context_data(psat=psat, answers_page_obj_group=answers_page_obj_group)
+    return render(request, 'a_psat/admin_print_answers.html', context)
+
+
+@admin_required
+def export_statistics_excel_view(_: HtmxHttpRequest, pk: int):
+    psat = get_object_or_404(models.Psat, pk=pk)
+    return admin_psat_utils.get_statistics_response(psat)
+
+
+@admin_required
+def export_catalog_excel_view(_: HtmxHttpRequest, pk: int):
+    psat = get_object_or_404(models.Psat, pk=pk)
+    return admin_psat_utils.get_catalog_response(psat)
+
+
+@admin_required
+def export_answers_excel_view(_: HtmxHttpRequest, pk: int):
+    psat = get_object_or_404(models.Psat, pk=pk)
+    return admin_psat_utils.get_answer_response(psat)

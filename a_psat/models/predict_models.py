@@ -146,12 +146,16 @@ class PredictStudentManager(models.Manager):
             'score_sum': models.F('score__sum'),
             'rank_tot_num': models.F(f'rank_total__participants'),
             'rank_dep_num': models.F(f'rank_category__participants'),
+            'filtered_rank_tot_num': models.F(f'rank_total__filtered_participants'),
+            'filtered_rank_dep_num': models.F(f'rank_category__filtered_participants'),
         }
         field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
         for key, fld in field_dict.items():
             annotate_dict[f'score_{key}'] = models.F(f'score__{fld}')
             annotate_dict[f'rank_tot_{key}'] = models.F(f'rank_total__{fld}')
             annotate_dict[f'rank_dep_{key}'] = models.F(f'rank_category__{fld}')
+            annotate_dict[f'filtered_rank_tot_{key}'] = models.F(f'rank_total__filtered_{fld}')
+            annotate_dict[f'filtered_rank_dep_{key}'] = models.F(f'rank_category__filtered_{fld}')
         return annotate_dict
 
     def get_filtered_qs_student_list_by_psat(self, psat):
@@ -159,7 +163,12 @@ class PredictStudentManager(models.Manager):
         return (
             self.with_select_related().filter(psat=psat)
             .order_by('psat__year', 'psat__order', 'rank_total__average')
-            .annotate(department=models.F('category__department'), **annotate_dict)
+            .annotate(
+                department=models.F('category__department'),
+                latest_answer_time=models.Max('answers__created_at'),
+                answer_count=models.Count('answers'),
+                **annotate_dict
+            )
         )
 
     def get_filtered_qs_by_user_and_psat_list(self, user, psat_list):
@@ -293,18 +302,19 @@ class PredictAnswerCountManager(models.Manager):
             'ans_predict': models.F(f'problem__predict_answer_count__answer_predict'),
             'ans_official': models.F('problem__answer'),
         }
-        field_list = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
-        for fld in field_list:
-            annotate_dict[f'{fld}_all'] = models.F(f'{fld}')
-            annotate_dict[f'{fld}_top'] = models.F(f'problem__predict_answer_count_top_rank__{fld}')
-            annotate_dict[f'{fld}_mid'] = models.F(f'problem__predict_answer_count_mid_rank__{fld}')
-            annotate_dict[f'{fld}_low'] = models.F(f'problem__predict_answer_count_low_rank__{fld}')
+        for prefix in ['', 'filtered_']:
+            for rank in ['all', 'top', 'mid', 'low']:
+                for fld in ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']:
+                    if rank == 'all':
+                        f_expr = f'{prefix}{fld}'
+                    else:
+                        f_expr = f'problem__predict_answer_count_{rank}_rank__{prefix}{fld}'
+                    annotate_dict[f'{prefix}{fld}_{rank}'] = models.F(f_expr)
         qs_answer_count = (
             self.filter(problem__psat=psat)
             .order_by('problem__subject', 'problem__number').annotate(**annotate_dict)
             .select_related(
                 f'problem',
-                f'problem__predict_answer_count',
                 f'problem__predict_answer_count_top_rank',
                 f'problem__predict_answer_count_mid_rank',
                 f'problem__predict_answer_count_low_rank',

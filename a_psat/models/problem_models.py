@@ -70,6 +70,24 @@ class Psat(models.Model):
     def get_admin_predict_update_url(self):
         return reverse_lazy('psat:admin-predict-update', args=[self.id])
 
+    def get_admin_predict_statistics_print_url(self):
+        return reverse_lazy('psat:admin-predict-statistics-print', args=[self.id])
+
+    def get_admin_predict_catalog_print_url(self):
+        return reverse_lazy('psat:admin-predict-catalog-print', args=[self.id])
+
+    def get_admin_predict_answer_print_url(self):
+        return reverse_lazy('psat:admin-predict-answer-print', args=[self.id])
+
+    def get_admin_predict_statistics_excel_url(self):
+        return reverse_lazy('psat:admin-predict-statistics-excel', args=[self.id])
+
+    def get_admin_predict_catalog_excel_url(self):
+        return reverse_lazy('psat:admin-predict-catalog-excel', args=[self.id])
+
+    def get_admin_predict_answer_excel_url(self):
+        return reverse_lazy('psat:admin-predict-answer-excel', args=[self.id])
+
     @staticmethod
     def get_predict_list_url():
         return reverse_lazy('psat:predict-list')

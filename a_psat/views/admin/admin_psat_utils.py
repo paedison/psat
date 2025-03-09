@@ -1,5 +1,7 @@
+import io
 import traceback
 from collections import defaultdict
+from urllib.parse import quote
 
 import django.db.utils
 import pandas as pd
@@ -7,8 +9,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Count, Window, F
 from django.db.models.functions import Rank
+from django.http import HttpResponse
 
-from common.constants import icon_set_new
 from ... import models, utils
 
 
@@ -31,7 +33,18 @@ def get_subject_vars(psat) -> dict[str, tuple[str, str, int]]:
     return subject_vars
 
 
-def get_field_vars(psat) -> dict[str, tuple[str, str, int]]:
+def get_field_vars(psat, is_filtered=False) -> dict[str, tuple[str, str, int]]:
+    if is_filtered:
+        field_vars = {
+            'filtered_subject_0': ('[필터링]헌법', '[필터링]헌법', 0),
+            'filtered_subject_1': ('[필터링]언어', '[필터링]언어논리', 1),
+            'filtered_subject_2': ('[필터링]자료', '[필터링]자료해석', 2),
+            'filtered_subject_3': ('[필터링]상황', '[필터링]상황판단', 3),
+            'filtered_average': ('[필터링]평균', '[필터링]PSAT 평균', 4),
+        }
+        if psat.exam in ['칠급', '칠예', '민경']:
+            field_vars.pop('filtered_subject_0')
+        return field_vars
     field_vars = {
         'subject_0': ('헌법', '헌법', 0),
         'subject_1': ('언어', '언어논리', 1),
@@ -40,7 +53,26 @@ def get_field_vars(psat) -> dict[str, tuple[str, str, int]]:
         'average': ('평균', 'PSAT 평균', 4),
     }
     if psat.exam in ['칠급', '칠예', '민경']:
-        field_vars.pop('헌법')
+        field_vars.pop('subject_0')
+    return field_vars
+
+
+def get_total_field_vars(psat) -> dict[str, tuple[str, str, int]]:
+    field_vars = {
+        'subject_0': ('헌법', '헌법', 0),
+        'subject_1': ('언어', '언어논리', 1),
+        'subject_2': ('자료', '자료해석', 2),
+        'subject_3': ('상황', '상황판단', 3),
+        'average': ('평균', 'PSAT 평균', 4),
+        'filtered_subject_0': ('[필터링]헌법', '[필터링]헌법', 0),
+        'filtered_subject_1': ('[필터링]언어', '[필터링]언어논리', 1),
+        'filtered_subject_2': ('[필터링]자료', '[필터링]자료해석', 2),
+        'filtered_subject_3': ('[필터링]상황', '[필터링]상황판단', 3),
+        'filtered_average': ('[필터링]평균', '[필터링]PSAT 평균', 4),
+    }
+    if psat.exam in ['칠급', '칠예', '민경']:
+        field_vars.pop('subject_0')
+        field_vars.pop('filtered_subject_0')
     return field_vars
 
 
@@ -52,11 +84,17 @@ def get_predict_psat(psat):
 
 
 def get_answer_tab(sub_list):
-    answer_tab = [
+    return [
         {'id': str(idx), 'title': sub, 'answer_count': 4 if sub == '헌법' else 5}
         for idx, sub in enumerate(sub_list)
     ]
-    return answer_tab
+
+
+def get_filter_tab():
+    return [
+        {'id': '0', 'title': '전체', 'prefix': 'TotalStatistics', 'header': 'total_statistics_list'},
+        {'id': '1', 'title': '필터링', 'prefix': 'FilteredStatistics', 'header': 'filtered_statistics_list'},
+    ]
 
 
 def get_answer_page_data(psat, qs_answer_count, page_number, per_page=10):
@@ -205,8 +243,12 @@ def update_scores(psat, qs_student, model_dict: dict):
     return is_updated, message_dict[is_updated]
 
 
-def update_rank_model(qs_student, model_dict: dict, sub_list: list, stat_type='total'):
+def update_rank_model(qs_student, model_dict: dict, sub_list: list, stat_type='total', is_filtered=False):
     rank_model = model_dict[stat_type]
+    prefix = ''
+    if is_filtered:
+        qs_student = qs_student.filter(is_filtered=is_filtered)
+        prefix = 'filtered_'
 
     list_create = []
     list_update = []
@@ -215,33 +257,39 @@ def update_rank_model(qs_student, model_dict: dict, sub_list: list, stat_type='t
     def rank_func(field_name) -> Window:
         return Window(expression=Rank(), order_by=F(field_name).desc())
 
-    annotate_dict = {f'rank_{idx}': rank_func(f'score__subject_{idx}') for idx in range(subject_count)}
-    annotate_dict['rank_average'] = rank_func('score__average')
+    annotate_dict = {f'{prefix}rank_{idx}': rank_func(f'score__subject_{idx}') for idx in range(subject_count)}
+    annotate_dict[f'{prefix}rank_average'] = rank_func('score__average')
 
     participants = qs_student.count()
     for student in qs_student:
         rank_list = qs_student.annotate(**annotate_dict)
         if stat_type == 'department':
             rank_list = rank_list.filter(category=student.category)
+            participants = rank_list.count()
         target, _ = rank_model.objects.get_or_create(student=student)
 
-        fields_not_match = [target.participants != participants]
+        fields_not_match = [getattr(target, f'{prefix}participants') != participants]
         for row in rank_list:
             if row.id == student.id:
                 for idx in range(subject_count):
                     fields_not_match.append(
-                        getattr(target, f'subject_{idx}') != getattr(row, f'rank_{idx}')
+                        getattr(target, f'{prefix}subject_{idx}') != getattr(row, f'{prefix}rank_{idx}')
                     )
-                fields_not_match.append(target.average != row.rank_average)
+                fields_not_match.append(
+                    getattr(target, f'{prefix}average') != getattr(row, f'{prefix}rank_average')
+                )
 
                 if any(fields_not_match):
                     for idx in range(subject_count):
-                        setattr(target, f'subject_{idx}', getattr(row, f'rank_{idx}'))
-                    target.average = row.rank_average
-                    target.participants = participants
+                        setattr(target, f'{prefix}subject_{idx}', getattr(row, f'{prefix}rank_{idx}'))
+                    setattr(target, f'{prefix}average', getattr(row, f'{prefix}rank_average'))
+                    setattr(target, f'{prefix}participants', participants)
                     list_update.append(target)
 
-    update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'average', 'participants']
+    update_fields = [
+        f'{prefix}subject_0', f'{prefix}subject_1', f'{prefix}subject_2',
+        f'{prefix}subject_3', f'{prefix}average', f'{prefix}participants'
+    ]
     return bulk_create_or_update(rank_model, list_create, list_update, update_fields)
 
 
@@ -254,7 +302,9 @@ def update_ranks(psat, qs_student, model_dict: dict):
     }
     is_updated_list = [
         update_rank_model(qs_student, model_dict, sub_list, 'total'),
+        update_rank_model(qs_student, model_dict, sub_list, 'total', True),
         update_rank_model(qs_student, model_dict, sub_list, 'department'),
+        update_rank_model(qs_student, model_dict, sub_list, 'department', True),
     ]
     if None in is_updated_list:
         is_updated = None
@@ -267,6 +317,23 @@ def update_ranks(psat, qs_student, model_dict: dict):
 
 def get_data_statistics(psat):
     field_vars = get_field_vars(psat)
+
+    department_list = list(
+        models.PredictCategory.objects.filter(exam=psat.exam).order_by('order')
+        .values_list('department', flat=True)
+    )
+    department_list.insert(0, '전체')
+
+    data_statistics = []
+    score_list = {}
+    filtered_data_statistics = []
+    filtered_score_list = {}
+    for department in department_list:
+        data_statistics.append({'department': department, 'participants': 0})
+        score_list.update({department: {field: [] for field, subject_tuple in field_vars.items()}})
+        filtered_data_statistics.append({'department': department, 'participants': 0})
+        filtered_score_list.update({department: {field: [] for field, subject_tuple in field_vars.items()}})
+
     qs_students = (
         models.PredictStudent.objects.filter(psat=psat)
         .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
@@ -279,27 +346,22 @@ def get_data_statistics(psat):
             average=F('score__average'),
         )
     )
-
-    department_list = list(
-        models.PredictCategory.objects.filter(exam=psat.exam).order_by('order')
-        .values_list('department', flat=True)
-    )
-    department_list.insert(0, '전체')
-
-    data_statistics = []
-    score_list = {}
-    for department in department_list:
-        data_statistics.append({'department': department, 'participants': 0})
-        score_list.update({
-            department: {field: [] for field, subject_tuple in field_vars.items()}
-        })
-
-    for qs in qs_students:
+    for qs_s in qs_students:
         for field, subject_tuple in field_vars.items():
-            score = getattr(qs, field)
+            score = getattr(qs_s, field)
             score_list['전체'][field].append(score)
-            score_list[qs.department][field].append(score)
+            score_list[qs_s.department][field].append(score)
+            if qs_s.is_filtered:
+                filtered_score_list['전체'][field].append(score)
+                filtered_score_list[qs_s.department][field].append(score)
 
+    update_data_statistics(data_statistics, field_vars, score_list, department_list)
+    update_data_statistics(filtered_data_statistics, field_vars, filtered_score_list, department_list)
+
+    return data_statistics, filtered_data_statistics
+
+
+def update_data_statistics(data_statistics, field_vars, score_list, department_list):
     for department, score_dict in score_list.items():
         department_idx = department_list.index(department)
         for field, scores in score_dict.items():
@@ -315,25 +377,25 @@ def get_data_statistics(psat):
                 top_20_threshold = max(1, int(participants * 0.2))
                 top_score_10 = sorted_scores[top_10_threshold - 1]
                 top_score_20 = sorted_scores[top_20_threshold - 1]
-                avg_score = sum(scores) / participants
+                avg_score = round(sum(scores) / participants, 1)
 
             data_statistics[department_idx][field] = {
                 'field': field,
                 'is_confirmed': True,
                 'sub': sub,
                 'subject': subject,
-                'icon': icon_set_new.ICON_SUBJECT[sub],
                 'participants': participants,
                 'max': max_score,
                 't10': top_score_10,
                 't20': top_score_20,
                 'avg': avg_score,
             }
-    return data_statistics
 
 
-def update_statistics_model(psat, data_statistics):
+def update_statistics_model(psat, data_statistics, is_filtered=False):
     field_vars = get_field_vars(psat)
+    prefix = 'filtered_' if is_filtered else ''
+
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '통계를 업데이트했습니다.',
@@ -345,48 +407,71 @@ def update_statistics_model(psat, data_statistics):
     for data_stat in data_statistics:
         department = data_stat['department']
         stat_dict = {'department': department}
-        for field in field_vars.keys():
+        for fld in field_vars.keys():
             stat_dict.update({
-                field: {
-                    'participants': data_stat[field]['participants'],
-                    'max': data_stat[field]['max'],
-                    't10': data_stat[field]['t10'],
-                    't20': data_stat[field]['t20'],
-                    'avg': data_stat[field]['avg'],
+                f'{prefix}{fld}': {
+                    'participants': data_stat[fld]['participants'],
+                    'max': data_stat[fld]['max'],
+                    't10': data_stat[fld]['t10'],
+                    't20': data_stat[fld]['t20'],
+                    'avg': data_stat[fld]['avg'],
                 }
             })
 
         try:
-            new_query = models.PredictStatistics.objects.get(psat=psat, department=department)
+            instance = models.PredictStatistics.objects.get(psat=psat, department=department)
             fields_not_match = any(
-                getattr(new_query, fld) != val for fld, val in stat_dict.items()
+                getattr(instance, fld) != val for fld, val in stat_dict.items()
             )
             if fields_not_match:
                 for fld, val in stat_dict.items():
-                    setattr(new_query, fld, val)
-                list_update.append(new_query)
+                    setattr(instance, fld, val)
+                list_update.append(instance)
         except models.PredictStatistics.DoesNotExist:
             list_create.append(models.PredictStatistics(psat=psat, **stat_dict))
     update_fields = [
-        'department', 'subject_0', 'subject_1', 'subject_2', 'subject_3', 'average',
+        'department', f'{prefix}subject_0', f'{prefix}subject_1',
+        f'{prefix}subject_2', f'{prefix}subject_3', f'{prefix}average',
     ]
     is_updated = bulk_create_or_update(models.PredictStatistics, list_create, list_update, update_fields)
     return is_updated, message_dict[is_updated]
 
 
-def update_answer_count_model(model_dict, rank_type='all'):
+def update_statistics(psat, data_statistics, filtered_data_statistics):
+    message_dict = {
+        None: '에러가 발생했습니다.',
+        True: '등수를 업데이트했습니다.',
+        False: '기존 등수와 일치합니다.',
+    }
+    is_updated_list = [
+        update_statistics_model(psat, data_statistics),
+        update_statistics_model(psat, filtered_data_statistics, True),
+    ]
+    if None in is_updated_list:
+        is_updated = None
+    elif any(is_updated_list):
+        is_updated = True
+    else:
+        is_updated = False
+    return is_updated, message_dict[is_updated]
+
+
+def update_answer_count_model(model_dict, rank_type='all', is_filtered=False):
     answer_model = model_dict['answer']
     answer_count_model = model_dict[rank_type]
+    prefix = 'filtered_' if is_filtered else ''
 
     list_update = []
     list_create = []
 
-    lookup_field = f'student__rank_total__average'
+    lookup_field = f'student__rank_total__{prefix}average'
     top_rank_threshold = 0.27
     mid_rank_threshold = 0.73
-    participants_function = F('student__rank_total__participants')
+    participants_function = F(f'student__rank_total__{prefix}participants')
 
     lookup_exp = {}
+    if is_filtered:
+        lookup_exp['student__is_filtered'] = is_filtered
     if rank_type == 'top':
         lookup_exp[f'{lookup_field}__lte'] = participants_function * top_rank_threshold
     elif rank_type == 'mid':
@@ -395,46 +480,43 @@ def update_answer_count_model(model_dict, rank_type='all'):
     elif rank_type == 'low':
         lookup_exp[f'{lookup_field}__gt'] = participants_function * mid_rank_threshold
 
-    answer_distribution = (
+    qs_answer = (
         answer_model.objects.filter(**lookup_exp)
         .select_related('student', 'student__rank_total')
         .values('problem_id', 'answer')
         .annotate(count=Count('id')).order_by('problem_id', 'answer')
     )
-    organized_distribution = defaultdict(lambda: {i: 0 for i in range(6)})
-
-    for entry in answer_distribution:
-        problem_id = entry['problem_id']
-        answer = entry['answer']
-        count = entry['count']
-        organized_distribution[problem_id][answer] = count
+    answer_distribution_dict = defaultdict(lambda: {i: 0 for i in range(6)})
+    for qs_a in qs_answer:
+        answer_distribution_dict[qs_a['problem_id']][qs_a['answer']] = qs_a['count']
 
     count_fields = [
-        'count_0', 'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_multiple',
+        f'{prefix}count_0', f'{prefix}count_1', f'{prefix}count_2', f'{prefix}count_3',
+        f'{prefix}count_4', f'{prefix}count_5', f'{prefix}count_multiple',
     ]
-    for problem_id, answers_original in organized_distribution.items():
-        answers = {'count_multiple': 0}
-        for answer, count in answers_original.items():
-            if answer <= 5:
-                answers[f'count_{answer}'] = count
+    for problem_id, answer_distribution in answer_distribution_dict.items():
+        answers = {f'{prefix}count_multiple': 0}
+        for ans, cnt in answer_distribution.items():
+            if ans <= 5:
+                answers[f'{prefix}count_{ans}'] = cnt
             else:
-                answers['count_multiple'] = count
-        answers['count_sum'] = sum(answers[fld] for fld in count_fields)
+                answers[f'{prefix}count_multiple'] = cnt
+        answers[f'{prefix}count_sum'] = sum(answers[fld] for fld in count_fields)
 
         try:
-            new_query = answer_count_model.objects.get(problem_id=problem_id)
+            instance = answer_count_model.objects.get(problem_id=problem_id)
             fields_not_match = any(
-                getattr(new_query, fld) != val for fld, val in answers.items()
+                getattr(instance, fld) != val for fld, val in answers.items()
             )
             if fields_not_match:
                 for fld, val in answers.items():
-                    setattr(new_query, fld, val)
-                list_update.append(new_query)
+                    setattr(instance, fld, val)
+                list_update.append(instance)
         except answer_count_model.DoesNotExist:
             list_create.append(answer_count_model(problem_id=problem_id, **answers))
     update_fields = [
-        'problem_id', 'count_0', 'count_1', 'count_2', 'count_3',
-        'count_4', 'count_5', 'count_multiple', 'count_sum',
+        'problem_id', f'{prefix}count_0', f'{prefix}count_1', f'{prefix}count_2', f'{prefix}count_3',
+        f'{prefix}count_4', f'{prefix}count_5', f'{prefix}count_multiple', f'{prefix}count_sum',
     ]
     return bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
 
@@ -450,6 +532,10 @@ def update_answer_counts(model_dict):
         update_answer_count_model(model_dict, 'top'),
         update_answer_count_model(model_dict, 'mid'),
         update_answer_count_model(model_dict, 'low'),
+        update_answer_count_model(model_dict, 'all', True),
+        update_answer_count_model(model_dict, 'top', True),
+        update_answer_count_model(model_dict, 'mid', True),
+        update_answer_count_model(model_dict, 'low', True),
     ]
     if None in is_updated_list:
         is_updated = None
@@ -482,3 +568,107 @@ def bulk_create_or_update(model, list_create, list_update, update_fields):
         is_updated = None
     print(message)
     return is_updated
+
+
+def get_statistics_response(psat):
+    filename = f'{psat.full_reference}_성적통계.xlsx'
+    drop_columns = ['id', 'psat_id']
+    column_label = [('직렬', '')]
+
+    field_vars = get_total_field_vars(psat)
+
+    qs_statistics = models.PredictStatistics.objects.filter(psat=psat).order_by('id')
+    df = pd.DataFrame.from_records(qs_statistics.values())
+    for fld, val in field_vars.items():
+        drop_columns.append(fld)
+        column_label.extend([
+            (val[1], '총 인원'),
+            (val[1], '최고'),
+            (val[1], '상위10%'),
+            (val[1], '상위20%'),
+            (val[1], '평균'),
+        ])
+        df_subject = pd.json_normalize(df[fld])
+        df = pd.concat([df, df_subject], axis=1)
+
+    return get_response_for_excel_file(df, drop_columns, column_label, filename)
+
+
+def get_catalog_response(psat):
+    student_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
+    df = pd.DataFrame.from_records(student_list.values())
+    df['created_at'] = df['created_at'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
+    df['latest_answer_time'] = df['latest_answer_time'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
+
+    filename = f'{psat.full_reference}_성적일람표.xlsx'
+    column_label = [
+        ('ID', ''), ('등록일시', ''), ('이름', ''), ('수험번호', ''), ('비밀번호', ''),
+        ('PSAT ID', ''), ('카테고리 ID', ''), ('사용자 ID', ''),
+        ('필터링 여부', ''), ('프라임 ID', ''), ('직렬', ''), ('최종답안 등록일시', ''),
+        ('제출 답안수', ''), ('PSAT 총점', ''), ('전체 총 인원', ''), ('직렬 총 인원', ''),
+        ('[필터링]전체 총 인원', ''), ('[필터링]직렬 총 인원', ''),
+    ]
+
+    field_vars = get_field_vars(psat)
+    for _, val in field_vars.items():
+        column_label.extend([
+            (val[1], '점수'),
+            (val[1], '전체 등수'),
+            (val[1], '직렬 등수'),
+            (val[1], '[필터링]전체 등수'),
+            (val[1], '[필터링]직렬 등수'),
+        ])
+
+    return get_response_for_excel_file(df, [], column_label, filename)
+
+
+def get_answer_response(psat):
+    qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat_and_subject(psat)
+    df = pd.DataFrame.from_records(qs_answer_count.values())
+
+    def move_column(col_name: str, loc: int):
+        col = df.pop(col_name)
+        df.insert(loc, col_name, col)
+
+    move_column('problem_id', 1)
+    move_column('subject', 2)
+    move_column('number', 3)
+    move_column('ans_official', 4)
+    move_column('ans_predict', 5)
+
+    filename = f'{psat.full_reference}_문항분석표.xlsx'
+    drop_columns = [
+        'answer_predict',
+        'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0', 'count_multiple', 'count_sum',
+        'filtered_count_1', 'filtered_count_2', 'filtered_count_3', 'filtered_count_4',
+        'filtered_count_5', 'filtered_count_0', 'filtered_count_multiple', 'filtered_count_sum',
+    ]
+    column_label = [
+        ('ID', '', ''), ('문제 ID', '', ''), ('과목', '', ''),
+        ('번호', '', ''), ('정답', '', ''), ('예상 정답', '', ''),
+    ]
+    for top in ['전체 데이터', '필터링 데이터']:
+        for mid in ['전체', '상위권', '중위권', '하위권']:
+            column_label.extend([
+                (top, mid, '①'), (top, mid, '②'), (top, mid, '③'),
+                (top, mid, '④'), (top, mid, '⑤'), (top, mid, '합계'),
+            ])
+
+    return get_response_for_excel_file(df, drop_columns, column_label, filename)
+
+
+def get_response_for_excel_file(df, drop_columns, column_label, filename):
+    df.drop(columns=drop_columns, inplace=True)
+    df.columns = pd.MultiIndex.from_tuples(column_label)
+    df.reset_index(inplace=True)
+
+    excel_data = io.BytesIO()
+    df.to_excel(excel_data, engine='xlsxwriter')
+
+    response = HttpResponse(
+        excel_data.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename={quote(filename)}'
+
+    return response
