@@ -9,6 +9,7 @@
                 <th class="text-primary text-nowrap" rowspan="3">등수</th>
                 <th class="text-primary text-nowrap" rowspan="3">이름<br/>(수험번호)</th>
                 <th class="text-primary text-nowrap" rowspan="3">직렬</th>
+                <th class="text-primary text-nowrap" rowspan="3">프라임ID</th>
                 <th class="text-primary text-nowrap" rowspan="3">등록일시</th>
                 <th class="text-primary text-nowrap" rowspan="3">최종답안<br/>제출일시</th>
                 <th class="text-primary text-nowrap" rowspan="3">제출<br/>답안수</th>
@@ -53,6 +54,7 @@
                         </a>
                     </td>
                     <td class="text-nowrap">{{ obj.department }}</td>
+                    <td class="text-nowrap">{{ obj.prime_id }}</td>
                     <td class="text-nowrap">{{ obj.created_at|date:'n/j G:i' }}</td>
                     <td class="text-nowrap">{{ obj.latest_answer_time|date:'n/j G:i' }}</td>
                     <td class="text-nowrap">{{ obj.answer_count }}</td>
