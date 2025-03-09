@@ -349,11 +349,12 @@ def get_data_statistics(psat):
     for qs_s in qs_students:
         for field, subject_tuple in field_vars.items():
             score = getattr(qs_s, field)
-            score_list['전체'][field].append(score)
-            score_list[qs_s.department][field].append(score)
-            if qs_s.is_filtered:
-                filtered_score_list['전체'][field].append(score)
-                filtered_score_list[qs_s.department][field].append(score)
+            if score is not None:
+                score_list['전체'][field].append(score)
+                score_list[qs_s.department][field].append(score)
+                if qs_s.is_filtered:
+                    filtered_score_list['전체'][field].append(score)
+                    filtered_score_list[qs_s.department][field].append(score)
 
     update_data_statistics(data_statistics, field_vars, score_list, department_list)
     update_data_statistics(filtered_data_statistics, field_vars, filtered_score_list, department_list)
