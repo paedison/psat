@@ -143,8 +143,8 @@ class ProblemTaggedItem(TaggedItemBase):
 
 class ProblemManager(models.Manager):
     def get_filtered_qs_by_psat(self, psat):
-        return self.select_related('psat').filter(
-            psat=psat).annotate(no=models.F('number'), ans=models.F('answer'))
+        return self.select_related('psat').filter(psat=psat).annotate(
+            no=models.F('number'), ans=models.F('answer'), ans_official=models.F('answer')).order_by('subject', 'no')
 
 
 class Problem(models.Model):

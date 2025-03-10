@@ -44,7 +44,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for obj in catalog_page_obj %}
+            {% for obj in cat_page_obj %}
                 <tr class="text-center">
                     <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
                     <td class="text-nowrap">{{ obj.rank_tot_avg }}</td>
@@ -116,6 +116,6 @@
     </table>
 </article>
 
-{% with page_obj=catalog_page_obj page_range=catalog_page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header='catalog_list' %}
+{% with page_obj=cat_page_obj page_range=cat_page_range %}
+    {% include 'a_prime/snippets/pagination.html' with header=tab.header %}
 {% endwith %}

@@ -139,13 +139,13 @@
                         </div>
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-                                {% for tab in filter_tab %}
+                                {% for tab in stat_filter_tab %}
                                     {% #nav_tab prefix=tab.prefix id=tab.id %}{{ tab.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
                         <div id="statisticsContent" class="tab-content">
-                            {% for tab in filter_tab %}
+                            {% for tab in stat_filter_tab %}
                                 {% cycle statistics_page_obj filtered_statistics_page_obj as stat_page_obj silent %}
                                 {% cycle statistics_page_range filtered_statistics_page_range as stat_page_range silent %}
                                 {% #nav_content prefix=tab.prefix id=tab.id %}
@@ -177,8 +177,21 @@
                                 {% include 'a_psat/snippets/admin_detail_search.html' %}
                             </div>
                         </div>
-                        <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
-                            {% include 'a_psat/snippets/admin_detail_predict_catalog.html' %}
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
+                                {% for tab in cat_filter_tab %}
+                                    {% #nav_tab prefix=tab.prefix id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+                        <div id="catalogContent" class="tab-content">
+                            {% for tab in cat_filter_tab %}
+                                {% cycle catalog_page_obj filtered_catalog_page_obj as cat_page_obj silent %}
+                                {% cycle catalog_page_range filtered_catalog_page_range as cat_page_range silent %}
+                                {% #nav_content prefix=tab.prefix id=tab.id %}
+                                    {% include 'a_psat/snippets/admin_detail_predict_catalog.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
                         </div>
                     </div>
                 </div>

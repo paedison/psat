@@ -90,10 +90,10 @@ def get_answer_tab(sub_list):
     ]
 
 
-def get_filter_tab():
+def get_filter_tab(target: str):
     return [
-        {'id': '0', 'title': '전체', 'prefix': 'TotalStatistics', 'header': 'total_statistics_list'},
-        {'id': '1', 'title': '필터링', 'prefix': 'FilteredStatistics', 'header': 'filtered_statistics_list'},
+        {'id': '0', 'title': '전체', 'prefix': f'Total{target.capitalize()}', 'header': f'total_{target}_list'},
+        {'id': '1', 'title': '필터링', 'prefix': f'Filtered{target.capitalize()}', 'header': f'filtered_{target}_list'},
     ]
 
 
@@ -391,6 +391,16 @@ def update_data_statistics(data_statistics, field_vars, score_list, department_l
                 't20': top_score_20,
                 'avg': avg_score,
             }
+
+
+def update_filtered_catalog(filtered_catalog_page_obj):
+    field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
+    for obj in filtered_catalog_page_obj:
+        obj.rank_tot_num = obj.filtered_rank_tot_num
+        obj.rank_dep_num = obj.filtered_rank_dep_num
+        for key, fld in field_dict.items():
+            setattr(obj, f'rank_tot_{key}', getattr(obj, f'filtered_rank_tot_{key}'))
+            setattr(obj, f'rank_dep_{key}', getattr(obj, f'filtered_rank_dep_{key}'))
 
 
 def update_statistics_model(psat, data_statistics, is_filtered=False):

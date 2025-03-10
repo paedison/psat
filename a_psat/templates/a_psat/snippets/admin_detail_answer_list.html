@@ -48,10 +48,18 @@
                             {% endfor %}
                         {% endif %}
                     {% else %}
-                        <button data-number="{{ answer.no }}"
-                                class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
-                            {{ answer.ans }}
-                        </button>
+                        {% if predict_psat.is_collecting_answer or predict_psat.is_answer_predict_opened %}
+                            <button data-number="{{ answer.no }}"
+                                    class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                                {{ answer.ans }}
+                            </button>
+                        {% elif predict_psat.is_answer_official_opened %}
+                            <button data-number="{{ answer.no }}"
+                                    class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                                    btn-{% if answer.ans == answer.ans_official %}success{% else %}danger{% endif %}">
+                                {{ answer.ans }}
+                            </button>
+                        {% endif %}
                     {% endif %}
                 </td>
             {% endif %}
