@@ -82,6 +82,9 @@ class Psat(models.Model):
     def get_admin_predict_statistics_excel_url(self):
         return reverse_lazy('psat:admin-predict-statistics-excel', args=[self.id])
 
+    def get_admin_predict_prime_id_excel_url(self):
+        return reverse_lazy('psat:admin-predict-prime_id-excel', args=[self.id])
+
     def get_admin_predict_catalog_excel_url(self):
         return reverse_lazy('psat:admin-predict-catalog-excel', args=[self.id])
 

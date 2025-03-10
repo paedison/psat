@@ -66,6 +66,8 @@ admin_patterns = [
 
     path('predict/excel/statistics/<int:pk>/',
          admin_psat_views.export_statistics_excel_view, name='admin-predict-statistics-excel'),
+    path('predict/excel/prime_id/<int:pk>/',
+         admin_psat_views.prime_id_excel_view, name='admin-predict-prime_id-excel'),
     path('predict/excel/catalog/<int:pk>/',
          admin_psat_views.export_catalog_excel_view, name='admin-predict-catalog-excel'),
     path('predict/excel/answer/<int:pk>/',

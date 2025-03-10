@@ -224,6 +224,12 @@ def export_statistics_excel_view(_: HtmxHttpRequest, pk: int):
 
 
 @admin_required
+def prime_id_excel_view(_: HtmxHttpRequest, pk: int):
+    psat = get_object_or_404(models.Psat, pk=pk)
+    return admin_psat_utils.get_prime_id_response(psat)
+
+
+@admin_required
 def export_catalog_excel_view(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
     return admin_psat_utils.get_catalog_response(psat)

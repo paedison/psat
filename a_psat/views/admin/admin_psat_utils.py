@@ -441,8 +441,8 @@ def update_statistics_model(psat, data_statistics, is_filtered=False):
 def update_statistics(psat, data_statistics, filtered_data_statistics):
     message_dict = {
         None: '에러가 발생했습니다.',
-        True: '등수를 업데이트했습니다.',
-        False: '기존 등수와 일치합니다.',
+        True: '통계를 업데이트했습니다.',
+        False: '기존 통계와 일치합니다.',
     }
     is_updated_list = [
         update_statistics_model(psat, data_statistics),
@@ -572,14 +572,14 @@ def bulk_create_or_update(model, list_create, list_update, update_fields):
 
 
 def get_statistics_response(psat):
+    qs_statistics = models.PredictStatistics.objects.filter(psat=psat).order_by('id')
+    df = pd.DataFrame.from_records(qs_statistics.values())
+
     filename = f'{psat.full_reference}_성적통계.xlsx'
     drop_columns = ['id', 'psat_id']
     column_label = [('직렬', '')]
 
     field_vars = get_total_field_vars(psat)
-
-    qs_statistics = models.PredictStatistics.objects.filter(psat=psat).order_by('id')
-    df = pd.DataFrame.from_records(qs_statistics.values())
     for fld, val in field_vars.items():
         drop_columns.append(fld)
         column_label.extend([
@@ -593,6 +593,17 @@ def get_statistics_response(psat):
         df = pd.concat([df, df_subject], axis=1)
 
     return get_response_for_excel_file(df, drop_columns, column_label, filename)
+
+
+def get_prime_id_response(psat):
+    qs_student = models.PredictStudent.objects.filter(psat=psat).values(
+        'id', 'created_at', 'name', 'prime_id').order_by('id')
+    df = pd.DataFrame.from_records(qs_student)
+    df['created_at'] = df['created_at'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
+
+    filename = f'{psat.full_reference}_참여자명단.xlsx'
+    column_label = [('ID', ''), ('등록일시', ''), ('이름', ''), ('프라임법학원 ID', '')]
+    return get_response_for_excel_file(df, [], column_label, filename)
 
 
 def get_catalog_response(psat):
