@@ -5,32 +5,32 @@
     <table class="table table-bordered table-striped align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap p-2" rowspan="2">ID</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">문제 출처 및 정답</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">전체<br/>정답률(%)</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">상위권<br/>정답률(%)</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">중위권<br/>정답률(%)</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">하위권<br/>정답률(%)</th>
-                <th class="text-primary text-nowrap p-2" rowspan="2">변별도</th>
-                <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)-전체</th>
-                <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)-전체</th>
-                <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)-상위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)-상위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)-중위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)-중위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="5">답안 선택수(명)-하위권</th>
-                <th class="text-primary text-nowrap p-2" colspan="5">답안 선택률(%)-하위권</th>
+                <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
+                <th class="text-primary text-nowrap" rowspan="2">문제 출처 및 정답</th>
+                <th class="text-primary text-nowrap" rowspan="2">전체<br/>정답률(%)</th>
+                <th class="text-primary text-nowrap" rowspan="2">상위권<br/>정답률(%)</th>
+                <th class="text-primary text-nowrap" rowspan="2">중위권<br/>정답률(%)</th>
+                <th class="text-primary text-nowrap" rowspan="2">하위권<br/>정답률(%)</th>
+                <th class="text-primary text-nowrap" rowspan="2">변별도</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-전체</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-전체</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-상위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-상위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-중위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택률(%)-중위권</th>
+                <th class="text-primary text-nowrap" colspan="5">답안 선택수(명)-하위권</th>
+                <th class="text-primary text-nowrap td-right-no-border" colspan="5">답안 선택률(%)-하위권</th>
             </tr>
             <tr class="text-center table-warning align-middle">
                 {% for _ in '12345678' %}
-                    <th class="text-primary text-nowrap p-2 td-right-no-border">①</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">②</th>
-                    <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">③</th>
+                    <th class="text-primary text-nowrap td-right-no-border">①</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">②</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">③</th>
                     {% if tab.title == '헌법' %}
-                        <th class="text-primary text-nowrap p-2 td-left-no-border">④</th>
+                        <th class="text-primary text-nowrap td-left-no-border">④</th>
                     {% else %}
-                        <th class="text-primary text-nowrap p-2 td-left-no-border td-right-no-border">④</th>
-                        <th class="text-primary text-nowrap p-2 td-left-no-border">⑤</th>
+                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">④</th>
+                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">⑤</th>
                     {% endif %}
                 {% endfor %}
             </tr>
@@ -38,10 +38,10 @@
         <tbody>
             {% for answer in answer_page_obj %}
                 <tr class="text-center">
-                    <td class="text-nowrap">{{ answer.id }}</td>
-                    <td class="text-nowrap" hx-target="#main">
+                    <th class="text-nowrap td-left-no-border">{{ answer.id }}</th>
+                    <th class="text-nowrap" hx-target="#main">
                         {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=answer problem=answer.problem problem_id=answer.problem_id %}
-                    </td>
+                    </th>
                     {% for _ in '12345' %}
                         {% cycle answer.rate_correct answer.rate_correct_top answer.rate_correct_mid answer.rate_correct_low answer.rate_gap as rate_correct silent %}
                         <td>
@@ -74,13 +74,13 @@
                             <td class="td-left-no-border">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</td>
                         {% else %}
                             <td class="td-left-no-border td-right-no-border">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                            <td class="td-left-no-border">{{ count_5|percentageby:count_sum|floatformat:1|default:'' }}</td>
+                            <td class="td-left-no-border td-right-no-border">{{ count_5|percentageby:count_sum|floatformat:1|default:'' }}</td>
                         {% endif %}
                     {% endfor %}
                 </tr>
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap p-2" colspan="40">자료가 없습니다.</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="40">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

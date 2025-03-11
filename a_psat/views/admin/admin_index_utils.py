@@ -1,5 +1,6 @@
 import traceback
 from collections import defaultdict
+from datetime import timedelta, datetime
 
 import django.db.utils
 import pandas as pd
@@ -305,6 +306,45 @@ def update_study_result_model(student: models.StudyStudent | None = None):
             except models.StudyResult.DoesNotExist:
                 list_create.append(models.StudyResult(student=student, psat=psat))
         bulk_create_or_update(models.StudyResult, list_create, [], [])
+
+
+def get_lecture_theme(lecture_nums, lecture_number) -> int:
+    if lecture_nums <= 15:
+        return lecture_number
+    else:
+        if lecture_number < 15:
+            return lecture_number
+        elif lecture_number == 15:
+            return 0
+        else:
+            return 15
+
+
+def get_lecture_and_homework_round(lecture_number) -> tuple:
+    lecture_round = None
+    homework_round = None
+    if 3 <= lecture_number <= 14:
+        lecture_round = lecture_number - 2
+    if 2 <= lecture_number <= 13:
+        homework_round = lecture_number - 1
+    return lecture_round, homework_round
+
+
+def get_lecture_datetimes(lecture_start_datetime: datetime, lecture_number) -> tuple:
+    lecture_datetime = lecture_start_datetime + timedelta(days=7) * (lecture_number - 1)
+
+    if lecture_number == 8:
+        lecture_open_datetime = lecture_datetime - timedelta(days=14)
+    else:
+        lecture_open_datetime = lecture_datetime - timedelta(days=7)
+    lecture_open_datetime = lecture_open_datetime.replace(hour=11, minute=0, second=0)
+
+    homework_end_datetime = (lecture_datetime - timedelta(days=1)).replace(
+        hour=23, minute=59, second=59, microsecond=999999)
+
+    if lecture_number == 8:
+        lecture_datetime = None
+    return lecture_open_datetime, homework_end_datetime, lecture_datetime
 
 
 def bulk_create_or_update(model, list_create, list_update, update_fields):

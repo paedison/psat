@@ -1,5 +1,4 @@
 import itertools
-from datetime import timedelta, datetime
 
 import pandas as pd
 from django.http import HttpResponse
@@ -435,9 +434,9 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
             list_create = []
             list_update = []
             for lecture_number in range(1, lecture_nums + 1):
-                lecture_theme = get_lecture_theme(lecture_nums, lecture_number)
-                lecture_round, homework_round = get_lecture_and_homework_round(lecture_number)
-                lecture_open_datetime, homework_end_datetime, lecture_datetime = get_lecture_datetimes(
+                lecture_theme = admin_index_utils.get_lecture_theme(lecture_nums, lecture_number)
+                lecture_round, homework_round = admin_index_utils.get_lecture_and_homework_round(lecture_number)
+                lecture_open_datetime, homework_end_datetime, lecture_datetime = admin_index_utils.get_lecture_datetimes(
                     lecture_start_datetime, lecture_number)
                 try:
                     schedule = models.StudyCurriculumSchedule.objects.get(
@@ -485,45 +484,6 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
     form = forms.StudyCurriculumForm()
     context = update_context_data(context, form=form)
     return render(request, 'a_psat/admin_form.html', context)
-
-
-def get_lecture_theme(lecture_nums, lecture_number) -> int:
-    if lecture_nums <= 15:
-        return lecture_number
-    else:
-        if lecture_number < 15:
-            return lecture_number
-        elif lecture_number == 15:
-            return 0
-        else:
-            return 15
-
-
-def get_lecture_and_homework_round(lecture_number) -> tuple:
-    lecture_round = None
-    homework_round = None
-    if 3 <= lecture_number <= 14:
-        lecture_round = lecture_number - 2
-    if 2 <= lecture_number <= 13:
-        homework_round = lecture_number - 1
-    return lecture_round, homework_round
-
-
-def get_lecture_datetimes(lecture_start_datetime: datetime, lecture_number) -> tuple:
-    lecture_datetime = lecture_start_datetime + timedelta(days=7) * (lecture_number - 1)
-
-    if lecture_number == 8:
-        lecture_open_datetime = lecture_datetime - timedelta(days=14)
-    else:
-        lecture_open_datetime = lecture_datetime - timedelta(days=7)
-    lecture_open_datetime = lecture_open_datetime.replace(hour=11, minute=0, second=0)
-
-    homework_end_datetime = (lecture_datetime - timedelta(days=1)).replace(
-        hour=23, minute=59, second=59, microsecond=999999)
-
-    if lecture_number == 8:
-        lecture_datetime = None
-    return lecture_open_datetime, homework_end_datetime, lecture_datetime
 
 
 @admin_required

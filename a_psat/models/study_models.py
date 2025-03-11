@@ -193,7 +193,9 @@ class StudyCurriculumManager(models.Manager):
 
     def annotate_student_count(self):
         return self.with_select_related().annotate(
-            student_count=models.Count('students')).order_by('-id')
+            student_count=models.Count('students'),
+            registered_student_count=models.Count('students', filter=models.Q(students__user__isnull=False))
+        ).order_by('-id')
 
 
 class StudyCurriculum(models.Model):

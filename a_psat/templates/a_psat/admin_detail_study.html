@@ -110,7 +110,6 @@
                                         전체 학생
                                     </a>
                                     {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
-{#                                    {% include 'a_prime/snippets/admin_detail_button_export.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
                                     {% include 'a_psat/snippets/admin_detail_button_export.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
                                 </div>
                             </div>
@@ -179,10 +178,9 @@
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap td-left-no-border" rowspan="2">수정</th>
                     <th class="text-primary text-nowrap" rowspan="2">ID</th>
-                    <th class="text-primary text-nowrap" rowspan="2">주차</th>
-                    <th class="text-primary text-nowrap" rowspan="2">강의 주제</th>
+                    <th class="text-primary text-nowrap" rowspan="2">강의 과목<br/>[강의 주차]</th>
                     <th class="text-primary text-nowrap" colspan="2">미니테스트</th>
-                    <th class="text-primary text-nowrap" rowspan="2">강의<br/>오픈일</th>
+                    <th class="text-primary text-nowrap" rowspan="2">강의 오픈일</th>
                     <th class="text-primary text-nowrap" rowspan="2">강의일</th>
                     <th class="text-primary text-nowrap td-right-no-border" rowspan="2">과제 마감일</th>
                 </tr>
@@ -200,18 +198,22 @@
                                 클릭
                             </a>
                         </td>
-                        <td class="text-nowrap text-center td-left-no-border">{{ obj.id }}</td>
-                        <td class="text-nowrap text-center">{{ obj.lecture_number }}</td>
-                        <td class="text-nowrap text-center">{{ obj.get_lecture_theme_display }}</td>
+                        <th class="text-nowrap text-center td-left-no-border">{{ obj.id }}</th>
+                        <th class="text-nowrap text-center">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ obj.get_lecture_theme_display }}</span>
+                                <span class="small text-primary">[{{ obj.lecture_number }}주차]</span>
+                            </div>
+                        </th>
                         <td class="text-nowrap text-center">{{ obj.lecture_round|default_if_none:'' }}</td>
                         <td class="text-nowrap text-center">{{ obj.homework_round|default_if_none:'' }}</td>
-                        <td class="text-nowrap text-center">{{ obj.lecture_open_datetime|date:'n/j(D) G:i' }}</td>
-                        <td class="text-nowrap text-center">{{ obj.lecture_datetime|date:'n/j(D) G:i' }}</td>
-                        <td class="text-nowrap text-center td-right-no-border">{{ obj.homework_end_datetime|date:'n/j(D) G:i' }}</td>
+                        <td class="text-nowrap text-center">{{ obj.lecture_open_datetime|date:'m/d(D) G:i' }}</td>
+                        <td class="text-nowrap text-center">{{ obj.lecture_datetime|date:'m/d(D) G:i' }}</td>
+                        <td class="text-nowrap text-center td-right-no-border">{{ obj.homework_end_datetime|date:'m/d(D) G:i' }}</td>
                     </tr>
                 {% empty %}
                     <tr class="text-center">
-                        <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border" colspan="22">자료가 없습니다.</td>
                     </tr>
                 {% endfor %}
             </tbody>

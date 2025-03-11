@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">PSAT 합격 예측 시험 목록 | 관리자 페이지</div>
+                    <div class="card-header">PSAT 합격 예측 시험 목록</div>
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         <div class="row flex-column flex-md-row-reverse">
                             <div id="predictUpdate"
@@ -28,7 +28,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ sub_title }} 시험 목록 | 관리자 페이지</div>
+                    <div class="card-header">{{ sub_title }} 시험 목록</div>
 
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         <div class="row flex-column flex-md-row-reverse">
@@ -53,7 +53,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">PSAT 스터디 카테고리 목록 | 관리자 페이지</div>
+                    <div class="card-header">PSAT 스터디 카테고리 목록</div>
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         <div class="row flex-column flex-md-row-reverse">
                             <div id="studyPsatUpdate"
@@ -75,7 +75,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">PSAT 스터디 커리큘럼 목록 | 관리자 페이지</div>
+                    <div class="card-header">PSAT 스터디 커리큘럼 목록</div>
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         <div class="row flex-column flex-md-row-reverse">
                             <div id="studyCurriculumUpdate"
@@ -222,8 +222,11 @@
             <tbody>
                 {% for obj in category_page_obj %}
                     <tr class="cursor-pointer" hx-get="{{ obj.get_admin_study_category_detail_url }}">
-                        <td class="text-center text-nowrap td-left-no-border">{{ obj.id }}</td>
-                        <td class="text-nowrap">{{ obj.category_info }} [{{ obj.name }}]</td>
+                        <th class="text-center text-nowrap td-left-no-border">{{ obj.id }}</th>
+                        <th class="text-nowrap">
+                            {{ obj.category_info }}
+                            <span class="small text-primary">[{{ obj.name }}]</span>
+                        </th>
                         <td class="text-center text-nowrap">{{ obj.round }}</td>
                         <td class="text-center text-nowrap">{{ obj.student_count }}</td>
                         {% for _ in '12345' %}
@@ -251,9 +254,8 @@
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
-                    <th class="text-primary text-nowrap" rowspan="2">커리큘럼</th>
-                    <th class="text-primary text-nowrap" rowspan="2">학생 수<br/>(명)</th>
-                    <th class="text-primary text-nowrap" rowspan="2">카테고리</th>
+                    <th class="text-primary text-nowrap" rowspan="2">커리큘럼 [카테고리]</th>
+                    <th class="text-primary text-nowrap" rowspan="2">학생 수<br/>등록/총원<br/>(명)</th>
                     <th class="text-primary text-nowrap td-right-no-border" colspan="5">통계(점)</th>
                 </tr>
                 <tr class="text-center table-warning align-middle">
@@ -266,10 +268,14 @@
             <tbody>
                 {% for obj in curriculum_page_obj %}
                     <tr class="cursor-pointer" hx-get="{{ obj.get_admin_study_curriculum_detail_url }}">
-                        <td class="text-center text-nowrap td-left-no-border">{{ obj.id }}</td>
-                        <td class="text-nowrap">{{ obj.curriculum_info }}</td>
-                        <td class="text-center text-nowrap">{{ obj.student_count }}</td>
-                        <td class="text-center text-nowrap">{{ obj.category_info }}</td>
+                        <th class="text-center text-nowrap td-left-no-border">{{ obj.id }}</th>
+                        <th class="text-nowrap">
+                            <div class=" d-flex justify-content-between">
+                                <span>{{ obj.curriculum_info }}</span>
+                                <span class="small text-primary ps-2">[{{ obj.category_info }}]</span>
+                            </div>
+                        </th>
+                        <td class="text-center text-nowrap">{{ obj.registered_student_count }} / {{ obj.student_count }}</td>
                         {% for _ in '12345' %}
                             {% cycle obj.max obj.t10 obj.t25 obj.t50 obj.avg as obj_stat silent %}
                             <td class="text-center text-nowrap td-left-no-border td-right-no-border">{% if obj_stat %}{{ obj_stat }}{% endif %}</td>

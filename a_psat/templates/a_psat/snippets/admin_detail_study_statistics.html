@@ -6,13 +6,19 @@
             <tr class="text-center table-warning align-middle">
                 {% for _ in '1234567' %}
                     {% cycle '회차' '응시 인원(명)' '최고 점수(점)' '상위 10%(점)' '상위 25%(점)' '상위 50%(점)' '평균 점수(점)' as th_title silent %}
-                    <th class="text-primary text-nowrap">{{ th_title }}</th>
+                    {% if forloop.first %}
+                        <th class="text-primary text-nowrap td-left-no-border">{{ th_title }}</th>
+                    {% elif forloop.last %}
+                        <th class="text-primary text-nowrap td-right-no-border">{{ th_title }}</th>
+                    {% else %}
+                        <th class="text-primary text-nowrap">{{ th_title }}</th>
+                    {% endif %}
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             <tr class="text-center">
-                <td class="text-nowrap">전체</td>
+                <th class="text-nowrap td-left-no-border">전체</th>
                 <td class="text-nowrap">
                     {% if category_stat.participants %}{{ category_stat.participants|intcomma }}{% endif %}
                 </td>
@@ -20,16 +26,16 @@
                     {% cycle category_stat.max category_stat.t10 category_stat.t25 category_stat.t50 as cat_stat silent %}
                     <td class="text-nowrap">{% if cat_stat %}{{ cat_stat }}{% endif %}</td>
                 {% endfor %}
-                <td class="text-nowrap">
+                <td class="text-nowrap td-right-no-border">
                     {% if category_stat.avg %}{{ category_stat.avg|floatformat:1 }}{% endif %}
                 </td>
             </tr>
             <tr class="text-center">
-                <td class="text-nowrap" colspan="7"></td>
+                <td class="text-nowrap td-left-no-border td-right-no-border" colspan="7"></td>
             </tr>
             {% for obj in statistics_page_obj %}
                 <tr class="text-center">
-                    <td class="text-nowrap">{{ obj.get_round_display }}</td>
+                    <th class="text-nowrap td-left-no-border">{{ obj.get_round_display }}</th>
                     <td class="text-nowrap">
                         {% if obj.statistics.participants %}{{ obj.statistics.participants|intcomma }}{% endif %}
                     </td>
@@ -37,13 +43,13 @@
                         {% cycle obj.statistics.max obj.statistics.t10 obj.statistics.t25 obj.statistics.t50 as obj_stat silent %}
                         <td class="text-nowrap">{% if obj_stat %}{{ obj_stat }}{% endif %}</td>
                     {% endfor %}
-                    <td class="text-nowrap">
+                    <td class="text-nowrap td-right-no-border">
                         {% if obj.statistics.avg %}{{ obj.statistics.avg|floatformat:1 }}{% endif %}
                     </td>
                 </tr>
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="22">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>
