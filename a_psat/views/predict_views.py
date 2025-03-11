@@ -65,6 +65,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         return redirect('psat:predict-list')
 
     score_tab = predict_utils.get_score_tab()
+    filtered_score_tab = predict_utils.get_score_tab(True)
     answer_tab = predict_utils.get_answer_tab(psat)
 
     qs_student_answer = models.PredictAnswer.objects.get_filtered_qs_by_psat_and_student(student, psat)
@@ -86,7 +87,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         stat_total_filtered = {}
         stat_department_filtered = {}
 
-    student_score = predict_utils.get_student_score(student)
+    chart_score = predict_utils.get_chart_score(student, stat_total_all, stat_department_all)
     frequency_score = predict_utils.get_dict_frequency_score(student)
     data_answers = predict_utils.get_data_answers(qs_student_answer, psat)
 
@@ -98,7 +99,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
 
         # tab variables for templates
-        score_tab=score_tab, answer_tab=answer_tab,
+        score_tab=score_tab, filtered_score_tab=filtered_score_tab, answer_tab=answer_tab,
 
         # info_student: 수험 정보
         student=student,
@@ -115,7 +116,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         data_answers=data_answers, is_confirmed_data=is_confirmed_data,
 
         # chart: 성적 분포 차트
-        student_score=student_score, frequency_score=frequency_score,
+        chart_score=chart_score, frequency_score=frequency_score,
         all_confirmed=is_confirmed_data[-1],
     )
 

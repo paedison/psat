@@ -174,14 +174,14 @@
                     <div class="card-body">
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetFilteredTab" role="tablist">
-                                {% for tab in score_tab %}
+                                {% for tab in filtered_score_tab %}
                                     {% #nav_tab prefix='ScoreFiltered' id=tab.id %}{{ tab.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
 
                         <div class="tab-content" id="scoreSheetFilteredContent">
-                            {% for tab in score_tab %}
+                            {% for tab in filtered_score_tab %}
                                 {% cycle stat_total_filtered as stat_total silent %}
                                 {% cycle stat_department_filtered as stat_department silent %}
                                 {% cycle '' stat_total_filtered stat_department_filtered as stat_data silent %}

@@ -28,69 +28,17 @@
 {% partialdef chart_contents %}
 <script type="text/javascript">
     screenWidth = window.innerWidth;
-    my_score = [
-        {{ student_score.0|floatformat:1 }},
-        {{ student_score.1|floatformat:1 }},
-        {{ student_score.2|floatformat:1 }},
-        {{ student_score.3|floatformat:1 }},
-        {{ student_score.4|floatformat:1 }},
-    ]
-    department_average = [
-        {{ stat_department.0.avg_score|floatformat:1 }},
-        {{ stat_department.1.avg_score|floatformat:1 }},
-        {{ stat_department.2.avg_score|floatformat:1 }},
-        {{ stat_department.3.avg_score|floatformat:1 }},
-        {{ stat_department.4.avg_score|floatformat:1 }},
-    ]
-    total_average = [
-        {{ stat_total.0.avg_score|floatformat:1 }},
-        {{ stat_total.1.avg_score|floatformat:1 }},
-        {{ stat_total.2.avg_score|floatformat:1 }},
-        {{ stat_total.3.avg_score|floatformat:1 }},
-        {{ stat_total.4.avg_score|floatformat:1 }},
-    ]
-    department_score_20 = [
-        {{ stat_department.0.top_score_20|floatformat:1 }},
-        {{ stat_department.1.top_score_20|floatformat:1 }},
-        {{ stat_department.2.top_score_20|floatformat:1 }},
-        {{ stat_department.3.top_score_20|floatformat:1 }},
-        {{ stat_department.4.top_score_20|floatformat:1 }},
-    ]
-    total_score_20 = [
-        {{ stat_total.0.top_score_20|floatformat:1 }},
-        {{ stat_total.1.top_score_20|floatformat:1 }},
-        {{ stat_total.2.top_score_20|floatformat:1 }},
-        {{ stat_total.3.top_score_20|floatformat:1 }},
-        {{ stat_total.4.top_score_20|floatformat:1 }},
-    ]
-    department_score_10 = [
-        {{ stat_department.0.top_score_10|floatformat:1 }},
-        {{ stat_department.1.top_score_10|floatformat:1 }},
-        {{ stat_department.2.top_score_10|floatformat:1 }},
-        {{ stat_department.3.top_score_10|floatformat:1 }},
-        {{ stat_department.4.top_score_10|floatformat:1 }},
-    ]
-    total_score_10 = [
-        {{ stat_total.0.top_score_10|floatformat:1 }},
-        {{ stat_total.1.top_score_10|floatformat:1 }},
-        {{ stat_total.2.top_score_10|floatformat:1 }},
-        {{ stat_total.3.top_score_10|floatformat:1 }},
-        {{ stat_total.4.top_score_10|floatformat:1 }},
-    ]
-    department_top = [
-        {{ stat_department.0.max_score|floatformat:1 }},
-        {{ stat_department.1.max_score|floatformat:1 }},
-        {{ stat_department.2.max_score|floatformat:1 }},
-        {{ stat_department.3.max_score|floatformat:1 }},
-        {{ stat_department.4.max_score|floatformat:1 }},
-    ]
-    total_top = [
-        {{ stat_total.0.max_score|floatformat:1 }},
-        {{ stat_total.1.max_score|floatformat:1 }},
-        {{ stat_total.2.max_score|floatformat:1 }},
-        {{ stat_total.3.max_score|floatformat:1 }},
-        {{ stat_total.4.max_score|floatformat:1 }},
-    ]
+
+    my_score = {{ chart_score.my_score }}
+    total_average = {{ chart_score.total_average }}
+    total_score_20 = {{ chart_score.total_score_20 }}
+    total_score_10 = {{ chart_score.total_score_10 }}
+    total_top = {{ chart_score.total_top }}
+    department_average = {{ chart_score.department_average }}
+    department_score_20 = {{ chart_score.department_score_20 }}
+    department_score_10 = {{ chart_score.department_score_10 }}
+    department_top = {{ chart_score.department_top }}
+
     chart_datasets = [
         {label: '내 점수', borderWidth: 1, data: my_score},
         {label: '직렬 평균', borderWidth: 1, data: department_average},
@@ -126,7 +74,12 @@
                 }
             },
             scales: {
-                y: {ticks: {font: {weight: 'bold'}}},
+                y: {
+                    min: {{ chart_score.min_score }},
+                    ticks: {
+                        font: {weight: 'bold'}
+                    }
+                },
                 x: {ticks: {font: {weight: 'bold'}}},
             },
             elements: {
@@ -185,7 +138,16 @@
                 },
             },
             scales: {
-                y: {ticks: {font: {weight: 'bold'}}},
+                y: {
+                    min: 0,
+                    ticks: {
+                        font: {weight: 'bold'},
+                        callback: function(value, index, values) {
+                            return Number.isInteger(value) ? value : '';
+                        },
+                        stepSize: 1
+                    }
+                },
                 x: {ticks: {font: {weight: 'bold'}}},
             },
         }

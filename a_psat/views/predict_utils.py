@@ -74,12 +74,13 @@ def get_predict_psat(psat):
         return None
 
 
-def get_score_tab():
+def get_score_tab(is_filtered=False):
+    suffix = 'Filtered' if is_filtered else ''
     score_template_table = get_score_template_table()
     return [
-        {'id': '0', 'title': '내 성적', 'prefix': 'my', 'template': score_template_table[0]},
-        {'id': '1', 'title': '전체 기준', 'prefix': 'total', 'template': score_template_table[1]},
-        {'id': '2', 'title': '직렬 기준', 'prefix': 'department', 'template': score_template_table[2]},
+        {'id': '0', 'title': '내 성적', 'prefix': f'my{suffix}', 'template': score_template_table[0]},
+        {'id': '1', 'title': '전체 기준', 'prefix': f'total{suffix}', 'template': score_template_table[1]},
+        {'id': '2', 'title': '직렬 기준', 'prefix': f'department{suffix}', 'template': score_template_table[2]},
     ]
 
 
@@ -197,7 +198,7 @@ def get_stat_data(
                     rank = sorted_scores.index(student_score) + 1
                     top_10_threshold = max(1, int(participants * 0.1))
                     top_20_threshold = max(1, int(participants * 0.2))
-                    avg_score = sum(scores[fld]) / participants if any(scores[fld]) else 0
+                    avg_score = round(sum(scores[fld]) / participants, 1) if any(scores[fld]) else 0
                     stat.update({
                         'rank': rank,
                         'score': student_score,
@@ -223,9 +224,38 @@ def get_dict_frequency_score(student) -> dict:
     return {'score_points': dict(score_counts), 'score_colors': score_colors}
 
 
-def get_student_score(student: models.PredictStudent) -> list:
+def get_chart_score(student, stat_total, stat_department):
     field_vars = get_field_vars(student.psat)
-    return [getattr(student.score, field) for field in field_vars]
+    student_score = [getattr(student.score, field) for field in field_vars]
+
+    chart_score = {
+        'my_score': student_score,
+        'total_average': [],
+        'total_score_20': [],
+        'total_score_10': [],
+        'total_top': [],
+        'department_average': [],
+        'department_score_20': [],
+        'department_score_10': [],
+        'department_top': [],
+    }
+
+    score_list = student_score.copy()
+    for stat in stat_total:
+        score_list.extend([stat['avg_score'], stat['top_score_20'], stat['top_score_10'], stat['max_score']])
+        chart_score['total_average'].append(stat['avg_score'])
+        chart_score['total_score_20'].append(stat['top_score_20'])
+        chart_score['total_score_10'].append(stat['top_score_10'])
+        chart_score['total_top'].append(stat['max_score'])
+    for stat in stat_department:
+        score_list.extend([stat['avg_score'], stat['top_score_20'], stat['top_score_10'], stat['max_score']])
+        chart_score['department_average'].append(stat['avg_score'])
+        chart_score['department_score_20'].append(stat['top_score_20'])
+        chart_score['department_score_10'].append(stat['top_score_10'])
+        chart_score['department_top'].append(stat['max_score'])
+
+    chart_score['min_score'] = (min(score_list) // 5) * 5
+    return chart_score
 
 
 def get_answer_rate(answer_count, ans: int, count_sum: int, answer_official_list=None):

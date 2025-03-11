@@ -1,5 +1,6 @@
 import io
 import traceback
+import zipfile
 from collections import defaultdict
 from urllib.parse import quote
 
@@ -618,17 +619,51 @@ def get_prime_id_response(psat):
 
 def get_catalog_response(psat):
     student_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
+    filtered_student_list = student_list.filter(is_filtered=True)
+
+    df1, filename1 = get_catalog_dataframe_and_file_name(student_list, psat)
+    df2, filename2 = get_catalog_dataframe_and_file_name(filtered_student_list, psat, True)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        excel_buffer1 = io.BytesIO()
+        df1.to_excel(excel_buffer1, engine='xlsxwriter')
+        zip_file.writestr(filename1, excel_buffer1.getvalue())
+
+        excel_buffer2 = io.BytesIO()
+        df2.to_excel(excel_buffer2, engine='xlsxwriter')
+        zip_file.writestr(filename2, excel_buffer2.getvalue())
+
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="catalog_files.zip"'
+    return response
+
+
+def get_catalog_dataframe_and_file_name(student_list, psat, is_filtered=False):
+    filtered_type = '필터링' if is_filtered else '전체'
+    filename = f'{psat.full_reference}_성적일람표_{filtered_type}.xlsx'
+
     df = pd.DataFrame.from_records(student_list.values())
+    if is_filtered:
+        field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
+        df['rank_tot_num'] = df['filtered_rank_tot_num']
+        df['rank_dep_num'] = df['filtered_rank_dep_num']
+        for key, fld in field_dict.items():
+            df[f'rank_tot_{key}'] = df[f'filtered_rank_tot_{key}']
+            df[f'rank_dep_{key}'] = df[f'filtered_rank_dep_{key}']
+
     df['created_at'] = df['created_at'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
     df['latest_answer_time'] = df['latest_answer_time'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
 
-    filename = f'{psat.full_reference}_성적일람표.xlsx'
+    drop_columns = ['filtered_rank_tot_num', 'filtered_rank_dep_num']
+    field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
+    for key in field_dict:
+        drop_columns.extend([f'filtered_rank_tot_{key}', f'filtered_rank_dep_{key}'])
     column_label = [
         ('ID', ''), ('등록일시', ''), ('이름', ''), ('수험번호', ''), ('비밀번호', ''),
         ('PSAT ID', ''), ('카테고리 ID', ''), ('사용자 ID', ''),
         ('필터링 여부', ''), ('프라임 ID', ''), ('직렬', ''), ('최종답안 등록일시', ''),
         ('제출 답안수', ''), ('PSAT 총점', ''), ('전체 총 인원', ''), ('직렬 총 인원', ''),
-        ('[필터링]전체 총 인원', ''), ('[필터링]직렬 총 인원', ''),
     ]
 
     field_vars = get_field_vars(psat)
@@ -637,11 +672,13 @@ def get_catalog_response(psat):
             (val[1], '점수'),
             (val[1], '전체 등수'),
             (val[1], '직렬 등수'),
-            (val[1], '[필터링]전체 등수'),
-            (val[1], '[필터링]직렬 등수'),
         ])
 
-    return get_response_for_excel_file(df, [], column_label, filename)
+    df.drop(columns=drop_columns, inplace=True)
+    df.columns = pd.MultiIndex.from_tuples(column_label)
+    df.reset_index(inplace=True)
+
+    return df, filename
 
 
 def get_answer_response(psat):
