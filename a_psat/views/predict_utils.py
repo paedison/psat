@@ -240,7 +240,7 @@ def get_chart_score(student, stat_total, stat_department):
         'department_top': [],
     }
 
-    score_list = student_score.copy()
+    score_list = [score for score in student_score if score is not None]
     for stat in stat_total:
         score_list.extend([stat['avg_score'], stat['top_score_20'], stat['top_score_10'], stat['max_score']])
         chart_score['total_average'].append(stat['avg_score'])
