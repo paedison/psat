@@ -45,7 +45,7 @@
                 <td class="text-nowrap td-left-no-border td-right-no-border" colspan="14"></td>
             </tr>
             {% for obj in result_page_obj %}
-                {% if config.current_time >= obj.schedule.lecture_open_datetime and config.current_time < obj.schedule.homework_end_datetime %}
+                {% if current_time >= obj.schedule.lecture_open_datetime and current_time < obj.schedule.homework_end_datetime %}
                     {% if obj.score %}
                         <tr class="text-center">
                             <th class="text-nowrap td-left-no-border">{{ obj.psat.get_round_display }}</th>
@@ -90,7 +90,7 @@
                             </td>
                         </tr>
                     {% endif %}
-                {% elif config.current_time >= obj.schedule.homework_end_datetime %}
+                {% elif current_time >= obj.schedule.homework_end_datetime %}
                     <tr class="text-center">
                         <th class="text-nowrap td-left-no-border">{{ obj.psat.get_round_display }}</th>
                         <td class="text-nowrap">{{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}</td>

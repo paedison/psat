@@ -339,12 +339,45 @@ def get_lecture_datetimes(lecture_start_datetime: datetime, lecture_number) -> t
         lecture_open_datetime = lecture_datetime - timedelta(days=7)
     lecture_open_datetime = lecture_open_datetime.replace(hour=11, minute=0, second=0)
 
-    homework_end_datetime = (lecture_datetime - timedelta(days=1)).replace(
+    homework_end_datetime = (lecture_datetime + timedelta(days=6)).replace(
         hour=23, minute=59, second=59, microsecond=999999)
 
     if lecture_number == 8:
         lecture_datetime = None
     return lecture_open_datetime, homework_end_datetime, lecture_datetime
+
+
+def update_study_curriculum_schedule_model(lecture_nums, lecture_start_datetime, curriculum):
+    list_create = []
+    list_update = []
+    for lecture_number in range(1, lecture_nums + 1):
+        lecture_theme = get_lecture_theme(lecture_nums, lecture_number)
+        lecture_round, homework_round = get_lecture_and_homework_round(lecture_number)
+        lecture_open_datetime, homework_end_datetime, lecture_datetime = get_lecture_datetimes(
+            lecture_start_datetime, lecture_number)
+        find_expr = {'curriculum': curriculum, 'lecture_number': lecture_number}
+        matching_expr = {
+            'lecture_theme': lecture_theme,
+            'lecture_round': lecture_round,
+            'homework_round': homework_round,
+            'lecture_open_datetime': lecture_open_datetime,
+            'homework_end_datetime': homework_end_datetime,
+            'lecture_datetime': lecture_datetime,
+        }
+        try:
+            schedule = models.StudyCurriculumSchedule.objects.get(**find_expr)
+            fields_not_match = [getattr(schedule, key) != val for key, val in matching_expr.items()]
+            if any(fields_not_match):
+                for key, val in matching_expr.items():
+                    setattr(schedule, key, val)
+                list_update.append(schedule)
+        except models.StudyCurriculumSchedule.DoesNotExist:
+            list_create.append(models.StudyCurriculumSchedule(**find_expr, **matching_expr))
+    update_fields = [
+        'lecture_number', 'lecture_theme', 'lecture_round', 'homework_round',
+        'lecture_open_datetime', 'homework_end_datetime', 'lecture_datetime'
+    ]
+    bulk_create_or_update(models.StudyCurriculumSchedule, list_create, list_update, update_fields)
 
 
 def bulk_create_or_update(model, list_create, list_update, update_fields):

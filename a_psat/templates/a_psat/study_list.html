@@ -24,9 +24,9 @@
                 <div class="d-none d-sm-inline">[{{ student.curriculum.name }}]</div>
             </div>
             <div>
-                {% if config.current_time < student.earliest_datetime %}
+                {% if current_time < student.earliest_datetime %}
                     <span class="badge rounded-pill bg-primary fs-6">개강 전</span>
-                {% elif config.current_time > student.latest_datetime %}
+                {% elif current_time > student.latest_datetime %}
                     <span class="badge rounded-pill bg-danger fs-6">종강</span>
                 {% else %}
                     <span class="badge rounded-pill bg-success fs-6">강의 진행중</span>

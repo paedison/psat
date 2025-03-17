@@ -38,7 +38,7 @@
         </thead>
         <tbody>
             {% for obj in answer_page_obj %}
-                {% if not obj.ans_student and config.current_time < obj.schedule.homework_end_datetime %}
+                {% if not obj.ans_student and current_time < obj.schedule.homework_end_datetime %}
                     <tr>
                         <td class="text-nowrap td-left-no-border" hx-target="#main">
                             {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}

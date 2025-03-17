@@ -248,8 +248,8 @@ class StudyCurriculumForm(forms.Form):
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
     lecture_nums = forms.IntegerField(
-        label='강의 차수', initial=15,
-        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+        label='강의 차수', initial=16,
+        widget=forms.NumberInput(attrs={'type': 'number', 'class': 'form-control'}),
     )
 
     def __init__(self, *args, **kwargs):

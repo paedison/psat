@@ -431,51 +431,7 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
             curriculum.name = curriculum_name
             curriculum.save()
 
-            list_create = []
-            list_update = []
-            for lecture_number in range(1, lecture_nums + 1):
-                lecture_theme = admin_index_utils.get_lecture_theme(lecture_nums, lecture_number)
-                lecture_round, homework_round = admin_index_utils.get_lecture_and_homework_round(lecture_number)
-                lecture_open_datetime, homework_end_datetime, lecture_datetime = admin_index_utils.get_lecture_datetimes(
-                    lecture_start_datetime, lecture_number)
-                try:
-                    schedule = models.StudyCurriculumSchedule.objects.get(
-                        curriculum=curriculum, lecture_number=lecture_number)
-                    fields_not_match = [
-                        schedule.lecture_theme != lecture_theme,
-                        schedule.lecture_round != lecture_round,
-                        schedule.homework_round != homework_round,
-                        schedule.lecture_open_datetime != lecture_open_datetime,
-                        schedule.homework_end_datetime != homework_end_datetime,
-                        schedule.lecture_datetime != lecture_datetime,
-                    ]
-                    if any(fields_not_match):
-                        schedule.lecture_theme = lecture_theme
-                        schedule.lecture_round = lecture_round
-                        schedule.homework_round = homework_round
-                        schedule.lecture_open_datetime = lecture_open_datetime
-                        schedule.homework_end_datetime = homework_end_datetime
-                        schedule.lecture_datetime = lecture_datetime
-                        list_update.append(schedule)
-                except models.StudyCurriculumSchedule.DoesNotExist:
-                    list_create.append(
-                        models.StudyCurriculumSchedule(
-                            curriculum=curriculum,
-                            lecture_number=lecture_number,
-                            lecture_theme=lecture_theme,
-                            lecture_round=lecture_round,
-                            homework_round=homework_round,
-                            lecture_open_datetime=lecture_open_datetime,
-                            homework_end_datetime=homework_end_datetime,
-                            lecture_datetime=lecture_datetime,
-                        )
-                    )
-            update_fields = [
-                'lecture_number', 'lecture_theme', 'lecture_round', 'homework_round',
-                'lecture_open_datetime', 'homework_end_datetime', 'lecture_datetime'
-            ]
-            admin_index_utils.bulk_create_or_update(
-                models.StudyCurriculumSchedule, list_create, list_update, update_fields)
+            admin_index_utils.update_study_curriculum_schedule_model(lecture_nums, lecture_start_datetime, curriculum)
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)

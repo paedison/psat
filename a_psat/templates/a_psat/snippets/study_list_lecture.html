@@ -10,7 +10,7 @@
                             {{ obj.lecture_number }}주차 - {{ obj.lecture_datetime|date:'n/j(D)' }}
                             {% if obj.lecture_round %}
                                 <span class="text-primary">미니테스트 {{ obj.lecture_round }}회차</span>
-                                {% if config.current_time > obj.lecture_open_datetime and config.current_time <= obj.homework_end_datetime %}
+                                {% if current_time > obj.lecture_open_datetime and current_time <= obj.homework_end_datetime %}
                                     <a class="btn btn-sm btn-outline-primary"
                                        href="{% url 'psat:study-answer-input-redirect' obj.curriculum.organization.name obj.curriculum.semester obj.lecture_round %}">
                                         답안 제출
@@ -70,7 +70,7 @@
                     <th class="text-nowrap text-center small">
                         {% if obj.lecture_round %}
                             {{ obj.lecture_round }}회차<br/>
-                            {% if config.current_time > obj.lecture_open_datetime and config.current_time <= obj.homework_end_datetime %}
+                            {% if current_time > obj.lecture_open_datetime and current_time <= obj.homework_end_datetime %}
                                 <a class="btn btn-sm btn-outline-primary"
                                    href="{% url 'psat:study-answer-input-redirect' obj.curriculum.organization.name obj.curriculum.semester obj.lecture_round %}">
                                     답안 제출
