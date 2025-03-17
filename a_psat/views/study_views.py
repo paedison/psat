@@ -11,7 +11,7 @@ from django_htmx.http import reswap
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 from . import study_utils
-from .admin import admin_utils
+from .admin import admin_study_utils
 from .. import models, forms, utils
 
 
@@ -87,7 +87,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
 
     if view_type == 'lecture':
         lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
-        admin_utils.update_lecture_paginator_data(lecture_page_obj)
+        admin_study_utils.update_lecture_paginator_data(lecture_page_obj)
         context = update_context_data(
             context, lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range)
         return render(request, 'a_psat/snippets/study_list_lecture.html', context)
@@ -108,7 +108,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         return render(request, 'a_psat/snippets/study_list_answer_analysis.html', context)
 
     lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
-    admin_utils.update_lecture_paginator_data(lecture_page_obj)
+    admin_study_utils.update_lecture_paginator_data(lecture_page_obj)
     curriculum_stat, result_page_obj, result_page_range = study_utils.get_result_paginator_data(
         homework_schedule, student, opened_rounds, page_number)
     answer_page_obj, answer_page_range = study_utils.get_answer_paginator_data(
@@ -273,7 +273,7 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int):
                 problem = models.StudyProblem.objects.get(psat=result.psat, number=no)
                 list_create.append(models.StudyAnswer(
                     student=result.student, problem=problem, answer=ans))
-            admin_utils.bulk_create_or_update(models.StudyAnswer, list_create, [], [])
+            admin_study_utils.bulk_create_or_update(models.StudyAnswer, list_create, [], [])
 
             qs_answer_count = models.StudyAnswerCount.objects.get_filtered_qs_by_psat(result.psat)
             for qs_ac in qs_answer_count:
@@ -290,6 +290,13 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int):
                     score += 1
             result.score = score
             result.save()
+
+            student = result.student
+            if student.score_total is None:
+                student.score_total = score
+            else:
+                student.score_total = F('student__score_total') + score
+            student.save()
 
         next_url = result.student.get_study_curriculum_detail_url()
         context = update_context_data(header=f'답안 제출', is_confirmed=is_confirmed, next_url=next_url)

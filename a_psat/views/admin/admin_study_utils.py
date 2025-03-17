@@ -3,8 +3,7 @@ from collections import defaultdict
 
 import django.db.utils
 from django.db import transaction
-from django.db.models import Count, Window, F, Sum, Value, Max, Avg
-from django.db.models.functions import Rank, Coalesce
+from django.db.models import Count, F
 from django.urls import reverse_lazy
 
 from ... import models
@@ -67,7 +66,7 @@ def update_data_answers(qs_problem):
 
 def get_score_stat_dict(qs_student) -> dict:
     # stat_dict keys: participants, max, avg, t10, t25, t50
-    stat_dict = qs_student.aggregate(participants=Count('id'), max=Max('score_total'), avg=Avg('score_total'))
+    stat_dict = models.get_study_statistics_aggregation(qs_student)
     participants = stat_dict['participants']
     if participants == 0:
         return {}
@@ -114,8 +113,7 @@ def update_scores(qs_student, psats):
 
     # Update StudyStudent for score_total
     list_update = []
-    student_scores = qs_student.annotate(
-        score_calculated=Coalesce(Sum('results__score'), Value(0)))
+    student_scores = models.get_study_student_score_calculated_annotation(qs_student)
     for student in student_scores:
         if student.score_total != student.score_calculated:
             student.score_total = student.score_calculated
@@ -142,12 +140,7 @@ def update_ranks(qs_student, psats):
 
     # Update StudyResult for rank
     list_update = []
-    ranked_results = (
-        models.StudyResult.objects.filter(student__in=qs_student, psat__in=psats)
-        .annotate(
-            rank_calculated=Window(expression=Rank(), partition_by=F('psat'), order_by=[F('score').desc()])
-        )
-    )
+    ranked_results = models.StudyResult.objects.get_rank_calculated(qs_student, psats)
     for result in ranked_results:
         if result.rank_calculated != models.StudyResult.objects.get(id=result.id).rank:
             result.rank = result.rank_calculated
@@ -157,9 +150,7 @@ def update_ranks(qs_student, psats):
 
     # Update StudyStudent for score_total
     list_update = []
-    ranked_students = qs_student.annotate(
-        rank_calculated=Window(expression=Rank(), order_by=[F('score_total').desc()])
-    )
+    ranked_students = models.get_study_student_total_rank_calculated_annotation(qs_student)
     for student in ranked_students:
         if student.rank_total != student.rank_calculated:
             student.rank_total = student.rank_calculated
@@ -178,39 +169,31 @@ def update_ranks(qs_student, psats):
 
 def get_data_statistics(qs_student):
     data_statistics = []
-    score_dict = {'전체': []}
-
+    score_dict = defaultdict(list)
     for student in qs_student:
-        score_dict['전체'].append(student.score_total)
+        if student.score_total is not None:
+            score_dict['전체'].append(student.score_total)
         for r in student.result_list:
-            study_round = r.psat.round
-            if study_round not in score_dict.keys():
-                score_dict[study_round] = []
-            if r.score:
-                score_dict[study_round].append(r.score)
+            if r.score is not None:
+                score_dict[r.psat.round].append(r.score)
 
     for study_round, scores in score_dict.items():
         participants = len(scores)
         sorted_scores = sorted(scores, reverse=True)
-        max_score = top_score_10 = top_score_25 = top_score_50 = avg_score = None
-        if sorted_scores:
-            max_score = sorted_scores[0]
-            top_10_threshold = max(1, int(participants * 0.10))
-            top_25_threshold = max(1, int(participants * 0.25))
-            top_50_threshold = max(1, int(participants * 0.50))
-            top_score_10 = sorted_scores[top_10_threshold - 1]
-            top_score_25 = sorted_scores[top_25_threshold - 1]
-            top_score_50 = sorted_scores[top_50_threshold - 1]
-            avg_score = round(sum(scores) / participants, 1)
+
+        def get_top_score(percentage):
+            if sorted_scores:
+                threshold = max(1, int(participants * percentage))
+                return sorted_scores[threshold - 1]
 
         data_statistics.append({
             'study_round': study_round,
             'participants': participants,
-            'max': max_score,
-            't10': top_score_10,
-            't25': top_score_25,
-            't50': top_score_50,
-            'avg': avg_score,
+            'max': sorted_scores[0] if sorted_scores else None,
+            't10': get_top_score(0.10),
+            't25': get_top_score(0.25),
+            't50': get_top_score(0.50),
+            'avg': round(sum(scores) / participants, 1) if sorted_scores else None,
         })
     return data_statistics
 
@@ -249,13 +232,7 @@ def update_statistics_model(category, data_statistics):
     return is_updated, message_dict[is_updated]
 
 
-def update_answer_count_model(model_dict, rank_type='all'):
-    answer_model = model_dict['answer']
-    answer_count_model = model_dict[rank_type]
-
-    list_update = []
-    list_create = []
-
+def get_answer_distribution(answer_model, rank_type):
     lookup_field = f'student__rank_total'
     top_rank_threshold = 0.27
     mid_rank_threshold = 0.73
@@ -270,12 +247,20 @@ def update_answer_count_model(model_dict, rank_type='all'):
     elif rank_type == 'low':
         lookup_exp[f'{lookup_field}__gt'] = participants * mid_rank_threshold
 
-    answer_distribution = (
-        answer_model.objects.filter(**lookup_exp)
-        # .select_related('student', 'student__rank_total')
-        .values('problem_id', 'answer')
+    return (
+        answer_model.objects.filter(**lookup_exp).values('problem_id', 'answer')
         .annotate(count=Count('id')).order_by('problem_id', 'answer')
     )
+
+
+def update_answer_count_model(model_dict, rank_type='all'):
+    answer_model = model_dict['answer']
+    answer_count_model = model_dict[rank_type]
+
+    list_update = []
+    list_create = []
+
+    answer_distribution = get_answer_distribution(answer_model, rank_type)
     organized_distribution = defaultdict(lambda: {i: 0 for i in range(6)})
 
     for entry in answer_distribution:

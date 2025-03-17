@@ -73,13 +73,13 @@ def list_view(request: HtmxHttpRequest):
         return render(request, f'{template_name}#study_category_list', context)
     elif view_type == 'study_category_list':
         category_page_obj, category_page_range = utils.get_paginator_data(study_category_list, page_number)
-        admin_index_utils.update_category_statistics(category_page_obj)
+        admin_index_utils.update_study_statistics(category_page_obj)
         context = update_context_data(
             context, category_page_obj=category_page_obj, category_page_range=category_page_range)
         return render(request, f'{template_name}#study_category_list', context)
     elif view_type == 'study_curriculum_list':
         curriculum_page_obj, curriculum_page_range = utils.get_paginator_data(study_curriculum_list, page_number)
-        admin_index_utils.update_curriculum_statistics(curriculum_page_obj)
+        admin_index_utils.update_study_statistics(curriculum_page_obj, True)
         context = update_context_data(
             context, curriculum_page_obj=curriculum_page_obj, curriculum_page_range=curriculum_page_range)
         return render(request, f'{template_name}#study_curriculum_list', context)
@@ -88,9 +88,9 @@ def list_view(request: HtmxHttpRequest):
     admin_index_utils.update_problem_count(page_obj)
     predict_page_obj, predict_page_range = utils.get_paginator_data(predict_exam_list, page_number)
     category_page_obj, category_page_range = utils.get_paginator_data(study_category_list, page_number)
-    admin_index_utils.update_category_statistics(category_page_obj)
+    admin_index_utils.update_study_statistics(category_page_obj)
     curriculum_page_obj, curriculum_page_range = utils.get_paginator_data(study_curriculum_list, page_number)
-    admin_index_utils.update_curriculum_statistics(curriculum_page_obj)
+    admin_index_utils.update_study_statistics(curriculum_page_obj, True)
 
     context = update_context_data(
         context,

@@ -79,18 +79,21 @@ admin_patterns = [
          admin_index_views.study_category_create_view, name='admin-study-category-create'),
     path('study/category/upload/',
          admin_index_views.study_category_upload_view, name='admin-study-category-upload'),
+    path('study/category/update/<int:pk>/',
+         admin_study_views.category_update_view, name='admin-study-category-update'),
 
     path('study/curriculum/upload/',
          admin_index_views.study_curriculum_upload_view, name='admin-study-curriculum-upload'),
     path('study/curriculum/create/',
          admin_index_views.study_curriculum_create_view, name='admin-study-curriculum-create'),
+    path('study/curriculum/update/<int:pk>/',
+         admin_study_views.curriculum_update_view, name='admin-study-curriculum-update'),
+
     path('study/organization/create/',
          admin_index_views.study_organization_create_view, name='admin-study-organization-create'),
     path('study/student/create/',
          admin_index_views.study_student_create_view, name='admin-study-student-create'),
     path('study/answer/add/', admin_index_views.study_answer_add_view, name='admin-study-answer-add'),
-
-    path('study/category/update/<int:pk>/', admin_study_views.category_update_view, name='admin-study-category-update'),
 
     path('study/student/<int:pk>/', admin_study_views.student_detail_view, name='admin-study-student-detail'),
 ]

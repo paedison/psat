@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 
-from .admin import admin_utils
+from .admin import admin_study_utils
 from .. import models, utils
 
 
@@ -78,7 +78,7 @@ def get_result_paginator_data(homework_schedule, student, opened_rounds, page_nu
 
     # 커리큘럼 기준 전체 통계
     qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(student.curriculum)
-    curriculum_stat = admin_utils.get_score_stat_dict(qs_student)
+    curriculum_stat = admin_study_utils.get_score_stat_dict(qs_student)
     total_score_sum = score_dict['total']['score_sum']
     curriculum_stat['score_sum'] = total_score_sum
     curriculum_stat['rank'] = student.rank if total_score_sum else None
@@ -86,7 +86,7 @@ def get_result_paginator_data(homework_schedule, student, opened_rounds, page_nu
         curriculum_stat[f'score_{i}'] = score_dict['total'][f'score_{i}']
 
     # 커리큘럼 기준 회차별 통계
-    data_statistics = admin_utils.get_data_statistics(qs_student)
+    data_statistics = admin_study_utils.get_data_statistics(qs_student)
     data_statistics_dict = {}
     for data in data_statistics:
         data_statistics_dict[data['study_round']] = data

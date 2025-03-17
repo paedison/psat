@@ -22,6 +22,10 @@ class StudyPsatAdmin(ModelAdmin):
     save_on_top = True
     show_full_result_count = True
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('category')
+
     @admin.display(description='카테고리')
     def category_info(self, obj):
         return obj.category_info
@@ -34,6 +38,12 @@ class StudyProblemAdmin(ModelAdmin):
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
     show_full_result_count = True
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            'psat', 'psat__category', 'problem', 'problem__psat',
+        )
 
     @admin.display(description='회차 정보')
     def psat_info(self, obj):
@@ -69,6 +79,10 @@ class StudyCurriculumAdmin(ModelAdmin):
     save_on_top = True
     show_full_result_count = True
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('organization', 'category')
+
     @admin.display(description='교육기관명')
     def name(self, obj):
         return obj.organization.name
@@ -81,54 +95,50 @@ class StudyCurriculumAdmin(ModelAdmin):
 @admin.register(models.StudyCurriculumSchedule)
 class StudyCurriculumScheduleAdmin(ModelAdmin):
     list_display = list_display_links = [
-        'id', 'curriculum_info', 'lecture_number', 'lecture_theme', 'lecture_round', 'homework_round',
+        'id', 'curriculum', 'lecture_number', 'lecture_theme', 'lecture_round', 'homework_round',
         'lecture_open_datetime', 'homework_end_datetime', 'lecture_datetime',
     ]
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
     show_full_result_count = True
 
-    @admin.display(description='커리큘럼')
-    def curriculum_info(self, obj):
-        return obj.curriculum.curriculum_info
-
 
 @admin.register(models.StudyStudent)
 class StudyStudentAdmin(ModelAdmin):
     list_display = list_display_links = [
-        'id', 'created_at', 'updated_at', 'curriculum_info', 'serial', 'name', 'user']
+        'id', 'created_at', 'updated_at', 'curriculum', 'serial', 'name', 'user']
     list_filter = ['curriculum']
+    list_select_related = ['curriculum', 'curriculum__organization', 'curriculum__category']
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
     show_full_result_count = True
 
-    @admin.display(description='커리큘럼')
-    def curriculum_info(self, obj):
-        return obj.curriculum_info
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('curriculum', 'curriculum__organization', 'curriculum__category')
 
 
 @admin.register(models.StudyAnswer)
 class StudyAnswerAdmin(ModelAdmin):
     list_display = list_display_links = [
-        'id', 'created_at', 'curriculum_info', 'student_info',
-        'problem_info', 'answer', 'answer_official', 'problem_reference'
+        'id', 'created_at', 'student_info',
+        'problem', 'answer', 'answer_official', 'problem_reference'
     ]
     list_filter = ['student']
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
     show_full_result_count = True
 
-    @admin.display(description='커리큘럼')
-    def curriculum_info(self, obj):
-        return obj.curriculum_info
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            'student', 'student__curriculum', 'student__curriculum__organization',
+            'problem', 'problem__psat', 'problem__problem', 'problem__problem__psat',
+        )
 
     @admin.display(description='수험정보')
     def student_info(self, obj):
-        return obj.student_info
-
-    @admin.display(description='문제')
-    def problem_info(self, obj):
-        return obj.problem_info
+        return f'{obj.student_info}({obj.curriculum_info})'
 
     @admin.display(description='정답')
     def answer_official(self, obj):
@@ -151,6 +161,13 @@ class StudyAnswerCountAdmin(ModelAdmin):
     save_on_top = True
     show_full_result_count = True
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            'problem', 'problem__psat', 'problem__problem', 'problem__problem__psat',
+            'problem__psat__category'
+        )
+
     @admin.display(description='문제')
     def problem_info(self, obj):
         return obj.problem_info
@@ -172,6 +189,13 @@ class StudyResultAdmin(ModelAdmin):
     show_facets = admin.ShowFacets.ALWAYS
     save_on_top = True
     show_full_result_count = True
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            'student', 'student__curriculum', 'psat', 'psat__category',
+            'student__curriculum__organization',
+        )
 
     @admin.display(description='커리큘럼')
     def curriculum_info(self, obj):

@@ -11,6 +11,26 @@ from .problem_models import Problem
 verbose_name_prefix = '[스터디] '
 
 
+def get_study_statistics_aggregation(qs_student):
+    return qs_student.aggregate(
+        participants=models.Count('id'), max=models.Max('score_total'), avg=models.Avg('score_total'))
+
+
+def get_study_student_score_calculated_annotation(qs_student):
+    return qs_student.annotate(
+        score_calculated=functions.Coalesce(models.Sum('results__score'), None))
+
+
+def get_study_student_total_rank_calculated_annotation(qs_student):
+    return qs_student.annotate(
+        rank_calculated=models.Case(
+            models.When(score_total__isnull=True, then=models.Value(None)),
+            default=models.Window(expression=functions.Rank(), order_by=[models.F('score_total').desc()]),
+            output_field=models.IntegerField(),
+        )
+    )
+
+
 class StudyCategoryManager(models.Manager):
     def with_prefetch_related(self):
         return self.prefetch_related('psats')
@@ -39,7 +59,7 @@ class StudyCategory(models.Model):
         ]
 
     def __str__(self):
-        return f'[PSAT]StudyCategory(#{self.id}):{self.category_info}'
+        return self.category_info
 
     @property
     def category_info(self):
@@ -79,7 +99,7 @@ class StudyPsat(models.Model):
         ]
 
     def __str__(self):
-        return f'[PSAT]StudyPsat(#{self.id}):{self.psat_info}'
+        return self.psat_info
 
     @property
     def category_info(self):
@@ -147,7 +167,7 @@ class StudyProblem(models.Model):
         ]
 
     def __str__(self):
-        return f'[PSAT]StudyProblem(#{self.id}):{self.category_info}-{self.problem_info}'
+        return self.problem_info
 
     @property
     def category_info(self):
@@ -188,7 +208,7 @@ class StudyOrganization(models.Model):
         ]
 
     def __str__(self):
-        return f'[PSAT]StudyOrganization(#{self.id}):{self.name}'
+        return self.name
 
 
 class StudyCurriculumManager(models.Manager):
@@ -222,7 +242,7 @@ class StudyCurriculum(models.Model):
         ]
 
     def __str__(self):
-        return f'[PSAT]StudyCurriculum(#{self.id}):{self.curriculum_info}({self.category_info})'
+        return self.curriculum_info
 
     @property
     def category_info(self):
@@ -230,7 +250,7 @@ class StudyCurriculum(models.Model):
 
     @property
     def curriculum_info(self):
-        return f'{self.organization.name}-{self.year}-{self.semester}'
+        return f'{self.organization}-{self.year}-{self.semester}'
 
     @property
     def full_reference(self):
@@ -342,7 +362,7 @@ class StudyStudent(models.Model):
     name = models.CharField(max_length=20, default='', verbose_name='이름')
     user = models.ForeignKey(
         User, models.SET_NULL, null=True, blank=True, related_name='psat_study_students')
-    score_total = models.PositiveSmallIntegerField(default=0, verbose_name='총점')
+    score_total = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='총점')
     rank_total = models.PositiveIntegerField(null=True, blank=True, verbose_name='등수')
 
     class Meta:
@@ -355,7 +375,7 @@ class StudyStudent(models.Model):
         ]
 
     def __str__(self):
-        return f'[PSAT]StudyStudent(#{self.id}):{self.curriculum_info}-{self.student_info}'
+        return f'{self.serial}-{self.name}'
 
     @property
     def curriculum_info(self):
@@ -517,6 +537,18 @@ class StudyResultManager(models.Manager):
             'student').annotate(result_count=models.Count('id')).order_by('student')
         return {q['student']: q['result_count'] for q in queryset}
 
+    def get_rank_calculated(self, qs_student, psats):
+        return self.filter(student__in=qs_student, psat__in=psats).annotate(
+            rank_calculated=models.Case(
+                models.When(score__isnull=True, then=models.Value(None)),
+                default=models.Window(
+                    expression=functions.Rank(),
+                    partition_by=models.F('psat'),
+                    order_by=[models.F('score').desc()]),
+                output_field=models.IntegerField(),
+            )
+        )
+
 
 class StudyResult(models.Model):
     objects = StudyResultManager()
@@ -534,7 +566,7 @@ class StudyResult(models.Model):
         ]
 
     def __str__(self):
-        return f'[PSAT]StudyResult(#{self.id}):{self.student.student_info}'
+        return f'{self.student}({self.psat})'
 
     @property
     def curriculum_info(self):
@@ -568,7 +600,7 @@ class StudyAnswerCountTopRank(abstract_models.AnswerCount):
         ordering = ['problem']
 
     def __str__(self):
-        return f'[PSAT]StudyAnswerCountTopRank(#{self.id}):{self.problem_info}'
+        return self.problem_info
 
     @property
     def problem_info(self):

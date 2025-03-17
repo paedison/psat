@@ -5,7 +5,6 @@ from datetime import timedelta, datetime
 import django.db.utils
 import pandas as pd
 from django.db import transaction
-from django.db.models import Value, CharField, Count, When, Case
 
 from ... import models
 
@@ -70,37 +69,24 @@ def update_problem_count(page_obj):
         psat.image_problem_count = sum(1 for prob in psat.problems.all() if prob.has_image)
 
 
-def update_category_statistics(category_page_obj):
-    for c in category_page_obj:
-        score_list = models.StudyStudent.objects.filter(
-            curriculum__category=c).values_list('score_total', flat=True)
+def update_study_statistics(page_obj, is_curriculum=False):
+    for obj in page_obj:
+        if is_curriculum:
+            qs_student = models.StudyStudent.objects.filter(curriculum=obj, score_total__isnull=False)
+        else:
+            qs_student = models.StudyStudent.objects.filter(curriculum__category=obj, score_total__isnull=False)
+        score_list = qs_student.values_list('score_total', flat=True)
         participants = len(score_list)
         sorted_scores = sorted(score_list, reverse=True)
         if sorted_scores:
             top_10_threshold = max(1, int(participants * 0.10))
             top_25_threshold = max(1, int(participants * 0.25))
             top_50_threshold = max(1, int(participants * 0.50))
-            c.max = sorted_scores[0]
-            c.t10 = sorted_scores[top_10_threshold - 1]
-            c.t25 = sorted_scores[top_25_threshold - 1]
-            c.t50 = sorted_scores[top_50_threshold - 1]
-            c.avg = round(sum(score_list) / participants, 1)
-
-
-def update_curriculum_statistics(curriculum_page_obj):
-    for c in curriculum_page_obj:
-        score_list = models.StudyStudent.objects.filter(curriculum=c).values_list('score_total', flat=True)
-        participants = len(score_list)
-        sorted_scores = sorted(score_list, reverse=True)
-        if sorted_scores:
-            top_10_threshold = max(1, int(participants * 0.10))
-            top_25_threshold = max(1, int(participants * 0.25))
-            top_50_threshold = max(1, int(participants * 0.50))
-            c.max = sorted_scores[0]
-            c.t10 = sorted_scores[top_10_threshold - 1]
-            c.t25 = sorted_scores[top_25_threshold - 1]
-            c.t50 = sorted_scores[top_50_threshold - 1]
-            c.avg = round(sum(score_list) / participants, 1)
+            obj.max = sorted_scores[0]
+            obj.t10 = sorted_scores[top_10_threshold - 1]
+            obj.t25 = sorted_scores[top_25_threshold - 1]
+            obj.t50 = sorted_scores[top_50_threshold - 1]
+            obj.avg = round(sum(score_list) / participants, 1)
 
 
 def upload_data_to_study_category_and_psat_model(excel_file):

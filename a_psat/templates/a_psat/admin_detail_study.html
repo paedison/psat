@@ -14,16 +14,16 @@
                                 <div class="col-md-6 d-flex"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                     <div class="btn-group flex-fill">
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='score' button_name='점수 업데이트' update_url=config.url_study_category_update %}
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' update_url=config.url_study_category_update %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='score' button_name='점수 업데이트' update_url=config.url_study_update %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' update_url=config.url_study_update %}
                                     </div>
                                 </div>
 
                                 <div class="col-md-6 d-flex"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                     <div class="btn-group flex-fill">
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' update_url=config.url_study_category_update %}
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' update_url=config.url_study_category_update %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' update_url=config.url_study_update %}
+                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' update_url=config.url_study_update %}
                                     </div>
                                 </div>
                             </div>
