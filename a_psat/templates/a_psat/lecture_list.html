@@ -11,7 +11,7 @@
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card cursor-pointer"
                          hx-target="#main" hx-push-url="true"
-                         hx-get="{% url 'psat:lecture-detail' lecture.id %}">
+                         hx-get="{{ lecture.get_lecture_detail_url }}">
                         <img src="{{ lecture.thumbnail_url }}" class="card-img-top" alt="Thumbnail">
                         <div class="card-body">
                             <h5 class="card-title mb-0">{{ lecture.get_subject_display }}</h5>

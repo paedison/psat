@@ -126,6 +126,10 @@ class StudyProblemManager(models.Manager):
             )
         )
 
+    def get_ordered_qs_by_subject_field(self):
+        return self.values('psat_id', 'problem__subject').annotate(
+            subject=get_annotation_for_subject(), count=models.Count('id')).order_by('psat_id', 'subject')
+
 
 class StudyProblem(models.Model):
     objects = StudyProblemManager()
@@ -387,33 +391,14 @@ class StudyAnswerManager(models.Manager):
     def with_select_related(self):
         return self.select_related('student', 'problem', 'problem__psat', 'problem__problem')
 
-    @staticmethod
-    def get_annotation_for_subject():
-        return models.Case(
-            models.When(problem__problem__subject='헌법', then=models.Value('subject_0')),
-            models.When(problem__problem__subject='언어', then=models.Value('subject_1')),
-            models.When(problem__problem__subject='자료', then=models.Value('subject_2')),
-            models.When(problem__problem__subject='상황', then=models.Value('subject_3')),
-            default=models.Value(''),
-            output_field=models.CharField(),
-        )
-
-    @staticmethod
-    def get_annotation_for_is_correct():
-        return models.Case(
-            models.When(answer=models.F('problem__problem__answer'), then=models.Value(True)),
-            default=models.Value(False),
-            output_field=models.BooleanField(),
-        )
-
     def get_filtered_qs_by_student(self, student, **kwargs):
         return (
             self.with_select_related().filter(student=student, **kwargs)
             .order_by('problem__psat__round', 'problem__problem__subject')
             .annotate(
                 round=models.F('problem__psat__round'),
-                subject=self.get_annotation_for_subject(),
-                is_correct=self.get_annotation_for_is_correct(),
+                subject=get_annotation_for_subject(),
+                is_correct=get_annotation_for_is_correct(),
             )
             .values('round', 'subject', 'is_correct')
         )
@@ -626,3 +611,23 @@ class StudyAnswerCountLowRank(abstract_models.AnswerCount):
     @property
     def problem_reference(self):
         return self.problem.problem_reference
+
+
+def get_annotation_for_subject():
+    return models.Case(
+        models.When(problem__problem__subject='헌법', then=models.Value('subject_0')),
+        models.When(problem__problem__subject='언어', then=models.Value('subject_1')),
+        models.When(problem__problem__subject='자료', then=models.Value('subject_2')),
+        models.When(problem__problem__subject='상황', then=models.Value('subject_3')),
+        default=models.Value(''),
+        output_field=models.CharField(),
+    )
+
+
+def get_annotation_for_is_correct():
+    return models.Case(
+        models.When(answer=models.F('problem__problem__answer'), then=models.Value(True)),
+        default=models.Value(False),
+        output_field=models.BooleanField(),
+    )
+

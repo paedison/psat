@@ -24,9 +24,9 @@ def lecture_list_view(request: HtmxHttpRequest):
 
 def lecture_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
-    queryset = models.Lecture.objects.order_by_subject_code()
-    lecture: models.Lecture = get_object_or_404(queryset, pk=pk)
-    prev_lec, next_lec = utils.get_prev_next_prob(pk, queryset)
+    lecture_list = models.Lecture.objects.order_by_subject_code()
+    lecture: models.Lecture = get_object_or_404(lecture_list, pk=pk)
+    prev_lec, next_lec = utils.get_prev_next_prob(pk, lecture_list)
     lec_images = utils.get_lecture_images(lecture)
 
     memo_form = forms.LectureMemoForm()
@@ -48,7 +48,7 @@ def lecture_detail_view(request: HtmxHttpRequest, pk: int):
             ).values_list('name', flat=True)
 
     context = update_context_data(
-        config=config, lecture=lecture, lec_images=lec_images,
+        config=config, lecture=lecture, lec_images=lec_images, lecture_list=lecture_list,
         prev_lec=prev_lec, next_lec=next_lec, icon_nav=icon_set_new.ICON_NAV,
         memo_form=memo_form, my_memo=my_memo, memo_url=memo_url, tags=tags,
     )

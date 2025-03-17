@@ -169,20 +169,7 @@ def upload_data_to_study_problem_model(excel_file):
 
 
 def update_study_psat_models():
-    problem_count_list = (
-        models.StudyProblem.objects.values('psat_id', 'problem__subject')
-        .annotate(
-            subject=Case(
-                When(problem__subject='헌법', then=Value('subject_0')),
-                When(problem__subject='언어', then=Value('subject_1')),
-                When(problem__subject='자료', then=Value('subject_2')),
-                When(problem__subject='상황', then=Value('subject_3')),
-                default=Value(''),
-                output_field=CharField(),
-            ),
-            count=Count('id'))
-        .order_by('psat_id', 'subject')
-    )
+    problem_count_list = models.StudyProblem.objects.get_ordered_qs_by_subject_field()
     problem_count_dict = defaultdict(dict)
     for p in problem_count_list:
         problem_count_dict[p['psat_id']][p['subject']] = p['count']

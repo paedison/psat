@@ -130,6 +130,13 @@ class Lecture(models.Model):
     def get_tag_url(self):
         return reverse_lazy('psat:tag-lecture', args=[self.id])
 
+    @staticmethod
+    def get_lecture_list_url():
+        return reverse_lazy('psat:lecture-list')
+
+    def get_lecture_detail_url(self):
+        return reverse_lazy('psat:lecture-detail', args=[self.id])
+
 
 class LectureOpen(models.Model):
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='opens')
