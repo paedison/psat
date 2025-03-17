@@ -42,16 +42,9 @@ def list_view(request: HtmxHttpRequest):
 
     # 로그인한 경우 수험 정보 추출
     if request.user.is_authenticated:
-        schedule_info = {}
-        qs_curriculum_schedule_info = models.StudyCurriculumSchedule.objects.get_curriculum_schedule_info()
-        for qs_cs in qs_curriculum_schedule_info:
-            schedule_info[qs_cs['curriculum']] = qs_cs
-
+        schedule_info = study_utils.get_schedule_info()
         qs_student = models.StudyStudent.objects.get_filtered_qs_by_user(request.user)
-        for qs_s in qs_student:
-            qs_s.study_rounds = schedule_info[qs_s.curriculum_id]['study_rounds']
-            qs_s.earliest_datetime = schedule_info[qs_s.curriculum_id]['earliest']
-            qs_s.latest_datetime = schedule_info[qs_s.curriculum_id]['latest']
+        study_utils.update_qs_student(qs_student, schedule_info)
     context = update_context_data(config=config, current_time=current_time, students=qs_student)
     return render(request, 'a_psat/study_list.html', context)
 
@@ -89,10 +82,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
 
     qs_schedule = models.StudyCurriculumSchedule.objects.filter(
         curriculum=curriculum, lecture_open_datetime__lt=config.current_time).order_by('-lecture_number')
-    homework_schedule = {}
-    for qs_s in qs_schedule:
-        if qs_s.homework_round:
-            homework_schedule[qs_s.homework_round] = qs_s
+    homework_schedule = study_utils.get_homework_schedule(qs_schedule)
     opened_rounds = qs_schedule.values_list('lecture_round', flat=True)
 
     if view_type == 'lecture':
@@ -202,13 +192,6 @@ def answer_input_redirect_view(request: HtmxHttpRequest, organization: str, seme
     return redirect('psat:study-answer-input', result.id)
 
 
-def get_answer_data(request, problem_count):
-    empty_answer_data = [0 for _ in range(problem_count)]
-    answer_data_cookie = request.COOKIES.get('answer_data_set', '{}')
-    answer_data = json.loads(answer_data_cookie) or empty_answer_data
-    return answer_data
-
-
 def answer_input_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     current_time = timezone.now()
@@ -243,7 +226,7 @@ def answer_input_view(request: HtmxHttpRequest, pk: int):
         return render(request, 'a_psat/redirect.html', context)
 
     problem_count = result.psat.problems.count()
-    answer_data = get_answer_data(request, problem_count)
+    answer_data = study_utils.get_answer_data(request, problem_count)
 
     # answer_submit
     if request.method == 'POST':
@@ -281,7 +264,7 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int):
 
     if request.method == 'POST':
         problem_count = result.psat.problems.count()
-        answer_data = get_answer_data(request, problem_count)
+        answer_data = study_utils.get_answer_data(request, problem_count)
 
         is_confirmed = all(answer_data)
         if is_confirmed:

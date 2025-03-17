@@ -1,10 +1,37 @@
+import json
 from collections import defaultdict
 
 from .admin import admin_utils
 from .. import models, utils
 
 
-def get_result_paginator_data(schedule_dict, student, opened_rounds, page_number) -> tuple:
+def get_schedule_info():
+    schedule_info = defaultdict()
+    qs_curriculum_schedule_info = models.StudyCurriculumSchedule.objects.get_curriculum_schedule_info()
+    for qs_cs in qs_curriculum_schedule_info:
+        schedule_info[qs_cs['curriculum']] = qs_cs
+    return schedule_info
+
+
+def update_qs_student(qs_student, schedule_info):
+    for qs_s in qs_student:
+        qs_s.study_rounds = schedule_info[qs_s.curriculum_id]['study_rounds']
+        qs_s.earliest_datetime = schedule_info[qs_s.curriculum_id]['earliest']
+        qs_s.latest_datetime = schedule_info[qs_s.curriculum_id]['latest']
+
+
+def get_homework_schedule(qs_schedule):
+    homework_schedule = defaultdict(dict)
+    for qs_s in qs_schedule:
+        if qs_s.lecture_round:
+            homework_schedule[qs_s.lecture_round]['lecture_datetime'] = qs_s.lecture_datetime
+            homework_schedule[qs_s.lecture_round]['lecture_open_datetime'] = qs_s.lecture_open_datetime
+        if qs_s.homework_round:
+            homework_schedule[qs_s.homework_round]['homework_end_datetime'] = qs_s.homework_end_datetime
+    return homework_schedule
+
+
+def get_result_paginator_data(homework_schedule, student, opened_rounds, page_number) -> tuple:
     qs_result = models.StudyResult.objects.select_related('psat').filter(
         student=student, psat__round__in=opened_rounds).order_by('-psat__round')
     result_page_obj, result_page_range = utils.get_paginator_data(qs_result, page_number, 4)
@@ -73,7 +100,7 @@ def get_result_paginator_data(schedule_dict, student, opened_rounds, page_number
 
         obj.rank = score_dict_for_rank[obj.psat.round].index(obj.score) + 1 if obj.score else None
         obj.statistics = data_statistics_dict.get(obj.psat.round)
-        obj.schedule = schedule_dict.get(obj.psat.round)
+        obj.schedule = homework_schedule.get(obj.psat.round)
     return curriculum_stat, result_page_obj, result_page_range
 
 
@@ -116,3 +143,10 @@ def get_answer_paginator_data(schedule_dict, student, opened_rounds, page_number
             obj.rate_gap = None
 
     return answer_page_obj, answer_page_range
+
+
+def get_answer_data(request, problem_count):
+    empty_answer_data = [0 for _ in range(problem_count)]
+    answer_data_cookie = request.COOKIES.get('answer_data_set', '{}')
+    answer_data = json.loads(answer_data_cookie) or empty_answer_data
+    return answer_data
