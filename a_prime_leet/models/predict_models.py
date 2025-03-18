@@ -1,143 +1,144 @@
 from django.db import models
 
 from common.models import User
-from .problem_models import Psat, Problem, Category
-from . import choices
+from . import abstract_models, managers
+from .problem_models import Leet, Problem
 
 verbose_name_prefix = '[성적예측] '
 
 
-class PredictStudent(models.Model):
-    psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_students')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='predict_students')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prime_predict_students')
+class PredictStatistics(abstract_models.ExtendedStatistics):
+    objects = managers.StatisticsManager()
+    leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='predict_statistics')
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
-    name = models.CharField(max_length=20, verbose_name='이름')
-    serial = models.CharField(max_length=10, verbose_name='수험번호')
-    password = models.CharField(max_length=10, null=True, blank=True, verbose_name='비밀번호')
+    class Meta:
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}00_시험통계'
+        db_table = 'a_prime_leet_predict_statistics'
+        constraints = [
+            models.UniqueConstraint(fields=['leet', 'aspiration'], name='unique_prime_leet_predict_statistics')
+        ]
+
+    def __str__(self):
+        return self.leet.reference
+
+
+class PredictStudent(abstract_models.Student):
+    objects = managers.PredictStudentManager()
+    leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='predict_students')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prime_leet_predict_students')
+    is_filtered = models.BooleanField(default=False, verbose_name='필터링 여부')
+    answer_count = {'언어': 0, '추리': 0}
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}01_수험정보'
-        db_table = 'a_prime_predict_student'
+        db_table = 'a_prime_leet_predict_student'
         constraints = [
-            models.UniqueConstraint(
-                fields=['psat', 'category', 'user', 'name', 'serial'],
-                name='unique_prime_predict_student',
-            )
+            models.UniqueConstraint(fields=['leet', 'user'], name='unique_prime_leet_predict_student')
         ]
 
     def __str__(self):
-        return f'[Prime]PredictStudent(#{self.id}):{self.psat.reference}({self.student_info})'
-
-    @property
-    def student_info(self):
-        return f'{self.serial}-{self.name}'
+        return self.student_info
 
 
-class PredictAnswer(models.Model):
+class PredictAnswer(abstract_models.Answer):
     student = models.ForeignKey(PredictStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='predict_answers')
-    answer = models.IntegerField(choices=choices.answer_choice, default=1, verbose_name='답안')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}03_답안'
-        db_table = 'a_prime_predict_answer'
+        db_table = 'a_prime_leet_predict_answer'
         constraints = [
-            models.UniqueConstraint(fields=['student', 'problem'], name='unique_prime_predict_answer')
+            models.UniqueConstraint(fields=['student', 'problem'], name='unique_prime_leet_predict_answer')
         ]
 
     def __str__(self):
-        return f'[Prime]PredictAnswer(#{self.id}):{self.student.student_info}-{self.problem.reference}'
+        return f'{self.student.student_info}-{self.problem.reference}'
 
 
-class PredictAnswerCount(models.Model):
+class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
+    objects = managers.AnswerCountManager()
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count')
-    count_1 = models.IntegerField(default=0, verbose_name='①')
-    count_2 = models.IntegerField(default=0, verbose_name='②')
-    count_3 = models.IntegerField(default=0, verbose_name='③')
-    count_4 = models.IntegerField(default=0, verbose_name='④')
-    count_5 = models.IntegerField(default=0, verbose_name='⑤')
-    count_0 = models.IntegerField(default=0, verbose_name='미표기')
-    count_multiple = models.IntegerField(default=0, verbose_name='중복표기')
-    count_total = models.IntegerField(default=0, verbose_name='총계')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}04_답안 개수'
-        db_table = 'a_prime_predict_answer_count'
+        db_table = 'a_prime_leet_predict_answer_count'
 
     def __str__(self):
-        return f'[Prime]PredictAnswerCount(#{self.id}):{self.problem.reference}'
+        return self.problem.reference
 
 
-class PredictScore(models.Model):
+class PredictScore(abstract_models.Score):
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='score')
-    subject_0 = models.FloatField(null=True, blank=True, verbose_name='헌법')
-    subject_1 = models.FloatField(null=True, blank=True, verbose_name='언어논리')
-    subject_2 = models.FloatField(null=True, blank=True, verbose_name='자료해석')
-    subject_3 = models.FloatField(null=True, blank=True, verbose_name='상황판단')
-    total = models.FloatField(null=True, blank=True, verbose_name='PSAT 총점')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}05_점수'
-        db_table = 'a_prime_predict_score'
+        db_table = 'a_prime_leet_predict_score'
 
     def __str__(self):
-        return f'[Prime]PredictScore(#{self.id}):{self.student.student_info}'
+        return self.student.student_info
 
 
-class PredictRank(models.Model):
-    subject_0 = models.IntegerField(null=True, blank=True, verbose_name='헌법')
-    subject_1 = models.IntegerField(null=True, blank=True, verbose_name='언어논리')
-    subject_2 = models.IntegerField(null=True, blank=True, verbose_name='자료해석')
-    subject_3 = models.IntegerField(null=True, blank=True, verbose_name='상황판단')
-    total = models.IntegerField(null=True, blank=True, verbose_name='PSAT')
+class PredictRank(abstract_models.ExtendedRank):
+    student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='rank')
 
     class Meta:
-        abstract = True
-
-
-class PredictRankTotal(PredictRank):
-    student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='rank_total')
-
-    class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}06_전체 등수'
-        db_table = 'a_prime_predict_rank_total'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}06_등수(전체)'
+        db_table = 'a_prime_leet_predict_rank'
 
     def __str__(self):
-        return f'[Prime]PredictRankTotal(#{self.id}):{self.student.student_info}'
+        return self.student.student_info
 
 
-class PredictRankCategory(PredictRank):
-    student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='rank_category')
+class PredictRankAspiration1(abstract_models.ExtendedRank):
+    student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='rank_aspiration_1')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}07_직렬 등수'
-        db_table = 'a_prime_predict_rank_category'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}07_등수(1지망)'
+        db_table = 'a_prime_leet_predict_rank_aspiration_1'
 
     def __str__(self):
-        return f'[Prime]PredictRankCategory(#{self.id}):{self.student.student_info}'
+        return self.student.student_info
 
 
-class PredictAnswerCountLowRank(PredictAnswerCount):
-    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_low_rank')
-
-    class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}08_답안 개수(하위권)'
-        db_table = 'a_prime_predict_answer_count_low_rank'
-
-
-class PredictAnswerCountMidRank(PredictAnswerCount):
-    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_mid_rank')
+class PredictRankAspiration2(abstract_models.ExtendedRank):
+    student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='rank_aspiration_2')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}09_답안 개수(중위권)'
-        db_table = 'a_prime_predict_answer_count_mid_rank'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}08_등수(2지망)'
+        db_table = 'a_prime_leet_predict_rank_aspiration_2'
+
+    def __str__(self):
+        return self.student.student_info
 
 
-class PredictAnswerCountTopRank(PredictAnswerCount):
+class PredictAnswerCountTopRank(abstract_models.ExtendedAnswerCount):
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_top_rank')
 
     class Meta:
-        verbose_name = verbose_name_plural = f'{verbose_name_prefix}10_답안 개수(상위권)'
-        db_table = 'a_prime_predict_answer_count_top_rank'
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}09_답안 개수(상위권)'
+        db_table = 'a_prime_leet_predict_answer_count_top_rank'
+
+    def __str__(self):
+        return self.problem.reference
+
+
+class PredictAnswerCountMidRank(abstract_models.ExtendedAnswerCount):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_mid_rank')
+
+    class Meta:
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}10_답안 개수(중위권)'
+        db_table = 'a_prime_leet_predict_answer_count_mid_rank'
+
+    def __str__(self):
+        return self.problem.reference
+
+
+class PredictAnswerCountLowRank(abstract_models.ExtendedAnswerCount):
+    problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count_low_rank')
+
+    class Meta:
+        verbose_name = verbose_name_plural = f'{verbose_name_prefix}11_답안 개수(하위권)'
+        db_table = 'a_prime_leet_predict_answer_count_low_rank'
+
+    def __str__(self):
+        return self.problem.reference

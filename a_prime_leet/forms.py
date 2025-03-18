@@ -84,6 +84,13 @@ class LeetForm(forms.Form):
         return cleaned_data
 
 
+class LeetActiveForm(forms.ModelForm):
+    class Meta:
+        model = models.Leet
+        fields = ['is_active']
+        widgets = {'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'})}
+
+
 class PrimeLeetStudentForm(forms.ModelForm):
     class Meta:
         model = models.ResultStudent
@@ -91,9 +98,4 @@ class PrimeLeetStudentForm(forms.ModelForm):
 
 
 class UploadFileForm(forms.Form):
-    file = forms.FileField(
-        label='',
-        label_suffix='',
-        widget=forms.FileInput(
-            attrs={'class': 'form-control'}),
-    )
+    file = forms.FileField(label='업로드 파일', widget=forms.FileInput(attrs={'class': 'form-control'}))

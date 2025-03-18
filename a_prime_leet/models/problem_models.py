@@ -29,7 +29,7 @@ class Leet(models.Model):
         ]
 
     def __str__(self):
-        return f'[PrimeLeet]Leet(#{self.id}):{self.reference}'
+        return self.abbr
 
     @property
     def score_opened_at(self):
@@ -38,7 +38,7 @@ class Leet(models.Model):
 
     @property
     def reference(self):
-        return f'{self.year}-{self.round}'
+        return self.name
 
     @property
     def full_reference(self):
@@ -68,8 +68,17 @@ class Leet(models.Model):
     def get_admin_list_url():
         return reverse_lazy('prime_leet:admin-list')
 
+    def get_admin_leet_active_url(self):
+        return reverse_lazy('prime_leet:admin-leet-active', args=[self.id])
+
+    def get_admin_detail_url(self, model_type: str):
+        return reverse_lazy('prime_leet:admin-detail', args=[model_type, self.id])
+
+    def get_admin_predict_detail_url(self):
+        return reverse_lazy('prime_leet:admin-detail', args=['predict', self.id])
+
     def get_admin_result_detail_url(self):
-        return reverse_lazy('prime_leet:admin-detail', args=[self.id])
+        return reverse_lazy('prime_leet:admin-detail', args=['result', self.id])
 
     def get_admin_update_url(self):
         return reverse_lazy('prime_leet:admin-update', args=[self.id])
@@ -108,7 +117,7 @@ class Problem(models.Model):
         ]
 
     def __str__(self):
-        return f'[PrimeLeet]Problem(#{self.id}):{self.reference}'
+        return self.reference
 
     @property
     def year_ex_sub(self):

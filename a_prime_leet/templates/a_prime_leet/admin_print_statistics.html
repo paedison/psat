@@ -3,15 +3,30 @@
 {% load psat_filter %}
 {% load humanize %}
 
-{% block head_title %}{{ exam.name }}_성적통계{% endblock head_title %}
+{% block head_title %}{{ leet.name }}_성적통계{% endblock head_title %}
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 {% block google_adsense %}{% endblock %}
 
 {% block html_body %}
 <body class="bg-white">
     {{ info|json_script:'info' }}
-    <h2 class="fw-bold text-center mb-4">{{ exam.name }} 성적통계</h2>
+    <h2 class="fw-bold text-center mb-4">{{ leet.name }} 성적통계</h2>
+    {% with statistics=data_statistics table_title='전체 데이터' %}{% partial statistics_table %}{% endwith %}
+    {% if model_type == 'predict' %}
+        {% with statistics=filtered_data_statistics table_title='필터링 데이터' %}{% partial statistics_table %}{% endwith %}
+    {% endif %}
 
+    <script>
+        window.onload = function () {
+            setTimeout(function () {
+                window.print();
+            }, 1000);
+        };
+    </script>
+</body>
+{% endblock html_body %}
+
+{% partialdef statistics_table %}
     <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
             <thead>
@@ -37,7 +52,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for obj in statistics_page_obj %}
+                {% for obj in statistics %}
                     <tr class="text-center small align-middle">
                         <th>{{ obj.aspiration|intcomma }}</th>
                         <th>{{ obj.sum.participants|intcomma }}</th>
@@ -84,7 +99,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for obj in statistics_page_obj %}
+                {% for obj in statistics %}
                     <tr class="text-center small align-middle">
                         <th>{{ obj.aspiration|intcomma }}</th>
                         <th>{{ obj.sum.participants|intcomma }}</th>
@@ -105,13 +120,4 @@
             </tbody>
         </table>
     </div>
-
-    <script>
-        window.onload = function () {
-            setTimeout(function () {
-                window.print();
-            }, 1000);
-        };
-    </script>
-</body>
-{% endblock html_body %}
+{% endpartialdef %}

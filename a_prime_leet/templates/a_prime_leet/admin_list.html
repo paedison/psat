@@ -32,10 +32,14 @@
         <table class="table table-bordered table-striped align-middle">
             <thead>
                 <tr class="text-center table-warning align-middle">
+                    {% if user.is_admin %}
+                        <th class="text-primary text-nowrap">활성</th>
+                    {% endif %}
                     <th class="text-primary text-nowrap">연도</th>
                     <th class="text-primary text-nowrap">종류</th>
                     <th class="text-primary text-nowrap">회차</th>
                     <th class="text-primary text-nowrap">시험명</th>
+                    <th class="text-primary text-nowrap">성적<br/>예측</th>
                     <th class="text-primary text-nowrap">성적<br/>결과</th>
                     <th class="text-primary text-nowrap">페이지<br/>오픈일</th>
                     <th class="text-primary text-nowrap">시험일</th>
@@ -49,10 +53,28 @@
                 {% if exam_page_obj %}
                     {% for obj in exam_page_obj %}
                         <tr class="text-center">
+                            {% if user.is_admin %}
+                                <td class="text-nowrap" aria-label="활성">
+                                    <form class="d-flex justify-content-center"
+                                          hx-trigger="change" hx-swap="none" hx-push-url="false"
+                                          hx-post="{{ obj.get_admin_leet_active_url }}">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="is_active" value="true"
+                                                   aria-label="활성"{% if obj.is_active %} checked{% endif %}>
+                                        </div>
+                                    </form>
+                                </td>
+                            {% endif %}
                             <td class="text-nowrap">{{ obj.get_year_display }}</td>
                             <td class="text-nowrap">{{ obj.exam }}</td>
-                            <td class="text-nowrap">{% if obj.round %}{{ obj.round }}{% endif %}</td>
-                            <td class="text-nowrap">{{ obj.name|default_if_none:'' }}</td>
+                            <td class="text-nowrap">{% if obj.round %}{{ obj.get_round_display }}{% endif %}</td>
+                            <td class="text-nowrap small">{{ obj.name }}</td>
+                            <td class="text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" hx-boost="true"
+                                   href="{{ obj.get_admin_predict_detail_url }}">
+                                    클릭
+                                </a>
+                            </td>
                             <td class="text-nowrap">
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
                                    href="{{ obj.get_admin_result_detail_url }}">
@@ -72,8 +94,10 @@
         </table>
     </article>
 
-    <button class="btn btn-primary" hx-get="{{ config.url_exam_create  }}">시험 추가</button>
-    <button class="btn btn-primary" hx-get="{{ config.url_problem_update  }}">정답 업데이트</button>
+    {% if user.is_admin %}
+        <button class="btn btn-primary" hx-get="{{ config.url_leet_create  }}">시험 추가</button>
+        <button class="btn btn-primary" hx-get="{{ config.url_problem_update  }}">정답 업데이트</button>
+    {% endif %}
 {% endpartialdef exam_list %}
 
 {% partialdef student_list %}
@@ -109,8 +133,6 @@
     </article>
 
     {% with page_obj=student_page_obj page_range=student_page_range %}
-        {% if page_obj.has_next or page_obj.has_previous %}
-            {% include 'a_prime/snippets/pagination.html' with header='student_list' %}
-        {% endif %}
+        {% include 'a_prime/snippets/pagination.html' with header='student_list' %}
     {% endwith %}
 {% endpartialdef student_list %}

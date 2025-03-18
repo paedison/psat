@@ -7,16 +7,16 @@
     <section class="section">
         <div class="row">
             {% if user.is_admin %}
-                <div class="col-12" aria-label="성적 결과 업데이트">
+                <div class="col-12" aria-label="업데이트 [{{ score_type }}]">
                     <div class="card" hx-swap="innerHTML swap:0.25s">
-                        <div class="card-header">{{ exam.name }} | 성적 결과 업데이트</div>
+                        <div class="card-header">{{ leet.name }} | 업데이트 [{{ score_type }}]</div>
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <form enctype="multipart/form-data"
                                           hx-headers='{"View-Type":"answer_official"}'
                                           hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                          hx-post="{{ exam.get_admin_update_url }}">
+                                          hx-post="{{ config.url_admin_update }}">
                                         <div class="input-group">
                                             <input type="file" name="file" class="form-control" required id="id_file">
                                             <button class="btn btn-outline-secondary prevent_double_click" type="submit"
@@ -25,20 +25,21 @@
                                         </div>
                                     </form>
                                 </div>
-
-                                <div class="col-md-6">
-                                    <form enctype="multipart/form-data"
-                                          hx-headers='{"View-Type":"answer_student"}'
-                                          hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                          hx-post="{{ exam.get_admin_update_url }}">
-                                        <div class="input-group">
-                                            <input type="file" name="file" class="form-control" required id="id_file">
-                                            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                제출 답안 업데이트</button>
-                                        </div>
-                                    </form>
-                                </div>
+                                {% if score_type == '결과' %}
+                                    <div class="col-md-6">
+                                        <form enctype="multipart/form-data"
+                                              hx-headers='{"View-Type":"answer_student"}'
+                                              hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                              hx-post="{{ config.url_admin_update }}">
+                                            <div class="input-group">
+                                                <input type="file" name="file" class="form-control" required id="id_file">
+                                                <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                    제출 답안 업데이트</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                {% endif %}
 
                                 <div class="col-md-6 d-flex"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
@@ -67,9 +68,9 @@
                 </div>
             {% endif %}
 
-            <div class="col-12" aria-label="성적통계">
+            <div class="col-12" aria-label="성적통계 [{{ score_type }}]">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ exam.name }} | 성적통계</div>
+                    <div class="card-header">성적통계 [{{ score_type }}]</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
@@ -91,15 +92,14 @@
                 </div>
             </div>
 
-            <div class="col-12" aria-label="성적일람표">
+            <div class="col-12" aria-label="성적일람표 [{{ score_type }}]">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ exam.name }} | 성적일람표</div>
+                    <div class="card-header">성적일람표 [{{ score_type }}]</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
                                 <div class="btn-group flex-fill">
                                     {% include 'a_prime_leet/snippets/admin_detail_export_button.html' with button_name='Excel로 내보내기' export_url=config.url_export_catalog_excel %}
-{#                                    {% include 'a_prime_leet/snippets/admin_detail_export_button.html' with button_name='PDF로 내보내기' export_url=config.url_export_statistics_pdf %}#}
                                     {% include 'a_prime_leet/snippets/admin_detail_export_button.html' with button_name='인쇄하기' export_url=config.url_catalog_print %}
                                 </div>
                             </div>
@@ -115,20 +115,22 @@
                 </div>
             </div>
 
-            <div class="col-12" aria-label="성적 확인 목록">
-                <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ exam.name }} | 성적 확인 목록</div>
-                    <div class="card-body">
-                        <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
-                            {% include 'a_prime_leet/snippets/admin_detail_registry.html' %}
+            {% if registry_page_obj %}
+                <div class="col-12" aria-label="성적 확인 목록 [{{ score_type }}]">
+                    <div class="card" hx-swap="innerHTML swap:0.25s">
+                        <div class="card-header">성적 확인 목록 [{{ score_type }}]</div>
+                        <div class="card-body">
+                            <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
+                                {% include 'a_prime_leet/snippets/admin_detail_registry.html' %}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
 
-            <div class="col-12" aria-label="문항분석표">
+            <div class="col-12" aria-label="문항분석표 [{{ score_type }}]">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">{{ exam.name }} | 문항분석표</div>
+                    <div class="card-header">문항분석표 [{{ score_type }}]</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">

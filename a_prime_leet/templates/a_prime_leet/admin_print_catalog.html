@@ -3,14 +3,14 @@
 {% load psat_filter %}
 {% load humanize %}
 
-{% block head_title %}{{ exam.name }}_성적일람표{% endblock head_title %}
+{% block head_title %}{{ leet.name }}_성적일람표{% endblock head_title %}
 {% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
 {% block google_adsense %}{% endblock %}
 
 {% block html_body %}
 <body class="bg-white">
     {{ info|json_script:'info' }}
-    <h2 class="fw-bold text-center mb-4">{{ exam.name }} 성적일람표</h2>
+    <h2 class="fw-bold text-center mb-4">{{ leet.name }} 성적일람표</h2>
     <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
             <thead>
@@ -48,7 +48,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for obj in catalog_page_obj %}
+                {% for obj in student_list %}
                     <tr class="text-center small align-middle">
                         <td>{{ obj.rank_sum }}</td>
                         <td class="text-nowrap">{{ obj.name }}</td>

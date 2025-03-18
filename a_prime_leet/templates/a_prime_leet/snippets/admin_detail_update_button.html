@@ -1,6 +1,6 @@
 <button class="btn btn-outline-secondary prevent_double_click"
         hx-headers='{"View-Type":"{{ view_type }}"}'
-        hx-post="{{ exam.get_admin_update_url }}"
+        hx-post="{{ config.url_admin_update }}"
         data-bs-toggle="modal" data-bs-target="#modalContainer">
     {{ button_name }}
 </button>
