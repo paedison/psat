@@ -211,8 +211,8 @@ def leet_create_view(request: HtmxHttpRequest):
             leet.save()
 
             admin_utils.create_default_problems(leet)
-            admin_utils.create_default_statistics('result')
-            # admin_utils.create_default_statistics('predict')
+            admin_utils.create_default_statistics(leet)
+            # admin_utils.create_default_statistics(leet, 'predict')
 
             problems = models.Problem.objects.filter(leet=leet).order_by('id')
             admin_utils.create_default_answer_counts(problems, 'result')

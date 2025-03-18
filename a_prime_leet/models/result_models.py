@@ -59,6 +59,7 @@ class ResultRegistry(models.Model):
 
 
 class ResultAnswer(abstract_models.Answer):
+    objects = managers.AnswerManager()
     student = models.ForeignKey(ResultStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='result_answers')
 
@@ -86,6 +87,7 @@ class ResultAnswerCount(abstract_models.AnswerCount):
 
 
 class ResultScore(abstract_models.Score):
+    objects = managers.ScoreManager()
     student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='score')
 
     class Meta:

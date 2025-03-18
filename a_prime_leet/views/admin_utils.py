@@ -35,7 +35,7 @@ def get_subject_vars() -> dict[str, tuple[str, str, int]]:
     }
 
 
-def get_problem_count(exam):
+def get_problem_count_dict(exam):
     if exam == '하프':
         return {'언어': 15, '추리': 20}
     return {'언어': 30, '추리': 40}
@@ -297,7 +297,7 @@ def update_result_answer_model_for_answer_student(leet, form, file) -> tuple:
             subject_vars = get_subject_vars()
             subject_vars.pop('총점')
             for sub, (subject, _, _) in subject_vars.items():
-                problem_count = get_problem_count(student.leet.exam)[sub]
+                problem_count = get_problem_count_dict(student.leet.exam)[sub]
                 for number in range(1, problem_count + 1):
                     answer = row[(subject, number)] if not np.isnan(row[(subject, number)]) else 0
                     try:
@@ -743,10 +743,10 @@ def update_answer_count_model(model_dict, rank_type='all'):
 
 def create_default_problems(leet):
     sub_list = get_sub_list()
-    problem_count = get_problem_count(leet.exam)
+    problem_count_dict = get_problem_count_dict(leet.exam)
     list_create = []
     for subject in sub_list:
-        problem_count = problem_count[subject]
+        problem_count = problem_count_dict[subject]
         for number in range(1, problem_count + 1):
             problem_info = {'leet': leet, 'subject': subject, 'number': number}
             try:
