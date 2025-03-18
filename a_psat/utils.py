@@ -7,6 +7,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.templatetags.static import static
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.timezone import make_aware
 
 from _config.settings.base import BASE_DIR
@@ -224,3 +225,9 @@ def get_local_time(target_date, target_time=time(9, 0)):
         raise ValidationError("Date is required for timezone conversion.")
     target_datetime = datetime.combine(target_date, target_time)
     return make_aware(target_datetime)
+
+
+def get_datetime_format(target_datetime):
+    if target_datetime:
+        return timezone.localtime(target_datetime).strftime('%Y/%m/%d %H:%M')
+    return '-'

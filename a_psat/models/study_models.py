@@ -83,7 +83,7 @@ class StudyPsatManager(models.Manager):
 
 class StudyPsat(models.Model):
     objects = StudyPsatManager()
-    category = models.ForeignKey(StudyCategory, models.CASCADE, related_name='psats')
+    category = models.ForeignKey(StudyCategory, models.CASCADE, related_name='psats', verbose_name='카테고리')
     round = models.PositiveSmallIntegerField(
         choices=choices.study_round_choice, default=1, verbose_name='회차')
     statistics = models.JSONField(default=abstract_models.get_default_statistics, verbose_name='통계')
@@ -161,10 +161,10 @@ class StudyProblemManager(models.Manager):
 
 class StudyProblem(models.Model):
     objects = StudyProblemManager()
-    psat = models.ForeignKey(StudyPsat, models.CASCADE, related_name='problems')
+    psat = models.ForeignKey(StudyPsat, models.CASCADE, related_name='problems', verbose_name='PSAT')
     number = models.PositiveSmallIntegerField(
         choices=choices.number_choice, default=1, verbose_name='번호')
-    problem = models.ForeignKey(Problem, models.CASCADE, related_name='study_problems')
+    problem = models.ForeignKey(Problem, models.CASCADE, related_name='study_problems', verbose_name='스터디 문제')
 
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}02_문제'
@@ -187,7 +187,7 @@ class StudyProblem(models.Model):
 
     @property
     def problem_info(self):
-        return f'{self.psat.round:02}회차-{self.number:02}번'
+        return f'{self.psat.psat_info}-{self.number:02}'
 
     @property
     def problem_reference(self):
@@ -234,9 +234,10 @@ class StudyCurriculum(models.Model):
     objects = StudyCurriculumManager()
     year = models.PositiveSmallIntegerField(
         choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
-    organization = models.ForeignKey(StudyOrganization, models.CASCADE, related_name='curriculum')
+    organization = models.ForeignKey(
+        StudyOrganization, models.CASCADE, related_name='curriculum', verbose_name='교육기관')
     semester = models.PositiveSmallIntegerField(choices=choices.study_semester_choice, default=1, verbose_name='학기')
-    category = models.ForeignKey(StudyCategory, models.CASCADE, related_name='curriculum')
+    category = models.ForeignKey(StudyCategory, models.CASCADE, related_name='curriculum', verbose_name='카테고리')
     name = models.CharField(max_length=20, default='', verbose_name='커리큘럼명')
 
     class Meta:
@@ -294,7 +295,8 @@ class StudyCurriculumScheduleManager(models.Manager):
 
 class StudyCurriculumSchedule(models.Model):
     objects = StudyCurriculumScheduleManager()
-    curriculum = models.ForeignKey(StudyCurriculum, on_delete=models.CASCADE, related_name='schedules')
+    curriculum = models.ForeignKey(
+        StudyCurriculum, on_delete=models.CASCADE, related_name='schedules', verbose_name='커리큘럼')
     lecture_number = models.PositiveSmallIntegerField(default=1, verbose_name='강의 주차')
     lecture_theme = models.IntegerField(choices=choices.study_lecture_theme, default=1, verbose_name='강의 주제')
     lecture_round = models.PositiveSmallIntegerField(
@@ -365,11 +367,11 @@ class StudyStudent(models.Model):
     objects = StudyStudentManager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='수정 일시')
-    curriculum = models.ForeignKey(StudyCurriculum, models.CASCADE, related_name='students')
+    curriculum = models.ForeignKey(StudyCurriculum, models.CASCADE, related_name='students', verbose_name='커리큘럼')
     serial = models.CharField(max_length=10, verbose_name='수험번호')
     name = models.CharField(max_length=20, default='', verbose_name='이름')
     user = models.ForeignKey(
-        User, models.SET_NULL, null=True, blank=True, related_name='psat_study_students')
+        User, models.SET_NULL, null=True, blank=True, related_name='psat_study_students', verbose_name='사용자')
     score_total = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='총점')
     rank_total = models.PositiveIntegerField(null=True, blank=True, verbose_name='등수')
 
@@ -444,8 +446,10 @@ class StudyAnswerManager(models.Manager):
 class StudyAnswer(models.Model):
     objects = StudyAnswerManager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
-    student = models.ForeignKey(StudyStudent, on_delete=models.CASCADE, related_name='answers')
-    problem = models.ForeignKey(StudyProblem, on_delete=models.CASCADE, related_name='answers')
+    student = models.ForeignKey(
+        StudyStudent, on_delete=models.CASCADE, related_name='answers', verbose_name='학생')
+    problem = models.ForeignKey(
+        StudyProblem, on_delete=models.CASCADE, related_name='answers', verbose_name='스터디 문제')
     answer = models.IntegerField(choices=choices.answer_choice, default=0, verbose_name='답안')
 
     class Meta:
@@ -457,7 +461,7 @@ class StudyAnswer(models.Model):
         ]
 
     def __str__(self):
-        return f'[PSAT]StudyAnswer(#{self.id}):{self.curriculum_info}-{self.student_info}-{self.problem_info}'
+        return f'{self.student_info}-{self.problem_info}'
 
     @property
     def curriculum_info(self):
@@ -569,8 +573,8 @@ class StudyResultManager(models.Manager):
 
 class StudyResult(models.Model):
     objects = StudyResultManager()
-    student = models.ForeignKey(StudyStudent, on_delete=models.CASCADE, related_name='results')
-    psat = models.ForeignKey(StudyPsat, on_delete=models.CASCADE, related_name='results')
+    student = models.ForeignKey(StudyStudent, on_delete=models.CASCADE, related_name='results', verbose_name='학생')
+    psat = models.ForeignKey(StudyPsat, on_delete=models.CASCADE, related_name='results', verbose_name='PSAT')
     rank = models.PositiveIntegerField(null=True, blank=True, verbose_name='등수')
     score = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name='점수')
 
