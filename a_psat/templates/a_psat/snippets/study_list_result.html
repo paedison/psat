@@ -82,10 +82,9 @@
                             </td>
                             <td class="text-nowrap text-center">{{ obj.statistics.participants|intcomma }}</td>
                             <td class="text-nowrap td-right-no-border" colspan="10">
-                                <a href="{{ obj.get_answer_input_url }}">
-                                    <span class="badge rounded-pill text-bg-danger">
-                                        {{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}까지 답안을 제출해주세요.
-                                    </span>
+                                <a class="badge rounded-pill text-bg-danger"
+                                   href="{{ obj.get_answer_input_url }}">
+                                    {{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}까지 답안을 제출해주세요.
                                 </a>
                             </td>
                         </tr>
