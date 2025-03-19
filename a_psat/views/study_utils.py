@@ -95,12 +95,14 @@ def get_result_paginator_data(homework_schedule, student, opened_rounds, page_nu
     for obj in result_page_obj:
         for key, val in score_dict[obj.psat.round].items():
             setattr(obj, key, val)
-        if data_statistics_dict:
-            for key, val in data_statistics_dict.get(obj.psat.round).items():
+
+        data_stat = data_statistics_dict.get(obj.psat.round)
+        if data_stat:
+            for key, val in data_stat.items():
                 setattr(obj, key, val)
 
+        obj.statistics = data_stat
         obj.rank = score_dict_for_rank[obj.psat.round].index(obj.score) + 1 if obj.score else None
-        obj.statistics = data_statistics_dict.get(obj.psat.round)
         obj.schedule = homework_schedule.get(obj.psat.round)
     return curriculum_stat, result_page_obj, result_page_range
 
