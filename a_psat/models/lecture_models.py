@@ -13,7 +13,7 @@ from django.urls import reverse_lazy
 from taggit.models import TagBase, TaggedItemBase
 
 from common.models import User
-from . import choices
+from . import choices, managers
 
 
 def get_remarks(message_type: str, remarks: str | None) -> str:
@@ -72,22 +72,8 @@ class LectureTaggedItem(TaggedItemBase):
         return self.content_object.reference
 
 
-class LectureManager(models.Manager):
-    def order_by_subject_code(self):
-        return self.get_queryset().annotate(
-            subject_code=models.Case(
-                models.When(subject='공부', then=0),
-                models.When(subject='언어', then=1),
-                models.When(subject='자료', then=2),
-                models.When(subject='상황', then=3),
-                default=4,
-                output_field=models.IntegerField(),
-            )
-        ).order_by('subject_code')
-
-
 class Lecture(models.Model):
-    objects = LectureManager()
+    objects = managers.LectureManager()
 
     subject = models.CharField(max_length=2, choices=choices.lecture_subject_choice, default='언어')
     title = models.CharField(max_length=20, null=True, blank=True)

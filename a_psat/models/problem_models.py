@@ -11,7 +11,7 @@ from taggit.models import TaggedItemBase, TagBase
 from _config.settings.base import BASE_DIR
 from common.constants import icon_set_new
 from common.models import User
-from . import choices
+from . import choices, managers
 
 
 class Psat(models.Model):
@@ -141,14 +141,8 @@ class ProblemTaggedItem(TaggedItemBase):
         return self.content_object.reference
 
 
-class ProblemManager(models.Manager):
-    def get_filtered_qs_by_psat(self, psat):
-        return self.select_related('psat').filter(psat=psat).annotate(
-            no=models.F('number'), ans=models.F('answer'), ans_official=models.F('answer')).order_by('subject', 'no')
-
-
 class Problem(models.Model):
-    objects = ProblemManager()
+    objects = managers.ProblemManager()
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='problems', verbose_name='PSAT')
     subject = models.CharField(max_length=2, choices=choices.subject_choice, default='언어', verbose_name='과목')
     paper_type = models.CharField(max_length=2, default='', verbose_name='책형')

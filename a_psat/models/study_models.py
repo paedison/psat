@@ -5,7 +5,7 @@ from django.db.models import functions
 from django.urls import reverse_lazy
 
 from common.models import User
-from . import choices, abstract_models
+from . import choices, abstract_models, managers
 from .problem_models import Problem
 
 verbose_name_prefix = '[스터디] '
@@ -31,16 +31,8 @@ def get_study_student_total_rank_calculated_annotation(qs_student):
     )
 
 
-class StudyCategoryManager(models.Manager):
-    def with_prefetch_related(self):
-        return self.prefetch_related('psats')
-
-    def annotate_student_count(self):
-        return self.annotate(student_count=models.Count('curriculum__students')).order_by('-id')
-
-
 class StudyCategory(models.Model):
-    objects = StudyCategoryManager()
+    objects = managers.StudyCategoryManager()
     season = models.PositiveSmallIntegerField(default=1, verbose_name='시즌')
     study_type = models.CharField(
         max_length=5, choices=choices.study_category_choice, default='기본', verbose_name='종류')
@@ -73,16 +65,8 @@ class StudyCategory(models.Model):
         return reverse_lazy('psat:admin-study-detail', args=['category', self.id])
 
 
-class StudyPsatManager(models.Manager):
-    def with_select_related(self):
-        return self.select_related('category')
-
-    def get_qs_psat(self, category: StudyCategory):
-        return self.with_select_related().filter(category=category)
-
-
 class StudyPsat(models.Model):
-    objects = StudyPsatManager()
+    objects = managers.StudyPsatManager()
     category = models.ForeignKey(StudyCategory, models.CASCADE, related_name='psats', verbose_name='카테고리')
     round = models.PositiveSmallIntegerField(
         choices=choices.study_round_choice, default=1, verbose_name='회차')
@@ -122,45 +106,8 @@ class StudyPsat(models.Model):
         return self.category.name
 
 
-class StudyProblemManager(models.Manager):
-    def with_select_related(self):
-        return self.select_related('psat', 'psat__category', 'problem', 'problem__psat')
-
-    def get_qs_study_problem(self, category):
-        return self.filter(psat__category=category).select_related(
-            'psat', 'psat__category', 'problem', 'problem__psat')
-
-    def get_filtered_qs_by_category_annotated_with_answer_count(self, category):
-        annotate_dict = {'ans_official': models.F('problem__answer')}
-        field_list = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
-        for fld in field_list:
-            annotate_dict[f'{fld}_all'] = models.F(f'answer_count__{fld}')
-            annotate_dict[f'{fld}_top'] = models.F(f'answer_count_top_rank__{fld}')
-            annotate_dict[f'{fld}_mid'] = models.F(f'answer_count_mid_rank__{fld}')
-            annotate_dict[f'{fld}_low'] = models.F(f'answer_count_low_rank__{fld}')
-        return (
-            self.filter(psat__category=category).order_by('psat__round', 'number').annotate(**annotate_dict)
-            .select_related(
-                'psat', 'problem', 'problem__psat', 'answer_count',
-                'answer_count_top_rank', 'answer_count_mid_rank', 'answer_count_low_rank',
-            )
-        )
-
-    def get_ordered_qs_by_subject_field(self):
-        subject = models.Case(
-            models.When(problem__subject='헌법', then=models.Value('subject_0')),
-            models.When(problem__subject='언어', then=models.Value('subject_1')),
-            models.When(problem__subject='자료', then=models.Value('subject_2')),
-            models.When(problem__subject='상황', then=models.Value('subject_3')),
-            default=models.Value(''),
-            output_field=models.CharField(),
-        )
-        return self.values('psat_id', 'problem__subject').annotate(
-            subject=subject, count=models.Count('id')).order_by('psat_id', 'subject')
-
-
 class StudyProblem(models.Model):
-    objects = StudyProblemManager()
+    objects = managers.StudyProblemManager()
     psat = models.ForeignKey(StudyPsat, models.CASCADE, related_name='problems', verbose_name='PSAT')
     number = models.PositiveSmallIntegerField(
         choices=choices.number_choice, default=1, verbose_name='번호')
@@ -219,19 +166,8 @@ class StudyOrganization(models.Model):
         return self.name
 
 
-class StudyCurriculumManager(models.Manager):
-    def with_select_related(self):
-        return self.select_related('organization', 'category')
-
-    def annotate_student_count(self):
-        return self.with_select_related().annotate(
-            student_count=models.Count('students'),
-            registered_student_count=models.Count('students', filter=models.Q(students__user__isnull=False))
-        ).order_by('-id')
-
-
 class StudyCurriculum(models.Model):
-    objects = StudyCurriculumManager()
+    objects = managers.StudyCurriculumManager()
     year = models.PositiveSmallIntegerField(
         choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
     organization = models.ForeignKey(
@@ -278,23 +214,8 @@ class StudyCurriculum(models.Model):
         return reverse_lazy('psat:study-detail', args=[self.id])
 
 
-class StudyCurriculumScheduleManager(models.Manager):
-    def with_select_related(self):
-        return self.select_related('curriculum')
-
-    def get_curriculum_schedule_info(self):
-        return (
-            self.values('curriculum')
-            .annotate(
-                study_rounds=models.Count('id'),
-                earliest=models.Min('lecture_datetime'),
-                latest=models.Max('lecture_datetime'),
-            )
-        )
-
-
 class StudyCurriculumSchedule(models.Model):
-    objects = StudyCurriculumScheduleManager()
+    objects = managers.StudyCurriculumScheduleManager()
     curriculum = models.ForeignKey(
         StudyCurriculum, on_delete=models.CASCADE, related_name='schedules', verbose_name='커리큘럼')
     lecture_number = models.PositiveSmallIntegerField(default=1, verbose_name='강의 주차')
@@ -323,48 +244,8 @@ class StudyCurriculumSchedule(models.Model):
         return reverse_lazy('admin:a_psat_studycurriculumschedule_change', args=[self.id])
 
 
-class StudyStudentManager(models.Manager):
-    def with_select_related(self):
-        return self.select_related('curriculum', 'curriculum__organization', 'curriculum__category')
-
-    @staticmethod
-    def _with_prefetch_related_to_results(queryset):
-        return queryset.prefetch_related(
-            models.Prefetch(
-                'results', queryset=StudyResult.objects.select_related('psat'), to_attr='result_list')
-        )
-
-    def get_filtered_qs_by_category(self, category):
-        return self.with_select_related().filter(curriculum__category=category).order_by('rank_total')
-
-    def get_filtered_qs_by_category_for_catalog(self, category):
-        queryset = self.get_filtered_qs_by_category(category)
-        return self._with_prefetch_related_to_results(queryset)
-
-    def get_filtered_qs_by_curriculum(self, curriculum):
-        return self.with_select_related().filter(curriculum=curriculum).order_by('rank_total')
-
-    def get_filtered_qs_by_curriculum_for_catalog(self, curriculum):
-        queryset = self.get_filtered_qs_by_curriculum(curriculum)
-        return self._with_prefetch_related_to_results(queryset)
-
-    def get_filtered_qs_by_user(self, user):
-        return (
-            self.with_select_related().filter(user=user)
-            .annotate(score_count=models.Count('results', filter=models.Q(results__score__gt=0)))
-            .order_by('-id')
-        )
-
-    def get_filtered_student(self, curriculum, user):
-        return self.with_select_related().filter(curriculum=curriculum, user=user).first()
-
-    def get_filtered_qs_by_curriculum_for_rank(self, curriculum, **kwargs):
-        return self.filter(curriculum=curriculum, **kwargs).annotate(
-            rank=models.Window(expression=functions.Rank(), order_by=[models.F('score_total').desc()]))
-
-
 class StudyStudent(models.Model):
-    objects = StudyStudentManager()
+    objects = managers.StudyStudentManager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='수정 일시')
     curriculum = models.ForeignKey(StudyCurriculum, models.CASCADE, related_name='students', verbose_name='커리큘럼')
@@ -417,34 +298,8 @@ class StudyStudent(models.Model):
         return reverse_lazy('psat:admin-study-student-detail', args=[self.id])
 
 
-class StudyAnswerManager(models.Manager):
-    def with_select_related(self):
-        return self.select_related('student', 'problem', 'problem__psat', 'problem__problem')
-
-    def get_filtered_qs_by_student(self, student, **kwargs):
-        subject = models.Case(
-            models.When(problem__problem__subject='헌법', then=models.Value('subject_0')),
-            models.When(problem__problem__subject='언어', then=models.Value('subject_1')),
-            models.When(problem__problem__subject='자료', then=models.Value('subject_2')),
-            models.When(problem__problem__subject='상황', then=models.Value('subject_3')),
-            default=models.Value(''),
-            output_field=models.CharField(),
-        )
-        is_correct = models.Case(
-            models.When(answer=models.F('problem__problem__answer'), then=models.Value(True)),
-            default=models.Value(False),
-            output_field=models.BooleanField(),
-        )
-        return (
-            self.with_select_related().filter(student=student, **kwargs)
-            .order_by('problem__psat__round', 'problem__problem__subject')
-            .annotate(round=models.F('problem__psat__round'), subject=subject, is_correct=is_correct)
-            .values('round', 'subject', 'is_correct')
-        )
-
-
 class StudyAnswer(models.Model):
-    objects = StudyAnswerManager()
+    objects = managers.StudyAnswerManager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     student = models.ForeignKey(
         StudyStudent, on_delete=models.CASCADE, related_name='answers', verbose_name='학생')
@@ -492,16 +347,8 @@ class StudyAnswer(models.Model):
         return self.answer
 
 
-class StudyAnswerCountManager(models.Manager):
-    def with_select_related(self):
-        return self.select_related('problem', 'problem__psat', 'problem__problem')
-
-    def get_filtered_qs_by_psat(self, psat):
-        return self.filter(problem__psat=psat).annotate(no=models.F('problem__number')).order_by('no')
-
-
 class StudyAnswerCount(abstract_models.AnswerCount):
-    objects = StudyAnswerCountManager()
+    objects = managers.StudyAnswerCountManager()
     problem = models.OneToOneField(StudyProblem, on_delete=models.CASCADE, related_name='answer_count')
 
     class Meta:
@@ -537,42 +384,8 @@ class StudyAnswerCount(abstract_models.AnswerCount):
         return self.problem.problem.subject
 
 
-class StudyResultManager(models.Manager):
-    def with_select_related(self):
-        return self.select_related(
-            'student', 'psat', 'student__curriculum',
-            'student__curriculum__category', 'student__curriculum__organization',
-        )
-
-    def get_filtered_qs_ordered_by_psat_round(self, curriculum, **kwargs):
-        return self.filter(student__curriculum=curriculum, **kwargs).order_by(
-            'psat__round').values('score', round=models.F('psat__round'))
-
-    def get_result_count_dict_by_category(self, category):
-        queryset = self.filter(student__curriculum__category=category, score__isnull=False).values(
-            'student').annotate(result_count=models.Count('id')).order_by('student')
-        return {q['student']: q['result_count'] for q in queryset}
-
-    def get_result_count_dict_by_curriculum(self, curriculum):
-        queryset = self.filter(student__curriculum=curriculum, score__isnull=False).values(
-            'student').annotate(result_count=models.Count('id')).order_by('student')
-        return {q['student']: q['result_count'] for q in queryset}
-
-    def get_rank_calculated(self, qs_student, psats):
-        return self.filter(student__in=qs_student, psat__in=psats).annotate(
-            rank_calculated=models.Case(
-                models.When(score__isnull=True, then=models.Value(None)),
-                default=models.Window(
-                    expression=functions.Rank(),
-                    partition_by=models.F('psat'),
-                    order_by=[models.F('score').desc()]),
-                output_field=models.IntegerField(),
-            )
-        )
-
-
 class StudyResult(models.Model):
-    objects = StudyResultManager()
+    objects = managers.StudyResultManager()
     student = models.ForeignKey(StudyStudent, on_delete=models.CASCADE, related_name='results', verbose_name='학생')
     psat = models.ForeignKey(StudyPsat, on_delete=models.CASCADE, related_name='results', verbose_name='PSAT')
     rank = models.PositiveIntegerField(null=True, blank=True, verbose_name='등수')
