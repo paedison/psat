@@ -20,6 +20,7 @@ class Leet(models.Model):
     exam_finished_at = models.DateTimeField(default=timezone.now, verbose_name='시험 종료 일시')
     answer_predict_opened_at = models.DateTimeField(default=timezone.now, verbose_name='예상 정답 공개 일시')
     answer_official_opened_at = models.DateTimeField(default=timezone.now, verbose_name='공식 정답 공개 일시')
+    predict_closed_at = models.DateTimeField(default=timezone.now, verbose_name='성적 에측 종료 일시')
 
     class Meta:
         verbose_name = verbose_name_plural = "[프라임LEET] 00_LEET 모의고사"
@@ -29,7 +30,7 @@ class Leet(models.Model):
         ]
 
     def __str__(self):
-        return self.abbr
+        return self.name
 
     @property
     def score_opened_at(self):
@@ -49,6 +50,18 @@ class Leet(models.Model):
         return timezone.now() <= self.page_opened_at
 
     @property
+    def is_not_started(self):
+        return self.page_opened_at < timezone.now() <= self.exam_started_at
+
+    @property
+    def is_started(self):
+        return self.exam_started_at < timezone.now()
+
+    @property
+    def is_going_on(self):
+        return self.exam_started_at < timezone.now() <= self.exam_finished_at
+
+    @property
     def is_not_finished(self):
         return timezone.now() <= self.exam_finished_at
 
@@ -63,6 +76,10 @@ class Leet(models.Model):
     @property
     def is_answer_official_opened(self):
         return self.answer_official_opened_at <= timezone.now()
+
+    @property
+    def is_predict_closed(self):
+        return self.predict_closed_at <= timezone.now()
 
     @staticmethod
     def get_admin_list_url():
@@ -90,17 +107,28 @@ class Leet(models.Model):
     def get_result_detail_url(self):
         return reverse_lazy('prime_leet:result-detail', args=[self.id])
 
-    def get_result_register_url(self):
-        return reverse_lazy('prime_leet:result-register', args=[self.id])
-
-    def get_result_unregister_url(self):
-        return reverse_lazy('prime_leet:result-unregister', args=[self.id])
-
     def get_result_print_url(self):
         return reverse_lazy('prime_leet:result-print', args=[self.id])
 
     def get_result_modal_url(self):
         return reverse_lazy('prime_leet:result-modal', args=[self.id])
+
+    @staticmethod
+    def get_predict_list_url():
+        return reverse_lazy('prime_leet:predict-list')
+
+    def get_predict_detail_url(self):
+        return reverse_lazy('prime_leet:predict-detail', args=[self.id])
+
+    @staticmethod
+    def get_predict_student_register_url():
+        return reverse_lazy('prime_leet:predict-student-register')
+
+    def get_predict_answer_input_url(self, subject_field):
+        return reverse_lazy('prime_leet:predict-answer-input', args=[self.id, subject_field])
+
+    def get_predict_answer_confirm_url(self, subject_field):
+        return reverse_lazy('prime_leet:predict-answer-confirm', args=[self.id, subject_field])
 
 
 class Problem(models.Model):

@@ -1,0 +1,20 @@
+{% load psat_filter %}
+
+{% for tab in answer_tab %}
+    {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 as answers silent %}
+    {% cycle is_confirmed_data.0 is_confirmed_data.1 is_confirmed_data.2 is_confirmed_data.3 as is_confirmed silent %}
+
+    {% for answer in answers %}
+        <div id="answerPredict{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
+             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+            <button data-number="{{ answer.no }}"
+                    class="btn btn-circle btn-sm fs-6 mx-1 my-2 {% if answer.predict_result %}btn-success{% else %}btn-danger{% endif %}">
+                {{ answer.ans_predict }}
+            </button>
+        </div>
+        <div id="answerPredictAccuracy{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
+             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+            {{ answer.rate_accuracy|floatformat:0 }}
+        </div>
+    {% endfor %}
+{% endfor %}

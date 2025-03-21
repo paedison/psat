@@ -1,0 +1,8 @@
+{% for i in '12345' %}
+    <input id="answerButton{{ answer.no|stringformat:'02d' }}-{{ i }}"
+           type="radio" class="btn-check prevent_double_click" name="answer" value="{{ i }}"
+           hx-trigger="change" hx-post=""/>
+    <label class="btn btn-circle btn-sm fs-6 {% if i|to_int == answer.ans %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+           for="answerButton{{ answer.no|stringformat:'02d' }}-{{ i }}">
+        {{ i }}</label>
+{% endfor %}

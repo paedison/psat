@@ -25,21 +25,21 @@
             <ol class="breadcrumb" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
                 <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
                 <li class="breadcrumb-item">{{ config.menu_eng|title }}</li>
-                {% if exam %}
+                {% if leet %}
                     <li class="breadcrumb-item">
                         <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                     </li>
                     <li class="breadcrumb-item">
                         {% if config.submenu == 'result' %}
-                            <a href="{{ exam.get_result_detail_url }}" class="active">{{ exam.abbr }}</a>
+                            <a href="{{ leet.get_result_detail_url }}" class="active">{{ leet.abbr }}</a>
                         {% elif config.submenu == 'predict' %}
-                            <a href="{{ exam.get_predict_detail_url }}" class="active">{{ exam.abbr }}</a>
+                            <a href="{{ leet.get_predict_detail_url }}" class="active">{{ leet.abbr }}</a>
                         {% elif config.submenu == 'admin' %}
-                            <a href="{{ exam.get_admin_result_detail_url }}" class="active">{{ exam.abbr }}</a>
-{#                        {% elif config.submenu == 'admin' and config.model_type == 'result' %}#}
-{#                            <a href="{{ exam.get_admin_result_detail_url }}" class="active">{{ exam.get_round_display }}</a>#}
-{#                        {% elif config.submenu == 'admin' and config.model_type == 'predict' %}#}
-{#                            <a href="{{ exam.get_admin_predict_detail_url }}" class="active">{{ exam.get_round_display }}</a>#}
+                            {% if config.model_type == 'result' %}
+                                <a href="{{ leet.get_admin_result_detail_url }}" class="active">{{ leet.abbr }}-결과</a>
+                            {% elif config.model_type == 'predict' %}
+                                <a href="{{ leet.get_admin_predict_detail_url }}" class="active">{{ leet.abbr }}-예측</a>
+                            {% endif %}
                         {% endif %}
                     </li>
                 {% else %}

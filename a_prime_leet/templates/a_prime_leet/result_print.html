@@ -41,7 +41,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for sub in exam_vars.sub_list %}
+                {% for sub in sub_list %}
                     {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
                     <tr class="text-center small">
                         <th class="text-nowrap align-center" rowspan="5">{{ sub }}</th>
@@ -91,7 +91,7 @@
         </table>
     </div>
     <div class="table-responsive">
-        {% include 'a_prime_leet/snippets/detail_chart.html#chart_canvas' with print_class='print' %}
+        {% include 'a_prime_leet/snippets/result_detail_chart.html#chart_canvas' with print_class='print' %}
     </div>
 
     <script>

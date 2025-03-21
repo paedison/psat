@@ -1,0 +1,33 @@
+{% load static %}
+
+<div class="card-header">
+    성적 예측 II
+    <span class="text-danger small">[정답 공개 전 데이터]</span>
+</div>
+
+<div class="card-body">
+    <nav>
+        <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetFilteredTab" role="tablist">
+            {% for tab in score_tab %}
+                {% #nav_tab prefix='ScoreFiltered' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="tab-content" id="scoreSheetFilteredContent">
+        {% for tab in score_tab %}
+            {% cycle stat_total_filtered as stat_total silent %}
+            {% cycle stat_department_filtered as stat_department silent %}
+            {% cycle '' stat_total_filtered stat_department_filtered as stat_data silent %}
+            {% #nav_content prefix='ScoreFiltered' id=tab.id %}{% include tab.template %}{% /nav_content %}
+        {% endfor %}
+
+        <div>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+            <ol class="text-success small fw-bold m-0">
+                <li><span class="text-danger">정답 공개 전</span>에 답안 제출을 완료한 응시생들의 답안만을 대상으로 분석한 자료입니다.</li>
+                <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
+            </ol>
+        </div>
+    </div>
+</div>

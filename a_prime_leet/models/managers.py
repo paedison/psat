@@ -1,17 +1,14 @@
+from django.apps import apps
 from django.db import models
 
 
 class StatisticsManager(models.Manager):
-    def get_filtered_qs_by_leet(self, leet):
-        return self.filter(leet=leet).order_by('id')
+    pass
 
 
 class StudentManager(models.Manager):
     def with_select_related(self):
         return self.select_related('leet', 'score', 'rank', 'rank_aspiration_1', 'rank_aspiration_2')
-
-    def get_filtered_qs_by_leet(self, leet):
-        return self.filter(leet=leet).order_by('id')
 
     @staticmethod
     def get_annotate_dict_for_score_and_rank():
@@ -29,7 +26,7 @@ class StudentManager(models.Manager):
             annotate_dict[f'rank_{key}_aspiration_2'] = models.F(f'rank_aspiration_2__{fld}')
         return annotate_dict
 
-    def get_filtered_qs_student_list_by_leet(self, leet):
+    def prime_leet_qs_student_list_by_leet(self, leet):
         annotate_dict = self.get_annotate_dict_for_score_and_rank()
         return (
             self.with_select_related().filter(leet=leet)
@@ -41,30 +38,21 @@ class StudentManager(models.Manager):
             )
         )
 
-    def get_student_score_frequency_list(self, student) -> list:
-        return self.filter(leet=student.leet).values_list('score__sum', flat=True)
-
-    # def get_filtered_qs_by_user_and_psat_list(self, user, psat_list):
-    #     return self.with_select_related().filter(user=user, psat__in=psat_list).order_by('id')
-    #
-    # def get_filtered_qs_by_psat_and_user_with_answer_count(self, user, psat):
-    #     annotate_dict = self.get_annotate_dict_for_score_and_rank()
-    #     qs_student = (
-    #         self.with_select_related().filter(user=user, psat=psat)
-    #         .prefetch_related('answers')
-    #         .annotate(department=models.F('category__department'), **annotate_dict)
-    #         .order_by('id').last()
-    #     )
-    #     if qs_student:
-    #         qs_answer_count = qs_student.answers.values(
-    #             subject=models.F('problem__subject')).annotate(answer_count=models.Count('id'))
-    #         average_answer_count = 0
-    #         for q in qs_answer_count:
-    #             qs_student.answer_count[q['subject']] = q['answer_count']
-    #             if q['subject'] != '헌법':
-    #                 average_answer_count += q['answer_count']
-    #         qs_student.answer_count['평균'] = average_answer_count
-    #     return qs_student
+    def prime_leet_qs_student_by_user_and_leet_with_answer_count(self, user, leet):
+        annotate_dict = self.get_annotate_dict_for_score_and_rank()
+        qs_student = (
+            self.with_select_related().filter(user=user, leet=leet).prefetch_related('answers')
+            .annotate(**annotate_dict).order_by('-id').last()
+        )
+        if qs_student:
+            answer_count_model = apps.get_model('a_prime_leet', 'PredictAnswer')
+            answer_count = answer_count_model.objects.filter(student=qs_student).aggregate(
+                subject_0=models.Count('id', filter=models.Q(problem__subject='언어')),
+                subject_1=models.Count('id', filter=models.Q(problem__subject='추리')),
+            )
+            answer_count['sum'] = sum(answer_count.values())
+            qs_student.answer_count = answer_count
+        return qs_student
 
 
 class PredictStudentManager(StudentManager):
@@ -73,7 +61,12 @@ class PredictStudentManager(StudentManager):
 
 
 class ResultRegistryManager(models.Manager):
-    def get_filtered_qs_by_leet(self, leet):
+    def with_select_related(self):
+        return self.select_related(
+            'user', 'student', 'student__leet', 'student__score',
+            'student__rank', 'student__rank_aspiration_1', 'student__rank_aspiration_2')
+
+    def prime_leet_registry_list_by_leet(self, leet):
         annotate_dict = {
             'aspiration_1': models.F('student__aspiration_1'),
             'aspiration_2': models.F('student__aspiration_2'),
@@ -90,29 +83,23 @@ class ResultRegistryManager(models.Manager):
             annotate_dict[f'rank_{key}_aspiration_1'] = models.F(f'student__rank_aspiration_1__{fld}')
             annotate_dict[f'rank_{key}_aspiration_2'] = models.F(f'student__rank_aspiration_2__{fld}')
 
-        return (
-            self.filter(student__leet=leet)
-            .select_related(
-                'user', 'student', 'student__leet', 'student__score',
-                'student__rank', 'student__rank_aspiration_1', 'student__rank_aspiration_2')
-            .order_by('id').annotate(**annotate_dict)
-        )
+        return self.with_select_related().filter(student__leet=leet).order_by('id').annotate(**annotate_dict)
 
 
 class AnswerManager(models.Manager):
-    def get_filtered_qs_by_student_and_stat_type(self, student, stat_type='total'):
+    def prime_leet_qs_answer_by_student_and_stat_type(self, student, stat_type='total'):
         qs_answers = (
             self.filter(problem__leet=student.leet).values('problem__subject')
             .annotate(participant_count=models.Count('student_id', distinct=True))
         )
-        aspiration = getattr(student, stat_type)
         if stat_type != 'total':
+            aspiration = getattr(student, stat_type)
             qs_answers = qs_answers.filter(
                 models.Q(student__aspiration_1=aspiration) | models.Q(student__aspiration_2=aspiration)
             )
         return qs_answers
 
-    def get_filtered_qs_by_student(self, student):
+    def prime_leet_qs_answer_by_student(self, student):
         return self.filter(
             problem__leet=student.leet, student=student).annotate(
             is_correct=models.Case(
@@ -128,9 +115,41 @@ class AnswerManager(models.Manager):
             'problem__result_answer_count_low_rank',
         )
 
+    def prime_leet_qs_answer_by_student_with_predict_result(self, student):
+        return self.filter(
+            problem__leet=student.leet, student=student).annotate(
+            subject=models.F('problem__subject'),
+            result=models.Case(
+                models.When(answer=models.F('problem__answer'), then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField(),
+            ),
+            predict_result=models.Case(
+                models.When(answer=models.F('problem__predict_answer_count__answer_predict'), then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField(),
+            )
+        ).select_related(
+            'problem',
+            'problem__result_answer_count',
+            'problem__result_answer_count_top_rank',
+            'problem__result_answer_count_mid_rank',
+            'problem__result_answer_count_low_rank',
+        )
+
+    def prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
+            self, student, stat_type='total', is_filtered=False):
+        qs = self.filter(problem__leet=student.leet).values('problem__subject').annotate(
+            participant_count=models.Count('student_id', distinct=True))
+        if stat_type != 'total':  # aspiration_1 | aspiration_2
+            qs = qs.filter(**{f'student__{stat_type}': getattr(student, stat_type)})
+        if is_filtered:
+            qs = qs.filter(student__is_filtered=True)
+        return qs
+
 
 class AnswerCountManager(models.Manager):
-    def get_filtered_qs_by_leet_and_subject_model_type(self, leet, subject=None, model_type='result'):
+    def prime_leet_qs_answer_count_by_leet_and_model_type_and_subject(self, leet, model_type='result', subject=None):
         annotate_dict = {
             'subject': models.F('problem__subject'),
             'number': models.F('problem__number'),
@@ -160,18 +179,21 @@ class AnswerCountManager(models.Manager):
             qs_answer_count = qs_answer_count.filter(subject=subject)
         return qs_answer_count
 
-    def get_filtered_qs_by_psat(self, psat):
-        return self.filter(problem__psat=psat).annotate(
-            no=models.F('problem__number'), sub=models.F('problem__subject'), ans=models.F('answer_predict'),
-            ans_official=models.F('problem__answer')).order_by('sub', 'no')
+    # def get_filtered_qs_by_psat(self, psat):
+    #     return self.filter(problem__psat=psat).annotate(
+    #         no=models.F('problem__number'), sub=models.F('problem__subject'), ans=models.F('answer_predict'),
+    #         ans_official=models.F('problem__answer')).order_by('sub', 'no')
 
 
 class ScoreManager(models.Manager):
-    def get_filtered_qs_by_student_and_stat_type(self, student, stat_type='total'):
+    def prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
+            self, student, stat_type='total', is_filtered=False):
         qs_score = self.filter(student__leet=student.leet)
-        aspiration = getattr(student, stat_type)
         if stat_type != 'total':
+            aspiration = getattr(student, stat_type)
             qs_score = qs_score.filter(
                 models.Q(student__aspiration_1=aspiration) | models.Q(student__aspiration_2=aspiration)
             )
+        if is_filtered:
+            qs_score = qs_score.filter(student__is_filtered=True)
         return qs_score.values()

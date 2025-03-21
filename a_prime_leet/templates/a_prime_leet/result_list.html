@@ -2,192 +2,122 @@
 {% load static %}
 
 {% block main_content %}
-    <section class="section htmx-fade-in htmx-fade-out"
-             hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-        <div class="row">
-{#            <div class="col-12">#}
-{#                <div class="card">#}
-{#                    <div class="card-body">#}
-{#                        <h5 class="card-title mb-0 text-center">#}
-{#                            <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>#}
-{#                            <div class="container p-0">#}
-{#                                <div class="container mb-3">#}
-{#                                    <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>#}
-{#                                    <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>#}
-{#                                </div>#}
-    {#                            <div class="row g-3">#}
-    {#                                <div class="col-6 text-sm-end">#}
-    {#                                    <a class="btn btn-outline-danger" target="_blank"#}
-    {#                                       href="https://renew.primeedunet.com/psat/product/prereg/group/108">#}
-    {#                                        모의고사 신청#}
-    {#                                    </a>#}
-    {#                                </div>#}
-    {#                                {% if user.is_staff %}#}
-    {#                                    {% partialdef predict_score inline=True %}#}
-    {#                                        {% if student %}#}
-    {#                                            <div class="col-6 text-sm-start">#}
-    {#                                                <a class="btn btn-outline-primary" hx-target="#main"#}
-    {#                                                   href="{% url 'predict:student_create' %}" hx-boost="true">#}
-    {#                                                    성적 예측하기#}
-    {#                                                </a>#}
-    {#                                            </div>#}
-    {#                                        {% else %}#}
-    {#                                            <div class="col-6 text-sm-start">#}
-    {#                                                <a class="btn btn-outline-primary" hx-target="#main"#}
-    {#                                                   href="{% url 'predict:index' %}" hx-boost="true">#}
-    {#                                                    성적 예측하기#}
-    {#                                                </a>#}
-    {#                                            </div>#}
-    {#                                        {% endif %}#}
-    {#                                    {% endpartialdef %}#}
-    {#                                {% else %}#}
-    {#                                    {% if current_time > predict_opened_at %}#}
-    {#                                        {% partial predict_score %}#}
-    {#                                    {% else %}#}
-    {#                                        <div class="col-6 text-sm-start">#}
-    {#                                            <a class="btn btn-outline-primary"#}
-    {#                                               hx-get="{% url 'score_prime_psat:no_predict_open_modal' %}" href=""#}
-    {#                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"#}
-    {#                                               data-bs-toggle="modal" data-bs-target="#modalContainer">#}
-    {#                                                성적 예측하기#}
-    {#                                            </a>#}
-    {#                                        </div>#}
-    {#                                    {% endif %}#}
-    {#                                {% endif %}#}
-    {#                            </div>#}
-{#                            </div>#}
-{#                        </h5>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">시험 목록</div>
-                    <div class="card-body">
-                        <article class="table-responsive">
-                            <table class="table table-bordered align-middle">
-                                <thead>
-                                    <tr class="text-center align-middle table-warning">
-                                        <th class="text-primary text-nowrap td-left-no-border" rowspan="2">시험명</th>
-                                        <th class="text-primary text-nowrap" rowspan="2">수험번호</th>
-                                        <th class="text-primary text-nowrap" rowspan="2">성적표</th>
-                                        <th class="text-primary text-nowrap" colspan="2">총점</th>
-                                        <th class="text-primary text-nowrap" colspan="2">언어이해</th>
-                                        <th class="text-primary text-nowrap td-right-no-border" colspan="2">추리논증</th>
-                                    </tr>
-                                    <tr class="text-center align-middle table-warning">
-                                        {% for _ in '012' %}
-                                            <th class="text-primary text-nowrap td-right-no-border">원점수</th>
-                                            <th class="text-primary text-nowrap td-left-no-border td-right-no-border">표준점수</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {% if page_obj %}
-                                        {% for obj in page_obj %}
-                                            <tr class="text-center">
-                                                {% partialdef exam_round inline=True %}
-                                                    <td class="text-nowrap td-left-no-border">
-                                                        {% if obj.student %}
-                                                            <a href="{{ obj.get_result_detail_url }}" hx-boost="true">
-                                                                {{ obj.name }}
-                                                            </a>
-                                                        {% else %}
-                                                            {{ obj.name }}
-                                                        {% endif %}
-                                                    </td>
-                                                {% endpartialdef %}
-
-                                                {% if not user.is_authenticated %}
-                                                    <td class="text-nowrap" colspan="8">
-                                                        <a class="btn btn-outline-danger"
-                                                           hx-boost="true"
-                                                           hx-target="body" hx-swap="innerHTML swap:0.25s"
-                                                           href="{% url 'account_login' %}?next={{ request.path }}">
-                                                            로그인이 필요합니다
-                                                        </a>
-                                                    </td>
-                                                {% else %}
-                                                    {% if current_time < obj.score_opened_at %}
-                                                        <td class="text-nowrap" colspan="8">
-                                                            <a class="badge rounded-pill text-bg-danger" href=""
-                                                               hx-headers='{"View-Type":"no_open"}'
-                                                               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                                               data-bs-toggle="modal" data-bs-target="#modalContainer"
-                                                               hx-get="{{ obj.get_result_modal_url }}">
-                                                                성적 공개 일시 : {{ obj.score_opened_at|date:'n/j(D) H:i' }}
-                                                            </a>
-                                                        </td>
-                                                    {% else %}
-                                                        {% partial exam_info %}
-                                                    {% endif %}
-                                                {% endif %}
-                                            </tr>
-                                        {% endfor %}
-                                    {% endif %}
-                                </tbody>
-                            </table>
-                        </article>
-                    </div>
+    <section class="section" aria-label="시험 목록">
+        <div class="row" hx-boost="true">
+            {% for registry in registries %}
+                <div class="col-lg-6">
+                    {% partial leet_card %}
                 </div>
+            {% endfor %}
+            <div class="col-lg-6">
+                {% partial registry_card %}
             </div>
         </div>
     </section>
 {% endblock main_content %}
 
-{% partialdef exam_info %}
-    <td class="text-nowrap p-2" aria-label="수험번호">
-        {% if obj.student %}
-            <a href="{{ obj.get_result_detail_url }}" hx-boost="true">{{ obj.student.serial }}</a>
-            {% partialdef delete_student inline=True %}
-                {% if user.is_staff %}
-                    <a class="badge rounded-pill text-bg-danger"
-                       hx-confirm="수험 정보를 삭제하시겠습니까?"
-                       href="" hx-post="{{ obj.get_result_unregister_url }}">
-                        삭제
+{% partialdef leet_card %}
+    <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            ({{ registry.student.leet.exam_started_at|date:'n/j' }}) {{ registry.student.leet.name }}
+        </div>
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="d-flex flex-column justify-content-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center">
+                        <img src="{% static 'image/logo/prime.jpg' %}" alt="로고" height="100"/>
+                    </div>
+                    <a class="btn btn-outline-primary" hx-boost="true"
+                       href="{{ registry.student.leet.get_result_detail_url }}">
+                        성적 확인
                     </a>
+                </div>
+                <article class="table-responsive flex-fill ps-3">
+                    <table class="table m-0">
+                        <thead>
+                            <tr class="table-warning text-center align-middle">
+                                <th class="text-nowrap">구분</th>
+                                <th class="text-nowrap">총점</th>
+                                <th class="text-nowrap">언어</th>
+                                <th class="text-nowrap">추리</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr class="text-center align-middle">
+                                <th class="text-nowrap">표준점수</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.sum }}</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.subject_0 }}</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.subject_1 }}</th>
+                            </tr>
+                            <tr class="text-center align-middle">
+                                <th class="text-nowrap">원점수</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.raw_sum }}</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.raw_subject_0 }}</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.raw_subject_1 }}</th>
+                            </tr>
+                            <tr class="text-center align-middle">
+                                <th class="text-nowrap">등수</th>
+                                <th class="text-nowrap">
+                                    <span class="fw-bold text-primary">{{ registry.student.rank.sum }}</span>
+                                    / {{ registry.student.rank.participants }}
+                                </th>
+                                <th class="text-nowrap">
+                                    <span class="fw-bold text-primary">{{ registry.student.rank.subject_0 }}</span>
+                                    / {{ registry.student.rank.participants }}
+                                </th>
+                                <th class="text-nowrap">
+                                    <span class="fw-bold text-primary">{{ registry.student.rank.subject_1 }}</span>
+                                    / {{ registry.student.rank.participants }}
+                                </th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+            </div>
+        </div>
+    </div>
+{% endpartialdef leet_card %}
+
+{% partialdef registry_card %}
+    <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <div class="card-header">수험정보 등록</div>
+        <div class="card-body">
+            <div class="d-grid d-sm-flex align-items-sm-center">
+                {% if not user.is_authenticated %}
+                    <div class="d-flex align-items-center justify-content-center">
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                           hx-boost="true" hx-target="body"
+                           href="{% url 'account_login' %}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center my-2 ms-sm-4 fw-bold">
+                        로그인이 필요합니다.
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center ms-sm-auto">
+                        <a class="btn btn-outline-danger" hx-boost="true" hx-target="body"
+                           href="{% url 'account_login' %}">
+                            로그인
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center">
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                           hx-boost="true" href="{{ config.url_study_student_register }}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center my-2 ms-sm-4 fw-bold">
+                        수험정보를 등록해주세요.
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center ms-sm-auto">
+                        <a class="btn btn-outline-primary" hx-boost="true" href="{{ config.url_student_register }}">
+                            수험정보 등록
+                        </a>
+                    </div>
                 {% endif %}
-            {% endpartialdef delete_student %}
-        {% else %}
-            {% partialdef input_button inline=True %}
-                <a class="badge rounded-pill text-bg-warning" href=""
-                   hx-headers='{"View-Modal":"student_register"}'
-                   hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                   data-bs-toggle="modal" data-bs-target="#modalContainer"
-                   hx-get="{{ obj.get_result_modal_url }}">
-                    입력
-                </a>
-            {% endpartialdef input_button %}
-        {% endif %}
-    </td>
-
-    <td class="text-nowrap p-2" aria-label="성적표">
-        {% if obj.student %}
-            <a class="badge rounded-pill text-bg-success" hx-boost="true"
-               href="{{ obj.get_result_detail_url }}">
-                확인
-            </a>
-        {% else %}
-            <a class="badge rounded-pill text-bg-danger" href=""
-               hx-headers='{"View-Modal":"student_register"}'
-               hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-               data-bs-toggle="modal" data-bs-target="#modalContainer"
-               hx-get="{{ obj.get_result_modal_url }}">
-                미응시
-            </a>
-        {% endif %}
-    </td>
-
-    {% for subject in subjects %}
-        {% cycle obj.student.raw_score_sum obj.student.raw_score_0 obj.student.raw_score_1 as raw_score silent %}
-        {% cycle obj.student.score_sum obj.student.score_0 obj.student.score_1 as score silent %}
-        <td class="text-nowrap td-right-no-border" aria-label="{{ subject.0 }} 원점수">
-            {{ raw_score }}
-        </td>
-        <td class="text-nowrap td-left-no-border td-right-no-border" aria-label="{{ subject.0 }} 표준점수">
-            {{ score|floatformat:1 }}
-        </td>
-    {% endfor %}
-{% endpartialdef exam_info %}
+            </div>
+        </div>
+    </div>
+{% endpartialdef registry_card %}

@@ -39,20 +39,24 @@ class LeetForm(forms.Form):
         label='시험일', label_suffix='', initial=timezone.now(),
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
     )
+    predict_close_date = forms.DateField(
+        label='성적 예측 종료일', initial=timezone.now(),
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+    )
     exam_start_time = forms.TimeField(
         label='시험 시작 시각', label_suffix='', initial=time(9, 0),
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
     exam_finish_time = forms.TimeField(
-        label='시험 종료 시각', label_suffix='', initial=time(17, 0),
+        label='시험 종료 시각', label_suffix='', initial=time(12, 50),
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
     answer_predict_open_time = forms.TimeField(
-        label='예상 정답 공개 시각', label_suffix='', initial=time(17, 30),
+        label='예상 정답 공개 시각', label_suffix='', initial=time(12, 50),
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
     answer_official_open_time = forms.TimeField(
-        label='공식 정답 공개 시각', label_suffix='', initial=time(17, 30),
+        label='공식 정답 공개 시각', label_suffix='', initial=time(12, 50),
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
     )
 
@@ -68,6 +72,7 @@ class LeetForm(forms.Form):
         try:
             page_open_date = cleaned_data['page_open_date']
             exam_date = cleaned_data['exam_date']
+            predict_close_date = cleaned_data['predict_close_date']
             exam_start_time = cleaned_data['exam_start_time']
             exam_finish_time = cleaned_data['exam_finish_time']
             answer_predict_open_time = cleaned_data['answer_predict_open_time']
@@ -80,6 +85,7 @@ class LeetForm(forms.Form):
         cleaned_data['exam_finished_at'] = get_local_time(exam_date, exam_finish_time)
         cleaned_data['answer_predict_opened_at'] = get_local_time(exam_date, answer_predict_open_time)
         cleaned_data['answer_official_opened_at'] = get_local_time(exam_date, answer_official_open_time)
+        cleaned_data['predict_closed_at'] = get_local_time(predict_close_date, time(17, 00))
 
         return cleaned_data
 
@@ -91,10 +97,26 @@ class LeetActiveForm(forms.ModelForm):
         widgets = {'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'})}
 
 
-class PrimeLeetStudentForm(forms.ModelForm):
-    class Meta:
-        model = models.ResultStudent
-        fields = ['serial', 'name', 'password']
+class ResultStudentForm(forms.Form):
+    leet = forms.ModelChoiceField(
+        label='시험명', queryset=models.Leet.objects.filter(year=2026),
+        empty_label='시험을 선택해주세요',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    serial = forms.CharField(label='수험번호', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    name = forms.CharField(label='이름', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(
+        label='비밀번호', widget=forms.TextInput(attrs={'class': 'form-control', 'type': 'password'}))
+
+
+class PredictStudentForm(ResultStudentForm):
+    leet = forms.ModelChoiceField(
+        label='시험명',
+        queryset=models.Leet.objects.filter(
+            year=2026, page_opened_at__lte=timezone.now(), predict_closed_at__gte=timezone.now()),
+        empty_label='시험을 선택해주세요',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
 
 
 class UploadFileForm(forms.Form):

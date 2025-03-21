@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import result_views, admin_views
+from .views import result_views, predict_views, admin_views
 
 app_name = 'prime_leet'
 
@@ -31,24 +31,19 @@ admin_patterns = [
 result_patterns = [
     path('', result_views.list_view, name='result-list'),
     path('<int:pk>/', result_views.detail_view, name='result-detail'),
-    path('register/<int:pk>/', result_views.register_view, name='result-register'),
-    path('unregister/<int:pk>/', result_views.unregister_view, name='result-unregister'),
-
+    path('student/register/', result_views.student_register_view, name='result-student-register'),
     path('print/<int:pk>/', result_views.print_view, name='result-print'),
     path('modal/<int:pk>/', result_views.modal_view, name='result-modal'),
 ]
 
 predict_patterns = [
-    # path('', predict_views.index_view, name='predict-index'),
-    # path('<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-    #      predict_views.detail_view, name='detail'),
-    # path('student/<int:exam_year>/<str:exam_exam>/<int:exam_round>/',
-    #      predict_views.student_create_view, name='student-create'),
-    # path('answer/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
-    #      predict_views.answer_input_view, name='answer-input'),
-    # path('answer/confirm/<int:exam_year>/<str:exam_exam>/<int:exam_round>/<str:subject_field>/',
-    #      predict_views.answer_confirm_view, name='answer-confirm'),
-    # path('admin/', include(admin_patterns)),
+    path('', predict_views.list_view, name='predict-list'),
+    path('<int:pk>/', predict_views.detail_view, name='predict-detail'),
+    path('student/register/', predict_views.student_register_view, name='predict-student-register'),
+    path('answer/<int:pk>/<str:subject_field>/',
+         predict_views.answer_input_view, name='predict-answer-input'),
+    path('answer/confirm/<int:pk>/<str:subject_field>/',
+         predict_views.answer_confirm_view, name='predict-answer-confirm'),
 ]
 
 urlpatterns = [

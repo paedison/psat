@@ -6,7 +6,7 @@ from django_htmx.http import replace_url
 from common.constants import icon_set_new
 from common.decorators import only_staff_allowed, admin_required
 from common.utils import HtmxHttpRequest, update_context_data
-from . import admin_utils
+from . import admin_utils, result_views
 from .. import models, utils, forms
 
 
@@ -82,8 +82,8 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     data_statistics = admin_utils.get_qs_statistics(leet, model_type)
     student_list = admin_utils.get_student_list(leet, model_type)
     registry_list = None
-    if model_type == 'predict':
-        registry_list = models.ResultRegistry.objects.get_filtered_qs_by_leet(leet)
+    if model_type == 'result':
+        registry_list = models.ResultRegistry.objects.prime_leet_registry_list_by_leet(leet)
     qs_answer_count = admin_utils.get_qs_answer_count(leet, model_type, subject)
 
     if view_type == 'statistics_list':
@@ -138,12 +138,8 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
 @only_staff_allowed()
 def result_student_detail_view(request: HtmxHttpRequest, pk: int):
-    from .result_views import get_detail_context
     student = get_object_or_404(models.ResultStudent, pk=pk)
-    context = get_detail_context(request.user, student.leet, student)
-    if context is None:
-        return redirect('prime_leet:admin-detail', args=['result', pk])
-    return render(request, 'a_prime_leet/result_print.html', context)
+    return result_views.detail_view(request, student.leet.pk, student=student, is_for_print=True)
 
 
 @only_staff_allowed()
@@ -212,11 +208,11 @@ def leet_create_view(request: HtmxHttpRequest):
 
             admin_utils.create_default_problems(leet)
             admin_utils.create_default_statistics(leet)
-            # admin_utils.create_default_statistics(leet, 'predict')
+            admin_utils.create_default_statistics(leet, 'predict')
 
             problems = models.Problem.objects.filter(leet=leet).order_by('id')
             admin_utils.create_default_answer_counts(problems, 'result')
-            # admin_utils.create_default_answer_counts(problems, 'predict')
+            admin_utils.create_default_answer_counts(problems, 'predict')
 
             response = redirect('prime_leet:admin-list')
             return replace_url(response, config.url_list)

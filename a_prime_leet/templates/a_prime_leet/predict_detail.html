@@ -1,0 +1,63 @@
+{% extends 'a_prime_leet/_prime_leet_base.html' %}
+{% load static %}
+
+{% block main_content %}
+    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center p-4">
+                        <img src="{% static 'image/prime/2025/psat/title.jpg' %}" class="mw-100" alt="Title"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="수험 정보">
+                <div id="info_student" class="card htmx-fade-in htmx-fade-out">
+                    {% include 'a_prime_leet/snippets/predict_detail_info_student.html' %}
+                </div>
+            </div>
+
+            <div class="col-12" aria-label="답안 제출 현황">
+                <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
+                    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html' %}
+                </div>
+            </div>
+
+            {% if leet.is_collecting_answer or leet.is_answer_predict_opened %}
+                <div class="col-12" aria-label="예상 정답">
+                    <div id="info_student" class="card htmx-fade-in htmx-fade-out">
+                        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_predict.html' %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if leet.is_answer_official_opened %}
+                <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
+                    <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
+                        {% include 'a_prime_leet/snippets/predict_detail_sheet_score_all.html' %}
+                    </div>
+                </div>
+                {% if student.is_confirmed %}
+                    <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
+                        <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
+                            {% include 'a_prime_leet/snippets/predict_detail_sheet_score_filtered.html' %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="col-12" aria-label="정답 확인">
+                    <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
+                        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html' %}
+                    </div>
+                </div>
+
+{#                    <div class="col-12">#}
+{#                        <div id="chart" class="card htmx-fade-in htmx-fade-out">#}
+{#                            {% include 'a_prime_leet/snippets/result_detail_chart.html' with is_confirmed=True stat_total=stat_total_all stat_department=stat_department_all %}#}
+{#                        </div>#}
+{#                    </div>#}
+            {% endif %}
+        </div>
+    </section>
+{% endblock main_content %}

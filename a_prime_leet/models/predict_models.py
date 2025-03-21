@@ -41,6 +41,7 @@ class PredictStudent(abstract_models.Student):
 
 
 class PredictAnswer(abstract_models.Answer):
+    objects = managers.AnswerManager()
     student = models.ForeignKey(PredictStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='predict_answers')
 
@@ -68,6 +69,7 @@ class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
 
 
 class PredictScore(abstract_models.Score):
+    objects = managers.ScoreManager()
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='score')
 
     class Meta:

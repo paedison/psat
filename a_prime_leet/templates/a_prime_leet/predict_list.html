@@ -1,0 +1,163 @@
+{% extends 'a_prime_leet/_prime_leet_base.html' %}
+{% load static %}
+
+{% block main_content %}
+    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-0 text-center">
+                            <img src="{% static 'image/prime/2025/psat/title.jpg' %}" class="mw-100" alt="Title"/>
+                            <div class="fs-1 fw-bolder">성적 예측</div>
+                            <a class="btn btn-outline-primary ms-auto mt-4" hx-boost="true"
+                               href="{% url 'prime:result-list' %}">
+                                성적 확인 페이지로 이동
+                            </a>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="시험 목록">
+        <div class="row" hx-boost="true">
+            {% for student in students %}
+                <div class="col-12">
+                    {% partial leet_card %}
+                </div>
+            {% endfor %}
+            <div class="col-12">
+                {% partial student_card %}
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+{% partialdef leet_card %}
+    <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-sm-none text-primary">
+                ({{ student.leet.exam_started_at|date:'n/j' }}) {{ student.leet.abbr }} 모의고사
+            </div>
+            <div class="d-none d-sm-block text-primary">
+                ({{ student.leet.exam_started_at|date:'n/j' }}) {{ student.leet.name }}
+            </div>
+            <div>
+                {% if student.leet.is_not_started %}
+                    <span class="badge rounded-pill bg-primary fs-6">시험 시작전</span>
+                {% elif student.leet.is_going_on %}
+                    <span class="badge rounded-pill bg-success fs-6">시험 진행중</span>
+                {% elif student.leet.is_collecting_answer %}
+                    <span class="badge rounded-pill bg-success fs-6">답안 수집중</span>
+                {% elif student.leet.is_answer_predict_opened %}
+                    <span class="badge rounded-pill bg-success fs-6">예상 정답 공개</span>
+                {% elif student.leet.is_answer_official_opened %}
+                    <span class="badge rounded-pill bg-danger fs-6">성적 예측 진행중</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="d-grid d-sm-flex align-items-sm-center">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                    {% if student %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center">
+                            <img src="{% static 'image/logo/prime.jpg' %}" alt="로고" height="100"/>
+                        </div>
+                        <a class="btn btn-outline-primary" hx-boost="true"
+                           href="{{ student.leet.get_predict_detail_url }}">
+                            성적 예측
+                        </a>
+                    {% else %}
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center mb-2"
+                           href="{{ config.url_register }}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <a class="btn btn-outline-primary text-nowrap" hx-boost="true"
+                           href="{{ config.url_register }}">
+                            수험정보 등록
+                        </a>
+                    {% endif %}
+                </div>
+                <article class="table-responsive flex-fill ps-sm-3">
+                    <table class="table m-0">
+                        <tbody>
+                            <tr>
+                                <th class="text-nowrap px-0">시험 일시</th>
+                                <td class="text-nowrap">
+                                    {{ student.leet.exam_started_at|date:'Y.n.j(D)' }}
+                                    {{ student.leet.exam_started_at|date:'H:i' }}
+                                    ~ {{ student.leet.exam_finished_at|date:'H:i' }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-nowrap px-0">정답 공개</th>
+                                <td class="text-nowrap">
+                                    {{ student.leet.answer_predict_opened_at|date:'H:i' }} (예상 정답) /
+                                    {{ student.leet.answer_official_opened_at|date:'H:i' }} (공식 정답)
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-nowrap px-0">수험 번호</th>
+                                <td>
+                                    {% if student %}
+                                        {{ student.serial }}
+                                    {% else %}
+                                        <a class="badge rounded-pill text-bg-primary" hx-boost="true"
+                                           href="{{ config.url_register }}">
+                                            수험정보를 등록해주세요.
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+            </div>
+        </div>
+    </div>
+{% endpartialdef leet_card %}
+
+{% partialdef student_card %}
+    <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <div class="card-header">수험정보 등록</div>
+        <div class="card-body">
+            <div class="d-grid d-sm-flex align-items-sm-center">
+                {% if not user.is_authenticated %}
+                    <div class="d-flex align-items-center justify-content-center">
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                           hx-boost="true" hx-target="body"
+                           href="{% url 'account_login' %}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center my-2 ms-sm-4 fw-bold">
+                        로그인이 필요합니다.
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center ms-sm-auto">
+                        <a class="btn btn-outline-danger" hx-boost="true" hx-target="body"
+                           href="{% url 'account_login' %}">
+                            로그인
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-center">
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                           hx-boost="true" href="{{ config.url_student_register }}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center my-2 ms-sm-4 fw-bold">
+                        수험정보를 등록해주세요.
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center ms-sm-auto">
+                        <a class="btn btn-outline-primary" hx-boost="true" href="{{ config.url_student_register }}">
+                            수험정보 등록
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endpartialdef student_card %}

@@ -19,7 +19,7 @@ def get_answer_tab() -> list:
 
 
 def get_score_tab() -> list:
-    score_template_table = 'a_prime_leet/snippets/detail_sheet_score_table.html'
+    score_template_table = 'a_prime_leet/snippets/result_detail_sheet_score_table.html'
     return [
             {'id': '0', 'title': '전체', 'prefix': 'total', 'template': score_template_table},
             {'id': '1', 'title': '1지망', 'prefix': 'aspiration1', 'template': score_template_table},
@@ -94,8 +94,8 @@ def get_student(leet, user):
 
 
 def get_dict_stat_data(student: models.ResultStudent, stat_type='total') -> dict:
-    qs_answers = models.ResultAnswer.objects.get_filtered_qs_by_student_and_stat_type(student, stat_type)
-    qs_score = models.ResultScore.objects.get_filtered_qs_by_student_and_stat_type(student, stat_type)
+    qs_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type(student, stat_type)
+    qs_score = models.ResultScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(student, stat_type)
     sub_list = get_sub_list()
     subject_vars = get_subject_vars()
     field_vars = {
@@ -105,8 +105,7 @@ def get_dict_stat_data(student: models.ResultStudent, stat_type='total') -> dict
     }
 
     participants_dict = {
-        subject_vars[entry['problem__subject']][1]: entry['participant_count']
-        for entry in qs_answers
+        subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer
     }
     participants_dict['sum'] = max(
         participants_dict[f'subject_{idx}'] for idx, _ in enumerate(sub_list)
@@ -154,7 +153,7 @@ def get_dict_stat_data(student: models.ResultStudent, stat_type='total') -> dict
 
 
 def get_dict_frequency_score(student) -> dict:
-    score_frequency_list = models.ResultStudent.objects.get_student_score_frequency_list(student)
+    score_frequency_list = models.ResultStudent.objects.filter(leet=student.leet).values_list('score__sum', flat=True)
     score_counts_list = [round(score, 1) for score in score_frequency_list]
     score_counts_list.sort()
 
@@ -176,10 +175,7 @@ def get_data_answers(qs_answer):
         field = subject_vars[sub][1]
         ans_official = qs_a.problem.answer
         ans_student = qs_a.answer
-
-        answer_official_list = []
-        if ans_official > 5:
-            answer_official_list = [int(digit) for digit in str(ans_official)]
+        answer_official_list = [int(digit) for digit in str(ans_official)]
 
         qs_a.no = qs_a.problem.number
         qs_a.ans_official = ans_official
@@ -198,10 +194,11 @@ def get_data_answers(qs_answer):
         except TypeError:
             qs_a.rate_gap = None
 
-        qs_a.rate_selection = qs_a.problem.result_answer_count.get_answer_rate(ans_student)
-        qs_a.rate_selection_top = qs_a.problem.result_answer_count_top_rank.get_answer_rate(ans_student)
-        qs_a.rate_selection_mid = qs_a.problem.result_answer_count_mid_rank.get_answer_rate(ans_student)
-        qs_a.rate_selection_low = qs_a.problem.result_answer_count_low_rank.get_answer_rate(ans_student)
+        if ans_student <= 5:
+            qs_a.rate_selection = qs_a.problem.result_answer_count.get_answer_rate(ans_student)
+            qs_a.rate_selection_top = qs_a.problem.result_answer_count_top_rank.get_answer_rate(ans_student)
+            qs_a.rate_selection_mid = qs_a.problem.result_answer_count_mid_rank.get_answer_rate(ans_student)
+            qs_a.rate_selection_low = qs_a.problem.result_answer_count_low_rank.get_answer_rate(ans_student)
 
         data_answers[idx].append(qs_a)
     return data_answers

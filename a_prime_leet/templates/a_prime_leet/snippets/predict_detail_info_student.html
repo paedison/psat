@@ -1,0 +1,35 @@
+{% load static %}
+{% load psat_filter %}
+
+<div class="card-header">수험정보</div>
+
+<div class="card-body">
+    <table class="table">
+        <tbody>
+            <tr>
+                <th class="px-0" scope="row">수험번호</th>
+                <td>{{ student.serial }}</td>
+            </tr>
+            <tr>
+                <th class="px-0" scope="row">이름</th>
+                <td>{{ student.name }}</td>
+            </tr>
+{#            <tr>#}
+{#                <th class="px-0" scope="row">출신 대학 / 전공</th>#}
+{#                <td>{{ student.school }} / {{ student.major }}</td>#}
+{#            </tr>#}
+{#            <tr>#}
+{#                <th class="px-0" scope="row">1지망 / 2지망</th>#}
+{#                <td>{{ student.aspiration_1 }} / {{ student.aspiration_2 }}</td>#}
+{#            </tr>#}
+{#            <tr>#}
+{#                <th class="px-0" scope="row">학점(GPA)</th>#}
+{#                <td>{{ student.gpa }} / {{ student.gpa_type }}</td>#}
+{#            </tr>#}
+{#            <tr>#}
+{#                <th class="px-0" scope="row">영어 성적</th>#}
+{#                <td>{{ student.english }} / {{ student.english_type }}</td>#}
+{#            </tr>#}
+        </tbody>
+    </table>
+</div>

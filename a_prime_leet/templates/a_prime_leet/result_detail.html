@@ -12,25 +12,16 @@
                             <div class="d-flex">
                                 <div class="btn-group ms-auto">
                                     <a class="btn btn-outline-secondary" title="목록"
-                                       href="{{ exam.get_result_list_url }}" hx-boost="true">
+                                       href="{{ leet.get_result_list_url }}" hx-boost="true">
                                         목록
                                     </a>
                                     <a class="btn btn-outline-secondary" title="인쇄하기"
-                                       href="{{ exam.get_result_print_url }}" target="score_print">
+                                       href="{{ leet.get_result_print_url }}" target="score_print">
                                         인쇄하기
                                     </a>
                                 </div>
                             </div>
-{#                            <img src="{% static 'image/prime/2024/exam/title.jpg' %}" class="mw-100" alt="Title"/>#}
-                            <div class="fs-1 fw-bolder my-4">{{ exam.name }} 성적표</div>
-{#                            {% if not student %}#}
-{#                                <div class="container p-0">#}
-{#                                    <div class="container">#}
-{#                                        <img src="{% static 'image/prime/2024/exam/message-1.jpg' %}" class="mw-100" alt="Message"/>#}
-{#                                        <img src="{% static 'image/prime/2024/exam/message-2.jpg' %}" class="mw-100" alt="Message"/>#}
-{#                                    </div>#}
-{#                                </div>#}
-{#                            {% endif %}#}
+                            <div class="fs-1 fw-bolder my-4">{{ leet.name }} 성적표</div>
                         </h5>
                     </div>
                 </div>
@@ -38,25 +29,25 @@
 
             <div class="col-12">
                 <div id="student_info" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/detail_info_student.html' %}
+                    {% include 'a_prime_leet/snippets/result_detail_info_student.html' %}
                 </div>
             </div>
 
             <div class="col-12">
                 <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/detail_sheet_score.html' with is_confirmed=True %}
+                    {% include 'a_prime_leet/snippets/result_detail_sheet_score.html' with is_confirmed=True %}
                 </div>
             </div>
 
             <div class="col-12">
                 <div id="chart" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/detail_chart.html' with is_confirmed=True %}
+                    {% include 'a_prime_leet/snippets/result_detail_chart.html' with is_confirmed=True %}
                 </div>
             </div>
 
             <div class="col-12">
                 <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/detail_sheet_answer.html' %}
+                    {% include 'a_prime_leet/snippets/result_detail_sheet_answer.html' %}
                 </div>
             </div>
         </div>

@@ -17,6 +17,7 @@ from django_htmx.http import reswap
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 from scripts.update_prime_result_models import bulk_create_or_update
+from . import predict_utils
 from .. import models, forms, utils
 
 
@@ -30,225 +31,219 @@ class ViewConfiguration:
     menu_title = {'kor': menu_kor, 'eng': menu.capitalize()}
     submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
     url_admin = reverse_lazy('admin:a_prime_leet_leet_changelist')
-    url_list = reverse_lazy('prime_leet:result-list')
-
-
-def get_student_dict(user, exam_list):
-    if user.is_authenticated:
-        students = (
-            models.PredictStudent.objects.filter(user=user, psat__in=exam_list)
-            .select_related('psat', 'score', 'category').order_by('id')
-        )
-        return {student.psat: student for student in students}
-    return {}
+    url_list = reverse_lazy('prime_leet:predict-list')
+    url_student_register = reverse_lazy('prime_leet:predict-student-register')
 
 
 @login_not_required
 def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    exam_list = models.Psat.objects.filter(year=2025)
+    qs_student = models.PredictStudent.objects.with_select_related().filter(user=request.user).order_by('-id')
+    context = update_context_data(current_time=timezone.now(), config=config, students=qs_student)
+    return render(request, 'a_prime_leet/predict_list.html', context)
 
-    subjects = [
-        ('헌법', 'subject_0'),
-        ('언어논리', 'subject_1'),
-        ('자료해석', 'subject_2'),
-        ('상황판단', 'subject_3'),
-        ('PSAT 평균', 'average'),
-    ]
 
-    page_number = request.GET.get('page', 1)
-    paginator = Paginator(exam_list, 10)
-    page_obj = paginator.get_page(page_number)
-    page_range = paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=1)
+def student_register_view(request: HtmxHttpRequest):
+    config = ViewConfiguration()
+    title = '수험정보 등록'
+    form = forms.PredictStudentForm()
+    context = update_context_data(config=config, title=title, form=form)
 
-    student_dict = get_student_dict(request.user, exam_list)
-    for obj in page_obj:
-        obj.student = student_dict.get(obj, None)
-        for idx in range(4):
-            if obj.student:
-                setattr(obj, f'score_{idx}', getattr(obj.student.score, f'subject_{idx}'))
-        answer_student_counts = models.PredictAnswer.objects.filter(student=obj.student).count()
-        obj.answer_all_confirmed = answer_student_counts == 145
+    if request.method == 'POST':
+        form = forms.PredictStudentForm(request.POST)
+        if form.is_valid():
+            leet = form.cleaned_data['leet']
+            student, is_created = models.PredictStudent.objects.get_or_create(user=request.user, leet=leet)
+            if is_created:
+                student.name = form.cleaned_data['name']
+                student.serial = form.cleaned_data['serial']
+                student.password = form.cleaned_data['password']
+                student.save()
+                models.PredictScore.objects.create(student=student)
+                models.PredictRank.objects.create(student=student)
+                models.PredictRankAspiration1.objects.create(student=student)
+                models.PredictRankAspiration2.objects.create(student=student)
+                return redirect(student.leet.get_predict_detail_url())
+            else:
+                form.add_error(None, '해당 시험으로 등록된 수험정보가 존재합니다.')
+            form.add_error(None, '시험명 및 수험정보를 다시 확인해주세요.')
+        context = update_context_data(context, form=form)
 
-    context = update_context_data(
-        current_time=timezone.now(),
-        config=config,
-        subjects=subjects,
-        icon_subject=icon_set_new.ICON_SUBJECT,
-        page_obj=page_obj,
-        page_range=page_range
-    )
-    return render(request, 'a_prime/predict_list.html', context)
+    return render(request, 'a_prime_leet/admin_form.html', context)
 
 
 def detail_view(request: HtmxHttpRequest, pk: int):
-    exam = utils.get_exam(pk)
-    if exam.is_predict_closed or not exam.is_active:
-        return redirect('prime:predict-list')
+    config = ViewConfiguration()
+    context = update_context_data(current_time=timezone.now(), config=config)
+
+    leet = models.Leet.objects.filter(pk=pk).first()
+    if leet.is_predict_closed:
+        context = update_context_data(context, message='성적 예측 기간이 지났습니다.', next_url=config.url_list)
+        return render(request, 'a_prime_leet/redirect.html', context)
+    if not leet.is_active:
+        context = update_context_data(context, message='성적 예측 대상 시험이 아닙니다.', next_url=config.url_list)
+        return render(request, 'a_prime_leet/redirect.html', context)
 
     view_type = request.headers.get('View-Type', 'main')
-    exam_vars = ExamVars(exam)
-    config = ViewConfiguration()
-    config.submenu_kor = f'제{exam.round}회 ' + config.submenu_kor
-
-    student = exam_vars.get_student(request.user)
+    student = models.PredictStudent.objects.prime_leet_qs_student_by_user_and_leet_with_answer_count(request.user, leet)
     if not student:
-        return redirect('prime:predict-list')
+        context = update_context_data(
+            context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)
+        return render(request, 'a_prime_leet/redirect.html', context)
 
-    score_tab = exam_vars.get_score_tab()
-    answer_tab = exam_vars.get_answer_tab()
+    score_tab = predict_utils.get_score_tab()
+    filtered_score_tab = predict_utils.get_score_tab(True)
+    answer_tab = predict_utils.get_answer_tab()
 
-    qs_student_answer = exam_vars.get_qs_student_answer(student)
-    is_confirmed_data = exam_vars.get_is_confirmed_data(qs_student_answer)
-    answer_data_set = exam_vars.get_input_answer_data_set(request)
+    is_confirmed_data = predict_utils.get_is_confirmed_data(student)
+    qs_student_answer = models.PredictAnswer.objects.prime_leet_qs_answer_by_student_with_predict_result(student)
+    answer_data_set = predict_utils.get_input_answer_data_set(leet, request)
 
-    stat_total_all = exam_vars.get_stat_data(student, is_confirmed_data, answer_data_set, 'total', False)
-    exam_vars.update_score_predict(stat_total_all, qs_student_answer)
-    stat_department_all = exam_vars.get_stat_data(student, is_confirmed_data, answer_data_set, 'department', False)
+    stat_data_total = predict_utils.get_dict_stat_data(student,is_confirmed_data, answer_data_set)
+    predict_utils.update_score_predict(stat_data_total, qs_student_answer)
+    stat_data_1 = predict_utils.get_dict_stat_data(
+        student, is_confirmed_data, answer_data_set, 'aspiration_1')
+    stat_data_2 = predict_utils.get_dict_stat_data(
+        student, is_confirmed_data, answer_data_set, 'aspiration_2')
 
     if student.is_filtered:
-        stat_total_filtered = exam_vars.get_stat_data(student, is_confirmed_data, answer_data_set, 'total', True)
-        stat_department_filtered = exam_vars.get_stat_data(student, is_confirmed_data, answer_data_set, 'department',
-                                                           True)
+        stat_data_total_filtered = predict_utils.get_dict_stat_data(
+            student, is_confirmed_data, answer_data_set)
+        stat_data_1_filtered = predict_utils.get_dict_stat_data(
+            student, is_confirmed_data, answer_data_set, 'aspiration_1', True)
+        stat_data_2_filtered = predict_utils.get_dict_stat_data(
+            student, is_confirmed_data, answer_data_set, 'aspiration_2', True)
     else:
-        stat_total_filtered = {}
-        stat_department_filtered = {}
+        stat_data_total_filtered = {}
+        stat_data_1_filtered = {}
+        stat_data_2_filtered = {}
 
-    frequency_score = exam_vars.get_dict_frequency_score(student)
-    data_answers = exam_vars.get_data_answers(qs_student_answer)
+    frequency_score = predict_utils.get_dict_frequency_score(student)
+    data_answers = predict_utils.get_data_answers(qs_student_answer)
 
     context = update_context_data(
-        current_time=timezone.now(),
-        exam=exam,
-        exam_vars=exam_vars,
-        config=config,
-        sub_title=f'제{exam.round}회 프라임모의고사 성적표',
-
-        # icon
-        icon_menu=icon_set_new.ICON_MENU,
-        icon_subject=icon_set_new.ICON_SUBJECT,
-        icon_nav=icon_set_new.ICON_NAV,
+        current_time=timezone.now(), leet=leet, config=config,
+        sub_title=f'제{leet.round}회 프라임모의고사 성적표',
+        icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
 
         # tab variables for templates
-        score_tab=score_tab,
-        answer_tab=answer_tab,
+        score_tab=score_tab, filtered_score_tab=filtered_score_tab, answer_tab=answer_tab,
 
         # info_student: 수험 정보
         student=student,
 
         # sheet_score: 성적 예측 I [All]
-        stat_total_all=stat_total_all,
-        stat_department_all=stat_department_all,
+        stat_data_total=stat_data_total,
+        stat_data_1=stat_data_1,
+        stat_data_2=stat_data_2,
 
         # sheet_score: 성적 예측 II [Filtered]
-        stat_total_filtered=stat_total_filtered,
-        stat_department_filtered=stat_department_filtered,
+        stat_data_total_filtered=stat_data_total_filtered,
+        stat_data_1_filtered=stat_data_1_filtered,
+        stat_data_2_filtered=stat_data_2_filtered,
+
+        # sheet_answer: 답안 확인
+        data_answers=data_answers, is_confirmed_data=is_confirmed_data,
 
         # chart: 성적 분포 차트
         frequency_score=frequency_score,
-
-        # sheet_answer: 답안 확인
-        data_answers=data_answers,
-        is_confirmed_data=is_confirmed_data,
     )
 
     if view_type == 'info_answer':
-        return render(request, 'a_prime/snippets/predict_update_info_answer.html', context)
+        return render(request, 'a_prime_leet/snippets/predict_update_info_answer.html', context)
     if view_type == 'score_all':
-        return render(request, 'a_prime/snippets/predict_update_sheet_score.html', context)
+        return render(request, 'a_prime_leet/snippets/predict_update_sheet_score.html', context)
     if view_type == 'answer_submit':
-        return render(request, 'a_prime/snippets/predict_update_sheet_answer_submit.html', context)
+        return render(request, 'a_prime_leet/snippets/predict_update_sheet_answer_submit.html', context)
     if view_type == 'answer_predict':
-        return render(request, 'a_prime/snippets/predict_update_sheet_answer_predict.html', context)
-    return render(request, 'a_prime/predict_detail.html', context)
-
-
-def modal_view(request: HtmxHttpRequest, pk: int):
-    exam = utils.get_exam(pk)
-    exam_vars = ExamVars(exam)
-    view_type = request.headers.get('View-Type', '')
-
-    form = exam_vars.student_form()
-    context = update_context_data(exam=exam, form=form)
-
-    if view_type == 'no_open':
-        return render(request, 'a_prime/snippets/modal_predict_no_open.html', context)
-
-    if view_type == 'no_predict':
-        return render(request, 'a_prime/snippets/modal_predict_no_predict.html', context)
-
-    if view_type == 'student_register':
-        units = models.choices.unit_choice()
-        context = update_context_data(
-            context,
-            exam_vars=exam_vars,
-            units=units,
-            header=f'{exam.year}년 대비 제{exam.round}회 프라임 모의고사 수험 정보 입력',
-        )
-        return render(request, 'a_prime/snippets/modal_predict_student_create.html', context)
-
-
-def register_view(request: HtmxHttpRequest, pk: int):
-    view_type = request.headers.get('View-Type', '')
-    exam = utils.get_exam(pk)
-    if not exam or not exam.is_active:
-        return redirect('prime:predict-list')
-
-    exam_vars = ExamVars(exam)
-    form = exam_vars.student_form()
-    context = update_context_data(exam_vars=exam_vars, exam=exam, form=form)
-
-    if view_type == 'department':
-        unit = request.GET.get('unit')
-        categories = exam_vars.get_qs_category(unit)
-        context = update_context_data(context, categories=categories)
-        return render(request, 'a_prime/snippets/department_list.html', context)
-
-    if request.method == 'POST':
-        form = exam_vars.student_form(request.POST)
-        if form.is_valid():
-            student = form.save(commit=False)
-            student.user = request.user
-            student.psat = exam
-            student.save()
-            exam_vars.rank_total_model.objects.get_or_create(student=student)
-            exam_vars.rank_category_model.objects.get_or_create(student=student)
-            exam_vars.score_model.objects.get_or_create(student=student)
-            context = update_context_data(context, user_verified=True)
-
-    return render(request, 'a_prime/snippets/modal_predict_student_create.html#student_info', context)
-
-
-@require_POST
-def unregister_view(request: HtmxHttpRequest, pk: int):
-    exam = utils.get_exam(pk)
-    student = models.PredictStudent.objects.get(psat=exam, user=request.user)
-    student.delete()
-    return redirect('prime:predict-list')
-
-
+        return render(request, 'a_prime_leet/snippets/predict_update_sheet_answer_predict.html', context)
+    return render(request, 'a_prime_leet/predict_detail.html', context)
+#
+#
+# def modal_view(request: HtmxHttpRequest, pk: int):
+#     exam = utils.get_exam(pk)
+#     exam_vars = ExamVars(exam)
+#     view_type = request.headers.get('View-Type', '')
+#
+#     form = exam_vars.student_form()
+#     context = update_context_data(exam=exam, form=form)
+#
+#     if view_type == 'no_open':
+#         return render(request, 'a_prime_leet/snippets/modal_predict_no_open.html', context)
+#
+#     if view_type == 'no_predict':
+#         return render(request, 'a_prime_leet/snippets/modal_predict_no_predict.html', context)
+#
+#     if view_type == 'student_register':
+#         units = models.choices.unit_choice()
+#         context = update_context_data(
+#             context,
+#             exam_vars=exam_vars,
+#             units=units,
+#             header=f'{exam.year}년 대비 제{exam.round}회 프라임 모의고사 수험 정보 입력',
+#         )
+#         return render(request, 'a_prime_leet/snippets/modal_predict_student_create.html', context)
+#
+#
+# def student_register_view(request: HtmxHttpRequest, pk: int):
+#     view_type = request.headers.get('View-Type', '')
+#     exam = utils.get_exam(pk)
+#     if not exam or not exam.is_active:
+#         return redirect('prime:predict-list')
+#
+#     exam_vars = ExamVars(exam)
+#     form = exam_vars.student_form()
+#     context = update_context_data(exam_vars=exam_vars, exam=exam, form=form)
+#
+#     if view_type == 'department':
+#         unit = request.GET.get('unit')
+#         categories = exam_vars.get_qs_category(unit)
+#         context = update_context_data(context, categories=categories)
+#         return render(request, 'a_prime_leet/snippets/department_list.html', context)
+#
+#     if request.method == 'POST':
+#         form = exam_vars.student_form(request.POST)
+#         if form.is_valid():
+#             student = form.save(commit=False)
+#             student.user = request.user
+#             student.psat = exam
+#             student.save()
+#             exam_vars.rank_total_model.objects.get_or_create(student=student)
+#             exam_vars.rank_category_model.objects.get_or_create(student=student)
+#             exam_vars.score_model.objects.get_or_create(student=student)
+#             context = update_context_data(context, user_verified=True)
+#
+#     return render(request, 'a_prime_leet/snippets/modal_predict_student_create.html#student_info', context)
+#
+#
+# @require_POST
+# def unregister_view(request: HtmxHttpRequest, pk: int):
+#     exam = utils.get_exam(pk)
+#     student = models.PredictStudent.objects.get(psat=exam, user=request.user)
+#     student.delete()
+#     return redirect('prime:predict-list')
+#
+#
 def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
     config = ViewConfiguration()
-    exam = utils.get_exam(pk)
-    if not exam or not exam.is_active:
+    current_time = timezone.now()
+    leet = models.Leet.objects.filter(pk=pk).first()
+    if not leet or not leet.is_active:
         return redirect('prime:predict-list')
 
-    config.url_detail = exam.get_predict_detail_url()
-    exam_vars = ExamVars(exam)
-    student = exam_vars.get_student(request.user)
+    config.url_detail = leet.get_predict_detail_url()
+    student = models.PredictStudent.objects.prime_leet_qs_student_by_user_and_leet_with_answer_count(request.user, leet)
 
-    field_vars = exam_vars.field_vars.copy()
-    field_vars.pop('average')
+    field_vars = predict_utils.get_field_vars()
     sub, subject, field_idx = field_vars[subject_field]
 
-    time_schedule = exam_vars.get_time_schedule().get(sub)
-    if exam_vars.current_time < time_schedule[0]:
+    time_schedule = predict_utils.get_time_schedule(leet).get(sub)
+    if current_time < time_schedule[0]:
         return redirect('prime:predict-detail', pk=pk)
 
-    problem_count = exam_vars.problem_count.copy()
-    problem_count.pop('평균')
+    problem_count = predict_utils.get_problem_count(leet.exam)
 
-    answer_data_set = exam_vars.get_input_answer_data_set(request)
+    answer_data_set = predict_utils.get_input_answer_data_set(leet, request)
     answer_data = answer_data_set[subject_field]
 
     # answer_submit
@@ -261,8 +256,8 @@ def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
             return reswap(HttpResponse(''), 'none')
 
         answer_temporary = {'no': no, 'ans': ans}
-        context = update_context_data(subject=subject, answer=answer_temporary, exam=exam)
-        response = render(request, 'a_prime/snippets/predict_answer_button.html', context)
+        context = update_context_data(subject=subject, answer=answer_temporary, exam=leet)
+        response = render(request, 'a_prime_leet/snippets/predict_answer_button.html', context)
 
         if 1 <= no <= problem_count[sub] and 1 <= ans <= 5:
             answer_data[no - 1] = ans
@@ -276,12 +271,11 @@ def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
         {'no': no, 'ans': ans} for no, ans in enumerate(answer_data, start=1)
     ]
     context = update_context_data(
-        exam=exam, exam_vars=exam_vars, config=config, subject=subject,
-        icon_subject=icon_set_new.ICON_SUBJECT[sub],
+        leet=leet, config=config, subject=subject,
         student=student, answer_student=answer_student,
-        url_answer_confirm=exam.get_predict_answer_confirm_url(subject_field),
+        url_answer_confirm=leet.get_predict_answer_confirm_url(subject_field),
     )
-    return render(request, 'a_prime/predict_answer_input.html', context)
+    return render(request, 'a_prime_leet/predict_answer_input.html', context)
 
 
 def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
@@ -332,11 +326,11 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
 
 @dataclasses.dataclass
 class ExamVars:
-    exam: models.Psat
+    exam: models.Leet
 
-    exam_model = models.Psat
+    exam_model = models.Leet
     problem_model = models.Problem
-    category_model = models.Category
+    # category_model = models.Category
 
     statistics_model = models.PredictStatistics
     answer_count_model = models.PredictAnswerCount
@@ -344,14 +338,14 @@ class ExamVars:
     student_model = models.PredictStudent
     answer_model = models.PredictAnswer
     score_model = models.PredictScore
-    rank_total_model = models.PredictRankTotal
-    rank_category_model = models.PredictRankCategory
+    rank_total_model = models.PredictRank
+    # rank_category_model = models.PredictRankCategory
 
-    student_form = forms.PrimePredictStudentForm
+    student_form = forms.PredictStudentForm
 
     current_time = timezone.now()
 
-    sub_list = ['헌법', '언어', '자료', '상황']
+    sub_list = ['언어', '추리']
     subject_list = [models.choices.subject_choice()[key] for key in sub_list]
     problem_count = {'헌법': 25, '언어': 40, '자료': 40, '상황': 40, '평균': 120}
     subject_vars = {

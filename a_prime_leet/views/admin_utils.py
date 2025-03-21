@@ -109,14 +109,12 @@ def get_rank_model_set(model_type='result'):
 def get_answer_count_model_set(model_type='result'):
     model_dict = {
         'result': {
-            'answer': models.ResultAnswer,
             'all': models.ResultAnswerCount,
             'top': models.ResultAnswerCountTopRank,
             'mid': models.ResultAnswerCountMidRank,
             'low': models.ResultAnswerCountLowRank,
         },
         'predict': {
-            'answer': models.PredictAnswer,
             'all': models.PredictAnswerCount,
             'top': models.PredictAnswerCountTopRank,
             'mid': models.PredictAnswerCountMidRank,
@@ -128,17 +126,17 @@ def get_answer_count_model_set(model_type='result'):
 
 def get_qs_statistics(leet, model_type='result'):
     model = get_statistics_model(model_type)
-    return model.objects.get_filtered_qs_by_leet(leet)
+    return model.objects.filter(leet=leet).order_by('id')
 
 
 def get_student_list(leet, model_type='result'):
     model = get_student_model(model_type)
-    return model.objects.get_filtered_qs_student_list_by_leet(leet)
+    return model.objects.prime_leet_qs_student_list_by_leet(leet)
 
 
 def get_qs_answer_count(leet, model_type='result', subject=None):
     model = get_answer_count_model(model_type)
-    return model.objects.get_filtered_qs_by_leet_and_subject_model_type(leet, subject, model_type)
+    return model.objects.prime_leet_qs_answer_count_by_leet_and_model_type_and_subject(leet, model_type, subject)
 
 
 def get_answer_page_data(qs_answer_count, page_number, model_type='result', per_page=10):
@@ -197,7 +195,7 @@ def get_data_answers(qs_answer_count, subject_vars, model_type='result'):
 
 def get_qs_student(leet, model_type='result'):
     model = models.ResultStudent if model_type == 'result' else models.PredictStudent
-    return model.objects.get_filtered_qs_by_leet(leet)
+    return model.objects.filter(leet=leet).order_by('id')
 
 
 def update_problem_model_for_answer_official(leet, form, file) -> tuple:
@@ -210,7 +208,7 @@ def update_problem_model_for_answer_official(leet, form, file) -> tuple:
     list_create = []
 
     if form.is_valid():
-        df = pd.read_excel(file, sheet_name='정답', header=0, index_col=0)
+        df = pd.read_excel(file, header=0, index_col=0)
         df = df.infer_objects(copy=False)
         df.fillna(value=0, inplace=True)
 
