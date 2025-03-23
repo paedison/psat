@@ -215,25 +215,27 @@ class StudyStudentCreateForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['curriculum'].queryset = models.StudyCurriculum.objects.all()
-        self.fields['curriculum'].label_from_instance = lambda obj: obj.full_reference
-        self.fields['curriculum'].label = '커리큘럼'
-
 
 class StudyCurriculumForm(forms.Form):
+    hx_request_attrs = {
+        'class': 'form-select',
+        'hx-trigger': 'change',
+        'hx-headers': '{"View-Type": "category"}',
+        'hx-target': '#id_category_container',
+        'hx-swap': 'outerHTML swap:0.25s',
+        'hx-post': '',
+    }
     year = forms.ChoiceField(
         label='연도', initial=timezone.now().year, choices=models.choices.year_choice,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     organization = forms.ModelChoiceField(
         label='교육기관', initial='서울과기대', queryset=models.StudyOrganization.objects.all(),
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs=hx_request_attrs),
     )
     semester = forms.ChoiceField(
         label='학기', initial=1, choices=models.choices.study_semester_choice,
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs=hx_request_attrs),
     )
     category = forms.ModelChoiceField(
         label='카테고리', initial='시즌02심화', queryset=models.StudyCategory.objects.all(),
@@ -252,12 +254,6 @@ class StudyCurriculumForm(forms.Form):
         widget=forms.NumberInput(attrs={'type': 'number', 'class': 'form-control'}),
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['organization'].label_from_instance = lambda obj: obj.name
-        self.fields['category'].queryset = models.StudyCategory.objects.all()
-        self.fields['category'].label_from_instance = lambda obj: obj.category_info
-
     def clean(self):
         cleaned_data = super().clean()
         lecture_start_date = cleaned_data['lecture_start_date']
@@ -265,6 +261,13 @@ class StudyCurriculumForm(forms.Form):
         cleaned_data['lecture_start_datetime'] = utils.get_local_time(lecture_start_date, lecture_start_time)
 
         return cleaned_data
+
+
+class StudyCurriculumCategoryForm(forms.Form):
+    category = forms.ModelChoiceField(
+        label='카테고리', initial='시즌02심화', queryset=models.StudyCategory.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
 
 
 class StudyAnswerForm(forms.Form):

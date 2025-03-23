@@ -13,32 +13,34 @@
                         <form enctype="multipart/form-data" method="post">
                             {% csrf_token %}
                             {{ form.non_field_errors }}
-                            {% for field in form %}
-                                <div class="col-12 form-field-container">
-                                    {% if field.errors %}
-                                        {{ field.errors }}
-                                    {% endif %}
-                                    {% if field.name == 'file' %}
-                                        <div class="required-field mb-3">
-                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                            {{ field }}
-                                        </div>
-                                    {% elif field.name == 'is_active' %}
-                                        <div class="form-check form-switch required-field mb-3">
-                                            {{ field }}
-                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                        </div>
-                                    {% else %}
-                                        <div class="form-floating required-field mb-3">
-                                            {{ field }}
-                                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                        </div>
-                                    {% endif %}
-                                    {% if field.help_text %}
-                                        {{ field.help_text }}
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
+                            {% partialdef form_field inline=True %}
+                                {% for field in form %}
+                                    <div id="{{ field.id_for_label }}_container" class="col-12 form-field-container">
+                                        {% if field.errors %}
+                                            {{ field.errors }}
+                                        {% endif %}
+                                        {% if field.name == 'file' %}
+                                            <div class="required-field mb-3">
+                                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                {{ field }}
+                                            </div>
+                                        {% elif field.name == 'is_active' %}
+                                            <div class="form-check form-switch required-field mb-3">
+                                                {{ field }}
+                                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                            </div>
+                                        {% else %}
+                                            <div class="form-floating required-field mb-3">
+                                                {{ field }}
+                                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                            </div>
+                                        {% endif %}
+                                        {% if field.help_text %}
+                                            {{ field.help_text }}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% endpartialdef form_field %}
 
                             <div class="d-flex justify-content-end">
                                 <div class="btn-group" role="group" aria-label="취소·등록 버튼">

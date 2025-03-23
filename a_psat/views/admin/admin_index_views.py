@@ -414,8 +414,28 @@ def study_curriculum_create_view(request: HtmxHttpRequest):
     title = 'PSAT 스터디 커리큘럼 등록'
     context = update_context_data(config=config, title=title)
 
+    view_type = request.headers.get('View-Type', '')
     if request.method == 'POST':
         form = forms.StudyCurriculumForm(request.POST, request.FILES)
+        if view_type == 'category':
+            organization_id = request.POST.get('organization')
+            organization = models.StudyOrganization.objects.get(id=organization_id)
+            semester = request.POST.get('semester')
+            category_basic = models.StudyCategory.objects.filter(study_type='기본').first()
+            category_advanced = models.StudyCategory.objects.filter(study_type='심화').first()
+            category_set = {
+                ('서울과기대', '1'): category_advanced,
+                ('서울과기대', '2'): category_basic,
+                ('한국외대', '1'): category_basic,
+                ('한국외대', '2'): category_advanced,
+            }
+            category = category_set.get((organization.name, semester))
+            if category:
+                category_form = forms.StudyCurriculumCategoryForm(initial={'category': category})
+            else:
+                category_form = forms.StudyCurriculumCategoryForm()
+            context = update_context_data(context, form=category_form)
+            return render(request, 'a_psat/admin_form.html#form_field', context)
         if form.is_valid():
             year = form.cleaned_data['year']
             organization = form.cleaned_data['organization']
