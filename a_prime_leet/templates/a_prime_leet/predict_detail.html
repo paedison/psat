@@ -6,8 +6,18 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-body text-center p-4">
-                        <img src="{% static 'image/prime/2025/psat/title.jpg' %}" class="mw-100" alt="Title"/>
+                    <div class="card-body">
+                        <h5 class="card-title mb-0 text-center">
+                            <div class="d-flex">
+                                <div class="btn-group ms-auto">
+                                    <a class="btn btn-outline-secondary" title="목록"
+                                       href="{{ leet.get_predict_list_url }}" hx-boost="true">
+                                        목록
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="fs-1 fw-bolder my-4">{{ leet.name }} 성적표</div>
+                        </h5>
                     </div>
                 </div>
             </div>
@@ -24,15 +34,13 @@
                 </div>
             </div>
 
-            {% if leet.is_collecting_answer or leet.is_answer_predict_opened %}
+            {% if current_time <= leet.answer_official_opened_at %}
                 <div class="col-12" aria-label="예상 정답">
                     <div id="info_student" class="card htmx-fade-in htmx-fade-out">
                         {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_predict.html' %}
                     </div>
                 </div>
-            {% endif %}
-
-            {% if leet.is_answer_official_opened %}
+            {% else %}
                 <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
                     <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
                         {% include 'a_prime_leet/snippets/predict_detail_sheet_score_all.html' %}
@@ -52,11 +60,11 @@
                     </div>
                 </div>
 
-{#                    <div class="col-12">#}
-{#                        <div id="chart" class="card htmx-fade-in htmx-fade-out">#}
-{#                            {% include 'a_prime_leet/snippets/result_detail_chart.html' with is_confirmed=True stat_total=stat_total_all stat_department=stat_department_all %}#}
-{#                        </div>#}
-{#                    </div>#}
+                <div class="col-12" aria-label="성적 분포 차트">
+                    <div id="chart" class="card htmx-fade-in htmx-fade-out">
+                        {% include 'a_prime_leet/snippets/predict_detail_chart.html' with is_confirmed=True stat_total=stat_total_all stat_department=stat_department_all %}
+                    </div>
+                </div>
             {% endif %}
         </div>
     </section>

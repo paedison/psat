@@ -1,77 +1,8 @@
 {% load psat_filter %}
 
 {% for tab in score_tab %}
-    {% if tab.id == '0' %}
-        {% for stat_tot in stat_total_all %}
-            {% cycle stat_department_all.0 stat_department_all.1 stat_department_all.2 stat_department_all.3 stat_department_all.4 as stat_dep silent %}
-            {% if stat_tot %}{% partial sub_score_line %}{% endif %}
-        {% endfor %}
-    {% elif tab.id == '1' %}
-        {% for stat_tot in stat_total_all %}
-            {% cycle stat_tot as stat silent %}
-            {% if stat_total_all %}
-                {% for stat in stat_total_all %}{% partial sub_stat_line %}{% endfor %}
-            {% endif %}
-        {% endfor %}
-    {% elif tab.id == '2' %}
-        {% for stat_tot in stat_total_all %}
-            {% if stat_department_all %}
-                {% for stat in stat_department_all %}{% partial sub_stat_line %}{% endfor %}
-            {% endif %}
-        {% endfor %}
-    {% endif %}
+    {% cycle stat_data_total stat_data_1 stat_data_2 as stat_data silent %}
+    {% for stat in stat_data %}
+        {% include 'a_prime_leet/snippets/predict_detail_sheet_score_table.html#sub_score_line' %}
+    {% endfor %}
 {% endfor %}
-
-{% partialdef sub_score_line %}
-    <div id="{{ tab.prefix }}Score{{ stat_tot.field|title }}"
-         class="htmx-fade-up-in delay-0 text-success fw-bold" hx-swap-oob="true">
-        {{ stat_tot.score|floatformat:1 }}
-    </div>
-    <div id="{{ tab.prefix }}RankTotal{{ stat_tot.field|title }}"
-         class="htmx-fade-up-in delay-1" hx-swap-oob="true">
-        {{ stat_tot.rank }} / {{ stat_tot.participants }}
-    </div>
-    <div id="{{ tab.prefix }}RankRatioTotal{{ stat_tot.field|title }}"
-         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
-        {% if stat_tot.participants %}
-            {{ stat_tot.rank|percentageby:stat_tot.participants|floatformat:1 }}
-        {% endif %}
-    </div>
-    <div id="{{ tab.prefix }}RankDepartment{{ stat_tot.field|title }}"
-         class="htmx-fade-up-in delay-3" hx-swap-oob="true">
-        {{ stat_dep.rank }} / {{ stat_dep.participants }}
-    </div>
-    <div id="{{ tab.prefix }}RankRatioDepartment{{ stat_tot.field|title }}"
-         class="htmx-fade-up-in delay-4" hx-swap-oob="true">
-        {% if stat_dep.participants %}
-            {{ stat_dep.rank|percentageby:stat_dep.participants|floatformat:1 }}
-        {% endif %}
-    </div>
-{% endpartialdef sub_score_line %}
-
-{% partialdef sub_stat_line %}
-    <div id="{{ tab.prefix }}Score{{ stat.field|title }}"
-         class="htmx-fade-up-in delay-0 text-success fw-bold" hx-swap-oob="true">
-        {{ stat.score|floatformat:1 }}
-    </div>
-    <div id="{{ tab.prefix }}Participants{{ stat.field|title }}"
-         class="htmx-fade-up-in delay-1" hx-swap-oob="true">
-        {{ stat.participants }}
-    </div>
-    <div id="{{ tab.prefix }}MaxScore{{ stat.field|title }}"
-         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
-        {{ stat.max_score|floatformat:1 }}
-    </div>
-    <div id="{{ tab.prefix }}TopScore10{{ stat.field|title }}"
-         class="htmx-fade-up-in delay-3" hx-swap-oob="true">
-        {{ stat.top_score_10|floatformat:1 }}
-    </div>
-    <div id="{{ tab.prefix }}TopScore20{{ stat.field|title }}"
-         class="htmx-fade-up-in delay-4" hx-swap-oob="true">
-        {{ stat.top_score_20|floatformat:1 }}
-    </div>
-    <div id="{{ tab.prefix }}AvgScore{{ stat.field|title }}"
-         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
-        {{ stat.avg_score|floatformat:1 }}
-    </div>
-{% endpartialdef sub_stat_line %}

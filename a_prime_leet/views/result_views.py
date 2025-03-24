@@ -26,14 +26,17 @@ class ViewConfiguration:
 @login_not_required
 def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    qs_registry = models.ResultRegistry.objects.with_select_related().filter(user=request.user)
+    qs_registry = []
+    if request.user.is_authenticated:
+        qs_registry = models.ResultRegistry.objects.with_select_related().filter(user=request.user)
     context = update_context_data(current_time=timezone.now(), config=config, registries=qs_registry)
     return render(request, 'a_prime_leet/result_list.html', context)
 
 
 def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=False):
     config = ViewConfiguration()
-    context = update_context_data(current_time=timezone.now(), config=config)
+    current_time = timezone.now()
+    context = update_context_data(current_time=current_time, config=config)
 
     leet = models.Leet.objects.filter(pk=pk).first()
     if not leet or not leet.is_active:

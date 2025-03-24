@@ -117,6 +117,32 @@ class PredictStudentForm(ResultStudentForm):
         empty_label='시험을 선택해주세요',
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
+    school = forms.ChoiceField(
+        label='출신대학', choices=models.choices.university_choice(),
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    major = forms.ChoiceField(
+        label='전공', choices=models.choices.major_choice,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    aspiration_1 = forms.ChoiceField(
+        label='1지망', choices=models.choices.university_choice,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    aspiration_2 = forms.ChoiceField(
+        label='2지망', choices=models.choices.university_choice,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    gpa_type = forms.ChoiceField(
+        label='학점(GPA) 종류', choices=models.choices.gpa_type_choice,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    gpa = forms.FloatField(label='학점(GPA)', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    english_type = forms.ChoiceField(
+        label='공인 영어성적 종류', choices=models.choices.english_type_choice,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    english = forms.IntegerField(label='공인 영어성적', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
 
 class UploadFileForm(forms.Form):

@@ -1,14 +1,5 @@
-{% for stat_tot in stat_total_all %}
-    <div id="{{ stat_tot.field }}ScorePredict"
-         class="htmx-fade-up-in delay-1 text-primary fw-bold" hx-swap-oob="true">
-        {{ stat_tot.score_predict|floatformat:1|default:'' }}
-    </div>
-    <div id="{{ stat_tot.field }}Score"
-         class="htmx-fade-up-in delay-1 text-success fw-bold" hx-swap-oob="true">
-        {{ stat_tot.score|floatformat:1|default:'' }}
-    </div>
-    <div id="{{ stat_tot.field }}Participants"
-         class="htmx-fade-up-in delay-2 fw-bold" hx-swap-oob="true">
-        {{ stat_tot.participants|default:0 }}
-    </div>
+{% for stat_tot in stat_data_total %}
+    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#score_predict' %}
+    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#score_real' %}
+    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#participants' %}
 {% endfor %}

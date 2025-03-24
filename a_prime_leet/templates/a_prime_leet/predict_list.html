@@ -2,25 +2,6 @@
 {% load static %}
 
 {% block main_content %}
-    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title mb-0 text-center">
-                            <img src="{% static 'image/prime/2025/psat/title.jpg' %}" class="mw-100" alt="Title"/>
-                            <div class="fs-1 fw-bolder">성적 예측</div>
-                            <a class="btn btn-outline-primary ms-auto mt-4" hx-boost="true"
-                               href="{% url 'prime:result-list' %}">
-                                성적 확인 페이지로 이동
-                            </a>
-                        </h5>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="section" aria-label="시험 목록">
         <div class="row" hx-boost="true">
             {% for student in students %}

@@ -65,10 +65,7 @@
 {% partialdef sub_answer_line %}
     {% if current_time < stat_tot.end_time %}
         <tr class="text-center{% if stat_tot.field == 'sum' %} table-warning{% endif %}">
-            <th class="text-nowrap" aria-label="과목">
-                {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
-            </th>
-
+            <th class="text-nowrap" aria-label="과목">{{ stat_tot.subject }}</th>
             {% if current_time < stat_tot.start_time %}
                 <td colspan="3" aria-label="시험 시작 전">
                     <span class="badge rounded-pill text-bg-primary">시험 시작 전입니다.</span>
@@ -131,20 +128,29 @@
                     {% if current_time <= leet.answer_predict_opened_at %}
                         <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
                     {% elif current_time <= leet.answer_official_opened_at %}
-                        <div id="{{ stat_tot.field }}ScorePredict" class="htmx-fade-up-in delay-1 text-primary fw-bold">
-                            {{ stat_tot.score_predict|floatformat:1|default:'' }}
-                        </div>
+                        {% partialdef score_predict inline=True %}
+                            <div id="{{ stat_tot.field }}ScorePredict"
+                                 class="htmx-fade-up-in delay-1 text-primary fw-bold" hx-swap-oob="true">
+                                {{ stat_tot.score_predict|floatformat:1|default:'' }}
+                            </div>
+                        {% endpartialdef %}
                     {% else %}
-                        <div id="{{ stat_tot.field }}Score" class="htmx-fade-up-in delay-1 text-success fw-bold">
-                            {{ stat_tot.score|floatformat:1|default:'' }}
-                        </div>
+                        {% partialdef score_real inline=True %}
+                            <div id="{{ stat_tot.field }}Score"
+                                 class="htmx-fade-up-in delay-1 text-success fw-bold" hx-swap-oob="true">
+                                {{ stat_tot.score_real|floatformat:1|default:'' }}
+                            </div>
+                        {% endpartialdef %}
                     {% endif %}
                 </td>
 
                 <td aria-label="총 참여자수">
-                    <div id="{{ stat_tot.field }}Participants" class="htmx-fade-up-in delay-2 fw-bold">
-                        {{ stat_tot.participants|default:0 }}
-                    </div>
+                    {% partialdef participants inline=True %}
+                        <div id="{{ stat_tot.field }}Participants"
+                             class="htmx-fade-up-in delay-2 fw-bold" hx-swap-oob="true">
+                            {{ stat_tot.participants|default:0 }}
+                        </div>
+                    {% endpartialdef %}
                 </td>
 
                 <td class="text-nowrap fw-bold" aria-label="선택 답안수">

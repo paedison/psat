@@ -24,10 +24,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for _ in stat_data %}
-                {% cycle stat_data.0 stat_data.1 stat_data.2 as stat silent %}
-                {% if stat_data %}{% partial sub_score_line %}{% endif %}
-            {% endfor %}
+            {% for stat in stat_data %}{% partial sub_score_line %}{% endfor %}
         </tbody>
     </table>
 </article>
@@ -44,65 +41,113 @@
             {% endif %}
         </th>
 
-        {% if not stat_tot.is_confirmed %}
-            <td colspan="14">
-                {% if stat_tot.field == exam_vars.final_field %}
+        {% if not stat.is_confirmed %}
+            <td class="text-nowrap" colspan="14">
+                {% if stat.field == 'sum' %}
                     <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                 {% else %}
                     <a hx-boost="true"
-                       href="{{ stat_tot.url_answer_input }}">
+                       href="{{ stat.url_answer_input }}">
                         <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                     </a>
                 {% endif %}
             </td>
         {% else %}
-            {% if exam.is_not_finished %}
-                <td colspan="5">
-                    {% if exam.is_not_started %}
+            {% if current_time < leet.answer_official_opened_at %}
+                <td colspan="14">
+                    {% if current_time < leet.exam_started_at %}
                         <span class="badge rounded-pill bg-primary">시험 시작 전입니다.</span>
-                    {% elif exam.is_going_on %}
+                    {% elif current_time < leet.exam_started_at %}
                         <span class="badge rounded-pill bg-primary">시험 진행 중입니다.</span>
+                    {% else %}
+                        <span class="badge rounded-pill bg-danger">공식 정답 공개 전입니다.</span>
                     {% endif %}
                 </td>
             {% else %}
-                {% if not exam.is_answer_official_opened %}
-                    <td colspan="5">
-                        <span class="badge rounded-pill bg-danger">공식 정답 공개 전입니다.</span>
-                    </td>
-                {% else %}
-                    <td>
-                        <div id="{{ tab.prefix }}Score{{ stat_tot.field|title }}"
-                             class="htmx-fade-up-in delay-0 text-success fw-bold">
-                            {{ stat_tot.score|floatformat:1 }}
-                        </div>
-                    </td>
-                    <td>
-                        <div id="{{ tab.prefix }}RankTotal{{ stat_tot.field|title }}"
-                             class="htmx-fade-up-in delay-1">
-                            {{ stat_tot.rank }} / {{ stat_tot.participants }}
-                        </div>
-                    </td>
-                    <td>
-                        <div id="{{ tab.prefix }}RankRatioTotal{{ stat_tot.field|title }}"
-                             class="htmx-fade-up-in delay-2">
-                            {{ stat_tot.rank|percentageby:stat_tot.participants|floatformat:1 }}
-                        </div>
-                    </td>
-                    <td>
-                        <div id="{{ tab.prefix }}RankDepartment{{ stat_tot.field|title }}"
-                             class="htmx-fade-up-in delay-3">
-                            {{ stat_dep.rank }} / {{ stat_dep.participants }}
-                        </div>
-                    </td>
-                    <td>
-                        <div id="{{ tab.prefix }}RankRatioDepartment{{ stat_tot.field|title }}"
-                             class="htmx-fade-up-in delay-4">
-                            {% if stat_dep.participants %}
-                                {{ stat_dep.rank|percentageby:stat_dep.participants|floatformat:1 }}
-                            {% endif %}
-                        </div>
-                    </td>
-                {% endif %}
+                <td class="text-nowrap td-right-no-border">
+                    <div id="{{ tab.prefix }}MyRawScore{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-0 text-success fw-bold" hx-swap-oob="true">
+                        {{ stat.raw_score }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border td-left-no-border">
+                    <div id="{{ tab.prefix }}MyScore{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-0 text-success fw-bold" hx-swap-oob="true">
+                        {{ stat.score|floatformat:1 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border">
+                    <div id="{{ tab.prefix }}Rank{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-1" hx-swap-oob="true">
+                        {{ stat.rank }} / {{ stat.participants }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border td-left-no-border">
+                    <div id="{{ tab.prefix }}RankRatio{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+                        {{ stat.rank|percentageby:stat.participants|floatformat:1 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border">
+                    <div id="{{ tab.prefix }}MaxRawScore{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+                        {{ stat.max_raw_score }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border td-left-no-border">
+                    <div id="{{ tab.prefix }}MaxScore{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+                        {{ stat.max_score|floatformat:1 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border">
+                    <div id="{{ tab.prefix }}TopRawScore10{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-3" hx-swap-oob="true">
+                        {{ stat.top_raw_score_10 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border td-left-no-border">
+                    <div id="{{ tab.prefix }}TopScore10{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-3" hx-swap-oob="true">
+                        {{ stat.top_score_10|floatformat:1 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border">
+                    <div id="{{ tab.prefix }}TopRawScore25{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-4" hx-swap-oob="true">
+                        {{ stat.top_raw_score_25 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border td-left-no-border">
+                    <div id="{{ tab.prefix }}TopScore25{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-4" hx-swap-oob="true">
+                        {{ stat.top_score_25|floatformat:1 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border">
+                    <div id="{{ tab.prefix }}TopRawScore50{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+                        {{ stat.top_raw_score_50|floatformat:1 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border td-left-no-border">
+                    <div id="{{ tab.prefix }}TopScore50{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+                        {{ stat.top_score_50|floatformat:1 }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border">
+                    <div id="{{ tab.prefix }}RawScoreAvg{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+                        {{ stat.raw_score_avg }}
+                    </div>
+                </td>
+                <td class="text-nowrap td-right-no-border td-left-no-border">
+                    <div id="{{ tab.prefix }}RawScoreStdDev{{ stat.field|title }}"
+                         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+                        {{ stat.raw_score_stddev|floatformat:1 }}
+                    </div>
+                </td>
             {% endif %}
         {% endif %}
     </tr>

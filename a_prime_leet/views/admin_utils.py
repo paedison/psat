@@ -106,6 +106,11 @@ def get_rank_model_set(model_type='result'):
     return model_dict[model_type]
 
 
+def get_answer_model(model_type='result'):
+    model_dict = {'result': models.ResultAnswer, 'predict': models.PredictAnswer}
+    return model_dict[model_type]
+
+
 def get_answer_count_model_set(model_type='result'):
     model_dict = {
         'result': {
@@ -476,7 +481,7 @@ def update_rank_model(qs_student, model_dict: dict, stat_type='total', is_filter
         return Window(expression=Rank(), order_by=F(field_name).desc())
 
     annotate_dict = {f'{prefix}rank_{idx}': rank_func(f'score__subject_{idx}') for idx in range(subject_count)}
-    annotate_dict['rank_sum'] = rank_func('score__sum')
+    annotate_dict[f'{prefix}rank_sum'] = rank_func('score__sum')
 
     for qs_s in qs_student:
         rank_list = qs_student.annotate(**annotate_dict)
@@ -489,34 +494,26 @@ def update_rank_model(qs_student, model_dict: dict, stat_type='total', is_filter
         participants = None
         if stat_type == 'total' or aspiration:
             participants = rank_list.count()
-        fields_not_match = [target.participants != participants]
+        fields_not_match = [getattr(target, f'{prefix}participants') != participants]
 
         for row in rank_list:
             if row.id == qs_s.id:
-                if stat_type == 'total' or aspiration:
-                    for idx in range(subject_count):
-                        fields_not_match.append(
-                            getattr(target, f'subject_{idx}') != getattr(row, f'rank_{idx}')
-                        )
-                    fields_not_match.append(target.sum != row.rank_sum)
-                else:
-                    for idx in range(subject_count):
-                        fields_not_match.append(getattr(target, f'subject_{idx}') is not None)
-                    fields_not_match.append(target.sum is not None)
+                for idx in range(subject_count):
+                    fields_not_match.append(
+                        getattr(target, f'{prefix}subject_{idx}') != getattr(row, f'{prefix}rank_{idx}')
+                    )
+                fields_not_match.append(getattr(target, f'{prefix}sum') != getattr(row, f'{prefix}rank_sum'))
 
                 if any(fields_not_match):
-                    if stat_type == 'total' or aspiration:
-                        for idx in range(subject_count):
-                            setattr(target, f'subject_{idx}', getattr(row, f'rank_{idx}'))
-                        target.sum = row.rank_sum
-                        target.participants = participants
-                    else:
-                        for idx in range(subject_count):
-                            setattr(target, f'subject_{idx}', None)
-                        target.sum = None
-                        target.participants = None
+                    for idx in range(subject_count):
+                        setattr(target, f'{prefix}subject_{idx}', getattr(row, f'{prefix}rank_{idx}'))
+                    setattr(target, f'{prefix}sum', getattr(row, f'{prefix}rank_sum'))
+                    setattr(target, f'{prefix}participants', participants)
                     list_update.append(target)
-    update_fields = ['subject_0', 'subject_1', 'sum', 'participants']
+
+    update_fields = [
+        f'{prefix}subject_0', f'{prefix}subject_1', f'{prefix}sum', f'{prefix}participants'
+    ]
     return bulk_create_or_update(rank_model, list_create, list_update, update_fields)
 
 
@@ -619,7 +616,7 @@ def update_statistics(leet, data_statistics, filtered_data_statistics, model_typ
 
 
 def update_statistics_model(leet, data_statistics, statistics_model, is_filtered=False):
-    field_vars = get_field_vars(is_filtered)
+    field_vars = get_field_vars()
     prefix = 'filtered_' if is_filtered else ''
 
     list_update = []
@@ -660,12 +657,13 @@ def update_answer_counts(model_type='result'):
         True: '문항 분석표를 업데이트했습니다.',
         False: '기존 문항 분석표와 일치합니다.',
     }
-    model_set = get_answer_count_model_set(model_type)
+    answer_model = get_answer_model(model_type)
+    answer_count_models = get_answer_count_model_set(model_type)
     is_updated_list = [
-        update_answer_count_model(model_set, 'all'),
-        update_answer_count_model(model_set, 'top'),
-        update_answer_count_model(model_set, 'mid'),
-        update_answer_count_model(model_set, 'low'),
+        update_answer_count_model(answer_model, answer_count_models, 'all'),
+        update_answer_count_model(answer_model, answer_count_models, 'top'),
+        update_answer_count_model(answer_model, answer_count_models, 'mid'),
+        update_answer_count_model(answer_model, answer_count_models, 'low'),
     ]
     if None in is_updated_list:
         is_updated = None
@@ -676,17 +674,17 @@ def update_answer_counts(model_type='result'):
     return is_updated, message_dict[is_updated]
 
 
-def update_answer_count_model(model_dict, rank_type='all'):
-    answer_model = model_dict['answer']
-    answer_count_model = model_dict[rank_type]
+def update_answer_count_model(answer_model, answer_count_models, rank_type='all', is_filtered=False):
+    answer_count_model = answer_count_models[rank_type]
+    prefix = 'filtered_' if is_filtered else ''
 
     list_update = []
     list_create = []
 
-    lookup_field = f'student__rank__sum'
+    lookup_field = f'student__rank__{prefix}sum'
     top_rank_threshold = 0.27
     mid_rank_threshold = 0.73
-    participants_function = F('student__rank__participants')
+    participants_function = F(f'student__rank__{prefix}participants')
 
     lookup_exp = {}
     if rank_type == 'top':
@@ -807,7 +805,6 @@ def bulk_create_or_update(model, list_create, list_update, update_fields):
 def get_statistics_response(leet, model_type='result'):
     qs_statistics = get_qs_statistics(leet, model_type)
     df = pd.DataFrame.from_records(qs_statistics.values())
-    print(df.columns)
 
     filename = f'{leet.name}_성적통계.xlsx'
     drop_columns = ['id', 'leet_id']

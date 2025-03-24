@@ -87,17 +87,20 @@ class ResultRegistryManager(models.Manager):
 
 
 class AnswerManager(models.Manager):
-    def prime_leet_qs_answer_by_student_and_stat_type(self, student, stat_type='total'):
-        qs_answers = (
+    def prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
+            self, student, stat_type='total', is_filtered=False):
+        qs_answer = (
             self.filter(problem__leet=student.leet).values('problem__subject')
             .annotate(participant_count=models.Count('student_id', distinct=True))
         )
-        if stat_type != 'total':
+        if stat_type != 'total':  # aspiration_1 | aspiration_2
             aspiration = getattr(student, stat_type)
-            qs_answers = qs_answers.filter(
+            qs_answer = qs_answer.filter(
                 models.Q(student__aspiration_1=aspiration) | models.Q(student__aspiration_2=aspiration)
             )
-        return qs_answers
+        if is_filtered:
+            qs_answer = qs_answer.filter(student__is_filtered=True)
+        return qs_answer
 
     def prime_leet_qs_answer_by_student(self, student):
         return self.filter(
@@ -119,7 +122,7 @@ class AnswerManager(models.Manager):
         return self.filter(
             problem__leet=student.leet, student=student).annotate(
             subject=models.F('problem__subject'),
-            result=models.Case(
+            real_result=models.Case(
                 models.When(answer=models.F('problem__answer'), then=models.Value(True)),
                 default=models.Value(False),
                 output_field=models.BooleanField(),
@@ -135,17 +138,11 @@ class AnswerManager(models.Manager):
             'problem__result_answer_count_top_rank',
             'problem__result_answer_count_mid_rank',
             'problem__result_answer_count_low_rank',
+            'problem__predict_answer_count',
+            'problem__predict_answer_count_top_rank',
+            'problem__predict_answer_count_mid_rank',
+            'problem__predict_answer_count_low_rank',
         )
-
-    def prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
-            self, student, stat_type='total', is_filtered=False):
-        qs = self.filter(problem__leet=student.leet).values('problem__subject').annotate(
-            participant_count=models.Count('student_id', distinct=True))
-        if stat_type != 'total':  # aspiration_1 | aspiration_2
-            qs = qs.filter(**{f'student__{stat_type}': getattr(student, stat_type)})
-        if is_filtered:
-            qs = qs.filter(student__is_filtered=True)
-        return qs
 
 
 class AnswerCountManager(models.Manager):
@@ -179,10 +176,10 @@ class AnswerCountManager(models.Manager):
             qs_answer_count = qs_answer_count.filter(subject=subject)
         return qs_answer_count
 
-    # def get_filtered_qs_by_psat(self, psat):
-    #     return self.filter(problem__psat=psat).annotate(
-    #         no=models.F('problem__number'), sub=models.F('problem__subject'), ans=models.F('answer_predict'),
-    #         ans_official=models.F('problem__answer')).order_by('sub', 'no')
+    def prime_leet_qs_answer_count_by_leet(self, leet):
+        return self.filter(problem__leet=leet).annotate(
+            no=models.F('problem__number'), sub=models.F('problem__subject'), ans=models.F('answer_predict'),
+            ans_official=models.F('problem__answer')).order_by('sub', 'no')
 
 
 class ScoreManager(models.Manager):

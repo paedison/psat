@@ -10,7 +10,8 @@ admin_patterns = [
     path('leet/active/<int:pk>/', admin_views.leet_active_view, name='admin-leet-active'),
 
     path('detail/<str:model_type>/<int:pk>/', admin_views.detail_view, name='admin-detail'),
-    path('result/student/<int:pk>/', admin_views.result_student_detail_view, name='admin-result-student-detail'),
+    path('detail/student/<str:model_type>/<int:pk>/',
+         admin_views.detail_student_view, name='admin-detail-student'),
     path('update/<str:model_type>/<int:pk>/', admin_views.update_view, name='admin-update'),
 
     path('print/statistics/<str:model_type>/<int:pk>/',

@@ -6,7 +6,7 @@ from django_htmx.http import replace_url
 from common.constants import icon_set_new
 from common.decorators import only_staff_allowed, admin_required
 from common.utils import HtmxHttpRequest, update_context_data
-from . import admin_utils, result_views
+from . import admin_utils, result_views, predict_views
 from .. import models, utils, forms
 
 
@@ -137,9 +137,12 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
 
 @only_staff_allowed()
-def result_student_detail_view(request: HtmxHttpRequest, pk: int):
-    student = get_object_or_404(models.ResultStudent, pk=pk)
-    return result_views.detail_view(request, student.leet.pk, student=student, is_for_print=True)
+def detail_student_view(request: HtmxHttpRequest, model_type: str, pk: int):
+    if model_type == 'result':
+        student = get_object_or_404(models.ResultStudent, pk=pk)
+        return result_views.detail_view(request, student.leet.pk, student=student)
+    student = get_object_or_404(models.PredictStudent, pk=pk)
+    return predict_views.detail_view(request, student.leet.pk, student=student)
 
 
 @only_staff_allowed()
@@ -181,7 +184,7 @@ def update_view(request: HtmxHttpRequest, model_type: str, pk: int):
         context = update_context_data(context, header='통계 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'answer_count':
-        is_updated, message = admin_utils.update_answer_counts()
+        is_updated, message = admin_utils.update_answer_counts(model_type)
         context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
 
     return render(request, 'a_prime_leet/snippets/admin_modal_update.html', context)

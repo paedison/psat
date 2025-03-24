@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse_lazy
 
 from common.models import User
 from . import abstract_models, managers
@@ -38,6 +39,9 @@ class PredictStudent(abstract_models.Student):
 
     def __str__(self):
         return self.student_info
+
+    def get_admin_detail_student_url(self):
+        return reverse_lazy('prime_leet:admin-detail-student', args=['predict', self.id])
 
 
 class PredictAnswer(abstract_models.Answer):

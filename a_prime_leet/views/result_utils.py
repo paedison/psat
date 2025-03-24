@@ -94,9 +94,10 @@ def get_student(leet, user):
 
 
 def get_dict_stat_data(student: models.ResultStudent, stat_type='total') -> dict:
-    qs_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type(student, stat_type)
-    qs_score = models.ResultScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(student, stat_type)
-    sub_list = get_sub_list()
+    qs_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
+        student, stat_type)
+    qs_score = models.ResultScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
+        student, stat_type)
     subject_vars = get_subject_vars()
     field_vars = {
         'subject_0': ('언어', '언어이해', 0),
@@ -107,9 +108,7 @@ def get_dict_stat_data(student: models.ResultStudent, stat_type='total') -> dict
     participants_dict = {
         subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer
     }
-    participants_dict['sum'] = max(
-        participants_dict[f'subject_{idx}'] for idx, _ in enumerate(sub_list)
-    )
+    participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
 
     raw_scores = {}
     scores = {}

@@ -5,11 +5,11 @@
     <section class="section" aria-label="시험 목록">
         <div class="row" hx-boost="true">
             {% for registry in registries %}
-                <div class="col-lg-6">
+                <div class="col-12">
                     {% partial leet_card %}
                 </div>
             {% endfor %}
-            <div class="col-lg-6">
+            <div class="col-12">
                 {% partial registry_card %}
             </div>
         </div>
@@ -33,42 +33,45 @@
                     </a>
                 </div>
                 <article class="table-responsive flex-fill ps-3">
-                    <table class="table m-0">
+                    <table class="table table-bordered m-0">
                         <thead>
                             <tr class="table-warning text-center align-middle">
-                                <th class="text-nowrap">구분</th>
-                                <th class="text-nowrap">총점</th>
-                                <th class="text-nowrap">언어</th>
-                                <th class="text-nowrap">추리</th>
+                                <th class="text-nowrap td-left-no-border">과목</th>
+                                <th class="text-nowrap">원점수</th>
+                                <th class="text-nowrap">표준점수</th>
+                                <th class="text-nowrap td-right-no-border">전체 석차</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             <tr class="text-center align-middle">
-                                <th class="text-nowrap">표준점수</th>
-                                <th class="text-primary text-nowrap">{{ registry.student.score.sum }}</th>
-                                <th class="text-primary text-nowrap">{{ registry.student.score.subject_0 }}</th>
-                                <th class="text-primary text-nowrap">{{ registry.student.score.subject_1 }}</th>
-                            </tr>
-                            <tr class="text-center align-middle">
-                                <th class="text-nowrap">원점수</th>
-                                <th class="text-primary text-nowrap">{{ registry.student.score.raw_sum }}</th>
+                                <th class="text-nowrap td-left-no-border">언어이해</th>
                                 <th class="text-primary text-nowrap">{{ registry.student.score.raw_subject_0 }}</th>
-                                <th class="text-primary text-nowrap">{{ registry.student.score.raw_subject_1 }}</th>
-                            </tr>
-                            <tr class="text-center align-middle">
-                                <th class="text-nowrap">등수</th>
-                                <th class="text-nowrap">
-                                    <span class="fw-bold text-primary">{{ registry.student.rank.sum }}</span>
-                                    / {{ registry.student.rank.participants }}
-                                </th>
-                                <th class="text-nowrap">
+                                <th class="text-primary text-nowrap">{{ registry.student.score.subject_0 }}</th>
+                                <th class="text-nowrap td-right-no-border">
                                     <span class="fw-bold text-primary">{{ registry.student.rank.subject_0 }}</span>
                                     / {{ registry.student.rank.participants }}
+                                    ({{ registry.student.rank.subject_0|percentageby:registry.student.rank.participants|floatformat:1 }}%)
                                 </th>
-                                <th class="text-nowrap">
+                            </tr>
+                            <tr class="text-center align-middle">
+                                <th class="text-nowrap td-left-no-border">추리논증</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.raw_subject_1 }}</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.subject_1 }}</th>
+                                <th class="text-nowrap td-right-no-border">
                                     <span class="fw-bold text-primary">{{ registry.student.rank.subject_1 }}</span>
                                     / {{ registry.student.rank.participants }}
+                                    ({{ registry.student.rank.subject_1|percentageby:registry.student.rank.participants|floatformat:1 }}%)
+                                </th>
+                            </tr>
+                            <tr class="text-center align-middle">
+                                <th class="text-nowrap td-left-no-border">총점</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.raw_sum }}</th>
+                                <th class="text-primary text-nowrap">{{ registry.student.score.sum }}</th>
+                                <th class="text-nowrap td-right-no-border">
+                                    <span class="fw-bold text-primary">{{ registry.student.rank.sum }}</span>
+                                    / {{ registry.student.rank.participants }}
+                                    ({{ registry.student.rank.sum|percentageby:registry.student.rank.participants|floatformat:1 }}%)
                                 </th>
                             </tr>
                         </tbody>
