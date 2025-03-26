@@ -88,7 +88,8 @@
                 <td data-number="{{ answer.no }}">
                     {% partialdef ans_predict inline=True %}
                         <div id="answerPredict{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
-                             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+                             class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}"
+                                 {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                             <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 {% if answer.predict_result %}btn-success{% else %}btn-danger{% endif %}">
                                 {{ answer.ans_predict }}
                             </button>
@@ -106,7 +107,8 @@
                     {% partialdef rate_accuracy inline=True %}
                         <div id="answerPredictAccuracy{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
                              class="fw-bold {% if answer.predict_result %}text-success{% else %}text-danger{% endif %}
-                             htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+                             htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}"
+                                 {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                             {{ answer.rate_accuracy|floatformat:0 }}
                         </div>
                     {% endpartialdef %}

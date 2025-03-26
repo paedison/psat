@@ -130,14 +130,16 @@
                     {% elif current_time <= leet.answer_official_opened_at %}
                         {% partialdef score_predict inline=True %}
                             <div id="{{ stat_tot.field }}ScorePredict"
-                                 class="htmx-fade-up-in delay-1 text-primary fw-bold" hx-swap-oob="true">
+                                 class="htmx-fade-up-in delay-1 text-primary fw-bold"
+                                 {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                                 {{ stat_tot.score_predict|floatformat:1|default:'' }}
                             </div>
                         {% endpartialdef %}
                     {% else %}
                         {% partialdef score_real inline=True %}
                             <div id="{{ stat_tot.field }}Score"
-                                 class="htmx-fade-up-in delay-1 text-success fw-bold" hx-swap-oob="true">
+                                 class="htmx-fade-up-in delay-1 text-success fw-bold"
+                                 {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                                 {{ stat_tot.score_real|floatformat:1|default:'' }}
                             </div>
                         {% endpartialdef %}
@@ -147,7 +149,8 @@
                 <td aria-label="총 참여자수">
                     {% partialdef participants inline=True %}
                         <div id="{{ stat_tot.field }}Participants"
-                             class="htmx-fade-up-in delay-2 fw-bold" hx-swap-oob="true">
+                             class="htmx-fade-up-in delay-2 fw-bold"
+                                 {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                             {{ stat_tot.participants|default:0 }}
                         </div>
                     {% endpartialdef %}

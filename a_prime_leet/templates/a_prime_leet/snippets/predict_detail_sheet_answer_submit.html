@@ -109,7 +109,8 @@
                         <div class="fw-bold text-success">
                             {% partialdef rate_correct inline=True %}
                                 <div id="answerSubmitRateCorrect{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
-                                     class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+                                     class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}"
+                                     {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                                     {{ answer.rate_correct|floatformat:0 }}
                                 </div>
                             {% endpartialdef %}
@@ -151,7 +152,8 @@
                         <div class="fw-bold text-primary">
                             {% partialdef rate_selection inline=True %}
                                 <div id="answerSubmitRateSelect{{ answer.no|stringformat:'02d' }}"
-                                     class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}" hx-swap-oob="true">
+                                     class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}"
+                                     {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                                     {{ answer.rate_selection|floatformat:0 }}
                                 </div>
                             {% endpartialdef %}

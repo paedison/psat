@@ -24,19 +24,7 @@
     <article class="table-responsive">
         <table class="table align-middle">
             <tbody>
-                {% if answers|length == 30  %}
-                    {% for _ in '012' %}
-                        {% cycle 10 10 10 as loop_counter silent %}
-                        {% cycle 0 10 20 as loop_min silent %}
-                        {% partial answer_table_tr %}
-                    {% endfor %}
-                {% else %}
-                    {% for _ in '0123' %}
-                        {% cycle 10 10 10 10 as loop_counter silent %}
-                        {% cycle 0 10 20 30 as loop_min silent %}
-                        {% partial answer_table_tr %}
-                    {% endfor %}
-                {% endif %}
+                {% for loop in tab.loop_list %}{% partial answer_table_tr %}{% endfor %}
             </tbody>
         </table>
     </article>
@@ -52,15 +40,15 @@
 {% partialdef answer_table_tr %}
     <tr class="text-center table-warning" aria-label="문제 번호">
         <th class="text-nowrap" colspan="2" scope="row">문제 번호</th>
-        {% for _ in 'x'|ljust:loop_counter %}
-            <th>{{ forloop.counter|add:loop_min }}</th>
+        {% for _ in 'x'|ljust:loop.counter %}
+            <th>{{ forloop.counter|add:loop.min }}</th>
         {% endfor %}
     </tr>
 
     <tr class="text-center" aria-label="정답">
         <th class="text-nowrap" colspan="2" scope="row">정답</th>
         {% for answer in answers %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+            {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}
                 <td data-number="{{ answer.no }}">
                     {% if answer.ans_list %}
                         {% if answer.ans_official == 1234 or answer.ans_official == 12345 %}
@@ -83,7 +71,7 @@
     </tr>
 
     {% partialdef answer_rate_line_official %}
-        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+        {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}
             <td data-number="{{ answer.no }}">
                 <span class="fw-bold text-success">
                     {{ answer_rate|floatformat:0 }}
@@ -93,7 +81,7 @@
     {% endpartialdef answer_rate_line_official %}
 
     {% partialdef answer_rate_line_student %}
-        {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+        {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}
             <td data-number="{{ answer.no }}">
                 <span class="fw-bold
                       text-{% if answer.result %}success{% else %}danger{% endif %}">
@@ -161,7 +149,7 @@
     <tr class="text-center" aria-label="선택 답안">
         <th class="text-nowrap" colspan="2" scope="row">선택 답안</th>
         {% for answer in answers %}
-            {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
+            {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}
                 <td data-number="{{ answer.no }}">
                     <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
                             btn-{% if answer.result %}success{% else %}danger{% endif %}">

@@ -66,85 +66,99 @@
             {% else %}
                 <td class="text-nowrap td-right-no-border">
                     <div id="{{ tab.prefix }}MyRawScore{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-0 text-success fw-bold" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-0 text-success fw-bold"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.raw_score }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border td-left-no-border">
                     <div id="{{ tab.prefix }}MyScore{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-0 text-success fw-bold" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-0 text-success fw-bold"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.score|floatformat:1 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border">
                     <div id="{{ tab.prefix }}Rank{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-1" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-1"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.rank }} / {{ stat.participants }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border td-left-no-border">
                     <div id="{{ tab.prefix }}RankRatio{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-2"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.rank|percentageby:stat.participants|floatformat:1 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border">
                     <div id="{{ tab.prefix }}MaxRawScore{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-2"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.max_raw_score }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border td-left-no-border">
                     <div id="{{ tab.prefix }}MaxScore{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-2" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-2"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.max_score|floatformat:1 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border">
                     <div id="{{ tab.prefix }}TopRawScore10{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-3" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-3"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.top_raw_score_10 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border td-left-no-border">
                     <div id="{{ tab.prefix }}TopScore10{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-3" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-3"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.top_score_10|floatformat:1 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border">
                     <div id="{{ tab.prefix }}TopRawScore25{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-4" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-4"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.top_raw_score_25 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border td-left-no-border">
                     <div id="{{ tab.prefix }}TopScore25{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-4" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-4"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.top_score_25|floatformat:1 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border">
                     <div id="{{ tab.prefix }}TopRawScore50{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-5"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.top_raw_score_50|floatformat:1 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border td-left-no-border">
                     <div id="{{ tab.prefix }}TopScore50{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-5"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.top_score_50|floatformat:1 }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border">
                     <div id="{{ tab.prefix }}RawScoreAvg{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-5"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.raw_score_avg }}
                     </div>
                 </td>
                 <td class="text-nowrap td-right-no-border td-left-no-border">
                     <div id="{{ tab.prefix }}RawScoreStdDev{{ stat.field|title }}"
-                         class="htmx-fade-up-in delay-5" hx-swap-oob="true">
+                         class="htmx-fade-up-in delay-5"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
                         {{ stat.raw_score_stddev|floatformat:1 }}
                     </div>
                 </td>

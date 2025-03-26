@@ -10,6 +10,17 @@ class StudentManager(models.Manager):
     def with_select_related(self):
         return self.select_related('leet', 'score', 'rank', 'rank_aspiration_1', 'rank_aspiration_2')
 
+    def prime_leet_qs_result_student_by_leet_and_user(self, leet, user):
+        annotate_dict = {'score_sum': models.F('score__sum'), 'rank_num': models.F(f'rank__participants')}
+        field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'sum'}
+        for key, fld in field_dict.items():
+            annotate_dict[f'score_{key}'] = models.F(f'score__{fld}')
+            annotate_dict[f'rank_{key}'] = models.F(f'rank__{fld}')
+        return (
+            self.filter(registries__user=user, leet=leet).select_related('leet', 'score', 'rank')
+            .annotate(**annotate_dict).order_by('id').last()
+        )
+
     @staticmethod
     def get_annotate_dict_for_score_and_rank():
         annotate_dict = {
@@ -38,7 +49,7 @@ class StudentManager(models.Manager):
             )
         )
 
-    def prime_leet_qs_student_by_user_and_leet_with_answer_count(self, user, leet):
+    def prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(self, user, leet):
         annotate_dict = self.get_annotate_dict_for_score_and_rank()
         qs_student = (
             self.with_select_related().filter(user=user, leet=leet).prefetch_related('answers')

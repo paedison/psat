@@ -5,7 +5,7 @@
     {% cycle is_confirmed_data.0 is_confirmed_data.1 is_confirmed_data.2 is_confirmed_data.3 as is_confirmed silent %}
 
     {% for answer in answers %}
-        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_predict.html#ans_predict' %}
-        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_predict.html#rate_accuracy' %}
+        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_predict.html#ans_predict' with is_hx_request=True %}
+        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_predict.html#rate_accuracy' with is_hx_request=True %}
     {% endfor %}
 {% endfor %}

@@ -24,10 +24,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for _ in stat_data %}
-                {% cycle stat_data.subject_0 stat_data.subject_1 stat_data.sum as stat silent %}
-                {% if stat_data %}{% partial sub_score_line %}{% endif %}
-            {% endfor %}
+            {% for stat in stat_data %}{% partial sub_score_line %}{% endfor %}
         </tbody>
     </table>
 </article>

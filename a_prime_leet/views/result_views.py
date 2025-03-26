@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from . import result_utils
+from . import normal_utils
 from .. import models, forms
 
 
@@ -44,29 +44,34 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         return render(request, 'a_prime_leet/redirect.html', context)
 
     if student is None:
-        student = result_utils.get_student(leet, request.user)
+        student = models.ResultStudent.objects.prime_leet_qs_result_student_by_leet_and_user(leet, request.user)
     if not student:
         context = update_context_data(
             context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)
-    context = update_context_data(context, leet=leet, student=student)
 
-    sub_list = result_utils.get_sub_list()
-    stat_data_total = result_utils.get_dict_stat_data(student)
-    stat_data_1 = result_utils.get_dict_stat_data(student, 'aspiration_1')
-    stat_data_2 = result_utils.get_dict_stat_data(student, 'aspiration_2')
+    stat_data_total = normal_utils.get_dict_stat_data_for_result(student)
+    stat_data_1 = normal_utils.get_dict_stat_data_for_result(student, 'aspiration_1')
+    stat_data_2 = normal_utils.get_dict_stat_data_for_result(student, 'aspiration_2')
 
-    frequency_score = result_utils.get_dict_frequency_score(student)
-    qs_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student(student)
-    data_answers = result_utils.get_data_answers(qs_answer)
+    stat_chart = normal_utils.get_dict_stat_chart(student, stat_data_total)
+    score_frequency_list = models.ResultStudent.objects.filter(leet=student.leet).values_list('score__sum', flat=True)
+    stat_frequency = normal_utils.get_dict_stat_frequency(student, score_frequency_list)
+
+    qs_student_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student(student)
+    data_answers = normal_utils.get_data_answers_for_result(qs_student_answer)
 
     context = update_context_data(
-        context, sub_title=f'{leet.name} 성적표', sub_list=sub_list,
+        context, leet=leet,
+        sub_title=f'{leet.name} 성적표',
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
 
         # tab variables for templates
-        answer_tab=result_utils.get_answer_tab(),
-        score_tab=result_utils.get_score_tab(),
+        answer_tab=normal_utils.get_answer_tab(leet),
+        score_tab=normal_utils.get_score_tab(),
+
+        # info_student: 수험 정보
+        student=student,
 
         # sheet_score: 성적 확인
         stat_data_total=stat_data_total,
@@ -74,7 +79,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         stat_data_2=stat_data_2,
 
         # chart: 성적 분포 차트
-        frequency_score=frequency_score,
+        stat_chart=stat_chart, stat_frequency=stat_frequency,
 
         # sheet_answer: 답안 확인
         data_answers=data_answers,

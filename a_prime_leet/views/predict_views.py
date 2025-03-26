@@ -9,7 +9,7 @@ from django_htmx.http import reswap
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from . import predict_utils
+from . import normal_utils
 from .. import models, forms
 
 
@@ -51,7 +51,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         return render(request, 'a_prime_leet/redirect.html', context)
 
     if student is None:
-        student = models.PredictStudent.objects.prime_leet_qs_student_by_user_and_leet_with_answer_count(
+        student = models.PredictStudent.objects.prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(
             request.user, leet)
     if not student:
         context = update_context_data(
@@ -59,45 +59,46 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         return render(request, 'a_prime_leet/redirect.html', context)
 
     view_type = request.headers.get('View-Type', 'main')
-    score_tab = predict_utils.get_score_tab()
-    filtered_score_tab = predict_utils.get_score_tab(True)
-    answer_tab = predict_utils.get_answer_tab(leet)
-
-    is_confirmed_data = predict_utils.get_is_confirmed_data(student)
+    is_confirmed_data = normal_utils.get_is_confirmed_data(student)
     qs_student_answer = models.PredictAnswer.objects.prime_leet_qs_answer_by_student_with_predict_result(student)
-    answer_data_set = predict_utils.get_input_answer_data_set(leet, request)
+    answer_data_set = normal_utils.get_input_answer_data_set(leet, request)
 
-    stat_data_total = predict_utils.get_dict_stat_data(student, is_confirmed_data, answer_data_set)
-    predict_utils.update_score_predict(stat_data_total, qs_student_answer)
+    stat_data_total = normal_utils.get_dict_stat_data_for_predict(student, is_confirmed_data, answer_data_set)
+    normal_utils.update_score_predict(stat_data_total, qs_student_answer)
     if current_time > leet.answer_official_opened_at:
-        predict_utils.update_score_real(stat_data_total, qs_student_answer)
-    stat_data_1 = predict_utils.get_dict_stat_data(
+        normal_utils.update_score_real(stat_data_total, qs_student_answer)
+    stat_data_1 = normal_utils.get_dict_stat_data_for_predict(
         student, is_confirmed_data, answer_data_set, 'aspiration_1')
-    stat_data_2 = predict_utils.get_dict_stat_data(
+    stat_data_2 = normal_utils.get_dict_stat_data_for_predict(
         student, is_confirmed_data, answer_data_set, 'aspiration_2')
 
     if student.is_filtered:
-        stat_data_total_filtered = predict_utils.get_dict_stat_data(
+        stat_data_total_filtered = normal_utils.get_dict_stat_data_for_predict(
             student, is_confirmed_data, answer_data_set)
-        stat_data_1_filtered = predict_utils.get_dict_stat_data(
+        stat_data_1_filtered = normal_utils.get_dict_stat_data_for_predict(
             student, is_confirmed_data, answer_data_set, 'aspiration_1', True)
-        stat_data_2_filtered = predict_utils.get_dict_stat_data(
+        stat_data_2_filtered = normal_utils.get_dict_stat_data_for_predict(
             student, is_confirmed_data, answer_data_set, 'aspiration_2', True)
     else:
         stat_data_total_filtered = {}
         stat_data_1_filtered = {}
         stat_data_2_filtered = {}
 
-    data_answers = predict_utils.get_data_answers(qs_student_answer)
-    frequency_score = predict_utils.get_dict_frequency_score(student)
+    stat_chart = normal_utils.get_dict_stat_chart(student, stat_data_total)
+    score_frequency_list = models.PredictStudent.objects.filter(leet=student.leet).values_list('score__sum', flat=True)
+    stat_frequency = normal_utils.get_dict_stat_frequency(student, score_frequency_list)
+
+    data_answers = normal_utils.get_data_answers_for_predict(qs_student_answer)
 
     context = update_context_data(
-        current_time=timezone.now(), leet=leet, config=config,
+        context, leet=leet,
         sub_title=f'제{leet.round}회 프라임모의고사 성적표',
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
 
         # tab variables for templates
-        score_tab=score_tab, filtered_score_tab=filtered_score_tab, answer_tab=answer_tab,
+        score_tab=normal_utils.get_score_tab(),
+        filtered_score_tab=normal_utils.get_score_tab(True),
+        answer_tab=normal_utils.get_answer_tab(leet),
 
         # info_student: 수험 정보
         student=student,
@@ -112,11 +113,11 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         stat_data_1_filtered=stat_data_1_filtered,
         stat_data_2_filtered=stat_data_2_filtered,
 
+        # chart: 성적 분포 차트
+        stat_chart=stat_chart, stat_frequency=stat_frequency,
+
         # sheet_answer: 답안 확인
         data_answers=data_answers, is_confirmed_data=is_confirmed_data,
-
-        # chart: 성적 분포 차트
-        frequency_score=frequency_score,
     )
 
     if view_type == 'info_answer':
@@ -167,18 +168,19 @@ def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
         return redirect('prime:predict-list')
 
     config.url_detail = leet.get_predict_detail_url()
-    student = models.PredictStudent.objects.prime_leet_qs_student_by_user_and_leet_with_answer_count(request.user, leet)
+    student = models.PredictStudent.objects.prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(
+        request.user, leet)
 
-    field_vars = predict_utils.get_field_vars()
+    field_vars = normal_utils.get_field_vars()
     sub, subject, field_idx = field_vars[subject_field]
 
-    time_schedule = predict_utils.get_time_schedule(leet).get(sub)
+    time_schedule = normal_utils.get_time_schedule(leet).get(sub)
     if current_time < time_schedule[0]:
         return redirect('prime:predict-detail', pk=pk)
 
-    problem_count = predict_utils.get_problem_count(leet.exam)
+    problem_count = normal_utils.get_problem_count(leet.exam)
 
-    answer_data_set = predict_utils.get_input_answer_data_set(leet, request)
+    answer_data_set = normal_utils.get_input_answer_data_set(leet, request)
     answer_data = answer_data_set[subject_field]
 
     # answer_submit
@@ -218,35 +220,36 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
     if not leet or not leet.is_active:
         return redirect('prime:predict-list')
 
-    student = models.PredictStudent.objects.prime_leet_qs_student_by_user_and_leet_with_answer_count(request.user, leet)
-    field_vars = predict_utils.get_field_vars()
+    student = models.PredictStudent.objects.prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(
+        request.user, leet)
+    field_vars = normal_utils.get_field_vars()
     sub, subject, field_idx = field_vars[subject_field]
 
     if request.method == 'POST':
-        answer_data_set = predict_utils.get_input_answer_data_set(leet, request)
+        answer_data_set = normal_utils.get_input_answer_data_set(leet, request)
         answer_data = answer_data_set[subject_field]
 
         is_confirmed = all(answer_data)
         if is_confirmed:
-            predict_utils.create_confirmed_answers(student, sub, answer_data)  # PredictAnswer 모델에 추가
-            predict_utils.update_answer_counts_after_confirm(leet, sub, answer_data)  # PredictAnswerCount 모델 수정
-            predict_utils.update_predict_score_for_student(student, sub)  # PredictScore 모델 수정
+            normal_utils.create_confirmed_answers(student, sub, answer_data)  # PredictAnswer 모델에 추가
+            normal_utils.update_answer_counts_after_confirm(leet, sub, answer_data)  # PredictAnswerCount 모델 수정
+            normal_utils.update_predict_score_for_student(student, sub)  # PredictScore 모델 수정
 
             qs_student = models.PredictStudent.objects.filter(leet=leet).order_by('id')
-            predict_utils.update_predict_rank_for_each_student(
+            normal_utils.update_predict_rank_for_each_student(
                 qs_student, student, subject_field, field_idx, 'total')  # PredictRank 모델 수정
-            predict_utils.update_predict_rank_for_each_student(
+            normal_utils.update_predict_rank_for_each_student(
                 qs_student, student, subject_field, field_idx, 'aspiration_1')  # PredictRankAspiration1 모델 수정
-            predict_utils.update_predict_rank_for_each_student(
+            normal_utils.update_predict_rank_for_each_student(
                 qs_student, student, subject_field, field_idx, 'aspiration_2')  # PredictRankAspiration2 모델 수정
-            answer_all_confirmed = predict_utils.get_answer_all_confirmed(student)  # 전체 답안 제출 여부 확인
-            predict_utils.update_statistics_after_confirm(
+            answer_all_confirmed = normal_utils.get_answer_all_confirmed(student)  # 전체 답안 제출 여부 확인
+            normal_utils.update_statistics_after_confirm(
                 student, subject_field, answer_all_confirmed)  # PredictStatistics 모델 수정
 
         # Load student instance after save
-        student = models.PredictStudent.objects.prime_leet_qs_student_by_user_and_leet_with_answer_count(
+        student = models.PredictStudent.objects.prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(
             request.user, leet)
-        next_url = predict_utils.get_next_url_for_answer_input(student)
+        next_url = normal_utils.get_next_url_for_answer_input(student)
 
         context = update_context_data(header=f'{subject} 답안 제출', is_confirmed=is_confirmed, next_url=next_url)
         return render(request, 'a_prime_leet/snippets/modal_answer_confirmed.html', context)

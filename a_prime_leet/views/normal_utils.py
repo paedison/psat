@@ -104,7 +104,23 @@ def get_input_answer_data_set(leet, request) -> dict:
     return answer_data_set
 
 
-def get_dict_stat_data(
+def get_dict_stat_data_for_result(student: models.ResultStudent, stat_type='total') -> list:
+    subject_vars = get_subject_vars()
+    stat_data = get_empty_dict_stat_data_for_result(student, subject_vars)
+
+    qs_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
+        student, stat_type)
+    qs_score = models.ResultScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
+        student, stat_type)
+
+    participants_dict = {subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer}
+    participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
+    update_dict_stat_data(student, qs_score, stat_data, participants_dict)
+
+    return stat_data
+
+
+def get_dict_stat_data_for_predict(
         student: models.PredictStudent,
         is_confirmed_data: list,
         answer_data_set: dict,
@@ -112,15 +128,20 @@ def get_dict_stat_data(
         is_filtered=False,
 ):
     subject_vars = get_subject_vars()
-    stat_data = get_empty_dict_stat_data(student, is_confirmed_data, answer_data_set, subject_vars)
-
+    stat_data = get_empty_dict_stat_data_for_predict(student, is_confirmed_data, answer_data_set, subject_vars)
     qs_answer = models.PredictAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
         student, stat_type)
-    participants_dict = {
-        subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer
-    }
-    participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
+    qs_score = models.PredictScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
+        student, stat_type, is_filtered)
 
+    participants_dict = {subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer}
+    participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
+    update_dict_stat_data(student, qs_score, stat_data, participants_dict)
+
+    return stat_data
+
+
+def update_dict_stat_data(student, qs_score, stat_data: list, participants_dict: dict):
     field_vars = {
         'subject_0': ('언어', '언어이해', 0),
         'subject_1': ('추리', '추리논증', 1),
@@ -128,8 +149,6 @@ def get_dict_stat_data(
     }
     raw_scores = {fld: [] for fld in field_vars.keys()}
     scores = {fld: [] for fld in field_vars.keys()}
-    qs_score = models.PredictScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
-        student, stat_type, is_filtered)
     for stat in stat_data:
         fld = stat['field']
         if fld in participants_dict.keys():
@@ -173,10 +192,24 @@ def get_dict_stat_data(
                         'top_score_25': get_top_score(sorted_scores, 0.25),
                         'top_score_50': get_top_score(sorted_scores, 0.50),
                     })
+
+
+def get_empty_dict_stat_data_for_result(student, subject_vars: dict) -> list[dict]:
+    stat_data = []
+    problem_count = get_problem_count(student.leet.exam)
+    problem_count['총점'] = sum(val for val in problem_count.values())
+    for sub, (subject, fld, fld_idx) in subject_vars.items():
+        stat_data.append({
+            'field': fld, 'sub': sub, 'subject': subject,
+            'participants': 0, 'is_confirmed': True,
+            'problem_count': problem_count.get(sub),
+            'rank': 0, 'raw_score': 0, 'score': 0, 'max_score': 0,
+            'top_score_10': 0, 'top_score_25': 0, 'top_score_50': 0, 'avg_score': 0,
+        })
     return stat_data
 
 
-def get_empty_dict_stat_data(
+def get_empty_dict_stat_data_for_predict(
         student: models.PredictStudent,
         is_confirmed_data: list,
         answer_data_set: dict,
@@ -262,54 +295,81 @@ def update_score_real(stat_data_total, qs_student_answer):
             stat['score_real'] = score_sum
 
 
-def get_dict_frequency_score(student) -> dict:
-    score_frequency_list = models.PredictStudent.objects.filter(
-        leet=student.leet).values_list('score__sum', flat=True)
-    score_counts_list = [round(score, 1) for score in score_frequency_list if score]
-    score_counts_list.sort()
-
-    score_counts = Counter(score_counts_list)
-    student_target_score = round(student.score.sum, 1) if student.score.sum else 0
-    score_colors = ['blue' if score == student_target_score else 'white' for score in score_counts.keys()]
-
-    return {'score_points': dict(score_counts), 'score_colors': score_colors}
-
-
-def get_chart_score(student, stat_data_total, stat_department):
-    field_vars = get_field_vars(student.psat)
-    student_score = [getattr(student.score, field) for field in field_vars]
-
-    chart_score = {
-        'my_score': student_score,
-        'total_average': [],
-        'total_score_20': [],
-        'total_score_10': [],
-        'total_top': [],
-        'department_average': [],
-        'department_score_20': [],
-        'department_score_10': [],
-        'department_top': [],
+def get_dict_stat_chart(student, stat_data_total) -> dict:
+    field_vars = {
+        'subject_0': ('언어', '언어이해', 0),
+        'subject_1': ('추리', '추리논증', 1),
+        'sum': ('총점', '총점', 2),
+    }
+    return {
+        'my_score': [getattr(student.score, fld) for fld in field_vars],
+        'total_score_10': [stat['top_score_10'] for stat in stat_data_total],
+        'total_score_25': [stat['top_score_25'] for stat in stat_data_total],
+        'total_score_50': [stat['top_score_50'] for stat in stat_data_total],
+        'total_top': [stat['max_score'] for stat in stat_data_total],
     }
 
-    score_list = [score for score in student_score if score is not None]
-    for stat in stat_data_total:
-        score_list.extend([stat['avg_score'], stat['top_score_20'], stat['top_score_10'], stat['max_score']])
-        chart_score['total_average'].append(stat['avg_score'])
-        chart_score['total_score_20'].append(stat['top_score_20'])
-        chart_score['total_score_10'].append(stat['top_score_10'])
-        chart_score['total_top'].append(stat['max_score'])
-    for stat in stat_department:
-        score_list.extend([stat['avg_score'], stat['top_score_20'], stat['top_score_10'], stat['max_score']])
-        chart_score['department_average'].append(stat['avg_score'])
-        chart_score['department_score_20'].append(stat['top_score_20'])
-        chart_score['department_score_10'].append(stat['top_score_10'])
-        chart_score['department_top'].append(stat['max_score'])
 
-    chart_score['min_score'] = (min(score_list) // 5) * 5
-    return chart_score
+def get_dict_stat_frequency(student, score_frequency_list) -> dict:
+    score_counts_list = [round(score, 1) for score in score_frequency_list]
+    score_counts_list.sort()
+    score_counts = Counter(score_counts_list)
+
+    score_label = []
+    score_data = []
+    score_color = []
+    for key, val in score_counts.items():
+        score_label.append(key)
+        score_data.append(val)
+        color = 'blue' if key == round(student.score.sum, 1) else 'white'
+        score_color.append(color)
+
+    return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
 
 
-def get_data_answers(qs_student_answer):
+def get_data_answers_for_result(qs_student_answer):
+    sub_list = get_sub_list()
+    subject_vars = get_subject_vars()
+    data_answers = [[] for _ in sub_list]
+
+    for qs_sa in qs_student_answer:
+        sub = qs_sa.problem.subject
+        idx = sub_list.index(sub)
+        field = subject_vars[sub][1]
+        ans_official = qs_sa.problem.answer
+        ans_student = qs_sa.answer
+        answer_official_list = [int(digit) for digit in str(ans_official)]
+
+        qs_sa.no = qs_sa.problem.number
+        qs_sa.ans_official = ans_official
+        qs_sa.ans_official_circle = qs_sa.problem.get_answer_display
+
+        qs_sa.ans_student = ans_student
+        qs_sa.ans_list = answer_official_list
+
+        qs_sa.field = field
+        qs_sa.result = ans_student in answer_official_list
+
+        qs_sa.rate_correct = qs_sa.problem.result_answer_count.get_answer_rate(ans_official)
+        qs_sa.rate_correct_top = qs_sa.problem.result_answer_count_top_rank.get_answer_rate(ans_official)
+        qs_sa.rate_correct_mid = qs_sa.problem.result_answer_count_mid_rank.get_answer_rate(ans_official)
+        qs_sa.rate_correct_low = qs_sa.problem.result_answer_count_low_rank.get_answer_rate(ans_official)
+        try:
+            qs_sa.rate_gap = qs_sa.rate_correct_top - qs_sa.rate_correct_low
+        except TypeError:
+            qs_sa.rate_gap = None
+
+        if ans_student <= 5:
+            qs_sa.rate_selection = qs_sa.problem.result_answer_count.get_answer_rate(ans_student)
+            qs_sa.rate_selection_top = qs_sa.problem.result_answer_count_top_rank.get_answer_rate(ans_student)
+            qs_sa.rate_selection_mid = qs_sa.problem.result_answer_count_mid_rank.get_answer_rate(ans_student)
+            qs_sa.rate_selection_low = qs_sa.problem.result_answer_count_low_rank.get_answer_rate(ans_student)
+
+        data_answers[idx].append(qs_sa)
+    return data_answers
+
+
+def get_data_answers_for_predict(qs_student_answer):
     sub_list = get_sub_list()
     subject_vars = get_subject_vars()
     data_answers = [[] for _ in sub_list]

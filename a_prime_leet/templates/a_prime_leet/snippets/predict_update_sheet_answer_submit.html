@@ -7,7 +7,7 @@
     {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
 
     {% for answer in answers %}
-        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html#rate_correct' %}
-        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html#rate_selection' %}
+        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html#rate_correct' with is_hx_request=True %}
+        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html#rate_selection' with is_hx_request=True %}
     {% endfor %}
 {% endfor %}

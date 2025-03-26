@@ -24,7 +24,7 @@
 
             <div class="col-12" aria-label="수험 정보">
                 <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/predict_detail_info_student.html' %}
+                    {% include 'a_prime_leet/snippets/detail_info_student.html' %}
                 </div>
             </div>
 
@@ -54,15 +54,15 @@
                     </div>
                 {% endif %}
 
-                <div class="col-12" aria-label="정답 확인">
-                    <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html' %}
+                <div class="col-12" aria-label="성적 분포 차트">
+                    <div id="chart" class="card htmx-fade-in htmx-fade-out">
+                        {% include 'a_prime_leet/snippets/detail_chart.html' with is_confirmed=True stat_total=stat_total_all stat_department=stat_department_all %}
                     </div>
                 </div>
 
-                <div class="col-12" aria-label="성적 분포 차트">
-                    <div id="chart" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_prime_leet/snippets/predict_detail_chart.html' with is_confirmed=True stat_total=stat_total_all stat_department=stat_department_all %}
+                <div class="col-12" aria-label="정답 확인">
+                    <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
+                        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html' %}
                     </div>
                 </div>
             {% endif %}

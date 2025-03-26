@@ -1,5 +1,5 @@
 {% for stat_tot in stat_data_total %}
-    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#score_predict' %}
-    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#score_real' %}
-    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#participants' %}
+    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#score_predict' with is_hx_request=True %}
+    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#score_real' with is_hx_request=True %}
+    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html#participants' with is_hx_request=True %}
 {% endfor %}
