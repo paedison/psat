@@ -1,15 +1,13 @@
-{% load static %}
-
 <div class="card-header">성적 분포 차트</div>
 
 <div class="card-body">
     {% if is_confirmed %}
         {% partialdef chart_canvas inline=True %}
-            <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
+            <div class="mt-4 chart-container-small {{ print_class }} ms-auto me-auto">
                 <canvas id="scoreChart"></canvas>
                 {% partial chart_contents %}
             </div>
-            <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
+            <div class="mt-4 chart-container-small {{ print_class }} ms-auto me-auto">
                 <canvas id="scoreChartTotal"></canvas>
                 {% partial chart_contents_total %}
             </div>
@@ -44,7 +42,7 @@
             datasets: chart_datasets,
         },
         options: {
-            indexAxis: (screenWidth < 768) ? 'y' : 'x',
+            indexAxis: 'x',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
@@ -99,7 +97,7 @@
             datasets: chart_datasets_total,
         },
         options: {
-            indexAxis: (screenWidth < 768) ? 'y' : 'x',
+            indexAxis: 'x',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {

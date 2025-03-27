@@ -35,6 +35,12 @@
 
             <div class="col-12">
                 <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
+                    {% include 'a_prime_leet/snippets/detail_my_score_table.html' with is_confirmed=True %}
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
                     {% include 'a_prime_leet/snippets/result_detail_sheet_score.html' with is_confirmed=True %}
                 </div>
             </div>

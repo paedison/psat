@@ -1,0 +1,112 @@
+<article class="table-responsive">
+    <table class="table align-middle">
+        <thead>
+            <tr class="text-center align-middle table-warning">
+                <th class="text-nowrap">과목</th>
+                {% for stat in stat_data %}
+                    <th class="text-nowrap">
+                        {% if stat.is_confirmed or stat.field == 'sum' %}
+                            {{ stat.subject }}
+                        {% else %}
+                            <a class="text-decoration-none" href="" hx-boost="true">
+                                {{ stat.subject }}
+                            </a>
+                        {% endif %}
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="text-center">
+                <th class="text-nowrap">
+                    {% with td_text_1='최고 점수' td_text_2='원점수' %}{% partial td_text %}{% endwith %}
+                </th>
+                {% for stat in stat_data %}
+                    {% cycle stat_data.0.max_score stat_data.1.max_score stat_data.2.max_score as target_score silent %}
+                    {% cycle stat_data.0.max_raw_score stat_data.1.max_raw_score stat_data.2.max_raw_score as target_raw_score silent %}
+                    {% with score_type='MaxScore' %}{% partial td_score %}{% endwith %}
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
+                <th class="text-nowrap">
+                    {% with td_text_1='상위 10%' td_text_2='원점수' %}{% partial td_text %}{% endwith %}
+                </th>
+                {% for stat in stat_data %}
+                    {% cycle stat_data.0.top_score_10 stat_data.1.top_score_10 stat_data.2.top_score_10 as target_score silent %}
+                    {% cycle stat_data.0.top_raw_score_10 stat_data.1.top_raw_score_10 stat_data.2.top_raw_score_10 as target_raw_score silent %}
+                    {% with score_type='TopScore10' %}{% partial td_score %}{% endwith %}
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
+                <th class="text-nowrap">
+                    {% with td_text_1='상위 25%' td_text_2='원점수' %}{% partial td_text %}{% endwith %}
+                </th>
+                {% for stat in stat_data %}
+                    {% cycle stat_data.0.top_score_25 stat_data.1.top_score_25 stat_data.2.top_score_25 as target_score silent %}
+                    {% cycle stat_data.0.top_raw_score_25 stat_data.1.top_raw_score_25 stat_data.2.top_raw_score_25 as target_raw_score silent %}
+                    {% with score_type='TopScore25' %}{% partial td_score %}{% endwith %}
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
+                <th class="text-nowrap">
+                    {% with td_text_1='상위 50%' td_text_2='원점수' %}{% partial td_text %}{% endwith %}
+                </th>
+                {% for stat in stat_data %}
+                    {% cycle stat_data.0.top_score_50 stat_data.1.top_score_50 stat_data.2.top_score_50 as target_score silent %}
+                    {% cycle stat_data.0.top_raw_score_50 stat_data.1.top_raw_score_50 stat_data.2.top_raw_score_50 as target_raw_score silent %}
+                    {% with score_type='TopScore50' %}{% partial td_score %}{% endwith %}
+                {% endfor %}
+            </tr>
+            <tr class="text-center align-middle table-warning">
+                <th class="text-nowrap">
+                    {% with td_text_1='원점수 평균' td_text_2='표준편차' %}{% partial td_text %}{% endwith %}
+                </th>
+                {% for stat in stat_data %}
+                    {% cycle stat_data.0.raw_score_avg stat_data.1.raw_score_avg stat_data.2.raw_score_avg as target_score silent %}
+                    {% cycle stat_data.0.raw_score_stddev stat_data.1.raw_score_stddev stat_data.2.raw_score_stddev as target_raw_score silent %}
+                    {% with score_type='RawScoreStat' %}{% partial td_score %}{% endwith %}
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</article>
+
+{% partialdef td_text %}
+    <div class="d-sm-none">
+        {{ td_text_1 }}<br/>({{ td_text_2 }})
+    </div>
+    <div class="d-none d-sm-block">
+        {{ td_text_1 }}({{ td_text_2 }})
+    </div>
+{% endpartialdef td_text %}
+
+{% partialdef td_score %}
+    <td class="text-center text-nowrap">
+        {% if not stat.is_confirmed %}
+            {% if stat.field == 'sum' %}
+                <span class="badge rounded-pill bg-danger">답안 미제출</span>
+            {% else %}
+                <a hx-boost="true"
+                   href="{{ stat.url_answer_input }}">
+                    <span class="badge rounded-pill bg-danger">답안 미제출</span>
+                </a>
+            {% endif %}
+        {% else %}
+            {% if current_time < leet.answer_official_opened_at %}
+                {% if current_time < leet.exam_started_at %}
+                    <span class="badge rounded-pill bg-primary">시험 시작 전</span>
+                {% elif current_time < leet.exam_started_at %}
+                    <span class="badge rounded-pill bg-primary">시험 진행 중</span>
+                {% else %}
+                    <span class="badge rounded-pill bg-danger">정답 공개 전</span>
+                {% endif %}
+            {% else %}
+                <div id="{{ tab.prefix }}{{ score_type }}{{ stat.field|title }}"
+                     class="htmx-fade-up-in delay-{{ forloop.counter0 }}"
+                     {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
+                    {% with td_text_1=target_score|floatformat:1 td_text_2=target_raw_score %}{% partial td_text %}{% endwith %}
+                </div>
+            {% endif %}
+        {% endif %}
+    </td>
+{% endpartialdef td_score %}

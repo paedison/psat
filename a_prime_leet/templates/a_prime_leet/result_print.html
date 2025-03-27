@@ -41,8 +41,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for sub in sub_list %}
-                    {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
+                {% for answers in data_answers %}
                     <tr class="text-center small">
                         <th class="text-nowrap align-center" rowspan="5">{{ sub }}</th>
                         <th class="text-nowrap">정답</th>
@@ -95,11 +94,7 @@
     </div>
 
     <script>
-        window.onload = function () {
-            setTimeout(function () {
-                window.print();
-            }, 1000);
-        };
+        window.onload = function () {setTimeout(function () {window.print()}, 1000)};
     </script>
 </body>
 {% endblock html_body %}
@@ -139,14 +134,13 @@
                 </tr>
             </thead>
             <tbody>
-                {% for _ in stat_data %}
-                    {% cycle stat_data.sum stat_data.subject_0 stat_data.subject_1 as stat silent %}
+                {% for stat in stat_data %}
                     <tr class="text-center small">
                         <th>{{ stat.subject }}</th>
                         <td>{{ stat.raw_score }}</td>
                         <td>{{ stat.score|floatformat:1 }}</td>
                         <td>{{ stat.rank }} / {{ stat.participants }}</td>
-                        <td>{{ stat.rank|percentageby:stat_data.sum.participants|floatformat:1 }}</td>
+                        <td>{{ stat.rank|percentageby:stat.participants|floatformat:1 }}</td>
 
                         <td>{{ stat.max_raw_score }}</td>
                         <td>{{ stat.max_score|floatformat:1 }}</td>

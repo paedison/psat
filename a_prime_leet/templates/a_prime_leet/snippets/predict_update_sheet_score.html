@@ -1,8 +1,6 @@
-{% load psat_filter %}
-
 {% for tab in score_tab %}
     {% cycle stat_data_total stat_data_1 stat_data_2 as stat_data silent %}
     {% for stat in stat_data %}
-        {% include 'a_prime_leet/snippets/predict_detail_sheet_score_table.html#sub_score_line' with is_hx_request=True %}
+        {% include 'a_prime_leet/snippets/detail_sheet_score_table.html' with is_hx_request=True %}
     {% endfor %}
 {% endfor %}

@@ -79,11 +79,11 @@ def get_loop_list(problem_count):
 
 def get_score_tab(is_filtered=False):
     suffix = 'Filtered' if is_filtered else ''
-    score_template_table = 'a_prime_leet/snippets/predict_detail_sheet_score_table.html'
+    score_template_table = 'a_prime_leet/snippets/detail_sheet_score_table.html'
     return [
-        {'id': '0', 'title': '전체', 'prefix': f'my{suffix}', 'template': score_template_table},
-        {'id': '1', 'title': '1지망', 'prefix': f'total{suffix}', 'template': score_template_table},
-        {'id': '2', 'title': '2지망', 'prefix': f'department{suffix}', 'template': score_template_table},
+        {'id': '0', 'title': '전체', 'prefix': f'total{suffix}', 'template': score_template_table},
+        {'id': '1', 'title': '1지망', 'prefix': f'aspiration1{suffix}', 'template': score_template_table},
+        {'id': '2', 'title': '2지망', 'prefix': f'aspiration2{suffix}', 'template': score_template_table},
     ]
 
 

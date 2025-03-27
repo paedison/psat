@@ -290,9 +290,23 @@ div.django-ckeditor-widget {
         max-width: 800px;
         height: 100vh;
     }
+    .chart-container-small {
+        position: relative;
+        margin: auto;
+        width: 80vw;
+        max-width: 800px;
+        height: 50vh;
+    }
 }
 @media screen and (min-width: 768px) {
     .chart-container {
+        position: relative;
+        margin: auto;
+        width: 80vw;
+        height: 30vh;
+        min-height: 400px;
+    }
+    .chart-container-small {
         position: relative;
         margin: auto;
         width: 80vw;
@@ -501,4 +515,30 @@ ul.errorlist>li {
 .study-card .card-icon {
   color: #4154f1;
   background: #f6f6fe;
+}
+
+.score-progress .progress {
+    height: 6px;
+    overflow: visible;
+    margin-bottom: 10px;
+}
+
+.score-progress .progress .progress-bar {
+    position: relative;
+    height: 100%;
+    color: inherit;
+    overflow: unset;
+}
+
+.score-progress .bg-c-blue {background: #4099ff}
+.score-progress .progress .progress-bar.bg-c-blue:after {border: 3px solid #4099ff}
+.score-progress .progress .progress-bar:after {
+    content: "";
+    background: #fff;
+    position: absolute;
+    right: -6px;
+    top: -4px;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
 }
