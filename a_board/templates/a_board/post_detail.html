@@ -7,11 +7,10 @@
         <div class="row">
             <div class="col-12" aria-label="{{ config.submenu_kor }}">
                 <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
-                    <div class="card-header mb-0 bg-warning-subtle text-black fw-bold">
-                        {{ config.submenu_kor }}
-                    </div>
+                    <div class="card-header">{{ config.submenu_kor }}</div>
+
                     <div class="card-body htmx-fade-in htmx-fade-out">
-                        <div class="card-title d-flex justify-content-between mb-0" hx-target="#main"
+                        <div class="card-title d-flex justify-content-between pt-0 mb-0" hx-target="#main"
                              hx-swap="innerHTML swap:0.25s">
                             <div aria-label="left-button">
                                 <a class="btn btn-circle btn-outline-secondary" title="목록"

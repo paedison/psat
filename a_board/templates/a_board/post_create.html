@@ -10,9 +10,8 @@
             <div class="col-12" aria-label="{{ config.submenu_kor }}">
                 <div id="noticeCard" class="card htmx-fade-in"
                      hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
-                    <div id="noticeCardHeader" class="card-header bg-warning-subtle text-black fw-bold">
-                        {{ config.submenu_kor }}
-                    </div>
+                    <div id="noticeCardHeader" class="card-header">{{ config.submenu_kor }}</div>
+
                     <div id="noticeCardContent" class="card-body htmx-fade-in htmx-fade-out">
                         <form hx-post="{{ post_url }}">
                             {% csrf_token %}

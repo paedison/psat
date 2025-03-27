@@ -1,45 +1,66 @@
+html, body {
+    width: 100%;
+    margin: 0;
+    overflow-x: hidden;
+    font-family: "Open Sans", "Noto Sans KR", sans-serif;
+}
 /* Font change */
 h1, h2, h3, h4, h5, h6, .breadcrumb, .logo span {
     font-family: "Nunito", "Noto Sans KR", sans-serif;
 }
-body {
-    font-family: "Open Sans", "Noto Sans KR", sans-serif;
+
+@media (max-width: 576px) {
+    #main {padding: 5px 0 0}
+    .pagetitle {display: none}
 }
 
-.rotate-180 {
-    transform: rotate(180deg);
-}
-
-.header-nav .profile {
-  z-index: 1000;
-}
-
-.card-title, .alert-heading {
-    font-family: "Poppins", "Noto Sans KR", sans-serif;
-}
-
-/* card */
 .card-header {
     border-width: 0;
-    background-color: #fff3cd;
     color: #000;
     font-weight: bold;
-    padding: 15px 20px;
-    margin-bottom: 20px;
 }
+@media (max-width: 576px) {
+    .card {
+        margin-bottom: 5px;
+        box-shadow: none;
+    }
+    .card-header {
+        position: relative;
+        background-color: #ffffff;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .card .card-header:after {
+        content: "";
+        background-color: #dee2e6;
+        width: 60px;
+        height: 1px;
+        position: absolute;
+        bottom: 0;
+        left: 15px;
+    }
+    .card-body {
+        padding: 0 15px 15px 15px;
+    }
+}
+@media (min-width: 577px) {
+    .card-header {
+        background-color: #fff3cd;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+    }
+}
+
+.rotate-180 {transform: rotate(180deg);}
+.header-nav .profile {z-index: 1000;}
+.card-title, .alert-heading {font-family: "Poppins", "Noto Sans KR", sans-serif;}
 
 /* info */
-#info {
-    display: none;
-}
+#info {display: none;}
 
-.text-gray-300 {
-    color: var(--bs-gray-300) !important;
-}
+.text-gray-300 {color: var(--bs-gray-300) !important;}
 
-.bg-gray-300 {
-    background-color: var(--bs-gray-300) !important;
-}
+.bg-gray-300 {background-color: var(--bs-gray-300) !important;}
 
 /* custom icons */
 .like_true {

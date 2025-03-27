@@ -33,18 +33,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <div>
-        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
-        <ol class="text-success small fw-bold m-0">
-            {% if predict_psat.is_collecting_answer %}
-                <li>예상 점수는 시험 종료 후 예상 정답과 함께 공개됩니다.</li>
-            {% endif %}
-            <li>총 참여자수는 과목별로 답안 제출을 완료한 응시생수입니다.</li>
-            <li>선택 답안수는 과목별로 답안을 선택한 문제수 및 총 문제수입니다.</li>
-            <li>최종 제출한 답안만 통계에 포함되니 답안 제출을 완료해주세요.</li>
-            <li>최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
-        </ol>
-    </div>
 </article>
 
 {% partialdef sub_answer_line %}
