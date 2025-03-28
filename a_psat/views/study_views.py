@@ -65,7 +65,8 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
     config = ViewConfiguration()
     current_time = timezone.now()
     curriculum = models.StudyCurriculum.objects.with_select_related().filter(pk=pk).first()
-    context = update_context_data(config=config, current_time=current_time, curriculum=curriculum)
+    context = update_context_data(
+        config=config, current_time=current_time, curriculum=curriculum, icon_image=icon_set_new.ICON_IMAGE)
     if not curriculum:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)

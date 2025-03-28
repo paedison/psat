@@ -51,14 +51,24 @@
                     </tr>
                 {% else %}
                     <tr class="text-center">
-                        <td class="text-nowrap td-left-no-border" hx-target="#main">
-                            {% partial reference %}
+                        <td class="small text-nowrap td-left-no-border" hx-target="#main">
+                            <span class="fw-bold">
+                                {{ obj.psat.get_round_display }} {{ obj.get_number_display }}<span class="d-none d-sm-inline"> |</span>
+                            </span>
+                            <div class="d-block d-sm-inline">
+                                <a class="text-decoration-none fw-bold cursor-pointer" hx-boost="true"
+                                   href="{{ obj.problem.get_absolute_url }}{% querystring %}">
+                                    {{ obj.problem.reference }}
+                                </a>
+                            </div>
                         </td>
+
                         <td class="text-wrap">
                             <button class="btn btn-circle btn-sm fs-6 btn-success">
                                 {{ obj.ans_official }}
                             </button>
                         </td>
+
                         <td>
                             {% if obj.ans_student %}
                                 <button class="btn btn-circle btn-sm fs-6
@@ -67,6 +77,7 @@
                                 </button>
                             {% endif %}
                         </td>
+
                         {% for _ in '12345' %}
                             {% cycle obj.rate_correct obj.rate_correct_top obj.rate_correct_mid obj.rate_correct_low obj.rate_gap as rate_correct silent %}
                             <td>
@@ -116,34 +127,3 @@
 {% with page_obj=answer_page_obj page_range=answer_page_range %}
     {% include 'a_psat/snippets/pagination.html' with header='answer_analysis' %}
 {% endwith %}
-
-{% partialdef reference %}
-    <span class="fw-bold">
-        {{ obj.psat.get_round_display }} {{ obj.get_number_display }} |
-    </span>
-    <a class="text-decoration-none fw-bold cursor-pointer" hx-boost="true"
-       href="{{ obj.problem.get_absolute_url }}{% querystring %}">
-        {{ obj.problem.reference }}
-    </a>
-    {% if obj.problem.images.name1 == 'Preparing Image' %}
-        {{ icon_image.False|safe }}
-    {% else %}
-        <a class="text-decoration-none" href=""
-           data-bs-toggle="modal" data-bs-target="#modalContainer"
-           hx-push-url="false"
-           hx-target="#modalContainer"
-           hx-headers='{"View-Type":"image"}'
-           hx-get="{% url 'psat:problem-detail' obj.problem_id %}">
-            {{ icon_image.True|safe }}
-        </a>
-    {% endif %}
-    {% if user.is_admin %}
-        <span class="badge bg-warning-subtle border border-warning-subtle text-warning-emphasis rounded-pill">
-            정답 {{ obj.problem.get_answer_display }}
-        </span>
-        <a class="badge bg-info-subtle border border-info-subtle text-info-emphasis rounded-pill"
-           target="#admin" href="{{ obj.problem.get_admin_change_url }}">
-            수정
-        </a>
-    {% endif %}
-{% endpartialdef reference %}

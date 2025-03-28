@@ -128,7 +128,7 @@ def get_score_dict(student):
 def get_answer_paginator_data(schedule_dict, student, opened_rounds, page_number) -> tuple:
     qs_problem = models.StudyProblem.objects.get_filtered_qs_by_category_annotated_with_answer_count(
         student.curriculum.category).filter(psat__round__in=opened_rounds).order_by('-psat')
-    answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number)
+    answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number, on_each_side=1)
 
     homework_rounds = []
     for obj in answer_page_obj:
