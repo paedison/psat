@@ -220,8 +220,8 @@ class StudyProblemManager(models.Manager):
         return (
             self.filter(psat__category=category).order_by('psat__round', 'number').annotate(**annotate_dict)
             .select_related(
-                'psat', 'problem', 'problem__psat', 'answer_count',
-                'answer_count_top_rank', 'answer_count_mid_rank', 'answer_count_low_rank',
+                'psat', 'psat__category', 'problem', 'problem__psat',
+                'answer_count', 'answer_count_top_rank', 'answer_count_mid_rank', 'answer_count_low_rank',
             )
         )
 

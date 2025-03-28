@@ -79,7 +79,7 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         admin_study_utils.update_lecture_paginator_data(lecture_page_obj)
         context = update_context_data(
             context, lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range)
-        return render(request, 'a_psat/snippets/study_list_lecture.html', context)
+        return render(request, 'a_psat/snippets/study_detail_lecture.html', context)
     if view_type == 'statistics_list':
         category_stat = admin_study_utils.get_score_stat_dict(qs_student)
         statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_psat, page_number)
@@ -118,7 +118,7 @@ def detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         problem_page_obj, problem_page_range = utils.get_paginator_data(qs_problem, page_number)
         context = update_context_data(
             context, problem_page_obj=problem_page_obj, problem_page_range=problem_page_range)
-        return render(request, 'a_psat/snippets/study_problem_list_content.html', context)
+        return render(request, 'a_psat/snippets/admin_detail_study_problem_list.html', context)
 
     study_rounds = '1' * category.round
     category_stat = admin_study_utils.get_score_stat_dict(qs_student)

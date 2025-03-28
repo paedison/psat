@@ -33,6 +33,14 @@ def divide(content, base) -> float:  # Divide content by base
 
 
 @register.filter
+def mod(value, divisor):
+    try:
+        return value % divisor
+    except (TypeError, ValueError, ZeroDivisionError):
+        return None
+
+
+@register.filter
 def percentage(content) -> float:  # Abstract content from base
     if content:
         return content * 100

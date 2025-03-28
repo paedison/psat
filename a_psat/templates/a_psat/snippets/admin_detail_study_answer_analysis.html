@@ -1,6 +1,3 @@
-{% load psat_filter %}
-{% load humanize %}
-
 <article class="table-responsive">
     <table class="table table-bordered table-striped align-middle m-0">
         <thead>
@@ -40,7 +37,7 @@
                 <tr class="text-center">
                     <th class="text-nowrap td-left-no-border">{{ answer.id }}</th>
                     <th class="text-nowrap" hx-target="#main">
-                        {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=answer problem=answer.problem problem_id=answer.problem_id %}
+                        {% partial reference %}
                     </th>
                     {% for _ in '12345' %}
                         {% cycle answer.rate_correct answer.rate_correct_top answer.rate_correct_mid answer.rate_correct_low answer.rate_gap as rate_correct silent %}
@@ -90,3 +87,32 @@
 {% with page_obj=answer_page_obj page_range=answer_page_range %}
     {% include 'a_prime/snippets/pagination.html' with header='answer_list' %}
 {% endwith %}
+
+{% partialdef reference %}
+    <span class="fw-bold">{{ answer.problem_info }} |</span>
+    <a class="text-decoration-none fw-bold cursor-pointer" hx-boost="true"
+       href="{{ answer.problem.get_absolute_url }}{% querystring %}">
+        {{ answer.problem.reference }}
+    </a>
+    {% if answer.problem.images.name1 == 'Preparing Image' %}
+        {{ icon_image.False|safe }}
+    {% else %}
+        <a class="text-decoration-none" href=""
+           data-bs-toggle="modal" data-bs-target="#modalContainer"
+           hx-push-url="false"
+           hx-target="#modalContainer"
+           hx-headers='{"View-Type":"image"}'
+           hx-get="{% url 'psat:problem-detail' answer.problem_id %}">
+            {{ icon_image.True|safe }}
+        </a>
+    {% endif %}
+    {% if user.is_admin %}
+        <span class="badge bg-warning-subtle border border-warning-subtle text-warning-emphasis rounded-pill">
+            정답 {{ answer.problem.get_answer_display }}
+        </span>
+        <a class="badge bg-info-subtle border border-info-subtle text-info-emphasis rounded-pill"
+           target="#admin" href="{{ answer.problem.get_admin_change_url }}">
+            수정
+        </a>
+    {% endif %}
+{% endpartialdef reference %}

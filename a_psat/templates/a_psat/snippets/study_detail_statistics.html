@@ -1,0 +1,50 @@
+{% load humanize %}
+
+<article class="table-responsive">
+    <table class="table table-bordered table-striped align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap td-left-no-border">회차</th>
+                <th class="text-primary text-nowrap">응시인원(명)</th>
+                <th class="text-primary text-nowrap">최고 점수</th>
+                <th class="text-primary text-nowrap">상위 10%</th>
+                <th class="text-primary text-nowrap">상위 25%</th>
+                <th class="text-primary text-nowrap">상위 50%</th>
+                <th class="text-primary text-nowrap td-right-no-border">평균 점수</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="text-center">
+                <th class="text-nowrap td-left-no-border">전체</th>
+                <th class="text-nowrap">{{ curriculum_stat.participants|intcomma }}</th>
+                <th class="text-nowrap">{% if curriculum_stat.max %}{{ curriculum_stat.max }}{% endif %}</th>
+                <th class="text-nowrap">{% if curriculum_stat.t10 %}{{ curriculum_stat.t10 }}{% endif %}</th>
+                <th class="text-nowrap">{% if curriculum_stat.t25 %}{{ curriculum_stat.t25 }}{% endif %}</th>
+                <th class="text-nowrap">{% if curriculum_stat.t50 %}{{ curriculum_stat.t50 }}{% endif %}</th>
+                <th class="text-nowrap td-right-no-border">{% if curriculum_stat.avg %}{{ curriculum_stat.avg|floatformat:1 }}{% endif %}</th>
+            </tr>
+            <tr class="text-center">
+                <td class="text-nowrap td-left-no-border td-right-no-border" colspan="14"></td>
+            </tr>
+            {% for obj in statistics_page_obj %}
+                <tr class="text-center">
+                    <th class="text-nowrap td-left-no-border">{{ obj.psat.get_round_display }}</th>
+                    <td class="text-nowrap">{{ obj.statistics.participants|intcomma }}</td>
+                    <td class="text-nowrap">{% if obj.max %}{{ obj.max }}{% endif %}</td>
+                    <td class="text-nowrap">{% if obj.t10 %}{{ obj.t10 }}{% endif %}</td>
+                    <td class="text-nowrap">{% if obj.t25 %}{{ obj.t25 }}{% endif %}</td>
+                    <td class="text-nowrap">{% if obj.t50 %}{{ obj.t50 }}{% endif %}</td>
+                    <td class="text-nowrap td-right-no-border">{% if obj.avg %}{{ obj.avg|floatformat:1 }}{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr class="text-center">
+                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="22">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% with page_obj=statistics_page_obj page_range=statistics_page_range %}
+    {% include 'a_psat/snippets/pagination.html' with header='statistics' %}
+{% endwith %}

@@ -41,7 +41,7 @@
                 {% if not obj.ans_student and current_time < obj.schedule.homework_end_datetime %}
                     <tr>
                         <td class="text-nowrap td-left-no-border" hx-target="#main">
-                            {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}
+                            {% partial reference %}
                         </td>
                         <td class="text-wrap" colspan="47">
                             <span class="badge rounded-pill text-bg-danger">
@@ -52,7 +52,7 @@
                 {% else %}
                     <tr class="text-center">
                         <td class="text-nowrap td-left-no-border" hx-target="#main">
-                            {% include 'a_psat/snippets/study_problem_list_content.html#reference' with study_problem=obj problem=obj.problem problem_id=obj.problem_id %}
+                            {% partial reference %}
                         </td>
                         <td class="text-wrap">
                             <button class="btn btn-circle btn-sm fs-6 btn-success">
@@ -116,3 +116,34 @@
 {% with page_obj=answer_page_obj page_range=answer_page_range %}
     {% include 'a_psat/snippets/pagination.html' with header='answer_analysis' %}
 {% endwith %}
+
+{% partialdef reference %}
+    <span class="fw-bold">
+        {{ obj.psat.get_round_display }} {{ obj.get_number_display }} |
+    </span>
+    <a class="text-decoration-none fw-bold cursor-pointer" hx-boost="true"
+       href="{{ obj.problem.get_absolute_url }}{% querystring %}">
+        {{ obj.problem.reference }}
+    </a>
+    {% if obj.problem.images.name1 == 'Preparing Image' %}
+        {{ icon_image.False|safe }}
+    {% else %}
+        <a class="text-decoration-none" href=""
+           data-bs-toggle="modal" data-bs-target="#modalContainer"
+           hx-push-url="false"
+           hx-target="#modalContainer"
+           hx-headers='{"View-Type":"image"}'
+           hx-get="{% url 'psat:problem-detail' obj.problem_id %}">
+            {{ icon_image.True|safe }}
+        </a>
+    {% endif %}
+    {% if user.is_admin %}
+        <span class="badge bg-warning-subtle border border-warning-subtle text-warning-emphasis rounded-pill">
+            정답 {{ obj.problem.get_answer_display }}
+        </span>
+        <a class="badge bg-info-subtle border border-info-subtle text-info-emphasis rounded-pill"
+           target="#admin" href="{{ obj.problem.get_admin_change_url }}">
+            수정
+        </a>
+    {% endif %}
+{% endpartialdef reference %}

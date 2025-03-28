@@ -1,5 +1,4 @@
 {% extends 'a_psat/_psat_base.html' %}
-{% load static %}
 {% load crispy_forms_field %}
 
 {% block main_content %}
@@ -59,7 +58,7 @@
                         <div class="card-header">주차별 강의 내용</div>
                         <div class="card-body">
                             <div id="resultContent" class="htmx-fade-in htmx-fade-out">
-                                {% include 'a_psat/snippets/study_list_lecture.html' %}
+                                {% include 'a_psat/snippets/study_detail_lecture.html' %}
                             </div>
                         </div>
                     </div>
@@ -161,7 +160,7 @@
                             </div>
 
                             <div id="problemContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
-                                {% include 'a_psat/snippets/study_problem_list_content.html' %}
+                                {% include 'a_psat/snippets/admin_detail_study_problem_list.html' %}
                             </div>
                         </div>
                     </div>

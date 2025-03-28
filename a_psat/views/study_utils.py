@@ -31,16 +31,80 @@ def get_homework_schedule(qs_schedule):
     return homework_schedule
 
 
-def get_result_paginator_data(homework_schedule, student, opened_rounds, page_number) -> tuple:
-    qs_result = models.StudyResult.objects.select_related('psat').filter(
-        student=student, psat__round__in=opened_rounds).order_by('-psat__round')
-    result_page_obj, result_page_range = utils.get_paginator_data(qs_result, page_number, 4)
+def get_curriculum_statistics(qs_student):
+    total_stat = admin_study_utils.get_score_stat_dict(qs_student)
+    data_statistics = admin_study_utils.get_data_statistics(qs_student)
+    per_round_stat = {}
+    for data in data_statistics:
+        per_round_stat[data['study_round']] = data
+    return {
+        'total': total_stat,
+        'per_round': per_round_stat,
+    }
 
-    # 과제 회차 리스트 만들기
-    homework_rounds = []
-    for obj in result_page_obj:
-        homework_rounds.append(obj.psat.round)
 
+def get_statistics_paginator_data(homework_schedule, qs_result, curriculum_statistics, page_number) -> tuple:
+    per_round_stat = curriculum_statistics['per_round']
+    statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_result, page_number, 4)
+    for obj in statistics_page_obj:
+        data_stat = per_round_stat.get(obj.psat.round)
+        if data_stat:
+            for key, val in data_stat.items():
+                setattr(obj, key, val)
+
+        obj.statistics = data_stat
+        obj.schedule = homework_schedule.get(obj.psat.round)
+    return statistics_page_obj, statistics_page_range
+
+
+def get_my_result_paginator_data(homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number) -> tuple:
+    total_stat = curriculum_statistics['total']
+    per_round_stat = curriculum_statistics['per_round']
+    my_result_page_obj, my_result_page_range = utils.get_paginator_data(qs_result, page_number, 4)
+    score_dict = get_score_dict(student)
+
+    #  커리큘럼 기준 각 회차별 등수 계산 (점수가 None인 경우는 제외)
+    qs_score = models.StudyResult.objects.get_filtered_qs_ordered_by_psat_round(
+        student.curriculum, psat__round__in=opened_rounds)
+    score_dict_for_rank = defaultdict(list)
+    for qs_s in qs_score:
+        score = qs_s['score']
+        if score is not None:
+            score_dict_for_rank[qs_s['round']].append(score)
+    for rnd, score_list in score_dict_for_rank.items():
+        score_dict_for_rank[rnd] = sorted(score_list, reverse=True)
+
+    #  커리큘럼 기준 전체 등수 계산
+    qs_rank = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_rank(student.curriculum)
+    for qs_r in qs_rank:
+        if qs_r.id == student.id:
+            student.rank = qs_r.rank
+
+    # 커리큘럼 기준 전체 통계
+    problem_count = models.StudyProblem.objects.filter(
+        psat__category=student.curriculum.category, psat__round__in=opened_rounds).count()
+    my_total_result = {
+        'total_score_sum': problem_count,
+        'score_sum': score_dict['total']['score_sum'],
+        'participants': total_stat['participants'],
+        'rank': student.rank if score_dict['total']['score_sum'] else None,
+    }
+    for i in range(4):
+        my_total_result[f'score_{i}'] = score_dict['total'][f'score_{i}']
+
+    # 각 회차별 인스턴스에 통계 및 스케줄 자료 추가
+    for obj in my_result_page_obj:
+        for key, val in score_dict[obj.psat.round].items():
+            setattr(obj, key, val)
+
+        obj.rank = score_dict_for_rank[obj.psat.round].index(obj.score) + 1 if obj.score else None
+        stat = per_round_stat.get(obj.psat.round)
+        obj.participants = stat['participants'] if stat else None
+        obj.schedule = homework_schedule.get(obj.psat.round)
+    return my_total_result, my_result_page_obj, my_result_page_range
+
+
+def get_score_dict(student):
     # 점수 계산용 비어 있는 딕셔너리 만들기 (score_1: 언어, score_2: 자료, score_3: 상황)
     score_dict = defaultdict(dict)
     for study_round in range(student.curriculum.category.round + 1):
@@ -58,53 +122,7 @@ def get_result_paginator_data(homework_schedule, student, opened_rounds, page_nu
             score_dict[qs_a['round']][score_field] += 1
             score_dict['total']['score_sum'] += 1
             score_dict['total'][score_field] += 1
-
-    #  커리큘럼 기준 각 회차별 등수 계산 (점수가 None인 경우는 제외)
-    qs_score = models.StudyResult.objects.get_filtered_qs_ordered_by_psat_round(
-        student.curriculum, psat__round__in=homework_rounds)
-    score_dict_for_rank = defaultdict(list)
-    for qs_s in qs_score:
-        score = qs_s['score']
-        if score is not None:
-            score_dict_for_rank[qs_s['round']].append(score)
-    for rnd, score_list in score_dict_for_rank.items():
-        score_dict_for_rank[rnd] = sorted(score_list, reverse=True)
-
-    #  커리큘럼 기준 전체 등수 계산
-    qs_rank = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_rank(student.curriculum)
-    for qs_r in qs_rank:
-        if qs_r.id == student.id:
-            student.rank = qs_r.rank
-
-    # 커리큘럼 기준 전체 통계
-    qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(student.curriculum)
-    curriculum_stat = admin_study_utils.get_score_stat_dict(qs_student)
-    total_score_sum = score_dict['total']['score_sum']
-    curriculum_stat['score_sum'] = total_score_sum
-    curriculum_stat['rank'] = student.rank if total_score_sum else None
-    for i in range(4):
-        curriculum_stat[f'score_{i}'] = score_dict['total'][f'score_{i}']
-
-    # 커리큘럼 기준 회차별 통계
-    data_statistics = admin_study_utils.get_data_statistics(qs_student)
-    data_statistics_dict = {}
-    for data in data_statistics:
-        data_statistics_dict[data['study_round']] = data
-
-    # 각 회차별 인스턴스에 통계 및 스케줄 자료 추가
-    for obj in result_page_obj:
-        for key, val in score_dict[obj.psat.round].items():
-            setattr(obj, key, val)
-
-        data_stat = data_statistics_dict.get(obj.psat.round)
-        if data_stat:
-            for key, val in data_stat.items():
-                setattr(obj, key, val)
-
-        obj.statistics = data_stat
-        obj.rank = score_dict_for_rank[obj.psat.round].index(obj.score) + 1 if obj.score else None
-        obj.schedule = homework_schedule.get(obj.psat.round)
-    return curriculum_stat, result_page_obj, result_page_range
+    return score_dict
 
 
 def get_answer_paginator_data(schedule_dict, student, opened_rounds, page_number) -> tuple:

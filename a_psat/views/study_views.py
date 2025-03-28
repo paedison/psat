@@ -84,39 +84,58 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         curriculum=curriculum, lecture_open_datetime__lt=config.current_time).order_by('-lecture_number')
     homework_schedule = study_utils.get_homework_schedule(qs_schedule)
     opened_rounds = qs_schedule.values_list('lecture_round', flat=True)
+    qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(student.curriculum)
 
     if view_type == 'lecture':
         lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
         admin_study_utils.update_lecture_paginator_data(lecture_page_obj)
         context = update_context_data(
             context, lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range)
-        return render(request, 'a_psat/snippets/study_list_lecture.html', context)
-
-    if view_type == 'result':
-        curriculum_stat, result_page_obj, result_page_range = study_utils.get_result_paginator_data(
-            homework_schedule, student, opened_rounds, page_number)
-        context = update_context_data(
-            context, curriculum_stat=curriculum_stat,
-            result_page_obj=result_page_obj, result_page_range=result_page_range)
-        return render(request, 'a_psat/snippets/study_list_result.html', context)
+        return render(request, 'a_psat/snippets/study_detail_lecture.html', context)
 
     if view_type == 'answer_analysis':
         answer_page_obj, answer_page_range = study_utils.get_answer_paginator_data(
             homework_schedule, student, opened_rounds, page_number)
         context = update_context_data(
             context, answer_page_obj=answer_page_obj, answer_page_range=answer_page_range)
-        return render(request, 'a_psat/snippets/study_list_answer_analysis.html', context)
+        return render(request, 'a_psat/snippets/study_detail_answer_analysis.html', context)
+
+    curriculum_statistics = study_utils.get_curriculum_statistics(qs_student)
+    qs_result = models.StudyResult.objects.select_related('psat').filter(
+        student=student, psat__round__in=opened_rounds).order_by('-psat__round')
+
+    if view_type == 'my_result':
+        my_total_result, my_result_page_obj, my_result_page_range = study_utils.get_my_result_paginator_data(
+            homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number)
+        context = update_context_data(
+            context, my_total_result=my_total_result,
+            my_result_page_obj=my_result_page_obj, my_result_page_range=my_result_page_range)
+        return render(request, 'a_psat/snippets/study_detail_my_result.html', context)
+
+    if view_type == 'statistics':
+        statistics_page_obj, statistics_page_range = study_utils.get_statistics_paginator_data(
+            homework_schedule, qs_result, curriculum_statistics, page_number)
+        context = update_context_data(
+            context, curriculum_stat=curriculum_statistics['total'],
+            statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range)
+        return render(request, 'a_psat/snippets/study_detail_statistics.html', context)
 
     lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
     admin_study_utils.update_lecture_paginator_data(lecture_page_obj)
-    curriculum_stat, result_page_obj, result_page_range = study_utils.get_result_paginator_data(
-        homework_schedule, student, opened_rounds, page_number)
+
+    my_total_result, my_result_page_obj, my_result_page_range = study_utils.get_my_result_paginator_data(
+        homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number)
+    statistics_page_obj, statistics_page_range = study_utils.get_statistics_paginator_data(
+        homework_schedule, qs_result, curriculum_statistics, page_number)
     answer_page_obj, answer_page_range = study_utils.get_answer_paginator_data(
         homework_schedule, student, opened_rounds, page_number)
     context = update_context_data(
-        context, curriculum_stat=curriculum_stat,
+        context,
         lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range,
-        result_page_obj=result_page_obj, result_page_range=result_page_range,
+        my_total_result=my_total_result,
+        my_result_page_obj=my_result_page_obj, my_result_page_range=my_result_page_range,
+        curriculum_stat=curriculum_statistics['total'],
+        statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
         answer_page_obj=answer_page_obj, answer_page_range=answer_page_range,
     )
     return render(request, 'a_psat/study_detail.html', context)

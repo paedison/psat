@@ -1,0 +1,67 @@
+{% load psat_filter %}
+
+<div class="row score-progress">
+    <div class="col-12">
+        <h6>총점</h6>
+            {% if my_total_result.rank %}
+                <h5>
+                    <span class="text-primary fw-bold">{{ my_total_result.score_sum }}</span>
+                    <span class="fs-6">
+                        / {{ my_total_result.total_score_sum }}
+                        {{ my_total_result.rank }}등({{ my_total_result.rank|percentageby:my_total_result.participants|floatformat:1 }}%) |
+                        {{ my_total_result.score_1 }}(언) / {{ my_total_result.score_2 }}(자) / {{ my_total_result.score_3 }}(상)
+                    </span>
+
+                </h5>
+                <div class="progress">
+                    <div class="progress-bar bg-c-blue" style="width:{{ my_total_result.score_sum|percentageby:my_total_result.total_score_sum }}%"></div>
+                </div>
+            {% else %}
+                <span class="badge rounded-pill text-bg-danger">성적 자료가 없습니다.</span>
+            {% endif %}
+        <hr>
+    </div>
+    {% for stat in my_result_page_obj %}
+        <div class="col-md-6">
+            <h6>{{ stat.psat.get_round_display }}</h6>
+            {% if current_time >= stat.schedule.lecture_open_datetime and current_time < stat.schedule.homework_end_datetime %}
+                {% if stat.score is None %}
+                    <a class="btn btn-sm btn-outline-danger"
+                       href="{{ obj.get_answer_input_url }}">
+                        {{ stat.schedule.homework_end_datetime|date:'n/j(D)' }}까지 답안을 제출해주세요.
+                    </a>
+                {% else %}
+                    {% partialdef score_progress_bar inline=True %}
+                        <h5>
+                            <span class="text-primary fw-bold">{{ stat.score_sum }}</span>
+                            <span class="fs-6">
+                                / 10
+                                {{ stat.rank }}등({{ stat.rank|percentageby:stat.participants|floatformat:1 }}%) |
+                                {{ stat.score_1 }}(언) / {{ stat.score_2 }}(자) / {{ stat.score_3 }}(상)
+                            </span>
+                        </h5>
+                        <div class="progress mb-md-0">
+                            <div class="progress-bar bg-c-blue" style="width:{{ stat.score_sum|percentageby:10 }}%"></div>
+                        </div>
+                    {% endpartialdef score_progress_bar %}
+                {% endif %}
+            {% elif current_time >= stat.schedule.homework_end_datetime %}
+                {% if stat.score is None %}
+                    <span class="badge rounded-pill text-bg-warning">제출된 답안 자료가 없습니다.</span>
+                {% else %}
+                    {% partial score_progress_bar %}
+                {% endif %}
+            {% endif %}
+            <hr class="d-md-none">
+        </div>
+        {% if forloop.counter|mod:2 == 0  %}
+            <div class="col-md-12">
+                <hr class="d-none d-md-block">
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+{% with page_obj=my_result_page_obj page_range=my_result_page_range %}
+    {% include 'a_psat/snippets/pagination.html' with header='my_result' %}
+{% endwith %}
