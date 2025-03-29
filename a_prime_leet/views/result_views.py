@@ -28,7 +28,7 @@ def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     qs_registry = []
     if request.user.is_authenticated:
-        qs_registry = models.ResultRegistry.objects.with_select_related().filter(user=request.user)
+        qs_registry = models.ResultRegistry.objects.prime_leet_registry_list_by_user(request.user)
     context = update_context_data(current_time=timezone.now(), config=config, registries=qs_registry)
     return render(request, 'a_prime_leet/result_list.html', context)
 
@@ -62,27 +62,24 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
     data_answers = normal_utils.get_data_answers_for_result(qs_student_answer)
 
     context = update_context_data(
-        context, leet=leet,
-        sub_title=f'{leet.name} 성적표',
+        context, leet=leet, head_title=f'{leet.name} 성적표',
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
 
         # tab variables for templates
-        answer_tab=normal_utils.get_answer_tab(leet),
         score_tab=normal_utils.get_score_tab(),
+        answer_tab=normal_utils.get_answer_tab(leet),
 
         # info_student: 수험 정보
         student=student,
 
         # sheet_score: 성적 확인
-        stat_data_total=stat_data_total,
-        stat_data_1=stat_data_1,
-        stat_data_2=stat_data_2,
-
-        # chart: 성적 분포 차트
-        stat_chart=stat_chart, stat_frequency=stat_frequency,
+        stat_data_total=stat_data_total, stat_data_1=stat_data_1, stat_data_2=stat_data_2,
 
         # sheet_answer: 답안 확인
         data_answers=data_answers,
+
+        # chart: 성적 분포 차트
+        stat_chart=stat_chart, stat_frequency=stat_frequency, all_confirmed=True,
     )
     if is_for_print:
         return render(request, 'a_prime_leet/result_print.html', context)
@@ -121,21 +118,3 @@ def student_register_view(request: HtmxHttpRequest):
         context = update_context_data(context, form=form)
 
     return render(request, 'a_prime_leet/admin_form.html', context)
-
-
-def modal_view(request: HtmxHttpRequest, pk: int):
-    leet = models.Leet.objects.get(pk=pk)
-    hx_modal = request.headers.get('View-Modal', '')
-    is_no_open = hx_modal == 'no_open'
-    is_student_register = hx_modal == 'student_register'
-
-    context = update_context_data(exam=leet)
-    if is_no_open:
-        return render(request, 'a_prime_leet/snippets/modal_no_open.html', context)
-
-    if is_student_register:
-        context = update_context_data(
-            context,
-            header=f'{leet.name} 수험 정보 입력',
-        )
-        return render(request, 'a_prime_leet/snippets/modal_student_register.html', context)

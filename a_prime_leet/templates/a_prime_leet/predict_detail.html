@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block main_content %}
-    <section class="section htmx-fade-in htmx-fade-out" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+    <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -21,51 +21,273 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-12" aria-label="수험 정보">
-                <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/detail_info_student.html' %}
-                </div>
-            </div>
-
-            <div class="col-12" aria-label="답안 제출 현황">
-                <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/predict_detail_info_answer.html' %}
-                </div>
-            </div>
-
-            {% if current_time <= leet.answer_official_opened_at %}
-                <div class="col-12" aria-label="예상 정답">
-                    <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_predict.html' %}
-                    </div>
-                </div>
-            {% else %}
-                <div class="col-12" aria-label="성적 예측 I [전체 데이터]">
-                    <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_prime_leet/snippets/predict_detail_sheet_score_all.html' %}
-                    </div>
-                </div>
-                {% if student.is_confirmed %}
-                    <div class="col-12" aria-label="성적 예측 II [정답 공개 전 데이터]">
-                        <div id="sheet_score" class="card htmx-fade-in htmx-fade-out">
-                            {% include 'a_prime_leet/snippets/predict_detail_sheet_score_filtered.html' %}
-                        </div>
-                    </div>
-                {% endif %}
-
-                <div class="col-12" aria-label="성적 분포 차트">
-                    <div id="chart" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_prime_leet/snippets/detail_chart.html' with is_confirmed=True stat_total=stat_total_all stat_department=stat_department_all %}
-                    </div>
-                </div>
-
-                <div class="col-12" aria-label="정답 확인">
-                    <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
-                        {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html' %}
-                    </div>
-                </div>
-            {% endif %}
         </div>
     </section>
+
+    <section class="section" aria-label="수험 정보">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="infoStudent" class="card">
+                    <div class="card-header">수험 정보</div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/detail_info_student.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="답안 제출 현황">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="infoAnswer" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        답안 제출 현황
+                        <a class="text-decoration-none ms-2" href=""
+                           hx-swap="none" hx-indicator="#stat_tot_spinner"
+                           hx-headers='{"View-Type":"info_answer"}' hx-get="">
+                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                        </a>
+                        <div id="infoAnswerSpinner" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/predict_detail_info_answer.html' %}
+                        <div>
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+                            <ol class="text-success small fw-bold m-0">
+                                {% if leet.is_not_finished %}
+                                    <li>예상 점수는 시험이 종료된 후에 공개됩니다.</li>
+                                {% endif %}
+                                <li>총 참여자수는 과목별로 답안 제출을 완료한 응시생수입니다.</li>
+                                <li>선택 답안수는 과목별로 답안을 선택한 문제수 및 총 문제수입니다.</li>
+                                <li>최종 제출한 답안만 통계에 포함되니 답안 제출을 완료해주세요.</li>
+                                <li>최종 제출한 답안은 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% if current_time <= leet.answer_official_opened_at %}
+    <section class="section" aria-label="예상 정답">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="sheetAnswerPredict" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        예상 정답
+                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#answer_predict_spinner"
+                           hx-headers='{"View-Type":"answer_predict"}' hx-get="">
+                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                        </a>
+                        <div id="sheetAnswerPredictSpinner" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="sheetAnswerPredictTab" role="tablist">
+                                {% for tab in answer_tab %}
+                                    {% #nav_tab prefix='AnswerPredict' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="sheetAnswerPredictContent">
+                            {% for tab in answer_tab %}
+                                {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 as answers silent %}
+                                {% cycle is_confirmed_data.0 is_confirmed_data.1 is_confirmed_data.2 is_confirmed_data.3 as is_confirmed silent %}
+                                {% #nav_content prefix='AnswerPredict' id=tab.id %}
+                                    {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_predict.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+
+                        <div>
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                {% if leet.is_collecting_answer %}
+                                    <li>예상 정답은 답안 수집이 어느 정도 완료된 후에 공개됩니다.</li>
+                                {% endif %}
+                                {% if leet.is_answer_predict_opened %}
+                                    <li>{{ current_time|date:'Y년 n월 j일 G:i' }} 기준 예상 정답입니다.</li>
+                                {% endif %}
+                                <li>가장 많은 분들이 선택한 답안을 예상 정답으로 제시합니다.</li>
+                                <li>정확도 = 예상 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+{% if current_time > leet.answer_official_opened_at %}
+    <section class="section" aria-label="성적 예측 I [전체 데이터]">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="sheetScoreAll" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        성적 예측 I
+                        <span class="text-danger small">[전체 데이터]</span>
+                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_score_spinner"
+                           hx-headers='{"View-Type":"score_all"}' hx-get="">
+                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                        </a>
+                        <div id="sheetScoreAllSpinner" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="sheetScoreAllTab" role="tablist">
+                                {% for tab in score_tab %}
+                                    {% #nav_tab prefix='ScoreAll' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="sheetScoreAllContent">
+                            {% for tab in score_tab %}
+                                {% cycle stat_data_total stat_data_1 stat_data_2 as stat_data silent %}
+                                {% #nav_content prefix='ScoreAll' id=tab.id %}
+                                    {% include 'a_prime_leet/snippets/detail_sheet_score_table.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+
+                            <div>
+                                <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+                                <ol class="text-success small fw-bold m-0">
+                                    <li>답안 제출을 완료한 응시생들의 <span class="text-danger">전체 답안</span>을
+                                        대상으로 분석한 자료입니다.</li>
+                                    <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
+                                    {% if not filtered_stat_total %}
+                                        <li>정답 공개 전 제출 답안을 대상으로 분석한 자료는
+                                            <span class="text-danger">해당 응시자에게만 공개</span>됩니다.</li>
+                                    {% endif %}
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if student.is_filtered %}
+    <section class="section" aria-label="성적 예측 II [정답 공개 전 데이터]">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="sheetScoreFiltered" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        성적 예측 II
+                        <span class="text-danger small">[정답 공개 전 데이터]</span>
+                    </div>
+
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="sheetScoreFilteredTab" role="tablist">
+                                {% for tab in score_tab %}
+                                    {% #nav_tab prefix='ScoreFiltered' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="sheetScoreFilteredContent">
+                            {% for tab in filtered_score_tab %}
+                                {% cycle stat_data_total_filtered stat_data_1_filtered stat_data_2_filtered as stat_data silent %}
+                                {% #nav_content prefix='ScoreFiltered' id=tab.id %}
+                                    {% include 'a_prime_leet/snippets/detail_sheet_score_table.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+
+                            <div>
+                                <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span>
+                                <ol class="text-success small fw-bold m-0">
+                                    <li>
+                                        <span class="text-danger">정답 공개 전</span>에 답안 제출을 완료한 응시생들의
+                                        답안만을 대상으로 분석한 자료입니다.
+                                    </li>
+                                    <li>최종 성적은 위 결과와 다를 수 있으니 참고 자료로만 활용하시기 바랍니다.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="section" aria-label="정답 확인">
+        <div class="row">
+            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div id="sheetAnswerSubmit" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">
+                        정답 확인
+                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
+                           hx-headers='{"View-Type":"answer_submit"}' hx-get="">
+                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
+                        </a>
+                        <div id="sheetAnswerSubmitSpinner" role="status"
+                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="sheetAnswerSubmitTab" role="tablist">
+                                {% for tab in answer_tab %}
+                                    {% #nav_tab prefix='AnswerSubmit' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="sheetAnswerSubmitContent">
+                            {% for tab in answer_tab %}
+                                {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
+                                {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
+                                {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
+                                {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
+                                {% #nav_content prefix='AnswerSubmit' id=tab.id %}
+                                    {% include 'a_prime_leet/snippets/predict_detail_sheet_answer_submit.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>정답률 = 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
+                                <li>선택률 = 동일 답안 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="성적 분포 차트">
+        <div class="row" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            <div class="col-12">
+                <div id="sheetChart" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">성적 분포 차트</div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/detail_chart.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endif %}
 {% endblock main_content %}

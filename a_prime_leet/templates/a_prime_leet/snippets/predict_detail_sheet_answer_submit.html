@@ -1,71 +1,25 @@
 {% load psat_filter %}
 
-<div class="card-header">
-    정답 확인
-    <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
-       hx-headers='{"View-Type":"answer_submit"}' hx-get="">
-        <span class="badge rounded-pill text-bg-warning">업데이트</span>
-    </a>
-    <div id="sheet_answer_spinner" role="status"
-         class="htmx-indicator spinner-border text-warning spinner-border-sm">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
-
-<div class="card-body">
-    <nav>
-        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerSubmitTab" role="tablist">
-            {% for tab in answer_tab %}
-                {% #nav_tab prefix='AnswerSubmit' id=tab.id %}{{ tab.title }}{% /nav_tab %}
-            {% endfor %}
-        </div>
-    </nav>
-
-    <div class="tab-content" id="scoreAnswerSubmitContent">
-        {% for tab in answer_tab %}
-            {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
-            {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
-            {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
-            {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
-            {% #nav_content prefix='AnswerSubmit' id=tab.id %}{% partial answer_table %}{% /nav_content %}
-        {% endfor %}
-    </div>
-    <div>
-        <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
-        <ol class="text-success small fw-bold m-0">
-            {% if leet.is_collecting_answer or leet.is_answer_predict_opened %}
-                <li>정답 및 정답률은 공식 정답이 공개되면 확인 가능합니다.</li>
+<article class="table-responsive">
+    <table class="table align-middle">
+        <tbody>
+            {% if not answers %}
+                <tr class="text-center">
+                    <th>
+                        <a class="btn btn-outline-danger my-4" hx-boost="true"
+                           href="{{ tab.url_answer_input }}">
+                            답안을 제출해주세요.
+                        </a>
+                    </th>
+                </tr>
+            {% else %}
+                {% for loop in tab.loop_list %}
+                    {% partial answer_table_tr %}
+                {% endfor %}
             {% endif %}
-            {% if leet.is_answer_official_opened %}
-                <li>정답률 = 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
-            {% endif %}
-            <li>선택률 = 동일 답안 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
-        </ol>
-    </div>
-</div>
-
-{% partialdef answer_table %}
-    <article class="table-responsive">
-        <table class="table align-middle">
-            <tbody>
-                {% if not answers %}
-                    <tr class="text-center">
-                        <th>
-                            <a class="btn btn-outline-danger my-4" hx-boost="true"
-                               href="{{ tab.url_answer_input }}">
-                                답안을 제출해주세요.
-                            </a>
-                        </th>
-                    </tr>
-                {% else %}
-                    {% for loop in tab.loop_list %}
-                        {% partial answer_table_tr %}
-                    {% endfor %}
-                {% endif %}
-            </tbody>
-        </table>
-    </article>
-{% endpartialdef answer_table %}
+        </tbody>
+    </table>
+</article>
 
 {% partialdef answer_table_tr %}
     <tr class="text-center table-warning" aria-label="문제 번호">

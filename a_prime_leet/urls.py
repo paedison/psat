@@ -34,7 +34,6 @@ result_patterns = [
     path('<int:pk>/', result_views.detail_view, name='result-detail'),
     path('student/register/', result_views.student_register_view, name='result-student-register'),
     path('print/<int:pk>/', result_views.print_view, name='result-print'),
-    path('modal/<int:pk>/', result_views.modal_view, name='result-modal'),
 ]
 
 predict_patterns = [

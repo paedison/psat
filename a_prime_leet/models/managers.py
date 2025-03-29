@@ -77,7 +77,8 @@ class ResultRegistryManager(models.Manager):
             'user', 'student', 'student__leet', 'student__score',
             'student__rank', 'student__rank_aspiration_1', 'student__rank_aspiration_2')
 
-    def prime_leet_registry_list_by_leet(self, leet):
+    @staticmethod
+    def get_annotate_dict():
         annotate_dict = {
             'aspiration_1': models.F('student__aspiration_1'),
             'aspiration_2': models.F('student__aspiration_2'),
@@ -93,8 +94,15 @@ class ResultRegistryManager(models.Manager):
             annotate_dict[f'rank_{key}'] = models.F(f'student__rank__{fld}')
             annotate_dict[f'rank_{key}_aspiration_1'] = models.F(f'student__rank_aspiration_1__{fld}')
             annotate_dict[f'rank_{key}_aspiration_2'] = models.F(f'student__rank_aspiration_2__{fld}')
+        return annotate_dict
 
+    def prime_leet_registry_list_by_leet(self, leet):
+        annotate_dict = self.get_annotate_dict()
         return self.with_select_related().filter(student__leet=leet).order_by('id').annotate(**annotate_dict)
+
+    def prime_leet_registry_list_by_user(self, user):
+        annotate_dict = self.get_annotate_dict()
+        return self.with_select_related().filter(user=user).order_by('-student__leet').annotate(**annotate_dict)
 
 
 class AnswerManager(models.Manager):

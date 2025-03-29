@@ -91,8 +91,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
     data_answers = normal_utils.get_data_answers_for_predict(qs_student_answer)
 
     context = update_context_data(
-        context, leet=leet,
-        sub_title=f'제{leet.round}회 프라임모의고사 성적표',
+        context, leet=leet, head_title=f'{leet.name} 성적표',
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
 
         # tab variables for templates
@@ -104,20 +103,18 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         student=student,
 
         # sheet_score: 성적 예측 I [All]
-        stat_data_total=stat_data_total,
-        stat_data_1=stat_data_1,
-        stat_data_2=stat_data_2,
+        stat_data_total=stat_data_total, stat_data_1=stat_data_1, stat_data_2=stat_data_2,
 
         # sheet_score: 성적 예측 II [Filtered]
         stat_data_total_filtered=stat_data_total_filtered,
         stat_data_1_filtered=stat_data_1_filtered,
         stat_data_2_filtered=stat_data_2_filtered,
 
-        # chart: 성적 분포 차트
-        stat_chart=stat_chart, stat_frequency=stat_frequency,
-
         # sheet_answer: 답안 확인
         data_answers=data_answers, is_confirmed_data=is_confirmed_data,
+
+        # chart: 성적 분포 차트
+        stat_chart=stat_chart, stat_frequency=stat_frequency, all_confirmed=is_confirmed_data[-1],
     )
 
     if view_type == 'info_answer':

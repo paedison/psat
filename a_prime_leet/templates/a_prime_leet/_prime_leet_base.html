@@ -1,7 +1,9 @@
 {% extends 'list.html' %}
 {% load static %}
 
-{% block head_title %}{{ config.menu_kor }} {{ config.submenu_title.kor }}{% endblock %}
+{% block head_title %}
+    {% if head_title %}{{ head_title }}{% else %}{{ config.menu_kor }} {{ config.submenu_title.kor }}{% endif %}
+{% endblock %}
 {% block page_image %}
 <meta property="og:image" content="{% static 'image/prime/2025/psat/title.jpg' %}"/>
 {% endblock page_image %}

@@ -26,34 +26,93 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
+    <section class="section" aria-label="수험 정보">
+        <div class="row">
             <div class="col-12">
-                <div id="student_info" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/detail_info_student.html' %}
+                <div id="infoStudent" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">수험 정보</div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/detail_info_student.html' %}
+                    </div>
                 </div>
             </div>
+        </div>
+    </section>
 
+    <section class="section" aria-label="성적 확인">
+        <div class="row">
             <div class="col-12">
-                <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/detail_my_score_table.html' with is_confirmed=True %}
+                <div id="sheetScore" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">성적 확인</div>
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="sheetScoreTab" role="tablist">
+                                {% for tab in score_tab %}
+                                    {% #nav_tab prefix='Score' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="sheetScoreContent">
+                            {% for tab in score_tab %}
+                                {% cycle stat_data_total stat_data_1 stat_data_2 as stat_data silent %}
+                                {% #nav_content prefix='Score' id=tab.id %}
+                                    {% include 'a_prime_leet/snippets/detail_sheet_score_table.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+    </section>
 
+    <section class="section" aria-label="답안 확인">
+        <div class="row">
             <div class="col-12">
-                <div id="score_sheet" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/result_detail_sheet_score.html' with is_confirmed=True %}
+                <div id="sheetAnswerSubmit" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">답안 확인</div>
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="sheetAnswerSubmitTab" role="tablist">
+                                {% for tab in answer_tab %}
+                                    {% #nav_tab prefix='AnswerSubmit' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="sheetAnswerSubmitContent">
+                            {% for tab in answer_tab %}
+                                {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
+                                {% #nav_content prefix='AnswerSubmit' id=tab.id %}
+                                    {% include 'a_prime_leet/snippets/result_detail_sheet_answer.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>정답률 = 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
+                                <li>선택률 = 동일 답안 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+    </section>
 
+    <section class="section" aria-label="성적 분포 차트">
+        <div class="row" hx-target="#main" hx-swap="innerHTML swap:0.25s">
             <div class="col-12">
-                <div id="chart" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/detail_chart.html' with is_confirmed=True %}
-                </div>
-            </div>
-
-            <div class="col-12">
-                <div id="answer_student" class="card htmx-fade-in htmx-fade-out">
-                    {% include 'a_prime_leet/snippets/result_detail_sheet_answer.html' %}
+                <div id="sheetChart" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">성적 분포 차트</div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/detail_chart.html' %}
+                    </div>
                 </div>
             </div>
         </div>

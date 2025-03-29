@@ -110,9 +110,6 @@ class Leet(models.Model):
     def get_result_print_url(self):
         return reverse_lazy('prime_leet:result-print', args=[self.id])
 
-    def get_result_modal_url(self):
-        return reverse_lazy('prime_leet:result-modal', args=[self.id])
-
     @staticmethod
     def get_predict_list_url():
         return reverse_lazy('prime_leet:predict-list')
