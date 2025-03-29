@@ -40,7 +40,7 @@
                         <div id="resultContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_psat/snippets/study_detail_my_result.html' %}
                         </div>
-                        <div class="mt-3">
+                        <div>
                             <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
                             <ol class="text-success small fw-bold m-0">
                                 <li>정상적으로 답안을 제출한 경우에만 성적이 표시됩니다.</li>
@@ -76,6 +76,15 @@
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         <div id="answerAnalysisContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_psat/snippets/study_detail_answer_analysis.html' %}
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>상/중/하위권은 상위 백분율 27%와 73%를 경계로 나뉩니다.</li>
+                                <li>변별도는 상위권 정답률에서 하위권 정답률을 뺀 값입니다.</li>
+                                <li>답안 선택 현황에서 윗줄은 학생수를, 아랫줄은 비율을 의미합니다.</li>
+                                <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
+                            </ol>
                         </div>
                     </div>
                 </div>
