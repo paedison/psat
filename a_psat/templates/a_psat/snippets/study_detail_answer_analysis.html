@@ -52,15 +52,7 @@
                 {% else %}
                     <tr class="text-center">
                         <td class="small text-nowrap td-left-no-border" hx-target="#main">
-                            <span class="fw-bold">
-                                {{ obj.psat.get_round_display }} {{ obj.get_number_display }}<span class="d-none d-sm-inline"> |</span>
-                            </span>
-                            <div class="d-block d-sm-inline">
-                                <a class="text-decoration-none fw-bold cursor-pointer" hx-boost="true"
-                                   href="{{ obj.problem.get_absolute_url }}{% querystring %}">
-                                    {{ obj.problem.reference }}
-                                </a>
-                            </div>
+                            {% partial reference %}
                         </td>
 
                         <td class="text-wrap">
@@ -127,3 +119,15 @@
 {% with page_obj=answer_page_obj page_range=answer_page_range %}
     {% include 'a_psat/snippets/pagination.html' with header='answer_analysis' %}
 {% endwith %}
+
+{% partialdef reference %}
+    <span class="fw-bold">
+        {{ obj.psat.get_round_display }} {{ obj.get_number_display }}<span class="d-none d-sm-inline"> |</span>
+    </span>
+    <div class="d-block d-sm-inline">
+        <a class="text-decoration-none fw-bold cursor-pointer" hx-boost="true"
+           href="{{ obj.problem.get_absolute_url }}{% querystring %}">
+            {{ obj.problem.reference }}
+        </a>
+    </div>
+{% endpartialdef reference %}
