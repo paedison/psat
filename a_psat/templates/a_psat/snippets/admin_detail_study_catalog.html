@@ -2,74 +2,57 @@
 {% load humanize %}
 
 <article class="table-responsive htmx-fade-in htmx-fade-out">
-    <table class="table table-bordered table-striped align-middle m-0">
+    <table class="table table-bordered align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
                 <th class="text-primary text-nowrap" rowspan="2">수험정보</th>
                 <th class="text-primary text-nowrap" rowspan="2">사용자<br/>ID</th>
                 <th class="text-primary text-nowrap" rowspan="2">답안<br/>제출횟수</th>
-                <th class="text-primary text-nowrap" rowspan="2">전체<br/>등수/총점</th>
-                <th class="text-primary text-nowrap" colspan="{{ category.round }}">회차별 등수(등)</th>
-                <th class="text-primary text-nowrap td-right-no-border" colspan="{{ category.round }}">회차별 점수(점)</th>
+                <th class="text-primary text-nowrap td-right-no-border" colspan="{{ category.round|add:1 }}">회차별 성적(점수/등수)</th>
             </tr>
 
             <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap">전체</th>
                 {% for _ in study_rounds %}
-                    {% if forloop.first %}
-                        <th class="text-primary text-nowrap td-right-no-border">{{ forloop.counter }}</th>
-                    {% elif forloop.last %}
-                        <th class="text-primary text-nowrap td-left-no-border">{{ forloop.counter }}</th>
-                    {% else %}
-                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">{{ forloop.counter }}</th>
-                    {% endif %}
-                {% endfor %}
-                {% for _ in study_rounds %}
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">{{ forloop.counter }}</th>
+                    <th class="text-primary td-right-no-border">{{ forloop.counter }}</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for obj in catalog_page_obj %}
-                <tr class="text-center">
-                    <th class="text-nowrap td-left-no-border">{{ obj.id }}</th>
-                    <th class="text-nowrap">
+                <tr class="text-center small">
+                    <th class="td-left-no-border">{{ obj.id }}</th>
+                    <th>
                         <a href="{{ obj.get_admin_study_student_detail_url }}" target="score_print">
-                            {{ obj.name }} ({{ obj.serial }})
+                            {{ obj.name }}<br/>({{ obj.serial }})
                         </a>
                     </th>
-                    <td class="text-nowrap">{{ obj.user_id|default_if_none:'' }}</td>
-                    <td class="text-nowrap">{{ obj.result_count|default_if_none:'' }}</td>
-                    <td class="text-nowrap td-right-no-border">
-                        {% if obj.rank_total and obj.score_total %}
-                            {{ obj.rank_total }} / {{ obj.score_total }}
-                        {% endif %}
+                    <td>{{ obj.user_id|default:'' }}</td>
+                    <td>{{ obj.result_count|default:'' }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center">
+                            <div class="text-end">
+                                {{ obj.score_total|default:'' }}<br/>
+                                <span class="text-primary">{{ obj.rank_total|default:'' }}</span>
+                            </div>
+                        </div>
                     </td>
 
                     {% for result in obj.result_list %}
-                        {% if forloop.first %}
-                            <td class="text-nowrap td-right-no-border">
-                                {% if result.rank %}{{ result.rank }}{% endif %}
-                            </td>
-                        {% elif forloop.last %}
-                            <td class="text-nowrap td-left-no-border">
-                                {% if result.rank %}{{ result.rank }}{% endif %}
-                            </td>
-                        {% else %}
-                            <td class="text-nowrap td-left-no-border td-right-no-border">
-                                {% if result.rank %}{{ result.rank }}{% endif %}
-                            </td>
-                        {% endif %}
-                    {% endfor %}
-                    {% for result in obj.result_list %}
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            {% if result.score %}{{ result.score }}{% endif %}
+                        <td class="td-right-no-border">
+                            <div class="d-flex justify-content-center">
+                                <div class="text-end">
+                                    {{ result.score|default:'' }}<br/>
+                                    <span class="text-primary">{{ result.rank|default:'' }}</span>
+                                </div>
+                            </div>
                         </td>
                     {% endfor %}
                 </tr>
             {% empty %}
                 <tr>
-                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="31">자료가 없습니다.</td>
+                    <td class="td-left-no-border td-right-no-border" colspan="{{ category.round|add:5 }}">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

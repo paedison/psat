@@ -32,7 +32,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr class="text-center">
+            <tr class="text-center small">
                 <th class="text-nowrap td-left-no-border">전체</th>
                 <th class="text-nowrap">{{ curriculum_stat.participants|intcomma }}</th>
                 <th class="text-nowrap">{% if curriculum_stat.max %}{{ curriculum_stat.max }}{% endif %}</th>
@@ -41,11 +41,11 @@
                 <th class="text-nowrap">{% if curriculum_stat.t50 %}{{ curriculum_stat.t50 }}{% endif %}</th>
                 <th class="text-nowrap td-right-no-border">{% if curriculum_stat.avg %}{{ curriculum_stat.avg|floatformat:1 }}{% endif %}</th>
             </tr>
-            <tr class="text-center">
+            <tr class="text-center small">
                 <td class="text-nowrap td-left-no-border td-right-no-border" colspan="14"></td>
             </tr>
             {% for obj in statistics_page_obj %}
-                <tr class="text-center">
+                <tr class="text-center small">
                     <th class="text-nowrap td-left-no-border">{{ obj.psat.get_round_display }}</th>
                     <td class="text-nowrap">{{ obj.statistics.participants|intcomma }}</td>
                     <td class="text-nowrap">{% if obj.max %}{{ obj.max }}{% endif %}</td>
@@ -55,8 +55,8 @@
                     <td class="text-nowrap td-right-no-border">{% if obj.avg %}{{ obj.avg|floatformat:1 }}{% endif %}</td>
                 </tr>
             {% empty %}
-                <tr class="text-center">
-                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="22">자료가 없습니다.</td>
+                <tr class="text-center small">
+                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="7">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

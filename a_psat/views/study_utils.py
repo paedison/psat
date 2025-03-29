@@ -150,6 +150,7 @@ def get_answer_paginator_data(schedule_dict, student, opened_rounds, page_number
         obj.schedule = schedule_dict.get(obj.psat.round)
         obj.no = obj.number
         obj.ans_student = ans_student
+        obj.ans_student_circle = models.choices.answer_choice()[ans_student] if ans_student else None
         obj.ans_official = ans_official
         obj.ans_official_circle = obj.problem.get_answer_display()
         obj.is_correct = ans_student in answer_official_list

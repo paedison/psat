@@ -1,5 +1,3 @@
-{% load humanize %}
-
 <article class="table-responsive">
     <table class="table table-bordered table-striped align-middle m-0">
         <thead>
@@ -17,14 +15,14 @@
                 <th class="text-primary text-nowrap">전체[상/중/하]</th>
                 <th class="text-primary text-nowrap">변별도</th>
                 {% for _ in '1234' %}
-                    <th class="text-primary text-nowrap td-right-no-border">①</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">②</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">③</th>
+                    <th class="text-primary td-right-no-border">①</th>
+                    <th class="text-primary td-left-no-border td-right-no-border">②</th>
+                    <th class="text-primary td-left-no-border td-right-no-border">③</th>
                     {% if tab.title == '헌법' %}
-                        <th class="text-primary text-nowrap td-left-no-border">④</th>
+                        <th class="text-primary td-left-no-border">④</th>
                     {% else %}
-                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">④</th>
-                        <th class="text-primary text-nowrap td-left-no-border td-right-no-border">⑤</th>
+                        <th class="text-primary td-left-no-border td-right-no-border">④</th>
+                        <th class="text-primary td-left-no-border td-right-no-border">⑤</th>
                     {% endif %}
                 {% endfor %}
             </tr>
@@ -36,7 +34,7 @@
                         <th class="text-nowrap td-left-no-border" hx-target="#main">
                             {% partial reference %}
                         </th>
-                        <td class="text-wrap fs-6" colspan="47">
+                        <td class="text-nowrap fs-6" colspan="25">
                             <span class="badge rounded-pill text-bg-danger">
                                 {{ obj.schedule.homework_end_datetime|date:'n/j(D)' }}까지 답안을 제출해주세요.
                             </span>
@@ -44,39 +42,20 @@
                     </tr>
                 {% else %}
                     <tr class="text-center small">
-                        <th class="text-nowrap td-left-no-border" hx-target="#main">
-                            {% partial reference %}
+                        <th class="text-nowrap td-left-no-border" hx-target="#main">{% partial reference %}</th>
+                        <th class="fs-6 text-success">{{ obj.ans_official_circle|default:'' }}</th>
+                        <th class="fs-6 text-{% if obj.is_correct %}success{% else %}danger{% endif %}">
+                            {{ obj.ans_student_circle|default:'' }}
                         </th>
-
-                        <td class="text-wrap">
-                            <button class="btn btn-circle btn-sm fs-6 btn-success">
-                                {{ obj.ans_official }}
-                            </button>
-                        </td>
-
-                        <td>
-                            {% if obj.ans_student %}
-                                <button class="btn btn-circle btn-sm fs-6
-                                    btn-{% if obj.is_correct %}success{% else %}danger{% endif %}">
-                                    {{ obj.ans_student }}
-                                </button>
-                            {% endif %}
-                        </td>
-
                         <td class="text-nowrap">
                             {% if obj.rate_correct %}
-                                <div class="text-end">
-                                    {{ obj.rate_correct|floatformat:1 }} [
-                                    {% if obj.rate_correct_top %}{{ obj.rate_correct_top|floatformat:1 }}{% else %}-{% endif %} /
-                                    {% if obj.rate_correct_mid %}{{ obj.rate_correct_mid|floatformat:1 }}{% else %}-{% endif %} /
-                                    {% if obj.rate_correct_low %}{{ obj.rate_correct_low|floatformat:1 }}{% else %}-{% endif %} ]
-                                </div>
+                                <span class="fw-bold text-primary">{{ obj.rate_correct|floatformat:1 }}</span><br/>[
+                                {{ obj.rate_correct_top|floatformat:1|default:'-' }} /
+                                {{ obj.rate_correct_mid|floatformat:1|default:'-' }} /
+                                {{ obj.rate_correct_low|floatformat:1|default:'-' }} ]
                             {% endif %}
                         </td>
-
-                        <td class="text-nowrap">
-                            {{ obj.rate_gap|floatformat:1 }}
-                        </td>
+                        <td>{{ obj.rate_gap|floatformat:1 }}</td>
 
                         {% for _ in '1234' %}
                             {% cycle obj.count_1_all obj.count_1_top obj.count_1_mid obj.count_1_low as count_1 silent %}
@@ -118,7 +97,7 @@
                 {% endif %}
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="48">자료가 없습니다.</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="25">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -138,5 +117,17 @@
            href="{{ obj.problem.get_absolute_url }}{% querystring %}">
             {{ obj.problem.reference }}
         </a>
+        {% if obj.problem.images.name1 == 'Preparing Image' %}
+            {{ icon_image.False|safe }}
+        {% else %}
+            <a class="text-decoration-none" href=""
+               data-bs-toggle="modal" data-bs-target="#modalContainer"
+               hx-push-url="false"
+               hx-target="#modalContainer"
+               hx-headers='{"View-Type":"image"}'
+               hx-get="{% url 'psat:problem-detail' obj.problem_id %}">
+                {{ icon_image.True|safe }}
+            </a>
+        {% endif %}
     </div>
 {% endpartialdef reference %}
