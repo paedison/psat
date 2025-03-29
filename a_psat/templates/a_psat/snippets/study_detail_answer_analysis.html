@@ -121,10 +121,10 @@
 {% endwith %}
 
 {% partialdef reference %}
-    <span class="fw-bold">
+    <span class="fw-bold small">
         {{ obj.psat.get_round_display }} {{ obj.get_number_display }}<span class="d-none d-sm-inline"> |</span>
     </span>
-    <div class="d-block d-sm-inline">
+    <div class="d-block d-sm-inline small">
         <a class="text-decoration-none fw-bold cursor-pointer" hx-boost="true"
            href="{{ obj.problem.get_absolute_url }}{% querystring %}">
             {{ obj.problem.reference }}
