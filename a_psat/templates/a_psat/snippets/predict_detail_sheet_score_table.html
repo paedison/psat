@@ -1,24 +1,50 @@
+<div class="row score-progress py-3">
+    {% for stat in stat_data %}
+        <div class="{% if forloop.last %}col-12{% else %}col-md-6{% endif %}">
+            {% if forloop.last %}<hr class="d-none d-md-block">{% endif %}
+            <h6>{{ stat.subject }}</h6>
+            <h5>
+                <span class="text-primary fw-bold">{{ stat.score }}</span>
+                <span class="fs-6">
+                    {{ stat.rank }}등({{ stat.rank|percentageby:stat.participants|floatformat:1 }}%) |
+                    총 {{ stat.participants }}명
+                </span>
+
+            </h5>
+            <div class="progress">
+                <div class="progress-bar bg-c-blue" style="width:{{ stat.rank|percentageby:stat.participants|subtract:100 }}%"></div>
+            </div>
+            {% if not forloop.last %}
+                <hr class="d-md-none">
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
 <article class="table-responsive">
     <table class="table align-middle">
         <thead>
-            <tr class="d-table-row d-md-none text-center align-middle table-warning">
+            <tr class="d-table-row d-sm-none text-center align-middle table-warning">
                 <th class="text-nowrap">과목</th>
-                <th class="text-nowrap">내 점수</th>
-                <th class="text-nowrap">응시자수</th>
                 <th class="text-nowrap">최고<br/>점수</th>
                 <th class="text-nowrap">상위<br/>10%</th>
                 <th class="text-nowrap">상위<br/>20%</th>
                 <th class="text-nowrap">평균<br/>점수</th>
             </tr>
-            <tr class="d-none d-md-table-row text-center align-middle table-warning">
-                <th class="col-1">과목</th>
-                <th class="col-1">내 점수(점)</th>
-                <th class="col-1">응시자수</th>
-                <th class="col-1">최고 점수(점)</th>
-                <th class="col-1">상위 10%(점)</th>
-                <th class="col-1">상위 20%(점)</th>
-                <th class="col-1">평균 점수(점)</th>
+            <tr class="d-none d-sm-table-row text-center align-middle table-warning">
+                <th class="text-nowrap">과목</th>
+                <th class="text-nowrap">최고 점수(점)</th>
+                <th class="text-nowrap">상위 10%(점)</th>
+                <th class="text-nowrap">상위 20%(점)</th>
+                <th class="text-nowrap">평균 점수(점)</th>
             </tr>
+{#            <tr class="text-center align-middle table-warning">#}
+{#                <th class="text-nowrap">과목</th>#}
+{#                <th class="text-nowrap">최고 점수</th>#}
+{#                <th class="text-nowrap">상위 10%</th>#}
+{#                <th class="text-nowrap">상위 20%</th>#}
+{#                <th class="text-nowrap">평균 점수</th>#}
+{#            </tr>#}
         </thead>
         <tbody>
             {% for stat in stat_data %}
@@ -32,11 +58,11 @@
     <tr class="text-center {% if stat.field == 'average' %}table-warning{% endif %}">
         <th class="text-nowrap" aria-label="과목">
             {% if stat.is_confirmed or stat.field == 'average' %}
-                {{ stat.icon|safe }} {{ stat.subject }}
+                {{ stat.subject }}
             {% else %}
                 <a class="text-decoration-none"
-                   href="" hx-boost="true">
-                    {{ stat.icon|safe }} {{ stat.subject }}
+                   href="{{ stat_tot.url_answer_input }}" hx-boost="true">
+                    {{ stat.subject }}
                 </a>
             {% endif %}
         </th>
@@ -47,24 +73,12 @@
                     <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                 {% else %}
                     <a hx-boost="true"
-                       href="">
+                       href="{{ stat_tot.url_answer_input }}">
                         <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
                     </a>
                 {% endif %}
             </td>
         {% else %}
-            <td>
-                <div id="{{ tab.prefix }}Score{{ stat.field|title }}"
-                     class="htmx-fade-up-in delay-0 text-success fw-bold">
-                    {{ stat.score|floatformat:1 }}
-                </div>
-            </td>
-            <td>
-                <div id="{{ tab.prefix }}Participants{{ stat.field|title }}"
-                     class="htmx-fade-up-in delay-1">
-                    {{ stat.participants }}
-                </div>
-            </td>
             <td>
                 <div id="{{ tab.prefix }}MaxScore{{ stat.field|title }}"
                      class="htmx-fade-up-in delay-2">

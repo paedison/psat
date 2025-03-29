@@ -1,4 +1,4 @@
-<table class="table d-sm-none">
+<table class="table d-sm-none m-0">
     <tbody>
         <tr>
             <th class="px-0">수험번호</th>
@@ -25,9 +25,9 @@
     </tbody>
 </table>
 
-<table class="table d-none d-sm-table">
+<table class="table d-none d-sm-table m-0">
     <thead>
-        <tr class="text-center table-warning">
+        <tr class="text-center">
             <th>수험번호</th>
             <th>모집단위</th>
             <th>직렬</th>
@@ -39,12 +39,12 @@
     </thead>
     <tbody>
         <tr class="text-center">
-            <td>{{ student.serial }}</td>
-            <td>{{ student.category.unit }}</td>
-            <td>{{ student.category.get_department_display }}</td>
-            <td>{{ student.name }}</td>
+            <td class="td-no-border">{{ student.serial }}</td>
+            <td class="td-no-border">{{ student.category.unit }}</td>
+            <td class="td-no-border">{{ student.category.get_department_display }}</td>
+            <td class="td-no-border">{{ student.name }}</td>
             {% if student.prime_id %}
-                <td>{{ student.prime_id }}</td>
+                <td class="td-no-border">{{ student.prime_id }}</td>
             {% endif %}
         </tr>
     </tbody>

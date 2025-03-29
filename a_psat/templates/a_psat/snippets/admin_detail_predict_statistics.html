@@ -5,7 +5,7 @@
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">직렬</th>
-                <th class="text-primary text-nowrap" rowspan="2">응시 인원</th>
+                <th class="text-primary text-nowrap" rowspan="2">응시<br/>인원</th>
                 <th class="text-primary text-nowrap" colspan="4">PSAT</th>
                 <th class="text-primary text-nowrap" colspan="4">헌법</th>
                 <th class="text-primary text-nowrap" colspan="4">언어논리</th>
@@ -24,7 +24,7 @@
         </thead>
         <tbody>
             {% for obj in stat_page_obj %}
-                <tr class="text-center">
+                <tr class="text-center small">
                     <td class="text-nowrap td-left-no-border">{{ obj.department }}</td>
                     <td class="text-nowrap">
                         {% if obj.average.participants %}{{ obj.average.participants|intcomma }}{% endif %}
@@ -39,7 +39,7 @@
                     {% endfor %}
                 </tr>
             {% empty %}
-                <tr class="text-center">
+                <tr class="text-center small">
                     <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
                 </tr>
             {% endfor %}

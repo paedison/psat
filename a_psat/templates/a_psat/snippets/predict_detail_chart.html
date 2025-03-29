@@ -4,7 +4,7 @@
             <canvas id="scoreChart"></canvas>
             {% partial chart_contents %}
         </div>
-        <div class="mt-4 chart-container {{ print_class }} ms-auto me-auto">
+        <div class="mt-4 chart-container chart-container-small {{ print_class }} ms-auto me-auto">
             {{ frequency_score.score_points|json_script:'score_points' }}
             {{ frequency_score.score_colors|json_script:'score_colors' }}
             <canvas id="scoreChartTotal"></canvas>
@@ -75,7 +75,6 @@
             },
             scales: {
                 y: {
-                    min: {{ chart_score.min_score }},
                     ticks: {
                         font: {weight: 'bold'}
                     }
@@ -122,7 +121,7 @@
             datasets: chart_datasets_total,
         },
         options: {
-            indexAxis: (screenWidth < 768) ? 'y' : 'x',
+            indexAxis: 'x',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {

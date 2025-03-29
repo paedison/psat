@@ -126,14 +126,14 @@
                     <div class="card-header">
                         성적 예측 I
                         <span class="text-danger small">[전체 데이터]</span>
-                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_score_spinner"
-                           hx-headers='{"View-Type":"score_all"}' hx-get="">
-                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
-                        </a>
-                        <div id="sheet_score_spinner" role="status"
-                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
+{#                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_score_spinner"#}
+{#                           hx-headers='{"View-Type":"score_all"}' hx-get="">#}
+{#                            <span class="badge rounded-pill text-bg-warning">업데이트</span>#}
+{#                        </a>#}
+{#                        <div id="sheet_score_spinner" role="status"#}
+{#                             class="htmx-indicator spinner-border text-warning spinner-border-sm">#}
+{#                            <span class="visually-hidden">Loading...</span>#}
+{#                        </div>#}
                     </div>
 
                     <div class="card-body">
@@ -149,7 +149,7 @@
                             {% for tab in score_tab %}
                                 {% cycle stat_total_all as stat_total silent %}
                                 {% cycle stat_department_all as stat_department silent %}
-                                {% cycle '' stat_total_all stat_department_all as stat_data silent %}
+                                {% cycle stat_total_all stat_department_all as stat_data silent %}
                                 {% #nav_content prefix='ScoreAll' id=tab.id %}{% include tab.template %}{% /nav_content %}
                             {% endfor %}
 
@@ -196,7 +196,7 @@
                             {% for tab in filtered_score_tab %}
                                 {% cycle stat_total_filtered as stat_total silent %}
                                 {% cycle stat_department_filtered as stat_department silent %}
-                                {% cycle '' stat_total_filtered stat_department_filtered as stat_data silent %}
+                                {% cycle stat_total_filtered stat_department_filtered as stat_data silent %}
                                 {% #nav_content prefix='ScoreFiltered' id=tab.id %}{% include tab.template %}{% /nav_content %}
                             {% endfor %}
 

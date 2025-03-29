@@ -13,14 +13,6 @@ from django.shortcuts import get_object_or_404
 from .. import models
 
 
-def get_score_template_table() -> list:
-    return [
-        'a_psat/snippets/predict_detail_sheet_score_table_1.html',
-        'a_psat/snippets/predict_detail_sheet_score_table_2.html',
-        'a_psat/snippets/predict_detail_sheet_score_table_2.html',
-    ]
-
-
 def get_sub_list(psat) -> list:
     if psat.exam in ['칠급', '칠예', '민경']:
         return ['언어', '자료', '상황']
@@ -76,11 +68,10 @@ def get_predict_psat(psat):
 
 def get_score_tab(is_filtered=False):
     suffix = 'Filtered' if is_filtered else ''
-    score_template_table = get_score_template_table()
+    template = 'a_psat/snippets/predict_detail_sheet_score_table.html'
     return [
-        {'id': '0', 'title': '내 성적', 'prefix': f'my{suffix}', 'template': score_template_table[0]},
-        {'id': '1', 'title': '전체 기준', 'prefix': f'total{suffix}', 'template': score_template_table[1]},
-        {'id': '2', 'title': '직렬 기준', 'prefix': f'department{suffix}', 'template': score_template_table[2]},
+        {'id': '0', 'title': '전체 기준', 'prefix': f'total{suffix}', 'template': template},
+        {'id': '1', 'title': '직렬 기준', 'prefix': f'department{suffix}', 'template': template},
     ]
 
 

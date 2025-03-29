@@ -130,7 +130,8 @@ def get_data_answers(qs_answer_count, subject_vars):
 
         entry.no = entry.number
         entry.ans_official = ans_official
-        entry.ans_official_circle = entry.problem.get_answer_display
+        entry.ans_official_circle = entry.problem.get_answer_display()
+        entry.ans_predict_circle = models.choices.answer_choice()[entry.ans_predict] if entry.ans_predict else None
         entry.ans_list = answer_official_list
         entry.field = field
 

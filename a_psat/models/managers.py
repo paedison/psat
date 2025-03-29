@@ -66,6 +66,7 @@ class StudentManager(models.Manager):
             self.with_select_related().filter(psat=psat)
             .order_by('psat__year', 'psat__order', 'rank_total__average')
             .annotate(
+                unit=models.F('category__unit'),
                 department=models.F('category__department'),
                 latest_answer_time=models.Max('answers__created_at'),
                 answer_count=models.Count('answers'),

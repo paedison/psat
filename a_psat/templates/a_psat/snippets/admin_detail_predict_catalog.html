@@ -5,86 +5,66 @@
     <table class="table table-bordered table-striped align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap td-left-no-border" rowspan="3">ID</th>
-                <th class="text-primary text-nowrap" rowspan="3">등수</th>
-                <th class="text-primary text-nowrap" rowspan="3">이름<br/>(수험번호)</th>
-                <th class="text-primary text-nowrap" rowspan="3">직렬</th>
-                <th class="text-primary text-nowrap" rowspan="3">프라임ID</th>
-                <th class="text-primary text-nowrap" rowspan="3">등록일시</th>
-                <th class="text-primary text-nowrap" rowspan="3">최종답안<br/>제출일시</th>
-                <th class="text-primary text-nowrap" rowspan="3">제출<br/>답안수</th>
-                <th class="text-primary text-nowrap" rowspan="3">필터링<br/>여부</th>
-                <th class="text-primary text-nowrap" rowspan="3">직렬/전체<br/>인원(명)</th>
+                <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
+                <th class="text-primary text-nowrap" rowspan="2">등수</th>
+                <th class="text-primary text-nowrap" rowspan="2">이름<br/>(수험번호)</th>
+                <th class="text-primary text-nowrap" rowspan="2">직렬</th>
+                <th class="text-primary text-nowrap" rowspan="2">직렬/전체<br/>인원(명)</th>
 
-                <th class="text-primary text-nowrap" colspan="6">PSAT</th>
-                <th class="text-primary text-nowrap" colspan="5">헌법</th>
-                <th class="text-primary text-nowrap" colspan="5">언어논리</th>
-                <th class="text-primary text-nowrap" colspan="5">자료해석</th>
-                <th class="text-primary text-nowrap td-right-no-border" colspan="5">상황판단</th>
+                <th class="text-primary text-nowrap" colspan="3">PSAT</th>
+                <th class="text-primary text-nowrap" colspan="3">헌법</th>
+                <th class="text-primary text-nowrap" colspan="3">언어논리</th>
+                <th class="text-primary text-nowrap" colspan="3">자료해석</th>
+                <th class="text-primary text-nowrap" colspan="3">상황판단</th>
+                <th class="text-primary text-nowrap" rowspan="2">등록 및<br/>답안 제출<br/>일시</th>
+                <th class="text-primary text-nowrap" rowspan="2">제출<br/>답안<br/>개수</th>
+                <th class="text-primary text-nowrap" rowspan="2">필터링<br/>여부</th>
+                <th class="text-primary text-nowrap td-right-no-border" rowspan="2">프라임ID</th>
             </tr>
 
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap td-right-no-border" rowspan="2">총점</th>
-                <th class="text-primary text-nowrap td-left-no-border td-right-no-border" rowspan="2">평균</th>
-                <th class="text-primary text-nowrap td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
-                <th class="text-primary text-nowrap td-left-no-border" colspan="2">직렬 석차</th>
+                <th class="text-primary text-nowrap td-right-no-border" rowspan="2">총점<br/>(평균)</th>
+                <th class="text-primary text-nowrap td-left-no-border td-right-no-border">전체<br/>석차</th>
+                <th class="text-primary text-nowrap td-left-no-border">직렬<br/>석차</th>
                 {% for _ in '1234' %}
                     <th class="text-primary text-nowrap td-right-no-border" rowspan="2">점수</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border" colspan="2">전체 석차</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border" colspan="2">직렬 석차</th>
-                {% endfor %}
-            </tr>
-
-            <tr class="text-center table-warning align-middle">
-                {% for _ in '12345' %}
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">등</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">%</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">등</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">%</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">전체<br/>석차</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">직렬<br/>석차</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for obj in cat_page_obj %}
-                <tr class="text-center">
+                <tr class="text-center small">
                     <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
-                    <td class="text-nowrap">{{ obj.rank_tot_avg }}</td>
+                    <td class="text-nowrap">{{ obj.rank_tot_avg|default:'' }}</td>
                     <td class="text-nowrap">
                         <a href="{{ obj.get_admin_predict_student_detail_url }}" target="score_print">
-                            {{ obj.name }}({{ obj.serial }})
+                            {{ obj.name }}<br/>({{ obj.serial }})
                         </a>
                     </td>
-                    <td class="text-nowrap">{{ obj.department }}</td>
-                    <td class="text-nowrap">{{ obj.prime_id }}</td>
-                    <td class="text-nowrap">{{ obj.created_at|date:'n/j G:i' }}</td>
-                    <td class="text-nowrap">{{ obj.latest_answer_time|date:'n/j G:i' }}</td>
-                    <td class="text-nowrap">{{ obj.answer_count }}</td>
                     <td class="text-nowrap">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="is_active" value="true" disabled aria-label="활성"
-                                   {% if obj.is_filtered %}checked{% endif %}>
-                        </div>
+                        {{ obj.unit }}<br/>{{ obj.category.get_department_display }}
                     </td>
                     <td class="text-nowrap">
-                        {{ obj.rank_dep_num }} / {{ obj.rank_tot_num }}
+                        {% if obj.rank_dep_num %}{{ obj.rank_dep_num }} / {{ obj.rank_tot_num }}{% endif %}
                     </td>
 
-                    <td class="text-nowrap td-right-no-border">{{ obj.score_sum|floatformat:1 }}</td>
-                    <td class="text-nowrap td-left-no-border td-right-no-border">{{ obj.score_avg|floatformat:1 }}</td>
-                    <td class="text-nowrap td-left-no-border td-right-no-border">
-                        {{ obj.rank_tot_avg|default_if_none:'' }}
-                    </td>
-                    <td class="text-nowrap td-left-no-border td-right-no-border">
-                        {% if obj.rank_tot_avg and obj.rank_tot_num %}
-                            {{ obj.rank_tot_avg|divide:obj.rank_tot_num|percentage|floatformat:1 }}
+                    <td class="text-nowrap td-right-no-border">
+                        {% if obj.score_sum %}
+                            {{ obj.score_sum|floatformat:1 }}<br/>({{ obj.score_avg|floatformat:1 }})
                         {% endif %}
                     </td>
                     <td class="text-nowrap td-left-no-border td-right-no-border">
-                        {{ obj.rank_dep_avg|default_if_none:'' }}
+                        {% if obj.rank_tot_avg and obj.rank_tot_num %}
+                            {{ obj.rank_tot_avg }}<br/>
+                            <span class="text-primary">{{ obj.rank_tot_avg|divide:obj.rank_tot_num|percentage|floatformat:1 }}</span>
+                        {% endif %}
                     </td>
                     <td class="text-nowrap td-left-no-border">
                         {% if obj.rank_dep_avg and obj.rank_dep_num %}
-                            {{ obj.rank_dep_avg|divide:obj.rank_dep_num|percentage|floatformat:1 }}
+                            {{ obj.rank_dep_avg }}<br/>
+                            <span class="text-primary">{{ obj.rank_dep_avg|divide:obj.rank_dep_num|percentage|floatformat:1 }}</span>
                         {% endif %}
                     </td>
 
@@ -92,24 +72,32 @@
                         {% cycle obj.score_0 obj.score_1 obj.score_2 obj.score_3 as score silent %}
                         {% cycle obj.rank_tot_0 obj.rank_tot_1 obj.rank_tot_2 obj.rank_tot_3 as rank_tot silent %}
                         {% cycle obj.rank_dep_0 obj.rank_dep_1 obj.rank_dep_2 obj.rank_dep_3 as rank_dep silent %}
-                        <td class="text-nowrap td-right-no-border">{{ score|floatformat:1 }}</td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            {{ rank_tot|default_if_none:'' }}
-                        </td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
+                        <td class="align-top td-right-no-border">{{ score|floatformat:1 }}</td>
+                        <td class="td-left-no-border td-right-no-border">
                             {% if rank_tot and obj.rank_tot_num %}
-                                {{ rank_tot|divide:obj.rank_tot_num|percentage|floatformat:1 }}
+                                {{ rank_tot }}<br/>
+                                <span class="text-primary">{{ rank_tot|divide:obj.rank_tot_num|percentage|floatformat:1 }}</span>
                             {% endif %}
-                        </td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            {{ rank_dep|default_if_none:'' }}
                         </td>
                         <td class="text-nowrap td-left-no-border td-right-no-border">
                             {% if rank_dep and obj.rank_dep_num %}
-                                {{ rank_dep|divide:obj.rank_dep_num|percentage|floatformat:1 }}
+                                {{ rank_dep }}<br/>
+                                <span class="text-primary">{{ rank_dep|divide:obj.rank_dep_num|percentage|floatformat:1 }}</span>
                             {% endif %}
                         </td>
                     {% endfor %}
+                    <td class="text-nowrap align-top">
+                        {{ obj.created_at|date:'n/j G:i' }}<br/>
+                        {{ obj.latest_answer_time|date:'n/j G:i' }}
+                    </td>
+                    <td class="text-nowrap">{{ obj.answer_count }}</td>
+                    <td class="text-nowrap">
+                        <div class="form-check form-switch d-flex justify-content-center">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="true" disabled aria-label="활성"
+                                   {% if obj.is_filtered %}checked{% endif %}>
+                        </div>
+                    </td>
+                    <td class="text-nowrap td-right-no-border">{{ obj.prime_id }}</td>
                 </tr>
             {% empty %}
                 <tr class="text-center">
