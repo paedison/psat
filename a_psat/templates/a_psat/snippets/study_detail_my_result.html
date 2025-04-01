@@ -27,7 +27,7 @@
             {% if current_time >= stat.schedule.lecture_open_datetime and current_time < stat.schedule.homework_end_datetime %}
                 {% if stat.score is None %}
                     <a class="btn btn-sm btn-outline-danger"
-                       href="{{ obj.get_answer_input_url }}">
+                       href="{{ stat.get_answer_input_url }}">
                         {{ stat.schedule.homework_end_datetime|date:'n/j(D)' }}까지 답안을 제출해주세요.
                     </a>
                 {% else %}
