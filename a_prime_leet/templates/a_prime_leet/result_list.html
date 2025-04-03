@@ -1,5 +1,6 @@
 {% extends 'a_prime_leet/_prime_leet_base.html' %}
 {% load static %}
+{% block google_adsense %}{% endblock %}
 
 {% block main_content %}
     <section class="section" aria-label="시험 목록">
@@ -78,7 +79,7 @@
 
 {% partialdef registry_card %}
     <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
-        <div class="card-header">수험정보 등록</div>
+        <div class="card-header">성적 확인</div>
         <div class="card-body">
             <div class="d-grid d-sm-flex align-items-sm-center">
                 {% if not user.is_authenticated %}
