@@ -102,7 +102,8 @@ class ResultRegistryManager(models.Manager):
 
     def prime_leet_registry_list_by_user(self, user):
         annotate_dict = self.get_annotate_dict()
-        return self.with_select_related().filter(user=user).order_by('-student__leet').annotate(**annotate_dict)
+        return self.with_select_related().filter(user=user, student__leet__is_active=True).order_by(
+            '-student__leet').annotate(**annotate_dict)
 
 
 class AnswerManager(models.Manager):
