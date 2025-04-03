@@ -57,9 +57,9 @@
                                     <th class="text-nowrap td-left-no-border d-sm-none">{{ sub }}</th>
                                     <th class="text-nowrap td-left-no-border d-none d-sm-table-cell">{{ subject }}</th>
                                     <th class="text-primary text-nowrap d-sm-none">
-                                        {{ score }} ({{ raw_score }})
+                                        {{ score|floatformat:1 }} ({{ raw_score }})
                                     </th>
-                                    <th class="text-primary text-nowrap d-none d-sm-table-cell">{{ score }}</th>
+                                    <th class="text-primary text-nowrap d-none d-sm-table-cell">{{ score|floatformat:1 }}</th>
                                     <th class="text-primary text-nowrap d-none d-sm-table-cell">{{ raw_score }}</th>
                                     <th class="text-nowrap td-right-no-border">
                                         <span class="fw-bold text-primary">{{ rank }}</span>
