@@ -1,56 +1,38 @@
+{% partialdef no_input %}
+    <div class="badge rounded-pill bg-warning text-dark mx-1 align-content-center">미입력</div>
+{% endpartialdef no_input %}
+
+{% partialdef info_snippet %}
+    <tr>
+        <th class="px-0">{{ info_title }}</th>
+        <td>
+        <div class="d-flex align-content-center">
+            {% if info_text_1 and info_text_2 %}
+                {{ info_text_1 }} / {{ info_text_2 }}
+            {% else %}
+                {% if info_text_1 %}{{ info_text_1 }}{% else %}{% partial no_input %}{% endif %}
+                {% if info_text_2 %}/ {{ info_text_2 }}{% else %}{% partial no_input %}{% endif %}
+            {% endif %}
+        </div>
+        </td>
+    </tr>
+{% endpartialdef info_snippet %}
+
 <table class="table">
     <tbody>
         <tr>
-            <th class="px-0" scope="row">수험번호</th>
+            <th class="px-0">수험번호</th>
             <td>{{ student.serial }}</td>
         </tr>
         <tr>
-            <th class="px-0" scope="row">이름</th>
+            <th class="px-0">이름</th>
             <td>{{ student.name }}</td>
         </tr>
-        <tr>
-            <th class="px-0" scope="row">출신 대학 / 전공</th>
-            <td>
-                {% if not student.school and not student.major %}
-                    <span class="badge rounded-pill bg-warning text-dark">미입력</span>
-                {% else %}
-                    {% if student.school %}{{ student.school }}{% endif %}
-                    {% if student.major %}/ {{ student.major }}{% endif %}
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <th class="px-0" scope="row">1지망 / 2지망</th>
-            <td>
-                {% if not student.aspiration_1 and not student.aspiration_2 %}
-                    <span class="badge rounded-pill bg-warning text-dark">미입력</span>
-                {% else %}
-                    {% if student.aspiration_1 %}{{ student.aspiration_1 }}{% endif %}
-                    {% if student.aspiration_2 %}/ {{ student.aspiration_2 }}{% endif %}
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <th class="px-0" scope="row">학점(GPA)</th>
-            <td>
-                {% if not student.gpa and not student.gpa_type %}
-                    <span class="badge rounded-pill bg-warning text-dark">미입력</span>
-                {% else %}
-                    {% if student.gpa %}{{ student.gpa }}{% endif %}
-                    {% if student.gpa_type %}/ {{ student.gpa_type }}{% endif %}
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <th class="px-0" scope="row">영어 성적</th>
-            <td>
-                {% if not student.english and not student.english_type %}
-                    <span class="badge rounded-pill bg-warning text-dark">미입력</span>
-                {% else %}
-                    {% if student.english %}{{ student.english }}{% endif %}
-                    {% if student.english_type %}/ {{ student.english_type }}{% endif %}
-                {% endif %}
-            </td>
-        </tr>
+        {% for _ in '1234' %}
+            {% cycle '출신 대학 / 전공' '1지망 / 2지망' '학점(GPA)' '영어 성적' as info_title silent %}
+            {% cycle student.school student.aspiration_1 student.gpa student.english as info_text_1 silent %}
+            {% cycle student.major student.aspiration_2 student.gpa_type student.english_type as info_text_2 silent %}
+            {% partial info_snippet %}
+        {% endfor %}
     </tbody>
 </table>

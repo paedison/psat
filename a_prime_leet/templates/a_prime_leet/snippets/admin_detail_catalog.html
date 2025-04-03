@@ -6,6 +6,7 @@
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
+                <th class="text-primary text-nowrap" rowspan="2">성적<br/>확인</th>
                 <th class="text-primary text-nowrap" rowspan="2">등수</th>
                 <th class="text-primary text-nowrap" rowspan="2">이름<br/>(수험번호)</th>
                 <th class="text-primary text-nowrap" rowspan="2">비밀번호</th>
@@ -31,6 +32,7 @@
             {% for obj in catalog_page_obj %}
                 <tr class="text-center small">
                     <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
+                    <td class="text-nowrap">{% if obj.registries.count %}✔{% endif %}</td>
                     <td class="text-nowrap">{{ obj.rank_sum }}</td>
                     <td class="text-nowrap">
                         <a href="{{ obj.get_admin_detail_student_url }}" target="score_print">{{ obj.name }}<br/>{{ obj.serial }}</a>
