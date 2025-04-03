@@ -245,9 +245,6 @@ def update_result_answer_model_for_answer_student(leet, form, file) -> tuple:
         True: '제출 답안을 업데이트했습니다.',
         False: '기존 정답 데이터와 일치합니다.',
     }
-    list_update = []
-    list_create = []
-
     if form.is_valid():
         label_name = ('성명', 'Unnamed: 1_level_1')
         label_password = ('비밀번호', 'Unnamed: 2_level_1')
@@ -280,7 +277,10 @@ def update_result_answer_model_for_answer_student(leet, form, file) -> tuple:
                 return None
             return val
 
+        is_updated_list = []
         for serial, row in df.iterrows():
+            list_update = []
+            list_create = []
             student_detail = {
                 'name': row[label_name], 'password': row[label_password],
                 'school': row[label_school], 'major': row[label_major],
@@ -316,11 +316,17 @@ def update_result_answer_model_for_answer_student(leet, form, file) -> tuple:
                         list_create.append(q_student_answer)
                     except ValueError as error:
                         print(error)
-        update_fields = ['answer']
-        is_updated = bulk_create_or_update(models.ResultAnswer, list_create, list_update, update_fields)
+            update_fields = ['answer']
+            is_updated_list.append(bulk_create_or_update(models.ResultAnswer, list_create, list_update, update_fields))
     else:
-        is_updated = None
+        is_updated_list = [None]
         print(form)
+    if None in is_updated_list:
+        is_updated = None
+    elif any(is_updated_list):
+        is_updated = True
+    else:
+        is_updated = False
     return is_updated, message_dict[is_updated]
 
 
