@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block page_image %}
-    <meta property="og:image" content="{% static 'image/prime/2025/leet/prime_leet_2025_banner.png' %}"/>
+    <meta property="og:image" content="{% static 'image/prime/2025/leet/prime_leet_2025_open_graph.png' %}"/>
 {% endblock page_image %}
 
-{#{% block page_title %}{% endblock %}#}
-{#{% block page_description %}{% endblock %}#}
+{% block page_title %}프라임 LEET 전국모의고사{% endblock %}
+{% block page_description %}수준 높은 문제 퀄리티와 난이도!{% endblock %}
 
 {% block head_title %}
     {% if head_title %}{{ head_title }}{% else %}{{ config.menu_kor }} {{ config.submenu_title.kor }}{% endif %}
