@@ -35,7 +35,7 @@ def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     exam_page_obj, exam_page_range = utils.get_paginator_data(exam_list, page_number)
 
-    student_list = models.ResultRegistry.objects.select_related('user', 'student').order_by('id')
+    student_list = models.ResultRegistry.objects.select_related('user', 'student', 'student__leet').order_by('-id')
     student_page_obj, student_page_range = utils.get_paginator_data(student_list, page_number)
 
     context = update_context_data(

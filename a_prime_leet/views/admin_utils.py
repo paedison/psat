@@ -177,6 +177,7 @@ def get_data_answers(qs_answer_count, subject_vars, model_type='result'):
         qs_ac.no = qs_ac.number
         qs_ac.ans_official = ans_official
         qs_ac.ans_official_circle = qs_ac.problem.get_answer_display
+        qs_ac.ans_predict_circle = models.choices.answer_choice().get(qs_ac.ans_predict)
         qs_ac.ans_list = answer_official_list
         qs_ac.field = field
 

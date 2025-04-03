@@ -5,24 +5,23 @@
         <div class="row">
             <div class="col-12" aria-label="시험 목록">
                 <div class="card" hx-target="#main" hx-push-url="true">
-                    <div class="card-header">시험 목록 | 관리자 페이지</div>
-
+                    <div class="card-header">시험 목록</div>
                     <div class="card-body htmx-fade-in htmx-fade-out">
                         {% partial exam_list %}
                     </div>
                 </div>
             </div>
 
-            <div class="col-12" aria-label="참여자 목록">
-                <div class="card">
-                    <div class="card-header htmx-fade-in htmx-fade-out">
-                        참여자 목록 | 관리자 페이지
-                    </div>
-                    <div class="card-body htmx-fade-in htmx-fade-out">
-                        {% partial student_list %}
+            {% if request.user.is_admin %}
+                <div class="col-12" aria-label="참여자 목록">
+                    <div class="card">
+                        <div class="card-header">참여자 목록</div>
+                        <div class="card-body htmx-fade-in htmx-fade-out">
+                            {% partial student_list %}
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
         </div>
     </section>
 {% endblock main_content %}
@@ -35,24 +34,18 @@
                     {% if user.is_admin %}
                         <th class="text-primary text-nowrap">활성</th>
                     {% endif %}
-                    <th class="text-primary text-nowrap">연도</th>
-                    <th class="text-primary text-nowrap">종류</th>
-                    <th class="text-primary text-nowrap">회차</th>
                     <th class="text-primary text-nowrap">시험명</th>
-                    <th class="text-primary text-nowrap">성적<br/>예측</th>
-                    <th class="text-primary text-nowrap">성적<br/>결과</th>
-                    <th class="text-primary text-nowrap">페이지<br/>오픈일</th>
-                    <th class="text-primary text-nowrap">시험일</th>
-                    <th class="text-primary text-nowrap">시험<br/>시작</th>
-                    <th class="text-primary text-nowrap">시험<br/>종료</th>
-                    <th class="text-primary text-nowrap">예상 정답<br/>공개</th>
-                    <th class="text-primary text-nowrap">공식 정답<br/>공개</th>
+                    <th class="text-primary text-nowrap">성적 예측</th>
+                    <th class="text-primary text-nowrap">성적 결과</th>
+                    <th class="text-primary text-nowrap">페이지 오픈일<br/>시험일</th>
+                    <th class="text-primary text-nowrap">시험 시간</th>
+                    <th class="text-primary text-nowrap">정답 공개<br/>시각</th>
                 </tr>
             </thead>
             <tbody>
                 {% if exam_page_obj %}
                     {% for obj in exam_page_obj %}
-                        <tr class="text-center">
+                        <tr class="text-center small">
                             {% if user.is_admin %}
                                 <td class="text-nowrap" aria-label="활성">
                                     <form class="d-flex justify-content-center"
@@ -65,10 +58,9 @@
                                     </form>
                                 </td>
                             {% endif %}
-                            <td class="text-nowrap">{{ obj.get_year_display }}</td>
-                            <td class="text-nowrap">{{ obj.exam }}</td>
-                            <td class="text-nowrap">{% if obj.round %}{{ obj.get_round_display }}{% endif %}</td>
-                            <td class="text-nowrap small">{{ obj.name }}</td>
+                            <td class="text-nowrap">
+                                <div class="text-start">{{ obj.name }}</div>
+                            </td>
                             <td class="text-nowrap">
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
                                    href="{{ obj.get_admin_predict_detail_url }}">
@@ -81,11 +73,12 @@
                                     클릭
                                 </a>
                             </td>
-                            <td class="text-nowrap">{{ obj.page_opened_at|date:'Y.n.j(D)' }}</td>
-                            <td class="text-nowrap">{{ obj.exam_started_at|date:'Y.n.j(D)' }}</td>
-                            <td class="text-nowrap">{{ obj.exam_started_at|date:'H:i' }}</td>
-                            <td class="text-nowrap">{{ obj.exam_finished_at|date:'H:i' }}</td>
-                            <td class="text-nowrap">{{ obj.answer_predict_opened_at|date:'H:i' }}</td>
+                            <td class="text-nowrap">
+                                {{ obj.page_opened_at|date:'Y.n.d(D)' }}<br/>{{ obj.exam_started_at|date:'Y.n.d(D)' }}
+                            </td>
+                            <td class="text-nowrap">
+                                {{ obj.exam_started_at|date:'H:i' }}~{{ obj.exam_finished_at|date:'H:i' }}
+                            </td>
                             <td class="text-nowrap">{{ obj.answer_official_opened_at|date:'H:i' }}</td>
                         </tr>
                     {% endfor %}
@@ -106,10 +99,8 @@
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap" rowspan="2">ID</th>
-                    <th class="text-primary text-nowrap" rowspan="2">User ID</th>
-                    <th class="text-primary text-nowrap" rowspan="2">Username</th>
-                    <th class="text-primary text-nowrap" rowspan="2">연도</th>
-                    <th class="text-primary text-nowrap" rowspan="2">회차</th>
+                    <th class="text-primary text-nowrap" rowspan="2">사용자 정보</th>
+                    <th class="text-primary text-nowrap" rowspan="2">시험명</th>
                     <th class="text-primary text-nowrap" rowspan="2">수험번호</th>
                     <th class="text-primary text-nowrap" rowspan="2">이름</th>
                 </tr>
@@ -117,12 +108,17 @@
             <tbody>
                 {% if student_page_obj %}
                     {% for obj in student_page_obj %}
-                        <tr class="text-center">
+                        <tr class="text-center small">
                             <td class="text-nowrap">{{ obj.id }}</td>
-                            <td class="text-nowrap">{{ obj.user_id }}</td>
-                            <td class="text-nowrap">{{ obj.user.username }}</td>
-                            <td class="text-nowrap">{{ obj.student.leet.year }}</td>
-                            <td class="text-nowrap">{{ obj.student.leet.round }}</td>
+                            <td class="text-nowrap">
+                                <div class="d-flex justify-content-between">
+                                    <div>{{ obj.user.username }}</div>
+                                    <div class="ms-2">[{{ obj.user_id }}]</div>
+                                </div>
+                            </td>
+                            <td class="text-nowrap">
+                                <div class="text-start">{{ obj.student.leet.name }}</div>
+                            </td>
                             <td class="text-nowrap">{{ obj.student.serial }}</td>
                             <td class="text-nowrap">{{ obj.student.name }}</td>
                         </tr>

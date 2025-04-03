@@ -88,6 +88,13 @@
                         <div id="statisticsContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_prime_leet/snippets/admin_detail_statistics.html' %}
                         </div>
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>윗줄은 표준점수를, 아랫줄은 원점수를 의미합니다.</li>
+                                <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -110,6 +117,14 @@
 
                         <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
                             {% include 'a_prime_leet/snippets/admin_detail_catalog.html' %}
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>점수 칸에서 윗줄은 표준점수를, 아랫줄은 원점수를 의미합니다.</li>
+                                <li>석차 칸에서 윗줄은 등수를, 아랫줄은 퍼센트 등수를 의미합니다.</li>
+                                <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
+                            </ol>
                         </div>
                     </div>
                 </div>
@@ -156,6 +171,15 @@
                                     {% include 'a_prime_leet/snippets/admin_detail_answer.html' %}
                                 {% /nav_content %}
                             {% endfor %}
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>상/중/하위권은 상위 백분율 27%와 73%를 경계로 나뉩니다.</li>
+                                <li>변별도는 상위권 정답률에서 하위권 정답률을 뺀 값입니다.</li>
+                                <li>답안 선택 현황에서 윗줄은 학생수를, 아랫줄은 비율을 의미합니다.</li>
+                                <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
+                            </ol>
                         </div>
                     </div>
                 </div>

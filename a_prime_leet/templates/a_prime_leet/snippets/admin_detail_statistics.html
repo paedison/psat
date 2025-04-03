@@ -4,43 +4,51 @@
     <table class="table table-bordered table-striped align-middle m-0">
         <thead>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap" rowspan="3">지망 대학</th>
-                <th class="text-primary text-nowrap" rowspan="3">응시<br/>인원</th>
-                <th class="text-primary text-nowrap" colspan="15">표준점수(점)</th>
-                <th class="text-primary text-nowrap" colspan="15">원점수(점)</th>
+                <th class="text-primary text-nowrap td-left-no-border" rowspan="2">지망 대학</th>
+                <th class="text-primary text-nowrap" rowspan="2">응시<br/>인원</th>
+                <th class="text-primary text-nowrap" colspan="5">총점</th>
+                <th class="text-primary text-nowrap" colspan="5">언어이해</th>
+                <th class="text-primary text-nowrap td-right-no-border" colspan="5">추리논증</th>
             </tr>
-
             <tr class="text-center table-warning align-middle">
-                {% for _ in '01' %}
-                    <th class="text-primary text-nowrap" colspan="5">총점</th>
-                    <th class="text-primary text-nowrap" colspan="5">언어이해</th>
-                    <th class="text-primary text-nowrap" colspan="5">추리논증</th>
-                {% endfor %}
-            </tr>
-
-            <tr class="text-center table-warning align-middle">
-                {% for _ in '012345' %}
+                {% for _ in '123' %}
                     <th class="text-primary text-nowrap td-right-no-border">최고<br/>점수</th>
                     <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>10%</th>
                     <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>25%</th>
                     <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>50%</th>
-                    <th class="text-primary text-nowrap td-left-no-border">평균<br/>점수</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">평균<br/>점수</th>
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for obj in statistics_page_obj %}
-                <tr class="text-center">
-                    <td class="text-nowrap">{{ obj.aspiration }}</td>
+                <tr class="text-center small">
+                    <th class="text-nowrap td-left-no-border">{{ obj.aspiration }}</th>
                     <td class="text-nowrap">{{ obj.sum.participants|intcomma }}</td>
 
-                    {% for _ in '012345' %}
-                        {% cycle obj.sum obj.subject_0 obj.subject_1 obj.raw_sum obj.raw_subject_0 obj.raw_subject_1 as data_stat silent %}
-                        <td class="text-nowrap td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t25|floatformat:1 }}</td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t50|floatformat:1 }}</td>
-                        <td class="text-nowrap td-left-no-border">{{ data_stat.avg|floatformat:1 }}</td>
+                    {% for _ in '123' %}
+                        {% cycle obj.sum obj.subject_0 obj.subject_1 as data_stat silent %}
+                        {% cycle obj.raw_sum obj.raw_subject_0 obj.raw_subject_1 as raw_data_stat silent %}
+                        <td class="text-nowrap td-right-no-border">
+                            <span class="text-primary">{{ data_stat.max|floatformat:1 }}</span><br/>
+                            {{ raw_data_stat.max|floatformat:0 }}
+                        </td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">
+                            <span class="text-primary">{{ data_stat.t10|floatformat:1 }}</span><br/>
+                            {{ raw_data_stat.t10|floatformat:0 }}
+                        </td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">
+                            <span class="text-primary">{{ data_stat.t25|floatformat:1 }}</span><br/>
+                            {{ raw_data_stat.t25|floatformat:0 }}
+                        </td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">
+                            <span class="text-primary">{{ data_stat.t50|floatformat:1 }}</span><br/>
+                            {{ raw_data_stat.t50|floatformat:0 }}
+                        </td>
+                        <td class="text-nowrap td-left-no-border td-right-no-border">
+                            <span class="text-primary">{{ data_stat.avg|floatformat:1 }}</span><br/>
+                            {{ raw_data_stat.avg|floatformat:1 }}
+                        </td>
                     {% endfor %}
                 </tr>
             {% empty %}
