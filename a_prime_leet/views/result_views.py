@@ -86,8 +86,8 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
     return render(request, 'a_prime_leet/result_detail.html', context)
 
 
-def print_view(request: HtmxHttpRequest, pk: int):
-    return detail_view(request, pk, is_for_print=True)
+def print_view(request: HtmxHttpRequest, pk: int, student=None):
+    return detail_view(request, pk, student, True)
 
 
 def student_register_view(request: HtmxHttpRequest):

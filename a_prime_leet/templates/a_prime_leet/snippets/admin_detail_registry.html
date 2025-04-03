@@ -6,7 +6,7 @@
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
-                <th class="text-primary text-nowrap" rowspan="2">등록 일시</th>
+                <th class="text-primary text-nowrap" rowspan="2">등록<br/>일시</th>
                 <th class="text-primary text-nowrap" rowspan="2">사용자 ID<br/>학생 ID</th>
                 <th class="text-primary text-nowrap" rowspan="2">등수</th>
                 <th class="text-primary text-nowrap" rowspan="2">이름<br/>(수험번호)</th>
@@ -33,10 +33,7 @@
             {% for obj in registry_page_obj %}
                 <tr class="text-center small">
                     <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
-                    <td class="text-nowrap">
-                        {{ obj.created_at|date:'Y.m.d' }}<br/>
-                        {{ obj.created_at|date:'G:i' }}
-                    </td>
+                    <td class="text-nowrap">{{ obj.created_at|date:'n/j' }}<br/>{{ obj.created_at|date:'G:i' }}</td>
                     <td class="text-nowrap">{{ obj.user_id }}<br/>{{ obj.student_id }}</td>
 
                     <td class="text-nowrap">{{ obj.rank_sum }}</td>

@@ -6,9 +6,10 @@
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
-                <th class="text-primary text-nowrap" rowspan="2">성적<br/>확인</th>
+                <th class="text-primary text-nowrap" rowspan="2">수험<br/>정보<br/>등록</th>
                 <th class="text-primary text-nowrap" rowspan="2">등수</th>
                 <th class="text-primary text-nowrap" rowspan="2">이름<br/>(수험번호)</th>
+                <th class="text-primary text-nowrap" rowspan="2">성적 확인</th>
                 <th class="text-primary text-nowrap" rowspan="2">비밀번호</th>
                 <th class="text-primary text-nowrap" rowspan="2">출신대학<br/>(전공)</th>
                 <th class="text-primary text-nowrap" rowspan="2">1지망<br/>2지망</th>
@@ -36,6 +37,16 @@
                     <td class="text-nowrap">{{ obj.rank_sum }}</td>
                     <td class="text-nowrap">
                         <a href="{{ obj.get_admin_detail_student_url }}" target="score_print">{{ obj.name }}<br/>{{ obj.serial }}</a>
+                    </td>
+                    <td class="text-nowrap">
+                        <div class="btn-group">
+                            <a target="result" class="btn btn-sm btn-outline-primary"
+                               href="{{ obj.get_admin_detail_student_url }}">화면
+                            </a>
+                            <a target="result_print" class="btn btn-sm btn-outline-primary"
+                               href="{{ obj.get_admin_detail_student_print_url }}">인쇄
+                            </a>
+                        </div>
                     </td>
                     <td class="text-nowrap">{{ obj.password }}</td>
                     <td class="text-nowrap">{{ obj.school }}{% if obj.major %}<br/>({{ obj.major }}){% endif %}</td>

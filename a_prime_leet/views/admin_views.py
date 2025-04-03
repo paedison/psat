@@ -146,6 +146,13 @@ def detail_student_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
 
 @only_staff_allowed()
+def detail_student_print_view(request: HtmxHttpRequest, model_type: str, pk: int):
+    if model_type == 'result':
+        student = get_object_or_404(models.ResultStudent, pk=pk)
+        return result_views.print_view(request, student.leet.pk, student=student)
+
+
+@only_staff_allowed()
 def update_view(request: HtmxHttpRequest, model_type: str, pk: int):
     view_type = request.headers.get('View-Type', '')
     leet = get_object_or_404(models.Leet, pk=pk)

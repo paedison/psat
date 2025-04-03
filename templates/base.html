@@ -13,14 +13,13 @@
 <meta name="keywords" content="PSAT, 기출문제, 5급, 행정고시, 7급, 입법고시, 외교원, 외교관, 외무고시, 지역인재, 민간경력, 공무원"/>
 <meta name="google-site-verification" content="jv9Vpec7TB34EdIig5UYbDqQ_ueu3uNlLM_FbIzwWWM"/>
 <meta property="og:type" content="website"/>
-<meta property="og:url" content="https://paedison.com"/>
-<meta property="og:title" content="PSAT 기출노트 플랫폼"/>
-<meta property="og:description" content="나만의 PSAT 기출노트 세상!"/>
+<meta property="og:url" content="{% block page_url %}{{ request.build_absolute_uri }}{% endblock %}"/>
+<meta property="og:title" content="{% block page_title %}PSAT 기출노트 플랫폼{% endblock %}"/>
+<meta property="og:description" content="{% block page_description %}나만의 PSAT 기출노트 세상!{% endblock %}"/>
 {% block page_image %}
-{#    <meta property="og:image" content="{% static 'favicon/logo_typo.png' %}"/>#}
-    <meta property="og:image" content="{% static 'image/banner/2025/predict_psat_2025_haengsi_og.jpg' %}"/>
+    <meta property="og:image" content="{% static 'favicon/logo_typo.png' %}"/>
 {% endblock %}
-<title>{% block head_title %}PSAT 기출노트 플랫폼{% endblock head_title %}</title>
+<title>{% block head_title %}PSAT 기출노트 플랫폼{% endblock %}</title>
 
 <!-- Favicons -->
 <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}"/>

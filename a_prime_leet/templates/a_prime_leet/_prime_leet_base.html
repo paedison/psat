@@ -1,12 +1,18 @@
 {% extends 'list.html' %}
 {% load static %}
 
+{% block page_image %}
+    <meta property="og:image" content="{% static 'image/prime/2025/leet/prime_leet_2025_banner.png' %}"/>
+{% endblock page_image %}
+
+{#{% block page_title %}{% endblock %}#}
+{#{% block page_description %}{% endblock %}#}
+
 {% block head_title %}
     {% if head_title %}{{ head_title }}{% else %}{{ config.menu_kor }} {{ config.submenu_title.kor }}{% endif %}
 {% endblock %}
-{% block page_image %}
-<meta property="og:image" content="{% static 'image/prime/2025/leet/prime_leet_2025_banner.png' %}"/>
-{% endblock page_image %}
+
+{% block google_adsense %}{% endblock %}
 
 {% block main %}
     {{ config.info|json_script:'info' }}

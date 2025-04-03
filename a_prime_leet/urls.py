@@ -12,6 +12,8 @@ admin_patterns = [
     path('detail/<str:model_type>/<int:pk>/', admin_views.detail_view, name='admin-detail'),
     path('detail/student/<str:model_type>/<int:pk>/',
          admin_views.detail_student_view, name='admin-detail-student'),
+    path('detail/student/print/<str:model_type>/<int:pk>/',
+         admin_views.detail_student_print_view, name='admin-detail-student-print'),
     path('update/<str:model_type>/<int:pk>/', admin_views.update_view, name='admin-update'),
 
     path('print/statistics/<str:model_type>/<int:pk>/',
