@@ -92,7 +92,7 @@ def print_view(request: HtmxHttpRequest, pk: int):
 
 def student_register_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    title = '수험정보 등록'
+    title = '성적 확인'
     form = forms.ResultStudentForm()
     context = update_context_data(config=config, title=title, form=form)
 

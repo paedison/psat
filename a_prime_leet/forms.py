@@ -99,7 +99,7 @@ class LeetActiveForm(forms.ModelForm):
 
 class ResultStudentForm(forms.Form):
     leet = forms.ModelChoiceField(
-        label='시험명', queryset=models.Leet.objects.filter(year=2026),
+        label='시험명', queryset=models.Leet.objects.filter(year=2026, is_active=True),
         empty_label='시험을 선택해주세요',
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
