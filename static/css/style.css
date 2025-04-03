@@ -320,6 +320,12 @@ div.django-ckeditor-widget {
     width: 1000px;
     height: 500px;
 }
+.chart-container-small.print {
+    display: flex;
+    justify-content: center;
+    width: 1000px;
+    height: 500px;
+}
 
 .card-title > div > span > i {
     margin-right: 7px;
