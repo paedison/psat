@@ -5,7 +5,7 @@
     {% if head_title %}{{ head_title }}{% else %}{{ config.menu_kor }} {{ config.submenu_title.kor }}{% endif %}
 {% endblock %}
 {% block page_image %}
-<meta property="og:image" content="{% static 'image/prime/2025/psat/title.jpg' %}"/>
+<meta property="og:image" content="{% static 'image/prime/2025/leet/prime_leet_2025_banner.png' %}"/>
 {% endblock page_image %}
 
 {% block main %}
@@ -54,4 +54,12 @@
     </div><!-- Page Title End -->
     {% block main_content %}
     {% endblock main_content %}
+
+    <div class="col-12">
+        <div class="d-flex justify-content-center m-0 p-0">
+            <a target="_blank" href="https://renew.primeedunet.com/leet">
+                <img src="{% static 'image/prime/2025/leet/prime_leet_2025_banner.png' %}" class="mw-100" alt="Banner"/>
+            </a>
+        </div>
+    </div>
 {% endblock main %}
