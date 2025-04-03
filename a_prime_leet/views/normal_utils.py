@@ -340,6 +340,7 @@ def get_data_answers_for_result(qs_student_answer):
         answer_official_list = [int(digit) for digit in str(ans_official)]
 
         qs_sa.no = qs_sa.problem.number
+        qs_sa.sub = sub
         qs_sa.ans_official = ans_official
         qs_sa.ans_official_circle = qs_sa.problem.get_answer_display
 

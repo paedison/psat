@@ -39,6 +39,13 @@
         </thead>
         <tbody>
             <tr class="text-center">
+                <th class="text-nowrap">총 응시인원(명)</th>
+                {% for stat in stat_data %}
+                    {% cycle stat_data.0.participants stat_data.1.participants stat_data.2.participants as participants silent %}
+                    <td class="text-center text-nowrap">{{ participants }}</td>
+                {% endfor %}
+            </tr>
+            <tr class="text-center">
                 <th class="text-nowrap">
                     {% with td_text_1='최고 점수' td_text_2='원점수' %}{% partial td_text %}{% endwith %}
                 </th>

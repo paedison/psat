@@ -15,12 +15,12 @@
         <table class="table table-sm table-bordered small align-middle">
             <tbody>
                 <tr class="text-center">
-                    <td>수험번호 : {{ student.serial }}</td>
-                    <td>이름 : {{ student.name }}</td>
-                    <td>출신대학 및 전공 : {{ student.school }} / {{ student.major }}</td>
-                    <td>지망대학 : {{ student.aspiration_1 }} / {{ student.aspiration_2 }}</td>
-                    <td>학점(GPA) : {{ student.gpa }} / {{ student.gpa_type }}</td>
-                    <td>영어성적 : {{ student.english }} / {{ student.english_type }}</td>
+                    <td class="text-nowrap">수험번호 : {{ student.serial }}</td>
+                    <td class="text-nowrap">이름 : {{ student.name }}</td>
+                    <td class="text-nowrap">출신대학 및 전공 : {{ student.school }} / {{ student.major }}</td>
+                    <td class="text-nowrap">지망대학 : {{ student.aspiration_1 }} / {{ student.aspiration_2 }}</td>
+                    <td class="text-nowrap">학점(GPA) : {{ student.gpa }} / {{ student.gpa_type }}</td>
+                    <td class="text-nowrap">영어성적 : {{ student.english }} / {{ student.english_type }}</td>
                 </tr>
             </tbody>
         </table>
@@ -43,7 +43,7 @@
             <tbody>
                 {% for answers in data_answers %}
                     <tr class="text-center small">
-                        <th class="text-nowrap align-center" rowspan="5">{{ sub }}</th>
+                        <th class="text-nowrap align-center" rowspan="5">{{ answers.0.sub }}</th>
                         <th class="text-nowrap">정답</th>
                         {% for answer in answers %}
                             <td data-number="{{ answer.no }}">
