@@ -104,8 +104,8 @@ class ResultStudentForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     serial = forms.CharField(label='수험번호', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    name = forms.CharField(label='이름', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(
+    student_name = forms.CharField(label='이름', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    student_password = forms.CharField(
         label='비밀번호', widget=forms.TextInput(attrs={'class': 'form-control', 'type': 'password'}))
 
 

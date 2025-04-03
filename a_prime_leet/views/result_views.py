@@ -101,8 +101,8 @@ def student_register_view(request: HtmxHttpRequest):
         if form.is_valid():
             leet = form.cleaned_data['leet']
             serial = form.cleaned_data['serial']
-            name = form.cleaned_data['name']
-            password = form.cleaned_data['password']
+            name = form.cleaned_data['student_name']
+            password = form.cleaned_data['student_password']
 
             existing_registry = models.ResultRegistry.objects.filter(user=request.user, student__leet=leet)
             if not existing_registry.exists():
