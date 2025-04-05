@@ -114,7 +114,7 @@ def psat_create_view(request: HtmxHttpRequest):
         if form.is_valid():
             psat = form.save(commit=False)
             exam = form.cleaned_data['exam']
-            exam_order = {'행시': 1, '입시':2, '칠급': 3}
+            exam_order = {'행시': 1, '입시': 2, '칠급': 3}
             psat.order = exam_order.get(exam)
             psat.save()
             admin_index_utils.create_problem_model_instances(psat, exam)

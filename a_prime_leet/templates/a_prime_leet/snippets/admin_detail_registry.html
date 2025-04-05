@@ -8,26 +8,9 @@
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
                 <th class="text-primary text-nowrap" rowspan="2">등록<br/>일시</th>
                 <th class="text-primary text-nowrap" rowspan="2">사용자 ID<br/>학생 ID</th>
-                <th class="text-primary text-nowrap" rowspan="2">등수</th>
-                <th class="text-primary text-nowrap" rowspan="2">이름<br/>(수험번호)</th>
-                <th class="text-primary text-nowrap" rowspan="2">비밀번호</th>
-                <th class="text-primary text-nowrap" rowspan="2">출신대학<br/>(전공)</th>
-                <th class="text-primary text-nowrap" rowspan="2">1지망<br/>2지망</th>
-                <th class="text-primary text-nowrap" rowspan="2">학점(GPA)<br/>공인 영어성적</th>
-
-                <th class="text-primary text-nowrap" colspan="4">총점</th>
-                <th class="text-primary text-nowrap" colspan="4">언어이해</th>
-                <th class="text-primary text-nowrap td-right-no-border" colspan="4">추리논증</th>
+                {% include 'a_prime_leet/snippets/admin_detail_catalog.html#table_head_1' %}
             </tr>
-
-            <tr class="text-center table-warning align-middle">
-                {% for _ in '012' %}
-                    <th class="text-primary text-nowrap td-right-no-border">점수</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">전체<br/>석차</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">1지망<br/>석차</th>
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">2지망<br/>석차</th>
-                {% endfor %}
-            </tr>
+            {% include 'a_prime_leet/snippets/admin_detail_catalog.html#table_head_2' %}
         </thead>
         <tbody>
             {% for obj in registry_page_obj %}
@@ -36,48 +19,7 @@
                     <td class="text-nowrap">{{ obj.created_at|date:'n/j' }}<br/>{{ obj.created_at|date:'G:i' }}</td>
                     <td class="text-nowrap">{{ obj.user_id }}<br/>{{ obj.student_id }}</td>
 
-                    <td class="text-nowrap">{{ obj.rank_sum }}</td>
-                    <td class="text-nowrap">
-                        <a href="{{ obj.student.get_admin_detail_student_url }}" target="score_print">
-                            {{ obj.student.name }}<br/>{{ obj.student.serial }}
-                        </a>
-                    </td>
-                    <td class="text-nowrap">{{ obj.student.password }}</td>
-                    <td class="text-nowrap">
-                        {{ obj.student.school }}{% if obj.student.major %}<br/>({{ obj.student.major }}){% endif %}
-                    </td>
-                    <td class="text-nowrap">{{ obj.aspiration_1 }}<br/>{{ obj.aspiration_2 }}</td>
-                    <td class="text-nowrap">
-                        {% if obj.student.gpa %}{{ obj.student.gpa }} / {{ obj.student.gpa_type }}{% endif %}
-                        {% if obj.student.english %}<br/>{{ obj.student.english }} / {{ obj.student.english_type }}{% endif %}
-                    </td>
-
-                    {% for _ in '012' %}
-                        {% cycle obj.raw_score_sum obj.raw_score_0 obj.raw_score_1 as raw_score silent %}
-                        {% cycle obj.score_sum obj.score_0 obj.score_1 as score silent %}
-                        {% cycle obj.rank_sum obj.rank_0 obj.rank_1 as rank silent %}
-                        {% cycle obj.rank_sum_aspiration_1 obj.rank_0_aspiration_1 obj.rank_1_aspiration_1 as rank_aspiration_1 silent %}
-                        {% cycle obj.rank_sum_aspiration_2 obj.rank_0_aspiration_2 obj.rank_1_aspiration_2 as rank_aspiration_2 silent %}
-                        <td class="text-nowrap td-right-no-border">{{ score|floatformat:1 }}<br/>({{ raw_score }})</td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            {{ rank|default_if_none:'' }}
-                            {% if obj.rank_num %}
-                                <br/>({{ rank|divide:obj.rank_num|percentage|floatformat:1 }})
-                            {% endif %}
-                        </td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            {{ rank_aspiration_1|default_if_none:'' }}
-                            {% if obj.rank_num_aspiration_1 %}
-                                <br/>({{ rank_aspiration_1|divide:obj.rank_num_aspiration_1|percentage|floatformat:1 }})
-                            {% endif %}
-                        </td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            {{ rank_aspiration_2|default_if_none:'' }}
-                            {% if obj.rank_num_aspiration_2 %}
-                                <br/>({{ rank_aspiration_2|divide:obj.rank_num_aspiration_2|percentage|floatformat:1 }})
-                            {% endif %}
-                        </td>
-                    {% endfor %}
+                    {% include 'a_prime_leet/snippets/admin_detail_catalog.html#table_body' %}
                 </tr>
             {% empty %}
                 <tr class="text-center">

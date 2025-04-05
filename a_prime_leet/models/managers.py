@@ -40,7 +40,7 @@ class StudentManager(models.Manager):
     def prime_leet_qs_student_list_by_leet(self, leet):
         annotate_dict = self.get_annotate_dict_for_score_and_rank()
         return (
-            self.with_select_related().filter(leet=leet)
+            self.with_select_related().prefetch_related('registries').filter(leet=leet)
             .order_by('leet__year', 'leet__name', 'rank__sum')
             .annotate(
                 latest_answer_time=models.Max('answers__created_at'),
@@ -98,6 +98,18 @@ class ResultRegistryManager(models.Manager):
 
     def prime_leet_registry_list_by_leet(self, leet):
         annotate_dict = self.get_annotate_dict()
+        annotate_dict.update({
+            'name': models.F('student__name'),
+            'password': models.F('student__password'),
+            'school': models.F('student__school'),
+            'major': models.F('student__major'),
+            'aspiration_1': models.F('student__aspiration_1'),
+            'aspiration_2': models.F('student__aspiration_2'),
+            'gpa': models.F('student__gpa'),
+            'gpa_type': models.F('student__gpa_type'),
+            'english': models.F('student__english'),
+            'english_type': models.F('student__english_type'),
+        })
         return self.with_select_related().filter(student__leet=leet).order_by('id').annotate(**annotate_dict)
 
     def prime_leet_registry_list_by_user(self, user):

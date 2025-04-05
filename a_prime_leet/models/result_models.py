@@ -60,6 +60,12 @@ class ResultRegistry(models.Model):
     def __str__(self):
         return self.student.student_info
 
+    def get_admin_detail_student_url(self):
+        return reverse_lazy('prime_leet:admin-detail-student', args=['result', self.student_id])
+
+    def get_admin_detail_student_print_url(self):
+        return reverse_lazy('prime_leet:admin-detail-student-print', args=['result', self.student_id])
+
 
 class ResultAnswer(abstract_models.Answer):
     objects = managers.AnswerManager()

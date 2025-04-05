@@ -6,19 +6,23 @@
     <tr>
         <th class="px-0">{{ info_title }}</th>
         <td>
-        <div class="d-flex align-content-center">
-            {% if info_text_1 and info_text_2 %}
-                {{ info_text_1 }} / {{ info_text_2 }}
-            {% else %}
-                {% if info_text_1 %}{{ info_text_1 }}{% else %}{% partial no_input %}{% endif %}
-                {% if info_text_2 %}/ {{ info_text_2 }}{% else %}{% partial no_input %}{% endif %}
-            {% endif %}
-        </div>
+            {% partialdef info_snippet_content inline %}
+                <div class="d-flex align-content-center justify-content-sm-center">
+                    {% if info_text_1 and info_text_2 %}
+                        {{ info_text_1 }} / {{ info_text_2 }}
+                    {% elif not info_text_1 and not info_text_2 %}
+                        {% partial no_input %}
+                    {% else %}
+                        {% if info_text_1 %}{{ info_text_1 }}{% else %}{% partial no_input %}{% endif %} /
+                        {% if info_text_2 %}{{ info_text_2 }}{% else %}{% partial no_input %}{% endif %}
+                    {% endif %}
+                </div>
+            {% endpartialdef info_snippet_content %}
         </td>
     </tr>
 {% endpartialdef info_snippet %}
 
-<table class="table">
+<table class="table d-sm-none">
     <tbody>
         <tr>
             <th class="px-0">수험번호</th>
@@ -35,4 +39,78 @@
             {% partial info_snippet %}
         {% endfor %}
     </tbody>
+</table>
+
+<table class="table d-none d-sm-table d-lg-none m-0">
+    <tr class="text-center">
+        <th>수험번호</th>
+        <th>이름</th>
+        <th>출신 대학 / 전공</th>
+    </tr>
+    <tr class="text-center">
+        <td class="td-no-border">{{ student.serial }}</td>
+        <td class="td-no-border">{{ student.name }}</td>
+        <td class="td-no-border">
+            {% with info_text_1=student.school info_text_2=student.major %}
+                {% partial info_snippet_content %}
+            {% endwith %}
+        </td>
+    </tr>
+    <tr class="text-center">
+        <th class="pt-4">1지망 / 2지망</th>
+        <th class="pt-4">학점(GPA)</th>
+        <th class="pt-4">영어 성적</th>
+    </tr>
+    <tr class="text-center">
+        <td class="td-no-border">
+            {% with info_text_1=student.aspiration_1 info_text_2=student.aspiration_2 %}
+                {% partial info_snippet_content %}
+            {% endwith %}
+        </td>
+        <td class="td-no-border">
+            {% with info_text_1=student.gpa info_text_2=student.gpa_type %}
+                {% partial info_snippet_content %}
+            {% endwith %}
+        </td>
+        <td class="td-no-border">
+            {% with info_text_1=student.english info_text_2=student.english_type %}
+                {% partial info_snippet_content %}
+            {% endwith %}
+        </td>
+    </tr>
+</table>
+
+<table class="table d-none d-lg-table m-0">
+    <tr class="text-center">
+        <th>수험번호</th>
+        <th>이름</th>
+        <th>출신 대학 / 전공</th>
+        <th>1지망 / 2지망</th>
+        <th>학점(GPA)</th>
+        <th>영어 성적</th>
+    </tr>
+    <tr class="text-center">
+        <td class="td-no-border">{{ student.serial }}</td>
+        <td class="td-no-border">{{ student.name }}</td>
+        <td class="td-no-border">
+            {% with info_text_1=student.school info_text_2=student.major %}
+                {% partial info_snippet_content %}
+            {% endwith %}
+        </td>
+        <td class="td-no-border">
+            {% with info_text_1=student.aspiration_1 info_text_2=student.aspiration_2 %}
+                {% partial info_snippet_content %}
+            {% endwith %}
+        </td>
+        <td class="td-no-border">
+            {% with info_text_1=student.gpa info_text_2=student.gpa_type %}
+                {% partial info_snippet_content %}
+            {% endwith %}
+        </td>
+        <td class="td-no-border">
+            {% with info_text_1=student.english info_text_2=student.english_type %}
+                {% partial info_snippet_content %}
+            {% endwith %}
+        </td>
+    </tr>
 </table>

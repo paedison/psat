@@ -104,19 +104,21 @@ def get_input_answer_data_set(leet, request) -> dict:
 
 
 def get_dict_stat_data_for_result(student: models.ResultStudent, stat_type='total') -> list:
-    subject_vars = get_subject_vars()
-    stat_data = get_empty_dict_stat_data_for_result(student, subject_vars)
+    if stat_type == 'total' or getattr(student, stat_type):
+        subject_vars = get_subject_vars()
+        stat_data = get_empty_dict_stat_data_for_result(student, subject_vars)
 
-    qs_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
-        student, stat_type)
-    qs_score = models.ResultScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
-        student, stat_type)
+        qs_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
+            student, stat_type)
+        qs_score = models.ResultScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
+            student, stat_type)
 
-    participants_dict = {subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer}
-    participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
-    update_dict_stat_data(student, qs_score, stat_data, participants_dict)
+        participants_dict = {subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer}
+        participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
+        update_dict_stat_data(student, qs_score, stat_data, participants_dict)
 
-    return stat_data
+        return stat_data
+    return []
 
 
 def get_dict_stat_data_for_predict(
