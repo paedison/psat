@@ -1,5 +1,5 @@
 import json
-from collections import Counter
+from collections import defaultdict
 from datetime import timedelta
 
 import numpy as np
@@ -311,18 +311,39 @@ def get_dict_stat_chart(student, stat_data_total) -> dict:
     }
 
 
+def frequency_table_by_bin(scores, bin_size=10, target_score=None):
+    freq = defaultdict(int)
+
+    for score in scores:
+        bin_start = int((score // bin_size) * bin_size)
+        bin_end = bin_start + bin_size
+        bin_label = f'{bin_start}~{bin_end}'
+        freq[bin_label] += 1
+
+    # bin_start 기준으로 정렬
+    sorted_freq = dict(sorted(freq.items(), key=lambda x: int(x[0].split('~')[0])))
+
+    # 특정 점수의 구간 구하기
+    target_bin = None
+    if target_score is not None:
+        bin_start = int((target_score // bin_size) * bin_size)
+        bin_end = bin_start + bin_size
+        target_bin = f'{bin_start}~{bin_end}'
+
+    return sorted_freq, target_bin
+
+
 def get_dict_stat_frequency(student, score_frequency_list) -> dict:
-    score_counts_list = [round(score, 1) for score in score_frequency_list]
-    score_counts_list.sort()
-    score_counts = Counter(score_counts_list)
+    scores = [round(score, 1) for score in score_frequency_list]
+    sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.sum)
 
     score_label = []
     score_data = []
     score_color = []
-    for key, val in score_counts.items():
+    for key, val in sorted_freq.items():
         score_label.append(key)
         score_data.append(val)
-        color = 'blue' if key == round(student.score.sum, 1) else 'white'
+        color = 'rgba(255, 99, 132, 0.5)' if key == target_bin else 'rgba(54, 162, 235, 0.5)'
         score_color.append(color)
 
     return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
@@ -530,5 +551,3 @@ def get_next_url_for_answer_input(student):
         if student.answer_count[subject_field] == 0:
             return student.leet.get_predict_answer_input_url(subject_field)
     return student.leet.get_predict_detail_url()
-
-

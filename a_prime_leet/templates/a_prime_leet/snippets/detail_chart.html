@@ -80,16 +80,16 @@
     chart_datasets_total = [
         {
             label: 'LEET 총점(표준점수)',
-            data: {{ stat_frequency.score_data }},
+            data: {{ stat_frequency.score_data|safe }},
             borderWidth: 2,
             tension: 0.4,
-            pointBackgroundColor: {{ stat_frequency.score_color|safe }},
+            backgroundColor: {{ stat_frequency.score_color|safe }},
         },
     ]
     chart_data_total = {
-        type: 'line',
+        type: 'bar',
         data: {
-            labels: {{ stat_frequency.score_label }},
+            labels: {{ stat_frequency.score_label|safe }},
             datasets: chart_datasets_total,
         },
         options: {
