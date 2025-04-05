@@ -1,7 +1,9 @@
 {% extends 'list.html' %}
 {% load static %}
 
-{% block head_title %}{{ config.menu_kor }} {{ config.submenu_title.kor }}{% endblock %}
+{% block head_title %}
+    {% if head_title %}{{ head_title }}{% else %}{{ config.menu_kor }} {{ config.submenu_title.kor }}{% endif %}
+{% endblock %}
 
 {% block main %}
     {{ config.info|json_script:'info' }}

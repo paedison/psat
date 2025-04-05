@@ -104,7 +104,7 @@ predict_patterns = [
     path('register/', predict_views.register_view, name='predict-register'),
 
     path('modal/<int:pk>/', predict_views.modal_view, name='predict-modal'),
-    path('answer/<int:pk>/<str:subject_field>/',
+    path('answer/input/<int:pk>/<str:subject_field>/',
          predict_views.answer_input_view, name='predict-answer-input'),
     path('answer/confirm/<int:pk>/<str:subject_field>/',
          predict_views.answer_confirm_view, name='predict-answer-confirm'),

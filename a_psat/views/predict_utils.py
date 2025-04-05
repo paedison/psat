@@ -1,6 +1,6 @@
 import json
 import traceback
-from collections import Counter
+from collections import defaultdict
 from datetime import timedelta
 
 import django.db.utils
@@ -202,20 +202,7 @@ def get_stat_data(
     return stat_data
 
 
-def get_dict_frequency_score(student) -> dict:
-    score_frequency_list = models.PredictStudent.objects.filter(
-        psat=student.psat).values_list('score__sum', flat=True)
-    score_counts_list = [round(score / 3, 1) for score in score_frequency_list if score]
-    score_counts_list.sort()
-
-    score_counts = Counter(score_counts_list)
-    student_target_score = round(student.score.sum / 3, 1) if student.score.sum else 0
-    score_colors = ['blue' if score == student_target_score else 'white' for score in score_counts.keys()]
-
-    return {'score_points': dict(score_counts), 'score_colors': score_colors}
-
-
-def get_chart_score(student, stat_total, stat_department):
+def get_dict_stat_chart(student, stat_total, stat_department):
     field_vars = get_field_vars(student.psat)
     student_score = [getattr(student.score, field) for field in field_vars]
 
@@ -247,6 +234,44 @@ def get_chart_score(student, stat_total, stat_department):
 
     chart_score['min_score'] = (min(score_list) // 5) * 5
     return chart_score
+
+
+def frequency_table_by_bin(scores, bin_size=5, target_score=None):
+    freq = defaultdict(int)
+
+    for score in scores:
+        bin_start = int((score // bin_size) * bin_size)
+        bin_end = bin_start + bin_size
+        bin_label = f'{bin_start}~{bin_end}'
+        freq[bin_label] += 1
+
+    # bin_start 기준으로 정렬
+    sorted_freq = dict(sorted(freq.items(), key=lambda x: int(x[0].split('~')[0])))
+
+    # 특정 점수의 구간 구하기
+    target_bin = None
+    if target_score is not None:
+        bin_start = int((target_score // bin_size) * bin_size)
+        bin_end = bin_start + bin_size
+        target_bin = f'{bin_start}~{bin_end}'
+
+    return sorted_freq, target_bin
+
+
+def get_dict_stat_frequency(student, score_frequency_list) -> dict:
+    scores = [round(score, 1) for score in score_frequency_list]
+    sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.sum)
+
+    score_label = []
+    score_data = []
+    score_color = []
+    for key, val in sorted_freq.items():
+        score_label.append(key)
+        score_data.append(val)
+        color = 'rgba(255, 99, 132, 0.5)' if key == target_bin else 'rgba(54, 162, 235, 0.5)'
+        score_color.append(color)
+
+    return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
 
 
 def get_answer_rate(answer_count, ans: int, count_sum: int, answer_official_list=None):

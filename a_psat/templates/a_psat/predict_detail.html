@@ -63,7 +63,7 @@
         </div>
     </section>
 
-{% if predict_psat.is_collecting_answer or predict_psat.is_answer_predict_opened %}
+{% if current_time > predict_psat.exam_finished_at and current_time <= predict_psat.answer_official_opened_at %}
     <section class="section" aria-label="예상 정답">
         <div class="row">
             <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
@@ -101,11 +101,10 @@
                         <div>
                             <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
                             <ol class="text-success small fw-bold m-0">
-                                {% if predict_psat.is_collecting_answer %}
+                                {% if current_time < predict_psat.answer_predict_opened_at %}
                                     <li>예상 정답은 답안 수집이 어느 정도 완료된 후에 공개됩니다.</li>
-                                {% endif %}
-                                {% if predict_psat.is_answer_predict_opened %}
-                                    <li>{{ config.current_time|date:'Y년 n월 j일 G:i' }} 기준 현재 예상 정답입니다.</li>
+                                {% else %}
+                                    <li>{{ current_time|date:'Y년 n월 j일 G:i' }} 기준 현재 예상 정답입니다.</li>
                                 {% endif %}
                                 <li>가장 많은 분들이 선택한 답안을 예상 정답으로 제시합니다.</li>
                                 <li>정확도 = 예상 정답 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
@@ -118,7 +117,7 @@
     </section>
 {% endif %}
 
-{% if predict_psat.is_answer_official_opened %}
+{% if current_time > predict_psat.answer_official_opened_at %}
     <section class="section" aria-label="성적 예측 I [전체 데이터]">
         <div class="row">
             <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
@@ -269,7 +268,7 @@
         <div class="row" hx-target="#main" hx-swap="innerHTML swap:0.25s">
             <div class="col-12">
                 <div id="chart" class="card htmx-fade-in htmx-fade-out">
-                    <div class="card-header">성적 분포 차트</div>
+                    <div class="card-header m-0">성적 분포 차트</div>
                     <div class="card-body">
                         {% include 'a_psat/snippets/predict_detail_chart.html' with stat_total=stat_total_all stat_department=stat_department_all %}
                     </div>

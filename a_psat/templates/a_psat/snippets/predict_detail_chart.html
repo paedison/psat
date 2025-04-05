@@ -4,11 +4,27 @@
             <canvas id="scoreChart"></canvas>
             {% partial chart_contents %}
         </div>
+        <div>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+            <ol class="text-success small fw-bold m-0">
+                <li>전체 응시생 및 직렬별 응시생을 대상으로 조사한 결과입니다.</li>
+                <li>막대 그래프를 클릭하시면 정확한 점수를 확인하실 수 있습니다.</li>
+                <li>범례 항목을 클릭하시면 그래프에 표시하거나 제거할 수 있습니다.</li>
+            </ol>
+        </div>
+        <hr/>
         <div class="mt-4 chart-container chart-container-small {{ print_class }} ms-auto me-auto">
-            {{ frequency_score.score_points|json_script:'score_points' }}
-            {{ frequency_score.score_colors|json_script:'score_colors' }}
             <canvas id="scoreChartTotal"></canvas>
             {% partial chart_contents_total %}
+        </div>
+        <div>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+            <ol class="text-success small fw-bold m-0">
+                <li>50점 이상 응시생을 대상으로 조사한 결과입니다.</li>
+                <li>'75~80' 구간은 '75점 이상 80점 미만'을 의미합니다.</li>
+                <li>막대 그래프를 클릭하시면 정확한 인원을 확인하실 수 있습니다.</li>
+                <li>본인이 속한 구간은 붉은색 사각형으로 표시됩니다.</li>
+            </ol>
         </div>
     {% endpartialdef chart_canvas %}
 {% else %}
@@ -28,28 +44,26 @@
 {% partialdef chart_contents %}
 <script type="text/javascript">
     screenWidth = window.innerWidth;
-
-    my_score = {{ chart_score.my_score }}
-    total_average = {{ chart_score.total_average }}
-    total_score_20 = {{ chart_score.total_score_20 }}
-    total_score_10 = {{ chart_score.total_score_10 }}
-    total_top = {{ chart_score.total_top }}
-    department_average = {{ chart_score.department_average }}
-    department_score_20 = {{ chart_score.department_score_20 }}
-    department_score_10 = {{ chart_score.department_score_10 }}
-    department_top = {{ chart_score.department_top }}
-
     chart_datasets = [
-        {label: '내 점수', borderWidth: 1, data: my_score},
-        {label: '직렬 평균', borderWidth: 1, data: department_average},
-        {label: '전체 평균', borderWidth: 1, data: total_average},
-        {label: '직렬 상위 20%', borderWidth: 1, data: department_score_20, hidden: true},
-        {label: '전체 상위 20%', borderWidth: 1, data: total_score_20, hidden: true},
-        {label: '직렬 상위 10%', borderWidth: 1, data: department_score_10},
-        {label: '전체 상위 10%', borderWidth: 1, data: total_score_10},
-        {label: '직렬 최고', borderWidth: 1, data: department_top, hidden: true},
-        {label: '전체 최고', borderWidth: 1, data: total_top, hidden: true},
+        {label: '내 점수', borderWidth: 1, data: {{ stat_chart.my_score }}},
+        {label: '직렬 평균', borderWidth: 1, data: {{ stat_chart.department_average }}},
+        {label: '전체 평균', borderWidth: 1, data: {{ stat_chart.total_average }}},
+        {label: '직렬 상위 20%', borderWidth: 1, data: {{ stat_chart.department_score_20 }}, hidden: true},
+        {label: '전체 상위 20%', borderWidth: 1, data: {{ stat_chart.total_score_20 }}, hidden: true},
+        {label: '직렬 상위 10%', borderWidth: 1, data: {{ stat_chart.department_score_10 }}},
+        {label: '전체 상위 10%', borderWidth: 1, data: {{ stat_chart.total_score_10 }}},
+        {label: '직렬 최고', borderWidth: 1, data: {{ stat_chart.department_top }}, hidden: true},
+        {label: '전체 최고', borderWidth: 1, data: {{ stat_chart.total_top }}, hidden: true},
     ]
+    index_property = {ticks: {font: {weight: 'bold'}}}
+    value_property = {
+        title: {
+            display: true,
+            text: '점수(점)',
+            font: {size: 14, weight: 'bold'},
+        },
+        ticks: {font: {weight: 'bold'}}
+    }
 
     chart_data = {
         type: 'bar',
@@ -62,6 +76,18 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
+                title: {
+                    display: true,
+                    text: '전체 통계',
+                    font: {
+                        size: 18
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 30
+                    },
+                    align: 'center',
+                },
                 legend: {
                     position: 'bottom',
                 },
@@ -74,12 +100,8 @@
                 }
             },
             scales: {
-                y: {
-                    ticks: {
-                        font: {weight: 'bold'}
-                    }
-                },
-                x: {ticks: {font: {weight: 'bold'}}},
+                x: (screenWidth < 768) ? value_property : index_property,
+                y: (screenWidth < 768) ? index_property : value_property,
             },
             elements: {
                 bar: {
@@ -101,30 +123,54 @@
 
 {% partialdef chart_contents_total %}
 <script type="text/javascript">
-    score_points = JSON.parse(document.getElementById('score_points').textContent);
-    score_colors = JSON.parse(document.getElementById('score_colors').textContent);
-
     chart_datasets_total = [
         {
             label: 'PSAT 평균',
-            data: Object.values(score_points),
+            data: {{ stat_frequency.score_data|safe }},
             borderWidth: 2,
             tension: 0.4,
-            pointBackgroundColor: score_colors,
+            backgroundColor: {{ stat_frequency.score_color|safe }},
         },
     ]
+    index_property = {ticks: {font: {weight: 'bold'}}}
+    value_property = {
+        beginAtZero: true,
+        title: {
+            display: true,
+            text: '인원(명)',
+            font: {size: 14, weight: 'bold'},
+        },
+        ticks: {
+            font: {weight: 'bold'},
+            callback: function (value) {
+                return Math.floor(value);
+            }
+        },
+    }
 
     chart_data_total = {
-        type: 'line',
+        type: 'bar',
         data: {
-            labels: Object.keys(score_points),
+            labels: {{ stat_frequency.score_label|safe }},
             datasets: chart_datasets_total,
         },
         options: {
-            indexAxis: 'x',
+            indexAxis: (screenWidth < 768) ? 'y' : 'x',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
+                title: {
+                    display: true,
+                    text: '도수분포그래프 (PSAT 평균 기준)',
+                    font: {
+                        size: 18
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 30
+                    },
+                    align: 'center',
+                },
                 legend: {
                     position: 'bottom',
                 },
@@ -137,17 +183,8 @@
                 },
             },
             scales: {
-                y: {
-                    min: 0,
-                    ticks: {
-                        font: {weight: 'bold'},
-                        callback: function(value, index, values) {
-                            return Number.isInteger(value) ? value : '';
-                        },
-                        stepSize: 1
-                    }
-                },
-                x: {ticks: {font: {weight: 'bold'}}},
+                x: (screenWidth < 768) ? value_property : index_property,
+                y: (screenWidth < 768) ? index_property : value_property,
             },
         }
     }

@@ -49,24 +49,22 @@ def list_view(request: HtmxHttpRequest):
 
 def detail_view(request: HtmxHttpRequest, pk: int, student=None):
     config = ViewConfiguration()
-    context = update_context_data(config=config)
+    current_time = timezone.now()
+    context = update_context_data(current_time=current_time, config=config)
 
     psat = models.Psat.objects.filter(pk=pk).first()
     if not psat or not hasattr(psat, 'predict_psat') or not psat.predict_psat.is_active:
         context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)
 
-    view_type = request.headers.get('View-Type', 'main')
-    config.submenu_kor = f'{psat.get_year_display()} {psat.exam_abbr} {config.submenu_kor}'
-
     if student is None:
         student = models.PredictStudent.objects.get_filtered_qs_by_psat_and_user_with_answer_count(request.user, psat)
     if not student:
-        return redirect('psat:predict-list')
+        context = update_context_data(context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)
+        return render(request, 'a_psat/redirect.html', context)
 
-    score_tab = predict_utils.get_score_tab()
-    filtered_score_tab = predict_utils.get_score_tab(True)
-    answer_tab = predict_utils.get_answer_tab(psat)
+    view_type = request.headers.get('View-Type', 'main')
+    config.submenu_kor = f'{psat.get_year_display()} {psat.exam_abbr} {config.submenu_kor}'
 
     qs_student_answer = models.PredictAnswer.objects.get_filtered_qs_by_psat_and_student(student, psat)
     is_confirmed_data = predict_utils.get_is_confirmed_data(qs_student_answer, psat)
@@ -87,37 +85,39 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         stat_total_filtered = {}
         stat_department_filtered = {}
 
-    chart_score = predict_utils.get_chart_score(student, stat_total_all, stat_department_all)
-    frequency_score = predict_utils.get_dict_frequency_score(student)
     data_answers = predict_utils.get_data_answers(qs_student_answer, psat)
 
+    stat_chart = predict_utils.get_dict_stat_chart(student, stat_total_all, stat_department_all)
+    score_frequency_list = models.PredictStudent.objects.filter(
+        psat=psat, score__average__gte=50).values_list('score__average', flat=True)
+    stat_frequency = predict_utils.get_dict_stat_frequency(student, score_frequency_list)
+
     context = update_context_data(
-        exam=psat, config=config, sub_title=f'{psat.full_reference} 합격 예측',
+        context, psat=psat, sub_title=f'{psat.full_reference} 합격 예측',
         predict_psat=psat.predict_psat,
 
         # icon
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
 
         # tab variables for templates
-        score_tab=score_tab, filtered_score_tab=filtered_score_tab, answer_tab=answer_tab,
+        score_tab=predict_utils.get_score_tab(),
+        filtered_score_tab=predict_utils.get_score_tab(True),
+        answer_tab=predict_utils.get_answer_tab(psat),
 
         # info_student: 수험 정보
         student=student,
 
         # sheet_score: 성적 예측 I [All]
-        stat_total_all=stat_total_all,
-        stat_department_all=stat_department_all,
+        stat_total_all=stat_total_all, stat_department_all=stat_department_all,
 
         # sheet_score: 성적 예측 II [Filtered]
-        stat_total_filtered=stat_total_filtered,
-        stat_department_filtered=stat_department_filtered,
+        stat_total_filtered=stat_total_filtered, stat_department_filtered=stat_department_filtered,
 
         # sheet_answer: 답안 확인
         data_answers=data_answers, is_confirmed_data=is_confirmed_data,
 
         # chart: 성적 분포 차트
-        chart_score=chart_score, frequency_score=frequency_score,
-        all_confirmed=is_confirmed_data[-1],
+        stat_chart=stat_chart, stat_frequency=stat_frequency, all_confirmed=is_confirmed_data[-1],
     )
 
     if view_type == 'info_answer':

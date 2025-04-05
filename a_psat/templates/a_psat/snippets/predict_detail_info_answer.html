@@ -36,13 +36,13 @@
 </article>
 
 {% partialdef sub_answer_line %}
-    {% if config.current_time < stat_tot.end_time %}
+    {% if current_time < stat_tot.end_time %}
         <tr class="text-center{% if stat_tot.field == 'average' %} table-warning{% endif %}">
             <th class="text-nowrap" aria-label="과목">
                 {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
             </th>
 
-            {% if config.current_time < stat_tot.start_time %}
+            {% if current_time < stat_tot.start_time %}
                 <td colspan="3" aria-label="시험 시작 전">
                     <span class="badge rounded-pill text-bg-primary">시험 시작 전입니다.</span>
                 </td>
@@ -101,9 +101,9 @@
                 </th>
 
                 <td aria-label="점수">
-                    {% if predict_psat.is_not_finished or predict_psat.is_collecting_answer %}
+                    {% if current_time <= predict_psat.answer_predict_opened_at %}
                         <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
-                    {% elif predict_psat.is_answer_predict_opened %}
+                    {% elif current_time <= predict_psat.answer_official_opened_at %}
                         <div id="{{ stat_tot.field }}ScorePredict" class="htmx-fade-up-in delay-1 text-primary fw-bold">
                             {{ stat_tot.score_predict|floatformat:1|default:'' }}
                         </div>
