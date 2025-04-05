@@ -40,20 +40,18 @@
     </tr>
 
     <tr class="text-center" aria-label="전체 정답률">
-        <th class="text-nowrap" rowspan="4">
-            <span class="d-md-none">정답률<br/>(%)</span>
-            <span class="d-none d-md-inline">정답률(%)</span>
+        <th class="text-nowrap px-0" rowspan="4">
+            {% with range_text_1='정답률<br/>(%)' range_text_2='정답률(%)' %}{% partial range_text %}{% endwith %}
         </th>
-        <th class="text-nowrap td-no-border">전체</th>
+        <th class="text-nowrap px-0 td-no-border">전체</th>
         {% for answer in answers %}
             {% with answer_rate=answer.rate_correct %}{% partial answer_rate_line_official %}{% endwith %}
         {% endfor %}
     </tr>
 
     <tr class="text-center" aria-label="상위권 정답률">
-        <th class="text-nowrap td-no-border">
-            <span class="d-md-none">상</span>
-            <span class="d-none d-md-inline">상위권</span>
+        <th class="text-nowrap px-0 td-no-border">
+            {% with range_text_1='상' range_text_2='상위권' %}{% partial range_text %}{% endwith %}
         </th>
         {% if answers.0.rate_correct_top %}
             {% for answer in answers %}
@@ -65,9 +63,8 @@
     </tr>
 
     <tr class="text-center" aria-label="중위권 정답률">
-        <th class="text-nowrap td-no-border">
-            <span class="d-md-none">중</span>
-            <span class="d-none d-md-inline">중위권</span>
+        <th class="text-nowrap px-0 td-no-border">
+            {% with range_text_1='중' range_text_2='중위권' %}{% partial range_text %}{% endwith %}
         </th>
         {% if answers.0.rate_correct_mid %}
             {% for answer in answers %}
@@ -79,9 +76,8 @@
     </tr>
 
     <tr class="text-center" aria-label="하위권 정답률">
-        <th class="text-nowrap">
-            <span class="d-md-none">하</span>
-            <span class="d-none d-md-inline">하위권</span>
+        <th class="text-nowrap px-0">
+            {% with range_text_1='하' range_text_2='하위권' %}{% partial range_text %}{% endwith %}
         </th>
         {% if answers.0.rate_correct_low %}
             {% for answer in answers %}
@@ -109,20 +105,18 @@
     </tr>
 
     <tr class="text-center" aria-label="전체 선택률">
-        <th class="text-nowrap" rowspan="4">
-            <span class="d-md-none">선택률<br/>(%)</span>
-            <span class="d-none d-md-inline">선택률(%)</span>
+        <th class="text-nowrap px-0" rowspan="4">
+            {% with range_text_1='선택률<br/>(%)' range_text_2='선택률(%)' %}{% partial range_text %}{% endwith %}
         </th>
-        <th class="text-nowrap td-no-border">전체</th>
+        <th class="text-nowrap px-0 td-no-border">전체</th>
         {% for answer in answers %}
             {% with answer_rate=answer.rate_selection %}{% partial answer_rate_line_student %}{% endwith %}
         {% endfor %}
     </tr>
 
     <tr class="text-center" aria-label="상위권 선택률">
-        <th class="text-nowrap td-no-border">
-            <span class="d-md-none">상</span>
-            <span class="d-none d-md-inline">상위권</span>
+        <th class="text-nowrap px-0 td-no-border">
+            {% with range_text_1='상' range_text_2='상위권' %}{% partial range_text %}{% endwith %}
         </th>
         {% if answers.0.rate_selection_top %}
             {% for answer in answers %}
@@ -134,9 +128,8 @@
     </tr>
 
     <tr class="text-center" aria-label="중위권 선택률">
-        <th class="text-nowrap td-no-border">
-            <span class="d-md-none">중</span>
-            <span class="d-none d-md-inline">중위권</span>
+        <th class="text-nowrap px-0 td-no-border">
+            {% with range_text_1='중' range_text_2='중위권' %}{% partial range_text %}{% endwith %}
         </th>
         {% if answers.0.rate_selection_top %}
             {% for answer in answers %}
@@ -148,9 +141,8 @@
     </tr>
 
     <tr class="text-center" aria-label="하위권 선택률">
-        <th class="text-nowrap">
-            <span class="d-md-none">하</span>
-            <span class="d-none d-md-inline">하위권</span>
+        <th class="text-nowrap px-0">
+            {% with range_text_1='하' range_text_2='하위권' %}{% partial range_text %}{% endwith %}
         </th>
         {% if answers.0.rate_selection_low %}
             {% for answer in answers %}
@@ -161,6 +153,11 @@
         {% endif %}
     </tr>
 {% endpartialdef answer_table_tr %}
+
+{% partialdef range_text %}
+    <span class="d-md-none">{{ range_text_1 }}</span>
+    <span class="d-none d-md-inline">{{ range_text_2 }}</span>
+{% endpartialdef range_text %}
 
 {% partialdef answer_rate_line_official %}
     {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}

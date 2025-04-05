@@ -4,21 +4,41 @@
             <canvas id="scoreChart"></canvas>
             {% partial chart_contents %}
         </div>
+        <div>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+            <ol class="text-success small fw-bold m-0">
+                <li>전체 응시생을 대상으로 조사한 결과입니다.</li>
+                <li>막대 그래프를 클릭하시면 정확한 점수를 확인하실 수 있습니다.</li>
+                <li>범례 항목을 클릭하시면 그래프에 표시하거나 제거할 수 있습니다.</li>
+            </ol>
+        </div>
+        <hr/>
         <div class="mt-4 chart-container-small {{ print_class }} ms-auto me-auto">
             <canvas id="scoreChartTotal"></canvas>
             {% partial chart_contents_total %}
         </div>
+        <div>
+            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+            <ol class="text-success small fw-bold m-0">
+                <li>전체 응시생을 대상으로 조사한 결과입니다.</li>
+                <li>'100~110' 구간은 '100점 이상 110점 미만'을 의미합니다.</li>
+                <li>막대 그래프를 클릭하시면 정확한 인원을 확인하실 수 있습니다.</li>
+                <li>본인이 속한 구간은 붉은색 사각형으로 표시됩니다.</li>
+            </ol>
+        </div>
     {% endpartialdef chart_canvas %}
 {% else %}
-    {% #responsive_table %}
-        <tbody>
-            <tr class="text-center align-middle">
-               <th colspan="6" class="text-danger fs-6 py-4">
-                   모든 과목의 답안을 입력해주세요.
-               </th>
-            </tr>
-        </tbody>
-    {% /responsive_table %}
+    <article class="table-responsive">
+        <table class="table align-middle">
+            <tbody>
+                <tr class="text-center align-middle">
+                   <th class="text-danger fs-6 py-4">
+                       모든 과목의 답안을 입력해주세요.
+                   </th>
+                </tr>
+            </tbody>
+        </table>
+    </article>
 {% endif %}
 
 {% partialdef chart_contents %}
@@ -31,6 +51,16 @@
         {label: '전체 상위 50%', borderWidth: 1, data: {{ stat_chart.total_score_50 }}, hidden: true},
         {label: '전체 최고', borderWidth: 1, data: {{ stat_chart.total_top }}},
     ]
+    index_property = {ticks: {font: {weight: 'bold'}}}
+    value_property = {
+        title: {
+            display: true,
+            text: '점수(점)',
+            font: {size: 14, weight: 'bold'},
+        },
+        ticks: {font: {weight: 'bold'}}
+    }
+
     chart_data = {
         type: 'bar',
         data: {
@@ -38,10 +68,22 @@
             datasets: chart_datasets,
         },
         options: {
-            indexAxis: 'x',
+            indexAxis: (screenWidth < 768) ? 'y' : 'x',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
+                title: {
+                    display: true,
+                    text: '전체 통계 (표준점수 기준)',
+                    font: {
+                        size: 18
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 30
+                    },
+                    align: 'center',
+                },
                 legend: {
                     position: 'bottom',
                 },
@@ -50,12 +92,12 @@
                     color: 'black',
                     font: {
                         weight: 'bold',
-                    }
-                }
+                    },
+                },
             },
             scales: {
-                y: {ticks: {font: {weight: 'bold'}}},
-                x: {ticks: {font: {weight: 'bold'}}},
+                x: (screenWidth < 768) ? value_property : index_property,
+                y: (screenWidth < 768) ? index_property : value_property,
             },
             elements: {
                 bar: {
@@ -86,6 +128,22 @@
             backgroundColor: {{ stat_frequency.score_color|safe }},
         },
     ]
+    index_property = {ticks: {font: {weight: 'bold'}}}
+    value_property = {
+        beginAtZero: true,
+        title: {
+            display: true,
+            text: '인원(명)',
+            font: {size: 14, weight: 'bold'},
+        },
+        ticks: {
+            font: {weight: 'bold'},
+            callback: function (value) {
+                return Math.floor(value);
+            }
+        },
+    }
+
     chart_data_total = {
         type: 'bar',
         data: {
@@ -93,10 +151,22 @@
             datasets: chart_datasets_total,
         },
         options: {
-            indexAxis: 'x',
+            indexAxis: (screenWidth < 768) ? 'y' : 'x',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
+                title: {
+                    display: true,
+                    text: '도수분포그래프 (표준점수 기준)',
+                    font: {
+                        size: 18
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 30
+                    },
+                    align: 'center',
+                },
                 legend: {
                     position: 'bottom',
                 },
@@ -109,17 +179,8 @@
                 },
             },
             scales: {
-                x: {ticks: {font: {weight: 'bold'}}},
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        font: {weight: 'bold'},
-                        callback: function (value) {
-                            return Math.floor(value);
-                        }
-                    },
-                },
+                x: (screenWidth < 768) ? value_property : index_property,
+                y: (screenWidth < 768) ? index_property : value_property,
             },
         }
     }
