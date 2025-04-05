@@ -260,7 +260,7 @@ def frequency_table_by_bin(scores, bin_size=5, target_score=None):
 
 def get_dict_stat_frequency(student, score_frequency_list) -> dict:
     scores = [round(score, 1) for score in score_frequency_list]
-    sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.sum)
+    sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.average)
 
     score_label = []
     score_data = []
