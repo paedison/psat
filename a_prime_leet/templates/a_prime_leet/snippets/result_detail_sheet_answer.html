@@ -133,7 +133,7 @@
         </th>
         {% if answers.0.rate_selection_top %}
             {% for answer in answers %}
-                {% with answer_rate=answer.rate_selection_top %}{% partial answer_rate_line_student %}{% endwith %}
+                {% with answer_rate=answer.rate_selection_mid %}{% partial answer_rate_line_student %}{% endwith %}
             {% endfor %}
         {% else %}
             {% partial answer_rate_line_empty %}
