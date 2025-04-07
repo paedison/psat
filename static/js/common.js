@@ -100,3 +100,8 @@ $(document).on('htmx:configRequest', function(event) {
 $(document).on('htmx:afterRequest', function(event) {
     $('.prevent_double_click').prop('disabled', false);
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const width = window.innerWidth;
+    document.cookie = `viewport_width=${width}; path=/`;
+});

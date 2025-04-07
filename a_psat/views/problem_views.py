@@ -73,7 +73,12 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
     config.url_admin = reverse_lazy(f'admin:a_psat_problem_change', args=[pk])
     user_id = request.user.id if request.user.is_authenticated else None
 
-    context = update_context_data(config=config, problem_id=pk, problem=problem)
+    viewport_width = request.COOKIES.get('viewport_width')
+    if viewport_width:
+        viewport_width = int(viewport_width)
+    images = utils.process_image(viewport_width, problem)
+
+    context = update_context_data(config=config, problem_id=pk, problem=problem, images=images)
 
     problem_data = queryset.filter(psat__year=problem.psat.year, psat__exam=problem.psat.exam, subject=problem.subject)
     prob_prev, prob_next = utils.get_prev_next_prob(pk, problem_data)

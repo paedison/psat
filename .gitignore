@@ -198,3 +198,4 @@ cython_debug/
 /static/vendor/bootstrap/bootstrap_v5.3.1.txt
 /psat2/
 /scripts/analysis/
+/image_crop/output_images/

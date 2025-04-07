@@ -26,7 +26,7 @@
                                 </div>
                             </div>
                         </div>
-                        {% if problem.images.name1 == 'Preparing Image' %}
+                        {% if images.name1 == 'Preparing Image' %}
                             <div id="problemQuestion" class="border-top htmx-fade-in htmx-fade-out">
                                 <div class="d-flex">
                                     <h6 class="lh-base text-nowrap mb-0 me-2 fw-bold text-primary">
@@ -39,22 +39,19 @@
                             </div>
                         {% endif %}
                         <div id="problemDetail" class="htmx-fade-in htmx-fade-out">
-                            {% if problem.images.name1 == 'Preparing Image' %}
-                                <div class="d-flex flex-wrap align-items-start justify-content-start">
-                                    <img class="mw-100 mx-auto" alt="{{ problem.images.name1 }}"
-                                         src="{{ problem.images.path1 }}"/>
-                                </div>
-                            {% else %}
-                                <div class="d-flex flex-wrap align-items-start justify-content-start"
-                                     data-bs-toggle="modal" data-bs-target="#modalContainerPsat">
-                                    <img class="mw-100 col-12 col-lg-6" alt="{{ problem.images.name1 }}"
-                                         src="{{ problem.images.path1 }}"/>
-                                {% endif %}
-                                {% if problem.images.name2 %}
-                                    <img class="mw-100 col-12 col-lg-6" alt="{{ problem.images.name2 }}"
-                                         src="{{ problem.images.path2 }}"/>
-                                </div>
-                            {% endif %}
+                            <div data-bs-toggle="modal" data-bs-target="#modalContainerPsat">
+                                {% partialdef problem_image inline %}
+                                    <div class="d-flex flex-wrap align-items-start justify-content-start">
+                                        {% for image in images %}
+                                            {% if image.name == 'Preparing Image' %}
+                                                <img class="mw-100 mx-auto" alt="{{ image.name }}" src="{{ image.path }}"/>
+                                            {% else %}
+                                                <img class="mw-100 col-12 col-lg-6" alt="{{ image.name }}" src="{{ image.path }}"/>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endpartialdef problem_image %}
+                            </div>
                         </div>
                     </div>
                 </problem>
@@ -206,12 +203,7 @@
 
 {% partialdef modal_image %}
     {% #modal header=problem.full_reference size="modal-xl" %}
-        <div class="d-flex flex-wrap align-items-start justify-content-start">
-            <img class="mw-100 col-12 col-xl-6" alt="{{ problem.images.name1 }}" src="{{ problem.images.path1 }}"/>
-            {% if problem.images.name2 %}
-                <img class="mw-100 col-12 col-xl-6" alt="{{ problem.images.name2 }}" src="{{ problem.images.path2 }}"/>
-            {% endif %}
-        </div>
+        {% partial problem_image %}
     {% /modal %}
 {% endpartialdef %}
 

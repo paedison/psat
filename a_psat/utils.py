@@ -1,7 +1,12 @@
 import os
 from datetime import time, datetime
+from io import BytesIO
 
+from PIL import Image
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -126,6 +131,82 @@ def create_new_custom_record(request, problem, model, **kwargs):
     else:
         new_record = model.objects.create(**base_info, **kwargs)
     return new_record
+
+
+def find_split_point(image, target_height=1000, margin=50) -> int:
+    """target_height ± margin 내에서 여백(밝은 부분)을 찾아 분할 위치를 반환"""
+    width, height = image.size
+    crop_area = (0, max(0, target_height - margin), width, min(height, target_height + margin))
+    cropped = image.crop(crop_area).convert('L')  # 밝기 기반
+
+    pixels = cropped.load()
+    scores = []
+    for y in range(cropped.height):
+        brightness = sum(pixels[x, y] for x in range(cropped.width))
+        scores.append((brightness, y))
+
+    # 밝은 부분 (여백) 우선
+    best = max(scores, key=lambda x: x[0])
+    split_y = crop_area[1] + best[1]
+    return split_y
+
+
+def process_image(viewport_width, problem) -> list:
+    image_name = f'PSAT{problem.year_ex_sub}{problem.number:02}'
+
+    def get_filename(number: int):
+        return f'{image_name}-{number}' if number else image_name
+
+    def get_image_path(number: int):
+        image_path = os.path.join(
+            settings.BASE_DIR, 'static', 'image', 'PSAT', str(problem.psat.year), f'{get_filename(number)}.png')
+        if os.path.exists(image_path):
+            return image_path
+
+    def get_image_url(number: int):
+        return static(f'image/PSAT/{problem.psat.year}/{get_filename(number)}.png')
+
+    if get_image_path(1):
+        if get_image_path(2):
+            return [
+                {'name': 'Problem Image 1', 'path': get_image_url(1)},
+                {'name': 'Problem Image 2', 'path': get_image_url(2)},
+            ]
+        return [{'name': 'Problem Image 1', 'path': get_image_url(1)}]
+
+    if get_image_path(0):
+        img = Image.open(get_image_path(0))
+        width, height = img.size
+
+        threshold_height = 2000
+        if viewport_width < 992 or height <= threshold_height:
+            return [{'name': 'Problem Image 1', 'path': get_image_url(0)}]
+
+        # 분할 작업
+        target_height = 1500 if height < threshold_height + 500 else height // 2
+        split_y = find_split_point(img, target_height)
+        img1 = img.crop((0, 0, width, split_y))
+        img2 = img.crop((0, split_y, width, height))
+        return [
+            {'name': 'Problem Image 1', 'path': save_temp_image(img1, f'{image_name}-1.png')},
+            {'name': 'Problem Image 2', 'path': save_temp_image(img2, f'{image_name}-2.png')},
+        ]
+
+    return [{'name': 'Preparing Image', 'path': static('image/preparing.png')}]
+
+
+def save_temp_image(image: Image.Image, filename: str) -> str:
+    temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_images')
+    os.makedirs(temp_dir, exist_ok=True)  # 폴더 없으면 생성
+    file_path = os.path.join(temp_dir, filename)
+    if not os.path.exists(file_path):
+        image_io = BytesIO()
+        image.save(image_io, format='PNG')
+        image_io.seek(0)
+        full_path = os.path.join('temp_images', filename)
+        default_storage.save(full_path, ContentFile(image_io.read()))
+
+    return f'{settings.MEDIA_URL}temp_images/{filename}'  # 브라우저에서 접근 가능한 경로
 
 
 def create_new_collection(request, form):
