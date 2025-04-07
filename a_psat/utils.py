@@ -166,33 +166,28 @@ def process_image(viewport_width, problem) -> list:
     def get_image_url(number: int):
         return static(f'image/PSAT/{problem.psat.year}/{get_filename(number)}.png')
 
+    image_list = [{'name': 'Preparing Image', 'path': static('image/preparing.png')}]
     if get_image_path(1):
+        image_list = [{'name': 'Problem Image 1', 'path': get_image_url(1)}]
         if get_image_path(2):
-            return [
-                {'name': 'Problem Image 1', 'path': get_image_url(1)},
-                {'name': 'Problem Image 2', 'path': get_image_url(2)},
-            ]
-        return [{'name': 'Problem Image 1', 'path': get_image_url(1)}]
-
-    if get_image_path(0):
+            image_list.append({'name': 'Problem Image 2', 'path': get_image_url(2)})
+    elif get_image_path(0):
         img = Image.open(get_image_path(0))
         width, height = img.size
+        image_list = [{'name': 'Problem Image 1', 'path': get_image_url(0)}]
 
         threshold_height = 2000
-        if viewport_width < 992 or height <= threshold_height:
-            return [{'name': 'Problem Image 1', 'path': get_image_url(0)}]
+        if viewport_width and viewport_width >= 992 and height > threshold_height:
+            target_height = 1500 if height < threshold_height + 500 else height // 2
+            split_y = find_split_point(img, target_height)
+            img1 = img.crop((0, 0, width, split_y))
+            img2 = img.crop((0, split_y, width, height))
+            image_list = [
+                {'name': 'Problem Image 1', 'path': save_temp_image(img1, f'{image_name}-1.png')},
+                {'name': 'Problem Image 2', 'path': save_temp_image(img2, f'{image_name}-2.png')},
+            ]
 
-        # 분할 작업
-        target_height = 1500 if height < threshold_height + 500 else height // 2
-        split_y = find_split_point(img, target_height)
-        img1 = img.crop((0, 0, width, split_y))
-        img2 = img.crop((0, split_y, width, height))
-        return [
-            {'name': 'Problem Image 1', 'path': save_temp_image(img1, f'{image_name}-1.png')},
-            {'name': 'Problem Image 2', 'path': save_temp_image(img2, f'{image_name}-2.png')},
-        ]
-
-    return [{'name': 'Preparing Image', 'path': static('image/preparing.png')}]
+    return image_list
 
 
 def save_temp_image(image: Image.Image, filename: str) -> str:
