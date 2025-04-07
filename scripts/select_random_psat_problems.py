@@ -2,20 +2,30 @@ import os
 import random
 import shutil
 
+from PIL import Image
 from openpyxl import Workbook, load_workbook
 
 from a_psat.models import Problem
 
 
-def run(
-        start_year=2004, end_year=2025, problem_count=40, subject='',
-        file_name='problem_list.xlsx',
-        folder_name='a_psat/data/selected_problems',
-):
-    subjects = ['언어', '자료', '상황']
-    start_year = int(start_year)
-    end_year = int(end_year)
-    problem_count = int(problem_count)
+def run():
+    start_year = get_user_input('시작 연도(start_year): ', 2004, int)
+    end_year = get_user_input('끝 연도(end_year): ', 2025, int)
+    exam_type = get_user_input('시험 종류(exam_type)[0: 전체, 1: 기본, 2: 심화]: ', 0, int)
+    problem_count = get_user_input('문제 개수(problem_count): ', 40, int)
+    subject = get_user_input('과목(subject): ', '', str)
+    file_name = get_user_input('파일명(file_name): ', 'problem_list.xlsx', str)
+    folder_name = get_user_input('폴더명(folder_name): ', 'a_psat/data/selected_problems', str)
+
+    print('\n[입력 요약]')
+    print(f'- 시작 연도: {start_year}')
+    print(f'- 끝 연도: {end_year}')
+    print(f'- 시험 종류: {exam_type}')
+    print(f'- 문제 개수: {problem_count}')
+    print(f'- 과목: {subject}')
+    print(f'- 파일명: {file_name}')
+    print(f'- 폴더명: {folder_name}')
+    print('작업을 시작합니다...\n')
 
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
@@ -27,17 +37,18 @@ def run(
     extracted_problem_ids = load_existing_problem_ids(wb)
 
     # 문제 추출
+    subjects = ['언어', '자료', '상황']
     selected_problems = []
     if subject:
-        selected_problems = get_selected_problems(
-            start_year, end_year, problem_count, subject,
-            selected_problems, extracted_problem_ids
+        selected_problems = select_problems(
+            start_year, end_year, exam_type,
+            problem_count, subject, selected_problems, extracted_problem_ids
         )
     else:
         for sub in subjects:
-            selected_problems = get_selected_problems(
-                start_year, end_year, problem_count, sub,
-                selected_problems, extracted_problem_ids
+            selected_problems = select_problems(
+                start_year, end_year, exam_type,
+                problem_count, sub, selected_problems, extracted_problem_ids
             )
 
     exam_order = {'민경': 1, '칠급': 2, '외시': 3, '행시': 4}
@@ -50,7 +61,7 @@ def run(
     print(f"문제가 '{folder_name}/{wb_filepath}' 파일로 저장되었습니다.")
 
     # 이미지 파일 복사 및 정리
-    organize_image_files(selected_problems_sorted, folder_name, new_worksheet_number)
+    organize_image_files(selected_problems_sorted, new_worksheet_number, folder_name)
 
 
 def get_workbook_and_worksheet(wb_filepath):
@@ -80,8 +91,8 @@ def load_existing_problem_ids(workbook) -> set:
     return extracted_ids
 
 
-def get_selected_problems(
-        start_year, end_year, problem_count, subject,
+def select_problems(
+        start_year, end_year, exam_type, problem_count, subject,
         all_selected_problems, extracted_problem_ids,
 ):
     problems = (
@@ -89,6 +100,11 @@ def get_selected_problems(
         .filter(psat__year__range=(start_year, end_year), subject=subject)
         .exclude(id__in=extracted_problem_ids).exclude(psat__exam='입시')
     )
+    if exam_type == 1:
+        problems = problems.filter(psat__exam__in=['민경', '칠급', '칠예', '칠모'])
+    elif exam_type == 2:
+        problems = problems.filter(psat__exam__in=['행시'])
+
     selected_problems = random.sample(list(problems), min(problem_count, len(problems)))
 
     # 추출된 문제 ID를 중복 방지를 위해 기록
@@ -108,7 +124,7 @@ def save_to_excel(problems: list, worksheet):
         ])
 
 
-def organize_image_files(problems, folder_name, worksheet_number):
+def organize_image_files(problems, worksheet_number, folder_name='a_psat/data/selected_problems'):
     base_image_path = "static/image/PSAT"
     folder = os.path.join(folder_name, str(worksheet_number))
     if not os.path.exists(folder):
@@ -128,30 +144,56 @@ def organize_image_files(problems, folder_name, worksheet_number):
             subject_counters[subject] = 1
         sorted_number = subject_counters[subject]
 
-        # 원본 파일명
-        original_file_1 = f"PSAT{year}{exam}{subject}{number:02}-1.png"
-        original_file_2 = f"PSAT{year}{exam}{subject}{number:02}-2.png"
+        def get_image_path(image_number) -> tuple[str, str]:
+            image_name = f'PSAT{year}{exam}{subject}{number:02}'
+            filename = f'{image_name}-{image_number}.png' if image_number else f'{image_name}.png'
+            image_path = os.path.join(base_image_path, str(year), filename)
 
-        # 원본 파일 경로
-        original_file_path_1 = os.path.join(base_image_path, str(year), original_file_1)
-        original_file_path_2 = os.path.join(base_image_path, str(year), original_file_2)
+            new_filename = f"{subject}{sorted_number:02}_{filename}"
+            new_image_path = os.path.join(folder, new_filename)
 
-        # 새로운 파일명
-        new_file_1 = f"{subject}{sorted_number:02}_{original_file_1}"
-        new_file_2 = f"{subject}{sorted_number:02}_{original_file_2}"
+            if os.path.exists(image_path):
+                return image_path, new_image_path
+            return '', ''
 
-        # 새로운 파일 경로
-        new_file_path_1 = os.path.join(folder, new_file_1)
-        new_file_path_2 = os.path.join(folder, new_file_2)
-
-        # 파일이 존재하면 복사
-        if os.path.exists(original_file_path_1):
-            shutil.copy(original_file_path_1, new_file_path_1)
-            # self.stdout.write(f"Copied {original_file_1} to {new_file_path_1}")
-
-        if os.path.exists(original_file_path_2):
-            shutil.copy(original_file_path_2, new_file_path_2)
-            # self.stdout.write(f"Copied {original_file_2} to {new_file_path_2}")
+        image_path_0, new_image_path_0 = get_image_path(0)
+        if image_path_0:
+            shutil.copy(image_path_0, new_image_path_0)
+        else:
+            image_path_1, new_image_path_1 = get_image_path(1)
+            image_path_2, new_image_path_2 = get_image_path(2)
+            if image_path_1:
+                merged_image_path = new_image_path_1.replace('-1', '')
+                if image_path_2:
+                    merge_images_vertically(image_path_1, image_path_2, merged_image_path)
+                else:
+                    shutil.copy(image_path_1, merged_image_path)
 
         # 과목별로 sorted_number 증가
         subject_counters[subject] += 1
+
+
+def merge_images_vertically(image_path1, image_path2, output_path):
+    # 이미지 열기
+    img1 = Image.open(image_path1)
+    img2 = Image.open(image_path2)
+
+    # 너비는 동일한 것으로 가정 or 최대값 사용
+    width = max(img1.width, img2.width)
+    total_height = img1.height + img2.height
+
+    # 새 이미지 생성 (RGB 기준)
+    new_img = Image.new('RGB', (width, total_height), color=(255, 255, 255))
+
+    # 이미지 붙이기
+    new_img.paste(img1, (0, 0))
+    new_img.paste(img2, (0, img1.height))
+
+    # 저장
+    new_img.save(output_path)
+    print(f"✅ 이미지 저장 완료: {output_path}")
+
+
+def get_user_input(prompt, default, type_func):
+    user_input = input(f"{prompt} [default: {default}]: ").strip()
+    return type_func(user_input) if user_input else default
