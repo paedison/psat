@@ -8,6 +8,17 @@ class ProblemManager(models.Manager):
         return self.select_related('psat').filter(psat=psat).annotate(
             no=models.F('number'), ans=models.F('answer'), ans_official=models.F('answer')).order_by('subject', 'no')
 
+    def psat_problem_qs_annotate_subject_code(self):
+        return self.get_queryset().annotate(
+            subject_code=models.Case(
+                models.When(subject='언어', then=1),
+                models.When(subject='자료', then=2),
+                models.When(subject='상황', then=3),
+                default=4,
+                output_field=models.IntegerField(),
+            )
+        )
+
 
 class LectureManager(models.Manager):
     def order_by_subject_code(self):

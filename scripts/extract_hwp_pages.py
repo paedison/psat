@@ -12,15 +12,13 @@ def run():
 
     source_filename = get_user_input('원본 파일명 경로(source_filename): ', "original", str)
     source_path = f'D:\\projects\\test\\{source_filename}.hwp'
-
-    excel_filename = get_user_input('엑셀 파일명 경로(excel_filename): ', "filename", str)
-    excel_path = f'D:\\projects\\test\\{excel_filename}.xlsx'
+    excel_path = f'D:\\projects\\test\\{source_filename}.xlsx'
 
     df = pd.read_excel(excel_path)
-    file_names = df['일련번호'].tolist()  # 엑셀의 열 이름을 맞춰주세요
+    file_names = df['일련번호'].tolist()
 
-    hwp = Hwp()
-    # hwp = Hwp(visible=False)
+    # hwp = Hwp()
+    hwp = Hwp(visible=False)
     try:
         hwp.open(source_path, arg="versionwarning:false")
 
