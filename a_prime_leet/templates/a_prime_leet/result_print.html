@@ -39,12 +39,19 @@
     </div>
 
     {% with stat_data=stat_data_total table_title='응시자 전체' %}{% partial statistics_table %}{% endwith %}
-    {% with stat_data=stat_data_1 table_title='1지망대학' %}{% partial statistics_table %}{% endwith %}
-    {% with stat_data=stat_data_2 table_title='2지망대학' %}{% partial statistics_table %}{% endwith %}
+    {% if student.aspiration_1 %}
+        {% with stat_data=stat_data_1 table_title='1지망대학' %}{% partial statistics_table %}{% endwith %}
+    {% endif %}
+    {% if student.aspiration_2 %}
+        {% with stat_data=stat_data_2 table_title='2지망대학' %}{% partial statistics_table %}{% endwith %}
+    {% endif %}
 
     <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
             <thead>
+                <tr class="text-center small align-middle">
+                    <th colspan="50">답안 확인</th>
+                </tr>
                 <tr class="text-center small align-middle">
                     <th class="text-nowrap" colspan="2">과목</th>
                     {% for _ in 'x'|ljust:40 %}
