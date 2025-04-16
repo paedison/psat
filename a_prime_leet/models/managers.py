@@ -99,6 +99,7 @@ class ResultRegistryManager(models.Manager):
     def prime_leet_registry_list_by_leet(self, leet):
         annotate_dict = self.get_annotate_dict()
         annotate_dict.update({
+            'serial': models.F('student__serial'),
             'name': models.F('student__name'),
             'password': models.F('student__password'),
             'school': models.F('student__school'),
