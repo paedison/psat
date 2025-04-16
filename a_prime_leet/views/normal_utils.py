@@ -356,6 +356,7 @@ def get_data_answers_for_result(qs_student_answer):
 
     for qs_sa in qs_student_answer:
         sub = qs_sa.problem.subject
+        subject = qs_sa.problem.get_subject_display()
         idx = sub_list.index(sub)
         field = subject_vars[sub][1]
         ans_official = qs_sa.problem.answer
@@ -364,6 +365,7 @@ def get_data_answers_for_result(qs_student_answer):
 
         qs_sa.no = qs_sa.problem.number
         qs_sa.sub = sub
+        qs_sa.subject = subject
         qs_sa.ans_official = ans_official
         qs_sa.ans_official_circle = qs_sa.problem.get_answer_display
 

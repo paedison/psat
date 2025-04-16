@@ -10,15 +10,23 @@
 {% block html_body %}
 <body class="bg-white">
     {{ info|json_script:'info' }}
-    <h2 class="fw-bold text-center mb-4">{{ sub_title }}</h2>
+    <h2 class="fw-bold text-center mb-4">{{ head_title }}</h2>
     <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
             <tbody>
                 <tr class="text-center">
                     <td class="text-nowrap">수험번호 : {{ student.serial }}</td>
                     <td class="text-nowrap">이름 : {{ student.name }}</td>
-                    <td class="text-nowrap">출신대학 및 전공 : {{ student.school }} / {{ student.major }}</td>
-                    <td class="text-nowrap">지망대학 : {{ student.aspiration_1 }} / {{ student.aspiration_2 }}</td>
+                    {% if student.school %}<td class="text-nowrap">출신대학 : {{ student.school }}</td>{% endif %}
+                    {% if student.major %}<td class="text-nowrap">전공 : {{ student.major }}</td>{% endif %}
+                </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered small align-middle">
+            <tbody>
+                <tr class="text-center">
+                    {% if student.aspiration_1 %}<td class="text-nowrap">1지망 : {{ student.aspiration_1 }}</td>{% endif %}
+                    {% if student.aspiration_2 %}<td class="text-nowrap">2지망 : {{ student.aspiration_2 }}</td>{% endif %}
                     {% if student.gpa and student.gpa_type %}
                         <td class="text-nowrap">학점(GPA) : {{ student.gpa }} / {{ student.gpa_type }}</td>
                     {% endif %}
@@ -38,7 +46,7 @@
         <table class="table table-sm table-bordered small align-middle">
             <thead>
                 <tr class="text-center small align-middle">
-                    <th colspan="2">과목</th>
+                    <th class="text-nowrap" colspan="2">과목</th>
                     {% for _ in 'x'|ljust:40 %}
                         <th class="text-nowrap fw-bold text-secondary">{{ forloop.counter|add:0 }}</th>
                     {% endfor %}
@@ -47,7 +55,7 @@
             <tbody>
                 {% for answers in data_answers %}
                     <tr class="text-center small">
-                        <th class="text-nowrap align-center" rowspan="5">{{ answers.0.sub }}</th>
+                        <th class="text-nowrap align-center" rowspan="5">{{ answers.0.subject }}</th>
                         <th class="text-nowrap">정답</th>
                         {% for answer in answers %}
                             <td data-number="{{ answer.no }}">
@@ -111,14 +119,14 @@
                     <th colspan="50">{{ table_title }} 성적 통계</th>
                 </tr>
                 <tr class="text-center small align-middle">
-                    <th rowspan="2">과목</th>
-                    <th colspan="2">내 점수(점)</th>
-                    <th rowspan="2">석차</th>
-                    <th colspan="2">최고 점수(점)</th>
-                    <th colspan="2">상위 10%(점)</th>
-                    <th colspan="2">상위 25%(점)</th>
-                    <th colspan="2">상위 50%(점)</th>
-                    <th colspan="2">원점수 통계(점)</th>
+                    <th class="text-nowrap" rowspan="2">과목</th>
+                    <th class="text-nowrap" colspan="2">내 점수(점)</th>
+                    <th class="text-nowrap" rowspan="2">석차</th>
+                    <th class="text-nowrap" colspan="2">최고 점수(점)</th>
+                    <th class="text-nowrap" colspan="2">상위 10%(점)</th>
+                    <th class="text-nowrap" colspan="2">상위 25%(점)</th>
+                    <th class="text-nowrap" colspan="2">상위 50%(점)</th>
+                    <th class="text-nowrap" colspan="2">원점수 통계(점)</th>
                 </tr>
                 <tr class="text-center small align-middle">
                     <th class="text-nowrap">원점수</th>
