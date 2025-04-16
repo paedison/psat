@@ -51,7 +51,6 @@
                                 {% cycle registry.score_0 registry.score_1 registry.score_sum as score silent %}
                                 {% cycle registry.raw_score_0 registry.raw_score_1 registry.raw_score_sum as raw_score silent %}
                                 {% cycle registry.rank_0 registry.rank_1 registry.rank_sum as rank silent %}
-                                {% cycle registry.rank_num as rank_num silent %}
 
                                 <tr class="text-center align-middle">
                                     <th class="text-nowrap td-left-no-border d-sm-none">{{ sub }}</th>
@@ -61,11 +60,7 @@
                                     </th>
                                     <th class="text-primary text-nowrap d-none d-sm-table-cell">{{ score|floatformat:1 }}</th>
                                     <th class="text-primary text-nowrap d-none d-sm-table-cell">{{ raw_score }}</th>
-                                    <th class="text-nowrap td-right-no-border">
-                                        <span class="fw-bold text-primary">{{ rank }}</span>
-                                        / {{ rank_num }}
-                                        ({{ rank|percentageby:rank_num|floatformat:1 }}%)
-                                    </th>
+                                    <th class="text-primary td-right-no-border">{{ rank }}</th>
                                 </tr>
                             {% endfor %}
                         </tbody>
