@@ -144,6 +144,48 @@ def get_qs_answer_count(leet, model_type='result', subject=None):
     return model.objects.prime_leet_qs_answer_count_by_leet_and_model_type_and_subject(leet, model_type, subject)
 
 
+def get_dict_stat_chart(data_total):
+    field_vars = {
+        'subject_0': ('언어', '언어이해', 0),
+        'subject_1': ('추리', '추리논증', 1),
+        'sum': ('총점', '총점', 2),
+    }
+    stat_chart = defaultdict(list)
+    for fld in field_vars:
+        stat_chart['total_score_10'].append(getattr(data_total, fld)['t10'])
+        stat_chart['total_score_25'].append(getattr(data_total, fld)['t25'])
+        stat_chart['total_score_50'].append(getattr(data_total, fld)['t50'])
+        stat_chart['total_top'].append(getattr(data_total, fld)['max'])
+    return stat_chart
+
+
+def frequency_table_by_bin(scores, bin_size=10):
+    freq = defaultdict(int)
+    for score in scores:
+        bin_start = int((score // bin_size) * bin_size)
+        bin_end = bin_start + bin_size
+        bin_label = f'{bin_start}~{bin_end}'
+        freq[bin_label] += 1
+    sorted_freq = dict(sorted(freq.items(), key=lambda x: int(x[0].split('~')[0])))
+    return sorted_freq
+
+
+def get_dict_stat_frequency(score_frequency_list) -> dict:
+    scores = [round(score, 1) for score in score_frequency_list]
+    sorted_freq = frequency_table_by_bin(scores)
+
+    score_label = []
+    score_data = []
+    score_color = []
+    for key, val in sorted_freq.items():
+        score_label.append(key)
+        score_data.append(val)
+        color = 'rgba(54, 162, 235, 0.5)'
+        score_color.append(color)
+
+    return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
+
+
 def get_answer_page_data(qs_answer_count, page_number, model_type='result', per_page=10):
     subject_vars = get_subject_vars()
     qs_answer_count_group, answers_page_obj_group, answers_page_range_group = {}, {}, {}

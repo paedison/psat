@@ -79,11 +79,14 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         config=config, leet=leet, answer_tab=answer_tab, score_type=score_type,
         icon_nav=icon_set_new.ICON_NAV, icon_search=icon_set_new.ICON_SEARCH,
     )
+
     data_statistics = admin_utils.get_qs_statistics(leet, model_type)
     student_list = admin_utils.get_student_list(leet, model_type)
+
     registry_list = None
     if model_type == 'result':
         registry_list = models.ResultRegistry.objects.prime_leet_registry_list_by_leet(leet)
+
     qs_answer_count = admin_utils.get_qs_answer_count(leet, model_type, subject)
 
     if view_type == 'statistics_list':
@@ -126,12 +129,17 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     answers_page_obj_group, answers_page_range_group = (
         admin_utils.get_answer_page_data(qs_answer_count, page_number, model_type))
 
+    stat_chart = admin_utils.get_dict_stat_chart(data_statistics.first())
+    score_frequency_list = models.ResultStudent.objects.filter(leet=leet).values_list('score__sum', flat=True)
+    stat_frequency = admin_utils.get_dict_stat_frequency(score_frequency_list)
+
     context = update_context_data(
         context,
         statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
         catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
         answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
         registry_page_obj=registry_page_obj, registry_page_range=registry_page_range,
+        stat_chart=stat_chart, stat_frequency=stat_frequency,
     )
     return render(request, 'a_prime_leet/admin_detail.html', context)
 

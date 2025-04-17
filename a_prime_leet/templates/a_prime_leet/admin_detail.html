@@ -4,10 +4,10 @@
 {% block google_adsense %}{% endblock %}
 
 {% block main_content %}
-    <section class="section">
-        <div class="row">
-            {% if user.is_admin %}
-                <div class="col-12" aria-label="업데이트 [{{ score_type }}]">
+    {% if user.is_admin %}
+        <section class="section" aria-label="업데이트 [{{ score_type }}]">
+            <div class="row">
+                <div class="col-12">
                     <div class="card" hx-swap="innerHTML swap:0.25s">
                         <div class="card-header">{{ leet.name }} | 업데이트 [{{ score_type }}]</div>
                         <div class="card-body">
@@ -66,11 +66,15 @@
                         </div>
                     </div>
                 </div>
-            {% endif %}
+            </div>
+        </section>
+    {% endif %}
 
-            <div class="col-12" aria-label="성적통계 [{{ score_type }}]">
+    <section class="section" aria-label="성적 통계 [{{ score_type }}]">
+        <div class="row">
+            <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">성적통계 [{{ score_type }}]</div>
+                    <div class="card-header">성적 통계 [{{ score_type }}]</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
@@ -98,8 +102,25 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="col-12" aria-label="성적일람표 [{{ score_type }}]">
+    <section class="section" aria-label="성적 분포 차트 [{{ score_type }}]">
+        <div class="row">
+            <div class="col-12">
+                <div id="sheetChart" class="card">
+                    <div class="card-header m-0">성적 분포 차트 [{{ score_type }}]</div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/admin_detail_chart.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="성적일람표 [{{ score_type }}]">
+        <div class="row">
+            <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
                     <div class="card-header">성적일람표 [{{ score_type }}]</div>
                     <div class="card-body">
@@ -129,9 +150,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            {% if registry_page_obj %}
-                <div class="col-12" aria-label="성적 확인 목록 [{{ score_type }}]">
+    {% if registry_page_obj %}
+        <section class="section" aria-label="성적 확인 목록 [{{ score_type }}]">
+            <div class="row">
+                <div class="col-12">
                     <div class="card" hx-swap="innerHTML swap:0.25s">
                         <div class="card-header">성적 확인 목록 [{{ score_type }}]</div>
                         <div class="card-body">
@@ -141,9 +166,13 @@
                         </div>
                     </div>
                 </div>
-            {% endif %}
+            </div>
+        </section>
+    {% endif %}
 
-            <div class="col-12" aria-label="문항분석표 [{{ score_type }}]">
+    <section class="section" aria-label="문항분석표 [{{ score_type }}]">
+        <div class="row">
+            <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
                     <div class="card-header">문항분석표 [{{ score_type }}]</div>
                     <div class="card-body">

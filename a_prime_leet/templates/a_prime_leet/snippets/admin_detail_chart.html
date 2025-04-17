@@ -1,0 +1,180 @@
+<div class="mt-4 chart-container-small {{ print_class }} ms-auto me-auto">
+    <canvas id="scoreChart"></canvas>
+    {% partial chart_contents %}
+</div>
+
+<div>
+    <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+    <ol class="text-success small fw-bold m-0">
+        <li>전체 응시생을 대상으로 조사한 결과입니다.</li>
+        <li>범례 항목을 클릭하시면 그래프에 표시하거나 제거할 수 있습니다.</li>
+    </ol>
+</div>
+<hr/>
+
+<div class="mt-4 chart-container-small {{ print_class }} ms-auto me-auto">
+    <canvas id="scoreChartTotal"></canvas>
+    {% partial chart_contents_total %}
+</div>
+
+<div>
+    <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+    <ol class="text-success small fw-bold m-0">
+        <li>전체 응시생을 대상으로 조사한 결과입니다.</li>
+        <li>'100~110' 구간은 '100점 이상 110점 미만'을 의미합니다.</li>
+        <li>막대 그래프를 클릭하시면 정확한 인원을 확인하실 수 있습니다.</li>
+    </ol>
+</div>
+
+{% partialdef chart_contents %}
+<script type="text/javascript">
+    screenWidth = window.innerWidth;
+    chart_datasets = [
+        {label: '전체 상위 10%', borderWidth: 1, data: {{ stat_chart.total_score_10 }}},
+        {label: '전체 상위 25%', borderWidth: 1, data: {{ stat_chart.total_score_25 }}},
+        {label: '전체 상위 50%', borderWidth: 1, data: {{ stat_chart.total_score_50 }}},
+        {label: '전체 최고', borderWidth: 1, data: {{ stat_chart.total_top }}},
+    ]
+    index_property = {ticks: {font: {weight: 'bold'}}}
+    value_property = {
+        title: {
+            display: true,
+            text: '점수(점)',
+            font: {size: 14, weight: 'bold'},
+        },
+        ticks: {font: {weight: 'bold'}}
+    }
+
+    chart_data = {
+        type: 'bar',
+        data: {
+            labels: ['언어이해', '추리논증', '총점'],
+            datasets: chart_datasets,
+        },
+        options: {
+            indexAxis: (screenWidth < 768) ? 'y' : 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: '전체 통계 (표준점수 기준)',
+                    font: {
+                        size: 18
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 30
+                    },
+                    align: 'center',
+                },
+                legend: {
+                    position: 'bottom',
+                },
+                datalabels: {
+                    align: 'end',
+                    color: 'black',
+                    font: {
+                        weight: 'bold',
+                    },
+                },
+            },
+            scales: {
+                x: (screenWidth < 768) ? value_property : index_property,
+                y: (screenWidth < 768) ? index_property : value_property,
+            },
+            elements: {
+                bar: {
+                    barPercentage: 0.5,
+                },
+            },
+        }
+    }
+
+    if (typeof chart_canvas === 'undefined') {
+        const chart_canvas = document.getElementById('scoreChart');
+        new Chart(chart_canvas, chart_data);
+    } else {
+        chart_canvas.chart.destroy();
+        new Chart(chart_canvas, chart_data);
+    }
+</script>
+{% endpartialdef chart_contents %}
+
+{% partialdef chart_contents_total %}
+<script type="text/javascript">
+    chart_datasets_total = [
+        {
+            label: 'LEET 총점(표준점수)',
+            data: {{ stat_frequency.score_data|safe }},
+            borderWidth: 2,
+            tension: 0.4,
+            backgroundColor: {{ stat_frequency.score_color|safe }},
+        },
+    ]
+    index_property = {ticks: {font: {weight: 'bold'}}}
+    value_property = {
+        beginAtZero: true,
+        title: {
+            display: true,
+            text: '인원(명)',
+            font: {size: 14, weight: 'bold'},
+        },
+        ticks: {
+            font: {weight: 'bold'},
+            callback: function (value) {
+                return Math.floor(value);
+            }
+        },
+    }
+
+    chart_data_total = {
+        type: 'bar',
+        data: {
+            labels: {{ stat_frequency.score_label|safe }},
+            datasets: chart_datasets_total,
+        },
+        options: {
+            indexAxis: (screenWidth < 768) ? 'y' : 'x',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: '도수분포그래프 (표준점수 기준)',
+                    font: {
+                        size: 18
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 30
+                    },
+                    align: 'center',
+                },
+                legend: {
+                    position: 'bottom',
+                },
+                datalabels: {
+                    align: 'end',
+                    color: 'black',
+                    font: {
+                        weight: 'bold',
+                    }
+                },
+            },
+            scales: {
+                x: (screenWidth < 768) ? value_property : index_property,
+                y: (screenWidth < 768) ? index_property : value_property,
+            },
+        }
+    }
+
+    if (typeof chart_canvas_total === 'undefined') {
+        const chart_canvas_total = document.getElementById('scoreChartTotal');
+        new Chart(chart_canvas_total, chart_data_total);
+    } else {
+        chart_canvas_total.chart.destroy();
+        new Chart(chart_canvas_total, chart_data_total);
+    }
+</script>
+{% endpartialdef chart_contents_total %}
