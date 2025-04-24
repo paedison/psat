@@ -35,6 +35,7 @@ OPTION_PROMPT = """
 EXAM_ORDER = {'민경': 1, '칠예': 2, '칠급': 3, '견습': 4, '외시': 5, '행시': 6, '입시': 7}
 SUB_MAP = {'언어': '01', '자료': '02', '상황': '03'}
 SUBJECT_LIST = ['언어', '자료', '상황']
+ANSWER_CHOICE_DICT = answer_choice()
 
 
 def run():
@@ -84,8 +85,7 @@ def run():
         print('✅ PDF 파일 복사 완료')
         print('===================')
         print(f'👉 HWP 파일 병합 중...')
-        output_hwp_path = output_sheet_folder / f'{sheet_name}_문제.hwp'
-        save_hwp_files(output_hwp_path, problem_list_df)
+        save_hwp_files(output_sheet_folder, problem_list_df, '문제')
         return True
 
     def handle_option_2():
@@ -119,8 +119,7 @@ def run():
             save_pdf_files(output_sheet_folder, df, '문제')
             save_pdf_files(output_sheet_folder, df, '손필기')
         elif _choice == 6:  # 추출된 문제 리스트 HWP 파일로 저장
-            output_hwp_path = output_sheet_folder / f'{sheet_name}_문제.hwp'
-            save_hwp_files(output_hwp_path, df)
+            save_hwp_files(output_sheet_folder, df, '문제')
         else:
             print('❌ 잘못된 입력입니다. 다시 선택해주세요.\n')
             return True
@@ -317,10 +316,14 @@ def save_png_files(output_sheet_folder: Path, df):
             count['blank'] += 1
 
     print("=== 처리 결과 요약 ===")
-    if count['saved']: print(f"✅ 저장한 PNG 파일: {count['saved']}개")
-    if count['merged']: print(f"➕ 결합한 PNG 파일: {count['merged']}개")
-    if count['blank']: print(f"❌ 빈 PNG 파일: {count['blank']}개")
-    if count['exist']: print(f"⛔ 이미 존재하는 PNG 파일: {count['exist']}개")
+    if count['saved']:
+        print(f"✅ 저장한 PNG 파일: {count['saved']}개")
+    if count['merged']:
+        print(f"➕ 결합한 PNG 파일: {count['merged']}개")
+    if count['blank']:
+        print(f"❌ 빈 PNG 파일: {count['blank']}개")
+    if count['exist']:
+        print(f"⛔ 이미 존재하는 PNG 파일: {count['exist']}개")
 
 
 def merge_images_vertically(input_path_1: Path, input_path_2: Path, output_path: Path):
@@ -357,7 +360,7 @@ def save_pdf_files(output_sheet_folder: Path, df, pdf_type: str):
             child_folder = parent_folder / category / folder_name
         child_folder.mkdir(parents=True, exist_ok=True)
 
-        input_folder = BASE_NAS_FOLDER / f'#{pdf_type}' / input_folder_name
+        input_folder = BASE_NAS_FOLDER / '#PDF' / pdf_type / input_folder_name
         input_filename = f'{serial}.pdf'
         input_path = input_folder / input_filename
         output_path = child_folder / f'{sorted_number:02}_{input_filename}'
@@ -379,57 +382,57 @@ def save_pdf_files(output_sheet_folder: Path, df, pdf_type: str):
         count['blank'] += 1
 
     print("=== 처리 결과 요약 ===")
-    if count['saved']: print(f"✅ 저장한 {pdf_type} PDF 파일: {count['saved']}개")
-    if count['blank']: print(f"❌ 빈 {pdf_type} PDF 파일: {count['blank']}개")
-    if count['exist']: print(f"⛔ 이미 존재하는 {pdf_type} PDF 파일: {count['exist']}개")
+    if count['saved']:
+        print(f"✅ 저장한 {pdf_type} PDF 파일: {count['saved']}개")
+    if count['blank']:
+        print(f"❌ 빈 {pdf_type} PDF 파일: {count['blank']}개")
+    if count['exist']:
+        print(f"⛔ 이미 존재하는 {pdf_type} PDF 파일: {count['exist']}개")
 
 
-def save_hwp_files(output_hwp_path: Path, df):
+def save_hwp_files(output_sheet_folder: Path, df, hwp_type: str):
+    output_hwp_path = output_sheet_folder / f'{hwp_type}.hwp'
     count = {'exist': 0, 'saved': 0, 'blank': 0}
+
     if output_hwp_path.exists():
         print(f'✅ 이미 존재하는 파일: {output_hwp_path}')
     else:
-        file_list = get_file_list(df, '#HWP', 'hwp')
-        answers = df['정답'].replace(answer_choice()).tolist()
-
-        print("🔧 병합 시작...")
         hwp = Hwp(visible=False)
-        hwp.open(file_list[0])
+        for idx, row in df.iterrows():
+            serial = row['일련번호']
+            sub = row['과목']
+            answer = ANSWER_CHOICE_DICT.get(row['정답'])
 
-        hwp.MoveDocBegin()
-        hwp.find(answers[0])
-        hwp.CharShapeTextColorRed()
-        hwp.MoveDocEnd()
+            input_folder = BASE_NAS_FOLDER / '#HWP' / hwp_type / f'{SUB_MAP[sub]}_{sub}'
+            input_path = input_folder / f'{serial}.hwp'
 
-        for idx, f in enumerate(file_list[1:], start=1):
-            if f.strip():
-                hwp.insert_file(f)
-                hwp.find(answers[idx])
+            if input_path.exists():
+                file = str(input_path)
+                if idx == 1:
+                    print("🔧 병합 시작...")
+                    hwp.open(file)
+                    hwp.MoveDocBegin()
+                else:
+                    hwp.insert_file(file)
+                    hwp.MoveRight()
+                    hwp.DeleteBack()
+                hwp.find(answer)
                 hwp.CharShapeTextColorRed()
                 count['saved'] += 1
             else:
                 hwp.insert_file(str(BLANK_HWP))
+                hwp.MoveRight()
+                hwp.DeleteBack()
                 count['blank'] += 1
+
             hwp.MoveDocEnd()
+            hwp.BreakPage()
 
         hwp.save_as(str(output_hwp_path))
         hwp.quit()
 
     print("=== 처리 결과 요약 ===")
-    if count['saved']: print(f"✅ 저장한 HWP 파일: {count['saved']}개")
-    if count['blank']: print(f"❌ 빈 HWP 파일: {count['blank']}개")
-
-
-def get_file_list(df, folder_name: str, extension: str) -> list[str]:
-    file_list = []
-    for idx, row in df.iterrows():
-        serial = row['일련번호']
-        sub = row['과목']
-        input_folder = BASE_NAS_FOLDER / folder_name / f'{SUB_MAP[sub]}_{sub}'
-        input_path = input_folder / f'{serial}.{extension}'
-
-        if input_path.exists():
-            file_list.append(str(input_path))
-        else:
-            file_list.append('')
-    return file_list
+    if count['saved']:
+        print(f"✅ 저장한 HWP 파일: {count['saved']}개")
+    if count['blank']:
+        print(f"❌ 빈 HWP 파일: {count['blank']}개")
