@@ -1,22 +1,33 @@
-import os
+from pathlib import Path
 
 import pandas as pd
 from pyhwpx import Hwp
 
+BASE_DIR = Path('D:/projects/test')
+SAVE_DIR = BASE_DIR / 'data'
+
 
 def run():
-    save_dir = r'D:\projects\test\data'
-    os.makedirs(save_dir, exist_ok=True)
+    Path.mkdir(SAVE_DIR, exist_ok=True)
 
-    source_filename = get_user_input('원본 파일명 경로(source_filename): ', "original", str)
-    source_path = f'D:\\projects\\test\\{source_filename}.hwp'
-    excel_path = f'D:\\projects\\test\\{source_filename}.xlsx'
+    input_file = get_user_input('입력 파일: ', "original", str).replace('"', '')
+    output_folder = get_user_input('저장 폴더: ', "", str).replace('"', '')
+
+    if output_folder:
+        save_folder = SAVE_DIR / output_folder
+    else:
+        save_folder = SAVE_DIR
+
+    hwp_path = Path(input_file).with_suffix('.hwp')
+    if hwp_path.parent == Path('.'):
+        hwp_path = BASE_DIR / hwp_path
+    excel_path = Path(hwp_path).with_suffix('.xlsx')
 
     df = pd.read_excel(excel_path)
     file_names = df['일련번호'].tolist()
 
     hwp = Hwp(visible=False)
-    hwp.open(source_path, arg='versionwarning:false')
+    hwp.open(str(hwp_path), arg='versionwarning:false')
     hwp.MoveDocBegin()
     total_pages = hwp.PageCount
 
@@ -28,12 +39,15 @@ def run():
     for idx, row in df.iterrows():
         serial = row['일련번호']
         file_name = f'{serial}.hwp'
-        save_path = os.path.join(save_dir, file_name)
+        save_path = save_folder / file_name
 
-        print(f'{idx + 1}페이지 처리 중: {file_name}')
         hwp.Select()
         hwp.MovePageEnd()
-        hwp.save_block_as(save_path)
+        if save_path.exists():
+            print(f'{idx + 1}페이지 → {file_name} ❌  이미 존재하는 파일')
+        else:
+            print(f'{idx + 1}페이지 → {file_name}')
+            hwp.save_block_as(str(save_path))
         hwp.DeleteBack()
         hwp.Delete()
         hwp.Delete()
