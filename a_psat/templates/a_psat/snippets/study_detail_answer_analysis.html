@@ -117,7 +117,8 @@
            href="{{ obj.problem.get_absolute_url }}{% querystring %}">
             {{ obj.problem.reference }}
         </a>
-        {% if obj.problem.images.name1 == 'Preparing Image' %}
+
+        {% if not obj.problem.has_image %}
             {{ icon_image.False|safe }}
         {% else %}
             <a class="text-decoration-none" href=""

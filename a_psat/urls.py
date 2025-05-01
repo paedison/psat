@@ -15,6 +15,7 @@ problem_patterns = [
     path('memo/<int:pk>/', problem_views.memo_problem, name='memo-problem'),
     path('tag/<int:pk>/', problem_views.tag_problem, name='tag-problem'),
     path('collect/<int:pk>/', problem_views.collect_problem, name='collect-problem'),
+    path('annotate/<int:pk>/', problem_views.annotate_problem, name='annotate-problem'),
 
     # path('comment/<int:pk>/', problem_views.comment_problem, name='comment-problem'),
     #

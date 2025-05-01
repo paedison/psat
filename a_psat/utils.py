@@ -1,12 +1,10 @@
 import os
 from datetime import time, datetime
-from io import BytesIO
+from pathlib import Path
 
 from PIL import Image
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -133,6 +131,46 @@ def create_new_custom_record(request, problem, model, **kwargs):
     return new_record
 
 
+def process_image(problem):
+    if not problem.absolute_img_path.exists():
+        problem.img_normal = problem.img_wide = {'alt': 'Preparing Image', 'src': static('image/preparing.png')}
+    else:
+        problem.img_normal = {'alt': 'Problem Image', 'src': static(problem.static_img_path)}
+        img_wide = {'alt': 'Problem Image', 'src': static(problem.static_img_path)}
+
+        threshold_height = 2000
+        img = Image.open(problem.absolute_img_path)
+        width, height = img.size
+        if height > threshold_height:
+            temp_dir = settings.MEDIA_ROOT / 'temp_images'
+            Path.mkdir(temp_dir, exist_ok=True)
+            img_wide_filename = f'{problem.img_name}_wide.png'
+            img_wide_path = temp_dir / img_wide_filename
+
+            if not img_wide_path.exists():
+                create_img_wide(img, width, height, threshold_height, img_wide_path)
+            img_wide['src'] = f'{settings.MEDIA_URL}temp_images/{img_wide_filename}'
+
+        problem.img_wide = img_wide
+
+
+def create_img_wide(img, width, height, threshold_height, img_wide_path):
+    target_height = 1500 if height < threshold_height + 500 else height // 2
+    split_y = find_split_point(img, target_height)
+    img1 = img.crop((0, 0, width, split_y))
+    img2 = img.crop((0, split_y, width, height))
+
+    width1, height1 = img1.size
+    width2, height2 = img2.size
+    new_width = width1 + width2
+    new_height = max(height1, height2)
+
+    img_wide = Image.new('RGB', (new_width, new_height), (255, 255, 255))
+    img_wide.paste(img1, (0, 0))
+    img_wide.paste(img2, (width1, 0))
+    img_wide.save(img_wide_path, format='PNG')
+
+
 def find_split_point(image, target_height=1000, margin=50) -> int:
     """target_height ± margin 내에서 여백(밝은 부분)을 찾아 분할 위치를 반환"""
     width, height = image.size
@@ -149,59 +187,6 @@ def find_split_point(image, target_height=1000, margin=50) -> int:
     best = max(scores, key=lambda x: x[0])
     split_y = crop_area[1] + best[1]
     return split_y
-
-
-def process_image(viewport_width, problem) -> list:
-    image_name = f'PSAT{problem.year_ex_sub}{problem.number:02}'
-
-    def get_filename(number: int):
-        return f'{image_name}-{number}' if number else image_name
-
-    def get_image_path(number: int):
-        image_path = os.path.join(
-            settings.BASE_DIR, 'static', 'image', 'PSAT', str(problem.psat.year), f'{get_filename(number)}.png')
-        if os.path.exists(image_path):
-            return image_path
-
-    def get_image_url(number: int):
-        return static(f'image/PSAT/{problem.psat.year}/{get_filename(number)}.png')
-
-    image_list = [{'name': 'Preparing Image', 'path': static('image/preparing.png')}]
-    if get_image_path(1):
-        image_list = [{'name': 'Problem Image 1', 'path': get_image_url(1)}]
-        if get_image_path(2):
-            image_list.append({'name': 'Problem Image 2', 'path': get_image_url(2)})
-    elif get_image_path(0):
-        img = Image.open(get_image_path(0))
-        width, height = img.size
-        image_list = [{'name': 'Problem Image 1', 'path': get_image_url(0)}]
-
-        threshold_height = 2000
-        if viewport_width and viewport_width >= 992 and height > threshold_height:
-            target_height = 1500 if height < threshold_height + 500 else height // 2
-            split_y = find_split_point(img, target_height)
-            img1 = img.crop((0, 0, width, split_y))
-            img2 = img.crop((0, split_y, width, height))
-            image_list = [
-                {'name': 'Problem Image 1', 'path': save_temp_image(img1, f'{image_name}-1.png')},
-                {'name': 'Problem Image 2', 'path': save_temp_image(img2, f'{image_name}-2.png')},
-            ]
-
-    return image_list
-
-
-def save_temp_image(image: Image.Image, filename: str) -> str:
-    temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_images')
-    os.makedirs(temp_dir, exist_ok=True)  # 폴더 없으면 생성
-    file_path = os.path.join(temp_dir, filename)
-    if not os.path.exists(file_path):
-        image_io = BytesIO()
-        image.save(image_io, format='PNG')
-        image_io.seek(0)
-        full_path = os.path.join('temp_images', filename)
-        default_storage.save(full_path, ContentFile(image_io.read()))
-
-    return f'{settings.MEDIA_URL}temp_images/{filename}'  # 브라우저에서 접근 가능한 경로
 
 
 def create_new_collection(request, form):

@@ -77,3 +77,8 @@ def create_instance_get_messages(old_model, new_model) -> dict:
         'update': msg_update,
         'error': msg_error,
     }
+
+
+def get_user_input(prompt, default, type_func):
+    user_input = input(f"{prompt} [default: {default}]: ").strip()
+    return type_func(user_input) if user_input else default

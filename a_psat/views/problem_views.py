@@ -73,12 +73,8 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
     config.url_admin = reverse_lazy(f'admin:a_psat_problem_change', args=[pk])
     user_id = request.user.id if request.user.is_authenticated else None
 
-    viewport_width = request.COOKIES.get('viewport_width')
-    if viewport_width:
-        viewport_width = int(viewport_width)
-    images = utils.process_image(viewport_width, problem)
-
-    context = update_context_data(config=config, problem_id=pk, problem=problem, images=images)
+    utils.process_image(problem)
+    context = update_context_data(config=config, problem_id=pk, problem=problem)
 
     problem_data = queryset.filter(psat__year=problem.psat.year, psat__exam=problem.psat.exam, subject=problem.subject)
     prob_prev, prob_next = utils.get_prev_next_prob(pk, problem_data)
@@ -424,6 +420,14 @@ def collect_problem(request: HtmxHttpRequest, pk: int):
             user=request.user, is_active=True).order_by('order').annotate(item_exists=item_exists)
         context = update_context_data(problem_id=pk, collections=collections)
         return render(request, 'a_psat/snippets/collection_modal.html', context)
+
+
+def annotate_problem(request: HtmxHttpRequest, pk: int):
+    config = ViewConfiguration()
+    problem: models.Problem = get_object_or_404(models.Problem, pk=pk)
+    utils.process_image(problem)
+    context = update_context_data(config=config, problem_id=pk, problem=problem)
+    return render(request, 'a_psat/problem_annotate.html', context)
 
 
 def comment_list_view(request: HtmxHttpRequest):

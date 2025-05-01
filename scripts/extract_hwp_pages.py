@@ -3,15 +3,17 @@ from pathlib import Path
 import pandas as pd
 from pyhwpx import Hwp
 
-BASE_DIR = Path('D:/projects/test')
-SAVE_DIR = BASE_DIR / 'data'
+from . import utils
+
+BASE_DIR = Path('D:/projects/#extract_hwp_pages')
+SAVE_DIR = BASE_DIR / 'output_pages'
 
 
 def run():
     Path.mkdir(SAVE_DIR, exist_ok=True)
 
-    input_file = get_user_input('입력 파일: ', "original", str).replace('"', '')
-    output_folder = get_user_input('저장 폴더: ', "", str).replace('"', '')
+    input_file = utils.get_user_input('입력 파일명: ', "original", str).replace('"', '')
+    output_folder = utils.get_user_input('저장 폴더: ', "", str).replace('"', '')
 
     if output_folder:
         save_folder = SAVE_DIR / output_folder
@@ -24,15 +26,16 @@ def run():
     excel_path = Path(hwp_path).with_suffix('.xlsx')
 
     df = pd.read_excel(excel_path)
-    file_names = df['일련번호'].tolist()
+    filename_list = df['일련번호'].tolist()
+    total_files = len(filename_list)
 
     hwp = Hwp(visible=False)
     hwp.open(str(hwp_path), arg='versionwarning:false')
     hwp.MoveDocBegin()
     total_pages = hwp.PageCount
 
-    if total_pages != len(file_names):
-        print(f'페이지 수({total_pages})와 파일명 수({len(file_names)})가 다릅니다.')
+    if total_pages != total_files:
+        print(f'페이지 수({total_pages})와 파일명 수({total_files})가 다릅니다.')
         hwp.quit()
         return
 
@@ -55,8 +58,3 @@ def run():
     hwp.close()
     hwp.quit()
     print("✅ 모든 페이지 분할 및 저장 완료.")
-
-
-def get_user_input(prompt, default, type_func):
-    user_input = input(f"{prompt} [default: {default}]: ").strip()
-    return type_func(user_input) if user_input else default

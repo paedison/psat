@@ -1,9 +1,7 @@
-import os
 from datetime import datetime
 
 from ckeditor.fields import RichTextField
 from django.db import models
-from django.templatetags.static import static
 from django.urls import reverse_lazy
 from taggit.managers import TaggableManager
 from taggit.models import TaggedItemBase, TagBase
@@ -196,27 +194,20 @@ class Problem(models.Model):
         return ' '.join([self.year_exam_subject, self.get_number_display()])
 
     @property
-    def images(self) -> dict:
-        def get_image_path_and_name(number):
-            filename = f'PSAT{self.year_ex_sub}{self.number:02}-{number}.png'
-            image_exists = os.path.exists(
-                os.path.join(BASE_DIR, 'static', 'image', 'PSAT', str(self.psat.year), filename))
-            path = name = ''
-            if number == 1:
-                path = static('image/preparing.png')
-                name = 'Preparing Image'
-            if image_exists:
-                path = static(f'image/PSAT/{self.psat.year}/{filename}')
-                name = f'Problem Image {number}'
-            return path, name
-
-        path1, name1 = get_image_path_and_name(1)
-        path2, name2 = get_image_path_and_name(2)
-        return {'path1': path1, 'path2': path2, 'name1': name1, 'name2': name2}
+    def img_name(self):
+        return f'PSAT{self.year_ex_sub}{self.number:02}'
 
     @property
-    def has_image(self):
-        return self.images['name1'] != 'Preparing Image'
+    def static_img_path(self):
+        return f'image/PSAT/{self.psat.year}/{self.img_name}.png'
+
+    @property
+    def absolute_img_path(self):
+        return BASE_DIR / 'static' / self.static_img_path
+
+    @property
+    def has_image(self) -> bool:
+        return self.absolute_img_path.exists()
 
     @property
     def bg_color(self):
@@ -258,6 +249,9 @@ class Problem(models.Model):
 
     def get_collect_url(self):
         return reverse_lazy('psat:collect-problem', args=[self.id])
+
+    def get_annotate_url(self):
+        return reverse_lazy('psat:annotate-problem', args=[self.id])
 
     def get_comment_create_url(self):
         return reverse_lazy('psat:comment-problem-create', args=[self.id])

@@ -54,7 +54,8 @@
        hx-get="{{ problem.get_absolute_url }}{% querystring %}">
         {{ problem.reference }}
     </a>
-    {% if problem.images.name1 == 'Preparing Image' %}
+
+    {% if not problem.has_image %}
         {{ icon_image.False|safe }}
     {% else %}
         <a class="text-decoration-none" href=""
@@ -66,6 +67,7 @@
             {{ icon_image.True|safe }}
         </a>
     {% endif %}
+
     {% if user.is_admin %}
         <span class="badge bg-warning-subtle border border-warning-subtle text-warning-emphasis rounded-pill">
             정답 {{ problem.get_answer_display }}

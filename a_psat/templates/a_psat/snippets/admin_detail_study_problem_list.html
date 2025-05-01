@@ -37,7 +37,8 @@
        href="{{ problem.get_absolute_url }}{% querystring %}">
         {{ problem.reference }}
     </a>
-    {% if problem.images.name1 == 'Preparing Image' %}
+
+    {% if not problem.has_image %}
         {{ icon_image.False|safe }}
     {% else %}
         <a class="text-decoration-none" href=""
