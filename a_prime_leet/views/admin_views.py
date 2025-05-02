@@ -176,7 +176,7 @@ def update_view(request: HtmxHttpRequest, model_type: str, pk: int):
         context = update_context_data(context, header='정답 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'answer_student':
-        is_updated, message = admin_utils.update_result_answer_model_for_answer_student(leet, upload_form, file)
+        is_updated, message = admin_utils.update_answer_student(leet, upload_form, file)
         context = update_context_data(context, header='제출 답안 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'raw_score':
@@ -184,12 +184,11 @@ def update_view(request: HtmxHttpRequest, model_type: str, pk: int):
         context = update_context_data(context, header='원점수 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'score':
-        score_model = models.ResultScore if model_type == 'result' else models.PredictScore
-        is_updated, message = admin_utils.update_scores(leet, score_model)
+        is_updated, message = admin_utils.update_scores(leet, model_type)
         context = update_context_data(context, header='표준점수 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'rank':
-        is_updated, message = admin_utils.update_ranks(qs_student, model_type)
+        is_updated, message = admin_utils.update_ranks(leet, qs_student, model_type)
         context = update_context_data(context, header='등수 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'statistics':
@@ -200,6 +199,10 @@ def update_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
     if view_type == 'answer_count':
         is_updated, message = admin_utils.update_answer_counts(model_type)
+        context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
+
+    if view_type == 'dummy_data':
+        is_updated, message = admin_utils.update_dummy_data(leet, upload_form, file)
         context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
 
     return render(request, 'a_prime_leet/snippets/admin_modal_update.html', context)

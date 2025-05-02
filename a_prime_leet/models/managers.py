@@ -2,6 +2,11 @@ from django.apps import apps
 from django.db import models
 
 
+class ProblemManager(models.Manager):
+    def prime_leet_qs_problem_by_leet(self, leet):
+        return self.filter(leet=leet).order_by('subject', 'number')
+
+
 class StatisticsManager(models.Manager):
     pass
 
@@ -134,6 +139,10 @@ class AnswerManager(models.Manager):
         if is_filtered:
             qs_answer = qs_answer.filter(student__is_filtered=True)
         return qs_answer
+
+    def prime_leet_qs_answer_by_student_with_sub_number(self, student):
+        return self.filter(student=student).annotate(
+            sub=models.F('problem__subject'), number=models.F('problem__number')).order_by('sub', 'number')
 
     def prime_leet_qs_answer_by_student(self, student):
         return self.filter(

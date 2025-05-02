@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.db import models
 from django.urls import reverse_lazy
 
-from . import choices
+from . import choices, managers
 
 
 class Leet(models.Model):
@@ -129,6 +129,7 @@ class Leet(models.Model):
 
 
 class Problem(models.Model):
+    objects = managers.ProblemManager()
     leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='problems', verbose_name='Leet')
     subject = models.CharField(max_length=2, choices=choices.subject_choice, default='언어', verbose_name='과목')
     number = models.IntegerField(choices=choices.number_choice, default=1, verbose_name='번호')

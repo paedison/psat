@@ -68,6 +68,33 @@
                 </div>
             </div>
         </section>
+
+        <section class="section" aria-label="더미 데이터 업데이트 [{{ score_type }}]">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card" hx-swap="innerHTML swap:0.25s">
+                        <div class="card-header">더미 데이터 업데이트 [{{ score_type }}]</div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <form enctype="multipart/form-data"
+                                          hx-headers='{"View-Type":"dummy_data"}'
+                                          hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                          hx-post="{{ config.url_admin_update }}">
+                                        <div class="input-group">
+                                            <input type="file" name="file" class="form-control" required id="id_file">
+                                            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                더미 데이터 업데이트</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     {% endif %}
 
     <section class="section" aria-label="성적 통계 [{{ score_type }}]">
