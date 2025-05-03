@@ -1,9 +1,11 @@
 from pathlib import Path
+from typing import Hashable
 
 import numpy as np
 import pandas as pd
 from openpyxl.reader.excel import load_workbook
 from openpyxl.utils import get_column_letter
+from pandas import DataFrame
 
 from . import utils
 
@@ -71,8 +73,8 @@ def run():
     label_for_rank = 'correct_count' if exam else 'standard_score'
     score_df = get_score_df(student_df, subjects, subjects_plus_total, all_scores, temp_totals)
 
+    # 성적/답안 데이터프레임에 그룹 컬럼 추가
     for subject in reversed(subjects_plus_total):
-        # 성적/답안 데이터프레임에 그룹 컬럼 추가
         column_label = ('group', subject)
         group_col = get_group_column(score_df, label_for_rank, subject, column_label)
         score_df.insert(3, column_label, group_col)
@@ -80,10 +82,9 @@ def run():
 
     # 성적대별 답안 선택률 데이터프레임 세트
     answer_count_group_df_set = get_answer_count_group_df_set(answer_df, subjects)
-    # group_choice_counts = get_group_choice_counts(answer_df, subjects)
 
     # 시트 정보
-    sheet_dict = {
+    sheet_data = {
         'correct_answer': correct_answer_df,
         'score': score_df,
         'answer': answer_df,
@@ -95,20 +96,16 @@ def run():
 
     # Excel 저장
     with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
-        for sheet_name, df in sheet_dict.items():
+        # 정답 / 성적 / 답안 / 지망 선택 현황 / 통계 / 도수분포표 / 전체 답안 선택률 시트 저장
+        for sheet_name, df in sheet_data.items():
             df.to_excel(writer, sheet_name=sheet_name)
 
-        # 상위권, 중위권, 하위권 시트 저장
+        # 성적대별 답안 선택률 시트 저장
         for sheet_name, df in answer_count_group_df_set.items():
             change_index_to_subject_number(df)
             df.to_excel(writer, sheet_name=f'answer_count_{sheet_name}')
-        #
-        # # 상위권, 중위권, 하위권 시트 저장
-        # for group_name in ['top', 'mid', 'low']:
-        #     combined_group_df = pd.concat(group_choice_counts[group_name], ignore_index=True)
-        #     change_index_to_subject_number(combined_group_df)
-        #     combined_group_df.to_excel(writer, sheet_name=f'answer_count_{group_name}')
 
+    # 시트별 컬럼 폭 조절
     wb = load_workbook(output_excel)
     adjust_column_widths(wb)
     wb.save(output_excel)
@@ -116,7 +113,7 @@ def run():
     print(f"✅ '{output_excel}' 파일에 모든 시트를 저장했습니다.")
 
 
-def get_virtual_data(input_excel, exam, subjects, num_students):
+def get_virtual_data(input_excel: Path, exam: int, subjects: list, num_students: int) -> tuple[list, dict, dict, dict]:
     all_correct_answers, all_answers, all_scores, all_stats = [], {}, {}, {}
 
     for subject in subjects:
@@ -139,7 +136,7 @@ def get_virtual_data(input_excel, exam, subjects, num_students):
     return all_correct_answers, all_answers, all_scores, all_stats
 
 
-def generate_student_answers(df, num_students):
+def generate_student_answers(df: pd.DataFrame, num_students: int) -> np.array:
     probs_matrix = df[['①', '②', '③', '④', '⑤']].div(df[['①', '②', '③', '④', '⑤']].sum(axis=1), axis=0)
     # 각 문제마다 num_students 명의 선택지를 생성
     response_array = np.array([
@@ -150,7 +147,9 @@ def generate_student_answers(df, num_students):
     return response_array
 
 
-def compute_scores(correct_answers, response_array, exam, subject):
+def compute_scores(
+        correct_answers: list, response_array: np.array, exam: int, subject: str
+) -> tuple[np.array, np.array, np.array]:
     correct_count_array = (response_array == np.array(correct_answers)).sum(axis=1)
     percentage_score_array = np.round(correct_count_array / len(correct_answers) * 100, 1)
     base_mean = STANDARD_BASE_MEANS[exam].get(subject, 50)
@@ -161,7 +160,7 @@ def compute_scores(correct_answers, response_array, exam, subject):
     return correct_count_array, percentage_score_array, standard_score_array
 
 
-def compute_statistics(values):
+def compute_statistics(values: np.array) -> dict[str, int | float]:
     return {
         'max': values.max(),
         't10': np.percentile(values, 90),
@@ -173,7 +172,7 @@ def compute_statistics(values):
     }
 
 
-def get_aspiration_data(input_excel, num_students):
+def get_aspiration_data(input_excel: Path, num_students: int) -> tuple[np.array, np.array]:
     univ_df = pd.read_excel(input_excel, sheet_name='university')
 
     total_applicants = univ_df['applicants'].sum()
@@ -193,7 +192,7 @@ def get_aspiration_data(input_excel, num_students):
     return aspiration_1, aspiration_2
 
 
-def get_correct_answer_df(all_correct_answers):
+def get_correct_answer_df(all_correct_answers: list) -> pd.DataFrame:
     correct_answer_df = pd.DataFrame(all_correct_answers, columns=['subject', 'number', 'answer'])
     subject = correct_answer_df.pop('subject')
     number = correct_answer_df.pop('number')
@@ -201,7 +200,7 @@ def get_correct_answer_df(all_correct_answers):
     return correct_answer_df
 
 
-def get_answer_df(subjects, all_answers, ids):
+def get_answer_df(subjects: list, all_answers: dict, ids: list) -> pd.DataFrame:
     answer_cols = pd.MultiIndex.from_tuples([
         (s, i + 1) for s in subjects for i in range(all_answers[s].shape[1])
     ])
@@ -211,7 +210,7 @@ def get_answer_df(subjects, all_answers, ids):
     return answer_df
 
 
-def get_aspiration_df(student_df):
+def get_aspiration_df(student_df: pd.DataFrame) -> pd.DataFrame:
     aspiration_1_counts = student_df['aspiration_1'].value_counts().sort_index()
     aspiration_2_counts = student_df['aspiration_2'].value_counts().sort_index()
     aspiration_total_counts = aspiration_1_counts.add(aspiration_2_counts, fill_value=0)
@@ -231,7 +230,7 @@ def get_aspiration_df(student_df):
     return aspiration_df
 
 
-def get_stat_df(subjects_plus_total, all_stats):
+def get_stat_df(subjects_plus_total: list, all_stats: dict):
     stat_rows = [
         ((m, s), [round(all_stats[s][m].get(k, 0), 1) for k in STAT_KEYS])
         for m in METRICS for s in subjects_plus_total
@@ -240,7 +239,7 @@ def get_stat_df(subjects_plus_total, all_stats):
     return pd.DataFrame([row[1] for row in stat_rows], index=stat_index, columns=STAT_KEYS)
 
 
-def get_freq_df(subjects_plus_total, all_scores, temp_totals):
+def get_freq_df(subjects_plus_total: list, all_scores: dict, temp_totals: dict):
     freq_rows = []
     for metric in METRICS:
         for subject in subjects_plus_total:
@@ -287,7 +286,7 @@ def generate_frequency_table(values: np.ndarray, subject: str, bin_width: int = 
     return freq_df
 
 
-def get_answer_count_df(subjects, all_answers):
+def get_answer_count_df(subjects: list, all_answers: dict) -> pd.DataFrame:
     choice_counts = []
     for subject in subjects:
         response_array = all_answers[subject]
@@ -300,7 +299,7 @@ def get_answer_count_df(subjects, all_answers):
     return answer_count_df
 
 
-def change_index_to_subject_number(df):
+def change_index_to_subject_number(df: pd.DataFrame) -> None:
     subject = df.pop('subject')
     number = df.pop('number')
     df.index = pd.MultiIndex.from_arrays([subject, number])
@@ -337,7 +336,9 @@ def calculate_answer_distribution(response_array: np.ndarray, subject: str) -> p
     return answer_count_df
 
 
-def get_score_df(student_df: pd.DataFrame, subjects, subjects_plus_total, all_scores, temp_totals):
+def get_score_df(
+        student_df: pd.DataFrame, subjects: list, subjects_plus_total: list, all_scores: dict, temp_totals: dict
+) -> pd.DataFrame:
     score_data = {}
     for metric in METRICS:
         for subject in subjects:
@@ -372,7 +373,9 @@ def get_descending_ranks(values: np.ndarray) -> np.ndarray:
     return ranks
 
 
-def get_group_column(score_df, quantile_score_label, subject, group_column_label):
+def get_group_column(
+        score_df: pd.DataFrame, quantile_score_label: str, subject: str, group_column_label: tuple
+) -> pd.Series:
     quantile_column_label = (quantile_score_label, subject)
     quantiles = score_df[quantile_column_label].quantile([0.27, 0.73])
 
@@ -388,40 +391,7 @@ def get_group_column(score_df, quantile_score_label, subject, group_column_label
     return score_df.pop(group_column_label)
 
 
-def get_group_choice_counts(answer_df, subjects):
-    group_choice_counts = {}
-    answer_cols = [col for col in answer_df.columns if col[0] != 'group']
-    student_groups = answer_df.groupby(('group', 'total'))
-
-    for group_name, group_df in student_groups:
-        subject_dict = {}
-
-        for subject in subjects:
-            subject_cols = [col for col in answer_cols if col[0] == subject]
-            group_subject_df = group_df[subject_cols]
-
-            count_data = []
-
-            for number in sorted({col[1] for col in subject_cols}):
-                col = (subject, number)
-                value_counts = group_subject_df[col].value_counts().sort_index()
-                counts = [value_counts.get(i, 0) for i in range(1, 6)]
-                count_sum = sum(counts)
-                count_data.append([subject, number] + counts + [count_sum])
-
-            subject_df = pd.DataFrame(count_data, columns=[
-                'subject', 'number',
-                'count_1', 'count_2', 'count_3', 'count_4', 'count_5',
-                'count_sum'
-            ])
-            subject_dict[subject] = subject_df
-
-        group_choice_counts[group_name] = subject_dict
-
-    return group_choice_counts
-
-
-def get_answer_count_group_df_set(answer_df, subjects) -> dict:
+def get_answer_count_group_df_set(answer_df: pd.DataFrame, subjects: list) -> dict[Hashable, DataFrame]:
     group_df_set = {}
     answer_cols = [col for col in answer_df.columns if col[0] != 'group']
     student_groups = answer_df.groupby(('group', 'total'))
@@ -456,10 +426,7 @@ def adjust_column_widths(wb):
         for col_idx, col in enumerate(ws.iter_cols(), 1):
             max_length = 0
             for cell in col:
-                try:
-                    if cell.value:
-                        max_length = max(max_length, len(str(cell.value)))
-                except:
-                    pass
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
             col_letter = get_column_letter(col_idx)
             ws.column_dimensions[col_letter].width = max_length + 2
