@@ -818,7 +818,7 @@ def update_dummy_data(leet, form, file, model_type='result'):
     }
 
     if form.is_valid():
-        is_updated_list = update_score_and_rank_model_for_dummy_data(leet, file, model_type)
+        is_updated_list = update_student_and_score_model_for_dummy_data(leet, file, model_type)
     else:
         is_updated_list = [None]
         print(form)
@@ -832,13 +832,11 @@ def update_dummy_data(leet, form, file, model_type='result'):
     return is_updated, message_dict[is_updated]
 
 
-def update_score_and_rank_model_for_dummy_data(leet, file, model_type='result'):
+def update_student_and_score_model_for_dummy_data(leet, file, model_type='result'):
     student_model = get_target_model(f'{model_type.capitalize()}Student')
     score_model = get_target_model(f'{model_type.capitalize()}Score')
-    rank_model = get_target_model(f'{model_type.capitalize()}Rank')
 
     df = pd.read_excel(file, sheet_name='score', header=[0, 1], index_col=0)
-    participants = df.shape[0]
 
     qs_student = student_model.objects.filter(leet=leet)
     qs_student_dict = {(qs_s.serial, qs_s.name): qs_s for qs_s in qs_student}
@@ -846,40 +844,24 @@ def update_score_and_rank_model_for_dummy_data(leet, file, model_type='result'):
     qs_score = score_model.objects.filter(student__leet=leet)
     qs_score_dict = {qs_s.student: qs_s for qs_s in qs_score}
 
-    qs_rank = rank_model.objects.filter(student__leet=leet)
-    qs_rank_dict = {qs_r.student: qs_r for qs_r in qs_rank}
-
-    list_update_score = []
-    list_update_rank = []
-    for _, row in df.iterrows():
-        serial = row[('student', 'serial')]
+    list_update_student, list_update_score = [], []
+    for serial, row in df.iterrows():
         password = row[('student', 'password')]
+        aspiration_1 = row[('student', 'aspiration_1')]
+        aspiration_2 = row[('student', 'aspiration_2')]
+        student_dict = {
+            'password': password,
+            'aspiration_1': aspiration_1,
+            'aspiration_2': aspiration_2,
+        }
         score_dict = {
-            'raw_subject_0': row[('맞은 개수', 'subject_0')],
-            'raw_subject_1': row[('맞은 개수', 'subject_1')],
-            'raw_sum': row[('맞은 개수', 'total')],
-            'subject_0': row[('표준점수', 'subject_0')],
-            'subject_1': row[('표준점수', 'subject_1')],
-            'sum': row[('표준점수', 'total')],
+            'raw_subject_0': row[('correct_count', 'subject_0')],
+            'raw_subject_1': row[('correct_count', 'subject_1')],
+            'raw_sum': row[('correct_count', 'total')],
+            'subject_0': row[('standard_score', 'subject_0')],
+            'subject_1': row[('standard_score', 'subject_1')],
+            'sum': row[('standard_score', 'total')],
         }
-        rank_dict = {
-            'subject_0': row[('등수', 'subject_0')],
-            'subject_1': row[('등수', 'subject_1')],
-            'sum': row[('등수', 'total')],
-            'participants': participants,
-        }
-
-        student = qs_student_dict.get((serial, serial))
-        if student is None:
-            student = student_model.objects.create(leet=leet, serial=serial, name=serial, password=password)
-
-        score_instance = qs_score_dict.get(student)
-        if score_instance is None:
-            score_instance = score_model.objects.create(student=student)
-
-        rank_instance = qs_rank_dict.get(student)
-        if rank_instance is None:
-            rank_instance = rank_model.objects.create(student=student)
 
         def _update_list(lst, instance, data):
             fields_not_match = []
@@ -890,14 +872,26 @@ def update_score_and_rank_model_for_dummy_data(leet, file, model_type='result'):
                     setattr(instance, key, val)
                 lst.append(instance)
 
-        _update_list(list_update_score, score_instance, score_dict)
-        _update_list(list_update_rank, rank_instance, rank_dict)
+        student = qs_student_dict.get((serial, serial))
+        if student is None:
+            student = student_model.objects.create(
+                leet=leet, serial=serial, name=serial, password=password,
+                aspiration_1=aspiration_1, aspiration_2=aspiration_2,
+            )
+        else:
+            _update_list(list_update_student, student, student_dict)
 
+        score_instance = qs_score_dict.get(student)
+        if score_instance is None:
+            score_instance = score_model.objects.create(student=student)
+
+        _update_list(list_update_score, score_instance, score_dict)
+
+    update_fields_student = ['password', 'aspiration_1', 'aspiration_2']
     update_fields_score = ['raw_subject_0', 'raw_subject_1', 'raw_sum', 'subject_0', 'subject_1', 'sum']
-    update_fields_rank = ['subject_0', 'subject_1', 'sum', 'participants']
     return [
-        bulk_create_or_update(score_model, [], list_update_score, update_fields_score),
-        bulk_create_or_update(rank_model, [], list_update_rank, update_fields_rank)
+        bulk_create_or_update(student_model, [], list_update_student, update_fields_student),
+        bulk_create_or_update(score_model, [], list_update_score, update_fields_score)
     ]
 
 
