@@ -59,7 +59,7 @@ def run():
     for metric in METRICS:
         all_stats['total'][metric] = compute_statistics(temp_totals[metric])
 
-    # 정답 / 답안 / 지망 선택 현황 / 통계 / 전체 답안 선택률 / 도수분포표 데이터프레임
+    # 정답 / 답안 / 지망 선택 현황 / 통계 / 도수분포표 / 전체 답안 선택률 데이터프레임
     correct_answer_df = get_correct_answer_df(all_correct_answers)
     answer_df = get_answer_df(subjects, all_answers, ids)
     aspiration_df = get_aspiration_df(student_df)
@@ -70,6 +70,7 @@ def run():
     # 성적 데이터프레임
     label_for_rank = 'correct_count' if exam else 'standard_score'
     score_df = get_score_df(student_df, subjects, subjects_plus_total, all_scores, temp_totals)
+
     for subject in reversed(subjects_plus_total):
         # 성적/답안 데이터프레임에 그룹 컬럼 추가
         column_label = ('group', subject)
@@ -78,7 +79,8 @@ def run():
         answer_df.insert(0, column_label, group_col)
 
     # 성적대별 답안 선택률 데이터프레임 세트
-    group_choice_counts = get_group_choice_counts(answer_df, subjects)
+    answer_count_group_df_set = get_answer_count_group_df_set(answer_df, subjects)
+    # group_choice_counts = get_group_choice_counts(answer_df, subjects)
 
     # 시트 정보
     sheet_dict = {
@@ -97,10 +99,15 @@ def run():
             df.to_excel(writer, sheet_name=sheet_name)
 
         # 상위권, 중위권, 하위권 시트 저장
-        for group_name in ['top', 'mid', 'low']:
-            combined_group_df = pd.concat(group_choice_counts[group_name], ignore_index=True)
-            change_index_to_subject_number(combined_group_df)
-            combined_group_df.to_excel(writer, sheet_name=f'answer_count_{group_name}')
+        for sheet_name, df in answer_count_group_df_set.items():
+            change_index_to_subject_number(df)
+            df.to_excel(writer, sheet_name=f'answer_count_{sheet_name}')
+        #
+        # # 상위권, 중위권, 하위권 시트 저장
+        # for group_name in ['top', 'mid', 'low']:
+        #     combined_group_df = pd.concat(group_choice_counts[group_name], ignore_index=True)
+        #     change_index_to_subject_number(combined_group_df)
+        #     combined_group_df.to_excel(writer, sheet_name=f'answer_count_{group_name}')
 
     wb = load_workbook(output_excel)
     adjust_column_widths(wb)
@@ -412,6 +419,35 @@ def get_group_choice_counts(answer_df, subjects):
         group_choice_counts[group_name] = subject_dict
 
     return group_choice_counts
+
+
+def get_answer_count_group_df_set(answer_df, subjects) -> dict:
+    group_df_set = {}
+    answer_cols = [col for col in answer_df.columns if col[0] != 'group']
+    student_groups = answer_df.groupby(('group', 'total'))
+
+    for group_name, group_df in student_groups:
+        count_data = []
+
+        for subject in subjects:
+            subject_cols = [col for col in answer_cols if col[0] == subject]
+            group_subject_df = group_df[subject_cols]
+
+            for number in sorted({col[1] for col in subject_cols}):
+                col = (subject, number)
+                value_counts = group_subject_df[col].value_counts().sort_index()
+                counts = [value_counts.get(i, 0) for i in range(1, 6)]
+                count_sum = sum(counts)
+                count_data.append([subject, number] + counts + [count_sum])
+
+        answer_count_df = pd.DataFrame(count_data, columns=[
+            'subject', 'number',
+            'count_1', 'count_2', 'count_3', 'count_4', 'count_5',
+            'count_sum'
+        ])
+        group_df_set[group_name] = answer_count_df
+
+    return group_df_set
 
 
 def adjust_column_widths(wb):
