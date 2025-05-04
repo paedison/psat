@@ -5,12 +5,15 @@
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">지망 대학</th>
-                <th class="text-primary text-nowrap" rowspan="2">응시<br/>인원</th>
+                <th class="text-primary text-nowrap" colspan="3">응시 인원</th>
                 <th class="text-primary text-nowrap" colspan="5">총점</th>
                 <th class="text-primary text-nowrap" colspan="5">언어이해</th>
                 <th class="text-primary text-nowrap td-right-no-border" colspan="5">추리논증</th>
             </tr>
             <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap td-right-no-border">전체</th>
+                <th class="text-primary text-nowrap td-left-no-border td-right-no-border">1지망</th>
+                <th class="text-primary text-nowrap td-left-no-border td-right-no-border">2지망</th>
                 {% for _ in '123' %}
                     <th class="text-primary text-nowrap td-right-no-border">최고<br/>점수</th>
                     <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>10%</th>
@@ -24,7 +27,9 @@
             {% for obj in statistics_page_obj %}
                 <tr class="text-center small">
                     <th class="text-nowrap td-left-no-border">{{ obj.aspiration }}</th>
-                    <td class="text-nowrap">{{ obj.sum.participants|intcomma }}</td>
+                    <td class="text-nowrap td-right-no-border">{{ obj.sum.participants|intcomma }}</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border">{{ obj.sum.participants_1|intcomma }}</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border">{{ obj.sum.participants_2|intcomma }}</td>
 
                     {% for _ in '123' %}
                         {% cycle obj.sum obj.subject_0 obj.subject_1 as data_stat silent %}
@@ -53,7 +58,7 @@
                 </tr>
             {% empty %}
                 <tr class="text-center">
-                    <td class="text-nowrap" colspan="32">자료가 없습니다.</td>
+                    <td class="text-nowrap td-left-no-border td-right-no-border" colspan="32">자료가 없습니다.</td>
                 </tr>
             {% endfor %}
         </tbody>

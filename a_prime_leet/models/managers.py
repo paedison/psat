@@ -54,6 +54,13 @@ class StudentManager(models.Manager):
             )
         )
 
+    def prime_leet_fake_qs_student_list_by_leet(self, leet):
+        annotate_dict = self.get_annotate_dict_for_score_and_rank()
+        return (
+            self.with_select_related().filter(leet=leet)
+            .order_by('leet__year', 'leet__name', 'rank__sum').annotate(**annotate_dict)
+        )
+
     def prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(self, user, leet):
         annotate_dict = self.get_annotate_dict_for_score_and_rank()
         qs_student = (
@@ -195,7 +202,7 @@ class AnswerCountManager(models.Manager):
             'ans_predict': models.F(f'problem__{model_type}_answer_count__answer_predict'),
             'ans_official': models.F('problem__answer'),
         }
-        prefix_list = [''] if model_type == 'result' else ['', 'filtered_']
+        prefix_list = [''] if model_type != 'predict' else ['', 'filtered_']
         for prefix in prefix_list:
             for rank in ['all', 'top', 'mid', 'low']:
                 for fld in ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']:

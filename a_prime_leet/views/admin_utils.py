@@ -94,7 +94,10 @@ def get_qs_statistics(leet, model_type='result'):
 
 def get_student_list(leet, model_type='result'):
     model = get_target_model(f'{model_type.capitalize()}Student')
-    return model.objects.prime_leet_qs_student_list_by_leet(leet)
+    if model_type == 'fake':
+        return model.objects.prime_leet_fake_qs_student_list_by_leet(leet)
+    else:
+        return model.objects.prime_leet_qs_student_list_by_leet(leet)
 
 
 def get_qs_answer_count(leet, model_type='result', subject=None):
@@ -109,11 +112,12 @@ def get_dict_stat_chart(data_total):
         'sum': ('총점', '총점', 2),
     }
     stat_chart = defaultdict(list)
-    for fld in field_vars:
-        stat_chart['total_score_10'].append(getattr(data_total, fld)['t10'])
-        stat_chart['total_score_25'].append(getattr(data_total, fld)['t25'])
-        stat_chart['total_score_50'].append(getattr(data_total, fld)['t50'])
-        stat_chart['total_top'].append(getattr(data_total, fld)['max'])
+    if data_total:
+        for fld in field_vars:
+            stat_chart['total_score_10'].append(getattr(data_total, fld)['t10'])
+            stat_chart['total_score_25'].append(getattr(data_total, fld)['t25'])
+            stat_chart['total_score_50'].append(getattr(data_total, fld)['t50'])
+            stat_chart['total_top'].append(getattr(data_total, fld)['max'])
     return stat_chart
 
 
@@ -247,7 +251,7 @@ def update_answer_student(leet, form, file, model_type='result'):
     }
 
     if form.is_valid():
-        is_updated_list = [update_answer_model(leet, file, model_type)]
+        is_updated_list = [update_models_for_answer_student(leet, file, model_type)]
     else:
         is_updated_list = [None]
         print(form)
@@ -261,7 +265,7 @@ def update_answer_student(leet, form, file, model_type='result'):
     return is_updated, message_dict[is_updated]
 
 
-def update_answer_model(leet, file, model_type='result'):
+def update_models_for_answer_student(leet, file, model_type='result'):
     student_model = get_target_model(f'{model_type.capitalize()}Student')
     answer_model = get_target_model(f'{model_type.capitalize()}Answer')
 
@@ -270,9 +274,6 @@ def update_answer_model(leet, file, model_type='result'):
 
     qs_student = student_model.objects.filter(leet=leet)
     qs_student_dict = {qs_s.serial: qs_s for qs_s in qs_student}
-
-    qs_answer = answer_model.objects.prime_leet_qs_answer_by_student_with_sub_number(student)
-    qs_answer_dict = {(qs_a.sub, qs_a.number): qs_a for qs_a in qs_answer}
 
     label_name = ('성명', 'Unnamed: 1_level_1')
     label_password = ('비밀번호', 'Unnamed: 2_level_1')
@@ -329,19 +330,27 @@ def update_answer_model(leet, file, model_type='result'):
                     setattr(student, fld, val)
                 student.save()
 
+        qs_answer = answer_model.objects.prime_leet_qs_answer_by_student_with_sub_number(student)
+        qs_answer_dict = {(qs_a.sub, qs_a.number): qs_a for qs_a in qs_answer}
+
         subject_vars = get_subject_vars()
         subject_vars.pop('총점')
+
         for sub, (subject, _, _) in subject_vars.items():
             problem_count = get_problem_count_dict(student.leet.exam)[sub]
+
             for number in range(1, problem_count + 1):
                 answer = row[(subject, number)] if not np.isnan(row[(subject, number)]) else 0
                 student_answer = qs_answer_dict.get((sub, number))
+
                 if student_answer and student_answer.answer != answer:
                     student_answer.answer = answer
                     list_update.append(student_answer)
+
                 if student_answer is None:
                     problem = qs_problem_dict.get((sub, number))
                     list_create.append(answer_model(student=student, problem=problem, answer=answer))
+
         update_fields = ['answer']
         is_updated_list.append(bulk_create_or_update(answer_model, list_create, list_update, update_fields))
     return is_updated_list
@@ -473,7 +482,7 @@ def update_ranks(leet, qs_student, model_type='result'):
         update_rank_model(leet, qs_student, model_type, 'Aspiration1'),
         update_rank_model(leet, qs_student, model_type, 'Aspiration2'),
     ]
-    if model_type != 'result':
+    if model_type == 'predict':
         is_updated_list.extend([
             update_rank_model(leet, qs_student, model_type, '', True),
             update_rank_model(leet, qs_student, model_type, 'Aspiration1', True),
@@ -487,6 +496,73 @@ def update_ranks(leet, qs_student, model_type='result'):
     else:
         is_updated = False
     return is_updated, message_dict[is_updated]
+
+
+def update_rank_model(leet, qs_student, model_type='result', stat_type='', is_filtered=False):
+    list_create, list_update = [], []
+    subject_fields = [f'subject_{idx}' for idx in range(len(get_sub_list()))] + ['sum']
+
+    rank_model = get_target_model(f'{model_type.capitalize()}Rank{stat_type.capitalize()}')
+    qs_rank = rank_model.objects.filter(student__leet=leet)
+    qs_rank_dict = {qs_r.student: qs_r for qs_r in qs_rank}
+
+    data_dict = get_data_dict_for_rank(qs_student, subject_fields, is_filtered)
+    for qs_s in qs_student:
+        data = {}
+        if stat_type == '':
+            data = data_dict['total']
+        if stat_type == 'Aspiration1' and qs_s.aspiration_1:
+            data = data_dict[qs_s.aspiration_1]
+        if stat_type == 'Aspiration2' and qs_s.aspiration_2:
+            data = data_dict[qs_s.aspiration_2]
+
+        rank_obj_exists = True
+        rank_obj = qs_rank_dict.get(qs_s)
+        if rank_obj is None:
+            rank_obj_exists = False
+            rank_obj = rank_model(student=qs_s)
+
+        def set_rank_obj_field(target_list):
+            ranks = {fld: rankdata(-data[fld], method='min') for fld in subject_fields}  # 높은 점수가 1등
+            participants = len(data['sum'])
+
+            need_to_append = False
+            for fld in subject_fields:
+                score = getattr(qs_s.score, fld)
+                idx = np.where(data[fld] == score)[0][0]
+                new_rank = int(ranks[fld][idx])
+                if hasattr(rank_obj, fld):
+                    if getattr(rank_obj, fld) != new_rank or rank_obj.participants != participants:
+                        need_to_append = True
+                        setattr(rank_obj, fld, new_rank)
+                        rank_obj.participants = participants
+            if need_to_append:
+                target_list.append(rank_obj)
+
+        def set_rank_obj_field_to_null(target_list):
+            need_to_append = False
+            for fld in subject_fields:
+                if hasattr(rank_obj, fld):
+                    if getattr(rank_obj, fld) is not None or rank_obj.participants is not None:
+                        need_to_append = True
+                        setattr(rank_obj, fld, None)
+                        rank_obj.participants = None
+            if need_to_append:
+                target_list.append(rank_obj)
+
+        if rank_obj_exists:
+            if data:
+                set_rank_obj_field(list_update)
+            else:
+                set_rank_obj_field_to_null(list_update)
+        else:
+            if data:
+                set_rank_obj_field(list_create)
+            else:
+                set_rank_obj_field_to_null(list_create)
+
+    update_fields = subject_fields + ['participants']
+    return bulk_create_or_update(rank_model, list_create, list_update, update_fields)
 
 
 def get_data_dict_for_rank(qs_student, subject_fields: list, is_filtered=False) -> dict[str: np.array]:
@@ -530,81 +606,9 @@ def get_data_dict_for_rank(qs_student, subject_fields: list, is_filtered=False) 
     return data_dict
 
 
-def update_rank_model(leet, qs_student, model_type='result', stat_type='', is_filtered=False):
-    list_create, list_update = [], []
-    subject_fields = [f'subject_{idx}' for idx in range(len(get_sub_list()))] + ['sum']
-
-    rank_model = get_target_model(f'{model_type.capitalize()}Rank{stat_type.capitalize()}')
-    qs_rank = rank_model.objects.filter(student__leet=leet)
-    qs_rank_dict = {qs_r.student: qs_r for qs_r in qs_rank}
-
-    data_dict = get_data_dict_for_rank(qs_student, subject_fields, is_filtered)
-    for i, qs_s in enumerate(qs_student):
-        data = []
-        if stat_type == '':
-            data = data_dict['total']
-        if stat_type == 'Aspiration1' and qs_s.aspiration_1:
-            data = data_dict[qs_s.aspiration_1]
-        if stat_type == 'Aspiration2' and qs_s.aspiration_2:
-            data = data_dict[qs_s.aspiration_2]
-
-        rank_obj_exists = True
-        rank_obj = qs_rank_dict.get(qs_s)
-        if rank_obj is None:
-            rank_obj_exists = False
-            rank_obj = rank_model(student=qs_s)
-
-        def set_rank_obj_field(target_list):
-            ranks = {fld: rankdata(-data[fld], method='min') for fld in subject_fields}  # 높은 점수가 1등
-            participants = len(data)
-
-            for fld in subject_fields:
-                score = getattr(qs_s.score, fld)
-                idx = np.where(data[fld] == score)[0][0]
-                new_rank = int(ranks[fld][idx])
-                if hasattr(rank_obj, fld):
-                    if getattr(rank_obj, fld) != new_rank:
-                        setattr(rank_obj, fld, new_rank)
-                        rank_obj.participants = participants
-                        target_list.append(rank_obj)
-
-        def set_rank_obj_field_to_null(target_list):
-            for fld in subject_fields:
-                if hasattr(rank_obj, fld):
-                    if getattr(rank_obj, fld) is not None:
-                        setattr(rank_obj, fld, None)
-                        rank_obj.participants = None
-                        target_list.append(rank_obj)
-
-        if data:
-            if rank_obj_exists:
-                set_rank_obj_field(list_update)
-            else:
-                set_rank_obj_field(list_create)
-        else:
-            if rank_obj_exists:
-                set_rank_obj_field_to_null(list_update)
-            else:
-                set_rank_obj_field_to_null(list_create)
-
-    return bulk_create_or_update(rank_model, list_create, list_update, subject_fields)
-
-
 def get_data_statistics(leet, model_type='result'):
     field_vars = get_field_vars()
     student_model = get_target_model(f'{model_type.capitalize()}Student')
-
-    aspirations = models.choices.get_aspirations()
-    data_statistics = []
-    score_list = {}
-    filtered_data_statistics = []
-    filtered_score_list = {}
-    for aspiration in aspirations:
-        data_statistics.append({'aspiration': aspiration, 'participants': 0})
-        score_list[aspiration] = {fld: [] for fld in field_vars}
-        if model_type != 'result':
-            filtered_data_statistics.append({'aspiration': aspiration, 'participants': 0})
-            filtered_score_list[aspiration] = {fld: [] for fld in field_vars}
 
     qs_students = (
         student_model.objects.filter(leet=leet)
@@ -618,30 +622,67 @@ def get_data_statistics(leet, model_type='result'):
             sum=F('score__sum'),
         )
     )
+
+    def get_participants_distribution(aspiration_num: int):
+        participants_distribution = (
+            qs_students.exclude(**{f'aspiration_{aspiration_num}__isnull': True})
+            .exclude(**{f'aspiration_{aspiration_num}': ''})
+            .values(f'aspiration_{aspiration_num}').annotate(count=Count('id'))
+        )
+        participants_dict = {row[f'aspiration_{aspiration_num}']: row['count'] for row in participants_distribution}
+        participants_dict['전체'] = sum(participants_dict.values())
+        return participants_dict
+
+    participants_dict_1 = get_participants_distribution(1)
+    participants_dict_2 = get_participants_distribution(2)
+    participants_dict_sum = {}
+    for key in set(participants_dict_1) | set(participants_dict_2):
+        participants_dict_sum[key] = participants_dict_1.get(key, 0) + participants_dict_2.get(key, 0)
+
+    aspirations = models.choices.get_aspirations()
+    score_list, filtered_score_list = {}, {}
+    data_statistics, filtered_data_statistics = {}, {}
+
+    for aspiration in aspirations:
+        score_list[aspiration] = {fld: [] for fld in field_vars}
+        data_statistics[aspiration] = {fld: {} for fld in field_vars}
+        data_statistics[aspiration]['aspiration'] = aspiration
+        data_statistics[aspiration]['participants_dict'] = {
+            '1': participants_dict_1.get(aspiration, 0),
+            '2': participants_dict_2.get(aspiration, 0),
+            'sum': participants_dict_sum.get(aspiration, 0),
+        }
+        if model_type == 'predict':
+            filtered_score_list[aspiration] = {fld: [] for fld in field_vars}
+            filtered_data_statistics[aspiration] = {'participants_1': 0, 'participants_2': 0, 'participants_sum': 0}
+
     for qs_s in qs_students:
         for fld in field_vars:
             score = getattr(qs_s, fld)
+            aspiration_1 = qs_s.aspiration_1
+            aspiration_2 = qs_s.aspiration_2
+
             if score is not None:
                 score_list['전체'][fld].append(score)
-                if qs_s.aspiration_1:
-                    score_list[qs_s.aspiration_1][fld].append(score)
-                if qs_s.aspiration_2:
-                    score_list[qs_s.aspiration_2][fld].append(score)
-                if model_type != 'result':
-                    filtered_score_list['전체'][fld].append(score)
-                    if qs_s.aspiration_1:
-                        filtered_score_list[qs_s.aspiration_1][fld].append(score)
-                    if qs_s.aspiration_2:
-                        filtered_score_list[qs_s.aspiration_2][fld].append(score)
+                if aspiration_1:
+                    score_list[aspiration_1][fld].append(score)
+                if aspiration_2:
+                    score_list[aspiration_2][fld].append(score)
 
-    update_data_statistics(data_statistics, score_list, field_vars, aspirations)
-    update_data_statistics(filtered_data_statistics, filtered_score_list, field_vars, aspirations)
+                if model_type == 'predict':
+                    filtered_score_list['전체'][fld].append(score)
+                    if aspiration_1:
+                        filtered_score_list[aspiration_1][fld].append(score)
+                    if aspiration_2:
+                        filtered_score_list[aspiration_2][fld].append(score)
+
+    update_data_statistics(data_statistics, score_list, field_vars)
+    update_data_statistics(filtered_data_statistics, filtered_score_list, field_vars)
     return data_statistics, filtered_data_statistics
 
 
-def update_data_statistics(data_statistics, score_list, field_vars, aspirations):
+def update_data_statistics(data_statistics, score_list, field_vars):
     for aspiration, score_dict in score_list.items():
-        aspiration_idx = aspirations.index(aspiration)
         for fld, scores in score_dict.items():
             sub = field_vars[fld][0]
             subject = field_vars[fld][1]
@@ -653,7 +694,7 @@ def update_data_statistics(data_statistics, score_list, field_vars, aspirations)
                     threshold = max(1, int(participants * percentage))
                     return sorted_scores[threshold - 1]
 
-            data_statistics[aspiration_idx][fld] = {
+            data_for_update = {
                 'field': fld,
                 'is_confirmed': True,
                 'sub': sub,
@@ -665,6 +706,10 @@ def update_data_statistics(data_statistics, score_list, field_vars, aspirations)
                 't50': get_top_score(0.50),
                 'avg': round(sum(scores) / participants, 1) if sorted_scores else None,
             }
+            if fld in ['sum', 'raw_sum']:
+                data_for_update['participants_dict'] = data_statistics[aspiration]['participants_dict']
+
+            data_statistics[aspiration][fld].update(data_for_update)
 
 
 def update_statistics(leet, data_statistics, filtered_data_statistics, model_type='result'):
@@ -687,20 +732,18 @@ def update_statistics(leet, data_statistics, filtered_data_statistics, model_typ
     return is_updated, message_dict[is_updated]
 
 
-def update_statistics_model(leet, data_statistics, model_type='result', is_filtered=False):
+def update_statistics_model(leet, data_statistics: dict, model_type='result', is_filtered=False):
     model = get_target_model(f'{model_type.capitalize()}Statistics')
 
     field_vars = get_field_vars()
     prefix = 'filtered_' if is_filtered else ''
 
-    list_update = []
-    list_create = []
-
-    for data_stat in data_statistics:
-        aspiration = data_stat['aspiration']
+    list_update, list_create = [], []
+    for aspiration, data_stat in data_statistics.items():
         stat_dict = {'aspiration': aspiration}
+
         for fld in field_vars:
-            stat_dict.update({
+            data_for_update = {
                 fld: {
                     'participants': data_stat[fld]['participants'],
                     'max': data_stat[fld]['max'],
@@ -709,7 +752,12 @@ def update_statistics_model(leet, data_statistics, model_type='result', is_filte
                     't50': data_stat[fld]['t50'],
                     'avg': data_stat[fld]['avg'],
                 }
-            })
+            }
+            if fld in ['sum', 'raw_sum']:
+                data_for_update[fld]['participants_1'] = data_stat[fld]['participants_dict']['1']
+                data_for_update[fld]['participants_2'] = data_stat[fld]['participants_dict']['2']
+
+            stat_dict.update(data_for_update)
 
         try:
             new_query = model.objects.get(leet=leet, aspiration=aspiration)
@@ -720,8 +768,10 @@ def update_statistics_model(leet, data_statistics, model_type='result', is_filte
                 list_update.append(new_query)
         except model.DoesNotExist:
             list_create.append(model(leet=leet, **stat_dict))
+
     update_fields = ['aspiration']
     update_fields.extend([f'{prefix}{key}' for key in field_vars])
+
     return bulk_create_or_update(model, list_create, list_update, update_fields)
 
 
@@ -751,8 +801,7 @@ def update_answer_count_model(model_type='result', rank_type='', is_filtered=Fal
     answer_count_model = get_target_model(f'{model_type.capitalize()}AnswerCount{rank_type.capitalize()}')
     prefix = 'filtered_' if is_filtered else ''
 
-    list_update = []
-    list_create = []
+    list_update, list_create = [], []
 
     lookup_field = f'student__rank__{prefix}sum'
     top_rank_threshold = 0.27
@@ -810,7 +859,7 @@ def update_answer_count_model(model_type='result', rank_type='', is_filtered=Fal
     return bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
 
 
-def update_dummy_data(leet, form, file, model_type='result'):
+def update_fake_ref(leet, form, file):
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '더미 데이터를 업데이트했습니다.',
@@ -818,7 +867,7 @@ def update_dummy_data(leet, form, file, model_type='result'):
     }
 
     if form.is_valid():
-        is_updated_list = update_student_and_score_model_for_dummy_data(leet, file, model_type)
+        is_updated_list = update_models_for_fake_ref(leet, file)
     else:
         is_updated_list = [None]
         print(form)
@@ -832,11 +881,84 @@ def update_dummy_data(leet, form, file, model_type='result'):
     return is_updated, message_dict[is_updated]
 
 
-def update_student_and_score_model_for_dummy_data(leet, file, model_type='result'):
-    student_model = get_target_model(f'{model_type.capitalize()}Student')
-    score_model = get_target_model(f'{model_type.capitalize()}Score')
+def update_models_for_fake_ref(leet, file):
+    problem_model = models.Problem
+    ref_aspiration_model = models.FakeRefAspiration
+    ref_answer_count_model = models.FakeRefAnswerCount
 
-    df = pd.read_excel(file, sheet_name='score', header=[0, 1], index_col=0)
+    df_aspiration = pd.read_excel(file, sheet_name='aspiration', header=0, index_col=0)
+    df_answer_count = pd.read_excel(file, sheet_name='answer_count', header=0, index_col=0)
+
+    qs_problem = problem_model.objects.filter(leet=leet)
+    qs_aspiration = ref_aspiration_model.objects.filter(leet=leet)
+    qs_answer_count = ref_answer_count_model.objects.filter(problem__leet=leet)
+
+    dict_qs_problem = {(qs_p.subject, qs_p.number): qs_p for qs_p in qs_problem}
+    dict_qs_aspiration = {qs_s.university: qs_s for qs_s in qs_aspiration}
+    dict_qs_answer_count = {(qs_ac.problem.subject, qs_ac.problem.number): qs_ac for qs_ac in qs_answer_count}
+
+    list_create_aspiration, list_create_answer_count = [], []
+    list_update_aspiration, list_update_answer_count = [], []
+
+    for _, row in df_aspiration.iterrows():
+        university = row['university']
+        aspiration_info = {col: row[col] for col in row.index}
+
+        aspiration = dict_qs_aspiration.get(university)
+        if aspiration is None:
+            list_create_aspiration.append(ref_aspiration_model(leet=leet, **aspiration_info))
+        else:
+            update_list_for_working_bulk(list_update_aspiration, aspiration, aspiration_info)
+
+    for _, row in df_answer_count.iterrows():
+        subject = row['subject'][:2]
+        number = row['number']
+        answer_count_instance = dict_qs_answer_count.get((subject, number))
+        answer_count_info = {col: row[col] for col in row.index if col[:5] == 'count'}
+        if answer_count_instance is None:
+            problem = dict_qs_problem.get((subject, number))
+            list_create_answer_count.append(ref_answer_count_model(problem=problem, **answer_count_info))
+        else:
+            update_list_for_working_bulk(list_update_answer_count, answer_count_instance, answer_count_info)
+
+    update_fields_student = ['university', 'aspiration_1', 'aspiration_2', 'aspiration_sum']
+    update_fields_score = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
+
+    return [
+        bulk_create_or_update(ref_aspiration_model, list_create_aspiration, list_update_aspiration, update_fields_student),
+        bulk_create_or_update(ref_answer_count_model, list_create_answer_count, list_update_answer_count, update_fields_score),
+    ]
+
+
+def update_fake_data(leet, form, file):
+    message_dict = {
+        None: '에러가 발생했습니다.',
+        True: '더미 데이터를 업데이트했습니다.',
+        False: '기존 더미 데이터와 일치합니다.',
+    }
+
+    if form.is_valid():
+        is_updated_list = update_student_score_rank_models_for_fake_data(leet, file)
+        is_updated_list += update_answer_count_models_for_fake_data(leet, file)
+    else:
+        is_updated_list = [None]
+        print(form)
+
+    if None in is_updated_list:
+        is_updated = None
+    elif any(is_updated_list):
+        is_updated = True
+    else:
+        is_updated = False
+    return is_updated, message_dict[is_updated]
+
+
+def update_student_score_rank_models_for_fake_data(leet, file):
+    student_model = models.FakeStudent
+    score_model = models.FakeScore
+    rank_model = models.FakeRank
+
+    df_score = pd.read_excel(file, sheet_name='score', header=[0, 1], index_col=0)
 
     qs_student = student_model.objects.filter(leet=leet)
     qs_student_dict = {(qs_s.serial, qs_s.name): qs_s for qs_s in qs_student}
@@ -844,17 +966,33 @@ def update_student_and_score_model_for_dummy_data(leet, file, model_type='result
     qs_score = score_model.objects.filter(student__leet=leet)
     qs_score_dict = {qs_s.student: qs_s for qs_s in qs_score}
 
-    list_update_student, list_update_score = [], []
-    for serial, row in df.iterrows():
-        password = row[('student', 'password')]
-        aspiration_1 = row[('student', 'aspiration_1')]
-        aspiration_2 = row[('student', 'aspiration_2')]
-        student_dict = {
-            'password': password,
-            'aspiration_1': aspiration_1,
-            'aspiration_2': aspiration_2,
+    qs_rank = rank_model.objects.filter(student__leet=leet)
+    qs_rank_dict = {qs_r.student: qs_r for qs_r in qs_rank}
+
+    result = []
+    list_create_student, list_create_score, list_create_rank = [], [], []
+    list_update_student, list_update_score, list_update_rank = [], [], []
+
+    for serial, row in df_score.iterrows():
+        student_info = {
+            'password': str(row[('student', 'password')]),
+            'aspiration_1': row[('student', 'aspiration_1')],
+            'aspiration_2': row[('student', 'aspiration_2')],
         }
-        score_dict = {
+        student = qs_student_dict.get((serial, serial))
+        if student is None:
+            list_create_student.append(student_model(leet=leet, serial=serial, name=serial, **student_info))
+        else:
+            update_list_for_working_bulk(list_update_student, student, student_info)
+
+    update_fields_student = ['password', 'aspiration_1', 'aspiration_2']
+    result.append(bulk_create_or_update(student_model, list_create_student, list_update_student, update_fields_student))
+
+    qs_student = student_model.objects.filter(leet=leet)
+    qs_student_dict = {(qs_s.serial, qs_s.name): qs_s for qs_s in qs_student}
+
+    for serial, row in df_score.iterrows():
+        score_info = {
             'raw_subject_0': row[('correct_count', 'subject_0')],
             'raw_subject_1': row[('correct_count', 'subject_1')],
             'raw_sum': row[('correct_count', 'total')],
@@ -862,37 +1000,79 @@ def update_student_and_score_model_for_dummy_data(leet, file, model_type='result
             'subject_1': row[('standard_score', 'subject_1')],
             'sum': row[('standard_score', 'total')],
         }
-
-        def _update_list(lst, instance, data):
-            fields_not_match = []
-            for key, val in data.items():
-                fields_not_match.append(getattr(instance, key) != val)
-            if any(fields_not_match):
-                for key, val in data.items():
-                    setattr(instance, key, val)
-                lst.append(instance)
+        rank_info = {
+            'subject_0': row[('rank', 'subject_0')],
+            'subject_1': row[('rank', 'subject_1')],
+            'sum': row[('rank', 'total')],
+            'participants': 1000,
+        }
 
         student = qs_student_dict.get((serial, serial))
-        if student is None:
-            student = student_model.objects.create(
-                leet=leet, serial=serial, name=serial, password=password,
-                aspiration_1=aspiration_1, aspiration_2=aspiration_2,
-            )
-        else:
-            _update_list(list_update_student, student, student_dict)
-
         score_instance = qs_score_dict.get(student)
         if score_instance is None:
-            score_instance = score_model.objects.create(student=student)
+            list_create_score.append(score_model(student=student, **score_info))
+        else:
+            update_list_for_working_bulk(list_update_score, score_instance, score_info)
 
-        _update_list(list_update_score, score_instance, score_dict)
+        rank_instance = qs_rank_dict.get(student)
+        if rank_instance is None:
+            list_create_rank.append(rank_model(student=student, **rank_info))
+        else:
+            update_list_for_working_bulk(list_update_rank, rank_instance, rank_info)
 
-    update_fields_student = ['password', 'aspiration_1', 'aspiration_2']
     update_fields_score = ['raw_subject_0', 'raw_subject_1', 'raw_sum', 'subject_0', 'subject_1', 'sum']
-    return [
-        bulk_create_or_update(student_model, [], list_update_student, update_fields_student),
-        bulk_create_or_update(score_model, [], list_update_score, update_fields_score)
-    ]
+    update_fields_rank = ['subject_0', 'subject_1', 'sum']
+    result.append(bulk_create_or_update(score_model, list_create_score, list_update_score, update_fields_score))
+    result.append(bulk_create_or_update(rank_model, list_create_rank, list_update_rank, update_fields_rank))
+
+    return result
+
+
+def update_answer_count_models_for_fake_data(leet, file):
+    qs_problem = models.Problem.objects.filter(leet=leet)
+    dict_qs_problem = {(qs_p.subject, qs_p.number): qs_p for qs_p in qs_problem}
+
+    result = []
+    update_fields = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
+    field_var = get_field_vars()
+
+    for rank_type in ['all', 'top', 'mid', 'low']:
+        list_create, list_update = [], []
+
+        if rank_type == 'all':
+            answer_count_model = models.FakeAnswerCount
+            df = pd.read_excel(file, sheet_name='answer_count', header=0, index_col=[0, 1])
+        else:
+            answer_count_model = get_target_model(f'FakeAnswerCount{rank_type.capitalize()}Rank')
+            df = pd.read_excel(file, sheet_name=f'answer_count_{rank_type}', header=0, index_col=[0, 1])
+
+        qs_answer_count = answer_count_model.objects.filter(problem__leet=leet)
+        dict_qs_answer_count = {(qs_ac.problem.subject, qs_ac.problem.number): qs_ac for qs_ac in qs_answer_count}
+
+        for index, row in df.iterrows():
+            field, number = index
+            lookup_index = (field_var[field][0], number)
+            answer_count_info = {col: row[col] for col in row.index}
+
+            problem = dict_qs_problem.get(lookup_index)
+            answer_count = dict_qs_answer_count.get(lookup_index)
+            if answer_count is None:
+                list_create.append(answer_count_model(problem=problem, **answer_count_info))
+            else:
+                update_list_for_working_bulk(list_update, answer_count, answer_count_info)
+
+        result.append(bulk_create_or_update(answer_count_model, list_create, list_update, update_fields))
+    return result
+
+
+def update_list_for_working_bulk(lst, instance, data):
+    fields_not_match = []
+    for key, val in data.items():
+        fields_not_match.append(getattr(instance, key) != val)
+    if any(fields_not_match):
+        for key, val in data.items():
+            setattr(instance, key, val)
+        lst.append(instance)
 
 
 def create_default_problems(leet):
@@ -978,11 +1158,19 @@ def get_statistics_response(leet, model_type='result'):
     for fld, (_, subject, _) in field_vars.items():
         drop_columns.append(fld)
         subject += ' (원점수)' if fld[:3] == 'raw' else ' (표준점수)'
-        column_label.extend([
-            (subject, '총 인원'), (subject, '최고'),
-            (subject, '상위10%'), (subject, '상위25%'),
-            (subject, '상위50%'), (subject, '평균'),
-        ])
+        if subject == '총점 (표준점수)':
+            column_label.extend([
+                (subject, '총 인원'), (subject, '1지망 인원'),
+                (subject, '2지망 인원'), (subject, '최고'),
+                (subject, '상위10%'), (subject, '상위25%'),
+                (subject, '상위50%'), (subject, '평균'),
+            ])
+        else:
+            column_label.extend([
+                (subject, '총 인원'), (subject, '최고'),
+                (subject, '상위10%'), (subject, '상위25%'),
+                (subject, '상위50%'), (subject, '평균'),
+            ])
         df_subject = pd.json_normalize(df[fld])
         df = pd.concat([df, df_subject], axis=1)
 

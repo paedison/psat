@@ -15,12 +15,12 @@ def run():
     input_excel_file = utils.get_user_input('답안 선택률 엑셀 파일명: ', '선택률', str)
     output_excel_file = utils.get_user_input('가상 답안 엑셀 파일명: ', '가상_답안', str)
 
-    fake_answer_dict = {
-        0: LeetFakeAnswer(num_students, input_excel_file, output_excel_file),
-        1: PsatHaengsiFakeAnswer(num_students, input_excel_file, output_excel_file),
-        2: PsatChilgeubFakeAnswer(num_students, input_excel_file, output_excel_file),
-    }
-    fake_answer = fake_answer_dict.get(exam)
+    if exam == 0:
+        fake_answer = LeetFakeAnswer(num_students, input_excel_file, output_excel_file)
+    elif exam == 1:
+        fake_answer = PsatHaengsiFakeAnswer(num_students, input_excel_file, output_excel_file)
+    else:
+        fake_answer = PsatChilgeubFakeAnswer(num_students, input_excel_file, output_excel_file)
 
     output_excel = fake_answer.output_excel
     sheet_data = fake_answer.get_sheet_data()
@@ -62,7 +62,7 @@ class LeetFakeAnswer:
         self.update_all_fake_data()
 
         # 학생 정보
-        self.ids = [f'dummy{i:04}' for i in range(1, num_students + 1)]
+        self.ids = [f'fake{i:04}' for i in range(1, num_students + 1)]
         self.student_df = self.get_student_df()
 
         # 답안/성적 데이터프레임
@@ -74,10 +74,12 @@ class LeetFakeAnswer:
         return self.BASE_DIR / f'{filename}.xlsx'
 
     def update_all_fake_data(self):
+        df = pd.read_excel(self.input_excel, index_col=[0, 1, 2], sheet_name='answer_count')
+
         for subject in self.SUBJECTS:
-            df = pd.read_excel(self.input_excel, sheet_name=subject)
-            correct_answers = df['정답'].tolist()
-            student_answers = self.generate_student_answers(df)
+            df_subject = df[df.index.get_level_values('field') == subject]
+            correct_answers = df_subject['answer'].tolist()
+            student_answers = self.generate_student_answers(df_subject)
             correct_counts, percentage_scores, standard_scores = self.compute_scores(
                 subject, correct_answers, student_answers)
 
@@ -96,9 +98,34 @@ class LeetFakeAnswer:
             total = np.sum([self.all_scores[s][metric] for s in self.SUBJECTS], axis=0)
             self.temp_totals[metric] = total
             self.all_stats['total'][metric] = self.compute_statistics(total)
+    #
+    # def update_all_fake_data(self):
+    #     for subject in self.SUBJECTS:
+    #         df = pd.read_excel(self.input_excel, sheet_name=subject)
+    #         correct_answers = df['answer'].tolist()
+    #         student_answers = self.generate_student_answers(df)
+    #         correct_counts, percentage_scores, standard_scores = self.compute_scores(
+    #             subject, correct_answers, student_answers)
+    #
+    #         self.all_answers[subject] = student_answers
+    #         self.all_scores[subject] = {
+    #             'correct_count': correct_counts,
+    #             'percentage_score': percentage_scores,
+    #             'standard_score': standard_scores,
+    #         }
+    #
+    #         self.all_correct_answers.extend([(subject, idx + 1, ans) for idx, ans in enumerate(correct_answers)])
+    #         self.all_stats[subject] = {k: self.compute_statistics(self.all_scores[subject][k]) for k in self.METRICS}
+    #
+    #     self.all_stats['total'] = {}
+    #     for metric in self.METRICS:
+    #         total = np.sum([self.all_scores[s][metric] for s in self.SUBJECTS], axis=0)
+    #         self.temp_totals[metric] = total
+    #         self.all_stats['total'][metric] = self.compute_statistics(total)
 
     def generate_student_answers(self, df: pd.DataFrame) -> np.array:
-        probs_matrix = df[['①', '②', '③', '④', '⑤']].div(df[['①', '②', '③', '④', '⑤']].sum(axis=1), axis=0)
+        probs_matrix = df[['count_1', 'count_2', 'count_3', 'count_4', 'count_5']].div(
+            df[['count_1', 'count_2', 'count_3', 'count_4', 'count_5']].sum(axis=1), axis=0)
         # 각 문제마다 num_students 명의 선택지를 생성
         student_answers = np.array([
             np.random.choice([1, 2, 3, 4, 5], size=self.num_students, p=probs_matrix.iloc[q_idx].values)
@@ -122,17 +149,19 @@ class LeetFakeAnswer:
     def get_student_df(self):
         passwords = [f'{np.random.randint(0, 10000):04}' for _ in range(self.num_students)]
 
-        df = pd.read_excel(self.input_excel, sheet_name='university')
-        total_applicants = df['applicants'].sum()
-        df['rate'] = df['applicants'] / total_applicants
+        df = pd.read_excel(self.input_excel, sheet_name='aspiration')
         universities = df['university'].tolist()
-        probabilities = df['rate'].tolist()
 
-        aspiration_1 = np.random.choice(universities, size=self.num_students, p=probabilities)
+        for i in range(1, 3):
+            aspiration_col = f'aspiration_{i}'
+            rate_col = f'rate_{i}'
+            df[rate_col] = df[aspiration_col] / df[aspiration_col].sum()
+
+        aspiration_1 = np.random.choice(universities, size=self.num_students, p=df['rate_1'].tolist())
         aspiration_2 = []
         for fc in aspiration_1:
             available_univs = [u for u in universities if u != fc]
-            available_probs = [df.loc[df['university'] == u, 'rate'].values[0] for u in available_univs]
+            available_probs = [df.loc[df['university'] == u, 'rate_2'].values[0] for u in available_univs]
             total = sum(available_probs)
             norm_probs = [p / total for p in available_probs]
             aspiration_2.append(np.random.choice(available_univs, p=norm_probs))

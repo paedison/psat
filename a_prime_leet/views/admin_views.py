@@ -60,7 +60,9 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     page_number = request.GET.get('page', '1')
     subject = request.GET.get('subject', '')
     student_name = request.GET.get('student_name', '')
-    score_type = '결과' if model_type == 'result' else '예측'
+
+    model_type_dict = {'result': '결과', 'predict': '예측', 'fake': '가상'}
+    score_type = model_type_dict.get(model_type)
 
     leet = get_object_or_404(models.Leet, pk=pk)
     answer_tab = admin_utils.get_answer_tab()
@@ -201,9 +203,13 @@ def update_view(request: HtmxHttpRequest, model_type: str, pk: int):
         is_updated, message = admin_utils.update_answer_counts(model_type)
         context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
 
-    if view_type == 'dummy_data':
-        is_updated, message = admin_utils.update_dummy_data(leet, upload_form, file)
-        context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
+    if view_type == 'fake_ref':
+        is_updated, message = admin_utils.update_fake_ref(leet, upload_form, file)
+        context = update_context_data(context, header='참고 자료 업데이트', is_updated=is_updated, message=message)
+
+    if view_type == 'fake_data':
+        is_updated, message = admin_utils.update_fake_data(leet, upload_form, file)
+        context = update_context_data(context, header='가상 답안 업데이트', is_updated=is_updated, message=message)
 
     return render(request, 'a_prime_leet/snippets/admin_modal_update.html', context)
 
@@ -261,7 +267,9 @@ def leet_active_view(request: HtmxHttpRequest, pk: int):
 @only_staff_allowed()
 def statistics_print_view(request: HtmxHttpRequest, model_type: str, pk: int):
     leet = get_object_or_404(models.Leet, pk=pk)
-    data_statistics, filtered_data_statistics = admin_utils.get_data_statistics(leet, model_type)
+    data_statistics_dict, filtered_data_statistics_dict = admin_utils.get_data_statistics(leet, model_type)
+    data_statistics = [val for val in data_statistics_dict.values()]
+    filtered_data_statistics = [val for val in filtered_data_statistics_dict.values()]
     context = update_context_data(
         leet=leet, model_type=model_type,
         data_statistics=data_statistics, filtered_data_statistics=filtered_data_statistics,

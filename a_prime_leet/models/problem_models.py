@@ -97,6 +97,9 @@ class Leet(models.Model):
     def get_admin_result_detail_url(self):
         return reverse_lazy('prime_leet:admin-detail', args=['result', self.id])
 
+    def get_admin_fake_detail_url(self):
+        return reverse_lazy('prime_leet:admin-detail', args=['fake', self.id])
+
     def get_admin_update_url(self):
         return reverse_lazy('prime_leet:admin-update', args=[self.id])
 

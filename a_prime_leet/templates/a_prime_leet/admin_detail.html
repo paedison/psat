@@ -41,6 +41,35 @@
                                     </div>
                                 {% endif %}
 
+                                {% if score_type == '가상' %}
+                                    <div class="col-md-6">
+                                        <form enctype="multipart/form-data"
+                                              hx-headers='{"View-Type":"fake_ref"}'
+                                              hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                              hx-post="{{ config.url_admin_update }}">
+                                            <div class="input-group">
+                                                <input type="file" name="file" class="form-control" required id="id_file">
+                                                <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                    참고 자료 업데이트</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <form enctype="multipart/form-data"
+                                              hx-headers='{"View-Type":"fake_data"}'
+                                              hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                              hx-post="{{ config.url_admin_update }}">
+                                            <div class="input-group">
+                                                <input type="file" name="file" class="form-control" required id="id_file">
+                                                <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                        data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                                    가상 답안 업데이트</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                {% endif %}
+
                                 <div class="col-md-6 d-flex"
                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
                                     <div class="btn-group flex-fill">
@@ -122,6 +151,8 @@
                         <div class="mt-3">
                             <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
                             <ol class="text-success small fw-bold m-0">
+                                <li>전체 대학에 대한 '전체' 응시 인원은 총 응시생 수입니다.</li>
+                                <li>각 대학별 '전체' 응시 인원은 각 대학에 1지망 또는 2지망으로 지원한 응시생 수의 합입니다.</li>
                                 <li>윗줄은 표준점수를, 아랫줄은 원점수를 의미합니다.</li>
                                 <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
                             </ol>

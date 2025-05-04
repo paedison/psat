@@ -35,8 +35,9 @@
                         <th class="text-primary text-nowrap">활성</th>
                     {% endif %}
                     <th class="text-primary text-nowrap">시험명</th>
-                    <th class="text-primary text-nowrap">성적 예측</th>
-                    <th class="text-primary text-nowrap">성적 결과</th>
+                    <th class="text-primary text-nowrap">성적<br/>예측</th>
+                    <th class="text-primary text-nowrap">성적<br/>결과</th>
+                    <th class="text-primary text-nowrap">가상<br/>결과</th>
                     <th class="text-primary text-nowrap">페이지 오픈일<br/>시험일</th>
                     <th class="text-primary text-nowrap">시험 시간</th>
                     <th class="text-primary text-nowrap">정답 공개<br/>시각</th>
@@ -70,6 +71,12 @@
                             <td class="text-nowrap">
                                 <a class="btn btn-sm btn-outline-primary" hx-boost="true"
                                    href="{{ obj.get_admin_result_detail_url }}">
+                                    클릭
+                                </a>
+                            </td>
+                            <td class="text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" hx-boost="true"
+                                   href="{{ obj.get_admin_fake_detail_url }}">
                                     클릭
                                 </a>
                             </td>

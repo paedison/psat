@@ -47,6 +47,8 @@
                                 <a href="{{ leet.get_admin_result_detail_url }}" class="active">{{ leet.abbr }}-결과</a>
                             {% elif config.model_type == 'predict' %}
                                 <a href="{{ leet.get_admin_predict_detail_url }}" class="active">{{ leet.abbr }}-예측</a>
+                            {% elif config.model_type == 'fake' %}
+                                <a href="{{ leet.get_admin_fake_detail_url }}" class="active">{{ leet.abbr }}-가상</a>
                             {% endif %}
                         {% endif %}
                     </li>
