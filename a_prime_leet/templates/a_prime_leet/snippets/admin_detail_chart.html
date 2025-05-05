@@ -12,10 +12,14 @@
 </div>
 <hr/>
 
-<div class="mt-4 chart-container-small {{ print_class }} ms-auto me-auto">
-    <canvas id="scoreChartTotal"></canvas>
-    {% partial chart_contents_total %}
-</div>
+{% for _ in '총언추' %}
+    {% cycle 'scoreChartFrquencyTotal' 'scoreChartFrquencySubject0' 'scoreChartFrquencySubject1' as chart_id silent %}
+    {% cycle '총점' '언어이해' '추리논증' as chart_label silent %}
+    {% cycle stat_frequency_dict.sum stat_frequency_dict.subject_0 stat_frequency_dict.subject_1 as stat_frequency silent %}
+    <div class="mt-4 chart-container-small {{ print_class }} ms-auto me-auto">
+        {% partial chart_contents_frequency %}
+    </div>
+{% endfor %}
 
 <div>
     <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
@@ -101,11 +105,12 @@
 </script>
 {% endpartialdef chart_contents %}
 
-{% partialdef chart_contents_total %}
+{% partialdef chart_contents_frequency %}
+<canvas id="{{ chart_id }}"></canvas>
 <script type="text/javascript">
     chart_datasets_total = [
         {
-            label: 'LEET 총점(표준점수)',
+            label: 'LEET {{ chart_label }}(표준점수)',
             data: {{ stat_frequency.score_data|safe }},
             borderWidth: 2,
             tension: 0.4,
@@ -141,7 +146,7 @@
             plugins: {
                 title: {
                     display: true,
-                    text: '도수분포그래프 (표준점수 기준)',
+                    text: '{{ chart_label }} 도수분포그래프 (표준점수 기준)',
                     font: {
                         size: 18
                     },
@@ -170,11 +175,11 @@
     }
 
     if (typeof chart_canvas_total === 'undefined') {
-        const chart_canvas_total = document.getElementById('scoreChartTotal');
+        const chart_canvas_total = document.getElementById('{{ chart_id }}');
         new Chart(chart_canvas_total, chart_data_total);
     } else {
         chart_canvas_total.chart.destroy();
         new Chart(chart_canvas_total, chart_data_total);
     }
 </script>
-{% endpartialdef chart_contents_total %}
+{% endpartialdef chart_contents_frequency %}

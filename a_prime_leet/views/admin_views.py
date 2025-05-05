@@ -132,8 +132,8 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         admin_utils.get_answer_page_data(qs_answer_count, page_number, model_type))
 
     stat_chart = admin_utils.get_dict_stat_chart(data_statistics.first())
-    score_frequency_list = models.ResultStudent.objects.filter(leet=leet).values_list('score__sum', flat=True)
-    stat_frequency = admin_utils.get_dict_stat_frequency(score_frequency_list)
+    score_frequency_dict = admin_utils.get_score_frequency_dict(leet, model_type)
+    stat_frequency_dict = admin_utils.get_stat_frequency_dict(score_frequency_dict)
 
     context = update_context_data(
         context,
@@ -141,7 +141,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
         answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
         registry_page_obj=registry_page_obj, registry_page_range=registry_page_range,
-        stat_chart=stat_chart, stat_frequency=stat_frequency,
+        stat_chart=stat_chart, stat_frequency_dict=stat_frequency_dict,
     )
     return render(request, 'a_prime_leet/admin_detail.html', context)
 

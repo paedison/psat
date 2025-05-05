@@ -121,6 +121,16 @@ def get_dict_stat_chart(data_total):
     return stat_chart
 
 
+def get_score_frequency_dict(leet, model_type='result'):
+    model = get_target_model(f'{model_type.capitalize()}Student')
+    score_frequency_dict = {
+        'subject_0': model.objects.filter(leet=leet).values_list('score__subject_0', flat=True),
+        'subject_1': model.objects.filter(leet=leet).values_list('score__subject_1', flat=True),
+        'sum': model.objects.filter(leet=leet).values_list('score__sum', flat=True),
+    }
+    return score_frequency_dict
+
+
 def frequency_table_by_bin(scores, bin_size=10):
     freq = defaultdict(int)
     for score in scores:
@@ -132,18 +142,21 @@ def frequency_table_by_bin(scores, bin_size=10):
     return sorted_freq
 
 
-def get_dict_stat_frequency(score_frequency_list) -> dict:
-    scores = [round(score, 1) for score in score_frequency_list if score is not None]
-    sorted_freq = frequency_table_by_bin(scores)
+def get_stat_frequency_dict(score_frequency_dict: dict) -> dict:
+    stat_frequency_dict = {}
+    for fld, score_list in score_frequency_dict.items():
+        scores = [round(score, 1) for score in score_list if score is not None]
+        sorted_freq = frequency_table_by_bin(scores)
 
-    score_label, score_data, score_color = [], [], []
-    for key, val in sorted_freq.items():
-        score_label.append(key)
-        score_data.append(val)
-        color = 'rgba(54, 162, 235, 0.5)'
-        score_color.append(color)
+        score_label, score_data, score_color = [], [], []
+        for key, val in sorted_freq.items():
+            score_label.append(key)
+            score_data.append(val)
+            color = 'rgba(54, 162, 235, 0.5)'
+            score_color.append(color)
 
-    return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
+        stat_frequency_dict[fld] = {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
+    return stat_frequency_dict
 
 
 def get_answer_page_data(qs_answer_count, page_number, model_type='result', per_page=10):

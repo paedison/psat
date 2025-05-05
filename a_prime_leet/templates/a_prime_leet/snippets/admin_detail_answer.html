@@ -18,12 +18,10 @@
                 <th class="text-primary text-nowrap">전체[상/중/하]</th>
                 <th class="text-primary text-nowrap">변별도</th>
                 {% for _ in '1234' %}
-                    <th class="text-primary text-nowrap td-right-no-border">전체</th>
-                    <th class="text-primary td-left-no-border td-right-no-border">①</th>
-                    <th class="text-primary td-left-no-border td-right-no-border">②</th>
-                    <th class="text-primary td-left-no-border td-right-no-border">③</th>
-                    <th class="text-primary td-left-no-border td-right-no-border">④</th>
-                    <th class="text-primary td-left-no-border td-right-no-border">⑤</th>
+                    <th class="text-primary td-right-no-border">전체</th>
+                    {% for answer_num in '①②③④⑤' %}
+                        <th class="text-primary td-left-no-border td-right-no-border">{{ answer_num }}</th>
+                    {% endfor %}
                 {% endfor %}
             </tr>
         </thead>
@@ -45,7 +43,7 @@
                     </td>
                     <td>{{ obj.rate_gap|floatformat:1 }}</td>
 
-                    {% for _ in '1234' %}
+                    {% for _ in '전상중하' %}
                         {% cycle obj.count_sum obj.count_sum_top obj.count_sum_mid obj.count_sum_low as count_sum silent %}
                         {% cycle obj.count_1 obj.count_1_top obj.count_1_mid obj.count_1_low as count_1 silent %}
                         {% cycle obj.count_2 obj.count_2_top obj.count_2_mid obj.count_2_low as count_2 silent %}
@@ -54,29 +52,14 @@
                         {% cycle obj.count_5 obj.count_5_top obj.count_5_mid obj.count_5_low as count_5 silent %}
 
                         <td class="td-right-no-border">
-                            {{ count_sum|default:'' }}<br/>
-                            <span class="text-primary">{{ count_sum|percentageby:count_sum|floatformat:1 }}</span>
+                            {% with cnt=count_sum %}{% partial answer_cnt %}{% endwith %}
                         </td>
-                        <td class="td-left-no-border td-right-no-border">
-                            {{ count_1|default:'' }}<br/>
-                            <span class="text-primary">{{ count_1|percentageby:count_sum|floatformat:1 }}</span>
-                        </td>
-                        <td class="td-left-no-border td-right-no-border">
-                            {{ count_2|default:'' }}<br/>
-                            <span class="text-primary">{{ count_2|percentageby:count_sum|floatformat:1 }}</span>
-                        </td>
-                        <td class="td-left-no-border td-right-no-border">
-                            {{ count_3|default:'' }}<br/>
-                            <span class="text-primary">{{ count_3|percentageby:count_sum|floatformat:1 }}</span>
-                        </td>
-                        <td class="td-left-no-border td-right-no-border">
-                            {{ count_4|default:'' }}<br/>
-                            <span class="text-primary">{{ count_4|percentageby:count_sum|floatformat:1 }}</span>
-                        </td>
-                        <td class="td-left-no-border td-right-no-border">
-                            {{ count_5|default:'' }}<br/>
-                            <span class="text-primary">{{ count_5|percentageby:count_sum|floatformat:1 }}</span>
-                        </td>
+                        {% for _ in '①②③④⑤' %}
+                            {% cycle count_1 count_2 count_3 count_4 count_5 as cnt silent %}
+                            <td class="td-left-no-border td-right-no-border">
+                                {% partial answer_cnt %}
+                            </td>
+                        {% endfor %}
                     {% endfor %}
                 </tr>
             {% empty %}
@@ -93,3 +76,8 @@
         {% include 'a_prime/snippets/pagination.html' with header='answer_list' %}
     {% endif %}
 {% endwith %}
+
+{% partialdef answer_cnt %}
+    {{ cnt|default:''|intcomma }}<br/>
+    <span class="text-primary">{{ cnt|percentageby:count_sum|floatformat:1 }}</span>
+{% endpartialdef %}
