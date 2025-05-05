@@ -5,6 +5,50 @@ from .views.admin import admin_index_views, admin_psat_views, admin_study_views
 
 app_name = 'psat'
 
+admin_patterns = [
+    path('', admin_index_views.list_view, name='admin-list'),
+    path('psat/<int:pk>/', admin_psat_views.detail_view, name='admin-detail'),
+
+    path('psat/create/', admin_index_views.psat_create_view, name='admin-psat-create'),
+    path('psat/active/<int:pk>/', admin_index_views.psat_active_view, name='admin-psat-active'),
+    path('problem/update/', admin_index_views.problem_update_view, name='admin-problem-update'),
+]
+
+admin_predict_patterns = [
+    path('create/', admin_index_views.predict_create_view, name='admin-predict-create'),
+    path('update/<int:pk>/', admin_psat_views.predict_update_view, name='admin-predict-update'),
+    path('student/<int:pk>/', admin_psat_views.student_detail_view, name='admin-predict-student-detail'),
+
+    path('print/statistics/<int:pk>/', admin_psat_views.statistics_print_view, name='admin-predict-statistics-print'),
+    path('print/catalog/<int:pk>/', admin_psat_views.catalog_print_view, name='admin-predict-catalog-print'),
+    path('print/answer/<int:pk>/', admin_psat_views.answer_print_view, name='admin-predict-answer-print'),
+
+    path('excel/statistics/<int:pk>/', admin_psat_views.export_statistics_excel_view, name='admin-predict-statistics-excel'),
+    path('excel/prime_id/<int:pk>/', admin_psat_views.prime_id_excel_view, name='admin-predict-prime_id-excel'),
+    path('excel/catalog/<int:pk>/', admin_psat_views.export_catalog_excel_view, name='admin-predict-catalog-excel'),
+    path('excel/answer/<int:pk>/', admin_psat_views.export_answers_excel_view, name='admin-predict-answer-excel'),
+]
+
+admin_study_patterns = [
+    path('category/', admin_index_views.list_view, name='admin-study-category-list'),
+    path('curriculum/', admin_index_views.list_view, name='admin-study-curriculum-list'),
+    path('detail/<str:study_type>/<int:pk>/', admin_study_views.detail_view, name='admin-study-detail'),
+
+    path('category/create/', admin_index_views.study_category_create_view, name='admin-study-category-create'),
+    path('category/upload/', admin_index_views.study_category_upload_view, name='admin-study-category-upload'),
+    path('category/update/<int:pk>/', admin_study_views.category_update_view, name='admin-study-category-update'),
+
+    path('curriculum/upload/', admin_index_views.study_curriculum_upload_view, name='admin-study-curriculum-upload'),
+    path('curriculum/create/', admin_index_views.study_curriculum_create_view, name='admin-study-curriculum-create'),
+    path('curriculum/update/<int:pk>/', admin_study_views.curriculum_update_view, name='admin-study-curriculum-update'),
+
+    path('organization/create/', admin_index_views.study_organization_create_view, name='admin-study-organization-create'),
+    path('student/create/', admin_index_views.study_student_create_view, name='admin-study-student-create'),
+    path('answer/add/', admin_index_views.study_answer_add_view, name='admin-study-answer-add'),
+
+    path('study/student/<int:pk>/', admin_study_views.student_detail_view, name='admin-study-student-detail'),
+]
+
 problem_patterns = [
     path('', problem_views.problem_list_view, name='problem-list'),
     path('<int:pk>/', problem_views.problem_detail_view, name='problem-detail'),
@@ -43,62 +87,6 @@ lecture_patterns = [
     path('tag/<int:pk>/', lecture_views.tag_lecture, name='tag-lecture'),
 ]
 
-admin_patterns = [
-    path('', admin_index_views.list_view, name='admin-list'),
-    path('study/category/', admin_index_views.list_view, name='admin-study-category-list'),
-    path('study/curriculum/', admin_index_views.list_view, name='admin-study-curriculum-list'),
-
-    path('psat/<int:pk>/', admin_psat_views.detail_view, name='admin-detail'),
-
-    path('psat/create/', admin_index_views.psat_create_view, name='admin-psat-create'),
-    path('psat/active/<int:pk>/', admin_index_views.psat_active_view, name='admin-psat-active'),
-    path('problem/update/', admin_index_views.problem_update_view, name='admin-problem-update'),
-
-    path('predict/create/', admin_index_views.predict_create_view, name='admin-predict-create'),
-    path('predict/update/<int:pk>/', admin_psat_views.predict_update_view, name='admin-predict-update'),
-    path('predict/student/<int:pk>/', admin_psat_views.student_detail_view, name='admin-predict-student-detail'),
-
-    path('predict/print/statistics/<int:pk>/',
-         admin_psat_views.statistics_print_view, name='admin-predict-statistics-print'),
-    path('predict/print/catalog/<int:pk>/',
-         admin_psat_views.catalog_print_view, name='admin-predict-catalog-print'),
-    path('predict/print/answer/<int:pk>/',
-         admin_psat_views.answer_print_view, name='admin-predict-answer-print'),
-
-    path('predict/excel/statistics/<int:pk>/',
-         admin_psat_views.export_statistics_excel_view, name='admin-predict-statistics-excel'),
-    path('predict/excel/prime_id/<int:pk>/',
-         admin_psat_views.prime_id_excel_view, name='admin-predict-prime_id-excel'),
-    path('predict/excel/catalog/<int:pk>/',
-         admin_psat_views.export_catalog_excel_view, name='admin-predict-catalog-excel'),
-    path('predict/excel/answer/<int:pk>/',
-         admin_psat_views.export_answers_excel_view, name='admin-predict-answer-excel'),
-
-    path('study/detail/<str:study_type>/<int:pk>/', admin_study_views.detail_view, name='admin-study-detail'),
-
-    path('study/category/create/',
-         admin_index_views.study_category_create_view, name='admin-study-category-create'),
-    path('study/category/upload/',
-         admin_index_views.study_category_upload_view, name='admin-study-category-upload'),
-    path('study/category/update/<int:pk>/',
-         admin_study_views.category_update_view, name='admin-study-category-update'),
-
-    path('study/curriculum/upload/',
-         admin_index_views.study_curriculum_upload_view, name='admin-study-curriculum-upload'),
-    path('study/curriculum/create/',
-         admin_index_views.study_curriculum_create_view, name='admin-study-curriculum-create'),
-    path('study/curriculum/update/<int:pk>/',
-         admin_study_views.curriculum_update_view, name='admin-study-curriculum-update'),
-
-    path('study/organization/create/',
-         admin_index_views.study_organization_create_view, name='admin-study-organization-create'),
-    path('study/student/create/',
-         admin_index_views.study_student_create_view, name='admin-study-student-create'),
-    path('study/answer/add/', admin_index_views.study_answer_add_view, name='admin-study-answer-add'),
-
-    path('study/student/<int:pk>/', admin_study_views.student_detail_view, name='admin-study-student-detail'),
-]
-
 predict_patterns = [
     path('', predict_views.list_view, name='predict-list'),
     path('<int:pk>/', predict_views.detail_view, name='predict-detail'),
@@ -125,11 +113,15 @@ study_patterns = [
 
 urlpatterns = [
     path('', problem_views.problem_list_view, name='base'),
+
+    path('admin/', include(admin_patterns)),
+    path('admin/predict/', include(admin_predict_patterns)),
+    path('admin/study/', include(admin_study_patterns)),
+
     path('problem/', include(problem_patterns)),
     path('collection/', include(collection_patterns)),
     # path('comment/', include(comment_patterns)),
     path('lecture/', include(lecture_patterns)),
-    path('admin/', include(admin_patterns)),
     path('predict/', include(predict_patterns)),
     path('study/', include(study_patterns)),
 ]

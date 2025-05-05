@@ -188,6 +188,11 @@ def get_data_answers(qs_answer_count, subject_vars, model_type='result'):
             qs_ac.rate_correct_top = qs_ac.problem.result_answer_count_top_rank.get_answer_rate(ans_official)
             qs_ac.rate_correct_mid = qs_ac.problem.result_answer_count_mid_rank.get_answer_rate(ans_official)
             qs_ac.rate_correct_low = qs_ac.problem.result_answer_count_low_rank.get_answer_rate(ans_official)
+        elif model_type == 'fake':
+            qs_ac.rate_correct = qs_ac.get_answer_rate(ans_official)
+            qs_ac.rate_correct_top = qs_ac.problem.fake_answer_count_top_rank.get_answer_rate(ans_official)
+            qs_ac.rate_correct_mid = qs_ac.problem.fake_answer_count_mid_rank.get_answer_rate(ans_official)
+            qs_ac.rate_correct_low = qs_ac.problem.fake_answer_count_low_rank.get_answer_rate(ans_official)
         else:
             qs_ac.rate_correct = qs_ac.get_answer_rate(ans_official)
             qs_ac.rate_correct_top = qs_ac.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
