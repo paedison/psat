@@ -880,8 +880,8 @@ def update_answer_count_model(model_type='result', rank_type='', is_filtered=Fal
 def update_fake_ref(leet, form, file):
     message_dict = {
         None: '에러가 발생했습니다.',
-        True: '더미 데이터를 업데이트했습니다.',
-        False: '기존 더미 데이터와 일치합니다.',
+        True: '참고 자료를 업데이트했습니다.',
+        False: '기존 참고 자료와 일치합니다.',
     }
 
     if form.is_valid():
@@ -929,7 +929,7 @@ def update_models_for_fake_ref(leet, file):
             update_list_for_working_bulk(list_update_aspiration, aspiration, aspiration_info)
 
     for _, row in df_answer_count.iterrows():
-        subject = row['subject'][:2]
+        subject = row['subject_kor'][:2]
         number = row['number']
         answer_count_instance = dict_qs_answer_count.get((subject, number))
         answer_count_info = {col: row[col] for col in row.index if col[:5] == 'count'}
@@ -951,8 +951,8 @@ def update_models_for_fake_ref(leet, file):
 def update_fake_data(leet, form, file):
     message_dict = {
         None: '에러가 발생했습니다.',
-        True: '더미 데이터를 업데이트했습니다.',
-        False: '기존 더미 데이터와 일치합니다.',
+        True: '가상 답안을 업데이트했습니다.',
+        False: '기존 가상 답안과 일치합니다.',
     }
 
     if form.is_valid():
@@ -1069,8 +1069,9 @@ def update_answer_count_models_for_fake_data(leet, file):
 
         for index, row in df.iterrows():
             field, number = index
-            lookup_index = (field_var[field][0], number)
-            answer_count_info = {col: row[col] for col in row.index}
+            subject = field_var[field][0]
+            lookup_index = (subject, number)
+            answer_count_info = {col: row[col] for col in row.index if str(col)[:5] == 'count'}
 
             problem = dict_qs_problem.get(lookup_index)
             answer_count = dict_qs_answer_count.get(lookup_index)

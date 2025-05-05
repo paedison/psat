@@ -24,14 +24,13 @@ def run():
 
     output_excel = fake_answer.output_excel
     sheet_data = fake_answer.get_sheet_data()
-    group_df_set = fake_answer.get_answer_count_group_df_set()
+    answer_count_sheet_data = fake_answer.get_answer_count_set_data()
 
     with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
         for sheet_name, df in sheet_data.items():
             df.to_excel(writer, sheet_name=sheet_name)
 
-        for sheet_name, df in group_df_set.items():
-            fake_answer.change_index_to_subject_number(df)
+        for sheet_name, df in answer_count_sheet_data.items():
             df.to_excel(writer, sheet_name=f'answer_count_{sheet_name}')
 
     fake_answer.adjust_column_widths()
@@ -57,7 +56,8 @@ class LeetFakeAnswer:
         self.output_excel = self.get_excel_file(output_excel_file)
 
         # 가상 데이터 생성
-        self.all_correct_answers = []
+        self.correct_answer_df = pd.DataFrame()
+        self.problem_count = pd.Series()
         self.all_answers, self.all_scores, self.all_stats, self.temp_totals = {}, {}, {}, {}
         self.update_all_fake_data()
 
@@ -65,20 +65,25 @@ class LeetFakeAnswer:
         self.ids = [f'fake{i:04}' for i in range(1, num_students + 1)]
         self.student_df = self.get_student_df()
 
-        # 답안/성적 데이터프레임
+        # 데이터프레임
         self.answer_df = self.get_answer_df()
         self.score_df = self.get_score_df()
         self.update_score_and_answer_df()
+        self.statistics_df = self.get_statistics_df()
+        self.frequency_df = self.get_frequency_df()
 
     def get_excel_file(self, filename):
         return self.BASE_DIR / f'{filename}.xlsx'
 
     def update_all_fake_data(self):
-        df = pd.read_excel(self.input_excel, index_col=[0, 1, 2], sheet_name='answer_count')
+        df = pd.read_excel(self.input_excel, index_col=[2, 3], sheet_name='answer_distribution')
+
+        self.problem_count = df.groupby(level='subject').size()
+        self.correct_answer_df = df[['answer']]
 
         for subject in self.SUBJECTS:
-            df_subject = df[df.index.get_level_values('field') == subject]
-            correct_answers = df_subject['answer'].tolist()
+            df_subject = df[df.index.get_level_values('subject') == subject]
+            correct_answers = df_subject['answer'].to_numpy()
             student_answers = self.generate_student_answers(df_subject)
             correct_counts, percentage_scores, standard_scores = self.compute_scores(
                 subject, correct_answers, student_answers)
@@ -89,8 +94,6 @@ class LeetFakeAnswer:
                 'percentage_score': percentage_scores,
                 'standard_score': standard_scores,
             }
-
-            self.all_correct_answers.extend([(subject, idx + 1, ans) for idx, ans in enumerate(correct_answers)])
             self.all_stats[subject] = {k: self.compute_statistics(self.all_scores[subject][k]) for k in self.METRICS}
 
         self.all_stats['total'] = {}
@@ -98,30 +101,6 @@ class LeetFakeAnswer:
             total = np.sum([self.all_scores[s][metric] for s in self.SUBJECTS], axis=0)
             self.temp_totals[metric] = total
             self.all_stats['total'][metric] = self.compute_statistics(total)
-    #
-    # def update_all_fake_data(self):
-    #     for subject in self.SUBJECTS:
-    #         df = pd.read_excel(self.input_excel, sheet_name=subject)
-    #         correct_answers = df['answer'].tolist()
-    #         student_answers = self.generate_student_answers(df)
-    #         correct_counts, percentage_scores, standard_scores = self.compute_scores(
-    #             subject, correct_answers, student_answers)
-    #
-    #         self.all_answers[subject] = student_answers
-    #         self.all_scores[subject] = {
-    #             'correct_count': correct_counts,
-    #             'percentage_score': percentage_scores,
-    #             'standard_score': standard_scores,
-    #         }
-    #
-    #         self.all_correct_answers.extend([(subject, idx + 1, ans) for idx, ans in enumerate(correct_answers)])
-    #         self.all_stats[subject] = {k: self.compute_statistics(self.all_scores[subject][k]) for k in self.METRICS}
-    #
-    #     self.all_stats['total'] = {}
-    #     for metric in self.METRICS:
-    #         total = np.sum([self.all_scores[s][metric] for s in self.SUBJECTS], axis=0)
-    #         self.temp_totals[metric] = total
-    #         self.all_stats['total'][metric] = self.compute_statistics(total)
 
     def generate_student_answers(self, df: pd.DataFrame) -> np.array:
         probs_matrix = df[['count_1', 'count_2', 'count_3', 'count_4', 'count_5']].div(
@@ -135,9 +114,9 @@ class LeetFakeAnswer:
         return student_answers
 
     def compute_scores(
-            self, subject: str, correct_answers: list, student_answers: np.array
+            self, subject: str, correct_answers: np.array, student_answers: np.array
     ) -> tuple[np.array, np.array, np.array]:
-        correct_counts = (student_answers == np.array(correct_answers)).sum(axis=1)
+        correct_counts = (student_answers == correct_answers).sum(axis=1)
         percentage_scores = np.round(correct_counts / len(correct_answers) * 100, 1)
         base_mean = self.BASE_MEANS.get(subject, 50)
         base_std = self.BASE_STDS.get(subject, 10)
@@ -149,29 +128,42 @@ class LeetFakeAnswer:
     def get_student_df(self):
         passwords = [f'{np.random.randint(0, 10000):04}' for _ in range(self.num_students)]
 
-        df = pd.read_excel(self.input_excel, sheet_name='aspiration')
-        universities = df['university'].tolist()
-
-        for i in range(1, 3):
-            aspiration_col = f'aspiration_{i}'
-            rate_col = f'rate_{i}'
-            df[rate_col] = df[aspiration_col] / df[aspiration_col].sum()
-
-        aspiration_1 = np.random.choice(universities, size=self.num_students, p=df['rate_1'].tolist())
-        aspiration_2 = []
-        for fc in aspiration_1:
-            available_univs = [u for u in universities if u != fc]
-            available_probs = [df.loc[df['university'] == u, 'rate_2'].values[0] for u in available_univs]
-            total = sum(available_probs)
-            norm_probs = [p / total for p in available_probs]
-            aspiration_2.append(np.random.choice(available_univs, p=norm_probs))
+        df = pd.read_excel(self.input_excel, index_col=0, sheet_name='aspiration_data')
+        df = self.clean_choice_dataframe(df)
+        choices = self.assign_choices(df)
 
         student_data = {
             'password': passwords,
-            'aspiration_1': aspiration_1,
-            'aspiration_2': aspiration_2,
+            'aspiration_1': choices['aspiration_1'].values,
+            'aspiration_2': choices['aspiration_2'].values,
         }
-        return pd.DataFrame(student_data, index=self.ids)
+        student_df = pd.DataFrame(student_data, index=self.ids)
+        student_df.index.name = 'serial'
+        return student_df
+
+    def assign_choices(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        전체 학생 수에 대해 1지망/2지망 배정:
+        - 절반은 조합 비율에 따라
+        - 절반은 개별 분포(1지망/2지망 각각)에 따라 샘플링
+        """
+
+        # 조합 비율 계산 및 조합 기반 샘플링
+        n_combo = self.num_students // 2
+        combo_probs = df.groupby(['aspiration_1', 'aspiration_2']).size() / len(df)
+        combo_samples = combo_probs.sample(n=n_combo, weights=combo_probs.values, replace=True)
+        combo_choices = combo_samples.reset_index()[['aspiration_1', 'aspiration_2']]
+
+        # 개별 분포 계산 및 개별 분포 기반 샘플링
+        n_indiv = self.num_students - n_combo
+        indiv_choices_dict = {}
+        for i in range(1, 3):
+            probs = df[f'aspiration_{i}'].value_counts(normalize=True)
+            indiv_choices_dict[f'aspiration_{i}'] = np.random.choice(probs.index, size=n_indiv, p=probs.values)
+        indiv_choices = pd.DataFrame(indiv_choices_dict)
+
+        choices = pd.concat([combo_choices, indiv_choices], ignore_index=True)
+        return choices
 
     def get_answer_df(self) -> pd.DataFrame:
         answer_cols = pd.MultiIndex.from_tuples([
@@ -226,21 +218,13 @@ class LeetFakeAnswer:
 
     def get_sheet_data(self):
         return {
-            'correct_answer': self.get_correct_answer_df(),
+            'correct_answer': self.correct_answer_df,
             'score': self.score_df,
             'answer': self.answer_df,
             'aspiration': self.get_aspiration_df(),
-            'statistics': self.get_stat_df(),
-            'frequency': self.get_freq_df(),
-            'answer_count': self.get_answer_count_df(),
+            'statistics': self.statistics_df,
+            'frequency': self.frequency_df,
         }
-
-    def get_correct_answer_df(self) -> pd.DataFrame:
-        correct_answer_df = pd.DataFrame(self.all_correct_answers, columns=['subject', 'number', 'answer'])
-        subject = correct_answer_df.pop('subject')
-        number = correct_answer_df.pop('number')
-        correct_answer_df.index = pd.MultiIndex.from_arrays([subject, number])
-        return correct_answer_df
 
     def get_aspiration_df(self) -> pd.DataFrame:
         aspiration_1_counts = self.student_df['aspiration_1'].value_counts().sort_index()
@@ -261,7 +245,7 @@ class LeetFakeAnswer:
 
         return aspiration_df
 
-    def get_stat_df(self) -> pd.DataFrame:
+    def get_statistics_df(self) -> pd.DataFrame:
         stat_rows = [
             ((m, s), [round(self.all_stats[s][m].get(k, 0), 1) for k in self.STAT_KEYS])
             for m in self.METRICS for s in self.SUBJECTS_PLUS_TOTAL
@@ -269,7 +253,7 @@ class LeetFakeAnswer:
         stat_index = pd.MultiIndex.from_tuples([row[0] for row in stat_rows], names=['metric', 'subject'])
         return pd.DataFrame([row[1] for row in stat_rows], index=stat_index, columns=self.STAT_KEYS)
 
-    def get_freq_df(self) -> pd.DataFrame:
+    def get_frequency_df(self) -> pd.DataFrame:
         freq_rows = []
         for metric in self.METRICS:
             for subject in self.SUBJECTS_PLUS_TOTAL:
@@ -289,45 +273,38 @@ class LeetFakeAnswer:
 
         return freq_df
 
-    def get_answer_count_df(self) -> pd.DataFrame:
-        choice_counts = []
-        for subject in self.SUBJECTS:
-            response_array = self.all_answers[subject]
-            answer_distribution = self.calculate_answer_distribution(response_array, subject)
-            choice_counts.append(answer_distribution.reset_index(drop=True))
+    def get_answer_count_set_data(self) -> dict[Hashable, pd.DataFrame]:
+        all_group = self.answer_df.copy()
+        all_group[('group', 'total')] = 'all'
+        student_groups = pd.concat([all_group, self.answer_df], axis=0).groupby(('group', 'total'))
 
+        sheet_data = {}
+        for rank_type, group_df in student_groups:
+            choice_counts = []
+            for subject in self.SUBJECTS:
+                if rank_type == 'all':
+                    response_array = self.all_answers[subject]
+                else:
+                    response_array = np.array(group_df.xs(subject, axis=1, level=0))
+                answer_distribution = self.calculate_answer_distribution(response_array, subject)
+                choice_counts.append(answer_distribution.reset_index(drop=True))
+            sheet_data[rank_type] = self.get_answer_count_df(choice_counts)
+
+        return sheet_data
+
+    def get_answer_count_df(self, choice_counts):
         answer_count_df = pd.concat(choice_counts, ignore_index=True)
         self.change_index_to_subject_number(answer_count_df)
+        answer_count_df = self.correct_answer_df.join(answer_count_df)
+
+        answer_count_df['answer_rate'] = answer_count_df.apply(
+            lambda row: row[f'rate_{int(row["answer"])}'], axis=1
+        )
+        cols = list(answer_count_df.columns)
+        cols.insert(cols.index('answer') + 1, cols.pop(cols.index('answer_rate')))
+        answer_count_df = answer_count_df[cols]
 
         return answer_count_df
-
-    def get_answer_count_group_df_set(self) -> dict[Hashable, pd.DataFrame]:
-        group_df_set = {}
-        answer_cols = [col for col in self.answer_df.columns if col[0] != 'group']
-        student_groups = self.answer_df.groupby(('group', 'total'))
-
-        for group_name, group_df in student_groups:
-            count_data = []
-
-            for subject in self.SUBJECTS:
-                subject_cols = [col for col in answer_cols if col[0] == subject]
-                group_subject_df = group_df[subject_cols]
-
-                for number in sorted({col[1] for col in subject_cols}):
-                    col = (subject, number)
-                    value_counts = group_subject_df[col].value_counts().sort_index()
-                    counts = [value_counts.get(i, 0) for i in range(1, 6)]
-                    count_sum = sum(counts)
-                    count_data.append([subject, number] + counts + [count_sum])
-
-            answer_count_df = pd.DataFrame(count_data, columns=[
-                'subject', 'number',
-                'count_1', 'count_2', 'count_3', 'count_4', 'count_5',
-                'count_sum'
-            ])
-            group_df_set[group_name] = answer_count_df
-
-        return group_df_set
 
     def adjust_column_widths(self):
         wb = load_workbook(self.output_excel)
@@ -341,6 +318,15 @@ class LeetFakeAnswer:
                 col_letter = get_column_letter(col_idx)
                 ws.column_dimensions[col_letter].width = max_length + 2
         wb.save(self.output_excel)
+
+    @staticmethod
+    def clean_choice_dataframe(df: pd.DataFrame, fill_value='미선택') -> pd.DataFrame:
+        df = df.rename(columns=lambda x: x.strip().lower().replace(' ', '_'))
+        df = df[['aspiration_1', 'aspiration_2']].copy()
+        df = df.fillna(fill_value)
+        df['aspiration_1'] = df['aspiration_1'].replace('', fill_value)
+        df['aspiration_2'] = df['aspiration_2'].replace('', fill_value)
+        return df
 
     @staticmethod
     def compute_statistics(values: np.array) -> dict[str, int | float]:
@@ -409,12 +395,16 @@ class LeetFakeAnswer:
             choices = response_array[:, idx]
             counts = pd.Series(choices).value_counts().reindex([1, 2, 3, 4, 5], fill_value=0)
             total = counts.sum()
-            row = counts.round(4).values.tolist() + [total]
+            rates = counts / total
+            row = counts.values.tolist() + [total] + rates.round(4).values.tolist()
             result.append(row)
 
         answer_count_df = pd.DataFrame(
             result,
-            columns=['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum'],
+            columns=[
+                'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum',
+                'rate_1', 'rate_2', 'rate_3', 'rate_4', 'rate_5',
+            ],
             index=[i + 1 for i in range(num_questions)],
         )
         answer_count_df.insert(0, 'subject', subject)
@@ -469,13 +459,12 @@ class PsatHaengsiFakeAnswer(LeetFakeAnswer):
 
     def get_sheet_data(self):
         return {
-            'correct_answer': self.get_correct_answer_df(),
+            'correct_answer': self.correct_answer_df,
             'score': self.score_df,
             'answer': self.answer_df,
             'category': self.get_category_df(),
-            'statistics': self.get_stat_df(),
-            'frequency': self.get_freq_df(),
-            'answer_count': self.get_answer_count_df(),
+            'statistics': self.statistics_df,
+            'frequency': self.frequency_df,
         }
 
     def get_category_df(self):
