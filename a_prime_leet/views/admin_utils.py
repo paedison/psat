@@ -976,10 +976,12 @@ def update_student_score_rank_models_for_fake_data(leet, file):
     score_model = models.FakeScore
     rank_model = models.FakeRank
 
-    df_score = pd.read_excel(file, sheet_name='score', header=[0, 1], index_col=0)
+    df = pd.read_excel(file, sheet_name='catalog', header=[0, 1], index_col=0)
 
-    qs_student = student_model.objects.filter(leet=leet)
-    qs_student_dict = {(qs_s.serial, qs_s.name): qs_s for qs_s in qs_student}
+    def get_qs_student_dict():
+        return {(qs_s.serial, qs_s.name): qs_s for qs_s in student_model.objects.filter(leet=leet)}
+
+    qs_student_dict = get_qs_student_dict()
 
     qs_score = score_model.objects.filter(student__leet=leet)
     qs_score_dict = {qs_s.student: qs_s for qs_s in qs_score}
@@ -991,12 +993,13 @@ def update_student_score_rank_models_for_fake_data(leet, file):
     list_create_student, list_create_score, list_create_rank = [], [], []
     list_update_student, list_update_score, list_update_rank = [], [], []
 
-    for serial, row in df_score.iterrows():
-        student_info = {
-            'password': str(row[('student', 'password')]),
-            'aspiration_1': row[('student', 'aspiration_1')],
-            'aspiration_2': row[('student', 'aspiration_2')],
-        }
+    for serial, row in df.iterrows():
+        student_info = {'password': f"{row[('student', 'password')]:04}"}
+        for i in range(1, 3):
+            aspiration_input = row[('student', f'aspiration_{i}')]
+            aspiration = '' if aspiration_input == '미선택' else aspiration_input
+            student_info[f'aspiration_{i}'] = aspiration
+
         student = qs_student_dict.get((serial, serial))
         if student is None:
             list_create_student.append(student_model(leet=leet, serial=serial, name=serial, **student_info))
@@ -1006,10 +1009,9 @@ def update_student_score_rank_models_for_fake_data(leet, file):
     update_fields_student = ['password', 'aspiration_1', 'aspiration_2']
     result.append(bulk_create_or_update(student_model, list_create_student, list_update_student, update_fields_student))
 
-    qs_student = student_model.objects.filter(leet=leet)
-    qs_student_dict = {(qs_s.serial, qs_s.name): qs_s for qs_s in qs_student}
+    qs_student_dict = get_qs_student_dict()
 
-    for serial, row in df_score.iterrows():
+    for serial, row in df.iterrows():
         score_info = {
             'raw_subject_0': row[('correct_count', 'subject_0')],
             'raw_subject_1': row[('correct_count', 'subject_1')],
@@ -1059,7 +1061,7 @@ def update_answer_count_models_for_fake_data(leet, file):
 
         if rank_type == 'all':
             answer_count_model = models.FakeAnswerCount
-            df = pd.read_excel(file, sheet_name='answer_count', header=0, index_col=[0, 1])
+            df = pd.read_excel(file, sheet_name='answer_count_all', header=0, index_col=[0, 1])
         else:
             answer_count_model = get_target_model(f'FakeAnswerCount{rank_type.capitalize()}Rank')
             df = pd.read_excel(file, sheet_name=f'answer_count_{rank_type}', header=0, index_col=[0, 1])
@@ -1201,7 +1203,7 @@ def get_catalog_response(leet, model_type='result'):
     df1, filename1 = get_catalog_dataframe_and_file_name(student_list, leet, model_type)
 
     df2, filename2 = None, None
-    if model_type != 'result':
+    if model_type == 'predict':
         filtered_student_list = student_list.filter(is_filtered=True)
         df2, filename2 = get_catalog_dataframe_and_file_name(filtered_student_list, leet, model_type, True)
 
@@ -1239,35 +1241,34 @@ def get_catalog_dataframe_and_file_name(student_list, leet, model_type='result',
     df['created_at'] = df['created_at'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
     df['latest_answer_time'] = df['latest_answer_time'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
 
+    for i in ['sum', 0, 1]:
+        ratio = df[f'rank_{i}'] / df['rank_num']
+        df[f'group_{i}'] = pd.cut(ratio, bins=[-float('inf'), 0.27, 0.73, float('inf')], labels=['top', 'mid', 'low'])
+
     drop_columns = []
-    if model_type != 'result':
+    if model_type == 'predict':
         drop_columns.extend(['filtered_rank_num', 'filtered_rank_aspiration_1', 'filtered_rank_aspiration_2'])
         for fld in field_list:
             drop_columns.extend([f'filtered_rank_sum_{fld}', f'filtered_rank_0_{fld}', f'filtered_rank_1_{fld}'])
 
     column_label = [
-        ('ID', ''), ('등록일시', ''), ('수험번호', ''), ('이름', ''), ('비밀번호', ''), ('1지망', ''), ('2지망', ''),
-        ('출신대학', ''), ('전공', ''), ('학점 종류', ''), ('학점', ''), ('영어 종류', ''), ('영어 성적', ''),
-        ('LEET ID', ''), ('최종답안 등록일시', ''), ('제출 답안수', ''),
+        ('DB정보', 'ID'), ('DB정보', '등록일시'),
+        ('수험정보', '수험번호'), ('수험정보', '이름'), ('수험정보', '비밀번호'),
+        ('지망대학', '1지망'), ('지망대학', '2지망'),
+        ('학과정보', '출신대학'), ('학과정보', '전공'),
+        ('성적정보', '학점 종류'), ('성적정보', '학점'), ('성적정보', '영어 종류'), ('성적정보', '영어 성적'),
+        ('답안정보', 'LEET ID'), ('답안정보', '최종답안 등록일시'), ('답안정보', '제출 답안수'),
         ('참여자 수', '전체'), ('참여자 수', '1지망'), ('참여자 수', '2지망'),
     ]
-    field_vars = {
-        'subject_0': ('언어', '언어이해', 0),
-        'subject_1': ('추리', '추리논증', 1),
-        'sum': ('총점', '총점', 2),
-    }
-    for _, (_, subject, _) in field_vars.items():
+    label_list = ['언어이해 성적', '추리논증 성적', '전체 성적']
+    for label in label_list:
         column_label.extend([
-            (subject, '원점수'),
-            (subject, '표준점수'),
-            (subject, '전체 등수'),
-            (subject, '1지망 등수'),
-            (subject, '2지망 등수'),
+            (label, '원점수'), (label, '표준점수'), (label, '전체 등수'), (label, '1지망 등수'), (label, '2지망 등수'),
         ])
+    column_label.extend([('그룹', '전체'), ('그룹', '언어이해'), ('그룹', '추리논증')])
 
     df.drop(columns=drop_columns, inplace=True)
     df.columns = pd.MultiIndex.from_tuples(column_label)
-    df.reset_index(inplace=True)
 
     return df, filename
 
