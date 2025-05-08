@@ -1299,22 +1299,33 @@ def get_answer_response(leet, model_type='result'):
         'answer_predict',
         'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0', 'count_multiple', 'count_sum',
     ]
-    if model_type != 'result':
+    if model_type == 'predict':
         drop_columns.extend([
             'filtered_count_1', 'filtered_count_2', 'filtered_count_3', 'filtered_count_4',
             'filtered_count_5', 'filtered_count_0', 'filtered_count_multiple', 'filtered_count_sum',
         ])
 
-    column_label = [
-        ('ID', '', ''), ('문제 ID', '', ''), ('과목', '', ''),
-        ('번호', '', ''), ('정답', '', ''), ('예상 정답', '', ''),
-    ]
-    top_field = ['전체 데이터'] if model_type == 'result' else ['전체 데이터', '필터링 데이터']
-    for top in top_field:
-        for mid in ['전체', '상위권', '중위권', '하위권']:
+    if model_type == 'predict':
+        column_label = [
+            ('DB 정보', 'ID', ''), ('DB 정보', '문제 ID', ''),
+            ('문제 정보', '과목', ''), ('문제 정보', '번호', ''), ('문제 정보', '정답', ''), ('문제 정보', '예상 정답', ''),
+        ]
+        top_field = ['전체 데이터', '필터링 데이터']
+        for top in top_field:
+            for rank_type in ['전체', '상위권', '중위권', '하위권']:
+                column_label.extend([
+                    (top, rank_type, '①'), (top, rank_type, '②'), (top, rank_type, '③'),
+                    (top, rank_type, '④'), (top, rank_type, '⑤'), (top, rank_type, '합계'),
+                ])
+    else:
+        column_label = [
+            ('DB 정보', 'ID'), ('DB 정보', '문제 ID'),
+            ('문제 정보', '과목'), ('문제 정보', '번호'), ('문제 정보', '정답'), ('문제 정보', '예상 정답'),
+        ]
+        for rank_type in ['전체', '상위권', '중위권', '하위권']:
             column_label.extend([
-                (top, mid, '①'), (top, mid, '②'), (top, mid, '③'),
-                (top, mid, '④'), (top, mid, '⑤'), (top, mid, '합계'),
+                (rank_type, '①'), (rank_type, '②'), (rank_type, '③'),
+                (rank_type, '④'), (rank_type, '⑤'), (rank_type, '합계'),
             ])
 
     return get_response_for_excel_file(df, drop_columns, column_label, filename)
@@ -1323,7 +1334,6 @@ def get_answer_response(leet, model_type='result'):
 def get_response_for_excel_file(df, drop_columns, column_label, filename):
     df.drop(columns=drop_columns, inplace=True)
     df.columns = pd.MultiIndex.from_tuples(column_label)
-    df.reset_index(inplace=True)
 
     excel_data = io.BytesIO()
     df.to_excel(excel_data, engine='xlsxwriter')
