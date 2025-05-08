@@ -148,8 +148,9 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
 @only_staff_allowed()
 def detail_student_view(request: HtmxHttpRequest, model_type: str, pk: int):
-    if model_type == 'result':
-        student = get_object_or_404(models.ResultStudent, pk=pk)
+    model = admin_utils.get_target_model(f'{model_type.capitalize()}Student')
+    student = get_object_or_404(model, pk=pk)
+    if model_type != 'predict':
         return result_views.detail_view(request, student.leet.pk, student=student)
     student = get_object_or_404(models.PredictStudent, pk=pk)
     return predict_views.detail_view(request, student.leet.pk, student=student)

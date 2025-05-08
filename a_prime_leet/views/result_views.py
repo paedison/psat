@@ -54,7 +54,11 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
     stat_data_1 = normal_utils.get_dict_stat_data_for_result(student, 'aspiration_1')
     stat_data_2 = normal_utils.get_dict_stat_data_for_result(student, 'aspiration_2')
 
-    stat_chart = normal_utils.get_dict_stat_chart(student, stat_data_total)
+    fake_stat_data_total = normal_utils.get_dict_stat_data_for_fake(student)
+    fake_stat_data_1 = normal_utils.get_dict_stat_data_for_fake(student, 'aspiration_1')
+    fake_stat_data_2 = normal_utils.get_dict_stat_data_for_fake(student, 'aspiration_2')
+
+    stat_chart = normal_utils.get_dict_stat_chart(student, fake_stat_data_total)
     score_frequency_list = models.ResultStudent.objects.filter(leet=student.leet).values_list('score__sum', flat=True)
     stat_frequency = normal_utils.get_dict_stat_frequency(student, score_frequency_list)
 
@@ -73,7 +77,14 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         student=student,
 
         # sheet_score: 성적 확인
-        stat_data_total=stat_data_total, stat_data_1=stat_data_1, stat_data_2=stat_data_2,
+        stat_data_total=stat_data_total,
+        stat_data_1=stat_data_1,
+        stat_data_2=stat_data_2,
+
+        # sheet_score: 누적 성적 확인
+        fake_stat_data_total=fake_stat_data_total,
+        fake_stat_data_1=fake_stat_data_1,
+        fake_stat_data_2=fake_stat_data_2,
 
         # sheet_answer: 답안 확인
         data_answers=data_answers,

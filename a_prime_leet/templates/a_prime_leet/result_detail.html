@@ -70,6 +70,34 @@
         </div>
     </section>
 
+    <section class="section" aria-label="누적 성적 확인">
+        <div class="row">
+            <div class="col-12">
+                <div id="sheetScore" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">누적 성적 확인</div>
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="sheetScoreTab" role="tablist">
+                                {% for tab in score_tab %}
+                                    {% #nav_tab prefix='CumulativeScore' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div class="tab-content" id="sheetCumulativeScoreContent">
+                            {% for tab in score_tab %}
+                                {% cycle fake_stat_data_total fake_stat_data_1 fake_stat_data_2 as stat_data silent %}
+                                {% #nav_content prefix='CumulativeScore' id=tab.id %}
+                                    {% include 'a_prime_leet/snippets/detail_sheet_score_table.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="section" aria-label="답안 확인">
         <div class="row">
             <div class="col-12">

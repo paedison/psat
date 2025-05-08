@@ -121,6 +121,27 @@ def get_dict_stat_data_for_result(student: models.ResultStudent, stat_type='tota
     return []
 
 
+def get_dict_stat_data_for_fake(student: models.ResultStudent, stat_type='total') -> list:
+    if stat_type == 'total' or getattr(student, stat_type):
+        subject_vars = get_subject_vars()
+        stat_data = get_empty_dict_stat_data_for_result(student, subject_vars)
+
+        fake_student = models.FakeStudent.objects.get(leet=student.leet, serial=student.serial)
+        qs_student = models.FakeStudent.objects.prime_leet_fake_qs_answer_by_student_and_stat_type(
+            fake_student, stat_type)
+
+        qs_score = models.FakeScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
+            fake_student, stat_type)
+
+        participants = qs_student.count()
+        participants_dict = {subject: participants for _, (_, subject, _) in subject_vars.items()}
+        participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
+        update_dict_stat_data(fake_student, qs_score, stat_data, participants_dict)
+
+        return stat_data
+    return []
+
+
 def get_dict_stat_data_for_predict(
         student: models.PredictStudent,
         is_confirmed_data: list,

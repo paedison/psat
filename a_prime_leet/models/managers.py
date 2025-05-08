@@ -61,6 +61,16 @@ class StudentManager(models.Manager):
             .order_by('leet__year', 'leet__name', 'rank__sum').annotate(**annotate_dict)
         )
 
+    def prime_leet_fake_qs_answer_by_student_and_stat_type(
+            self, student, stat_type='total'):
+        qs_answer = self.filter(leet=student.leet)
+        if stat_type != 'total':  # aspiration_1 | aspiration_2
+            aspiration = getattr(student, stat_type)
+            qs_answer = qs_answer.filter(
+                models.Q(aspiration_1=aspiration) | models.Q(aspiration_2=aspiration)
+            )
+        return qs_answer
+
     def prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(self, user, leet):
         annotate_dict = self.get_annotate_dict_for_score_and_rank()
         qs_student = (

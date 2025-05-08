@@ -1299,35 +1299,51 @@ def get_answer_response(leet, model_type='result'):
         'answer_predict',
         'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0', 'count_multiple', 'count_sum',
     ]
-    if model_type == 'predict':
-        drop_columns.extend([
-            'filtered_count_1', 'filtered_count_2', 'filtered_count_3', 'filtered_count_4',
-            'filtered_count_5', 'filtered_count_0', 'filtered_count_multiple', 'filtered_count_sum',
+
+    column_label = [
+        ('DB 정보', 'ID'), ('DB 정보', '문제 ID'),
+        ('문제 정보', '과목'), ('문제 정보', '번호'), ('문제 정보', '정답'), ('문제 정보', '예상 정답'),
+    ]
+    column_label.extend([
+        ('정답률', '전체'), ('정답률', '상위권'), ('정답률', '중위권'), ('정답률', '하위권'),
+    ])
+    for rank_type in ['전체 선택률', '상위권 선택률', '중위권 선택률', '하위권 선택률']:
+        column_label.extend([
+            (rank_type, '①'), (rank_type, '②'), (rank_type, '③'),
+            (rank_type, '④'), (rank_type, '⑤'),
+        ])
+    for rank_type in ['전체', '상위권', '중위권', '하위권']:
+        column_label.extend([
+            (rank_type, '①'), (rank_type, '②'), (rank_type, '③'),
+            (rank_type, '④'), (rank_type, '⑤'), (rank_type, '합계'),
         ])
 
-    if model_type == 'predict':
-        column_label = [
-            ('DB 정보', 'ID', ''), ('DB 정보', '문제 ID', ''),
-            ('문제 정보', '과목', ''), ('문제 정보', '번호', ''), ('문제 정보', '정답', ''), ('문제 정보', '예상 정답', ''),
-        ]
-        top_field = ['전체 데이터', '필터링 데이터']
-        for top in top_field:
-            for rank_type in ['전체', '상위권', '중위권', '하위권']:
-                column_label.extend([
-                    (top, rank_type, '①'), (top, rank_type, '②'), (top, rank_type, '③'),
-                    (top, rank_type, '④'), (top, rank_type, '⑤'), (top, rank_type, '합계'),
-                ])
-    else:
-        column_label = [
-            ('DB 정보', 'ID'), ('DB 정보', '문제 ID'),
-            ('문제 정보', '과목'), ('문제 정보', '번호'), ('문제 정보', '정답'), ('문제 정보', '예상 정답'),
-        ]
-        for rank_type in ['전체', '상위권', '중위권', '하위권']:
-            column_label.extend([
-                (rank_type, '①'), (rank_type, '②'), (rank_type, '③'),
-                (rank_type, '④'), (rank_type, '⑤'), (rank_type, '합계'),
-            ])
+    correct_rates = {'all': [], 'top': [], 'mid': [], 'low': []}
+    select_rates = {}
+    for _, row in df.iterrows():
+        correct_answer = row['ans_official']
+        for rank, rate_list in correct_rates.items():
+            correct_count = row[f'count_{correct_answer}_{rank}']
+            sum_count = row[f'count_sum_{rank}']
+            if sum_count:
+                correct_rate = round(correct_count / sum_count * 100, 1)
+            else:
+                correct_rate = round(0, 1)
+            rate_list.append(correct_rate)
 
+        for rank in correct_rates:
+            columns = [f'count_{i}_{rank}' for i in range(1, 6)]
+            # df_rank = df[columns].div(df[f'count_sum_{rank}'], axis=0)
+            # df_rank = df[columns].div(df[[f'count_sum_{rank}']])
+            df_rank = df[columns].div(df[columns].sum(axis=1), axis=0)
+            # print(df_rank.head)
+            select_rates[rank] = df_rank
+
+    for rank in reversed(correct_rates):
+        df.insert(6, f'correct_rate_{rank}', correct_rates[rank])
+    for rank in reversed(select_rates):
+        for i in range(1, 6):
+            df.insert(10, f'select_{i}_rate_{rank}', select_rates[rank][[f'count_{i}_{rank}']])
     return get_response_for_excel_file(df, drop_columns, column_label, filename)
 
 

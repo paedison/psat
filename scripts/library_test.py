@@ -77,6 +77,7 @@ def generate_correlated_distributions(max_rate=0.9, sample_size=1000, noise_leve
         'subject_sum': dist_sum
     })
     df = df.sort_values('subject_sum', ascending=False)
+    df.index = [f'{i + 1:04}' for i in range(sample_size)]
     return df
 
 
