@@ -761,19 +761,17 @@ def update_statistics_model(leet, data_statistics: dict, model_type='result', is
         stat_dict = {'aspiration': aspiration}
 
         for fld in field_vars:
-            data_for_update = {
-                fld: {
-                    'participants': data_stat[fld]['participants'],
-                    'max': data_stat[fld]['max'],
-                    't10': data_stat[fld]['t10'],
-                    't25': data_stat[fld]['t25'],
-                    't50': data_stat[fld]['t50'],
-                    'avg': data_stat[fld]['avg'],
-                }
-            }
+            data_for_update = {fld: {'participants': data_stat[fld]['participants']}}
             if fld in ['sum', 'raw_sum']:
                 data_for_update[fld]['participants_1'] = data_stat[fld]['participants_dict']['1']
                 data_for_update[fld]['participants_2'] = data_stat[fld]['participants_dict']['2']
+            data_for_update[fld].update({
+                'max': data_stat[fld]['max'],
+                't10': data_stat[fld]['t10'],
+                't25': data_stat[fld]['t25'],
+                't50': data_stat[fld]['t50'],
+                'avg': data_stat[fld]['avg'],
+            })
 
             stat_dict.update(data_for_update)
 
@@ -1173,13 +1171,13 @@ def get_statistics_response(leet, model_type='result'):
     filename = f'{leet.name}_성적통계.xlsx'
     drop_columns = ['id', 'leet_id']
     column_label = [('지망 대학', '')]
-    is_filtered = False if model_type == 'result' else True
+    is_filtered = True if model_type == 'predict' else False
     field_vars = get_field_vars(is_filtered)
 
     for fld, (_, subject, _) in field_vars.items():
         drop_columns.append(fld)
         subject += ' (원점수)' if fld[:3] == 'raw' else ' (표준점수)'
-        if subject == '총점 (표준점수)':
+        if fld in ['sum', 'raw_sum']:
             column_label.extend([
                 (subject, '총 인원'), (subject, '1지망 인원'),
                 (subject, '2지망 인원'), (subject, '최고'),
@@ -1238,8 +1236,9 @@ def get_catalog_dataframe_and_file_name(student_list, leet, model_type='result',
             df[f'rank_0_{fld}'] = df[f'filtered_rank_0_{fld}']
             df[f'rank_1_{fld}'] = df[f'filtered_rank_1_{fld}']
 
-    df['created_at'] = df['created_at'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
-    df['latest_answer_time'] = df['latest_answer_time'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
+    if model_type != 'fake':
+        df['created_at'] = df['created_at'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
+        df['latest_answer_time'] = df['latest_answer_time'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
 
     for i in ['sum', 0, 1]:
         ratio = df[f'rank_{i}'] / df['rank_num']
@@ -1251,22 +1250,30 @@ def get_catalog_dataframe_and_file_name(student_list, leet, model_type='result',
         for fld in field_list:
             drop_columns.extend([f'filtered_rank_sum_{fld}', f'filtered_rank_0_{fld}', f'filtered_rank_1_{fld}'])
 
-    column_label = [
-        ('DB정보', 'ID'), ('DB정보', '등록일시'),
-        ('수험정보', '수험번호'), ('수험정보', '이름'), ('수험정보', '비밀번호'),
-        ('지망대학', '1지망'), ('지망대학', '2지망'),
-        ('학과정보', '출신대학'), ('학과정보', '전공'),
-        ('성적정보', '학점 종류'), ('성적정보', '학점'), ('성적정보', '영어 종류'), ('성적정보', '영어 성적'),
-        ('답안정보', 'LEET ID'), ('답안정보', '최종답안 등록일시'), ('답안정보', '제출 답안수'),
-        ('참여자 수', '전체'), ('참여자 수', '1지망'), ('참여자 수', '2지망'),
-    ]
+    if model_type == 'fake':
+        column_label = [
+            ('DB정보', 'ID'), ('DB정보', 'LEET ID'),
+            ('수험정보', '수험번호'), ('수험정보', '이름'), ('수험정보', '비밀번호'),
+            ('지망대학', '1지망'), ('지망대학', '2지망'),
+            ('참여자 수', '전체'), ('참여자 수', '1지망'), ('참여자 수', '2지망'),
+        ]
+    else:
+        column_label = [
+            ('DB정보', 'ID'), ('DB정보', '등록일시'),
+            ('수험정보', '수험번호'), ('수험정보', '이름'), ('수험정보', '비밀번호'),
+            ('지망대학', '1지망'), ('지망대학', '2지망'),
+            ('학과정보', '출신대학'), ('학과정보', '전공'),
+            ('성적정보', '학점 종류'), ('성적정보', '학점'), ('성적정보', '영어 종류'), ('성적정보', '영어 성적'),
+            ('답안정보', 'LEET ID'), ('답안정보', '최종답안 등록일시'), ('답안정보', '제출 답안수'),
+            ('참여자 수', '전체'), ('참여자 수', '1지망'), ('참여자 수', '2지망'),
+        ]
+
     label_list = ['언어이해 성적', '추리논증 성적', '전체 성적']
     for label in label_list:
         column_label.extend([
             (label, '원점수'), (label, '표준점수'), (label, '전체 등수'), (label, '1지망 등수'), (label, '2지망 등수'),
         ])
     column_label.extend([('그룹', '전체'), ('그룹', '언어이해'), ('그룹', '추리논증')])
-
     df.drop(columns=drop_columns, inplace=True)
     df.columns = pd.MultiIndex.from_tuples(column_label)
 
