@@ -11,8 +11,11 @@
                 <h5>
                     <span class="text-primary fw-bold">{{ stat.score|floatformat:1 }}</span>
                     <span class="fs-6">
-                        {{ stat.rank }}등({{ stat.rank|percentageby:stat.participants|floatformat:1 }}%) |
-                        원점수 {{ stat.raw_score }}
+                        {{ stat.rank }}등
+                        {% if rank_percentage_revealed %}
+                            ({{ stat.rank|percentageby:stat.participants|floatformat:1 }}%)
+                        {% endif %}
+                        | 원점수 {{ stat.raw_score }}
                     </span>
                 </h5>
                 <div class="progress">
