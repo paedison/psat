@@ -54,12 +54,13 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
     stat_data_1 = normal_utils.get_dict_stat_data_for_result(student, 'aspiration_1')
     stat_data_2 = normal_utils.get_dict_stat_data_for_result(student, 'aspiration_2')
 
-    fake_stat_data_total = normal_utils.get_dict_stat_data_for_fake(student)
-    fake_stat_data_1 = normal_utils.get_dict_stat_data_for_fake(student, 'aspiration_1')
-    fake_stat_data_2 = normal_utils.get_dict_stat_data_for_fake(student, 'aspiration_2')
+    fake_student = models.FakeStudent.objects.get(leet=leet, serial=student.serial)
+    fake_stat_data_total = normal_utils.get_dict_stat_data_for_fake(fake_student)
+    fake_stat_data_1 = normal_utils.get_dict_stat_data_for_fake(fake_student, 'aspiration_1')
+    fake_stat_data_2 = normal_utils.get_dict_stat_data_for_fake(fake_student, 'aspiration_2')
 
     stat_chart = normal_utils.get_dict_stat_chart(student, fake_stat_data_total)
-    score_frequency_list = models.ResultStudent.objects.filter(leet=student.leet).values_list('score__sum', flat=True)
+    score_frequency_list = models.FakeStudent.objects.filter(leet=leet).values_list('score__sum', flat=True)
     stat_frequency = normal_utils.get_dict_stat_frequency(student, score_frequency_list)
 
     qs_student_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student(student)

@@ -10,7 +10,10 @@
                 <h6>{{ stat.subject }}</h6>
                 <h5>
                     <span class="text-primary fw-bold">{{ stat.score|floatformat:1 }}</span>
-                    <span class="fs-6">{{ stat.rank }}등 | 원점수 {{ stat.raw_score }}</span>
+                    <span class="fs-6">
+                        {{ stat.rank }}등({{ stat.rank|percentageby:stat.participants|floatformat:1 }}%) |
+                        원점수 {{ stat.raw_score }}
+                    </span>
                 </h5>
                 <div class="progress">
                     <div class="progress-bar bg-c-blue" style="width:{{ stat.rank|percentageby:stat.participants|subtract:100 }}%"></div>

@@ -121,15 +121,13 @@ def get_dict_stat_data_for_result(student: models.ResultStudent, stat_type='tota
     return []
 
 
-def get_dict_stat_data_for_fake(student: models.ResultStudent, stat_type='total') -> list:
-    if stat_type == 'total' or getattr(student, stat_type):
+def get_dict_stat_data_for_fake(fake_student: models.ResultStudent, stat_type='total') -> list:
+    if stat_type == 'total' or getattr(fake_student, stat_type):
         subject_vars = get_subject_vars()
-        stat_data = get_empty_dict_stat_data_for_result(student, subject_vars)
+        stat_data = get_empty_dict_stat_data_for_result(fake_student, subject_vars)
 
-        fake_student = models.FakeStudent.objects.get(leet=student.leet, serial=student.serial)
         qs_student = models.FakeStudent.objects.prime_leet_fake_qs_answer_by_student_and_stat_type(
             fake_student, stat_type)
-
         qs_score = models.FakeScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
             fake_student, stat_type)
 
