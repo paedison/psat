@@ -95,7 +95,7 @@ def get_qs_statistics(leet, model_type='result'):
 def get_student_list(leet, model_type='result'):
     model = get_target_model(f'{model_type.capitalize()}Student')
     if model_type == 'fake':
-        return model.objects.prime_leet_fake_qs_student_list_by_leet(leet)
+        return model.objects.prime_leet_qs_fake_student_list_by_leet(leet)
     else:
         return model.objects.prime_leet_qs_student_list_by_leet(leet)
 

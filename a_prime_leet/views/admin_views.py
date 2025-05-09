@@ -6,7 +6,7 @@ from django_htmx.http import replace_url
 from common.constants import icon_set_new
 from common.decorators import only_staff_allowed, admin_required
 from common.utils import HtmxHttpRequest, update_context_data
-from . import admin_utils, result_views, predict_views
+from . import admin_utils, result_views, predict_views, fake_views
 from .. import models, utils, forms
 
 
@@ -150,8 +150,10 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 def detail_student_view(request: HtmxHttpRequest, model_type: str, pk: int):
     model = admin_utils.get_target_model(f'{model_type.capitalize()}Student')
     student = get_object_or_404(model, pk=pk)
-    if model_type != 'predict':
+    if model_type == 'result':
         return result_views.detail_view(request, student.leet.pk, student=student)
+    elif model_type == 'fake':
+        return fake_views.detail_view(request, student.leet.pk, student=student)
     student = get_object_or_404(models.PredictStudent, pk=pk)
     return predict_views.detail_view(request, student.leet.pk, student=student)
 

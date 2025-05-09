@@ -26,6 +26,17 @@ class StudentManager(models.Manager):
             .annotate(**annotate_dict).order_by('id').last()
         )
 
+    def prime_leet_qs_fake_student_by_leet_and_user(self, leet):
+        annotate_dict = {'score_sum': models.F('score__sum'), 'rank_num': models.F(f'rank__participants')}
+        field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'sum'}
+        for key, fld in field_dict.items():
+            annotate_dict[f'score_{key}'] = models.F(f'score__{fld}')
+            annotate_dict[f'rank_{key}'] = models.F(f'rank__{fld}')
+        return (
+            self.filter(leet=leet).select_related('leet', 'score', 'rank')
+            .annotate(**annotate_dict).order_by('id').last()
+        )
+
     @staticmethod
     def get_annotate_dict_for_score_and_rank():
         annotate_dict = {
@@ -54,15 +65,14 @@ class StudentManager(models.Manager):
             )
         )
 
-    def prime_leet_fake_qs_student_list_by_leet(self, leet):
+    def prime_leet_qs_fake_student_list_by_leet(self, leet):
         annotate_dict = self.get_annotate_dict_for_score_and_rank()
         return (
             self.with_select_related().filter(leet=leet)
             .order_by('leet__year', 'leet__name', 'rank__sum').annotate(**annotate_dict)
         )
 
-    def prime_leet_fake_qs_answer_by_student_and_stat_type(
-            self, student, stat_type='total'):
+    def prime_leet_qs_fake_student_list_by_student_and_stat_type(self, student, stat_type='total'):
         qs_answer = self.filter(leet=student.leet)
         if stat_type != 'total':  # aspiration_1 | aspiration_2
             aspiration = getattr(student, stat_type)

@@ -126,7 +126,7 @@ def get_dict_stat_data_for_fake(fake_student: models.ResultStudent, stat_type='t
         subject_vars = get_subject_vars()
         stat_data = get_empty_dict_stat_data_for_result(fake_student, subject_vars)
 
-        qs_student = models.FakeStudent.objects.prime_leet_fake_qs_answer_by_student_and_stat_type(
+        qs_student = models.FakeStudent.objects.prime_leet_qs_fake_student_list_by_student_and_stat_type(
             fake_student, stat_type)
         qs_score = models.FakeScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
             fake_student, stat_type)
@@ -463,6 +463,40 @@ def get_data_answers_for_predict(qs_student_answer):
         qs_sa.rate_selection_low = qs_sa.problem.predict_answer_count_low_rank.get_answer_rate(ans_student)
 
         data_answers[idx].append(qs_sa)
+    return data_answers
+
+
+def get_data_answers_for_fake(qs_problem):
+    sub_list = get_sub_list()
+    subject_vars = get_subject_vars()
+    data_answers = [[] for _ in sub_list]
+
+    for qs_p in qs_problem:
+        sub = qs_p.subject
+        subject = qs_p.get_subject_display()
+        idx = sub_list.index(sub)
+        field = subject_vars[sub][1]
+        ans_official = qs_p.answer
+        answer_official_list = [int(digit) for digit in str(ans_official)]
+
+        qs_p.no = qs_p.number
+        qs_p.sub = sub
+        qs_p.subject = subject
+        qs_p.ans_official = ans_official
+        qs_p.ans_official_circle = qs_p.get_answer_display()
+        qs_p.ans_list = answer_official_list
+
+        qs_p.field = field
+        qs_p.rate_correct = qs_p.fake_answer_count.get_answer_rate(ans_official)
+        qs_p.rate_correct_top = qs_p.fake_answer_count_top_rank.get_answer_rate(ans_official)
+        qs_p.rate_correct_mid = qs_p.fake_answer_count_mid_rank.get_answer_rate(ans_official)
+        qs_p.rate_correct_low = qs_p.fake_answer_count_low_rank.get_answer_rate(ans_official)
+        try:
+            qs_p.rate_gap = qs_p.rate_correct_top - qs_p.rate_correct_low
+        except TypeError:
+            qs_p.rate_gap = None
+
+        data_answers[idx].append(qs_p)
     return data_answers
 
 
