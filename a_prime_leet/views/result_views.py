@@ -60,14 +60,14 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         fake_stat_data_1 = normal_utils.get_dict_stat_data_for_fake(fake_student, 'aspiration_1')
         fake_stat_data_2 = normal_utils.get_dict_stat_data_for_fake(fake_student, 'aspiration_2')
 
-        stat_chart = normal_utils.get_dict_stat_chart(student, fake_stat_data_total)
-        score_frequency_list = models.FakeStudent.objects.filter(leet=leet).values_list('score__sum', flat=True)
-        stat_frequency = normal_utils.get_dict_stat_frequency(student, score_frequency_list)
+        stat_chart = normal_utils.get_dict_stat_chart(fake_student, fake_stat_data_total)
+        score_frequency_dict = normal_utils.get_score_frequency_dict(leet, 'fake')
+        stat_frequency_dict = normal_utils.get_stat_frequency_dict(fake_student, score_frequency_dict)
     else:
         fake_stat_data_total,fake_stat_data_1, fake_stat_data_2 = [], [], []
         stat_chart = normal_utils.get_dict_stat_chart(student, stat_data_total)
-        score_frequency_list = models.ResultStudent.objects.filter(leet=leet).values_list('score__sum', flat=True)
-        stat_frequency = normal_utils.get_dict_stat_frequency(student, score_frequency_list)
+        score_frequency_dict = normal_utils.get_score_frequency_dict(leet)
+        stat_frequency_dict = normal_utils.get_stat_frequency_dict(student, score_frequency_dict)
 
     qs_student_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student(student)
     data_answers = normal_utils.get_data_answers_for_result(qs_student_answer)
@@ -97,7 +97,9 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         data_answers=data_answers,
 
         # chart: 성적 분포 차트
-        stat_chart=stat_chart, stat_frequency=stat_frequency, all_confirmed=True,
+        stat_chart=stat_chart,
+        stat_frequency_dict=stat_frequency_dict,
+        all_confirmed=True,
     )
     if is_for_print:
         return render(request, 'a_prime_leet/result_print.html', context)

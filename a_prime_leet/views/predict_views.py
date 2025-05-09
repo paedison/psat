@@ -85,8 +85,8 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         stat_data_2_filtered = {}
 
     stat_chart = normal_utils.get_dict_stat_chart(student, stat_data_total)
-    score_frequency_list = models.PredictStudent.objects.filter(leet=student.leet).values_list('score__sum', flat=True)
-    stat_frequency = normal_utils.get_dict_stat_frequency(student, score_frequency_list)
+    score_frequency_dict = normal_utils.get_score_frequency_dict(leet)
+    stat_frequency_dict = normal_utils.get_stat_frequency_dict(student, score_frequency_dict)
 
     data_answers = normal_utils.get_data_answers_for_predict(qs_student_answer)
 
@@ -103,7 +103,9 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         student=student,
 
         # sheet_score: 성적 예측 I [All]
-        stat_data_total=stat_data_total, stat_data_1=stat_data_1, stat_data_2=stat_data_2,
+        stat_data_total=stat_data_total,
+        stat_data_1=stat_data_1,
+        stat_data_2=stat_data_2,
 
         # sheet_score: 성적 예측 II [Filtered]
         stat_data_total_filtered=stat_data_total_filtered,
@@ -111,10 +113,13 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         stat_data_2_filtered=stat_data_2_filtered,
 
         # sheet_answer: 답안 확인
-        data_answers=data_answers, is_confirmed_data=is_confirmed_data,
+        data_answers=data_answers,
+        is_confirmed_data=is_confirmed_data,
 
         # chart: 성적 분포 차트
-        stat_chart=stat_chart, stat_frequency=stat_frequency, all_confirmed=is_confirmed_data[-1],
+        stat_chart=stat_chart,
+        stat_frequency_dict=stat_frequency_dict,
+        all_confirmed=is_confirmed_data[-1],
     )
 
     if view_type == 'info_answer':

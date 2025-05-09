@@ -316,18 +316,46 @@ def update_score_real(stat_data_total, qs_student_answer):
 
 
 def get_dict_stat_chart(student, stat_data_total) -> dict:
-    field_vars = {
-        'subject_0': ('언어', '언어이해', 0),
-        'subject_1': ('추리', '추리논증', 1),
-        'sum': ('총점', '총점', 2),
+    field_list = ['subject_0', 'subject_1', 'sum']
+    stat_chart = defaultdict(list)
+    if stat_data_total:
+        for fld in field_list:
+            stat_chart['my_score'].append(getattr(student.score, fld))
+        for stat in stat_data_total:
+            stat_chart['total_score_10'].append(stat['top_score_10'])
+            stat_chart['total_score_25'].append(stat['top_score_25'])
+            stat_chart['total_score_50'].append(stat['top_score_50'])
+            stat_chart['total_top'].append(stat['max_score'])
+    return stat_chart
+
+
+def get_score_frequency_dict(leet, model_type='result'):
+    model = models.ResultStudent
+    if model_type == 'fake':
+        model = models.FakeStudent
+    score_frequency_dict = {
+        'subject_0': model.objects.filter(leet=leet).values_list('score__subject_0', flat=True),
+        'subject_1': model.objects.filter(leet=leet).values_list('score__subject_1', flat=True),
+        'sum': model.objects.filter(leet=leet).values_list('score__sum', flat=True),
     }
-    return {
-        'my_score': [getattr(student.score, fld) for fld in field_vars],
-        'total_score_10': [stat['top_score_10'] for stat in stat_data_total],
-        'total_score_25': [stat['top_score_25'] for stat in stat_data_total],
-        'total_score_50': [stat['top_score_50'] for stat in stat_data_total],
-        'total_top': [stat['max_score'] for stat in stat_data_total],
-    }
+    return score_frequency_dict
+
+
+def get_stat_frequency_dict(student, score_frequency_dict: dict) -> dict:
+    stat_frequency_dict = {}
+    for fld, score_list in score_frequency_dict.items():
+        scores = [round(score, 1) for score in score_list if score is not None]
+        sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=getattr(student.score, fld))
+
+        score_label, score_data, score_color = [], [], []
+        for key, val in sorted_freq.items():
+            score_label.append(key)
+            score_data.append(val)
+            color = 'rgba(255, 99, 132, 0.5)' if key == target_bin else 'rgba(54, 162, 235, 0.5)'
+            score_color.append(color)
+
+        stat_frequency_dict[fld] = {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
+    return stat_frequency_dict
 
 
 def frequency_table_by_bin(scores, bin_size=10, target_score=None):
@@ -350,22 +378,6 @@ def frequency_table_by_bin(scores, bin_size=10, target_score=None):
         target_bin = f'{bin_start}~{bin_end}'
 
     return sorted_freq, target_bin
-
-
-def get_dict_stat_frequency(student, score_frequency_list) -> dict:
-    scores = [round(score, 1) for score in score_frequency_list]
-    sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.sum)
-
-    score_label = []
-    score_data = []
-    score_color = []
-    for key, val in sorted_freq.items():
-        score_label.append(key)
-        score_data.append(val)
-        color = 'rgba(255, 99, 132, 0.5)' if key == target_bin else 'rgba(54, 162, 235, 0.5)'
-        score_color.append(color)
-
-    return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
 
 
 def get_data_answers_for_result(qs_student_answer):

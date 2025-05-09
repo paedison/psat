@@ -228,6 +228,19 @@
     </section>
     {% endif %}
 
+    <section class="section" aria-label="성적 분포 차트">
+        <div class="row" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+            <div class="col-12">
+                <div id="sheetChart" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-header">성적 분포 차트</div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/detail_chart.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="section" aria-label="정답 확인">
         <div class="row">
             <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
@@ -271,19 +284,6 @@
                                 <li>선택률 = 동일 답안 선택 응시생 수 / 답안 제출 완료 응시생 수</li>
                             </ol>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" aria-label="성적 분포 차트">
-        <div class="row" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-            <div class="col-12">
-                <div id="sheetChart" class="card htmx-fade-in htmx-fade-out">
-                    <div class="card-header">성적 분포 차트</div>
-                    <div class="card-body">
-                        {% include 'a_prime_leet/snippets/detail_chart.html' %}
                     </div>
                 </div>
             </div>
