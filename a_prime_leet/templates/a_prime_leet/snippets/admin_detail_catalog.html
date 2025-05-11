@@ -6,15 +6,24 @@
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
-                <th class="text-primary text-nowrap" rowspan="2">수험<br/>정보<br/>등록</th>
+                {% if config.model_type == 'result' %}
+                    <th class="text-primary text-nowrap" rowspan="2">수험<br/>정보<br/>등록</th>
+                {% endif %}
+
                 {% partialdef table_head_1 inline=True %}
                     <th class="text-primary text-nowrap" rowspan="2">등수</th>
-                    <th class="text-primary text-nowrap" rowspan="2">이름<br/>(수험번호)</th>
+                    <th class="text-primary text-nowrap" rowspan="2">
+                        {% if config.model_type == 'result' %}이름<hr class="m-0"/>수험번호
+                        {% elif config.model_type == 'fake' %}수험번호{% endif %}
+                    </th>
                     <th class="text-primary text-nowrap" rowspan="2">성적 확인</th>
                     <th class="text-primary text-nowrap" rowspan="2">비밀번호</th>
-                    <th class="text-primary text-nowrap" rowspan="2">출신대학<br/>(전공)</th>
-                    <th class="text-primary text-nowrap" rowspan="2">1지망<br/>2지망</th>
-                    <th class="text-primary text-nowrap" rowspan="2">학점(GPA)<br/>공인 영어성적</th>
+                    <th class="text-primary text-nowrap" rowspan="2">1지망<hr class="m-0"/>2지망</th>
+
+                    {% if config.model_type == 'result' %}
+                        <th class="text-primary text-nowrap" rowspan="2">출신대학<hr class="m-0"/>전공</th>
+                        <th class="text-primary text-nowrap" rowspan="2">학점(GPA)<hr class="m-0"/>공인 영어성적</th>
+                    {% endif %}
 
                     <th class="text-primary text-nowrap" colspan="4">총점</th>
                     <th class="text-primary text-nowrap" colspan="4">언어이해</th>
@@ -24,7 +33,7 @@
 
             {% partialdef table_head_2 inline=True %}
                 <tr class="text-center table-warning align-middle">
-                    {% for _ in '012' %}
+                    {% for _ in '전12' %}
                         <th class="text-primary text-nowrap td-right-no-border">점수</th>
                         <th class="text-primary text-nowrap td-left-no-border td-right-no-border">전체<br/>석차</th>
                         <th class="text-primary text-nowrap td-left-no-border td-right-no-border">1지망<br/>석차</th>
@@ -37,10 +46,17 @@
             {% for obj in catalog_page_obj %}
                 <tr class="text-center small">
                     <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
-                    <td class="text-nowrap">{% if obj.registries.count %}✔{% endif %}</td>
+
+                    {% if config.model_type == 'result' %}
+                        <td class="text-nowrap">{% if obj.registries.count %}✔{% endif %}</td>
+                    {% endif %}
+
                     {% partialdef table_body inline=True %}
-                        <td class="text-nowrap">{{ obj.rank_sum }}</td>
-                        <td class="text-nowrap">{{ obj.name }}<br/>{{ obj.serial }}</td>
+                        <td class="text-nowrap">{{ obj.subjects.0.aspirations.0.rank }}</td>
+                        <td class="text-nowrap">
+                            {% if config.model_type == 'result' %}{{ obj.name }}<hr class="m-0"/>{{ obj.serial }}
+                            {% elif config.model_type == 'fake' %}{{ obj.serial }}{% endif %}
+                        </td>
                         <td class="text-nowrap">
                             <div class="btn-group">
                                 <a target="result" class="btn btn-sm btn-outline-primary"
@@ -53,33 +69,36 @@
                         </td>
                         <td class="text-nowrap">{{ obj.password }}</td>
                         <td class="text-nowrap">
-                            {{ obj.school|default:'' }}
-                            {% if obj.major %}<br/>({{ obj.major }}){% endif %}
-                        </td>
-                        <td class="text-nowrap">
-                            {{ obj.aspiration_1|default:'' }}<br/>{{ obj.aspiration_2|default:'' }}&nbsp;
-                        </td>
-                        <td class="text-nowrap">
-                            {% if obj.gpa %}{{ obj.gpa }} / {{ obj.gpa_type }}{% endif %}
-                            {% if obj.english %}<br/>{{ obj.english }} / {{ obj.english_type }}{% endif %}
+                            {% if obj.aspiration_1 or obj.aspiration_2 %}
+                                {{ obj.aspiration_1 }}<hr class="m-0"/>{{ obj.aspiration_2 }}&nbsp;
+                            {% endif %}
                         </td>
 
-                        {% for _ in '012' %}
-                            {% cycle obj.score_sum obj.score_0 obj.score_1 as score silent %}
-                            {% cycle obj.raw_score_sum obj.raw_score_0 obj.raw_score_1 as raw_score silent %}
-                            {% cycle obj.rank_sum obj.rank_0 obj.rank_1 as rank_total silent %}
-                            {% cycle obj.rank_sum_aspiration_1 obj.rank_0_aspiration_1 obj.rank_1_aspiration_1 as rank_aspiration_1 silent %}
-                            {% cycle obj.rank_sum_aspiration_2 obj.rank_0_aspiration_2 obj.rank_1_aspiration_2 as rank_aspiration_2 silent %}
+                        {% if config.model_type == 'result' %}
+                            <td class="text-nowrap">
+                                {% if obj.school or obj.major %}
+                                    {{ obj.school|default:'' }}<hr class="m-0"/>{{ obj.major }}
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap">
+                                {% if obj.gpa or obj.gpa_type or obj.english or ob.english_type %}
+                                    {{ obj.gpa }} / {{ obj.gpa_type }}
+                                    <hr class="m-0"/>
+                                    {{ obj.english }} / {{ obj.english_type }}
+                                {% endif %}
+                            </td>
+                        {% endif %}
+
+                        {% for sub in obj.subjects %}
                             <td class="text-nowrap td-right-no-border">
-                                <span class="text-primary">{{ score|floatformat:1 }}</span><br/>
-                                {{ raw_score|floatformat:0 }}</td>
-                            {% for _ in '012' %}
-                                {% cycle rank_total rank_aspiration_1 rank_aspiration_2 as rank silent %}
-                                {% cycle obj.rank_num obj.rank_num_aspiration_1 obj.rank_num_aspiration_2 as rank_num silent %}
+                                <span class="text-primary">{{ sub.score|floatformat:1 }}</span><br/>
+                                {{ sub.raw_score|floatformat:0 }}
+                            </td>
+                            {% for aspiration in sub.aspirations %}
                                 <td class="text-nowrap td-left-no-border td-right-no-border">
-                                    <span class="text-primary">{{ rank|default_if_none:'' }}</span>
-                                    {% if rank_num %}
-                                        <br/>{{ rank|divide:rank_num|percentage|floatformat:1 }}
+                                    {% if aspiration.rank and aspiration.participants %}
+                                        <span class="text-primary">{{ aspiration.rank }}</span>
+                                        <br/>{{ aspiration.rank|divide:aspiration.participants|percentage|floatformat:1 }}
                                     {% endif %}
                                 </td>
                             {% endfor %}

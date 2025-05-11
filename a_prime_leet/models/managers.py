@@ -54,23 +54,16 @@ class StudentManager(models.Manager):
         return annotate_dict
 
     def prime_leet_qs_student_list_by_leet(self, leet):
-        annotate_dict = self.get_annotate_dict_for_score_and_rank()
         return (
-            self.with_select_related().prefetch_related('registries').filter(leet=leet)
-            .order_by('leet__year', 'leet__name', 'rank__sum')
+            self.with_select_related().prefetch_related('registries').filter(leet=leet).order_by('rank__sum')
             .annotate(
                 latest_answer_time=models.Max('answers__created_at'),
                 answer_count=models.Count('answers'),
-                **annotate_dict
             )
         )
 
     def prime_leet_qs_fake_student_list_by_leet(self, leet):
-        annotate_dict = self.get_annotate_dict_for_score_and_rank()
-        return (
-            self.with_select_related().filter(leet=leet)
-            .order_by('leet__year', 'leet__name', 'rank__sum').annotate(**annotate_dict)
-        )
+        return self.with_select_related().filter(leet=leet).order_by('rank__sum')
 
     def prime_leet_qs_fake_student_list_by_student_and_stat_type(self, student, stat_type='total'):
         qs_answer = self.filter(leet=student.leet)

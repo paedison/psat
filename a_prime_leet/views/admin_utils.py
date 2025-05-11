@@ -159,6 +159,55 @@ def get_stat_frequency_dict(score_frequency_dict: dict) -> dict:
     return stat_frequency_dict
 
 
+def update_statistics_page_obj(
+        data_statistics_total: models.ResultStatistics | models.FakeStatistics | models.PredictStatistics,
+        statistics_page_obj):
+    update_stat_dict(data_statistics_total)
+    for obj in statistics_page_obj:
+        update_stat_dict(obj)
+
+
+def update_stat_dict(obj: models.ResultStatistics | models.FakeStatistics | models.PredictStatistics):
+    obj.participants = [obj.sum['participants'], obj.sum['participants_1'], obj.sum['participants_2']]
+    obj.subjects = [
+        {'data_stat': obj.sum, 'raw_data_stat': obj.raw_sum},
+        {'data_stat': obj.subject_0, 'raw_data_stat': obj.raw_subject_0},
+        {'data_stat': obj.subject_1, 'raw_data_stat': obj.raw_subject_1},
+    ]
+
+
+def update_catalog_page_obj(catalog_page_obj):
+    for obj in catalog_page_obj:
+        obj.subjects = get_catalog_info_from_student_obj(obj)
+
+
+def update_registry_page_obj(catalog_page_obj):
+    for obj in catalog_page_obj:
+        obj.subjects = get_catalog_info_from_student_obj(obj.student)
+
+
+def get_catalog_info_from_student_obj(obj):
+    subjects = ['sum', 'subject_0', 'subject_1']
+    return [{
+        'score': getattr(obj.score, subject, ''),
+        'raw_score': getattr(obj.score, f'raw_{subject}', ''),
+        'aspirations': [
+            get_rank_and_participants(obj, 'rank', subject),
+            get_rank_and_participants(obj, 'rank_aspiration_1', subject),
+            get_rank_and_participants(obj, 'rank_aspiration_2', subject),
+        ],
+    } for subject in subjects]
+
+
+def get_rank_and_participants(target_student, rank_model: str, subject: str):
+    rank = participants = ''
+    target_rank = getattr(target_student, rank_model, None)
+    if target_rank:
+        rank = getattr(target_rank, subject, '')
+        participants = getattr(target_rank, 'participants', '')
+    return {'rank': rank, 'participants': participants}
+
+
 def get_answer_page_data(qs_answer_count, page_number, model_type='result', per_page=10):
     subject_vars = get_subject_vars()
     qs_answer_count_group, answers_page_obj_group, answers_page_range_group = {}, {}, {}
@@ -1333,10 +1382,7 @@ def get_answer_response(leet, model_type='result'):
 
         for rank in correct_rates:
             columns = [f'count_{i}_{rank}' for i in range(1, 6)]
-            # df_rank = df[columns].div(df[f'count_sum_{rank}'], axis=0)
-            # df_rank = df[columns].div(df[[f'count_sum_{rank}']])
             df_rank = df[columns].div(df[columns].sum(axis=1), axis=0)
-            # print(df_rank.head)
             select_rates[rank] = df_rank
 
     for rank in reversed(correct_rates):

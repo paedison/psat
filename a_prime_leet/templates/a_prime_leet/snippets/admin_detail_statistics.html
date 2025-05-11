@@ -11,10 +11,12 @@
                 <th class="text-primary text-nowrap td-right-no-border" colspan="5">추리논증</th>
             </tr>
             <tr class="text-center table-warning align-middle">
-                <th class="text-primary text-nowrap td-right-no-border">전체</th>
-                <th class="text-primary text-nowrap td-left-no-border td-right-no-border">1지망</th>
-                <th class="text-primary text-nowrap td-left-no-border td-right-no-border">2지망</th>
-                {% for _ in '123' %}
+                {% for _ in '전12' %}
+                    {% cycle '전체' '1지망' '2지망' as aspiration_name silent %}
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">{{ aspiration_name }}</th>
+                {% endfor %}
+
+                {% for _ in '총언추' %}
                     <th class="text-primary text-nowrap td-right-no-border">최고<br/>점수</th>
                     <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>10%</th>
                     <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>25%</th>
@@ -24,38 +26,12 @@
             </tr>
         </thead>
         <tbody>
+            {% with obj=data_statistics_total %}{% partial aspiration_stat_tr %}{% endwith %}
+            <tr>
+                <td class="td-no-border" colspan="19"></td>
+            </tr>
             {% for obj in statistics_page_obj %}
-                <tr class="text-center small">
-                    <th class="text-nowrap td-left-no-border">{{ obj.aspiration }}</th>
-                    <td class="text-nowrap td-right-no-border">{{ obj.sum.participants|intcomma }}</td>
-                    <td class="text-nowrap td-left-no-border td-right-no-border">{{ obj.sum.participants_1|intcomma }}</td>
-                    <td class="text-nowrap td-left-no-border td-right-no-border">{{ obj.sum.participants_2|intcomma }}</td>
-
-                    {% for _ in '123' %}
-                        {% cycle obj.sum obj.subject_0 obj.subject_1 as data_stat silent %}
-                        {% cycle obj.raw_sum obj.raw_subject_0 obj.raw_subject_1 as raw_data_stat silent %}
-                        <td class="text-nowrap td-right-no-border">
-                            <span class="text-primary">{{ data_stat.max|floatformat:1 }}</span><br/>
-                            {{ raw_data_stat.max|floatformat:0 }}
-                        </td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            <span class="text-primary">{{ data_stat.t10|floatformat:1 }}</span><br/>
-                            {{ raw_data_stat.t10|floatformat:0 }}
-                        </td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            <span class="text-primary">{{ data_stat.t25|floatformat:1 }}</span><br/>
-                            {{ raw_data_stat.t25|floatformat:0 }}
-                        </td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            <span class="text-primary">{{ data_stat.t50|floatformat:1 }}</span><br/>
-                            {{ raw_data_stat.t50|floatformat:0 }}
-                        </td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">
-                            <span class="text-primary">{{ data_stat.avg|floatformat:1 }}</span><br/>
-                            {{ raw_data_stat.avg|floatformat:1 }}
-                        </td>
-                    {% endfor %}
-                </tr>
+                {% partial aspiration_stat_tr %}
             {% empty %}
                 <tr class="text-center">
                     <td class="text-nowrap td-left-no-border td-right-no-border" colspan="32">자료가 없습니다.</td>
@@ -70,3 +46,25 @@
         {% include 'a_prime/snippets/pagination.html' with header='statistics_list' %}
     {% endif %}
 {% endwith %}
+
+{% partialdef aspiration_stat_tr %}
+    <tr class="text-center small">
+        <th class="text-nowrap td-left-no-border">{{ obj.aspiration }}</th>
+        {% for participants in obj.participants %}
+            <td class="text-nowrap td-left-no-border td-right-no-border">
+                {{ participants|default:''|intcomma }}
+            </td>
+        {% endfor %}
+
+        {% for sub in obj.subjects %}
+            {% for _ in '최125평' %}
+                {% cycle sub.data_stat.max sub.data_stat.t10 sub.data_stat.t25 sub.data_stat.t50 sub.data_stat.avg as data_stat silent %}
+                {% cycle sub.raw_data_stat.max sub.raw_data_stat.t10 sub.raw_data_stat.t25 sub.raw_data_stat.t50 sub.raw_data_stat.avg as raw_data_stat silent %}
+                <td class="text-nowrap {% if not forloop.first %}td-left-no-border {% endif %}td-right-no-border">
+                    <span class="text-primary">{{ data_stat|floatformat:1 }}</span><br/>
+                    {{ raw_data_stat|floatformat:0 }}
+                </td>
+            {% endfor %}
+        {% endfor %}
+    </tr>
+{% endpartialdef %}

@@ -83,6 +83,8 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     )
 
     data_statistics = admin_utils.get_qs_statistics(leet, model_type)
+    data_statistics_total = data_statistics[0]
+    data_statistics = data_statistics.exclude(aspiration='전체')
     student_list = admin_utils.get_student_list(leet, model_type)
 
     registry_list = None
@@ -93,25 +95,29 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
     if view_type == 'statistics_list':
         statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
+        admin_utils.update_statistics_page_obj(data_statistics_total, statistics_page_obj)
         context = update_context_data(
-            context, statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range)
+            context, data_statistics_total=data_statistics_total,
+            statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
+        )
         return render(request, 'a_prime_leet/snippets/admin_detail_statistics.html', context)
-    if view_type == 'catalog_list':
+
+    if view_type in ['catalog_list', 'student_search']:
+        if student_name:
+            student_list = student_list.filter(name=student_name)
         catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
+        admin_utils.update_catalog_page_obj(catalog_page_obj)
         context = update_context_data(
             context, catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
         return render(request, 'a_prime_leet/snippets/admin_detail_catalog.html', context)
-    if view_type == 'student_search':
-        searched_student = student_list.filter(name=student_name)
-        catalog_page_obj, catalog_page_range = utils.get_paginator_data(searched_student, page_number)
-        context = update_context_data(
-            context, catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
-        return render(request, 'a_prime_leet/snippets/admin_detail_catalog.html', context)
+
     if view_type == 'registry_list':
         registry_page_obj, registry_page_range = utils.get_paginator_data(registry_list, page_number)
+        admin_utils.update_registry_page_obj(registry_page_obj)
         context = update_context_data(
             context, registry_page_obj=registry_page_obj, registry_page_range=registry_page_range)
         return render(request, 'a_prime_leet/snippets/admin_detail_registry.html', context)
+
     if view_type == 'answer_list':
         subject_vars = admin_utils.get_subject_vars()
         subject_idx = subject_vars[subject][2]
@@ -126,8 +132,14 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         return render(request, 'a_prime_leet/snippets/admin_detail_answer.html', context)
 
     statistics_page_obj, statistics_page_range = utils.get_paginator_data(data_statistics, page_number)
+    admin_utils.update_statistics_page_obj(data_statistics_total, statistics_page_obj)
+
     catalog_page_obj, catalog_page_range = utils.get_paginator_data(student_list, page_number)
+    admin_utils.update_catalog_page_obj(catalog_page_obj)
+
     registry_page_obj, registry_page_range = utils.get_paginator_data(registry_list, page_number)
+    admin_utils.update_registry_page_obj(registry_page_obj)
+
     answers_page_obj_group, answers_page_range_group = (
         admin_utils.get_answer_page_data(qs_answer_count, page_number, model_type))
 
@@ -137,11 +149,21 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
     context = update_context_data(
         context,
-        statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
-        catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
-        answers_page_obj_group=answers_page_obj_group, answers_page_range_group=answers_page_range_group,
-        registry_page_obj=registry_page_obj, registry_page_range=registry_page_range,
-        stat_chart=stat_chart, stat_frequency_dict=stat_frequency_dict,
+        data_statistics_total=data_statistics_total,
+        statistics_page_obj=statistics_page_obj,
+        statistics_page_range=statistics_page_range,
+
+        catalog_page_obj=catalog_page_obj,
+        catalog_page_range=catalog_page_range,
+
+        answers_page_obj_group=answers_page_obj_group,
+        answers_page_range_group=answers_page_range_group,
+
+        registry_page_obj=registry_page_obj,
+        registry_page_range=registry_page_range,
+
+        stat_chart=stat_chart,
+        stat_frequency_dict=stat_frequency_dict,
     )
     return render(request, 'a_prime_leet/admin_detail.html', context)
 
