@@ -9,15 +9,15 @@
                 <th class="text-primary text-nowrap" rowspan="2">공식<br/>정답</th>
                 <th class="text-primary text-nowrap" rowspan="2">예상<br/>정답</th>
                 <th class="text-primary text-nowrap" colspan="2">정답률(%)</th>
-                <th class="text-primary text-nowrap" colspan="6">[전체] 답안 선택 현황</th>
-                <th class="text-primary text-nowrap" colspan="6">[상위권] 답안 선택 현황</th>
-                <th class="text-primary text-nowrap" colspan="6">[중위권] 답안 선택 현황</th>
-                <th class="text-primary text-nowrap td-right-no-border" colspan="6">[하위권] 답안 선택 현황</th>
+                {% for _ in '전상중하' %}
+                    {% cycle '전체' '상위권' '중위권' '하위권' as rank_type silent %}
+                    <th class="text-primary text-nowrap{% if forloop.last %} td-right-no-border{% endif %}" colspan="6">[{{ rank_type }}] 답안 선택 현황</th>
+                {% endfor %}
             </tr>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap">전체[상/중/하]</th>
                 <th class="text-primary text-nowrap">변별도</th>
-                {% for _ in '1234' %}
+                {% for _ in '전상중하' %}
                     <th class="text-primary td-right-no-border">전체</th>
                     {% for answer_num in '①②③④⑤' %}
                         <th class="text-primary td-left-no-border td-right-no-border">{{ answer_num }}</th>

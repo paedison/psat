@@ -26,10 +26,12 @@
             </tr>
         </thead>
         <tbody>
-            {% with obj=data_statistics_total %}{% partial aspiration_stat_tr %}{% endwith %}
-            <tr>
-                <td class="td-no-border" colspan="19"></td>
-            </tr>
+            {% if data_statistics_total %}
+                {% with obj=data_statistics_total %}{% partial aspiration_stat_tr %}{% endwith %}
+                <tr>
+                    <td class="td-no-border" colspan="19"></td>
+                </tr>
+            {% endif %}
             {% for obj in statistics_page_obj %}
                 {% partial aspiration_stat_tr %}
             {% empty %}

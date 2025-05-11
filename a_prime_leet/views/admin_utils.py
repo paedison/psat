@@ -92,6 +92,11 @@ def get_qs_statistics(leet, model_type='result'):
     return model.objects.filter(leet=leet).order_by('id')
 
 
+def get_qs_student(leet, model_type='result'):
+    model = get_target_model(f'{model_type.capitalize()}Student')
+    return model.objects.filter(leet=leet).order_by('id')
+
+
 def get_student_list(leet, model_type='result'):
     model = get_target_model(f'{model_type.capitalize()}Student')
     if model_type == 'fake':
@@ -162,13 +167,19 @@ def get_stat_frequency_dict(score_frequency_dict: dict) -> dict:
 def update_statistics_page_obj(
         data_statistics_total: models.ResultStatistics | models.FakeStatistics | models.PredictStatistics,
         statistics_page_obj):
-    update_stat_dict(data_statistics_total)
-    for obj in statistics_page_obj:
-        update_stat_dict(obj)
+    if data_statistics_total:
+        update_stat_dict(data_statistics_total)
+    if statistics_page_obj:
+        for obj in statistics_page_obj:
+            update_stat_dict(obj)
 
 
 def update_stat_dict(obj: models.ResultStatistics | models.FakeStatistics | models.PredictStatistics):
-    obj.participants = [obj.sum['participants'], obj.sum['participants_1'], obj.sum['participants_2']]
+    obj.participants = [
+        obj.sum.get('participants'),
+        obj.sum.get('participants_1'),
+        obj.sum.get('participants_2'),
+    ]
     obj.subjects = [
         {'data_stat': obj.sum, 'raw_data_stat': obj.raw_sum},
         {'data_stat': obj.subject_0, 'raw_data_stat': obj.raw_subject_0},
@@ -177,13 +188,15 @@ def update_stat_dict(obj: models.ResultStatistics | models.FakeStatistics | mode
 
 
 def update_catalog_page_obj(catalog_page_obj):
-    for obj in catalog_page_obj:
-        obj.subjects = get_catalog_info_from_student_obj(obj)
+    if catalog_page_obj:
+        for obj in catalog_page_obj:
+            obj.subjects = get_catalog_info_from_student_obj(obj)
 
 
 def update_registry_page_obj(catalog_page_obj):
-    for obj in catalog_page_obj:
-        obj.subjects = get_catalog_info_from_student_obj(obj.student)
+    if catalog_page_obj:
+        for obj in catalog_page_obj:
+            obj.subjects = get_catalog_info_from_student_obj(obj.student)
 
 
 def get_catalog_info_from_student_obj(obj):
@@ -197,6 +210,23 @@ def get_catalog_info_from_student_obj(obj):
             get_rank_and_participants(obj, 'rank_aspiration_2', subject),
         ],
     } for subject in subjects]
+
+
+def get_catalog_info_from_student_obj_revised(obj):
+    field_vars = {
+        'sum': '총점',
+        'subject_0': '언어이해',
+        'subject_1': '추리논증',
+    }
+    return {subject: {
+        'score': getattr(obj.score, fld, ''),
+        'raw_score': getattr(obj.score, f'raw_{fld}', ''),
+        'aspirations': [
+            get_rank_and_participants(obj, 'rank', fld),
+            get_rank_and_participants(obj, 'rank_aspiration_1', fld),
+            get_rank_and_participants(obj, 'rank_aspiration_2', fld),
+        ],
+    } for fld, subject in field_vars.items()}
 
 
 def get_rank_and_participants(target_student, rank_model: str, subject: str):
@@ -268,9 +298,75 @@ def get_data_answers(qs_answer_count, subject_vars, model_type='result'):
     return qs_answer_count
 
 
-def get_qs_student(leet, model_type='result'):
-    model = get_target_model(f'{model_type.capitalize()}Student')
-    return model.objects.filter(leet=leet).order_by('id')
+def get_answer_page_data_revised(qs_answer_count, page_number, model_type='result', per_page=10):
+    qs_group = defaultdict(list)
+    page_obj_group = defaultdict(list)
+    page_range_group = defaultdict(list)
+
+    for qs_ac in qs_answer_count:
+        qs_group[qs_ac.subject].append(qs_ac)
+
+    for subject, qs_answer_count_set in qs_group.items():
+        update_data_answers(qs_answer_count_set, model_type)
+        page_obj_group[subject], page_range_group[subject] = utils.get_paginator_data(
+            qs_answer_count_set, page_number, per_page)
+
+    return page_obj_group, page_range_group
+
+
+def update_data_answers(qs_answer_count_set, model_type='result'):
+    subject_vars = get_subject_vars()
+    for qs_ac in qs_answer_count_set:
+        ans_official = qs_ac.ans_official
+
+        answer_official_list = []
+        if ans_official > 5:
+            answer_official_list = [int(digit) for digit in str(ans_official)]
+
+        qs_ac.no = qs_ac.number
+        qs_ac.ans_official = ans_official
+        qs_ac.ans_official_circle = qs_ac.problem.get_answer_display()
+        qs_ac.ans_predict_circle = models.choices.answer_choice().get(qs_ac.ans_predict)
+        qs_ac.ans_list = answer_official_list
+        qs_ac.field = subject_vars[qs_ac.subject][1]
+
+        if model_type == 'result':
+            update_answer_rate(qs_ac, 'result')
+        elif model_type == 'fake':
+            update_answer_rate(qs_ac, 'fake')
+        elif model_type == 'predict':
+            update_answer_rate(qs_ac, 'fake')
+
+
+def update_answer_rate(qs_ac, model_type: str):
+    """
+    qs_ac.rate = {
+        'correct': {'all': -, 'top': -, 'mid': -, 'low': -, 'gap': -},
+        'all': {
+            'count_sum': -, 'count_1': -, 'count_2': -, 'count_3': -, 'count_4': -, 'count_5': -,
+        },
+    }
+    """
+    rate = defaultdict(dict)
+    ranks = ['all', 'top', 'mid', 'low']
+    for rank_type in ranks:
+        qs = qs_ac if rank_type == 'all' else getattr(qs_ac.problem, f'{model_type}_answer_count_{rank_type}_rank')
+        rate['correct'][rank_type] = qs.get_answer_rate(qs.ans_official)
+        rate['rank_type'][rank_type] = {
+            'count_sum': qs.count_sum,
+            'count_1': qs.count_1,
+            'count_2': qs.count_2,
+            'count_3': qs.count_3,
+            'count_4': qs.count_4,
+            'count_5': qs.count_5,
+        }
+
+    rate_correct_top = rate['correct']['top']
+    rate_correct_low = rate['correct']['low']
+    if rate_correct_top is not None and rate_correct_low is not None:
+        rate['correct']['gap'] = rate_correct_top - rate_correct_low
+
+    qs_ac.rate = rate
 
 
 def update_problem_model_for_answer_official(leet, form, file) -> tuple:

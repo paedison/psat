@@ -83,7 +83,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     )
 
     data_statistics = admin_utils.get_qs_statistics(leet, model_type)
-    data_statistics_total = data_statistics[0]
+    data_statistics_total = data_statistics[0] if data_statistics else None
     data_statistics = data_statistics.exclude(aspiration='전체')
     student_list = admin_utils.get_student_list(leet, model_type)
 
