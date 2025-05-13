@@ -5,17 +5,14 @@
         <thead>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap td-left-no-border" rowspan="2">지망 대학</th>
-                <th class="text-primary text-nowrap" colspan="3">응시 인원</th>
+                <th class="text-primary text-nowrap" colspan="2">응시 인원</th>
                 <th class="text-primary text-nowrap" colspan="5">총점</th>
                 <th class="text-primary text-nowrap" colspan="5">언어이해</th>
                 <th class="text-primary text-nowrap td-right-no-border" colspan="5">추리논증</th>
             </tr>
             <tr class="text-center table-warning align-middle">
-                {% for _ in '전12' %}
-                    {% cycle '전체' '1지망' '2지망' as aspiration_name silent %}
-                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">{{ aspiration_name }}</th>
-                {% endfor %}
-
+                <th class="text-primary text-nowrap td-right-no-border">전체</th>
+                <th class="text-primary text-nowrap td-left-no-border">1지망<br/>2지망</th>
                 {% for _ in '총언추' %}
                     <th class="text-primary text-nowrap td-right-no-border">최고<br/>점수</th>
                     <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>10%</th>
@@ -52,19 +49,21 @@
 {% partialdef aspiration_stat_tr %}
     <tr class="text-center small">
         <th class="text-nowrap td-left-no-border">{{ obj.aspiration }}</th>
-        {% for participants in obj.participants %}
-            <td class="text-nowrap td-left-no-border td-right-no-border">
-                {{ participants|default:''|intcomma }}
-            </td>
-        {% endfor %}
+        <td class="text-nowrap td-right-no-border">
+            {{ obj.members.participants|default:''|intcomma }}
+        </td>
+        <td class="text-nowrap td-left-no-border">
+            {% if obj.members.participants_1 or obj.members.participants_2 %}
+                {{ obj.members.participants_1|default:0|intcomma }}<br/>
+                {{ obj.members.participants_2|default:0|intcomma }}
+            {% endif %}
+        </td>
 
-        {% for sub in obj.subjects %}
-            {% for _ in '최125평' %}
-                {% cycle sub.data_stat.max sub.data_stat.t10 sub.data_stat.t25 sub.data_stat.t50 sub.data_stat.avg as data_stat silent %}
-                {% cycle sub.raw_data_stat.max sub.raw_data_stat.t10 sub.raw_data_stat.t25 sub.raw_data_stat.t50 sub.raw_data_stat.avg as raw_data_stat silent %}
+        {% for distribution in obj.distribution.values %}
+            {% for stat in distribution.values %}
                 <td class="text-nowrap {% if not forloop.first %}td-left-no-border {% endif %}td-right-no-border">
-                    <span class="text-primary">{{ data_stat|floatformat:1 }}</span><br/>
-                    {{ raw_data_stat|floatformat:0 }}
+                    <span class="text-primary fw-bold">{{ stat.score|default:''|floatformat:1 }}</span><br/>
+                    {{ stat.raw_score|default:'' }}
                 </td>
             {% endfor %}
         {% endfor %}

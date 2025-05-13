@@ -15,77 +15,62 @@
         <table class="table table-sm table-bordered small align-middle">
             <thead>
                 <tr class="text-center small align-middle">
-                    <th rowspan="3">등수</th>
-                    <th rowspan="3">이름</th>
-                    <th rowspan="3">수험번호</th>
-                    <th rowspan="3">출신대학</th>
-                    <th rowspan="3">전공</th>
-                    <th rowspan="3">1지망</th>
-                    <th rowspan="3">2지망</th>
-                    <th rowspan="3">학점<br/>(GPA)</th>
-                    <th rowspan="3">공인<br/>영어성적</th>
+                    <th class="text-nowrap" rowspan="2">등수</th>
+                    <th class="text-nowrap" rowspan="2">이름<br/>수험번호</th>
+                    <th class="text-nowrap" rowspan="2">1지망<br/>2지망</th>
+                    <th class="text-nowrap" rowspan="2">출신대학<br/>전공</th>
+                    <th class="text-nowrap" rowspan="2">학점(GPA)<br/>공인 영어성적</th>
 
-                    <th colspan="8">총점</th>
-                    <th colspan="8">언어이해</th>
-                    <th colspan="8">추리논증</th>
+                    <th class="text-nowrap" colspan="4">총점</th>
+                    <th class="text-nowrap" colspan="4">언어이해</th>
+                    <th class="text-nowrap" colspan="4">추리논증</th>
                 </tr>
 
                 <tr class="text-center small align-middle">
-                    {% for _ in '012' %}
-                        <th rowspan="2">원점수</th>
-                        <th rowspan="2">표준점수</th>
-                        <th colspan="2">전체<br/>석차</th>
-                        <th colspan="2">1지망<br/>석차</th>
-                        <th colspan="2">2지망<br/>석차</th>
-                    {% endfor %}
-                </tr>
-
-                <tr class="text-center small align-middle">
-                    {% for _ in '012345678' %}
-                        <th>등</th>
-                        <th>%</th>
+                    {% for _ in '전12' %}
+                        <th class="td-right-no-border">점수</th>
+                        <th class="td-left-no-border td-right-no-border">전체<br/>석차</th>
+                        <th class="td-left-no-border td-right-no-border">1지망<br/>석차</th>
+                        <th class="td-left-no-border">2지망<br/>석차</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for obj in student_list %}
                     <tr class="text-center small align-middle">
-                        <td>{{ obj.rank_sum }}</td>
-                        <td class="text-nowrap">{{ obj.name }}</td>
-                        <td class="text-nowrap">{{ obj.serial }}</td>
-                        <td class="text-nowrap">{{ obj.school }}</td>
-                        <td class="text-nowrap">{{ obj.major }}</td>
-                        <td class="text-nowrap">{{ obj.aspiration_1 }}</td>
-                        <td class="text-nowrap">{{ obj.aspiration_2 }}</td>
-                        <td class="text-nowrap">{% if obj.gpa %}{{ obj.gpa }} / {{ obj.gpa_type }}{% endif %}</td>
-                        <td class="text-nowrap">{% if obj.english %}{{ obj.english }} / {{ obj.english_type }}{% endif %}</td>
+                        <th>{{ obj.stats.sum.rank_info.rank.integer }}</th>
+                        <th class="text-nowrap">{{ obj.name }}<br/>{{ obj.serial }}</th>
+                        <td class="text-nowrap">
+                            {% if obj.aspiration_1 or obj.aspiration_2 %}
+                                {{ obj.aspiration_1 }}<br/>{{ obj.aspiration_2 }}
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            {% if obj.school or obj.major %}
+                                {{ obj.school }}<br/>{{ obj.major }}
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            {% if obj.gpa or obj.gpa_type or obj.english or ob.english_type %}
+                                {{ obj.gpa }} / {{ obj.gpa_type }}
+                                <br/>
+                                {{ obj.english }} / {{ obj.english_type }}
+                            {% endif %}
+                        </td>
 
-                        {% for _ in '012' %}
-                            {% cycle obj.raw_score_sum obj.raw_score_0 obj.raw_score_1 as raw_score silent %}
-                            {% cycle obj.score_sum obj.score_0 obj.score_1 as score silent %}
-                            {% cycle obj.rank_sum obj.rank_0 obj.rank_1 as rank silent %}
-                            {% cycle obj.rank_sum_aspiration_1 obj.rank_0_aspiration_1 obj.rank_1_aspiration_1 as rank_aspiration_1 silent %}
-                            {% cycle obj.rank_sum_aspiration_2 obj.rank_0_aspiration_2 obj.rank_1_aspiration_2 as rank_aspiration_2 silent %}
-                            <td>{{ raw_score }}</td>
-                            <td>{{ score|floatformat:1 }}</td>
-                            <td>{{ rank|default_if_none:'' }}</td>
-                            <td>
-                                {% if obj.rank_num %}
-                                    {{ rank|divide:obj.rank_num|percentage|floatformat:1 }}
-                                {% endif %}
+                        {% for stat in obj.stats.values %}
+                            <td class="text-nowrap td-right-no-border">
+                                <span class="text-primary fw-bold">{{ stat.score|floatformat:1 }}</span><br/>
+                                {{ stat.raw_score }}
                             </td>
-                            <td>{{ rank_aspiration_1|default_if_none:'' }}</td>
-                            <td>
-                                {% if obj.rank_num_aspiration_1 %}
-                                    {{ rank_aspiration_1|divide:obj.rank_num_aspiration_1|percentage|floatformat:1 }}
-                                {% endif %}
-                            </td>
-                            <td>{{ rank_aspiration_2|default_if_none:'' }}</td>
-                            <td>
-                                {% if obj.rank_num_aspiration_2 %}
-                                    {{ rank_aspiration_2|divide:obj.rank_num_aspiration_2|percentage|floatformat:1 }}
-                                {% endif %}
-                            </td>
+                            {% for rank in stat.rank_info.values %}
+                                <td class="text-nowrap td-left-no-border td-right-no-border">
+                                    {% if rank.integer and rank.ratio %}
+                                        <span class="text-primary fw-bold">{{ rank.ratio }}</span><br/>
+                                        {{ rank.integer }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
                         {% endfor %}
                     </tr>
                 {% empty %}
@@ -97,12 +82,6 @@
         </table>
     </div>
 
-    <script>
-        window.onload = function () {
-            setTimeout(function () {
-                window.print();
-            }, 1000);
-        };
-    </script>
+    <script>setupPrintOnLoad();</script>
 </body>
 {% endblock html_body %}

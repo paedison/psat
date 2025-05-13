@@ -52,10 +52,17 @@
                     {% endif %}
 
                     {% partialdef table_body inline=True %}
-                        <td class="text-nowrap">{{ obj.subjects.0.aspirations.0.rank }}</td>
+                        <td class="text-nowrap">{{ obj.stats.sum.rank_info.rank.integer }}</td>
                         <td class="text-nowrap">
-                            {% if config.model_type == 'result' %}{{ obj.name }}<hr class="m-0"/>{{ obj.serial }}
-                            {% elif config.model_type == 'fake' %}{{ obj.serial }}{% endif %}
+                            {% if config.model_type == 'result' %}
+                                {{ obj.name }}<hr class="m-0"/>{{ obj.serial }}
+                            {% elif config.model_type == 'fake' %}
+                                {% if obj.serial|first == 'f' %}
+                                    <span class="text-danger">{{ obj.serial }}</span>
+                                {% else %}
+                                    {{ obj.serial }}
+                                {% endif %}
+                            {% endif %}
                         </td>
                         <td class="text-nowrap">
                             <div class="btn-group">
@@ -70,7 +77,7 @@
                         <td class="text-nowrap">{{ obj.password }}</td>
                         <td class="text-nowrap">
                             {% if obj.aspiration_1 or obj.aspiration_2 %}
-                                {{ obj.aspiration_1 }}<hr class="m-0"/>{{ obj.aspiration_2 }}&nbsp;
+                                {{ obj.aspiration_1 }}<hr class="m-0"/>{{ obj.aspiration_2 }}
                             {% endif %}
                         </td>
 
@@ -89,16 +96,16 @@
                             </td>
                         {% endif %}
 
-                        {% for sub in obj.subjects %}
+                        {% for stat in obj.stats.values %}
                             <td class="text-nowrap td-right-no-border">
-                                <span class="text-primary">{{ sub.score|floatformat:1 }}</span><br/>
-                                {{ sub.raw_score|floatformat:0 }}
+                                <span class="text-primary fw-bold">{{ stat.score|floatformat:1 }}</span><br/>
+                                {{ stat.raw_score|floatformat:0 }}
                             </td>
-                            {% for aspiration in sub.aspirations %}
+                            {% for rank in stat.rank_info.values %}
                                 <td class="text-nowrap td-left-no-border td-right-no-border">
-                                    {% if aspiration.rank and aspiration.participants %}
-                                        <span class="text-primary">{{ aspiration.rank }}</span>
-                                        <br/>{{ aspiration.rank|divide:aspiration.participants|percentage|floatformat:1 }}
+                                    {% if rank.integer and rank.ratio %}
+                                        <span class="text-primary fw-bold">{{ rank.ratio }}</span><br/>
+                                        {{ rank.integer }}
                                     {% endif %}
                                 </td>
                             {% endfor %}

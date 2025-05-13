@@ -113,7 +113,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
 
     if view_type == 'registry_list':
         registry_page_obj, registry_page_range = utils.get_paginator_data(registry_list, page_number)
-        admin_utils.update_registry_page_obj(registry_page_obj)
+        admin_utils.update_catalog_page_obj(registry_page_obj, True)
         context = update_context_data(
             context, registry_page_obj=registry_page_obj, registry_page_range=registry_page_range)
         return render(request, 'a_prime_leet/snippets/admin_detail_registry.html', context)
@@ -138,12 +138,12 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     admin_utils.update_catalog_page_obj(catalog_page_obj)
 
     registry_page_obj, registry_page_range = utils.get_paginator_data(registry_list, page_number)
-    admin_utils.update_registry_page_obj(registry_page_obj)
+    admin_utils.update_catalog_page_obj(registry_page_obj, True)
 
-    answers_page_obj_group, answers_page_range_group = (
-        admin_utils.get_answer_page_data(qs_answer_count, page_number, model_type))
+    answers_page_obj_group, answers_page_range_group = admin_utils.get_answer_page_data(
+        qs_answer_count, page_number, model_type)
 
-    stat_chart = admin_utils.get_dict_stat_chart(data_statistics.first())
+    stat_chart = admin_utils.get_dict_stat_chart(data_statistics_total)
     score_frequency_dict = admin_utils.get_score_frequency_dict(leet, model_type)
     stat_frequency_dict = admin_utils.get_stat_frequency_dict(score_frequency_dict)
 
@@ -219,9 +219,7 @@ def update_view(request: HtmxHttpRequest, model_type: str, pk: int):
         context = update_context_data(context, header='등수 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'statistics':
-        data_statistics, filtered_data_statistics = admin_utils.get_data_statistics(leet, model_type)
-        is_updated, message = admin_utils.update_statistics(
-            leet, data_statistics, filtered_data_statistics, model_type)
+        is_updated, message = admin_utils.update_statistics(leet, qs_student, model_type)
         context = update_context_data(context, header='통계 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'answer_count':
@@ -292,13 +290,9 @@ def leet_active_view(request: HtmxHttpRequest, pk: int):
 @only_staff_allowed()
 def statistics_print_view(request: HtmxHttpRequest, model_type: str, pk: int):
     leet = get_object_or_404(models.Leet, pk=pk)
-    data_statistics_dict, filtered_data_statistics_dict = admin_utils.get_data_statistics(leet, model_type)
-    data_statistics = [val for val in data_statistics_dict.values()]
-    filtered_data_statistics = [val for val in filtered_data_statistics_dict.values()]
-    context = update_context_data(
-        leet=leet, model_type=model_type,
-        data_statistics=data_statistics, filtered_data_statistics=filtered_data_statistics,
-    )
+    data_statistics = admin_utils.get_qs_statistics(leet, model_type)
+    admin_utils.update_statistics_page_obj([], data_statistics)
+    context = update_context_data(leet=leet, model_type=model_type, data_statistics=data_statistics)
     return render(request, 'a_prime_leet/admin_print_statistics.html', context)
 
 
@@ -306,6 +300,7 @@ def statistics_print_view(request: HtmxHttpRequest, model_type: str, pk: int):
 def catalog_print_view(request: HtmxHttpRequest, model_type: str, pk: int):
     leet = get_object_or_404(models.Leet, pk=pk)
     student_list = admin_utils.get_student_list(leet, model_type)
+    admin_utils.update_catalog_page_obj(student_list)
     context = update_context_data(leet=leet, student_list=student_list)
     return render(request, 'a_prime_leet/admin_print_catalog.html', context)
 

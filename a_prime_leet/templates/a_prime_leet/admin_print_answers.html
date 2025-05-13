@@ -18,84 +18,50 @@
                     <th class="text-nowrap" rowspan="2">과목</th>
                     <th class="text-nowrap" rowspan="2">문제<br/>번호</th>
                     <th class="text-nowrap" rowspan="2">정답</th>
-                    <th class="text-nowrap" rowspan="2">전체<br/>정답률(%)</th>
-                    <th class="text-nowrap" rowspan="2">상위권<br/>정답률(%)</th>
-                    <th class="text-nowrap" rowspan="2">중위권<br/>정답률(%)</th>
-                    <th class="text-nowrap" rowspan="2">하위권<br/>정답률(%)</th>
-                    <th class="text-nowrap" rowspan="2">변별도</th>
-                    <th class="text-nowrap" colspan="5">답안 선택수(명)-전체</th>
-                    <th class="text-nowrap" colspan="5">답안 선택률(%)-전체</th>
-                    <th class="text-nowrap" colspan="5">답안 선택수(명)-상위권</th>
-                    <th class="text-nowrap" colspan="5">답안 선택률(%)-상위권</th>
-                    <th class="text-nowrap" colspan="5">답안 선택수(명)-중위권</th>
-                    <th class="text-nowrap" colspan="5">답안 선택률(%)-중위권</th>
-                    <th class="text-nowrap" colspan="5">답안 선택수(명)-하위권</th>
-                    <th class="text-nowrap" colspan="5">답안 선택률(%)-하위권</th>
+                    <th class="text-nowrap" colspan="2">정답률(%)</th>
+                    {% for _ in '전상중하' %}
+                        {% cycle '전체' '상위권' '중위권' '하위권' as rank_type silent %}
+                        <th class="text-nowrap" colspan="6">[{{ rank_type }}] 답안 선택 현황</th>
+                    {% endfor %}
                 </tr>
                 <tr class="text-center small align-middle">
-                    {% for _ in '12345678' %}
-                        <th class="text-nowrap td-right-no-border">①</th>
+                    <th class="text-nowrap" rowspan="2">전체[상/중/하]</th>
+                    <th class="text-nowrap" rowspan="2">변별도</th>
+                    {% for _ in '전상중하' %}
+                        <th class="text-nowrap td-right-no-border">전체</th>
+                        <th class="text-nowrap td-left-no-border td-right-no-border">①</th>
                         <th class="text-nowrap td-left-no-border td-right-no-border">②</th>
                         <th class="text-nowrap td-left-no-border td-right-no-border">③</th>
-                        {% if tab.title == '헌법' %}
-                            <th class="text-nowrap td-left-no-border">④</th>
-                        {% else %}
-                            <th class="text-nowrap td-left-no-border td-right-no-border">④</th>
-                            <th class="text-nowrap td-left-no-border">⑤</th>
-                        {% endif %}
+                        <th class="text-nowrap td-left-no-border td-right-no-border">④</th>
+                        <th class="text-nowrap td-left-no-border">⑤</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for _ in answers_page_obj_group %}
-                    {% cycle answers_page_obj_group.언어 answers_page_obj_group.추리 as answers silent %}
-                    {% for answer in answers %}
-                        <tr class="text-center">
-                            <td class="text-nowrap">{{ answer.subject }}</td>
-                            <td class="text-nowrap">{{ answer.no }}</td>
+                {% for answers in answers_page_obj_group.values %}
+                    {% for obj in answers %}
+                        <tr class="text-center small">
+                            <th class="text-nowrap">{{ obj.subject }}</th>
+                            <th class="text-nowrap">{{ obj.no }}</th>
+                            <th class="text-nowrap">{{ obj.ans_official_circle }}</th>
+
                             <td class="text-nowrap">
-                                {% if answer.ans_official < 12345 %}
-                                    {{ answer.problem.get_answer_display }}
-                                {% else %}
-                                    전체<br/>정답
+                                {% if obj.rate.correct.all %}
+                                    <span class="fw-bold text-primary">{{ obj.rate.correct.all|floatformat:1 }}</span><br/>[
+                                    {{ obj.rate.correct.top|floatformat:1|default:'-' }} /
+                                    {{ obj.rate.correct.mid|floatformat:1|default:'-' }} /
+                                    {{ obj.rate.correct.low|floatformat:1|default:'-' }} ]
                                 {% endif %}
                             </td>
-                            {% for _ in '12345' %}
-                                {% cycle answer.rate_correct answer.rate_correct_top answer.rate_correct_mid answer.rate_correct_low answer.rate_gap as rate_correct silent %}
-                                <td>
-                                    {% if rate_correct %}
-                                        {{ rate_correct|floatformat:1 }}
-                                    {% endif %}
-                                </td>
-                            {% endfor %}
+                            <td>{{ obj.rate.correct.gap|floatformat:1 }}</td>
 
-                            {% for _ in '1234' %}
-                                {% cycle answer.count_1 answer.count_1_top answer.count_1_mid answer.count_1_low as count_1 silent %}
-                                {% cycle answer.count_2 answer.count_2_top answer.count_2_mid answer.count_2_low as count_2 silent %}
-                                {% cycle answer.count_3 answer.count_3_top answer.count_3_mid answer.count_3_low as count_3 silent %}
-                                {% cycle answer.count_4 answer.count_4_top answer.count_4_mid answer.count_4_low as count_4 silent %}
-                                {% cycle answer.count_5 answer.count_5_top answer.count_5_mid answer.count_5_low as count_5 silent %}
-                                {% cycle answer.count_sum answer.count_sum_top answer.count_sum_mid answer.count_sum_low as count_sum silent %}
-
-                                <td class="td-right-no-border">{{ count_1|default:'' }}</td>
-                                <td class="td-left-no-border td-right-no-border">{{ count_2|default:'' }}</td>
-                                <td class="td-left-no-border td-right-no-border">{{ count_3|default:'' }}</td>
-                                {% if tab.title == '헌법' %}
-                                    <td class="td-left-no-border">{{ count_4|default:'' }}</td>
-                                {% else %}
-                                    <td class="td-left-no-border td-right-no-border">{{ count_4|default:'' }}</td>
-                                    <td class="td-left-no-border">{{ count_5|default:'' }}</td>
-                                {% endif %}
-
-                                <td class="td-right-no-border">{{ count_1|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                                <td class="td-left-no-border td-right-no-border">{{ count_2|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                                <td class="td-left-no-border td-right-no-border">{{ count_3|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                                {% if tab.title == '헌법' %}
-                                    <td class="td-left-no-border">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                                {% else %}
-                                    <td class="td-left-no-border td-right-no-border">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                                    <td class="td-left-no-border">{{ count_5|percentageby:count_sum|floatformat:1|default:'' }}</td>
-                                {% endif %}
+                            {% for count in obj.rate.distribution.values %}
+                                {% for cnt in count.values %}
+                                    <td class="{% if not forloop.first %}td-left-no-border {% endif %}td-right-no-border">
+                                        <span class="text-primary fw-bold">{{ cnt.ratio|default:'' }}</span>
+                                        {{ cnt.integer|default:''|intcomma }}<br/>
+                                    </td>
+                                {% endfor %}
                             {% endfor %}
                         </tr>
                     {% endfor %}
@@ -108,12 +74,6 @@
         </table>
     </div>
 
-    <script>
-        window.onload = function () {
-            setTimeout(function () {
-                window.print();
-            }, 1000);
-        };
-    </script>
+    <script>setupPrintOnLoad();</script>
 </body>
 {% endblock html_body %}

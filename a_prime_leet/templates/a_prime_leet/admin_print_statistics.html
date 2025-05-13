@@ -16,13 +16,7 @@
         {% with statistics=filtered_data_statistics table_title='필터링 데이터' %}{% partial statistics_table %}{% endwith %}
     {% endif %}
 
-    <script>
-        window.onload = function () {
-            setTimeout(function () {
-                window.print();
-            }, 1000);
-        };
-    </script>
+    <script>setupPrintOnLoad();</script>
 </body>
 {% endblock html_body %}
 
@@ -31,85 +25,47 @@
         <table class="table table-sm table-bordered small align-middle">
             <thead>
                 <tr class="text-center small align-middle">
-                    <th rowspan="3">지망 대학</th>
-                    <th rowspan="3">응시 인원<br/>(명)</th>
-                    <th colspan="15">표준점수(점)</th>
-                </tr>
-                <tr class="text-center small align-middle">
+                    <th rowspan="2">지망 대학</th>
+                    <th colspan="2">응시 인원(명)</th>
                     <th colspan="5">총점</th>
                     <th colspan="5">언어이해</th>
                     <th colspan="5">추리논증</th>
                 </tr>
 
                 <tr class="text-center small align-middle">
-                    {% for _ in '012' %}
-                        <th>최고<br/>점수</th>
-                        <th>상위<br/>10%</th>
-                        <th>상위<br/>25%</th>
-                        <th>상위<br/>50%</th>
-                        <th>평균<br/>점수</th>
+                    <th class="text-nowrap td-right-no-border">전체</th>
+                    <th class="text-nowrap td-left-no-border">1지망<br/>2지망</th>
+
+                    {% for _ in '총언추' %}
+                    <th class="text-nowrap td-right-no-border">최고<br/>점수</th>
+                    <th class="text-nowrap td-left-no-border td-right-no-border">상위<br/>10%</th>
+                    <th class="text-nowrap td-left-no-border td-right-no-border">상위<br/>25%</th>
+                    <th class="text-nowrap td-left-no-border td-right-no-border">상위<br/>50%</th>
+                    <th class="text-nowrap td-left-no-border">평균<br/>점수</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for obj in statistics %}
                     <tr class="text-center small align-middle">
-                        <th>{{ obj.aspiration|intcomma }}</th>
-                        <th>{{ obj.sum.participants|intcomma }}</th>
-                        {% for _ in '012' %}
-                            {% cycle obj.sum obj.subject_0 obj.subject_1 as data_stat silent %}
-                            <td>{{ data_stat.max|floatformat:1 }}</td>
-                            <td>{{ data_stat.t10|floatformat:1 }}</td>
-                            <td>{{ data_stat.t25|floatformat:1 }}</td>
-                            <td>{{ data_stat.t50|floatformat:1 }}</td>
-                            <td>{{ data_stat.avg|floatformat:1 }}</td>
-                        {% endfor %}
-                    </tr>
-                {% empty %}
-                    <tr class="text-center">
-                        <td class="text-nowrap p-2" colspan="22">자료가 없습니다.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                        <th>{{ obj.aspiration }}</th>
+                        <td class="text-nowrap td-right-no-border">
+                            {{ obj.members.participants|default:''|intcomma }}
+                        </td>
+                        <td class="text-nowrap td-left-no-border">
+                            {% if obj.members.participants_1 or obj.members.participants_2 %}
+                                {{ obj.members.participants_1|default:0|intcomma }}<br/>
+                                {{ obj.members.participants_2|default:0|intcomma }}
+                            {% endif %}
+                        </td>
 
-    <div class="mb-2">
-        <table class="table table-sm table-bordered small align-middle">
-            <thead>
-                <tr class="text-center small align-middle">
-                    <th rowspan="3">지망 대학</th>
-                    <th rowspan="3">응시 인원<br/>(명)</th>
-                    <th colspan="15">원점수(점)</th>
-                </tr>
-                <tr class="text-center small align-middle">
-                    <th colspan="5">총점</th>
-                    <th colspan="5">언어이해</th>
-                    <th colspan="5">추리논증</th>
-                </tr>
-
-                <tr class="text-center small align-middle">
-                    {% for _ in '012' %}
-                        <th>최고<br/>점수</th>
-                        <th>상위<br/>10%</th>
-                        <th>상위<br/>25%</th>
-                        <th>상위<br/>50%</th>
-                        <th>평균<br/>점수</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for obj in statistics %}
-                    <tr class="text-center small align-middle">
-                        <th>{{ obj.aspiration|intcomma }}</th>
-                        <th>{{ obj.sum.participants|intcomma }}</th>
-                        {% for _ in '012' %}
-                            {% cycle obj.raw_sum obj.raw_subject_0 obj.raw_subject_1 as data_stat silent %}
-                            <td>{{ data_stat.max|floatformat:1 }}</td>
-                            <td>{{ data_stat.t10|floatformat:1 }}</td>
-                            <td>{{ data_stat.t25|floatformat:1 }}</td>
-                            <td>{{ data_stat.t50|floatformat:1 }}</td>
-                            <td>{{ data_stat.avg|floatformat:1 }}</td>
+                        {% for distribution in obj.distribution.values %}
+                            {% for stat in distribution.values %}
+                                <td class="text-nowrap {% if not forloop.first %}td-left-no-border {% endif %}td-right-no-border">
+                                    <span class="text-primary fw-bold">{{ stat.score|floatformat:1 }}</span><br/>
+                                    {{ stat.raw_score|floatformat:0 }}
+                                </td>
+                            {% endfor %}
                         {% endfor %}
                     </tr>
                 {% empty %}

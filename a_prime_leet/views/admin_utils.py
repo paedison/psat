@@ -17,16 +17,55 @@ from scipy.stats import rankdata
 from .. import models, utils
 
 
-def get_sub_list() -> list:
-    return ['언어', '추리']
+class BaseConstantList(list):
+    def __init__(self, items, label_sum):
+        super().__init__(items)
+        self.sum_first = [label_sum] + self
+        self.sum_last = self + [label_sum]
 
 
-def get_subject_list() -> list:
-    return ['언어이해', '추리논증']
+class ConstantList:
+    def __init__(self):
+        self.label_total = '총점'
+        self.subject_count = 2
+        self.sub = BaseConstantList(['언어', '추리'], '총점')
+        self.subject = BaseConstantList(['언어이해', '추리논증'], '총점')
+        self.sub_field = BaseConstantList(['subject_0', 'subject_1'], 'sum')
+        self.raw_sub_field = BaseConstantList(['raw_subject_0', 'raw_subject_1'], 'raw_sum')
+        self.participants_field = BaseConstantList(
+            ['participants_1', 'participants_2'], 'participants')
+        self.stat_list = ['max', 't10', 't25', 't50', 'avg']
+        self.rank_model = BaseConstantList(['rank_aspiration_1', 'rank_aspiration_2'], 'rank')
+        self.rank_type = BaseConstantList(['top', 'mid', 'low'], 'all')
+        self.ac_field = BaseConstantList(
+            ['count_1', 'count_2', 'count_3', 'count_4', 'count_5'], 'count_sum')
+        self.answer_tab = self.get_answer_tab()
+        self.subject_vars = self.get_subject_vars()
+        self.all_field_vars = self.get_all_field_vars()
+
+    def get_answer_tab(self):
+        return [{'id': str(idx), 'title': subject} for idx, subject in enumerate(self.subject)]
+
+    def get_subject_vars(self):
+        return {
+            self.sub.sum_last[idx]: (self.subject.sum_last[idx], self.sub_field.sum_last[idx], idx)
+            for idx in range(len(self.sub.sum_last))
+        }
+
+    def get_all_field_vars(self):
+        field_vars = {}
+        for idx, fld in enumerate(self.sub_field.sum_last):
+            field_vars[fld] = (self.sub.sum_last[idx], self.subject.sum_last[idx], idx)
+        for idx, fld in enumerate(self.raw_sub_field.sum_last):
+            field_vars[fld] = (self.sub.sum_last[idx], self.subject.sum_last[idx], idx)
+        return field_vars
+
+
+constant_list = ConstantList()
 
 
 def get_answer_tab() -> list:
-    return [{'id': str(idx), 'title': subject} for idx, subject in enumerate(get_subject_list())]
+    return constant_list.answer_tab
 
 
 def get_subject_vars() -> dict[str, tuple[str, str, int]]:
@@ -63,23 +102,6 @@ def get_field_vars(is_filtered=False) -> dict[str, tuple[str, str, int]]:
     }
 
 
-def get_total_field_vars() -> dict[str, tuple[str, str, int]]:
-    return {
-        'subject_0': ('언어', '언어이해', 0),
-        'subject_1': ('추리', '추리논증', 1),
-        'sum': ('총점', '총점', 2),
-        'raw_subject_0': ('언어', '언어이해', 0),
-        'raw_subject_1': ('추리', '추리논증', 1),
-        'raw_sum': ('총점', '총점', 2),
-        'filtered_subject_0': ('[필터링]언어', '[필터링]언어이해', 0),
-        'filtered_subject_1': ('[필터링]추리', '[필터링]추리논증', 1),
-        'filtered_sum': ('[필터링]총점', '[필터링]총점', 2),
-        'filtered_raw_subject_0': ('[필터링]언어', '[필터링]언어이해', 0),
-        'filtered_raw_subject_1': ('[필터링]추리', '[필터링]추리논증', 1),
-        'filtered_raw_sum': ('[필터링]총점', '[필터링]총점', 2),
-    }
-
-
 def get_target_model(model_name: str):
     try:
         return apps.get_model('a_prime_leet', model_name)
@@ -94,7 +116,7 @@ def get_qs_statistics(leet, model_type='result'):
 
 def get_qs_student(leet, model_type='result'):
     model = get_target_model(f'{model_type.capitalize()}Student')
-    return model.objects.filter(leet=leet).order_by('id')
+    return model.objects.filter(leet=leet).select_related('leet', 'score')
 
 
 def get_student_list(leet, model_type='result'):
@@ -111,29 +133,20 @@ def get_qs_answer_count(leet, model_type='result', subject=None):
 
 
 def get_dict_stat_chart(data_total):
-    field_vars = {
-        'subject_0': ('언어', '언어이해', 0),
-        'subject_1': ('추리', '추리논증', 1),
-        'sum': ('총점', '총점', 2),
-    }
     stat_chart = defaultdict(list)
     if data_total:
-        for fld in field_vars:
-            stat_chart['total_score_10'].append(getattr(data_total, fld)['t10'])
-            stat_chart['total_score_25'].append(getattr(data_total, fld)['t25'])
-            stat_chart['total_score_50'].append(getattr(data_total, fld)['t50'])
-            stat_chart['total_top'].append(getattr(data_total, fld)['max'])
+        for fld in constant_list.sub_field.sum_last:
+            for stat in constant_list.stat_list:
+                stat_chart[stat].append(getattr(data_total, fld)[stat])
     return stat_chart
 
 
 def get_score_frequency_dict(leet, model_type='result'):
     model = get_target_model(f'{model_type.capitalize()}Student')
-    score_frequency_dict = {
-        'subject_0': model.objects.filter(leet=leet).values_list('score__subject_0', flat=True),
-        'subject_1': model.objects.filter(leet=leet).values_list('score__subject_1', flat=True),
-        'sum': model.objects.filter(leet=leet).values_list('score__sum', flat=True),
+    return {
+        fld: model.objects.filter(leet=leet).values_list(f'score__{fld}', flat=True)
+        for fld in constant_list.sub_field.sum_first
     }
-    return score_frequency_dict
 
 
 def frequency_table_by_bin(scores, bin_size=10):
@@ -164,144 +177,55 @@ def get_stat_frequency_dict(score_frequency_dict: dict) -> dict:
     return stat_frequency_dict
 
 
-def update_statistics_page_obj(
-        data_statistics_total: models.ResultStatistics | models.FakeStatistics | models.PredictStatistics,
-        statistics_page_obj):
+def update_statistics_page_obj(data_statistics_total, page_obj):
     if data_statistics_total:
         update_stat_dict(data_statistics_total)
-    if statistics_page_obj:
-        for obj in statistics_page_obj:
+    if page_obj:
+        for obj in page_obj:
             update_stat_dict(obj)
 
 
-def update_stat_dict(obj: models.ResultStatistics | models.FakeStatistics | models.PredictStatistics):
-    obj.participants = [
-        obj.sum.get('participants'),
-        obj.sum.get('participants_1'),
-        obj.sum.get('participants_2'),
-    ]
-    obj.subjects = [
-        {'data_stat': obj.sum, 'raw_data_stat': obj.raw_sum},
-        {'data_stat': obj.subject_0, 'raw_data_stat': obj.raw_subject_0},
-        {'data_stat': obj.subject_1, 'raw_data_stat': obj.raw_subject_1},
-    ]
-
-
-def update_catalog_page_obj(catalog_page_obj):
-    if catalog_page_obj:
-        for obj in catalog_page_obj:
-            obj.subjects = get_catalog_info_from_student_obj(obj)
-
-
-def update_registry_page_obj(catalog_page_obj):
-    if catalog_page_obj:
-        for obj in catalog_page_obj:
-            obj.subjects = get_catalog_info_from_student_obj(obj.student)
-
-
-def get_catalog_info_from_student_obj(obj):
-    subjects = ['sum', 'subject_0', 'subject_1']
-    return [{
-        'score': getattr(obj.score, subject, ''),
-        'raw_score': getattr(obj.score, f'raw_{subject}', ''),
-        'aspirations': [
-            get_rank_and_participants(obj, 'rank', subject),
-            get_rank_and_participants(obj, 'rank_aspiration_1', subject),
-            get_rank_and_participants(obj, 'rank_aspiration_2', subject),
-        ],
-    } for subject in subjects]
-
-
-def get_catalog_info_from_student_obj_revised(obj):
-    field_vars = {
-        'sum': '총점',
-        'subject_0': '언어이해',
-        'subject_1': '추리논증',
+def update_stat_dict(obj):
+    obj.members = {fld: obj.sum.get(fld) for fld in constant_list.participants_field.sum_first}
+    obj.distribution = {
+        fld: {
+            stat: {'score': getattr(obj, fld).get(stat), 'raw_score': getattr(obj, f'raw_{fld}').get(stat)}
+            for stat in constant_list.stat_list
+        } for fld in constant_list.sub_field.sum_first
     }
-    return {subject: {
-        'score': getattr(obj.score, fld, ''),
-        'raw_score': getattr(obj.score, f'raw_{fld}', ''),
-        'aspirations': [
-            get_rank_and_participants(obj, 'rank', fld),
-            get_rank_and_participants(obj, 'rank_aspiration_1', fld),
-            get_rank_and_participants(obj, 'rank_aspiration_2', fld),
-        ],
-    } for fld, subject in field_vars.items()}
 
 
-def get_rank_and_participants(target_student, rank_model: str, subject: str):
-    rank = participants = ''
-    target_rank = getattr(target_student, rank_model, None)
-    if target_rank:
-        rank = getattr(target_rank, subject, '')
-        participants = getattr(target_rank, 'participants', '')
-    return {'rank': rank, 'participants': participants}
+def update_catalog_page_obj(page_obj, for_registry=False):
+    if page_obj:
+        for obj in page_obj:
+            student = obj.student if for_registry else obj
+            obj.stats = {
+                fld: {
+                    'score': getattr(student.score, fld, ''),
+                    'raw_score': getattr(student.score, f'raw_{fld}', ''),
+                    'rank_info': get_rank_info(student, fld),
+                } for fld in constant_list.sub_field.sum_first
+            }
+
+
+def get_rank_info(target_student, subject: str):
+    rank_info = {}
+    for rank_model in constant_list.rank_model.sum_first:
+        rank = ratio = None
+        target_rank = getattr(target_student, rank_model, None)
+        if target_rank:
+            rank = getattr(target_rank, subject)
+            participants = getattr(target_rank, 'participants')
+            if rank and participants:
+                ratio = round(rank * 100 / participants, 1)
+        rank_info[rank_model] = {'integer': rank, 'ratio': ratio}
+    return rank_info
 
 
 def get_answer_page_data(qs_answer_count, page_number, model_type='result', per_page=10):
-    subject_vars = get_subject_vars()
-    qs_answer_count_group, answers_page_obj_group, answers_page_range_group = {}, {}, {}
-
-    for entry in qs_answer_count:
-        if entry.subject not in qs_answer_count_group:
-            qs_answer_count_group[entry.subject] = []
-        qs_answer_count_group[entry.subject].append(entry)
-
-    for subject, qs_answer_count in qs_answer_count_group.items():
-        if subject not in answers_page_obj_group:
-            answers_page_obj_group[subject] = []
-            answers_page_range_group[subject] = []
-        data_answers = get_data_answers(qs_answer_count, subject_vars, model_type)
-        answers_page_obj_group[subject], answers_page_range_group[subject] = utils.get_paginator_data(
-            data_answers, page_number, per_page)
-
-    return answers_page_obj_group, answers_page_range_group
-
-
-def get_data_answers(qs_answer_count, subject_vars, model_type='result'):
-    for qs_ac in qs_answer_count:
-        sub = qs_ac.subject
-        field = subject_vars[sub][1]
-        ans_official = qs_ac.ans_official
-
-        answer_official_list = []
-        if ans_official > 5:
-            answer_official_list = [int(digit) for digit in str(ans_official)]
-
-        qs_ac.no = qs_ac.number
-        qs_ac.ans_official = ans_official
-        qs_ac.ans_official_circle = qs_ac.problem.get_answer_display
-        qs_ac.ans_predict_circle = models.choices.answer_choice().get(qs_ac.ans_predict)
-        qs_ac.ans_list = answer_official_list
-        qs_ac.field = field
-
-        if model_type == 'result':
-            qs_ac.rate_correct = qs_ac.get_answer_rate(ans_official)
-            qs_ac.rate_correct_top = qs_ac.problem.result_answer_count_top_rank.get_answer_rate(ans_official)
-            qs_ac.rate_correct_mid = qs_ac.problem.result_answer_count_mid_rank.get_answer_rate(ans_official)
-            qs_ac.rate_correct_low = qs_ac.problem.result_answer_count_low_rank.get_answer_rate(ans_official)
-        elif model_type == 'fake':
-            qs_ac.rate_correct = qs_ac.get_answer_rate(ans_official)
-            qs_ac.rate_correct_top = qs_ac.problem.fake_answer_count_top_rank.get_answer_rate(ans_official)
-            qs_ac.rate_correct_mid = qs_ac.problem.fake_answer_count_mid_rank.get_answer_rate(ans_official)
-            qs_ac.rate_correct_low = qs_ac.problem.fake_answer_count_low_rank.get_answer_rate(ans_official)
-        else:
-            qs_ac.rate_correct = qs_ac.get_answer_rate(ans_official)
-            qs_ac.rate_correct_top = qs_ac.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
-            qs_ac.rate_correct_mid = qs_ac.problem.predict_answer_count_mid_rank.get_answer_rate(ans_official)
-            qs_ac.rate_correct_low = qs_ac.problem.predict_answer_count_low_rank.get_answer_rate(ans_official)
-        try:
-            qs_ac.rate_gap = qs_ac.rate_correct_top - qs_ac.rate_correct_low
-        except TypeError:
-            qs_ac.rate_gap = None
-
-    return qs_answer_count
-
-
-def get_answer_page_data_revised(qs_answer_count, page_number, model_type='result', per_page=10):
     qs_group = defaultdict(list)
-    page_obj_group = defaultdict(list)
-    page_range_group = defaultdict(list)
+    page_obj_group = {}
+    page_range_group = {}
 
     for qs_ac in qs_answer_count:
         qs_group[qs_ac.subject].append(qs_ac)
@@ -315,7 +239,6 @@ def get_answer_page_data_revised(qs_answer_count, page_number, model_type='resul
 
 
 def update_data_answers(qs_answer_count_set, model_type='result'):
-    subject_vars = get_subject_vars()
     for qs_ac in qs_answer_count_set:
         ans_official = qs_ac.ans_official
 
@@ -328,7 +251,7 @@ def update_data_answers(qs_answer_count_set, model_type='result'):
         qs_ac.ans_official_circle = qs_ac.problem.get_answer_display()
         qs_ac.ans_predict_circle = models.choices.answer_choice().get(qs_ac.ans_predict)
         qs_ac.ans_list = answer_official_list
-        qs_ac.field = subject_vars[qs_ac.subject][1]
+        qs_ac.field = constant_list.subject_vars[qs_ac.subject][1]
 
         if model_type == 'result':
             update_answer_rate(qs_ac, 'result')
@@ -342,30 +265,27 @@ def update_answer_rate(qs_ac, model_type: str):
     """
     qs_ac.rate = {
         'correct': {'all': -, 'top': -, 'mid': -, 'low': -, 'gap': -},
-        'all': {
-            'count_sum': -, 'count_1': -, 'count_2': -, 'count_3': -, 'count_4': -, 'count_5': -,
-        },
+        'distribution': {
+            'all': {'count_sum': {'ratio': -, 'integer': -}, 'count_1': {...}, ...},
+            'top': {'count_sum': {'ratio': -, 'integer': -}, 'count_1': {...}, ...},
+             ...
+        }
     }
     """
     rate = defaultdict(dict)
-    ranks = ['all', 'top', 'mid', 'low']
-    for rank_type in ranks:
-        qs = qs_ac if rank_type == 'all' else getattr(qs_ac.problem, f'{model_type}_answer_count_{rank_type}_rank')
-        rate['correct'][rank_type] = qs.get_answer_rate(qs.ans_official)
-        rate['rank_type'][rank_type] = {
-            'count_sum': qs.count_sum,
-            'count_1': qs.count_1,
-            'count_2': qs.count_2,
-            'count_3': qs.count_3,
-            'count_4': qs.count_4,
-            'count_5': qs.count_5,
-        }
-
-    rate_correct_top = rate['correct']['top']
-    rate_correct_low = rate['correct']['low']
-    if rate_correct_top is not None and rate_correct_low is not None:
-        rate['correct']['gap'] = rate_correct_top - rate_correct_low
-
+    for rank_type in constant_list.rank_type.sum_first:
+        attr_name = f'{model_type}_answer_count_{rank_type}_rank'
+        qs = qs_ac if rank_type == 'all' else getattr(qs_ac.problem, attr_name)
+        rate['correct'][rank_type] = qs.get_answer_rate(qs.problem.answer)
+        rate['distribution'][rank_type] = distribution = {}
+        for idx, fld in enumerate(constant_list.ac_field.sum_first):
+            count_fld, count_sum = getattr(qs, fld), getattr(qs, 'count_sum')
+            distribution[fld] = {
+                'ratio': round(count_fld * 100 / count_sum, 1) if count_sum else 0,
+                'integer': count_fld
+            }
+    if None not in rate['correct'].values():
+        rate['correct']['gap'] = rate['correct']['top'] - rate['correct']['low']
     qs_ac.rate = rate
 
 
@@ -496,7 +416,7 @@ def update_models_for_answer_student(leet, file, model_type='result'):
         qs_answer = answer_model.objects.prime_leet_qs_answer_by_student_with_sub_number(student)
         qs_answer_dict = {(qs_a.sub, qs_a.number): qs_a for qs_a in qs_answer}
 
-        subject_vars = get_subject_vars()
+        subject_vars = constant_list.subject_vars
         subject_vars.pop('총점')
 
         for sub, (subject, _, _) in subject_vars.items():
@@ -539,7 +459,6 @@ def update_raw_scores(qs_student, model_type='result'):
 def update_score_model_for_raw_score(qs_student, model_type='result'):
     answer_model = get_target_model(f'{model_type.capitalize()}Answer')
     score_model = get_target_model(f'{model_type.capitalize()}Score')
-    sub_list = get_sub_list()
 
     list_create, list_update = [], []
 
@@ -549,7 +468,7 @@ def update_score_model_for_raw_score(qs_student, model_type='result'):
 
         score_list = []
         fields_not_match = []
-        for idx, sub in enumerate(sub_list):
+        for idx, sub in enumerate(constant_list.sub):
             qs_answer = (
                 answer_model.objects.filter(student=qs_s, problem__subject=sub)
                 .annotate(answer_correct=F('problem__answer'), answer_student=F('answer'))
@@ -663,7 +582,7 @@ def update_ranks(leet, qs_student, model_type='result'):
 
 def update_rank_model(leet, qs_student, model_type='result', stat_type='', is_filtered=False):
     list_create, list_update = [], []
-    subject_fields = [f'subject_{idx}' for idx in range(len(get_sub_list()))] + ['sum']
+    subject_fields = constant_list.sub_field.sum_last
 
     rank_model = get_target_model(f'{model_type.capitalize()}Rank{stat_type.capitalize()}')
     qs_rank = rank_model.objects.filter(student__leet=leet)
@@ -769,123 +688,16 @@ def get_data_dict_for_rank(qs_student, subject_fields: list, is_filtered=False) 
     return data_dict
 
 
-def get_data_statistics(leet, model_type='result'):
-    field_vars = get_field_vars()
-    student_model = get_target_model(f'{model_type.capitalize()}Student')
-
-    qs_students = (
-        student_model.objects.filter(leet=leet)
-        .select_related('leet', 'score', 'rank', 'rank_aspiration_1', 'rank_aspiration_2')
-        .annotate(
-            raw_subject_0=F('score__raw_subject_0'),
-            raw_subject_1=F('score__raw_subject_1'),
-            raw_sum=F('score__raw_sum'),
-            subject_0=F('score__subject_0'),
-            subject_1=F('score__subject_1'),
-            sum=F('score__sum'),
-        )
-    )
-
-    def get_participants_distribution(aspiration_num: int):
-        participants_distribution = (
-            qs_students.exclude(**{f'aspiration_{aspiration_num}__isnull': True})
-            .exclude(**{f'aspiration_{aspiration_num}': ''})
-            .values(f'aspiration_{aspiration_num}').annotate(count=Count('id'))
-        )
-        participants_dict = {row[f'aspiration_{aspiration_num}']: row['count'] for row in participants_distribution}
-        participants_dict['전체'] = sum(participants_dict.values())
-        return participants_dict
-
-    participants_dict_1 = get_participants_distribution(1)
-    participants_dict_2 = get_participants_distribution(2)
-    participants_dict_sum = {}
-    for key in set(participants_dict_1) | set(participants_dict_2):
-        participants_dict_sum[key] = participants_dict_1.get(key, 0) + participants_dict_2.get(key, 0)
-
-    aspirations = models.choices.get_aspirations()
-    score_list, filtered_score_list = {}, {}
-    data_statistics, filtered_data_statistics = {}, {}
-
-    for aspiration in aspirations:
-        score_list[aspiration] = {fld: [] for fld in field_vars}
-        data_statistics[aspiration] = {fld: {} for fld in field_vars}
-        data_statistics[aspiration]['aspiration'] = aspiration
-        data_statistics[aspiration]['participants_dict'] = {
-            '1': participants_dict_1.get(aspiration, 0),
-            '2': participants_dict_2.get(aspiration, 0),
-            'sum': participants_dict_sum.get(aspiration, 0),
-        }
-        if model_type == 'predict':
-            filtered_score_list[aspiration] = {fld: [] for fld in field_vars}
-            filtered_data_statistics[aspiration] = {'participants_1': 0, 'participants_2': 0, 'participants_sum': 0}
-
-    for qs_s in qs_students:
-        for fld in field_vars:
-            score = getattr(qs_s, fld)
-            aspiration_1 = qs_s.aspiration_1
-            aspiration_2 = qs_s.aspiration_2
-
-            if score is not None:
-                score_list['전체'][fld].append(score)
-                if aspiration_1:
-                    score_list[aspiration_1][fld].append(score)
-                if aspiration_2:
-                    score_list[aspiration_2][fld].append(score)
-
-                if model_type == 'predict':
-                    filtered_score_list['전체'][fld].append(score)
-                    if aspiration_1:
-                        filtered_score_list[aspiration_1][fld].append(score)
-                    if aspiration_2:
-                        filtered_score_list[aspiration_2][fld].append(score)
-
-    update_data_statistics(data_statistics, score_list, field_vars)
-    update_data_statistics(filtered_data_statistics, filtered_score_list, field_vars)
-    return data_statistics, filtered_data_statistics
-
-
-def update_data_statistics(data_statistics, score_list, field_vars):
-    for aspiration, score_dict in score_list.items():
-        for fld, scores in score_dict.items():
-            sub = field_vars[fld][0]
-            subject = field_vars[fld][1]
-            participants = len(scores)
-            sorted_scores = sorted(scores, reverse=True)
-
-            def get_top_score(percentage):
-                if sorted_scores:
-                    threshold = max(1, int(participants * percentage))
-                    return sorted_scores[threshold - 1]
-
-            data_for_update = {
-                'field': fld,
-                'is_confirmed': True,
-                'sub': sub,
-                'subject': subject,
-                'participants': participants,
-                'max': sorted_scores[0] if sorted_scores else None,
-                't10': get_top_score(0.10),
-                't25': get_top_score(0.25),
-                't50': get_top_score(0.50),
-                'avg': round(sum(scores) / participants, 1) if sorted_scores else None,
-            }
-            if fld in ['sum', 'raw_sum']:
-                data_for_update['participants_dict'] = data_statistics[aspiration]['participants_dict']
-
-            data_statistics[aspiration][fld].update(data_for_update)
-
-
-def update_statistics(leet, data_statistics, filtered_data_statistics, model_type='result'):
+def update_statistics(leet, qs_student, model_type='result'):
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '통계를 업데이트했습니다.',
         False: '기존 통계와 일치합니다.',
     }
-    is_updated_list = [update_statistics_model(leet, data_statistics, model_type)]
-    if model_type != 'result':
-        is_updated_list.append([
-            update_statistics_model(leet, filtered_data_statistics, model_type, True)
-        ])
+    is_updated_list = [update_statistics_model(leet, qs_student, model_type)]
+    if model_type == 'predict':
+        is_updated_list.append([update_statistics_model(leet, qs_student, model_type, True)])
+
     if None in is_updated_list:
         is_updated = None
     elif any(is_updated_list):
@@ -895,45 +707,98 @@ def update_statistics(leet, data_statistics, filtered_data_statistics, model_typ
     return is_updated, message_dict[is_updated]
 
 
-def update_statistics_model(leet, data_statistics: dict, model_type='result', is_filtered=False):
+def update_statistics_model(leet, qs_student, model_type='result', is_filtered=False):
     model = get_target_model(f'{model_type.capitalize()}Statistics')
+    data_statistics = get_data_statistics(qs_student)
 
     field_vars = get_field_vars()
     prefix = 'filtered_' if is_filtered else ''
 
     list_update, list_create = [], []
     for aspiration, data_stat in data_statistics.items():
-        stat_dict = {'aspiration': aspiration}
-
-        for fld in field_vars:
-            data_for_update = {fld: {'participants': data_stat[fld]['participants']}}
-            if fld in ['sum', 'raw_sum']:
-                data_for_update[fld]['participants_1'] = data_stat[fld]['participants_dict']['1']
-                data_for_update[fld]['participants_2'] = data_stat[fld]['participants_dict']['2']
-            data_for_update[fld].update({
-                'max': data_stat[fld]['max'],
-                't10': data_stat[fld]['t10'],
-                't25': data_stat[fld]['t25'],
-                't50': data_stat[fld]['t50'],
-                'avg': data_stat[fld]['avg'],
-            })
-
-            stat_dict.update(data_for_update)
-
         try:
             new_query = model.objects.get(leet=leet, aspiration=aspiration)
-            fields_not_match = any(getattr(new_query, fld) != val for fld, val in stat_dict.items())
+            fields_not_match = any(getattr(new_query, fld) != val for fld, val in data_stat.items())
             if fields_not_match:
-                for fld, val in stat_dict.items():
+                for fld, val in data_stat.items():
                     setattr(new_query, fld, val)
                 list_update.append(new_query)
         except model.DoesNotExist:
-            list_create.append(model(leet=leet, **stat_dict))
+            list_create.append(model(leet=leet, aspiration=aspiration, **data_stat))
 
     update_fields = ['aspiration']
     update_fields.extend([f'{prefix}{key}' for key in field_vars])
 
     return bulk_create_or_update(model, list_create, list_update, update_fields)
+
+
+def get_data_statistics(qs_student):
+    aspirations = models.choices.get_aspirations()
+    field_vars = constant_list.all_field_vars
+
+    participants_dict = get_participants_dict(qs_student)
+    data_statistics = {
+        aspiration: {
+            fld: {
+                'participants': participants_dict['sum'].get(aspiration, 0),
+                'participants_1': participants_dict['1'].get(aspiration, 0),
+                'participants_2': participants_dict['2'].get(aspiration, 0),
+                'max': 0, 't10': 0, 't25': 0, "t50": 0, 'avg': 0
+            } for fld in field_vars
+        } for aspiration in aspirations
+    }
+
+    score_dict = {aspiration: {fld: [] for fld in field_vars} for aspiration in aspirations}
+    for qs_s in qs_student:
+        for fld in field_vars:
+            score = getattr(qs_s.score, fld)
+            aspiration_1 = qs_s.aspiration_1
+            aspiration_2 = qs_s.aspiration_2
+
+            if score:
+                score_dict['전체'][fld].append(score)
+                if aspiration_1:
+                    score_dict[aspiration_1][fld].append(score)
+                if aspiration_2:
+                    score_dict[aspiration_2][fld].append(score)
+
+    for aspiration, values in score_dict.items():
+        for fld, scores in values.items():
+            participants = len(scores)
+            sorted_scores = sorted(scores, reverse=True)
+
+            def get_top_score(percentage):
+                if sorted_scores:
+                    threshold = max(1, int(participants * percentage))
+                    return sorted_scores[threshold - 1]
+
+            data_statistics[aspiration][fld].update({
+                'max': sorted_scores[0] if sorted_scores else None,
+                't10': get_top_score(0.10),
+                't25': get_top_score(0.25),
+                't50': get_top_score(0.50),
+                'avg': round(sum(scores) / participants, 1) if sorted_scores else None,
+            })
+
+    return data_statistics
+
+
+def get_participants_dict(qs_students):
+    def get_participants_distribution(aspiration_num: int):
+        participants_distribution = (
+            qs_students.exclude(**{f'aspiration_{aspiration_num}__isnull': True})
+            .exclude(**{f'aspiration_{aspiration_num}': ''})
+            .values(f'aspiration_{aspiration_num}').annotate(count=Count('id'))
+        )
+        data_dict = {row[f'aspiration_{aspiration_num}']: row['count'] for row in participants_distribution}
+        data_dict['전체'] = sum(data_dict.values())
+        return data_dict
+
+    participants_dict = {'1': get_participants_distribution(1), '2': get_participants_distribution(2), 'sum': {}}
+    for key in set(participants_dict['1']) | set(participants_dict['2']):
+        participants_dict['sum'][key] = participants_dict['1'].get(key, 0) + participants_dict['2'].get(key, 0)
+    participants_dict['sum']['전체'] = qs_students.count()
+    return participants_dict
 
 
 def update_answer_counts(model_type='result'):
@@ -1240,10 +1105,9 @@ def update_list_for_working_bulk(lst, instance, data):
 
 
 def create_default_problems(leet):
-    sub_list = get_sub_list()
     problem_count_dict = get_problem_count_dict(leet.exam)
     list_create = []
-    for subject in sub_list:
+    for subject in constant_list.sub:
         problem_count = problem_count_dict[subject]
         for number in range(1, problem_count + 1):
             problem_info = {'leet': leet, 'subject': subject, 'number': number}
