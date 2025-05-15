@@ -307,13 +307,10 @@ def get_distribution_by_interval(scores, bin_size=5):
     max_score = int(np.ceil(scores.max() / bin_size) * bin_size)
     bins = list(range(min_score, max_score + bin_size, bin_size))
 
-    # 도수 계산
+    # 도수 및 비율
     freq, bin_edges = np.histogram(scores, bins=bins)
-
-    # 비율 및 누적 비율
     total = freq.sum()
     ratio = (freq / total * 100).round(2)
-    cum_ratio = ratio.cumsum().round(2)
 
     # 구간 라벨 생성
     labels = []
@@ -321,20 +318,21 @@ def get_distribution_by_interval(scores, bin_size=5):
         start = int(bin_edges[i])
         end = int(bin_edges[i + 1])
         if i == len(freq) - 1:
-            labels.append(f"{start}점 이상")
+            labels.append(f'{start}점 이상')
         else:
-            labels.append(f"{start} 이상 {end} 미만")
+            labels.append(f'{start} 이상 {end} 미만')
 
     # 데이터프레임 생성
     df = pd.DataFrame({
-        "label": labels,
-        "ratio": ratio,
-        "cum_raio": cum_ratio
+        'label': labels,
+        'ratio': ratio,
     })
 
     # 높은 점수 구간부터 오도록 정렬 (구간의 시작값 기준)
-    df["시작점"] = [int(label.split()[0].replace("점", "")) for label in df["label"]]
-    df = df.sort_values(by="시작점", ascending=False).drop(columns="시작점").reset_index(drop=True)
+    df['start'] = [int(label.split()[0].replace('점', '')) for label in df['label']]
+    df = df.sort_values(by='start', ascending=False).reset_index(drop=True)
+    df['cum_ratio'] = df['ratio'].cumsum().round(1)
+    df.drop(columns='start', inplace=True)
 
     return df.to_dict(orient='records')
 
