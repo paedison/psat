@@ -28,7 +28,7 @@ def list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     qs_registry = []
     if request.user.is_authenticated:
-        qs_registry = models.ResultRegistry.objects.prime_leet_registry_list_by_user(request.user)
+        qs_registry = models.ResultRegistry.objects.get_qs_registry_by_user(request.user)
     context = update_context_data(current_time=timezone.now(), config=config, registries=qs_registry)
     return render(request, 'a_prime_leet/result_list.html', context)
 
@@ -44,7 +44,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         return render(request, 'a_prime_leet/redirect.html', context)
 
     if student is None:
-        student = models.ResultStudent.objects.prime_leet_qs_result_student_by_leet_and_user(leet, request.user)
+        student = models.ResultStudent.objects.get_student(leet=leet, registries__user=request.user)
     if not student:
         context = update_context_data(
             context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)
@@ -69,7 +69,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         score_frequency_dict = normal_utils.get_score_frequency_dict(leet)
         stat_frequency_dict = normal_utils.get_stat_frequency_dict(student, score_frequency_dict)
 
-    qs_student_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student(student)
+    qs_student_answer = models.ResultAnswer.objects.get_qs_answer_by_student(student)
     data_answers = normal_utils.get_data_answers_for_result(qs_student_answer)
 
     context = update_context_data(

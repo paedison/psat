@@ -33,7 +33,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         return render(request, 'a_prime_leet/redirect.html', context)
 
     if student is None:
-        student = models.FakeStudent.objects.prime_leet_qs_fake_student_by_leet_and_user(leet)
+        student = models.FakeStudent.objects.get_student(leet=leet)
     if not student:
         context = update_context_data(
             context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)

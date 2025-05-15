@@ -108,10 +108,8 @@ def get_dict_stat_data_for_result(student: models.ResultStudent, stat_type='tota
         subject_vars = get_subject_vars()
         stat_data = get_empty_dict_stat_data_for_result(student, subject_vars)
 
-        qs_answer = models.ResultAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
-            student, stat_type)
-        qs_score = models.ResultScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
-            student, stat_type)
+        qs_answer = models.ResultAnswer.objects.get_qs_answer_values_by_stat_type(student, stat_type)
+        qs_score = models.ResultScore.objects.get_qs_score_by_stat_type(student, stat_type)
 
         participants_dict = {subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer}
         participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
@@ -126,10 +124,8 @@ def get_dict_stat_data_for_fake(fake_student: models.ResultStudent, stat_type='t
         subject_vars = get_subject_vars()
         stat_data = get_empty_dict_stat_data_for_result(fake_student, subject_vars)
 
-        qs_student = models.FakeStudent.objects.prime_leet_qs_fake_student_list_by_student_and_stat_type(
-            fake_student, stat_type)
-        qs_score = models.FakeScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
-            fake_student, stat_type)
+        qs_student = models.FakeStudent.objects.get_qs_fake_student_by_stat_type(fake_student, stat_type)
+        qs_score = models.FakeScore.objects.get_qs_score_by_stat_type(fake_student, stat_type)
 
         participants = qs_student.count()
         participants_dict = {subject: participants for _, (_, subject, _) in subject_vars.items()}
@@ -149,10 +145,8 @@ def get_dict_stat_data_for_predict(
 ):
     subject_vars = get_subject_vars()
     stat_data = get_empty_dict_stat_data_for_predict(student, is_confirmed_data, answer_data_set, subject_vars)
-    qs_answer = models.PredictAnswer.objects.prime_leet_qs_answer_by_student_and_stat_type_and_is_filtered(
-        student, stat_type)
-    qs_score = models.PredictScore.objects.prime_leet_qs_score_by_student_and_stat_type_and_is_filtered(
-        student, stat_type, is_filtered)
+    qs_answer = models.PredictAnswer.objects.get_qs_answer_values_by_stat_type(student, stat_type)
+    qs_score = models.PredictScore.objects.get_qs_score_by_stat_type(student, stat_type, is_filtered)
 
     participants_dict = {subject_vars[qs_a['problem__subject']][1]: qs_a['participant_count'] for qs_a in qs_answer}
     participants_dict['sum'] = participants_dict[min(participants_dict)] if participants_dict else 0
@@ -509,7 +503,7 @@ def create_confirmed_answers(student, sub, answer_data):
 
 
 def update_answer_counts_after_confirm(leet, sub, answer_data):
-    qs_answer_count = models.PredictAnswerCount.objects.prime_leet_qs_answer_count_by_leet(leet).filter(sub=sub)
+    qs_answer_count = models.PredictAnswerCount.objects.get_qs_answer_count(leet).filter(sub=sub)
     for qs_ac in qs_answer_count:
         ans_student = answer_data[qs_ac.problem.number - 1]
         setattr(qs_ac, f'count_{ans_student}', F(f'count_{ans_student}') + 1)

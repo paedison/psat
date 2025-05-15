@@ -51,8 +51,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None):
         return render(request, 'a_prime_leet/redirect.html', context)
 
     if student is None:
-        student = models.PredictStudent.objects.prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(
-            request.user, leet)
+        student = models.PredictStudent.objects.get_qs_predict_student(request.user, leet)
     if not student:
         context = update_context_data(
             context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)
@@ -170,8 +169,7 @@ def answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
         return redirect('prime:predict-list')
 
     config.url_detail = leet.get_predict_detail_url()
-    student = models.PredictStudent.objects.prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(
-        request.user, leet)
+    student = models.PredictStudent.objects.get_qs_predict_student(request.user, leet)
 
     field_vars = normal_utils.get_field_vars()
     sub, subject, field_idx = field_vars[subject_field]
@@ -222,8 +220,7 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
     if not leet or not leet.is_active:
         return redirect('prime:predict-list')
 
-    student = models.PredictStudent.objects.prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(
-        request.user, leet)
+    student = models.PredictStudent.objects.get_qs_predict_student(request.user, leet)
     field_vars = normal_utils.get_field_vars()
     sub, subject, field_idx = field_vars[subject_field]
 
@@ -249,8 +246,7 @@ def answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
                 student, subject_field, answer_all_confirmed)  # PredictStatistics 모델 수정
 
         # Load student instance after save
-        student = models.PredictStudent.objects.prime_leet_qs_predict_student_by_user_and_leet_with_answer_count(
-            request.user, leet)
+        student = models.PredictStudent.objects.get_qs_predict_student(request.user, leet)
         next_url = normal_utils.get_next_url_for_answer_input(student)
 
         context = update_context_data(header=f'{subject} 답안 제출', is_confirmed=is_confirmed, next_url=next_url)

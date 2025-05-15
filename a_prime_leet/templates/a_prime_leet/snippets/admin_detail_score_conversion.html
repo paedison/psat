@@ -1,0 +1,61 @@
+<div class="row g-4">
+    {% for subject, data_stat in data_fake_statistics.score_conversion.items %}
+        <div class="col-sm-6 col-md-4">
+            <article class="table-responsive">
+                <table class="table table-bordered table-striped align-middle m-0">
+                    <thead>
+                        <tr class="text-center table-warning align-middle">
+                            <th class="text-primary text-nowrap td-left-no-border td-right-no-border" colspan="3">
+                                {{ subject }}
+                            </th>
+                        </tr>
+                        <tr class="text-center table-warning align-middle">
+                            <th class="text-primary text-nowrap td-left-no-border">원점수</th>
+                            <th class="text-primary text-nowrap">표준점수</th>
+                            <th class="text-primary text-nowrap td-right-no-border">백분위</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for obj in data_stat %}
+                            <tr class="text-center small">
+                                <td class="text-nowrap td-left-no-border">{{ obj.raw_score }}</td>
+                                <td class="text-nowrap">{{ obj.score }}</td>
+                                <td class="text-nowrap td-right-no-border">{{ obj.rank }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr class="text-center">
+                                <td class="text-nowrap td-left-no-border td-right-no-border" colspan="3">자료가 없습니다.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </article>
+        </div>
+    {% endfor %}
+    <div class="col-md-4">
+        <article class="table-responsive">
+            <table class="table table-bordered table-striped align-middle m-0">
+                <thead>
+                    <tr class="text-center table-warning align-middle">
+                        <th class="text-primary text-nowrap td-left-no-border">표준점수 총점</th>
+                        <th class="text-primary text-nowrap">비율(%)</th>
+                        <th class="text-primary text-nowrap td-right-no-border">누적비율(%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in data_fake_statistics.score_distribution %}
+                        <tr class="text-center small">
+                            <td class="text-nowrap td-left-no-border">{{ obj.label }}</td>
+                            <td class="text-nowrap">{{ obj.ratio }}</td>
+                            <td class="text-nowrap td-right-no-border">{{ obj.cum_raio }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr class="text-center">
+                            <td class="text-nowrap td-left-no-border td-right-no-border" colspan="3">자료가 없습니다.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </article>
+    </div>
+</div>

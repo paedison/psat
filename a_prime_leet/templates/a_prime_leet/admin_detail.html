@@ -5,11 +5,11 @@
 
 {% block main_content %}
     {% if user.is_admin %}
-        <section class="section" aria-label="업데이트 [{{ score_type }}]">
+        <section class="section" aria-label="업데이트">
             <div class="row">
                 <div class="col-12">
                     <div class="card" hx-swap="innerHTML swap:0.25s">
-                        <div class="card-header">{{ leet.name }} | 업데이트 [{{ score_type }}]</div>
+                        <div class="card-header">{{ leet.name }} | 업데이트</div>
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -99,11 +99,11 @@
         </section>
     {% endif %}
 
-    <section class="section" aria-label="성적 통계 [{{ score_type }}]">
+    <section class="section" aria-label="성적 통계">
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">성적 통계 [{{ score_type }}]</div>
+                    <div class="card-header">성적 통계</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
@@ -136,11 +136,11 @@
         </div>
     </section>
 
-    <section class="section" aria-label="성적 분포 차트 [{{ score_type }}]">
+    <section class="section" aria-label="성적 분포 차트">
         <div class="row">
             <div class="col-12">
                 <div id="sheetChart" class="card">
-                    <div class="card-header m-0">성적 분포 차트 [{{ score_type }}]</div>
+                    <div class="card-header m-0">성적 분포 차트</div>
                     <div class="card-body">
                         {% include 'a_prime_leet/snippets/admin_detail_chart.html' %}
                     </div>
@@ -149,11 +149,11 @@
         </div>
     </section>
 
-    <section class="section" aria-label="성적일람표 [{{ score_type }}]">
+    <section class="section" aria-label="성적일람표">
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">성적일람표 [{{ score_type }}]</div>
+                    <div class="card-header">성적일람표</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
@@ -185,11 +185,13 @@
     </section>
 
     {% if registry_page_obj %}
-        <section class="section" aria-label="성적 확인 목록 [{{ score_type }}]">
+        <section class="section" aria-label="성적 확인 목록">
             <div class="row">
                 <div class="col-12">
                     <div class="card" hx-swap="innerHTML swap:0.25s">
-                        <div class="card-header">성적 확인 목록 [{{ score_type }}]</div>
+                        <div class="card-header">
+                            성적 확인 목록 <span class="text-primary small">[총 {{ registry_count }}명 확인]</span>
+                        </div>
                         <div class="card-body">
                             <div id="catalogContent" class="htmx-fade-in htmx-fade-out">
                                 {% include 'a_prime_leet/snippets/admin_detail_registry.html' %}
@@ -201,11 +203,11 @@
         </section>
     {% endif %}
 
-    <section class="section" aria-label="문항분석표 [{{ score_type }}]">
+    <section class="section" aria-label="문항분석표">
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">문항분석표 [{{ score_type }}]</div>
+                    <div class="card-header">문항분석표</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
@@ -241,6 +243,19 @@
                                 <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
                             </ol>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="점수 변환표 및 백분위">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">점수 변환표 및 백분위</div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/admin_detail_score_conversion.html' %}
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse_lazy
 
-from . import abstract_models, managers, choices
+from . import abstract_models, choices, querysets
 from .problem_models import Leet, Problem
 
 verbose_name_prefix = '[가상답안] '
@@ -37,7 +37,6 @@ class FakeRefAnswerCount(abstract_models.AnswerCount):
 
 
 class FakeStatistics(abstract_models.Statistics):
-    objects = managers.StatisticsManager()
     leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='fake_statistics')
 
     class Meta:
@@ -52,7 +51,7 @@ class FakeStatistics(abstract_models.Statistics):
 
 
 class FakeStudent(models.Model):
-    objects = managers.StudentManager()
+    objects = querysets.StudentQuerySet.as_manager()
     leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='fake_students')
     serial = models.CharField(max_length=10, verbose_name='수험번호')
     name = models.CharField(max_length=20, verbose_name='이름')
@@ -80,7 +79,7 @@ class FakeStudent(models.Model):
 
 
 class FakeScore(abstract_models.Score):
-    objects = managers.ScoreManager()
+    objects = querysets.ScoreQueryset.as_manager()
     student = models.OneToOneField(FakeStudent, on_delete=models.CASCADE, related_name='score')
 
     class Meta:
@@ -125,7 +124,7 @@ class FakeRankAspiration2(abstract_models.Rank):
 
 
 class FakeAnswerCount(abstract_models.AnswerCount):
-    objects = managers.AnswerCountManager()
+    objects = querysets.AnswerCountQueryset.as_manager()
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='fake_answer_count')
 
     class Meta:

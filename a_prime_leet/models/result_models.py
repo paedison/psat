@@ -2,14 +2,13 @@ from django.db import models
 from django.urls import reverse_lazy
 
 from common.models import User
-from . import abstract_models, managers
+from . import abstract_models, querysets
 from .problem_models import Leet, Problem
 
 verbose_name_prefix = '[성적확인] '
 
 
 class ResultStatistics(abstract_models.Statistics):
-    objects = managers.StatisticsManager()
     leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='result_statistics')
 
     class Meta:
@@ -24,7 +23,7 @@ class ResultStatistics(abstract_models.Statistics):
 
 
 class ResultStudent(abstract_models.Student):
-    objects = managers.StudentManager()
+    objects = querysets.StudentQuerySet.as_manager()
     leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='result_students')
 
     class Meta:
@@ -45,7 +44,7 @@ class ResultStudent(abstract_models.Student):
 
 
 class ResultRegistry(models.Model):
-    objects = managers.ResultRegistryManager()
+    objects = querysets.ResultRegistryQueryset.as_manager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prime_leet_result_registries')
     student = models.ForeignKey(ResultStudent, on_delete=models.CASCADE, related_name='registries')
@@ -68,7 +67,7 @@ class ResultRegistry(models.Model):
 
 
 class ResultAnswer(abstract_models.Answer):
-    objects = managers.AnswerManager()
+    objects = querysets.AnswerQueryset.as_manager()
     student = models.ForeignKey(ResultStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='result_answers')
 
@@ -84,7 +83,7 @@ class ResultAnswer(abstract_models.Answer):
 
 
 class ResultAnswerCount(abstract_models.AnswerCount):
-    objects = managers.AnswerCountManager()
+    objects = querysets.AnswerCountQueryset.as_manager()
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='result_answer_count')
 
     class Meta:
@@ -96,7 +95,7 @@ class ResultAnswerCount(abstract_models.AnswerCount):
 
 
 class ResultScore(abstract_models.Score):
-    objects = managers.ScoreManager()
+    objects = querysets.ScoreQueryset.as_manager()
     student = models.OneToOneField(ResultStudent, on_delete=models.CASCADE, related_name='score')
 
     class Meta:

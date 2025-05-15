@@ -47,10 +47,7 @@ class ConstantList:
         return [{'id': str(idx), 'title': subject} for idx, subject in enumerate(self.subject)]
 
     def get_subject_vars(self):
-        return {
-            self.sub.sum_last[idx]: (self.subject.sum_last[idx], self.sub_field.sum_last[idx], idx)
-            for idx in range(len(self.sub.sum_last))
-        }
+        return {self.sub[idx]: (self.subject[idx], self.sub_field[idx], idx) for idx in range(len(self.sub))}
 
     def get_all_field_vars(self):
         field_vars = {}
@@ -60,26 +57,14 @@ class ConstantList:
             field_vars[fld] = (self.sub.sum_last[idx], self.subject.sum_last[idx], idx)
         return field_vars
 
+    @staticmethod
+    def get_problem_count_dict(exam):
+        if exam == '하프':
+            return {'언어': 15, '추리': 20}
+        return {'언어': 30, '추리': 40}
+
 
 constant_list = ConstantList()
-
-
-def get_answer_tab() -> list:
-    return constant_list.answer_tab
-
-
-def get_subject_vars() -> dict[str, tuple[str, str, int]]:
-    return {
-        '언어': ('언어이해', 'subject_0', 0),
-        '추리': ('추리논증', 'subject_1', 1),
-        '총점': ('총점', 'sum', 2),
-    }
-
-
-def get_problem_count_dict(exam):
-    if exam == '하프':
-        return {'언어': 15, '추리': 20}
-    return {'언어': 30, '추리': 40}
 
 
 def get_field_vars(is_filtered=False) -> dict[str, tuple[str, str, int]]:
@@ -121,15 +106,12 @@ def get_qs_student(leet, model_type='result'):
 
 def get_student_list(leet, model_type='result'):
     model = get_target_model(f'{model_type.capitalize()}Student')
-    if model_type == 'fake':
-        return model.objects.prime_leet_qs_fake_student_list_by_leet(leet)
-    else:
-        return model.objects.prime_leet_qs_student_list_by_leet(leet)
+    return model.objects.get_qs_student_list_by_leet(leet, model_type)
 
 
 def get_qs_answer_count(leet, model_type='result', subject=None):
     model = get_target_model(f'{model_type.capitalize()}AnswerCount')
-    return model.objects.prime_leet_qs_answer_count_by_leet_and_model_type_and_subject(leet, model_type, subject)
+    return model.objects.get_qs_answer_count_with_all_ranks(leet, model_type, subject)
 
 
 def get_dict_stat_chart(data_total):
@@ -241,7 +223,6 @@ def get_answer_page_data(qs_answer_count, page_number, model_type='result', per_
 def update_data_answers(qs_answer_count_set, model_type='result'):
     for qs_ac in qs_answer_count_set:
         ans_official = qs_ac.ans_official
-
         answer_official_list = []
         if ans_official > 5:
             answer_official_list = [int(digit) for digit in str(ans_official)]
@@ -287,6 +268,74 @@ def update_answer_rate(qs_ac, model_type: str):
     if None not in rate['correct'].values():
         rate['correct']['gap'] = rate['correct']['top'] - rate['correct']['low']
     qs_ac.rate = rate
+
+
+def get_data_fake_statistics(leet):
+    qs_fake_student = models.FakeStudent.objects.get_qs_fake_student_list_by_leet(leet).filter(
+        serial__startswith='fake')
+    score_dict = defaultdict(list)
+    for qs_fs in qs_fake_student:
+        score_dict['score_0'].append((qs_fs.score.raw_subject_0, qs_fs.score.subject_0))
+        score_dict['score_1'].append((qs_fs.score.raw_subject_1, qs_fs.score.subject_1))
+        score_dict['score_sum'].append(qs_fs.score.sum)
+    return {
+        'score_conversion': {
+            '언어이해': calculate_percentile_ranks_from_score_pairs(score_dict['score_0']),
+            '추리논증': calculate_percentile_ranks_from_score_pairs(score_dict['score_1']),
+        },
+        'score_distribution': get_distribution_by_interval(score_dict['score_sum']),
+    }
+
+
+def calculate_percentile_ranks_from_score_pairs(score_pairs):
+    df_all = pd.DataFrame(score_pairs, columns=['raw_score', 'score'])
+    df_all['rank'] = df_all['raw_score'].rank(pct=True, ascending=True) * 100
+    df_all['rank'] = df_all['rank'].round(1)
+
+    df_unique = df_all.drop_duplicates(subset='raw_score', keep='first')
+    df_unique = df_unique.sort_values(by='raw_score', ascending=False).reset_index(drop=True)
+
+    return df_unique.to_dict(orient='records')
+
+
+def get_distribution_by_interval(scores, bin_size=5):
+    scores = np.array(scores)
+
+    # 최소/최대 점수로부터 구간 경계 생성
+    min_score = int(np.floor(scores.min() / bin_size) * bin_size)
+    max_score = int(np.ceil(scores.max() / bin_size) * bin_size)
+    bins = list(range(min_score, max_score + bin_size, bin_size))
+
+    # 도수 계산
+    freq, bin_edges = np.histogram(scores, bins=bins)
+
+    # 비율 및 누적 비율
+    total = freq.sum()
+    ratio = (freq / total * 100).round(2)
+    cum_ratio = ratio.cumsum().round(2)
+
+    # 구간 라벨 생성
+    labels = []
+    for i in range(len(freq)):
+        start = int(bin_edges[i])
+        end = int(bin_edges[i + 1])
+        if i == len(freq) - 1:
+            labels.append(f"{start}점 이상")
+        else:
+            labels.append(f"{start} 이상 {end} 미만")
+
+    # 데이터프레임 생성
+    df = pd.DataFrame({
+        "label": labels,
+        "ratio": ratio,
+        "cum_raio": cum_ratio
+    })
+
+    # 높은 점수 구간부터 오도록 정렬 (구간의 시작값 기준)
+    df["시작점"] = [int(label.split()[0].replace("점", "")) for label in df["label"]]
+    df = df.sort_values(by="시작점", ascending=False).drop(columns="시작점").reset_index(drop=True)
+
+    return df.to_dict(orient='records')
 
 
 def update_problem_model_for_answer_official(leet, form, file) -> tuple:
@@ -352,7 +401,7 @@ def update_models_for_answer_student(leet, file, model_type='result'):
     student_model = get_target_model(f'{model_type.capitalize()}Student')
     answer_model = get_target_model(f'{model_type.capitalize()}Answer')
 
-    qs_problem = models.Problem.objects.prime_leet_qs_problem_by_leet(leet)
+    qs_problem = models.Problem.objects.get_qs_problem(leet=leet)
     qs_problem_dict = {(qs_p.subject, qs_p.number): qs_p for qs_p in qs_problem}
 
     qs_student = student_model.objects.filter(leet=leet)
@@ -413,14 +462,12 @@ def update_models_for_answer_student(leet, file, model_type='result'):
                     setattr(student, fld, val)
                 student.save()
 
-        qs_answer = answer_model.objects.prime_leet_qs_answer_by_student_with_sub_number(student)
+        qs_answer = answer_model.objects.get_qs_answer_with_sub_number(student)
         qs_answer_dict = {(qs_a.sub, qs_a.number): qs_a for qs_a in qs_answer}
 
-        subject_vars = constant_list.subject_vars
-        subject_vars.pop('총점')
-
-        for sub, (subject, _, _) in subject_vars.items():
-            problem_count = get_problem_count_dict(student.leet.exam)[sub]
+        for idx in range(constant_list.subject_count):
+            sub, subject = constant_list.sub[idx], constant_list.subject[idx]
+            problem_count = constant_list.get_problem_count_dict(student.leet.exam)[sub]
 
             for number in range(1, problem_count + 1):
                 answer = row[(subject, number)] if not np.isnan(row[(subject, number)]) else 0
@@ -1105,7 +1152,7 @@ def update_list_for_working_bulk(lst, instance, data):
 
 
 def create_default_problems(leet):
-    problem_count_dict = get_problem_count_dict(leet.exam)
+    problem_count_dict = constant_list.get_problem_count_dict(leet.exam)
     list_create = []
     for subject in constant_list.sub:
         problem_count = problem_count_dict[subject]
@@ -1186,19 +1233,12 @@ def get_statistics_response(leet, model_type='result'):
     for fld, (_, subject, _) in field_vars.items():
         drop_columns.append(fld)
         subject += ' (원점수)' if fld[:3] == 'raw' else ' (표준점수)'
-        if fld in ['sum', 'raw_sum']:
-            column_label.extend([
-                (subject, '총 인원'), (subject, '1지망 인원'),
-                (subject, '2지망 인원'), (subject, '최고'),
-                (subject, '상위10%'), (subject, '상위25%'),
-                (subject, '상위50%'), (subject, '평균'),
-            ])
-        else:
-            column_label.extend([
-                (subject, '총 인원'), (subject, '최고'),
-                (subject, '상위10%'), (subject, '상위25%'),
-                (subject, '상위50%'), (subject, '평균'),
-            ])
+        column_label.extend([
+            (subject, '총 인원'), (subject, '1지망 인원'),
+            (subject, '2지망 인원'), (subject, '최고'),
+            (subject, '상위10%'), (subject, '상위25%'),
+            (subject, '상위50%'), (subject, '평균'),
+        ])
         df_subject = pd.json_normalize(df[fld])
         df = pd.concat([df, df_subject], axis=1)
 

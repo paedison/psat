@@ -2,14 +2,13 @@ from django.db import models
 from django.urls import reverse_lazy
 
 from common.models import User
-from . import abstract_models, managers
+from . import abstract_models, querysets
 from .problem_models import Leet, Problem
 
 verbose_name_prefix = '[성적예측] '
 
 
 class PredictStatistics(abstract_models.ExtendedStatistics):
-    objects = managers.StatisticsManager()
     leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='predict_statistics')
 
     class Meta:
@@ -24,7 +23,7 @@ class PredictStatistics(abstract_models.ExtendedStatistics):
 
 
 class PredictStudent(abstract_models.Student):
-    objects = managers.PredictStudentManager()
+    objects = querysets.StudentQuerySet.as_manager()
     leet = models.ForeignKey(Leet, on_delete=models.CASCADE, related_name='predict_students')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prime_leet_predict_students')
     is_filtered = models.BooleanField(default=False, verbose_name='필터링 여부')
@@ -45,7 +44,7 @@ class PredictStudent(abstract_models.Student):
 
 
 class PredictAnswer(abstract_models.Answer):
-    objects = managers.AnswerManager()
+    objects = querysets.AnswerQueryset.as_manager()
     student = models.ForeignKey(PredictStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='predict_answers')
 
@@ -61,7 +60,7 @@ class PredictAnswer(abstract_models.Answer):
 
 
 class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
-    objects = managers.AnswerCountManager()
+    objects = querysets.AnswerCountQueryset.as_manager()
     problem = models.OneToOneField(Problem, on_delete=models.CASCADE, related_name='predict_answer_count')
 
     class Meta:
@@ -73,7 +72,7 @@ class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
 
 
 class PredictScore(abstract_models.Score):
-    objects = managers.ScoreManager()
+    objects = querysets.ScoreQueryset.as_manager()
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='score')
 
     class Meta:

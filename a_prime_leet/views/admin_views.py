@@ -65,7 +65,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     score_type = model_type_dict.get(model_type)
 
     leet = get_object_or_404(models.Leet, pk=pk)
-    answer_tab = admin_utils.get_answer_tab()
+    answer_tab = admin_utils.constant_list.answer_tab
 
     config.model_type = model_type
     config.url_admin_update = reverse_lazy('prime_leet:admin-update', args=[model_type, leet.id])
@@ -87,9 +87,10 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     data_statistics = data_statistics.exclude(aspiration='전체')
     student_list = admin_utils.get_student_list(leet, model_type)
 
-    registry_list = None
+    registry_list = []
     if model_type == 'result':
-        registry_list = models.ResultRegistry.objects.prime_leet_registry_list_by_leet(leet)
+        registry_list = models.ResultRegistry.objects.get_qs_registry_by_leet(leet)
+    registry_count = len(registry_list)
 
     qs_answer_count = admin_utils.get_qs_answer_count(leet, model_type, subject)
 
@@ -119,8 +120,7 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         return render(request, 'a_prime_leet/snippets/admin_detail_registry.html', context)
 
     if view_type == 'answer_list':
-        subject_vars = admin_utils.get_subject_vars()
-        subject_idx = subject_vars[subject][2]
+        subject_idx = admin_utils.constant_list.sub.index(subject)
         answers_page_obj_group, answers_page_range_group = (
             admin_utils.get_answer_page_data(qs_answer_count, page_number, model_type))
         context = update_context_data(
@@ -147,6 +147,8 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
     score_frequency_dict = admin_utils.get_score_frequency_dict(leet, model_type)
     stat_frequency_dict = admin_utils.get_stat_frequency_dict(score_frequency_dict)
 
+    data_fake_statistics = admin_utils.get_data_fake_statistics(leet)
+
     context = update_context_data(
         context,
         data_statistics_total=data_statistics_total,
@@ -159,11 +161,14 @@ def detail_view(request: HtmxHttpRequest, model_type: str, pk: int):
         answers_page_obj_group=answers_page_obj_group,
         answers_page_range_group=answers_page_range_group,
 
+        registry_count=registry_count,
         registry_page_obj=registry_page_obj,
         registry_page_range=registry_page_range,
 
         stat_chart=stat_chart,
         stat_frequency_dict=stat_frequency_dict,
+
+        data_fake_statistics=data_fake_statistics,
     )
     return render(request, 'a_prime_leet/admin_detail.html', context)
 
