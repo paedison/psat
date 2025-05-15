@@ -273,18 +273,19 @@ def update_answer_rate(qs_ac, model_type: str):
 def get_data_fake_statistics(leet):
     qs_fake_student = models.FakeStudent.objects.get_qs_fake_student_list_by_leet(leet).filter(
         serial__startswith='fake')
-    score_dict = defaultdict(list)
-    for qs_fs in qs_fake_student:
-        score_dict['score_0'].append((qs_fs.score.raw_subject_0, qs_fs.score.subject_0))
-        score_dict['score_1'].append((qs_fs.score.raw_subject_1, qs_fs.score.subject_1))
-        score_dict['score_sum'].append(qs_fs.score.sum)
-    return {
-        'score_conversion': {
-            '언어이해': calculate_percentile_ranks_from_score_pairs(score_dict['score_0']),
-            '추리논증': calculate_percentile_ranks_from_score_pairs(score_dict['score_1']),
-        },
-        'score_distribution': get_distribution_by_interval(score_dict['score_sum']),
-    }
+    if qs_fake_student:
+        score_dict = defaultdict(list)
+        for qs_fs in qs_fake_student:
+            score_dict['score_0'].append((qs_fs.score.raw_subject_0, qs_fs.score.subject_0))
+            score_dict['score_1'].append((qs_fs.score.raw_subject_1, qs_fs.score.subject_1))
+            score_dict['score_sum'].append(qs_fs.score.sum)
+        return {
+            'score_conversion': {
+                '언어이해': calculate_percentile_ranks_from_score_pairs(score_dict['score_0']),
+                '추리논증': calculate_percentile_ranks_from_score_pairs(score_dict['score_1']),
+            },
+            'score_distribution': get_distribution_by_interval(score_dict['score_sum']),
+        }
 
 
 def calculate_percentile_ranks_from_score_pairs(score_pairs):
