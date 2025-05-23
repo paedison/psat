@@ -1,129 +1,57 @@
-{% extends 'a_psat/_psat_base.html' %}
+{% extends 'a_psat/_psat_admin_base.html' %}
 {% load static %}
 {% load crispy_forms_field %}
 
 {% block main_content %}
-    {% if predict_psat %}{% partial predict_section %}{% endif %}
-
-    <section class="section" aria-label="공식 정답">
-        <div class="row">
-            <div class="col-12">
-                <div id="problemCard" class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">공식 정답</div>
-                    <div class="card-body">
-                        <nav>
-                            <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerOfficialTab" role="tablist">
-                                {% for subject in subjects %}
-                                    {% if subjects|length == 3 %}
-                                        {% cycle '1' '2' '3' as id silent %}
-                                        {% #nav_tab prefix='AnswerOfficial' id=id initial='1' %}{{ subject }}{% /nav_tab %}
-                                    {% else %}
-                                        {% cycle '0' '1' '2' '3' as id silent %}
-                                        {% #nav_tab prefix='AnswerOfficial' id=id %}{{ subject }}{% /nav_tab %}
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                        </nav>
-                        <div id="scoreAnswerOfficialContent" class="tab-content">
-                            {% for answer_official in answer_official_list %}
-                                {% if answer_official_list|length == 3 %}
-                                    {% cycle '1' '2' '3' as id silent %}
-                                    {% #nav_content prefix='AnswerOfficial' id=id initial='1' %}
-                                        {% include 'a_psat/snippets/admin_detail_answer_list.html' with answers=answer_official %}
-                                    {% /nav_content %}
-                                {% else %}
-                                    {% cycle '0' '1' '2' '3' '4' as id silent %}
-                                    {% #nav_content prefix='AnswerOfficial' id=id %}
-                                        {% include 'a_psat/snippets/admin_detail_answer_list.html' with answers=answer_official %}
-                                    {% /nav_content %}
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section" aria-label="문제 목록">
-        <div class="row">
-            <div class="col-12">
-                <div id="problemCard" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">
-                        {{ psat.full_reference }}
-                        {% if keyword %}(검색어: {{ keyword }}){% endif %}
-                    </div>
-
-                    <div class="card-body">
-                        <div class="row flex-column flex-md-row-reverse">
-                            <div id="problemFilter"
-                                 class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
-                                {% partial problem_filter %}
-                            </div>
-
-                            <div id="problemContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
-                                {% include 'a_psat/problem_list_content.html' %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-{% endblock main_content %}
-
-{% partialdef predict_section %}
-    {% if user.is_admin %}
-        <section class="section" aria-label="합격 예측 업데이트">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card" hx-swap="innerHTML swap:0.25s">
-                        <div class="card-header">{{ psat.year }}년도 {{ psat.exam_name }} | 합격 예측 업데이트</div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <form enctype="multipart/form-data"
-                                          hx-headers='{"View-Type":"answer_official"}'
-                                          hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
-                                          hx-post="{{ config.url_admin_predict_update }}">
-                                        <div class="input-group">
-                                            <input type="file" name="file" class="form-control" required id="id_file">
-                                            <button class="btn btn-outline-secondary prevent_double_click" type="submit"
-                                                    data-bs-toggle="modal" data-bs-target="#modalContainer">
-                                                정답 업데이트
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <div class="col-md-6 d-flex"
-                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                    <div class="btn-group flex-fill">
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='score' button_name='점수 업데이트' update_url=psat.get_admin_predict_update_url %}
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' update_url=psat.get_admin_predict_update_url %}
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 d-flex"
-                                     hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
-                                    <div class="btn-group flex-fill">
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' update_url=psat.get_admin_predict_update_url %}
-                                        {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' update_url=psat.get_admin_predict_update_url %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    {% endif %}
-
-    <section class="section" aria-label="성적통계 [예측]">
+    <section class="section" aria-label="합격 예측 업데이트">
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">성적통계 [예측]</div>
+                    <div class="card-header">{{ psat.year }}년도 {{ psat.exam_name }} | 합격 예측 업데이트</div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <form enctype="multipart/form-data"
+                                      hx-headers='{"View-Type":"answer_official"}'
+                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                      hx-post="{{ config.url_admin_predict_update }}">
+                                    <div class="input-group">
+                                        <input type="file" name="file" class="form-control" required id="id_file">
+                                        <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            정답 업데이트
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="col-md-6 d-flex"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='score' button_name='점수 업데이트' update_url=psat.get_admin_predict_update_url %}
+                                    {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' update_url=psat.get_admin_predict_update_url %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 d-flex"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' update_url=psat.get_admin_predict_update_url %}
+                                    {% include 'a_psat/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' update_url=psat.get_admin_predict_update_url %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="성적통계">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">성적통계</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
@@ -159,11 +87,11 @@
         </div>
     </section>
 
-    <section class="section" aria-label="성적일람표 [예측]">
+    <section class="section" aria-label="성적일람표">
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">성적일람표 [예측]</div>
+                    <div class="card-header">성적일람표</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
@@ -199,11 +127,11 @@
         </div>
     </section>
 
-    <section class="section" aria-label="문항분석표 [예측]">
+    <section class="section" aria-label="문항분석표">
         <div class="row">
             <div class="col-12">
                 <div class="card" hx-swap="innerHTML swap:0.25s">
-                    <div class="card-header">문항분석표 [예측]</div>
+                    <div class="card-header">문항분석표</div>
                     <div class="card-body">
                         <div class="row justify-content-md-end g-3 mb-3">
                             <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
@@ -282,7 +210,73 @@
             </div>
         </div>
     </section>
-{% endpartialdef predict_section %}
+
+    <section class="section" aria-label="공식 정답">
+        <div class="row">
+            <div class="col-12">
+                <div id="problemCard" class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">공식 정답</div>
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerOfficialTab" role="tablist">
+                                {% for subject in subjects %}
+                                    {% if subjects|length == 3 %}
+                                        {% cycle '1' '2' '3' as id silent %}
+                                        {% #nav_tab prefix='AnswerOfficial' id=id initial='1' %}{{ subject }}{% /nav_tab %}
+                                    {% else %}
+                                        {% cycle '0' '1' '2' '3' as id silent %}
+                                        {% #nav_tab prefix='AnswerOfficial' id=id %}{{ subject }}{% /nav_tab %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+                        <div id="scoreAnswerOfficialContent" class="tab-content">
+                            {% for answer_official in answer_official_list %}
+                                {% if answer_official_list|length == 3 %}
+                                    {% cycle '1' '2' '3' as id silent %}
+                                    {% #nav_content prefix='AnswerOfficial' id=id initial='1' %}
+                                        {% include 'a_psat/snippets/admin_detail_answer_list.html' with answers=answer_official %}
+                                    {% /nav_content %}
+                                {% else %}
+                                    {% cycle '0' '1' '2' '3' '4' as id silent %}
+                                    {% #nav_content prefix='AnswerOfficial' id=id %}
+                                        {% include 'a_psat/snippets/admin_detail_answer_list.html' with answers=answer_official %}
+                                    {% /nav_content %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="문제 목록">
+        <div class="row">
+            <div class="col-12">
+                <div id="problemCard" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">
+                        {{ psat.full_reference }}
+                        {% if keyword %}(검색어: {{ keyword }}){% endif %}
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row flex-column flex-md-row-reverse">
+                            <div id="problemFilter"
+                                 class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                {% partial problem_filter %}
+                            </div>
+
+                            <div id="problemContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                {% include 'a_psat/problem_list_content.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
 
 {% partialdef problem_filter %}
     <div class="accordion-item">

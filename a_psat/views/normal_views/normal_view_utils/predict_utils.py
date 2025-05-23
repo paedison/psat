@@ -1,62 +1,14 @@
 import json
-import traceback
 from collections import defaultdict
 from datetime import timedelta
 
-import django.db.utils
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 from django.db.models import Count, Window, F
 from django.db.models.functions import Rank
 from django.shortcuts import get_object_or_404
 
-from .. import models
-
-
-def get_sub_list(psat) -> list:
-    if psat.exam in ['칠급', '칠예', '민경']:
-        return ['언어', '자료', '상황']
-    return ['헌법', '언어', '자료', '상황']
-
-
-def get_problem_count(psat):
-    if psat.exam in ['칠급', '칠예', '민경']:
-        return {'언어': 25, '자료': 25, '상황': 25, '평균': 75}
-    return {'헌법': 25, '언어': 40, '자료': 40, '상황': 40, '평균': 120}
-
-
-def get_subject_vars(psat) -> dict[str, tuple[str, str, int]]:
-    if psat.exam in ['칠급', '칠예', '민경']:
-        return {
-            '언어': ('언어논리', 'subject_1', 0),
-            '자료': ('자료해석', 'subject_2', 1),
-            '상황': ('상황판단', 'subject_3', 2),
-            '평균': ('PSAT 평균', 'average', 3),
-        }
-    return {
-        '헌법': ('헌법', 'subject_0', 0),
-        '언어': ('언어논리', 'subject_1', 1),
-        '자료': ('자료해석', 'subject_2', 2),
-        '상황': ('상황판단', 'subject_3', 3),
-        '평균': ('PSAT 평균', 'average', 4),
-    }
-
-
-def get_field_vars(psat) -> dict[str, tuple[str, str, int]]:
-    if psat.exam in ['칠급', '칠예', '민경']:
-        return {
-            'subject_1': ('언어', '언어논리', 0),
-            'subject_2': ('자료', '자료해석', 1),
-            'subject_3': ('상황', '상황판단', 2),
-            'average': ('평균', 'PSAT 평균', 3),
-        }
-    return {
-        'subject_0': ('헌법', '헌법', 0),
-        'subject_1': ('언어', '언어논리', 1),
-        'subject_2': ('자료', '자료해석', 2),
-        'subject_3': ('상황', '상황판단', 3),
-        'average': ('평균', 'PSAT 평균', 4),
-    }
+from a_psat import models
+from . import common_utils
 
 
 def get_predict_psat(psat):
@@ -66,7 +18,7 @@ def get_predict_psat(psat):
         return None
 
 
-def get_score_tab(is_filtered=False):
+def get_predict_score_tab(is_filtered=False):
     suffix = 'Filtered' if is_filtered else ''
     template = 'a_psat/snippets/predict_detail_sheet_score_table.html'
     return [
@@ -75,9 +27,9 @@ def get_score_tab(is_filtered=False):
     ]
 
 
-def get_answer_tab(psat):
-    subject_vars = get_subject_vars(psat)
-    sub_list = get_sub_list(psat)
+def get_predict_answer_tab(psat):
+    subject_vars = common_utils.get_subject_vars(psat)
+    sub_list = common_utils.get_sub_list(psat)
     answer_tab = [
         {
             'id': str(idx),
@@ -92,8 +44,8 @@ def get_answer_tab(psat):
     return answer_tab
 
 
-def get_is_confirmed_data(qs_student_answer, psat) -> list:
-    subject_vars = get_subject_vars(psat)
+def get_predict_is_confirmed_data(qs_student_answer, psat) -> list:
+    subject_vars = common_utils.get_subject_vars(psat)
     is_confirmed_data = [False for _ in subject_vars.keys()]
     is_confirmed_data.pop()
     for answer in qs_student_answer:
@@ -106,10 +58,10 @@ def get_is_confirmed_data(qs_student_answer, psat) -> list:
     return is_confirmed_data
 
 
-def get_input_answer_data_set(request, psat) -> dict:
-    problem_count = get_problem_count(psat)
+def get_predict_input_answer_data_set(request, psat) -> dict:
+    problem_count = common_utils.get_problem_count(psat)
     problem_count.pop('평균')
-    subject_vars = get_subject_vars(psat)
+    subject_vars = common_utils.get_subject_vars(psat)
 
     empty_answer_data = {
         subject_vars[sub][1]: [0 for _ in range(cnt)] for sub, cnt in problem_count.items()
@@ -119,7 +71,7 @@ def get_input_answer_data_set(request, psat) -> dict:
     return answer_data_set
 
 
-def get_stat_data(
+def get_predict_stat_data(
         psat: models.Psat,
         student: models.PredictStudent,
         is_confirmed_data: list,
@@ -127,8 +79,8 @@ def get_stat_data(
         stat_type: str,
         is_filtered: bool
 ):
-    subject_vars = get_subject_vars(psat)
-    problem_count = get_problem_count(psat)
+    subject_vars = common_utils.get_subject_vars(psat)
+    problem_count = common_utils.get_problem_count(psat)
     stat_data = []
     for sub, (subject, fld, fld_idx) in subject_vars.items():
         url_answer_input = psat.get_predict_answer_input_url(fld) if sub != '평균' else ''
@@ -164,7 +116,7 @@ def get_stat_data(
     }
     participants_dict['average'] = participants_dict[min(participants_dict)] if participants_dict else 0
 
-    field_vars = get_field_vars(psat)
+    field_vars = common_utils.get_field_vars(psat)
     scores = {fld: [] for fld in field_vars.keys()}
     is_confirmed_for_average = []
     qs_score = models.PredictScore.objects.get_filtered_qs_by_psat_student_stat_type_and_is_filtered(
@@ -202,8 +154,8 @@ def get_stat_data(
     return stat_data
 
 
-def get_dict_stat_chart(student, stat_total, stat_department):
-    field_vars = get_field_vars(student.psat)
+def get_predict_dict_stat_chart(student, stat_total, stat_department):
+    field_vars = common_utils.get_field_vars(student.psat)
     student_score = [getattr(student.score, field) for field in field_vars]
 
     chart_score = {
@@ -258,7 +210,7 @@ def frequency_table_by_bin(scores, bin_size=5, target_score=None):
     return sorted_freq, target_bin
 
 
-def get_dict_stat_frequency(student, score_frequency_list) -> dict:
+def get_predict_dict_stat_frequency(student, score_frequency_list) -> dict:
     scores = [round(score, 1) for score in score_frequency_list]
     sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.average)
 
@@ -274,17 +226,9 @@ def get_dict_stat_frequency(student, score_frequency_list) -> dict:
     return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
 
 
-def get_answer_rate(answer_count, ans: int, count_sum: int, answer_official_list=None):
-    if answer_official_list:
-        return sum(
-            getattr(answer_count, f'count_{ans_official}') for ans_official in answer_official_list
-        ) * 100 / count_sum
-    return getattr(answer_count, f'count_{ans}') * 100 / count_sum
-
-
-def get_data_answers(qs_student_answer, psat):
-    sub_list = get_sub_list(psat)
-    subject_vars = get_subject_vars(psat)
+def get_predict_data_answers(qs_student_answer, psat):
+    sub_list = common_utils.get_sub_list(psat)
+    subject_vars = common_utils.get_subject_vars(psat)
     data_answers = [[] for _ in sub_list]
 
     for line in qs_student_answer:
@@ -323,9 +267,9 @@ def get_data_answers(qs_student_answer, psat):
     return data_answers
 
 
-def update_score_predict(stat_total_all, qs_student_answer, psat):
-    sub_list = get_sub_list(psat)
-    problem_count = get_problem_count(psat)
+def update_predict_score_predict(stat_total_all, qs_student_answer, psat):
+    sub_list = common_utils.get_sub_list(psat)
+    problem_count = common_utils.get_problem_count(psat)
     score_predict = {sub: 0 for sub in sub_list}
     predict_correct_count_list = qs_student_answer.filter(predict_result=True).values(
         'subject').annotate(correct_counts=Count('predict_result'))
@@ -362,15 +306,15 @@ def get_time_schedule(predict_psat):
     }
 
 
-def create_confirmed_answers(student, sub, answer_data):
+def create_predict_confirmed_answers(student, sub, answer_data):
     list_create = []
     for no, ans in enumerate(answer_data, start=1):
         problem = models.Problem.objects.get(psat=student.psat, subject=sub, number=no)
         list_create.append(models.PredictAnswer(student=student, problem=problem, answer=ans))
-    bulk_create_or_update(models.PredictAnswer, list_create, [], [])
+    common_utils.bulk_create_or_update(models.PredictAnswer, list_create, [], [])
 
 
-def update_answer_counts_after_confirm(predict_psat, sub, answer_data):
+def update_predict_answer_counts_after_confirm(predict_psat, sub, answer_data):
     qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat(predict_psat.psat).filter(sub=sub)
     for qs_ac in qs_answer_count:
         ans_student = answer_data[qs_ac.problem.number - 1]
@@ -382,14 +326,14 @@ def update_answer_counts_after_confirm(predict_psat, sub, answer_data):
         qs_ac.save()
 
 
-def get_answer_all_confirmed(student) -> bool:
+def get_predict_answer_all_confirmed(student) -> bool:
     answer_student_counts = models.PredictAnswer.objects.filter(student=student).count()
-    problem_count = get_problem_count(student.psat)
+    problem_count = common_utils.get_problem_count(student.psat)
     problem_count.pop('평균')
     return answer_student_counts == sum(problem_count.values())
 
 
-def update_statistics_after_confirm(student, predict_psat, subject_field, answer_all_confirmed):
+def update_predict_statistics_after_confirm(student, predict_psat, subject_field, answer_all_confirmed):
     def get_statistics_and_edit_participants(department: str):
         stat = get_object_or_404(models.PredictStatistics, psat=student.psat, department=department)
 
@@ -417,7 +361,7 @@ def update_predict_score_for_each_student(qs_answer, subject_field, sub):
     for qs_a in qs_answer:
         correct_count += 1 if qs_a.answer_student == qs_a.answer_correct else 0
 
-    problem_count = get_problem_count(student.psat)
+    problem_count = common_utils.get_problem_count(student.psat)
     score = correct_count * 100 / problem_count.get(sub)
     setattr(student.score, subject_field, score)
     score_list = [
@@ -469,36 +413,12 @@ def update_predict_rank_for_each_student(qs_student, student, subject_field, fie
                 target.save()
 
 
-def get_next_url_for_answer_input(student, psat):
-    sub_list = get_sub_list(psat)
-    subject_vars = get_subject_vars(psat)
+def get_predict_next_url_for_answer_input(student, psat):
+    sub_list = common_utils.get_sub_list(psat)
+    subject_vars = common_utils.get_subject_vars(psat)
     for sub in sub_list:
         if sub:
             subject_field = subject_vars[sub][1]
             if student.answer_count[sub] == 0:
                 return psat.get_predict_answer_input_url(subject_field)
     return psat.get_predict_detail_url()
-
-
-def bulk_create_or_update(model, list_create, list_update, update_fields):
-    model_name = model._meta.model_name
-    try:
-        with transaction.atomic():
-            if list_create:
-                model.objects.bulk_create(list_create)
-                message = f'Successfully created {len(list_create)} {model_name} instances.'
-                is_updated = True
-            elif list_update:
-                model.objects.bulk_update(list_update, list(update_fields))
-                message = f'Successfully updated {len(list_update)} {model_name} instances.'
-                is_updated = True
-            else:
-                message = f'No changes were made to {model_name} instances.'
-                is_updated = False
-    except django.db.utils.IntegrityError:
-        traceback_message = traceback.format_exc()
-        print(traceback_message)
-        message = f'Error occurred.'
-        is_updated = None
-    print(message)
-    return is_updated

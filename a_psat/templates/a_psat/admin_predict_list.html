@@ -1,0 +1,96 @@
+{% extends 'a_psat/_psat_admin_base.html' %}
+{% load crispy_forms_field %}
+
+{% block main_content %}
+    <section class="section" aria-label="PSAT 합격 예측 시험 목록">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">PSAT 합격 예측 시험 목록</div>
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        <div class="row flex-column flex-md-row-reverse">
+                            <div id="predictUpdate"
+                                 class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                {% partial predict_update_accordion %}
+                            </div>
+
+                            <div id="predictExamContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                {% partial predict_exam_list %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+{% partialdef predict_update_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapsePredictUpdate"
+                    aria-expanded="true" aria-controls="collapsePredictUpdate">
+                합격 예측 업데이트
+            </button>
+        </h2>
+        <div id="collapsePredictUpdate" class="accordion-collapse collapse show"
+             data-bs-parent="#predictUpdate">
+            <div class="accordion-body pb-2" hx-boost="true">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_predict_create  }}">PSAT 등록</a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_problem_update  }}">정답 업데이트</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef predict_update_accordion %}
+
+{% partialdef predict_exam_list %}
+    <article class="table-responsive">
+        <table class="table table-bordered table-striped align-middle" hx-push-url="true">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap td-left-no-border">ID</th>
+                    <th class="text-primary text-nowrap">연도</th>
+                    <th class="text-primary text-nowrap">시험</th>
+                    <th class="text-primary text-nowrap">페이지<br/>오픈일</th>
+                    <th class="text-primary text-nowrap">시험일</th>
+                    <th class="text-primary text-nowrap">시험<br/>시작</th>
+                    <th class="text-primary text-nowrap">시험<br/>종료</th>
+                    <th class="text-primary text-nowrap">예상 정답<br/>공개</th>
+                    <th class="text-primary text-nowrap">공식 정답<br/>공개</th>
+                    <th class="text-primary text-nowrap td-right-no-border">합격 예측<br/>종료일</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in page_obj %}
+                    <tr class="text-center cursor-pointer" hx-get="{{ obj.psat.get_admin_predict_detail_url }}">
+                        <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
+                        <td class="text-nowrap">{{ obj.psat.get_year_display }}</td>
+                        <td class="text-nowrap">{{ obj.exam_abbr }}</td>
+                        <td class="text-nowrap">{{ obj.page_opened_at|date:'Y.n.j(D)' }}</td>
+                        <td class="text-nowrap">{{ obj.exam_started_at|date:'Y.n.j(D)' }}</td>
+                        <td class="text-nowrap">{{ obj.exam_started_at|date:'H:i' }}</td>
+                        <td class="text-nowrap">{{ obj.exam_finished_at|date:'H:i' }}</td>
+                        <td class="text-nowrap">{{ obj.answer_predict_opened_at|date:'H:i' }}</td>
+                        <td class="text-nowrap">{{ obj.answer_official_opened_at|date:'H:i' }}</td>
+                        <td class="text-nowrap td-right-no-border">{{ obj.predict_closed_at|date:'Y.n.j(D)' }}</td>
+                    </tr>
+                {% empty %}
+                    <tr class="text-center">
+                        <td class="text-nowrap" colspan="8">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    {% with page_obj=predict_page_obj page_range=predict_page_range %}
+        {% include 'a_psat/snippets/pagination.html' with header='predict_exam_list' %}
+    {% endwith %}
+{% endpartialdef predict_exam_list %}

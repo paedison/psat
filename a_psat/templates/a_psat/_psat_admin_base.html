@@ -25,12 +25,12 @@
                 <li class="breadcrumb-item"><a href="{% url 'index' %}">Home</a></li>
                 <li class="breadcrumb-item">{{ config.menu_eng|title }}</li>
                 {% if config.submenu == 'official' %}
-                    {% if problem %}
+                    {% if psat %}
                         <li class="breadcrumb-item">
                             <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="{{ problem.get_absolute_url }}" class="active">{{ problem.reference }}</a>
+                            <a href="{{ psat.get_admin_official_detail_url }}" class="active">{{ psat.reference }}</a>
                         </li>
                     {% else %}
                         <li class="breadcrumb-item">
@@ -38,35 +38,34 @@
                         </li>
                     {% endif %}
                 {% elif config.submenu == 'predict' %}
-                    {% if exam %}
+                    {% if psat %}
                         <li class="breadcrumb-item">
                             <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="{{ exam.get_predict_detail_url }}" class="active">{{ exam.reference }}</a>
+                            <a href="{{ psat.get_admin_predict_detail_url }}" class="active">{{ psat.reference }}</a>
                         </li>
                     {% else %}
                         <li class="breadcrumb-item">
                             <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                         </li>
                     {% endif %}
-                {% elif config.submenu == 'lecture' %}
+                {% elif config.study_type == 'category' %}
+                    <li class="breadcrumb-item"><a href="{{ config.url_list }}">Study</a></li>
+                    <li class="breadcrumb-item"><a href="{{ config.url_list }}">Category</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ category.get_admin_study_category_detail_url }}" class="active">{{ category.category_info }}</a>
+                    </li>
+                {% elif config.study_type == 'curriculum' %}
+                    <li class="breadcrumb-item"><a href="{{ config.url_list }}">Study</a></li>
+                    <li class="breadcrumb-item"><a href="{{ config.url_list }}">Curriculum</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ curriculum.get_admin_study_curriculum_detail_url }}" class="active">{{ curriculum.curriculum_info }}</a>
+                    </li>
+                {% else %}
                     <li class="breadcrumb-item">
                         <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
                     </li>
-                {% elif config.submenu == 'study' %}
-                    {% if student %}
-                        <li class="breadcrumb-item">
-                            <a href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <a href="{{ student.get_study_curriculum_detail_url }}" class="active">{{ student.curriculum.curriculum_info }}</a>
-                        </li>
-                    {% else %}
-                        <li class="breadcrumb-item">
-                            <a class="active" href="{{ config.url_list }}">{{ config.submenu_eng|title }}</a>
-                        </li>
-                    {% endif %}
                 {% endif %}
             </ol>
         </nav>

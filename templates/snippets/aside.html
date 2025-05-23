@@ -4,6 +4,7 @@
 <aside id="sidebar" class="sidebar" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
     <ul id="sidebar-nav" class="sidebar-nav">
         {% partial menu_board %}
+        {% if user.is_admin %}{% partial menu_psat_admin %}{% endif %}
         {% partial menu_psat %}
         {% partial menu_prime %}
         {% partial menu_prime_leet %}
@@ -32,7 +33,43 @@
             </li>
         </ul>
     </li>
-{% endpartialdef menu_board %}
+{% endpartialdef %}
+
+{% partialdef menu_psat_admin %}
+    <li class="nav-item" role="menuitem" aria-label="PSAT Menu">
+        <a class="nav-link collapsed" href="#psatAdminNavContent" data-menu="psat_admin"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="psatNavContent">
+            <i class="fa-solid fa-fw fa-layer-group"></i> PSAT 관리자
+            <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
+        </a>
+        <ul id="psatAdminNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="psat_admin" data-menu-self="official"
+                   href="{% url 'psat:admin-official-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 기출문제
+                </a>
+            </li>
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="psat_admin" data-menu-self="predict"
+                   href="{% url 'psat:admin-predict-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 합격 예측
+                </a>
+            </li>
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="psat_admin" data-menu-self="study"
+                   href="{% url 'psat:admin-study-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 스터디
+                </a>
+            </li>
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="psat_admin" data-menu-self="tag"
+                   href="{% url 'psat:admin-tag-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 태그
+                </a>
+            </li>
+        </ul>
+    </li>
+{% endpartialdef %}
 
 {% partialdef menu_psat %}
     <li class="nav-item" role="menuitem" aria-label="PSAT Menu">
@@ -42,24 +79,16 @@
             <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
         </a>
         <ul id="psatNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-            {% if user.is_admin %}
-                <li>
-                    <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="admin"
-                       href="{% url 'psat:admin-list' %}">
-                        <i class="fa-regular fa-fw fa-square"></i> 관리자 메뉴
-                    </a>
-                </li>
-            {% endif %}
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="official"
+                   href="{% url 'psat:problem-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 기출문제
+                </a>
+            </li>
             <li>
                 <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="predict"
                    href="{% url 'psat:predict-list' %}">
                     <i class="fa-regular fa-fw fa-square"></i> 합격 예측
-                </a>
-            </li>
-            <li>
-                <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="problem"
-                   href="{% url 'psat:problem-list' %}">
-                    <i class="fa-regular fa-fw fa-square"></i> 기출문제
                 </a>
             </li>
             <li>
@@ -76,7 +105,7 @@
             </li>
         </ul>
     </li>
-{% endpartialdef menu_psat %}
+{% endpartialdef %}
 
 {% partialdef menu_prime %}
     <li class="nav-item" role="menuitem" aria-label="Prime PSAT Menu">
@@ -108,7 +137,7 @@
             </li>
         </ul>
     </li>
-{% endpartialdef menu_prime %}
+{% endpartialdef %}
 
 {% partialdef menu_prime_leet %}
     <li class="nav-item" role="menuitem" aria-label="Prime LEET Menu">
@@ -142,7 +171,7 @@
             {% endif %}
         </ul>
     </li>
-{% endpartialdef menu_prime_leet %}
+{% endpartialdef %}
 
 {% partialdef menu_schedule %}
     <li class="nav-item">
@@ -150,7 +179,7 @@
             <i class="fa-regular fa-fw fa-calendar-days"></i> Schedule
         </a>
     </li>
-{% endpartialdef menu_schedule %}
+{% endpartialdef %}
 
 {% partialdef menu_predict %}
     <li class="nav-item">
@@ -158,7 +187,7 @@
             <i class="fa-solid fa-fw fa-arrows-up-to-line"></i> 합격예측
         </a>
     </li>
-{% endpartialdef menu_predict %}
+{% endpartialdef %}
 
 {% partialdef menu_old_predict %}
     <li class="nav-item">
@@ -166,7 +195,7 @@
             <i class="fa-solid fa-fw fa-arrows-up-to-line"></i> Predict(Old)
         </a>
     </li>
-{% endpartialdef menu_old_predict %}
+{% endpartialdef %}
 
 {% partialdef menu_score %}
     <li class="nav-item" role="menuitem" aria-label="Score Menu">
@@ -184,7 +213,7 @@
             </li>
         </ul>
     </li>
-{% endpartialdef menu_score %}
+{% endpartialdef %}
 
 {% partialdef menu_old_score %}
     <li class="nav-item" role="menuitem" aria-label="Score Menu">
@@ -208,10 +237,10 @@
             </li>
         </ul>
     </li>
-{% endpartialdef menu_old_score %}
+{% endpartialdef %}
 
 {% partialdef sidebar_toggle %}
     <div class="d-none d-md-block text-center">
         <button id="sidebarToggle" class="rounded-circle border-0"></button>
     </div>
-{% endpartialdef sidebar_toggle %}
+{% endpartialdef %}

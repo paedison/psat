@@ -1,6 +1,7 @@
 from django.apps import apps
 from django.db import models
 from django.db.models import functions
+from taggit.managers import _TaggableManager
 
 
 class ProblemManager(models.Manager):
@@ -18,6 +19,11 @@ class ProblemManager(models.Manager):
                 output_field=models.IntegerField(),
             )
         )
+
+
+class _ProblemTagManager(_TaggableManager):
+    def names(self):
+        return self.get_queryset({'tagged_items__is_active': True}).values_list("name", flat=True).distinct()
 
 
 class LectureManager(models.Manager):

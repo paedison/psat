@@ -24,6 +24,7 @@ ICON_MENU = {
     'notice': '<i class="fa-solid fa-fw fa-bullhorn"></i>',
     'dashboard': '<i class="fa-solid fa-fw fa-list"></i>',
     'psat': '<i class="fa-solid fa-fw fa-layer-group"></i>',
+    'psat_admin': '<i class="fa-solid fa-fw fa-layer-group"></i>',
     'problem': '<i class="fa-solid fa-fw fa-file-lines"></i>',
     'like': '<i class="fa-solid fa-fw fa-heart"></i>',
     'rate': '<i class="fa-solid fa-fw fa-star"></i>',

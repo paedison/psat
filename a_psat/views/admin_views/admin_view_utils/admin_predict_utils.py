@@ -1,80 +1,15 @@
 import io
-import traceback
 import zipfile
 from collections import defaultdict
-from urllib.parse import quote
 
-import django.db.utils
 import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction
 from django.db.models import Count, Window, F
 from django.db.models.functions import Rank
 from django.http import HttpResponse
 
-from ... import models, utils
-
-
-def get_sub_list(psat) -> list:
-    if psat.exam in ['칠급', '칠예', '민경']:
-        return ['언어', '자료', '상황']
-    return ['헌법', '언어', '자료', '상황']
-
-
-def get_subject_vars(psat) -> dict[str, tuple[str, str, int]]:
-    subject_vars = {
-        '헌법': ('헌법', 'subject_0', 0),
-        '언어': ('언어논리', 'subject_1', 1),
-        '자료': ('자료해석', 'subject_2', 2),
-        '상황': ('상황판단', 'subject_3', 3),
-        '평균': ('PSAT 평균', 'average', 4),
-    }
-    if psat.exam in ['칠급', '칠예', '민경']:
-        subject_vars.pop('헌법')
-    return subject_vars
-
-
-def get_field_vars(psat, is_filtered=False) -> dict[str, tuple[str, str, int]]:
-    if is_filtered:
-        field_vars = {
-            'filtered_subject_0': ('[필터링]헌법', '[필터링]헌법', 0),
-            'filtered_subject_1': ('[필터링]언어', '[필터링]언어논리', 1),
-            'filtered_subject_2': ('[필터링]자료', '[필터링]자료해석', 2),
-            'filtered_subject_3': ('[필터링]상황', '[필터링]상황판단', 3),
-            'filtered_average': ('[필터링]평균', '[필터링]PSAT 평균', 4),
-        }
-        if psat.exam in ['칠급', '칠예', '민경']:
-            field_vars.pop('filtered_subject_0')
-        return field_vars
-    field_vars = {
-        'subject_0': ('헌법', '헌법', 0),
-        'subject_1': ('언어', '언어논리', 1),
-        'subject_2': ('자료', '자료해석', 2),
-        'subject_3': ('상황', '상황판단', 3),
-        'average': ('평균', 'PSAT 평균', 4),
-    }
-    if psat.exam in ['칠급', '칠예', '민경']:
-        field_vars.pop('subject_0')
-    return field_vars
-
-
-def get_total_field_vars(psat) -> dict[str, tuple[str, str, int]]:
-    field_vars = {
-        'subject_0': ('헌법', '헌법', 0),
-        'subject_1': ('언어', '언어논리', 1),
-        'subject_2': ('자료', '자료해석', 2),
-        'subject_3': ('상황', '상황판단', 3),
-        'average': ('평균', 'PSAT 평균', 4),
-        'filtered_subject_0': ('[필터링]헌법', '[필터링]헌법', 0),
-        'filtered_subject_1': ('[필터링]언어', '[필터링]언어논리', 1),
-        'filtered_subject_2': ('[필터링]자료', '[필터링]자료해석', 2),
-        'filtered_subject_3': ('[필터링]상황', '[필터링]상황판단', 3),
-        'filtered_average': ('[필터링]평균', '[필터링]PSAT 평균', 4),
-    }
-    if psat.exam in ['칠급', '칠예', '민경']:
-        field_vars.pop('subject_0')
-        field_vars.pop('filtered_subject_0')
-    return field_vars
+from a_psat import models, utils
+from . import common_utils
 
 
 def get_predict_psat(psat):
@@ -84,22 +19,22 @@ def get_predict_psat(psat):
         return None
 
 
-def get_answer_tab(sub_list):
+def get_predict_answer_tab(sub_list):
     return [
         {'id': str(idx), 'title': sub, 'answer_count': 4 if sub == '헌법' else 5}
         for idx, sub in enumerate(sub_list)
     ]
 
 
-def get_filter_tab(target: str):
+def get_predict_filter_tab(target: str):
     return [
         {'id': '0', 'title': '전체', 'prefix': f'Total{target.capitalize()}', 'header': f'total_{target}_list'},
         {'id': '1', 'title': '필터링', 'prefix': f'Filtered{target.capitalize()}', 'header': f'filtered_{target}_list'},
     ]
 
 
-def get_answer_page_data(psat, qs_answer_count, page_number, per_page=10):
-    subject_vars = get_subject_vars(psat)
+def get_predict_answer_page_data(psat, qs_answer_count, page_number, per_page=10):
+    subject_vars = common_utils.get_subject_vars(psat)
     qs_answer_count_group, answers_page_obj_group, answers_page_range_group = {}, {}, {}
 
     for entry in qs_answer_count:
@@ -111,14 +46,14 @@ def get_answer_page_data(psat, qs_answer_count, page_number, per_page=10):
         if subject not in answers_page_obj_group:
             answers_page_obj_group[subject] = []
             answers_page_range_group[subject] = []
-        data_answers = get_data_answers(qs_answer_count, subject_vars)
+        data_answers = get_predict_data_answers(qs_answer_count, subject_vars)
         answers_page_obj_group[subject], answers_page_range_group[subject] = utils.get_paginator_data(
             data_answers, page_number, per_page)
 
     return answers_page_obj_group, answers_page_range_group
 
 
-def get_data_answers(qs_answer_count, subject_vars):
+def get_predict_data_answers(qs_answer_count, subject_vars):
     for entry in qs_answer_count:
         sub = entry.subject
         field = subject_vars[sub][1]
@@ -145,6 +80,35 @@ def get_data_answers(qs_answer_count, subject_vars):
             entry.rate_gap = None
 
     return qs_answer_count
+
+
+def create_predict_answer_count_model_instances(original_psat):
+    problems = models.Problem.objects.filter(psat=original_psat).order_by('id')
+    model_list = [
+        models.PredictAnswerCount,
+        models.PredictAnswerCountTopRank,
+        models.PredictAnswerCountMidRank,
+        models.PredictAnswerCountLowRank,
+    ]
+    for model in model_list:
+        list_create = []
+        for problem in problems:
+            common_utils.append_list_create(model, list_create, problem=problem)
+        common_utils.bulk_create_or_update(model, list_create, [], [])
+
+
+def create_predict_statistics_model_instances(original_psat):
+    department_list = list(
+        models.PredictCategory.objects.filter(exam=original_psat.exam).order_by('order')
+        .values_list('department', flat=True)
+    )
+    department_list.insert(0, '전체')
+
+    list_create = []
+    for department in department_list:
+        common_utils.append_list_create(
+            models.PredictStatistics, list_create, psat=original_psat, department=department)
+    common_utils.bulk_create_or_update(models.PredictStatistics, list_create, [], [])
 
 
 def update_problem_model_for_answer_official(psat, form, file) -> tuple:
@@ -176,14 +140,14 @@ def update_problem_model_for_answer_official(psat, form, file) -> tuple:
                     except ValueError as error:
                         print(error)
         update_fields = ['answer']
-        is_updated = bulk_create_or_update(models.Problem, list_create, list_update, update_fields)
+        is_updated = common_utils.bulk_create_or_update(models.Problem, list_create, list_update, update_fields)
     else:
         is_updated = None
         print(form)
     return is_updated, message_dict[is_updated]
 
 
-def update_score_model(qs_student, model_dict: dict, sub_list: list):
+def update_predict_score_model(qs_student, model_dict: dict, sub_list: list):
     answer_model = model_dict['answer']
     score_model = model_dict['score']
 
@@ -225,17 +189,17 @@ def update_score_model(qs_student, model_dict: dict, sub_list: list):
             list_update.append(original_score_instance)
 
     update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'average']
-    return bulk_create_or_update(score_model, list_create, list_update, update_fields)
+    return common_utils.bulk_create_or_update(score_model, list_create, list_update, update_fields)
 
 
-def update_scores(psat, qs_student, model_dict: dict):
-    sub_list = get_sub_list(psat)
+def update_predict_scores(psat, qs_student, model_dict: dict):
+    sub_list = common_utils.get_sub_list(psat)
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '점수를 업데이트했습니다.',
         False: '기존 점수와 일치합니다.',
     }
-    is_updated_list = [update_score_model(qs_student, model_dict, sub_list)]
+    is_updated_list = [update_predict_score_model(qs_student, model_dict, sub_list)]
     if None in is_updated_list:
         is_updated = None
     elif any(is_updated_list):
@@ -245,7 +209,7 @@ def update_scores(psat, qs_student, model_dict: dict):
     return is_updated, message_dict[is_updated]
 
 
-def update_rank_model(qs_student, model_dict: dict, sub_list: list, stat_type='total', is_filtered=False):
+def update_predict_rank_model(qs_student, model_dict: dict, sub_list: list, stat_type='total', is_filtered=False):
     rank_model = model_dict[stat_type]
     prefix = ''
     if is_filtered:
@@ -292,21 +256,21 @@ def update_rank_model(qs_student, model_dict: dict, sub_list: list, stat_type='t
         f'{prefix}subject_0', f'{prefix}subject_1', f'{prefix}subject_2',
         f'{prefix}subject_3', f'{prefix}average', f'{prefix}participants'
     ]
-    return bulk_create_or_update(rank_model, list_create, list_update, update_fields)
+    return common_utils.bulk_create_or_update(rank_model, list_create, list_update, update_fields)
 
 
-def update_ranks(psat, qs_student, model_dict: dict):
-    sub_list = get_sub_list(psat)
+def update_predict_ranks(psat, qs_student, model_dict: dict):
+    sub_list = common_utils.get_sub_list(psat)
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '등수를 업데이트했습니다.',
         False: '기존 등수와 일치합니다.',
     }
     is_updated_list = [
-        update_rank_model(qs_student, model_dict, sub_list, 'total'),
-        update_rank_model(qs_student, model_dict, sub_list, 'total', True),
-        update_rank_model(qs_student, model_dict, sub_list, 'department'),
-        update_rank_model(qs_student, model_dict, sub_list, 'department', True),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'total'),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'total', True),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'department'),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'department', True),
     ]
     if None in is_updated_list:
         is_updated = None
@@ -317,8 +281,8 @@ def update_ranks(psat, qs_student, model_dict: dict):
     return is_updated, message_dict[is_updated]
 
 
-def get_data_statistics(psat):
-    field_vars = get_field_vars(psat)
+def get_predict_data_statistics(psat):
+    field_vars = common_utils.get_field_vars(psat)
 
     department_list = list(
         models.PredictCategory.objects.filter(exam=psat.exam).order_by('order')
@@ -358,13 +322,13 @@ def get_data_statistics(psat):
                     filtered_score_list['전체'][field].append(score)
                     filtered_score_list[qs_s.department][field].append(score)
 
-    update_data_statistics(data_statistics, field_vars, score_list, department_list)
-    update_data_statistics(filtered_data_statistics, field_vars, filtered_score_list, department_list)
+    update_predict_data_statistics(data_statistics, field_vars, score_list, department_list)
+    update_predict_data_statistics(filtered_data_statistics, field_vars, filtered_score_list, department_list)
 
     return data_statistics, filtered_data_statistics
 
 
-def update_data_statistics(data_statistics, field_vars, score_list, department_list):
+def update_predict_data_statistics(data_statistics, field_vars, score_list, department_list):
     for department, score_dict in score_list.items():
         department_idx = department_list.index(department)
         for field, scores in score_dict.items():
@@ -395,7 +359,7 @@ def update_data_statistics(data_statistics, field_vars, score_list, department_l
             }
 
 
-def update_filtered_catalog(filtered_catalog_page_obj):
+def update_predict_filtered_catalog(filtered_catalog_page_obj):
     field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
     for obj in filtered_catalog_page_obj:
         obj.rank_tot_num = obj.filtered_rank_tot_num
@@ -405,8 +369,8 @@ def update_filtered_catalog(filtered_catalog_page_obj):
             setattr(obj, f'rank_dep_{key}', getattr(obj, f'filtered_rank_dep_{key}'))
 
 
-def update_statistics_model(psat, data_statistics, is_filtered=False):
-    field_vars = get_field_vars(psat)
+def update_predict_statistics_model(psat, data_statistics, is_filtered=False):
+    field_vars = common_utils.get_field_vars(psat)
     prefix = 'filtered_' if is_filtered else ''
 
     message_dict = {
@@ -446,19 +410,19 @@ def update_statistics_model(psat, data_statistics, is_filtered=False):
         'department', f'{prefix}subject_0', f'{prefix}subject_1',
         f'{prefix}subject_2', f'{prefix}subject_3', f'{prefix}average',
     ]
-    is_updated = bulk_create_or_update(models.PredictStatistics, list_create, list_update, update_fields)
+    is_updated = common_utils.bulk_create_or_update(models.PredictStatistics, list_create, list_update, update_fields)
     return is_updated, message_dict[is_updated]
 
 
-def update_statistics(psat, data_statistics, filtered_data_statistics):
+def update_predict_statistics(psat, data_statistics, filtered_data_statistics):
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '통계를 업데이트했습니다.',
         False: '기존 통계와 일치합니다.',
     }
     is_updated_list = [
-        update_statistics_model(psat, data_statistics),
-        update_statistics_model(psat, filtered_data_statistics, True),
+        update_predict_statistics_model(psat, data_statistics),
+        update_predict_statistics_model(psat, filtered_data_statistics, True),
     ]
     if None in is_updated_list:
         is_updated = None
@@ -469,7 +433,7 @@ def update_statistics(psat, data_statistics, filtered_data_statistics):
     return is_updated, message_dict[is_updated]
 
 
-def update_answer_count_model(model_dict, rank_type='all', is_filtered=False):
+def update_predict_answer_count_model(model_dict, rank_type='all', is_filtered=False):
     answer_model = model_dict['answer']
     answer_count_model = model_dict[rank_type]
     prefix = 'filtered_' if is_filtered else ''
@@ -531,24 +495,24 @@ def update_answer_count_model(model_dict, rank_type='all', is_filtered=False):
         'problem_id', f'{prefix}count_0', f'{prefix}count_1', f'{prefix}count_2', f'{prefix}count_3',
         f'{prefix}count_4', f'{prefix}count_5', f'{prefix}count_multiple', f'{prefix}count_sum',
     ]
-    return bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
+    return common_utils.bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
 
 
-def update_answer_counts(model_dict):
+def update_predict_answer_counts(model_dict):
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '문항분석표를 업데이트했습니다.',
         False: '기존 문항분석표 데이터와 일치합니다.',
     }
     is_updated_list = [
-        update_answer_count_model(model_dict, 'all'),
-        update_answer_count_model(model_dict, 'top'),
-        update_answer_count_model(model_dict, 'mid'),
-        update_answer_count_model(model_dict, 'low'),
-        update_answer_count_model(model_dict, 'all', True),
-        update_answer_count_model(model_dict, 'top', True),
-        update_answer_count_model(model_dict, 'mid', True),
-        update_answer_count_model(model_dict, 'low', True),
+        update_predict_answer_count_model(model_dict, 'all'),
+        update_predict_answer_count_model(model_dict, 'top'),
+        update_predict_answer_count_model(model_dict, 'mid'),
+        update_predict_answer_count_model(model_dict, 'low'),
+        update_predict_answer_count_model(model_dict, 'all', True),
+        update_predict_answer_count_model(model_dict, 'top', True),
+        update_predict_answer_count_model(model_dict, 'mid', True),
+        update_predict_answer_count_model(model_dict, 'low', True),
     ]
     if None in is_updated_list:
         is_updated = None
@@ -559,31 +523,7 @@ def update_answer_counts(model_dict):
     return is_updated, message_dict[is_updated]
 
 
-def bulk_create_or_update(model, list_create, list_update, update_fields):
-    model_name = model._meta.model_name
-    try:
-        with transaction.atomic():
-            if list_create:
-                model.objects.bulk_create(list_create)
-                message = f'Successfully created {len(list_create)} {model_name} instances.'
-                is_updated = True
-            elif list_update:
-                model.objects.bulk_update(list_update, list(update_fields))
-                message = f'Successfully updated {len(list_update)} {model_name} instances.'
-                is_updated = True
-            else:
-                message = f'No changes were made to {model_name} instances.'
-                is_updated = False
-    except django.db.utils.IntegrityError:
-        traceback_message = traceback.format_exc()
-        print(traceback_message)
-        message = f'Error occurred.'
-        is_updated = None
-    print(message)
-    return is_updated
-
-
-def get_statistics_response(psat):
+def get_predict_statistics_response(psat):
     qs_statistics = models.PredictStatistics.objects.filter(psat=psat).order_by('id')
     df = pd.DataFrame.from_records(qs_statistics.values())
 
@@ -591,7 +531,7 @@ def get_statistics_response(psat):
     drop_columns = ['id', 'psat_id']
     column_label = [('직렬', '')]
 
-    field_vars = get_total_field_vars(psat)
+    field_vars = common_utils.get_total_field_vars(psat)
     for fld, val in field_vars.items():
         drop_columns.append(fld)
         column_label.extend([
@@ -603,11 +543,13 @@ def get_statistics_response(psat):
         ])
         df_subject = pd.json_normalize(df[fld])
         df = pd.concat([df, df_subject], axis=1)
+    df.drop(columns=drop_columns, inplace=True)
+    df.columns = pd.MultiIndex.from_tuples(column_label)
 
-    return get_response_for_excel_file(df, drop_columns, column_label, filename)
+    return common_utils.get_response_for_excel_file(df, filename)
 
 
-def get_prime_id_response(psat):
+def get_predict_prime_id_response(psat):
     qs_student = models.PredictStudent.objects.filter(psat=psat).values(
         'id', 'created_at', 'name', 'prime_id').order_by('id')
     df = pd.DataFrame.from_records(qs_student)
@@ -615,15 +557,16 @@ def get_prime_id_response(psat):
 
     filename = f'{psat.full_reference}_참여자명단.xlsx'
     column_label = [('ID', ''), ('등록일시', ''), ('이름', ''), ('프라임법학원 ID', '')]
-    return get_response_for_excel_file(df, [], column_label, filename)
+    df.columns = pd.MultiIndex.from_tuples(column_label)
+    return common_utils.get_response_for_excel_file(df, filename)
 
 
-def get_catalog_response(psat):
+def get_predict_catalog_response(psat):
     student_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
     filtered_student_list = student_list.filter(is_filtered=True)
 
-    df1, filename1 = get_catalog_dataframe_and_file_name(student_list, psat)
-    df2, filename2 = get_catalog_dataframe_and_file_name(filtered_student_list, psat, True)
+    df1, filename1 = get_predict_catalog_info(student_list, psat)
+    df2, filename2 = get_predict_catalog_info(filtered_student_list, psat, True)
 
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
@@ -640,7 +583,7 @@ def get_catalog_response(psat):
     return response
 
 
-def get_catalog_dataframe_and_file_name(student_list, psat, is_filtered=False):
+def get_predict_catalog_info(student_list, psat, is_filtered=False):
     filtered_type = '필터링' if is_filtered else '전체'
     filename = f'{psat.full_reference}_성적일람표_{filtered_type}.xlsx'
 
@@ -667,7 +610,7 @@ def get_catalog_dataframe_and_file_name(student_list, psat, is_filtered=False):
         ('제출 답안수', ''), ('PSAT 총점', ''), ('전체 총 인원', ''), ('직렬 총 인원', ''),
     ]
 
-    field_vars = get_field_vars(psat)
+    field_vars = common_utils.get_field_vars(psat)
     for _, val in field_vars.items():
         column_label.extend([
             (val[1], '점수'),
@@ -677,12 +620,11 @@ def get_catalog_dataframe_and_file_name(student_list, psat, is_filtered=False):
 
     df.drop(columns=drop_columns, inplace=True)
     df.columns = pd.MultiIndex.from_tuples(column_label)
-    df.reset_index(inplace=True)
 
     return df, filename
 
 
-def get_answer_response(psat):
+def get_predict_answer_response(psat):
     qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat_and_subject(psat)
     df = pd.DataFrame.from_records(qs_answer_count.values())
 
@@ -714,21 +656,7 @@ def get_answer_response(psat):
                 (top, mid, '④'), (top, mid, '⑤'), (top, mid, '합계'),
             ])
 
-    return get_response_for_excel_file(df, drop_columns, column_label, filename)
-
-
-def get_response_for_excel_file(df, drop_columns, column_label, filename):
     df.drop(columns=drop_columns, inplace=True)
     df.columns = pd.MultiIndex.from_tuples(column_label)
-    df.reset_index(inplace=True)
 
-    excel_data = io.BytesIO()
-    df.to_excel(excel_data, engine='xlsxwriter')
-
-    response = HttpResponse(
-        excel_data.getvalue(),
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = f'attachment; filename={quote(filename)}'
-
-    return response
+    return common_utils.get_response_for_excel_file(df, filename)

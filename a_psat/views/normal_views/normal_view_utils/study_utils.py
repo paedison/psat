@@ -1,11 +1,11 @@
 import json
 from collections import defaultdict
 
-from .admin import admin_study_utils
-from .. import models, utils
+from a_psat import models, utils
+from a_psat.views.admin_views import admin_view_utils
 
 
-def get_schedule_info():
+def get_study_schedule_info():
     schedule_info = defaultdict()
     qs_curriculum_schedule_info = models.StudyCurriculumSchedule.objects.get_curriculum_schedule_info()
     for qs_cs in qs_curriculum_schedule_info:
@@ -13,14 +13,14 @@ def get_schedule_info():
     return schedule_info
 
 
-def update_qs_student(qs_student, schedule_info):
+def update_study_qs_student(qs_student, schedule_info):
     for qs_s in qs_student:
         qs_s.study_rounds = schedule_info[qs_s.curriculum_id]['study_rounds']
         qs_s.earliest_datetime = schedule_info[qs_s.curriculum_id]['earliest']
         qs_s.latest_datetime = schedule_info[qs_s.curriculum_id]['latest']
 
 
-def get_homework_schedule(qs_schedule):
+def get_study_homework_schedule(qs_schedule):
     homework_schedule = defaultdict(dict)
     for qs_s in qs_schedule:
         if qs_s.lecture_round:
@@ -31,9 +31,9 @@ def get_homework_schedule(qs_schedule):
     return homework_schedule
 
 
-def get_curriculum_statistics(qs_student):
-    total_stat = admin_study_utils.get_score_stat_dict(qs_student)
-    data_statistics = admin_study_utils.get_data_statistics(qs_student)
+def get_study_curriculum_statistics(qs_student):
+    total_stat = admin_view_utils.get_study_score_stat_dict(qs_student)
+    data_statistics = admin_view_utils.get_study_data_statistics(qs_student)
     per_round_stat = {}
     for data in data_statistics:
         per_round_stat[data['study_round']] = data
@@ -43,7 +43,7 @@ def get_curriculum_statistics(qs_student):
     }
 
 
-def get_statistics_paginator_data(homework_schedule, qs_result, curriculum_statistics, page_number) -> tuple:
+def get_study_statistics_paginator_data(homework_schedule, qs_result, curriculum_statistics, page_number) -> tuple:
     per_round_stat = curriculum_statistics['per_round']
     statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_result, page_number, 4)
     for obj in statistics_page_obj:
@@ -57,7 +57,7 @@ def get_statistics_paginator_data(homework_schedule, qs_result, curriculum_stati
     return statistics_page_obj, statistics_page_range
 
 
-def get_my_result_paginator_data(homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number) -> tuple:
+def get_study_my_result_paginator_data(homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number) -> tuple:
     total_stat = curriculum_statistics['total']
     per_round_stat = curriculum_statistics['per_round']
     my_result_page_obj, my_result_page_range = utils.get_paginator_data(qs_result, page_number, 4)
@@ -125,7 +125,7 @@ def get_score_dict(student):
     return score_dict
 
 
-def get_answer_paginator_data(schedule_dict, student, opened_rounds, page_number) -> tuple:
+def get_study_answer_paginator_data(schedule_dict, student, opened_rounds, page_number) -> tuple:
     qs_problem = models.StudyProblem.objects.get_filtered_qs_by_category_annotated_with_answer_count(
         student.curriculum.category).filter(psat__round__in=opened_rounds).order_by('-psat')
     answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number, on_each_side=1)
@@ -167,7 +167,7 @@ def get_answer_paginator_data(schedule_dict, student, opened_rounds, page_number
     return answer_page_obj, answer_page_range
 
 
-def get_answer_data(request, problem_count):
+def get_study_answer_data(request, problem_count):
     empty_answer_data = [0 for _ in range(problem_count)]
     answer_data_cookie = request.COOKIES.get('answer_data_set', '{}')
     answer_data = json.loads(answer_data_cookie) or empty_answer_data

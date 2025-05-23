@@ -3,9 +3,9 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
+from a_psat import models, utils, forms
 from common.constants import icon_set_new
 from common.utils import Configuration, HtmxHttpRequest, update_context_data
-from .. import models, utils, forms
 
 
 class ViewConfiguration(Configuration):

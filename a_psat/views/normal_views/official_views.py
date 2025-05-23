@@ -7,15 +7,15 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
+from a_psat import models, utils, forms, filters
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from .. import models, utils, forms, filters
 
 
 class ViewConfiguration:
     menu = menu_eng = 'psat'
     menu_kor = 'PSAT'
-    submenu = submenu_eng = 'problem'
+    submenu = submenu_eng = 'official'
     submenu_kor = '기출문제'
     info = {'menu': menu, 'menu_self': submenu}
     icon_menu = icon_set_new.ICON_MENU[menu_eng]
@@ -26,7 +26,7 @@ class ViewConfiguration:
 
 
 @login_not_required
-def problem_list_view(request: HtmxHttpRequest):
+def official_problem_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     view_type = request.headers.get('View-Type', '')
     exam_year = request.GET.get('year', '')
@@ -65,7 +65,7 @@ def problem_list_view(request: HtmxHttpRequest):
 
 
 @login_not_required
-def problem_detail_view(request: HtmxHttpRequest, pk: int):
+def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     view_type = request.headers.get('View-Type', 'main')
     queryset = models.Problem.objects.all()
@@ -191,14 +191,14 @@ def problem_detail_view(request: HtmxHttpRequest, pk: int):
 
 
 @require_POST
-def like_problem(request: HtmxHttpRequest, pk: int):
+def official_like_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
     new_record = utils.create_new_custom_record(request, problem, models.ProblemLike)
     icon_like = icon_set_new.ICON_LIKE[f'{new_record.is_liked}']
     return HttpResponse(f'{icon_like}')
 
 
-def rate_problem(request: HtmxHttpRequest, pk: int):
+def official_rate_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
 
     if request.method == 'POST':
@@ -213,7 +213,7 @@ def rate_problem(request: HtmxHttpRequest, pk: int):
 
 
 @require_POST
-def solve_problem(request: HtmxHttpRequest, pk: int):
+def official_solve_problem(request: HtmxHttpRequest, pk: int):
     answer = request.POST.get('answer')
     problem = get_object_or_404(models.Problem, pk=pk)
 
@@ -230,7 +230,7 @@ def solve_problem(request: HtmxHttpRequest, pk: int):
     return render(request, 'a_psat/snippets/solve_modal.html', context)
 
 
-def memo_problem(request: HtmxHttpRequest, pk: int):
+def official_memo_problem(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     problem = get_object_or_404(models.Problem, pk=pk)
     context = update_context_data(
@@ -276,7 +276,7 @@ def memo_problem(request: HtmxHttpRequest, pk: int):
 
 
 @require_POST
-def tag_problem(request: HtmxHttpRequest, pk: int):
+def official_tag_problem(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     problem = get_object_or_404(models.Problem, pk=pk)
     name = request.POST.get('tag')
@@ -296,7 +296,7 @@ def tag_problem(request: HtmxHttpRequest, pk: int):
     return HttpResponse(icon_tag)
 
 
-def collection_list_view(request: HtmxHttpRequest):
+def official_collection_list_view(request: HtmxHttpRequest):
     collections = []
     collection_ids = request.POST.getlist('collection')
     if collection_ids:
@@ -311,7 +311,7 @@ def collection_list_view(request: HtmxHttpRequest):
     return render(request, 'a_psat/collection_list.html', context)
 
 
-def collection_create(request: HtmxHttpRequest):
+def official_collection_create(request: HtmxHttpRequest):
     view_type = request.headers.get('View-Type', '')
 
     if view_type == 'create':
@@ -341,7 +341,7 @@ def collection_create(request: HtmxHttpRequest):
             return render(request, 'a_psat/snippets/collection_create.html', context)
 
 
-def collection_detail_view(request: HtmxHttpRequest, pk: int):
+def official_collection_detail_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     collection = get_object_or_404(models.ProblemCollection, pk=pk, is_active=True)
 
@@ -386,7 +386,7 @@ def collection_detail_view(request: HtmxHttpRequest, pk: int):
     return render(request, 'a_psat/snippets/collection_item_card.html', context)
 
 
-def collect_problem(request: HtmxHttpRequest, pk: int):
+def official_collect_problem(request: HtmxHttpRequest, pk: int):
     if request.method == 'POST':
         collection_id = request.POST.get('collection_id')
         collection = get_object_or_404(models.ProblemCollection, id=collection_id, is_active=True)
@@ -422,7 +422,7 @@ def collect_problem(request: HtmxHttpRequest, pk: int):
         return render(request, 'a_psat/snippets/collection_modal.html', context)
 
 
-def annotate_problem(request: HtmxHttpRequest, pk: int):
+def official_annotate_problem(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     problem: models.Problem = get_object_or_404(models.Problem, pk=pk)
     utils.process_image(problem)
@@ -430,7 +430,7 @@ def annotate_problem(request: HtmxHttpRequest, pk: int):
     return render(request, 'a_psat/problem_annotate.html', context)
 
 
-def comment_list_view(request: HtmxHttpRequest):
+def official_comment_list_view(request: HtmxHttpRequest):
     page_number = int(request.GET.get('page', 1))
     comment_qs = (
         models.ProblemComment.objects.select_related('user', 'problem')
@@ -454,15 +454,15 @@ def comment_list_view(request: HtmxHttpRequest):
     return render(request, 'a_psat/comment_list.html', context)
 
 
-def comment_create(request: HtmxHttpRequest):
+def official_comment_create(request: HtmxHttpRequest):
     pass
 
 
-def comment_detail_view(request: HtmxHttpRequest, pk: int):
+def official_comment_detail_view(request: HtmxHttpRequest, pk: int):
     pass
 
 
-def comment_problem_create(request: HtmxHttpRequest, pk: int):
+def official_comment_problem_create(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
     reply_form = forms.ProblemCommentForm()
 
@@ -483,7 +483,7 @@ def comment_problem_create(request: HtmxHttpRequest, pk: int):
             return render(request, 'a_psat/snippets/comment.html', context)
 
 
-def comment_problem_update(request: HtmxHttpRequest, pk: int):
+def official_comment_problem_update(request: HtmxHttpRequest, pk: int):
     comment = get_object_or_404(models.ProblemComment, pk=pk)
     if request.method == 'POST':
         form = forms.ProblemCommentForm(request.POST, instance=comment)
@@ -495,7 +495,7 @@ def comment_problem_update(request: HtmxHttpRequest, pk: int):
     return render(request, 'problemcomment_form.html', {'form': form})
 
 
-def comment_problem_delete(request: HtmxHttpRequest, pk: int):
+def official_comment_problem_delete(request: HtmxHttpRequest, pk: int):
     comment = get_object_or_404(models.ProblemComment, pk=pk)
     if request.method == 'POST':
         comment.delete()
@@ -503,5 +503,5 @@ def comment_problem_delete(request: HtmxHttpRequest, pk: int):
     return render(request, 'problemcomment_confirm_delete.html', {'comment': comment})
 
 
-def comment_problem(request: HtmxHttpRequest, pk: int):
+def official_comment_problem(request: HtmxHttpRequest, pk: int):
     pass

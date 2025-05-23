@@ -55,15 +55,17 @@ class Psat(models.Model):
         }
         return exam_dict[self.exam]
 
-    @staticmethod
-    def get_admin_list_url():
-        return reverse_lazy('psat:admin-list')
-
     def get_admin_psat_active_url(self):
-        return reverse_lazy('psat:admin-psat-active', args=[self.id])
+        return reverse_lazy('psat:admin-official-psat-active', args=[self.id])
 
-    def get_admin_detail_url(self):
-        return reverse_lazy('psat:admin-detail', args=[self.id])
+    def get_admin_official_detail_url(self):
+        return reverse_lazy('psat:admin-official-detail', args=[self.id])
+
+    def get_admin_predict_detail_url(self):
+        return reverse_lazy('psat:admin-predict-detail', args=[self.id])
+
+    def get_admin_study_detail_url(self):
+        return reverse_lazy('psat:admin-study-detail', args=[self.id])
 
     def get_admin_predict_update_url(self):
         return reverse_lazy('psat:admin-predict-update', args=[self.id])
@@ -149,7 +151,7 @@ class Problem(models.Model):
     question = models.TextField(default='', verbose_name='발문')
     data = models.TextField(default='', verbose_name='자료')
 
-    tags = TaggableManager(through=ProblemTaggedItem, blank=True)
+    tags = TaggableManager(through=ProblemTaggedItem, blank=True, manager=managers._ProblemTagManager)
 
     like_users = models.ManyToManyField(User, related_name='liked_psat_problems', through='ProblemLike')
     rate_users = models.ManyToManyField(User, related_name='rated_psat_problems', through='ProblemRate')

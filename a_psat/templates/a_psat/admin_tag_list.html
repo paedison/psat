@@ -1,0 +1,333 @@
+{% extends 'a_psat/_psat_base.html' %}
+{% load crispy_forms_field %}
+
+{% block main_content %}
+    <section class="section" aria-label="문제별 태그">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">문제별 태그</div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out" hx-target="this">
+                        {% partialdef problem_container inline %}
+                            <div class="row flex-column flex-md-row-reverse">
+                                <div id="problemFilter"
+                                     class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                    {% partial problem_filter_accordion %}
+                                    {% partial problem_data_accordion %}
+                                </div>
+
+                                <div id="problemTagContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                    {% partial problem_list %}
+                                </div>
+                            </div>
+                        {% endpartialdef %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="태그된 문제">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">태그된 문제</div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out" hx-target="this">
+                        {% partialdef tagged_problem_container inline %}
+                            <div class="row flex-column flex-md-row-reverse">
+                                <div id="tagFilter"
+                                     class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                    {% partial tagged_problem_filter_accordion %}
+                                    {% partial tagged_problem_data_accordion %}
+                                </div>
+
+                                <div id="tagContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                    {% partial tagged_problem_list %}
+                                </div>
+                            </div>
+                        {% endpartialdef %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="태그">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">태그</div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out" hx-target="this">
+                        {% partialdef tag_container inline %}
+                            <div class="row flex-column flex-md-row-reverse">
+                                <div id="tagFilter"
+                                     class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+{#                                    {% partial tagged_problem_filter_accordion %}#}
+{#                                    {% partial tagged_problem_data_accordion %}#}
+                                </div>
+
+                                <div id="tagContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                    {% partial tag_list %}
+                                </div>
+                            </div>
+                        {% endpartialdef %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% partialdef problem_filter_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseProblemFilter"
+                    aria-expanded="true" aria-controls="collapseProblemFilter">
+                <i class="fa-solid fa-fw fa-filter me-1"></i>
+                문제 필터
+            </button>
+        </h2>
+        <div id="collapseProblemFilter" class="accordion-collapse collapse show">
+            <div class="accordion-body pb-2">
+                <form class="row g-2 align-items-center justify-content-start" hx-trigger="change"
+                      hx-headers='{"View-Type":"problem_container"}'
+                      hx-get="{{ request.path }}">
+                    <input id="id_data" type="text" name="keyword"
+                           value="{{ keyword }}" hidden title="키워드">
+                    {% for field in problem_form %}
+                        {% if field.errors %}
+                            {% crispy_field field 'class' 'form-select is-invalid' %}
+                        {% else %}
+                            {% if field.value == None or field.value == '' %}
+                                {% crispy_field field 'class' 'form-select' %}
+                            {% else %}
+                                {% crispy_field field 'class' 'form-select option-selected' %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef problem_data_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseProblemData"
+                    aria-expanded="true" aria-controls="collapseProblemData">
+                문제 목록 불러오기/내보내기
+            </button>
+        </h2>
+        <div id="collapseProblemData" class="accordion-collapse collapse show">
+            <div class="accordion-body pb-2">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" hx-boost="true" hx-target="#main"
+                           href="{{ config.url_tag_import_problem_list  }}">목록 불러오기</a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" target="_blank"
+                           href="{{ config.url_tag_export_problem_list  }}">목록 내보내기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef problem_list %}
+    <article class="table-responsive">
+        <table class="table table-striped align-middle m-0" hx-push-url="true">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap">ID</th>
+                    <th class="text-primary text-nowrap">출처</th>
+                    <th class="text-primary text-nowrap">태그</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for obj in problem_page_obj %}
+                    <tr class="text-center cursor-pointer">
+                        <td class="text-nowrap" aria-label="ID">
+                            {{ obj.id }}
+                        </td>
+                        <td class="text-nowrap" aria-label="연도">
+                            {% include 'a_psat/problem_list_content.html#reference' with problem=obj problem_id=obj.id %}
+                        </td>
+                        <td class="text-wrap" aria-label="태그">
+                            {% for name in obj.tags.names %}
+                                {{ name }}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td class="text-center text-nowrap px-2" colspan="8">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    {% include 'a_psat/snippets/pagination.html' with header='problem_list' page_obj=problem_page_obj page_range=problem_page_range %}
+{% endpartialdef %}
+
+{% partialdef tagged_problem_filter_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseTaggedProblemFilter"
+                    aria-expanded="true" aria-controls="collapseTaggedProblemFilter">
+                <i class="fa-solid fa-fw fa-filter me-1"></i>
+                태그 필터
+            </button>
+        </h2>
+        <div id="collapseTaggedProblemFilter" class="accordion-collapse collapse show">
+            <div class="accordion-body pb-2">
+                <form class="row g-2 align-items-center justify-content-start" hx-trigger="change"
+                      hx-headers='{"View-Type":"tagged_problem_container"}'
+                      hx-get="{{ request.path }}">
+                    <input id="id_data" type="text" name="keyword"
+                           value="{{ keyword }}" hidden title="키워드">
+                    {% for field in tag_form %}
+                        {% if field.errors %}
+                            {% crispy_field field 'class' 'form-select is-invalid' %}
+                        {% else %}
+                            {% if field.value == None or field.value == '' %}
+                                {% crispy_field field 'class' 'form-select' %}
+                            {% else %}
+                                {% crispy_field field 'class' 'form-select option-selected' %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef tagged_problem_data_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseTaggedProblemData"
+                    aria-expanded="true" aria-controls="collapseTaggedProblemData">
+                태그 불러오기/내보내기
+            </button>
+        </h2>
+        <div id="collapseTaggedProblemData" class="accordion-collapse collapse show">
+            <div class="accordion-body pb-2">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" target="_blank"
+                           href="{{ config.url_tag_import_tag_list  }}">태그 불러오기</a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" target="_blank"
+                           href="{{ config.url_tag_export_tag_list  }}">태그 내보내기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef tagged_problem_list %}
+    <article class="table-responsive">
+        <table class="table table-striped align-middle m-0" hx-push-url="true">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap">ID</th>
+                    <th class="text-primary text-nowrap">태그</th>
+                    <th class="text-primary text-nowrap">슬러그</th>
+                    <th class="text-primary text-nowrap">출처</th>
+                    <th class="text-primary text-nowrap">사용자</th>
+                    <th class="text-primary text-nowrap">활성 여부</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for obj in tagged_item_page_obj %}
+                    <tr class="text-center cursor-pointer">
+                        <td class="text-nowrap" aria-label="ID">
+                            {{ obj.id }}
+                        </td>
+                        <td class="text-nowrap" aria-label="ID">
+                            {{ obj.tag.name }}
+                        </td>
+                        <td class="text-nowrap" aria-label="ID">
+                            {{ obj.tag.slug }}
+                        </td>
+                        <td class="text-nowrap" aria-label="연도">
+                            {{ obj.content_object.reference }}
+                        </td>
+                        <td class="text-nowrap" aria-label="연도">
+                            {{ obj.user.username }}
+                        </td>
+                        <td class="text-nowrap" aria-label="활성">
+                            <div class="d-flex justify-content-center">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_active" value="true"
+                                           aria-label="활성"{% if obj.is_active %} checked{% endif %} disabled>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td class="text-center text-nowrap px-2" colspan="8">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    {% include 'a_psat/snippets/pagination.html' with header='tagged_problem_list' page_obj=tagged_item_page_obj page_range=tagged_item_page_range %}
+{% endpartialdef %}
+
+{% partialdef tag_list %}
+    <article class="table-responsive">
+        <table class="table table-striped align-middle m-0" hx-push-url="true">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap">ID</th>
+                    <th class="text-primary text-nowrap">생성 일시</th>
+                    <th class="text-primary text-nowrap">태그</th>
+                    <th class="text-primary text-nowrap">슬러그</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for obj in tag_page_obj %}
+                    <tr class="cursor-pointer">
+                        <td class="text-nowrap text-center" aria-label="ID">
+                            {{ obj.id }}
+                        </td>
+                        <td class="text-nowrap" aria-label="ID">
+                            {{ obj.created_at }}
+                        </td>
+                        <td class="text-center text-nowrap" aria-label="ID">
+                            {{ obj.name }}
+                        </td>
+                        <td class="text-center text-nowrap" aria-label="ID">
+                            {{ obj.slug }}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td class="text-center text-nowrap px-2" colspan="8">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    {% include 'a_psat/snippets/pagination.html' with header='tag_list' page_obj=tag_page_obj page_range=tag_page_range %}
+{% endpartialdef %}

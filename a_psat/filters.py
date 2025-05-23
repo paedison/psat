@@ -219,3 +219,63 @@ class StudyCurriculumFilter(django_filters.FilterSet):
         choices=choices.study_semester_choice,
     )
     category = django_filters
+
+
+class ProblemTagFilter(django_filters.FilterSet):
+    is_tagged = django_filters.ChoiceFilter(
+        label='',
+        empty_label='[전체 문제]',
+        choices=(
+            (True, '[태그된 문제]'),
+        ),
+        method='filter_tagged_problems'
+    )
+
+    class Meta:
+        model = models.Problem
+        fields = ['is_tagged']
+
+    def __init__(self, data=None, *args, **kwargs):
+        if data is not None:
+            data = data.copy()
+            if 'is_tagged' not in data:
+                data['is_tagged'] = True
+        super().__init__(data, *args, **kwargs)
+
+    @property
+    def qs(self):
+        return super().qs.select_related('psat').distinct()
+
+    @staticmethod
+    def filter_tagged_problems(queryset, _, value):
+        queryset = queryset.select_related('psat').distinct()
+        if value:
+            return queryset.filter(tagged_problems__isnull=False, tagged_problems__is_active=True)
+        return queryset
+
+
+class ProblemTaggedItemFilter(django_filters.FilterSet):
+    is_active = django_filters.ChoiceFilter(
+        field_name='is_active',
+        label='',
+        empty_label='[전체 태그]',
+        choices=(
+            (True, '[활성화된 태그]'),
+            (False, '[비활성된 태그]'),
+        ),
+    )
+
+    class Meta:
+        model = models.ProblemTaggedItem
+        fields = ['is_active']
+
+    def __init__(self, data=None, *args, **kwargs):
+        if data is not None:
+            data = data.copy()
+            if 'is_active' not in data:
+                data['is_active'] = True
+        super().__init__(data, *args, **kwargs)
+
+    @property
+    def qs(self):
+        return super().qs.select_related('tag', 'content_object', 'content_object__psat', 'user')
