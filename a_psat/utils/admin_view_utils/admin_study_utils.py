@@ -6,6 +6,7 @@ from django.db.models import Count, F
 from django.urls import reverse_lazy
 
 from a_psat import models
+from common.utils import get_paginator_data
 from . import common_utils
 
 
@@ -29,7 +30,7 @@ def update_study_statistics(page_obj, is_curriculum=False):
             obj.avg = round(sum(score_list) / participants, 1)
 
 
-def update_lecture_paginator_data(lecture_page_obj):
+def update_study_lecture_paginator_data(lecture_page_obj):
     lecture_dict = {}
     for lec in models.Lecture.objects.all():
         lecture_dict[(lec.subject, lec.order)] = lec.id
@@ -61,6 +62,33 @@ def update_lecture_paginator_data(lecture_page_obj):
             ]
 
 
+def get_study_page_context(queryset, page_number=1, per_page=10, **kwargs):
+    if queryset:
+        page_obj, page_range = get_paginator_data(queryset, page_number, per_page)
+        if kwargs:
+            for obj in page_obj:
+                for key, value in kwargs.items():
+                    setattr(obj, key, value.get(obj.id))
+        return {'page_obj': page_obj, 'page_range': page_range}
+
+
+def get_study_score_stat_dict(qs_student) -> dict:
+    # stat_dict keys: participants, max, avg, t10, t25, t50
+    stat_dict = models.get_study_statistics_aggregation(qs_student)
+    participants = stat_dict['participants']
+    if participants != 0:
+        score_list = list(qs_student.values_list('score_total', flat=True))
+
+        def get_score(rank_rate: float):
+            threshold = max(1, int(participants * rank_rate))
+            return score_list[threshold] if threshold < participants else None
+
+        stat_dict['t10'] = get_score(0.10)
+        stat_dict['t25'] = get_score(0.25)
+        stat_dict['t50'] = get_score(0.50)
+    return stat_dict
+
+
 def update_study_data_answers(qs_problem):
     for entry in qs_problem:
         ans_official = entry.ans_official
@@ -82,25 +110,6 @@ def update_study_data_answers(qs_problem):
             entry.rate_gap = entry.rate_correct_top - entry.rate_correct_low
         except TypeError:
             entry.rate_gap = None
-
-
-def get_study_score_stat_dict(qs_student) -> dict:
-    # stat_dict keys: participants, max, avg, t10, t25, t50
-    stat_dict = models.get_study_statistics_aggregation(qs_student)
-    participants = stat_dict['participants']
-    if participants == 0:
-        return {}
-
-    score_list = list(qs_student.values_list('score_total', flat=True))
-
-    def get_score(rank_rate: float):
-        threshold = max(1, int(participants * rank_rate))
-        return score_list[threshold] if threshold < participants else None
-
-    stat_dict['t10'] = get_score(0.10)
-    stat_dict['t25'] = get_score(0.25)
-    stat_dict['t50'] = get_score(0.50)
-    return stat_dict
 
 
 def upload_data_to_study_category_and_psat_model(excel_file):

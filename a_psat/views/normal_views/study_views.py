@@ -77,7 +77,7 @@ def study_detail_view(request: HtmxHttpRequest, pk: int, student=None):
 
     if view_type == 'lecture':
         lecture_page_obj, lecture_page_range = get_paginator_data(qs_schedule, page_number, 4)
-        admin_view_utils.update_lecture_paginator_data(lecture_page_obj)
+        admin_view_utils.update_study_lecture_paginator_data(lecture_page_obj)
         context = update_context_data(
             context, lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range)
         return render(request, 'a_psat/snippets/study_detail_lecture.html', context)
@@ -110,7 +110,7 @@ def study_detail_view(request: HtmxHttpRequest, pk: int, student=None):
         return render(request, 'a_psat/snippets/study_detail_statistics.html', context)
 
     lecture_page_obj, lecture_page_range = get_paginator_data(qs_schedule, page_number, 4)
-    admin_view_utils.update_lecture_paginator_data(lecture_page_obj)
+    admin_view_utils.update_study_lecture_paginator_data(lecture_page_obj)
 
     my_total_result, my_result_page_obj, my_result_page_range = study_utils.get_study_my_result_paginator_data(
         homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number)

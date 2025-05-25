@@ -1,7 +1,7 @@
 <article class="table-responsive">
     <table class="table d-sm-none align-middle m-0">
         <tbody>
-            {% for obj in lecture_page_obj %}
+            {% for obj in lecture_context.page_obj %}
                 <tr{% if obj.color_code %} class="table-{{ obj.color_code }}"{% endif %}>
                     <td class="text-nowrap">
                         <div class="fw-bold small mb-2">
@@ -59,7 +59,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for obj in lecture_page_obj %}
+            {% for obj in lecture_context.page_obj %}
                 <tr{% if obj.color_code %} class="table-{{ obj.color_code }}"{% endif %}>
                     <th class="text-nowrap text-center small td-left-no-border">
                         {{ obj.lecture_number }}주차<br/>
@@ -112,6 +112,6 @@
     </table>
 </article>
 
-{% with page_obj=lecture_page_obj page_range=lecture_page_range %}
-    {% include 'a_psat/snippets/pagination.html' with header='lecture' %}
+{% with page_obj=lecture_context.page_obj page_range=lecture_context.page_range %}
+    {% include 'a_psat/snippets/pagination.html' with header='lecture_list' %}
 {% endwith %}

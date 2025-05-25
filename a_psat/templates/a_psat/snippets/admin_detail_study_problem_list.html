@@ -3,7 +3,7 @@
 <article class="table-responsive">
     <table class="table align-middle m-0">
         <tbody>
-            {% for study_problem in problem_page_obj %}
+            {% for study_problem in problem_context.page_obj %}
                 {% with problem=study_problem.problem %}
                     <tr>
                         <td class="text-nowrap py-2 px-0">
@@ -27,7 +27,7 @@
     </table>
 </article>
 
-{% with page_obj=problem_page_obj page_range=problem_page_range %}
+{% with page_obj=problem_context.page_obj page_range=problem_context.page_range %}
     {% include 'a_psat/snippets/pagination.html' with header='problem_list' %}
 {% endwith %}
 

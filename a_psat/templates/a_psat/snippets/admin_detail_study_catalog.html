@@ -20,7 +20,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for obj in catalog_page_obj %}
+            {% for obj in catalog_context.page_obj %}
                 <tr class="text-center small">
                     <th class="td-left-no-border">{{ obj.id }}</th>
                     <th>
@@ -59,6 +59,6 @@
     </table>
 </article>
 
-{% with page_obj=catalog_page_obj page_range=catalog_page_range %}
+{% with page_obj=catalog_context.page_obj page_range=catalog_context.page_range %}
     {% include 'a_prime/snippets/pagination.html' with header='catalog_list' %}
 {% endwith %}

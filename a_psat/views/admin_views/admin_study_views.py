@@ -78,7 +78,7 @@ def study_detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
     page_number = request.GET.get('page', '1')
     student_name = request.GET.get('student_name', '')
 
-    curriculum, qs_schedule, lecture_page_obj, lecture_page_range = None, None, None, None
+    curriculum, qs_schedule = None, None
     if study_type == 'category':
         category = get_object_or_404(models.StudyCategory, pk=pk)
         qs_psat = models.StudyPsat.objects.get_qs_psat(category)
@@ -96,8 +96,6 @@ def study_detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         page_title = curriculum.full_reference
         qs_schedule = models.StudyCurriculumSchedule.objects.filter(curriculum=curriculum).order_by('-lecture_number')
         qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(curriculum)
-        lecture_page_obj, lecture_page_range = get_paginator_data(qs_schedule, page_number, 4)
-        admin_view_utils.update_lecture_paginator_data(lecture_page_obj)
 
         result_count_dict = models.StudyResult.objects.get_result_count_dict_by_curriculum(curriculum)
         data_statistics = admin_view_utils.get_study_data_statistics(qs_student)
@@ -107,76 +105,56 @@ def study_detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         for p in qs_psat:
             p.statistics = data_statistics_by_study_round.get(p.round)
 
+    study_rounds = '1' * category.round
     qs_problem = models.StudyProblem.objects.get_filtered_qs_by_category_annotated_with_answer_count(category)
     admin_view_utils.update_study_data_answers(qs_problem)
 
     context = update_context_data(
-        config=config, category=category, curriculum=curriculum, page_title=page_title,
-        icon_image=icon_set_new.ICON_IMAGE, icon_search=icon_set_new.ICON_SEARCH,
+        config=config, category=category, curriculum=curriculum, study_rounds=study_rounds,
+        page_title=page_title, icon_image=icon_set_new.ICON_IMAGE, icon_search=icon_set_new.ICON_SEARCH,
     )
-    if view_type == 'lecture':
-        lecture_page_obj, lecture_page_range = get_paginator_data(qs_schedule, page_number, 4)
-        admin_view_utils.update_lecture_paginator_data(lecture_page_obj)
-        context = update_context_data(
-            context, lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range)
+    if view_type == 'lecture_list':
+        lecture_context = admin_view_utils.get_study_page_context(qs_schedule, page_number, 4)
+        admin_view_utils.update_study_lecture_paginator_data(lecture_context['page_obj'])
+        context = update_context_data(context, lecture_context=lecture_context)
         return render(request, 'a_psat/snippets/study_detail_lecture.html', context)
     if view_type == 'statistics_list':
-        category_stat = admin_view_utils.get_study_score_stat_dict(qs_student)
-        statistics_page_obj, statistics_page_range = get_paginator_data(qs_psat, page_number)
         context = update_context_data(
-            context, category_stat=category_stat,
-            statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range
-        )
+            context, category_stat=admin_view_utils.get_study_score_stat_dict(qs_student),
+            statistics_context=admin_view_utils.get_study_page_context(qs_psat, page_number))
         return render(request, 'a_psat/snippets/admin_detail_study_statistics.html', context)
     if view_type == 'catalog_list':
-        study_rounds = '1' * category.round
-        catalog_page_obj, catalog_page_range = get_paginator_data(qs_student, page_number)
-        for obj in catalog_page_obj:
-            obj.result_count = result_count_dict.get(obj.id)
-        context = update_context_data(
-            context, study_rounds=study_rounds,
-            catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
-        )
+        catalog_context = admin_view_utils.get_study_page_context(
+            qs_student, page_number, result_count=result_count_dict)
+        context = update_context_data(context, catalog_context=catalog_context)
         return render(request, 'a_psat/snippets/admin_detail_study_catalog.html', context)
     if view_type == 'student_search':
-        study_rounds = '1' * category.round
         if student_name:
-            searched_student = qs_student.filter(name=student_name)
-        else:
-            searched_student = qs_student
-        catalog_page_obj, catalog_page_range = get_paginator_data(searched_student, page_number)
-        context = update_context_data(
-            context, study_rounds=study_rounds,
-            catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range)
+            qs_student = qs_student.filter(name=student_name)
+        catalog_context = admin_view_utils.get_study_page_context(
+            qs_student, page_number, result_count=result_count_dict)
+        context = update_context_data(context, catalog_context=catalog_context)
         return render(request, 'a_psat/snippets/admin_detail_study_catalog.html', context)
     if view_type == 'answer_list':
-        answer_page_obj, answer_page_range = get_paginator_data(qs_problem, page_number)
         context = update_context_data(
-            context, answer_page_obj=answer_page_obj, answer_page_range=answer_page_range)
+            context, answer_context=admin_view_utils.get_study_page_context(qs_problem, page_number))
         return render(request, 'a_psat/snippets/admin_detail_study_answer_analysis.html', context)
     if view_type == 'problem_list':
-        problem_page_obj, problem_page_range = get_paginator_data(qs_problem, page_number)
         context = update_context_data(
-            context, problem_page_obj=problem_page_obj, problem_page_range=problem_page_range)
+            context, problem_context=admin_view_utils.get_study_page_context(qs_problem, page_number))
         return render(request, 'a_psat/snippets/admin_detail_study_problem_list.html', context)
 
-    study_rounds = '1' * category.round
-    category_stat = admin_view_utils.get_study_score_stat_dict(qs_student)
-    statistics_page_obj, statistics_page_range = get_paginator_data(qs_psat, page_number)
+    lecture_context = admin_view_utils.get_study_page_context(qs_schedule, page_number, 4)
+    if lecture_context:
+        admin_view_utils.update_study_lecture_paginator_data(lecture_context['page_obj'])
 
-    catalog_page_obj, catalog_page_range = get_paginator_data(qs_student, page_number)
-    for obj in catalog_page_obj:
-        obj.result_count = result_count_dict.get(obj.id)
-
-    answer_page_obj, answer_page_range = get_paginator_data(qs_problem, page_number)
-    problem_page_obj, problem_page_range = get_paginator_data(qs_problem, page_number)
     context = update_context_data(
-        context, category_stat=category_stat, study_rounds=study_rounds, schedules=qs_schedule,
-        lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range,
-        statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range,
-        catalog_page_obj=catalog_page_obj, catalog_page_range=catalog_page_range,
-        answer_page_obj=answer_page_obj, answer_page_range=answer_page_range,
-        problem_page_obj=problem_page_obj, problem_page_range=problem_page_range,
+        context, schedules=qs_schedule, lecture_context=lecture_context,
+        category_stat=admin_view_utils.get_study_score_stat_dict(qs_student),
+        statistics_context=admin_view_utils.get_study_page_context(qs_psat),
+        catalog_context=admin_view_utils.get_study_page_context(qs_student, result_count=result_count_dict),
+        answer_context=admin_view_utils.get_study_page_context(qs_problem),
+        problem_context=admin_view_utils.get_study_page_context(qs_problem),
     )
     return render(request, f'a_psat/admin_study_detail.html', context)
 

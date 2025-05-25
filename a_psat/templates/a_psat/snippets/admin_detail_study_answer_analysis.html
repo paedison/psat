@@ -28,7 +28,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for obj in answer_page_obj %}
+            {% for obj in answer_context.page_obj %}
                 <tr class="text-center small">
                     <th class="text-nowrap td-left-no-border">{{ obj.id }}</th>
                     <th class="text-nowrap" hx-target="#main">{% partial reference %}</th>
@@ -89,7 +89,7 @@
     </table>
 </article>
 
-{% with page_obj=answer_page_obj page_range=answer_page_range %}
+{% with page_obj=answer_context.page_obj page_range=answer_context.page_range %}
     {% include 'a_prime/snippets/pagination.html' with header='answer_list' %}
 {% endwith %}
 
