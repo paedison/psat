@@ -3,9 +3,10 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
-from a_psat import models, utils, forms
+from a_psat import models, forms
 from common.constants import icon_set_new
 from common.utils import Configuration, HtmxHttpRequest, update_context_data
+from ...utils import normal_view_utils
 
 
 class ViewConfiguration(Configuration):
@@ -26,12 +27,12 @@ def lecture_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     lecture_list = models.Lecture.objects.order_by_subject_code()
     lecture: models.Lecture = get_object_or_404(lecture_list, pk=pk)
-    prev_lec, next_lec = utils.get_prev_next_prob(pk, lecture_list)
-    lec_images = utils.get_lecture_images(lecture)
+    prev_lec, next_lec = normal_view_utils.get_prev_next_obj(pk, lecture_list)
+    lec_images = normal_view_utils.get_lecture_images(lecture)
 
     memo_form = forms.LectureMemoForm()
     memo_url = reverse_lazy('psat:memo-lecture', args=[pk])
-    custom_data = utils.get_memo_custom_data(request.user)
+    custom_data = normal_view_utils.get_lecture_memo_custom_data(request.user)
 
     my_memo = None
     for dt in custom_data['memo']:

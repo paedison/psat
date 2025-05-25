@@ -8,11 +8,11 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django_htmx.http import reswap
 
-from a_psat import models, forms, utils
+from a_psat import models, forms
 from common.constants import icon_set_new
-from common.utils import HtmxHttpRequest, update_context_data
-from .normal_view_utils import study_utils
-from ..admin_views import admin_view_utils
+from common.utils import HtmxHttpRequest, update_context_data, get_paginator_data
+from ...utils.normal_view_utils import study_utils
+from ...utils import admin_view_utils
 
 
 class ViewConfiguration:
@@ -76,7 +76,7 @@ def study_detail_view(request: HtmxHttpRequest, pk: int, student=None):
     qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(student.curriculum)
 
     if view_type == 'lecture':
-        lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
+        lecture_page_obj, lecture_page_range = get_paginator_data(qs_schedule, page_number, 4)
         admin_view_utils.update_lecture_paginator_data(lecture_page_obj)
         context = update_context_data(
             context, lecture_page_obj=lecture_page_obj, lecture_page_range=lecture_page_range)
@@ -109,7 +109,7 @@ def study_detail_view(request: HtmxHttpRequest, pk: int, student=None):
             statistics_page_obj=statistics_page_obj, statistics_page_range=statistics_page_range)
         return render(request, 'a_psat/snippets/study_detail_statistics.html', context)
 
-    lecture_page_obj, lecture_page_range = utils.get_paginator_data(qs_schedule, page_number, 4)
+    lecture_page_obj, lecture_page_range = get_paginator_data(qs_schedule, page_number, 4)
     admin_view_utils.update_lecture_paginator_data(lecture_page_obj)
 
     my_total_result, my_result_page_obj, my_result_page_range = study_utils.get_study_my_result_paginator_data(

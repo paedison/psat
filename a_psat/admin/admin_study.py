@@ -1,10 +1,9 @@
 from django.contrib import admin
-from django.utils import timezone
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 
+from common.utils import get_datetime_format
 from . import models
-from .. import utils
 
 
 @admin.register(models.StudyCategory)
@@ -104,15 +103,15 @@ class StudyCurriculumScheduleAdmin(ModelAdmin):
 
     @admin.display(description='공개 날짜')
     def _lecture_open_datetime(self, obj):
-        return utils.get_datetime_format(obj.lecture_open_datetime)
+        return get_datetime_format(obj.lecture_open_datetime)
 
     @admin.display(description='과제 마감 날짜')
     def _homework_end_datetime(self, obj):
-        return utils.get_datetime_format(obj.homework_end_datetime)
+        return get_datetime_format(obj.homework_end_datetime)
 
     @admin.display(description='과제 마감 날짜')
     def _lecture_datetime(self, obj):
-        return utils.get_datetime_format(obj.lecture_datetime)
+        return get_datetime_format(obj.lecture_datetime)
 
 
 @admin.register(models.StudyStudent)
@@ -130,11 +129,11 @@ class StudyStudentAdmin(ModelAdmin):
 
     @admin.display(description='생성 일시')
     def _created_at(self, obj):
-        return utils.get_datetime_format(obj.created_at)
+        return get_datetime_format(obj.created_at)
 
     @admin.display(description='수정 일시')
     def _updated_at(self, obj):
-        return utils.get_datetime_format(obj.updated_at)
+        return get_datetime_format(obj.updated_at)
 
 
 @admin.register(models.StudyAnswer)
@@ -157,7 +156,7 @@ class StudyAnswerAdmin(ModelAdmin):
 
     @admin.display(description='생성 일시')
     def _created_at(self, obj):
-        return utils.get_datetime_format(obj.created_at)
+        return get_datetime_format(obj.created_at)
 
     @admin.display(description='수험정보')
     def _student_info(self, obj):

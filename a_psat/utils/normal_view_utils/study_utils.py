@@ -1,8 +1,9 @@
 import json
 from collections import defaultdict
 
-from a_psat import models, utils
-from a_psat.views.admin_views import admin_view_utils
+from a_psat import models
+from a_psat.utils import admin_view_utils
+from common.utils import get_paginator_data
 
 
 def get_study_schedule_info():
@@ -45,7 +46,7 @@ def get_study_curriculum_statistics(qs_student):
 
 def get_study_statistics_paginator_data(homework_schedule, qs_result, curriculum_statistics, page_number) -> tuple:
     per_round_stat = curriculum_statistics['per_round']
-    statistics_page_obj, statistics_page_range = utils.get_paginator_data(qs_result, page_number, 4)
+    statistics_page_obj, statistics_page_range = get_paginator_data(qs_result, page_number, 4)
     for obj in statistics_page_obj:
         data_stat = per_round_stat.get(obj.psat.round)
         if data_stat:
@@ -60,7 +61,7 @@ def get_study_statistics_paginator_data(homework_schedule, qs_result, curriculum
 def get_study_my_result_paginator_data(homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number) -> tuple:
     total_stat = curriculum_statistics['total']
     per_round_stat = curriculum_statistics['per_round']
-    my_result_page_obj, my_result_page_range = utils.get_paginator_data(qs_result, page_number, 4)
+    my_result_page_obj, my_result_page_range = get_paginator_data(qs_result, page_number, 4)
     score_dict = get_score_dict(student)
 
     #  커리큘럼 기준 각 회차별 등수 계산 (점수가 None인 경우는 제외)
@@ -128,7 +129,7 @@ def get_score_dict(student):
 def get_study_answer_paginator_data(schedule_dict, student, opened_rounds, page_number) -> tuple:
     qs_problem = models.StudyProblem.objects.get_filtered_qs_by_category_annotated_with_answer_count(
         student.curriculum.category).filter(psat__round__in=opened_rounds).order_by('-psat')
-    answer_page_obj, answer_page_range = utils.get_paginator_data(qs_problem, page_number, on_each_side=1)
+    answer_page_obj, answer_page_range = get_paginator_data(qs_problem, page_number, on_each_side=1)
 
     homework_rounds = []
     for obj in answer_page_obj:

@@ -1,5 +1,11 @@
+from datetime import time, datetime
+
+from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.http import HttpRequest
 from django.urls import reverse_lazy
+from django.utils import timezone
+from django.utils.timezone import make_aware
 from django_htmx.middleware import HtmxDetails
 
 from .constants import icon_set_new
@@ -14,6 +20,26 @@ def update_context_data(context: dict = None, **kwargs):
         context.update(kwargs)
         return context
     return kwargs
+
+
+def get_paginator_data(target_data, page_number, per_page=10, on_each_side=3, on_ends=1):
+    paginator = Paginator(target_data, per_page)
+    page_obj = paginator.get_page(page_number)
+    page_range = paginator.get_elided_page_range(number=page_number, on_each_side=on_each_side, on_ends=on_ends)
+    return page_obj, page_range
+
+
+def get_local_time(target_date, target_time=time(9, 0)):
+    if not target_date:
+        raise ValidationError("Date is required for timezone conversion.")
+    target_datetime = datetime.combine(target_date, target_time)
+    return make_aware(target_datetime)
+
+
+def get_datetime_format(target_datetime):
+    if target_datetime:
+        return timezone.localtime(target_datetime).strftime('%Y/%m/%d %H:%M')
+    return '-'
 
 
 def detect_encoding(file_path):

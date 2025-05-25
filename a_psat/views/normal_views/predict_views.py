@@ -10,7 +10,7 @@ from django_htmx.http import reswap
 from a_psat import models, forms
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from . import normal_view_utils
+from ...utils import normal_view_utils
 
 
 class ViewConfiguration:

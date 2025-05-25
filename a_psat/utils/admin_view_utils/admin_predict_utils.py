@@ -8,7 +8,8 @@ from django.db.models import Count, Window, F
 from django.db.models.functions import Rank
 from django.http import HttpResponse
 
-from a_psat import models, utils
+from a_psat import models
+from common.utils import get_paginator_data
 from . import common_utils
 
 
@@ -17,69 +18,6 @@ def get_predict_psat(psat):
         return psat.predict_psat
     except ObjectDoesNotExist:
         return None
-
-
-def get_predict_answer_tab(sub_list):
-    return [
-        {'id': str(idx), 'title': sub, 'answer_count': 4 if sub == '헌법' else 5}
-        for idx, sub in enumerate(sub_list)
-    ]
-
-
-def get_predict_filter_tab(target: str):
-    return [
-        {'id': '0', 'title': '전체', 'prefix': f'Total{target.capitalize()}', 'header': f'total_{target}_list'},
-        {'id': '1', 'title': '필터링', 'prefix': f'Filtered{target.capitalize()}', 'header': f'filtered_{target}_list'},
-    ]
-
-
-def get_predict_answer_page_data(psat, qs_answer_count, page_number, per_page=10):
-    subject_vars = common_utils.get_subject_vars(psat)
-    qs_answer_count_group, answers_page_obj_group, answers_page_range_group = {}, {}, {}
-
-    for entry in qs_answer_count:
-        if entry.subject not in qs_answer_count_group:
-            qs_answer_count_group[entry.subject] = []
-        qs_answer_count_group[entry.subject].append(entry)
-
-    for subject, qs_answer_count in qs_answer_count_group.items():
-        if subject not in answers_page_obj_group:
-            answers_page_obj_group[subject] = []
-            answers_page_range_group[subject] = []
-        data_answers = get_predict_data_answers(qs_answer_count, subject_vars)
-        answers_page_obj_group[subject], answers_page_range_group[subject] = utils.get_paginator_data(
-            data_answers, page_number, per_page)
-
-    return answers_page_obj_group, answers_page_range_group
-
-
-def get_predict_data_answers(qs_answer_count, subject_vars):
-    for entry in qs_answer_count:
-        sub = entry.subject
-        field = subject_vars[sub][1]
-        ans_official = entry.ans_official
-
-        answer_official_list = []
-        if ans_official > 5:
-            answer_official_list = [int(digit) for digit in str(ans_official)]
-
-        entry.no = entry.number
-        entry.ans_official = ans_official
-        entry.ans_official_circle = entry.problem.get_answer_display()
-        entry.ans_predict_circle = models.choices.answer_choice()[entry.ans_predict] if entry.ans_predict else None
-        entry.ans_list = answer_official_list
-        entry.field = field
-
-        entry.rate_correct = entry.get_answer_rate(ans_official)
-        entry.rate_correct_top = entry.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
-        entry.rate_correct_mid = entry.problem.predict_answer_count_mid_rank.get_answer_rate(ans_official)
-        entry.rate_correct_low = entry.problem.predict_answer_count_low_rank.get_answer_rate(ans_official)
-        try:
-            entry.rate_gap = entry.rate_correct_top - entry.rate_correct_low
-        except TypeError:
-            entry.rate_gap = None
-
-    return qs_answer_count
 
 
 def create_predict_answer_count_model_instances(original_psat):
@@ -147,6 +85,23 @@ def update_problem_model_for_answer_official(psat, form, file) -> tuple:
     return is_updated, message_dict[is_updated]
 
 
+def update_predict_scores(psat, qs_student, model_dict: dict):
+    sub_list = common_utils.get_sub_list(psat)
+    message_dict = {
+        None: '에러가 발생했습니다.',
+        True: '점수를 업데이트했습니다.',
+        False: '기존 점수와 일치합니다.',
+    }
+    is_updated_list = [update_predict_score_model(qs_student, model_dict, sub_list)]
+    if None in is_updated_list:
+        is_updated = None
+    elif any(is_updated_list):
+        is_updated = True
+    else:
+        is_updated = False
+    return is_updated, message_dict[is_updated]
+
+
 def update_predict_score_model(qs_student, model_dict: dict, sub_list: list):
     answer_model = model_dict['answer']
     score_model = model_dict['score']
@@ -192,14 +147,19 @@ def update_predict_score_model(qs_student, model_dict: dict, sub_list: list):
     return common_utils.bulk_create_or_update(score_model, list_create, list_update, update_fields)
 
 
-def update_predict_scores(psat, qs_student, model_dict: dict):
+def update_predict_ranks(psat, qs_student, model_dict: dict):
     sub_list = common_utils.get_sub_list(psat)
     message_dict = {
         None: '에러가 발생했습니다.',
-        True: '점수를 업데이트했습니다.',
-        False: '기존 점수와 일치합니다.',
+        True: '등수를 업데이트했습니다.',
+        False: '기존 등수와 일치합니다.',
     }
-    is_updated_list = [update_predict_score_model(qs_student, model_dict, sub_list)]
+    is_updated_list = [
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'total'),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'total', True),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'department'),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'department', True),
+    ]
     if None in is_updated_list:
         is_updated = None
     elif any(is_updated_list):
@@ -259,18 +219,16 @@ def update_predict_rank_model(qs_student, model_dict: dict, sub_list: list, stat
     return common_utils.bulk_create_or_update(rank_model, list_create, list_update, update_fields)
 
 
-def update_predict_ranks(psat, qs_student, model_dict: dict):
-    sub_list = common_utils.get_sub_list(psat)
+def update_predict_statistics(psat):
+    total_data, filtered_data = get_predict_statistics_data(psat)
     message_dict = {
         None: '에러가 발생했습니다.',
-        True: '등수를 업데이트했습니다.',
-        False: '기존 등수와 일치합니다.',
+        True: '통계를 업데이트했습니다.',
+        False: '기존 통계와 일치합니다.',
     }
     is_updated_list = [
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'total'),
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'total', True),
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'department'),
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'department', True),
+        update_predict_statistics_model(psat, total_data),
+        update_predict_statistics_model(psat, filtered_data, True),
     ]
     if None in is_updated_list:
         is_updated = None
@@ -279,94 +237,6 @@ def update_predict_ranks(psat, qs_student, model_dict: dict):
     else:
         is_updated = False
     return is_updated, message_dict[is_updated]
-
-
-def get_predict_data_statistics(psat):
-    field_vars = common_utils.get_field_vars(psat)
-
-    department_list = list(
-        models.PredictCategory.objects.filter(exam=psat.exam).order_by('order')
-        .values_list('department', flat=True)
-    )
-    department_list.insert(0, '전체')
-
-    data_statistics = []
-    score_list = {}
-    filtered_data_statistics = []
-    filtered_score_list = {}
-    for department in department_list:
-        data_statistics.append({'department': department, 'participants': 0})
-        score_list.update({department: {field: [] for field, subject_tuple in field_vars.items()}})
-        filtered_data_statistics.append({'department': department, 'participants': 0})
-        filtered_score_list.update({department: {field: [] for field, subject_tuple in field_vars.items()}})
-
-    qs_students = (
-        models.PredictStudent.objects.filter(psat=psat)
-        .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
-        .annotate(
-            department=F('category__department'),
-            subject_0=F('score__subject_0'),
-            subject_1=F('score__subject_1'),
-            subject_2=F('score__subject_2'),
-            subject_3=F('score__subject_3'),
-            average=F('score__average'),
-        )
-    )
-    for qs_s in qs_students:
-        for field, subject_tuple in field_vars.items():
-            score = getattr(qs_s, field)
-            if score is not None:
-                score_list['전체'][field].append(score)
-                score_list[qs_s.department][field].append(score)
-                if qs_s.is_filtered:
-                    filtered_score_list['전체'][field].append(score)
-                    filtered_score_list[qs_s.department][field].append(score)
-
-    update_predict_data_statistics(data_statistics, field_vars, score_list, department_list)
-    update_predict_data_statistics(filtered_data_statistics, field_vars, filtered_score_list, department_list)
-
-    return data_statistics, filtered_data_statistics
-
-
-def update_predict_data_statistics(data_statistics, field_vars, score_list, department_list):
-    for department, score_dict in score_list.items():
-        department_idx = department_list.index(department)
-        for field, scores in score_dict.items():
-            sub = field_vars[field][0]
-            subject = field_vars[field][1]
-            participants = len(scores)
-
-            sorted_scores = sorted(scores, reverse=True)
-            max_score = top_score_10 = top_score_20 = avg_score = None
-            if sorted_scores:
-                max_score = sorted_scores[0]
-                top_10_threshold = max(1, int(participants * 0.1))
-                top_20_threshold = max(1, int(participants * 0.2))
-                top_score_10 = sorted_scores[top_10_threshold - 1]
-                top_score_20 = sorted_scores[top_20_threshold - 1]
-                avg_score = round(sum(scores) / participants, 1)
-
-            data_statistics[department_idx][field] = {
-                'field': field,
-                'is_confirmed': True,
-                'sub': sub,
-                'subject': subject,
-                'participants': participants,
-                'max': max_score,
-                't10': top_score_10,
-                't20': top_score_20,
-                'avg': avg_score,
-            }
-
-
-def update_predict_filtered_catalog(filtered_catalog_page_obj):
-    field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
-    for obj in filtered_catalog_page_obj:
-        obj.rank_tot_num = obj.filtered_rank_tot_num
-        obj.rank_dep_num = obj.filtered_rank_dep_num
-        for key, fld in field_dict.items():
-            setattr(obj, f'rank_tot_{key}', getattr(obj, f'filtered_rank_tot_{key}'))
-            setattr(obj, f'rank_dep_{key}', getattr(obj, f'filtered_rank_dep_{key}'))
 
 
 def update_predict_statistics_model(psat, data_statistics, is_filtered=False):
@@ -414,15 +284,21 @@ def update_predict_statistics_model(psat, data_statistics, is_filtered=False):
     return is_updated, message_dict[is_updated]
 
 
-def update_predict_statistics(psat, data_statistics, filtered_data_statistics):
+def update_predict_answer_counts(model_dict):
     message_dict = {
         None: '에러가 발생했습니다.',
-        True: '통계를 업데이트했습니다.',
-        False: '기존 통계와 일치합니다.',
+        True: '문항분석표를 업데이트했습니다.',
+        False: '기존 문항분석표 데이터와 일치합니다.',
     }
     is_updated_list = [
-        update_predict_statistics_model(psat, data_statistics),
-        update_predict_statistics_model(psat, filtered_data_statistics, True),
+        update_predict_answer_count_model(model_dict, 'all'),
+        update_predict_answer_count_model(model_dict, 'top'),
+        update_predict_answer_count_model(model_dict, 'mid'),
+        update_predict_answer_count_model(model_dict, 'low'),
+        update_predict_answer_count_model(model_dict, 'all', True),
+        update_predict_answer_count_model(model_dict, 'top', True),
+        update_predict_answer_count_model(model_dict, 'mid', True),
+        update_predict_answer_count_model(model_dict, 'low', True),
     ]
     if None in is_updated_list:
         is_updated = None
@@ -498,29 +374,200 @@ def update_predict_answer_count_model(model_dict, rank_type='all', is_filtered=F
     return common_utils.bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
 
 
-def update_predict_answer_counts(model_dict):
-    message_dict = {
-        None: '에러가 발생했습니다.',
-        True: '문항분석표를 업데이트했습니다.',
-        False: '기존 문항분석표 데이터와 일치합니다.',
+def get_predict_statistics_context(psat, page_number=1, per_page=10):
+    total_data, filtered_data = get_predict_statistics_data(psat)
+    total_page_obj, total_page_range = get_paginator_data(total_data, page_number, per_page)
+    filtered_page_obj, filtered_page_range = get_paginator_data(filtered_data, page_number, per_page)
+    return {
+        'total': {
+            'id': '0',
+            'title': '전체',
+            'prefix': 'TotalStatistics',
+            'header': 'total_statistics_list',
+            'page_obj': total_page_obj,
+            'page_range': total_page_range,
+        },
+        'filtered': {
+            'id': '1',
+            'title': '필터링',
+            'prefix': 'FilteredStatistics',
+            'header': 'filtered_statistics_list',
+            'page_obj': filtered_page_obj,
+            'page_range': filtered_page_range,
+        },
     }
-    is_updated_list = [
-        update_predict_answer_count_model(model_dict, 'all'),
-        update_predict_answer_count_model(model_dict, 'top'),
-        update_predict_answer_count_model(model_dict, 'mid'),
-        update_predict_answer_count_model(model_dict, 'low'),
-        update_predict_answer_count_model(model_dict, 'all', True),
-        update_predict_answer_count_model(model_dict, 'top', True),
-        update_predict_answer_count_model(model_dict, 'mid', True),
-        update_predict_answer_count_model(model_dict, 'low', True),
-    ]
-    if None in is_updated_list:
-        is_updated = None
-    elif any(is_updated_list):
-        is_updated = True
-    else:
-        is_updated = False
-    return is_updated, message_dict[is_updated]
+
+
+def get_predict_statistics_data(psat):
+    field_vars = common_utils.get_field_vars(psat)
+
+    department_list = list(
+        models.PredictCategory.objects.filter(exam=psat.exam).order_by('order')
+        .values_list('department', flat=True)
+    )
+    department_list.insert(0, '전체')
+
+    total_data, filtered_data = [], []
+    total_scores, filtered_scores = {}, {}
+    for department in department_list:
+        total_data.append({'department': department, 'participants': 0})
+        filtered_data.append({'department': department, 'participants': 0})
+        total_scores.update({department: {fld: [] for fld in field_vars}})
+        filtered_scores.update({department: {fld: [] for fld in field_vars}})
+
+    qs_students = (
+        models.PredictStudent.objects.filter(psat=psat)
+        .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
+        .annotate(
+            department=F('category__department'),
+            subject_0=F('score__subject_0'),
+            subject_1=F('score__subject_1'),
+            subject_2=F('score__subject_2'),
+            subject_3=F('score__subject_3'),
+            average=F('score__average'),
+        )
+    )
+    for qs_s in qs_students:
+        for field, subject_tuple in field_vars.items():
+            score = getattr(qs_s, field)
+            if score is not None:
+                total_scores['전체'][field].append(score)
+                total_scores[qs_s.department][field].append(score)
+                if qs_s.is_filtered:
+                    filtered_scores['전체'][field].append(score)
+                    filtered_scores[qs_s.department][field].append(score)
+
+    update_predict_statistics_data(total_data, field_vars, total_scores, department_list)
+    update_predict_statistics_data(filtered_data, field_vars, filtered_scores, department_list)
+
+    return total_data, filtered_data
+
+
+def update_predict_statistics_data(data_statistics, field_vars, score_list, department_list):
+    for department, score_dict in score_list.items():
+        department_idx = department_list.index(department)
+        for field, scores in score_dict.items():
+            sub = field_vars[field][0]
+            subject = field_vars[field][1]
+            participants = len(scores)
+
+            sorted_scores = sorted(scores, reverse=True)
+            max_score = top_score_10 = top_score_20 = avg_score = None
+            if sorted_scores:
+                max_score = sorted_scores[0]
+                top_10_threshold = max(1, int(participants * 0.1))
+                top_20_threshold = max(1, int(participants * 0.2))
+                top_score_10 = sorted_scores[top_10_threshold - 1]
+                top_score_20 = sorted_scores[top_20_threshold - 1]
+                avg_score = round(sum(scores) / participants, 1)
+
+            data_statistics[department_idx][field] = {
+                'field': field,
+                'is_confirmed': True,
+                'sub': sub,
+                'subject': subject,
+                'participants': participants,
+                'max': max_score,
+                't10': top_score_10,
+                't20': top_score_20,
+                'avg': avg_score,
+            }
+
+
+def get_predict_catalog_context(psat, page_number=1, total_list=None):
+    if total_list is None:
+        total_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
+    filtered_list = total_list.filter(is_filtered=True)
+    total_page_obj, total_page_range = get_paginator_data(total_list, page_number)
+    filtered_page_obj, filtered_page_range = get_paginator_data(filtered_list, page_number)
+    update_predict_filtered_catalog(filtered_page_obj)
+
+    return {
+        'total': {
+            'id': '0',
+            'title': '전체',
+            'prefix': 'TotalCatalog',
+            'header': 'total_catalog_list',
+            'page_obj': total_page_obj,
+            'page_range': total_page_range,
+        },
+        'filtered': {
+            'id': '1',
+            'title': '필터링',
+            'prefix': 'FilteredCatalog',
+            'header': 'filtered_catalog_list',
+            'page_obj': filtered_page_obj,
+            'page_range': filtered_page_range,
+        },
+    }
+
+
+def update_predict_filtered_catalog(filtered_catalog_page_obj):
+    field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
+    for obj in filtered_catalog_page_obj:
+        obj.rank_tot_num = obj.filtered_rank_tot_num
+        obj.rank_dep_num = obj.filtered_rank_dep_num
+        for key, fld in field_dict.items():
+            setattr(obj, f'rank_tot_{key}', getattr(obj, f'filtered_rank_tot_{key}'))
+            setattr(obj, f'rank_dep_{key}', getattr(obj, f'filtered_rank_dep_{key}'))
+
+
+def get_predict_answer_context(psat, subject=None, page_number=1, per_page=10):
+    subject_vars = common_utils.get_subject_vars(psat)
+    subject_vars.pop('평균')
+    qs_answer_count_group = {sub: [] for sub in subject_vars}
+    answer_context = {}
+
+    qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat_and_subject(psat, subject)
+    for qs_ac in qs_answer_count:
+        sub = qs_ac.subject
+        if sub not in qs_answer_count_group:
+            qs_answer_count_group[sub] = []
+        qs_answer_count_group[sub].append(qs_ac)
+
+    for sub, qs_answer_count in qs_answer_count_group.items():
+        data_answers = get_predict_answer_data(qs_answer_count, subject_vars)
+        page_obj, page_range = get_paginator_data(data_answers, page_number, per_page)
+        answer_context[sub] = {
+            'id': str(subject_vars[sub][2]),
+            'title': sub,
+            'prefix': 'Answer',
+            'header': 'answer_list',
+            'answer_count': 4 if sub == '헌법' else 5,
+            'page_obj': page_obj,
+            'page_range': page_range,
+        }
+
+    return answer_context
+
+
+def get_predict_answer_data(qs_answer_count, subject_vars):
+    for qs_ac in qs_answer_count:
+        sub = qs_ac.subject
+        field = subject_vars[sub][1]
+        ans_official = qs_ac.ans_official
+
+        answer_official_list = []
+        if ans_official > 5:
+            answer_official_list = [int(digit) for digit in str(ans_official)]
+
+        qs_ac.no = qs_ac.number
+        qs_ac.ans_official = ans_official
+        qs_ac.ans_official_circle = qs_ac.problem.get_answer_display()
+        qs_ac.ans_predict_circle = models.choices.answer_choice()[qs_ac.ans_predict] if qs_ac.ans_predict else None
+        qs_ac.ans_list = answer_official_list
+        qs_ac.field = field
+
+        qs_ac.rate_correct = qs_ac.get_answer_rate(ans_official)
+        qs_ac.rate_correct_top = qs_ac.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
+        qs_ac.rate_correct_mid = qs_ac.problem.predict_answer_count_mid_rank.get_answer_rate(ans_official)
+        qs_ac.rate_correct_low = qs_ac.problem.predict_answer_count_low_rank.get_answer_rate(ans_official)
+        try:
+            qs_ac.rate_gap = qs_ac.rate_correct_top - qs_ac.rate_correct_low
+        except TypeError:
+            qs_ac.rate_gap = None
+
+    return qs_answer_count
 
 
 def get_predict_statistics_response(psat):

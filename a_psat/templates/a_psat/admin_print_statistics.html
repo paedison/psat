@@ -11,8 +11,9 @@
 <body class="bg-white">
     {{ info|json_script:'info' }}
     <h2 class="fw-bold text-center mb-4">{{ psat.year }}년도 {{ psat.get_exam_display }} 성적통계</h2>
-    {% with statistics=data_statistics table_title='전체 데이터' %}{% partial statistics_table %}{% endwith %}
-    {% with statistics=filtered_data_statistics table_title='필터링 데이터' %}{% partial statistics_table %}{% endwith %}
+    {% for statistics_data in statistics_context.values %}
+        {% partial statistics_table %}
+    {% endfor %}
 
     <script>
         window.onload = function () {
@@ -22,14 +23,14 @@
         };
     </script>
 </body>
-{% endblock html_body %}
+{% endblock %}
 
 {% partialdef statistics_table %}
     <div class="mb-2">
         <table class="table table-sm table-bordered small align-middle">
             <thead>
                 <tr class="text-center align-middle">
-                    <th class="text-primary" colspan="22">{{ table_title }}</th>
+                    <th class="text-primary" colspan="22">{{ statistics_data.title }} 데이터</th>
                 </tr>
                 <tr class="text-center small align-middle">
                     <th rowspan="2">직렬</th>
@@ -51,7 +52,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for obj in statistics %}
+                {% for obj in statistics_data.page_obj %}
                     <tr class="text-center small align-middle">
                         <th>{{ obj.department }}</th>
                         <th>{{ obj.average.participants|intcomma }}</th>
@@ -71,4 +72,4 @@
             </tbody>
         </table>
     </div>
-{% endpartialdef statistics_table %}
+{% endpartialdef %}

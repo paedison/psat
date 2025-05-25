@@ -50,6 +50,21 @@ def get_field_vars(psat) -> dict[str, tuple[str, str, int]]:
     }
 
 
+def get_prev_next_obj(pk, custom_data) -> tuple:
+    custom_list = list(custom_data.values_list('id', flat=True))
+    prev_obj = next_obj = None
+    last_id = len(custom_list) - 1
+    try:
+        q = custom_list.index(pk)
+        if q != 0:
+            prev_obj = custom_data[q - 1]
+        if q != last_id:
+            next_obj = custom_data[q + 1]
+        return prev_obj, next_obj
+    except ValueError:
+        return None, None
+
+
 def bulk_create_or_update(model, list_create, list_update, update_fields):
     model_name = model._meta.model_name
     try:

@@ -67,16 +67,14 @@
                         </div>
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-                                {% for tab in stat_filter_tab %}
-                                    {% #nav_tab prefix=tab.prefix id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% for statistics_data in statistics_context.values %}
+                                    {% #nav_tab prefix=statistics_data.prefix id=statistics_data.id %}{{ statistics_data.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
                         <div id="statisticsContent" class="tab-content">
-                            {% for tab in stat_filter_tab %}
-                                {% cycle statistics_page_obj filtered_statistics_page_obj as stat_page_obj silent %}
-                                {% cycle statistics_page_range filtered_statistics_page_range as stat_page_range silent %}
-                                {% #nav_content prefix=tab.prefix id=tab.id %}
+                            {% for statistics_data in statistics_context.values %}
+                                {% #nav_content prefix=statistics_data.prefix id=statistics_data.id %}
                                     {% include 'a_psat/snippets/admin_detail_predict_statistics.html' %}
                                 {% /nav_content %}
                             {% endfor %}
@@ -107,16 +105,14 @@
                         </div>
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-                                {% for tab in cat_filter_tab %}
-                                    {% #nav_tab prefix=tab.prefix id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% for catalog_data in catalog_context.values %}
+                                    {% #nav_tab prefix=catalog_data.prefix id=catalog_data.id %}{{ catalog_data.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
                         <div id="catalogContent" class="tab-content">
-                            {% for tab in cat_filter_tab %}
-                                {% cycle catalog_page_obj filtered_catalog_page_obj as cat_page_obj silent %}
-                                {% cycle catalog_page_range filtered_catalog_page_range as cat_page_range silent %}
-                                {% #nav_content prefix=tab.prefix id=tab.id %}
+                            {% for catalog_data in catalog_context.values %}
+                                {% #nav_content prefix=catalog_data.prefix id=catalog_data.id %}
                                     {% include 'a_psat/snippets/admin_detail_predict_catalog.html' %}
                                 {% /nav_content %}
                             {% endfor %}
@@ -143,26 +139,16 @@
                         </div>
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
-                                {% for tab in answer_tab %}
-                                    {% #nav_tab prefix='Answer' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% for answer_data in answer_context.values %}
+                                    {% #nav_tab prefix=answer_data.prefix id=answer_data.id %}{{ answer_data.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
                         <div id="answerAnalysisContent" class="tab-content">
-                            {% for tab in answer_tab %}
-                                {% if answer_tab|length == 3 %}
-                                    {% cycle answers_page_obj_group.언어 answers_page_obj_group.자료 answers_page_obj_group.상황 as answers silent %}
-                                    {% cycle answers_page_range_group.언어 answers_page_range_group.자료 answers_page_range_group.상황 as answers_page_range silent %}
-                                    {% #nav_content prefix='Answer' id=tab.id initial='1' %}
-                                        {% include 'a_psat/snippets/admin_detail_predict_answer_analysis.html' %}
-                                    {% /nav_content %}
-                                {% else %}
-                                    {% cycle answers_page_obj_group.헌법 answers_page_obj_group.언어 answers_page_obj_group.자료 answers_page_obj_group.상황 as answers silent %}
-                                    {% cycle answers_page_range_group.헌법 answers_page_range_group.언어 answers_page_range_group.자료 answers_page_range_group.상황 as answers_page_range silent %}
-                                    {% #nav_content prefix='Answer' id=tab.id %}
-                                        {% include 'a_psat/snippets/admin_detail_predict_answer_analysis.html' %}
-                                    {% /nav_content %}
-                                {% endif %}
+                            {% for answer_data in answer_context.values %}
+                                {% #nav_content prefix=answer_data.prefix id=answer_data.id %}
+                                    {% include 'a_psat/snippets/admin_detail_predict_answer_analysis.html' %}
+                                {% /nav_content %}
                             {% endfor %}
                         </div>
                     </div>
@@ -276,7 +262,7 @@
             </div>
         </div>
     </section>
-{% endblock main_content %}
+{% endblock %}
 
 {% partialdef problem_filter %}
     <div class="accordion-item">
@@ -328,4 +314,4 @@
             </div>
         </div>
     </div>
-{% endpartialdef problem_filter %}
+{% endpartialdef %}

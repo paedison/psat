@@ -5,7 +5,8 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from . import models, utils
+from common.utils import get_local_time
+from . import models
 
 
 class PsatForm(forms.ModelForm):
@@ -171,14 +172,14 @@ class PredictPsatForm(forms.Form):
             raise ValidationError(f"Missing field: {e.args[0]}")
 
         if page_open_date:
-            cleaned_data['page_opened_at'] = utils.get_local_time(page_open_date)
+            cleaned_data['page_opened_at'] = get_local_time(page_open_date)
         if exam_date:
-            cleaned_data['exam_started_at'] = utils.get_local_time(exam_date, exam_start_time)
-        cleaned_data['exam_finished_at'] = utils.get_local_time(exam_date, exam_finish_time)
-        cleaned_data['answer_predict_opened_at'] = utils.get_local_time(exam_date, answer_predict_open_time)
-        cleaned_data['answer_official_opened_at'] = utils.get_local_time(exam_date, answer_official_open_time)
+            cleaned_data['exam_started_at'] = get_local_time(exam_date, exam_start_time)
+        cleaned_data['exam_finished_at'] = get_local_time(exam_date, exam_finish_time)
+        cleaned_data['answer_predict_opened_at'] = get_local_time(exam_date, answer_predict_open_time)
+        cleaned_data['answer_official_opened_at'] = get_local_time(exam_date, answer_official_open_time)
         if predict_close_date:
-            cleaned_data['predict_closed_at'] = utils.get_local_time(predict_close_date)
+            cleaned_data['predict_closed_at'] = get_local_time(predict_close_date)
 
         return cleaned_data
 
@@ -258,7 +259,7 @@ class StudyCurriculumForm(forms.Form):
         cleaned_data = super().clean()
         lecture_start_date = cleaned_data['lecture_start_date']
         lecture_start_time = cleaned_data['lecture_start_time']
-        cleaned_data['lecture_start_datetime'] = utils.get_local_time(lecture_start_date, lecture_start_time)
+        cleaned_data['lecture_start_datetime'] = get_local_time(lecture_start_date, lecture_start_time)
 
         return cleaned_data
 

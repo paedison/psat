@@ -2,11 +2,11 @@ import pandas as pd
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 
-from a_psat import models, utils, forms, filters
+from a_psat import models, forms, filters
 from common.constants import icon_set_new
 from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data
-from . import admin_view_utils
+from common.utils import HtmxHttpRequest, update_context_data, get_paginator_data
+from ...utils import admin_view_utils
 
 
 class ViewConfiguration:
@@ -48,23 +48,23 @@ def tag_list_view(request: HtmxHttpRequest):
     )
 
     if view_type in ['problem_container', 'problem_list']:
-        problem_page_obj, problem_page_range = utils.get_paginator_data(problem_tag_filterset.qs, page_number)
+        problem_page_obj, problem_page_range = get_paginator_data(problem_tag_filterset.qs, page_number)
         context = update_context_data(context, problem_page_obj=problem_page_obj, problem_page_range=problem_page_range)
         return render(request, f'a_psat/admin_tag_list.html#{view_type}', context)
 
     if view_type in ['tagged_problem_container', 'tagged_problem_list']:
-        tagged_item_page_obj, tagged_item_page_range = utils.get_paginator_data(tagged_item_filterset.qs, page_number)
+        tagged_item_page_obj, tagged_item_page_range = get_paginator_data(tagged_item_filterset.qs, page_number)
         context = update_context_data(context, tagged_item_page_obj=tagged_item_page_obj, tagged_item_page_range=tagged_item_page_range)
         return render(request, f'a_psat/admin_tag_list.html#{view_type}', context)
 
     if view_type in ['tag_container', 'tag_list']:
-        tag_page_obj, tag_page_range = utils.get_paginator_data(qs_tag, page_number)
+        tag_page_obj, tag_page_range = get_paginator_data(qs_tag, page_number)
         context = update_context_data(context, tag_page_obj=tag_page_obj, tag_page_range=tag_page_range)
         return render(request, f'a_psat/admin_tag_list.html#{view_type}', context)
 
-    problem_page_obj, problem_page_range = utils.get_paginator_data(problem_tag_filterset.qs, page_number)
-    tagged_item_page_obj, tagged_item_page_range = utils.get_paginator_data(tagged_item_filterset.qs, page_number)
-    tag_page_obj, tag_page_range = utils.get_paginator_data(qs_tag, page_number)
+    problem_page_obj, problem_page_range = get_paginator_data(problem_tag_filterset.qs, page_number)
+    tagged_item_page_obj, tagged_item_page_range = get_paginator_data(tagged_item_filterset.qs, page_number)
+    tag_page_obj, tag_page_range = get_paginator_data(qs_tag, page_number)
     context = update_context_data(
         context,
         tagged_item_page_obj=tagged_item_page_obj, tagged_item_page_range=tagged_item_page_range,

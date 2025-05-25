@@ -6,11 +6,11 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
-from a_psat import models, utils, forms, filters
+from a_psat import models, forms, filters
 from common.constants import icon_set_new
 from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data
-from . import admin_view_utils
+from common.utils import HtmxHttpRequest, update_context_data, get_paginator_data
+from ...utils import admin_view_utils
 
 
 class ViewConfiguration:
@@ -41,18 +41,18 @@ def official_list_view(request: HtmxHttpRequest):
     exam_exam = request.GET.get('exam', '')
     page_number = request.GET.get('page', '1')
 
-    sub_title = utils.get_sub_title_by_psat(exam_year, exam_exam, '', end_string='PSAT')
+    sub_title = admin_view_utils.get_sub_title_by_psat(exam_year, exam_exam, '', end_string='PSAT')
     filterset = filters.PsatFilter(data=request.GET, request=request)
     context = update_context_data(config=config, sub_title=sub_title, psat_form=filterset.form)
     template_name = 'a_psat/admin_official_list.html'
 
     if view_type == 'exam_list':
-        page_obj, page_range = utils.get_paginator_data(filterset.qs, page_number)
+        page_obj, page_range = get_paginator_data(filterset.qs, page_number)
         admin_view_utils.update_official_problem_count(page_obj)
         context = update_context_data(context, page_obj=page_obj, page_range=page_range)
         return render(request, f'{template_name}#exam_list', context)
 
-    page_obj, page_range = utils.get_paginator_data(filterset.qs, page_number)
+    page_obj, page_range = get_paginator_data(filterset.qs, page_number)
     admin_view_utils.update_official_problem_count(page_obj)
     context = update_context_data(context, page_obj=page_obj, page_range=page_range)
     return render(request, 'a_psat/admin_official_list.html', context)
@@ -64,9 +64,9 @@ def official_detail_view(request: HtmxHttpRequest, pk: int):
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', '1')
 
-    psat = utils.get_psat(pk)
+    psat = get_object_or_404(models.Psat, pk=pk)
     qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
-    page_obj, page_range = utils.get_paginator_data(qs_problem, page_number)
+    page_obj, page_range = get_paginator_data(qs_problem, page_number)
 
     sub_list = admin_view_utils.get_sub_list(psat)
 

@@ -6,10 +6,10 @@
                 <th class="text-primary text-nowrap" rowspan="2">공식<br/>정답</th>
                 <th class="text-primary text-nowrap" rowspan="2">예상<br/>정답</th>
                 <th class="text-primary text-nowrap" colspan="2">정답률(%)</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">[전체] 답안 선택 현황</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">[상위권] 답안 선택 현황</th>
-                <th class="text-primary text-nowrap" colspan="{{ tab.answer_count }}">[중위권] 답안 선택 현황</th>
-                <th class="text-primary text-nowrap td-right-no-border" colspan="{{ tab.answer_count }}">[하위권] 답안 선택 현황</th>
+                <th class="text-primary text-nowrap" colspan="{{ answer_data.answer_count }}">[전체] 답안 선택 현황</th>
+                <th class="text-primary text-nowrap" colspan="{{ answer_data.answer_count }}">[상위권] 답안 선택 현황</th>
+                <th class="text-primary text-nowrap" colspan="{{ answer_data.answer_count }}">[중위권] 답안 선택 현황</th>
+                <th class="text-primary text-nowrap td-right-no-border" colspan="{{ answer_data.answer_count }}">[하위권] 답안 선택 현황</th>
             </tr>
             <tr class="text-center table-warning align-middle">
                 <th class="text-primary text-nowrap">전체[상/중/하]</th>
@@ -18,7 +18,7 @@
                     <th class="text-primary td-right-no-border">①</th>
                     <th class="text-primary td-left-no-border td-right-no-border">②</th>
                     <th class="text-primary td-left-no-border td-right-no-border">③</th>
-                    {% if tab.title == '헌법' %}
+                    {% if answer_data.title == '헌법' %}
                         <th class="text-primary td-left-no-border">④</th>
                     {% else %}
                         <th class="text-primary td-left-no-border td-right-no-border">④</th>
@@ -28,7 +28,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for obj in answers %}
+            {% for obj in answer_data.page_obj %}
                 <tr class="text-center small">
                     <th class="td-left-no-border">{{ obj.no }}</th>
                     <th class="fs-6 text-success">{{ obj.ans_official_circle|default:'' }}</th>
@@ -66,7 +66,7 @@
                             {{ count_3|default:'' }}<br/>
                             <span class="text-primary">{{ count_3|percentageby:count_sum|floatformat:1|default:'' }}</span>
                         </td>
-                        {% if tab.title == '헌법' %}
+                        {% if answer_data.title == '헌법' %}
                             <td class="td-left-no-border td-right-no-border">
                                 {{ count_4|default:'' }}<br/>
                                 <span class="text-primary">{{ count_4|percentageby:count_sum|floatformat:1|default:'' }}</span>
@@ -92,6 +92,6 @@
     </table>
 </article>
 
-{% with page_obj=answers page_range=answers_page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header='answer_list' %}
+{% with page_obj=answer_data.page_obj page_range=answer_data.page_range %}
+    {% include 'a_prime/snippets/pagination.html' with header=answer_data.header %}
 {% endwith %}

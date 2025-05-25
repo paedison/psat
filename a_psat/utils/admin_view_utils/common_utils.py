@@ -69,6 +69,43 @@ def get_total_field_vars(psat) -> dict[str, tuple[str, str, int]]:
     return field_vars
 
 
+def get_sub_title_by_psat(year, exam, subject, end_string='기출문제') -> str:
+    title_parts = []
+    if year:
+        title_parts.append(f'{year}년')
+        if isinstance(year, str):
+            year = int(year)
+
+    if exam:
+        exam_dict = {
+            '행시': '5급공채/행정고시', '외시': '외교원/외무고시', '칠급': '7급공채',
+            '입시': '입법고시', '칠예': '7급공채 예시', '민경': '민간경력', '견습': '견습',
+        }
+        if not year:
+            exam_name = exam_dict[exam]
+        else:
+            if exam == '행시':
+                exam_name = '행정고시' if year < 2011 else '5급공채'
+            elif exam == '외시':
+                exam_name = '외교원' if year == 2013 else '외무고시'
+            elif exam == '칠급':
+                exam_name = '7급공채 모의고사' if year == 2020 else '7급공채'
+            else:
+                exam_name = exam_dict[exam]
+        title_parts.append(exam_name)
+
+    if subject:
+        subject_dict = {'헌법': '헌법', '언어': '언어논리', '자료': '자료해석', '상황': '상황판단'}
+        title_parts.append(subject_dict[subject])
+
+    if not year and not exam and not subject:
+        title_parts.append('전체')
+    else:
+        title_parts.append('전체')
+    sub_title = f'{" ".join(title_parts)} {end_string}'
+    return sub_title
+
+
 class BaseConstantList(list):
     def __init__(self, items, label_avg):
         super().__init__(items)

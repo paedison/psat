@@ -47,9 +47,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for _ in answers_page_obj_group %}
-                    {% cycle answers_page_obj_group.헌법 answers_page_obj_group.언어 answers_page_obj_group.자료 answers_page_obj_group.상황 as answers silent %}
-                    {% for answer in answers %}
+                {% for answer_data in answer_context.values %}
+                    {% for answer in answer_data.page_obj %}
                         <tr class="text-center">
                             <td class="text-nowrap">{{ answer.subject }}</td>
                             <td class="text-nowrap">{{ answer.no }}</td>
@@ -107,8 +106,6 @@
             </tbody>
         </table>
     </div>
-        </table>
-    </div>
 
     <script>
         window.onload = function () {
@@ -118,4 +115,4 @@
         };
     </script>
 </body>
-{% endblock html_body %}
+{% endblock %}
