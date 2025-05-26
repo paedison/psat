@@ -3,16 +3,16 @@
 <article class="table-responsive">
     <table class="table align-middle">
         <tbody>
-            {% if not answers %}
+            {% if not answer_data.is_confirmed %}
                 <tr class="text-center">
                     <th>
-                        <a class="btn btn-outline-danger my-4" hx-boost="true" href="{{ tab.url_answer_input }}">
+                        <a class="btn btn-outline-danger my-4" hx-boost="true" href="{{ answer_data.url_answer_input }}">
                             답안을 제출해주세요.
                         </a>
                     </th>
                 </tr>
             {% else %}
-                {% if answers|length == 25  %}
+                {% if answer_data.page_obj|length == 25  %}
                     {% for _ in '012' %}
                         {% cycle 10 10 5 as loop_counter silent %}
                         {% cycle 0 10 20 as loop_min silent %}
@@ -40,7 +40,7 @@
 
     <tr class="text-center" aria-label="공식 정답">
         <th class="text-nowrap" scope="row">공식 정답</th>
-        {% for answer in answers %}
+        {% for answer in answer_data.page_obj %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td data-number="{{ answer.no }}">
                     {% if answer.ans_list %}
@@ -65,7 +65,7 @@
 
     <tr class="text-center" aria-label="정답률">
         <th class="text-nowrap" scope="row">정답률(%)</th>
-        {% for answer in answers %}
+        {% for answer in answer_data.page_obj %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td data-number="{{ answer.no }}">
                     <div class="fw-bold text-success">
@@ -81,7 +81,7 @@
 
     <tr class="text-center" aria-label="선택 답안">
         <th class="text-nowrap" scope="row">선택 답안</th>
-        {% for answer in answers %}
+        {% for answer in answer_data.page_obj %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td data-number="{{ answer.no }}">
                     <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
@@ -97,7 +97,7 @@
 
     <tr class="text-center" aria-label="선택률">
         <th class="text-nowrap" scope="row">선택률(%)</th>
-        {% for answer in answers %}
+        {% for answer in answer_data.page_obj %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td data-number="{{ answer.no }}">
                     <div class="fw-bold {% if answer.result %}text-success{% else %}text-danger{% endif %}">

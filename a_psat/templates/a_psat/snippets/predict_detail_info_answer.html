@@ -28,7 +28,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for stat_tot in stat_total_all %}
+            {% for stat_tot in total_statistics_context.all.page_obj %}
                 {% partial sub_answer_line %}
             {% endfor %}
         </tbody>

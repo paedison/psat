@@ -146,7 +146,7 @@ class AnswerManager(models.Manager):
             answer_correct=models.F('problem__answer'), answer_student=models.F('answer'))
 
     def get_filtered_qs_by_psat_student_stat_type_and_is_filtered(
-            self, psat, student, stat_type='total', is_filtered=False):
+            self, psat, student, stat_type='all', is_filtered=False):
         qs = self.filter(problem__psat=psat).values('problem__subject').annotate(
             participant_count=models.Count('student_id', distinct=True))
         if stat_type == 'department':
@@ -197,7 +197,7 @@ class AnswerCountManager(models.Manager):
 
 class ScoreManager(models.Manager):
     def get_filtered_qs_by_psat_student_stat_type_and_is_filtered(
-            self, psat, student, stat_type='total', is_filtered=False):
+            self, psat, student, stat_type='all', is_filtered=False):
         qs = self.filter(student__psat=psat)
         if stat_type == 'department':
             qs = qs.filter(student__category__department=student.category.department)

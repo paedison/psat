@@ -18,32 +18,6 @@ def get_predict_psat(psat):
         return None
 
 
-def get_predict_score_tab(is_filtered=False):
-    suffix = 'Filtered' if is_filtered else ''
-    template = 'a_psat/snippets/predict_detail_sheet_score_table.html'
-    return [
-        {'id': '0', 'title': '전체 기준', 'prefix': f'total{suffix}', 'template': template},
-        {'id': '1', 'title': '직렬 기준', 'prefix': f'department{suffix}', 'template': template},
-    ]
-
-
-def get_predict_answer_tab(psat):
-    subject_vars = common_utils.get_subject_vars(psat)
-    sub_list = common_utils.get_sub_list(psat)
-    answer_tab = [
-        {
-            'id': str(idx),
-            'title': sub,
-            'subject': subject_vars[sub][0],
-            'field': subject_vars[sub][1],
-            'url_answer_input': psat.get_predict_answer_input_url(
-                subject_vars[sub][1]) if sub != '평균' else '',
-        }
-        for idx, sub in enumerate(sub_list) if sub
-    ]
-    return answer_tab
-
-
 def get_predict_is_confirmed_data(qs_student_answer, psat) -> list:
     subject_vars = common_utils.get_subject_vars(psat)
     is_confirmed_data = [False for _ in subject_vars.keys()]
@@ -69,6 +43,30 @@ def get_predict_input_answer_data_set(request, psat) -> dict:
     answer_data_set_cookie = request.COOKIES.get('answer_data_set', '{}')
     answer_data_set = json.loads(answer_data_set_cookie) or empty_answer_data
     return answer_data_set
+
+
+def get_statistics_context(
+        psat: models.Psat,
+        student: models.PredictStudent,
+        is_confirmed_data: list,
+        answer_data_set: dict,
+        qs_student_answer,
+        is_filtered: bool
+):
+    suffix = 'Filtered' if is_filtered else 'Total'
+    statistics_all = get_predict_stat_data(
+        psat, student, is_confirmed_data, answer_data_set, 'all', is_filtered)
+    update_predict_score_predict(statistics_all, qs_student_answer, psat)
+    statistics_department = get_predict_stat_data(
+        psat, student, is_confirmed_data, answer_data_set, 'department', is_filtered)
+    return {
+        'all': {
+            'id': '0', 'title': '전체 기준', 'prefix': f'All{suffix}Score', 'page_obj': statistics_all,
+        },
+        'department': {
+            'id': '1', 'title': '직렬 기준', 'prefix': f'Department{suffix}Score', 'page_obj': statistics_department,
+        },
+    }
 
 
 def get_predict_stat_data(
@@ -154,7 +152,7 @@ def get_predict_stat_data(
     return stat_data
 
 
-def get_predict_dict_stat_chart(student, stat_total, stat_department):
+def get_predict_dict_stat_chart(student, total_statistics_context):
     field_vars = common_utils.get_field_vars(student.psat)
     student_score = [getattr(student.score, field) for field in field_vars]
 
@@ -171,13 +169,13 @@ def get_predict_dict_stat_chart(student, stat_total, stat_department):
     }
 
     score_list = [score for score in student_score if score is not None]
-    for stat in stat_total:
+    for stat in total_statistics_context['all']['page_obj']:
         score_list.extend([stat['avg_score'], stat['top_score_20'], stat['top_score_10'], stat['max_score']])
         chart_score['total_average'].append(stat['avg_score'])
         chart_score['total_score_20'].append(stat['top_score_20'])
         chart_score['total_score_10'].append(stat['top_score_10'])
         chart_score['total_top'].append(stat['max_score'])
-    for stat in stat_department:
+    for stat in total_statistics_context['department']['page_obj']:
         score_list.extend([stat['avg_score'], stat['top_score_20'], stat['top_score_10'], stat['max_score']])
         chart_score['department_average'].append(stat['avg_score'])
         chart_score['department_score_20'].append(stat['top_score_20'])
@@ -210,7 +208,9 @@ def frequency_table_by_bin(scores, bin_size=5, target_score=None):
     return sorted_freq, target_bin
 
 
-def get_predict_dict_stat_frequency(student, score_frequency_list) -> dict:
+def get_predict_dict_stat_frequency(student) -> dict:
+    score_frequency_list = models.PredictStudent.objects.filter(
+        psat=student.psat, score__average__gte=50).values_list('score__average', flat=True)
     scores = [round(score, 1) for score in score_frequency_list]
     sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.average)
 
@@ -226,15 +226,20 @@ def get_predict_dict_stat_frequency(student, score_frequency_list) -> dict:
     return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
 
 
-def get_predict_data_answers(qs_student_answer, psat):
-    sub_list = common_utils.get_sub_list(psat)
+def get_predict_answer_context(qs_student_answer, psat, is_confirmed_data):
     subject_vars = common_utils.get_subject_vars(psat)
-    data_answers = [[] for _ in sub_list]
+    subject_vars.pop('평균')
+    context = {
+        sub: {
+            'id': str(idx), 'title': sub, 'subject': subject, 'field': field,
+            'url_answer_input': psat.get_predict_answer_input_url(field),
+            'is_confirmed': is_confirmed_data[idx], 'page_obj': [],
+        }
+        for sub, (subject, field, idx) in subject_vars.items()
+    }
 
     for line in qs_student_answer:
         sub = line.problem.subject
-        idx = sub_list.index(sub)
-        field = subject_vars[sub][1]
         ans_official = line.problem.answer
         ans_student = line.answer
         ans_predict = line.problem.predict_answer_count.answer_predict
@@ -244,7 +249,7 @@ def get_predict_data_answers(qs_student_answer, psat):
         line.ans_official_circle = line.problem.get_answer_display
 
         line.ans_student = ans_student
-        line.field = field
+        line.field = subject_vars[sub][1]
 
         line.ans_predict = ans_predict
         line.rate_accuracy = line.problem.predict_answer_count.get_answer_predict_rate()
@@ -263,8 +268,8 @@ def get_predict_data_answers(qs_student_answer, psat):
         line.rate_selection_mid = line.problem.predict_answer_count_mid_rank.get_answer_rate(ans_student)
         line.rate_selection_low = line.problem.predict_answer_count_low_rank.get_answer_rate(ans_student)
 
-        data_answers[idx].append(line)
-    return data_answers
+        context[sub]['page_obj'].append(line)
+    return context
 
 
 def update_predict_score_predict(stat_total_all, qs_student_answer, psat):

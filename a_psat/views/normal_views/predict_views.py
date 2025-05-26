@@ -70,27 +70,12 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
     is_confirmed_data = normal_view_utils.get_predict_is_confirmed_data(qs_student_answer, psat)
     answer_data_set = normal_view_utils.get_predict_input_answer_data_set(request, psat)
 
-    stat_total_all = normal_view_utils.get_predict_stat_data(
-        psat, student, is_confirmed_data, answer_data_set, 'total', False)
-    normal_view_utils.update_predict_score_predict(stat_total_all, qs_student_answer, psat)
-    stat_department_all = normal_view_utils.get_predict_stat_data(
-        psat, student, is_confirmed_data, answer_data_set, 'department', False)
-
+    total_statistics_context = normal_view_utils.get_statistics_context(
+        psat, student, is_confirmed_data, answer_data_set, qs_student_answer, False)
+    filtered_statistics_context = None
     if student.is_filtered:
-        stat_total_filtered = normal_view_utils.get_predict_stat_data(
-            psat, student, is_confirmed_data, answer_data_set, 'total', True)
-        stat_department_filtered = normal_view_utils.get_predict_stat_data(
-            psat, student, is_confirmed_data, answer_data_set, 'department', True)
-    else:
-        stat_total_filtered = {}
-        stat_department_filtered = {}
-
-    data_answers = normal_view_utils.get_predict_data_answers(qs_student_answer, psat)
-
-    stat_chart = normal_view_utils.get_predict_dict_stat_chart(student, stat_total_all, stat_department_all)
-    score_frequency_list = models.PredictStudent.objects.filter(
-        psat=psat, score__average__gte=50).values_list('score__average', flat=True)
-    stat_frequency = normal_view_utils.get_predict_dict_stat_frequency(student, score_frequency_list)
+        filtered_statistics_context = normal_view_utils.get_statistics_context(
+            psat, student, is_confirmed_data, answer_data_set, qs_student_answer, True)
 
     context = update_context_data(
         context, psat=psat, sub_title=f'{psat.full_reference} 합격 예측',
@@ -99,25 +84,20 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
         # icon
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
 
-        # tab variables for templates
-        score_tab=normal_view_utils.get_predict_score_tab(),
-        filtered_score_tab=normal_view_utils.get_predict_score_tab(True),
-        answer_tab=normal_view_utils.get_predict_answer_tab(psat),
-
         # info_student: 수험 정보
         student=student,
 
-        # sheet_score: 성적 예측 I [All]
-        stat_total_all=stat_total_all, stat_department_all=stat_department_all,
+        # sheet_score: 성적 예측 I [Total] / 성적 예측 II [Filtered]
+        total_statistics_context=total_statistics_context,
+        filtered_statistics_context=filtered_statistics_context,
 
-        # sheet_score: 성적 예측 II [Filtered]
-        stat_total_filtered=stat_total_filtered, stat_department_filtered=stat_department_filtered,
-
-        # sheet_answer: 답안 확인
-        data_answers=data_answers, is_confirmed_data=is_confirmed_data,
+        # sheet_answer: 예상 정답 / 답안 확인
+        answer_context=normal_view_utils.get_predict_answer_context(qs_student_answer, psat, is_confirmed_data),
 
         # chart: 성적 분포 차트
-        stat_chart=stat_chart, stat_frequency=stat_frequency, all_confirmed=is_confirmed_data[-1],
+        stat_chart=normal_view_utils.get_predict_dict_stat_chart(student, total_statistics_context),
+        stat_frequency=normal_view_utils.get_predict_dict_stat_frequency(student),
+        all_confirmed=is_confirmed_data[-1],
     )
 
     if view_type == 'info_answer':

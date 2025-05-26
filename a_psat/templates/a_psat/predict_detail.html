@@ -83,17 +83,15 @@
                     <div class="card-body">
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerPredictTab" role="tablist">
-                                {% for tab in answer_tab %}
-                                    {% #nav_tab prefix='AnswerPredict' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% for answer_data in answer_context.values %}
+                                    {% #nav_tab prefix='AnswerPredict' id=answer_data.id %}{{ answer_data.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
 
                         <div class="tab-content" id="scoreAnswerPredictContent">
-                            {% for tab in answer_tab %}
-                                {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 as answers silent %}
-                                {% cycle is_confirmed_data.0 is_confirmed_data.1 is_confirmed_data.2 is_confirmed_data.3 as is_confirmed silent %}
-                                {% #nav_content prefix='AnswerPredict' id=tab.id %}
+                            {% for answer_data in answer_context.values %}
+                                {% #nav_content prefix='AnswerPredict' id=answer_data.id %}
                                     {% include 'a_psat/snippets/predict_detail_sheet_answer_predict.html' %}
                                 {% /nav_content %}
                             {% endfor %}
@@ -137,19 +135,18 @@
 
                     <div class="card-body">
                         <nav>
-                            <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetAllTab" role="tablist">
-                                {% for tab in score_tab %}
-                                    {% #nav_tab prefix='ScoreAll' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                            <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetTotalTab" role="tablist">
+                                {% for stat_data in total_statistics_context.values %}
+                                    {% #nav_tab prefix=stat_data.prefix id=stat_data.id %}{{ stat_data.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
 
-                        <div class="tab-content" id="scoreSheetAllContent">
-                            {% for tab in score_tab %}
-                                {% cycle stat_total_all as stat_total silent %}
-                                {% cycle stat_department_all as stat_department silent %}
-                                {% cycle stat_total_all stat_department_all as stat_data silent %}
-                                {% #nav_content prefix='ScoreAll' id=tab.id %}{% include tab.template %}{% /nav_content %}
+                        <div class="tab-content" id="scoreSheetTotalContent">
+                            {% for stat_data in total_statistics_context.values %}
+                                {% #nav_content prefix=stat_data.prefix id=stat_data.id %}
+                                    {% include 'a_psat/snippets/predict_detail_sheet_score_table.html' %}
+                                {% /nav_content %}
                             {% endfor %}
 
                             <div>
@@ -185,18 +182,17 @@
                     <div class="card-body">
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="scoreSheetFilteredTab" role="tablist">
-                                {% for tab in filtered_score_tab %}
-                                    {% #nav_tab prefix='ScoreFiltered' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% for stat_data in filtered_statistics_context.values %}
+                                    {% #nav_tab prefix=stat_data.prefix id=stat_data.id %}{{ stat_data.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
 
                         <div class="tab-content" id="scoreSheetFilteredContent">
-                            {% for tab in filtered_score_tab %}
-                                {% cycle stat_total_filtered as stat_total silent %}
-                                {% cycle stat_department_filtered as stat_department silent %}
-                                {% cycle stat_total_filtered stat_department_filtered as stat_data silent %}
-                                {% #nav_content prefix='ScoreFiltered' id=tab.id %}{% include tab.template %}{% /nav_content %}
+                            {% for stat_data in filtered_statistics_context.values %}
+                                {% #nav_content prefix=stat_data.prefix id=stat_data.id %}
+                                    {% include 'a_psat/snippets/predict_detail_sheet_score_table.html' %}
+                                {% /nav_content %}
                             {% endfor %}
 
                             <div>
@@ -235,22 +231,20 @@
                     <div class="card-body">
                         <nav>
                             <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerSubmitTab" role="tablist">
-                                {% for tab in answer_tab %}
-                                    {% #nav_tab prefix='AnswerSubmit' id=tab.id %}{{ tab.title }}{% /nav_tab %}
+                                {% for answer_data in answer_context.values %}
+                                    {% #nav_tab prefix='AnswerSubmit' id=answer_data.id %}{{ answer_data.title }}{% /nav_tab %}
                                 {% endfor %}
                             </div>
                         </nav>
+
                         <div class="tab-content" id="scoreAnswerSubmitContent">
-                            {% for tab in answer_tab %}
-                                {% cycle data_answers.0 data_answers.1 data_answers.2 data_answers.3 data_answers.4 as answers silent %}
-                                {% cycle data_answer_official.0 data_answer_official.1 data_answer_official.2 data_answer_official.3 data_answer_official.4 as answer_official silent %}
-                                {% cycle data_answer_student.0 data_answer_student.1 data_answer_student.2 data_answer_student.3 data_answer_student.4 as answer_student silent %}
-                                {% cycle answer_confirmed.0 answer_confirmed.1 answer_confirmed.2 answer_confirmed.3 answer_confirmed.4 as is_confirmed silent %}
-                                {% #nav_content prefix='AnswerSubmit' id=tab.id %}
+                            {% for answer_data in answer_context.values %}
+                                {% #nav_content prefix='AnswerSubmit' id=answer_data.id %}
                                     {% include 'a_psat/snippets/predict_detail_sheet_answer_submit.html' %}
                                 {% /nav_content %}
                             {% endfor %}
                         </div>
+
                         <div>
                             <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
                             <ol class="text-success small fw-bold m-0">

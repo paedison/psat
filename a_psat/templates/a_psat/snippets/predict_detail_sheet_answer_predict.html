@@ -3,10 +3,10 @@
 <article class="table-responsive">
     <table class="table align-middle">
         <tbody>
-            {% if not is_confirmed %}
+            {% if not answer_data.is_confirmed %}
                 <tr class="text-center">
                     <th>
-                        <a class="btn btn-outline-danger my-4" hx-boost="true" href="{{ tab.url_answer_input }}">
+                        <a class="btn btn-outline-danger my-4" hx-boost="true" href="{{ answer_data.url_answer_input }}">
                             답안을 제출해주세요.
                         </a>
                     </th>
@@ -19,7 +19,7 @@
                         </th>
                     </tr>
                 {% else %}
-                    {% if answers|length == 25  %}
+                    {% if answer_data.page_obj|length == 25  %}
                         {% for _ in '012' %}
                             {% cycle 10 10 5 as loop_counter silent %}
                             {% cycle 0 10 20 as loop_min silent %}
@@ -47,10 +47,10 @@
     </tr>
     <tr class="text-center" aria-label="예상 정답">
         <th class="text-nowrap td-no-border" scope="row">예상 정답</th>
-        {% for answer in answers %}
+        {% for answer in answer_data.page_obj %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td class="td-no-border">
-                    <div id="answerPredict{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
+                    <div id="answerPredict{{ answer_data.id }}-{{ answer.no|stringformat:'02d' }}"
                          class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}">
                         <button data-number="{{ answer.no }}"
                                 class="btn btn-circle btn-sm fs-6 mx-1 my-2 {% if answer.predict_result %}btn-success{% else %}btn-danger{% endif %}">
@@ -63,7 +63,7 @@
     </tr>
     <tr class="text-center" aria-label="정확도">
         <th class="text-nowrap" scope="row">정확도(%)</th>
-        {% for answer in answers %}
+        {% for answer in answer_data.page_obj %}
             {% if forloop.counter > loop_min and forloop.counter <= loop_min|add:loop_counter %}
                 <td>
                     <div data-number="{{ answer.no }}"
