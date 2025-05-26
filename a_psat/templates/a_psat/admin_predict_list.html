@@ -15,7 +15,7 @@
                             </div>
 
                             <div id="predictExamContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
-                                {% partial predict_exam_list %}
+                                {% partial predict_psat_list %}
                             </div>
                         </div>
                     </div>
@@ -48,9 +48,9 @@
             </div>
         </div>
     </div>
-{% endpartialdef predict_update_accordion %}
+{% endpartialdef %}
 
-{% partialdef predict_exam_list %}
+{% partialdef predict_psat_list %}
     <article class="table-responsive">
         <table class="table table-bordered table-striped align-middle" hx-push-url="true">
             <thead>
@@ -68,7 +68,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for obj in page_obj %}
+                {% for obj in predict_psat_context.page_obj %}
                     <tr class="text-center cursor-pointer" hx-get="{{ obj.psat.get_admin_predict_detail_url }}">
                         <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
                         <td class="text-nowrap">{{ obj.psat.get_year_display }}</td>
@@ -90,7 +90,5 @@
         </table>
     </article>
 
-    {% with page_obj=predict_page_obj page_range=predict_page_range %}
-        {% include 'a_psat/snippets/pagination.html' with header='predict_exam_list' %}
-    {% endwith %}
-{% endpartialdef predict_exam_list %}
+    {% include 'a_psat/snippets/pagination.html' with page_obj=predict_psat_context.page_obj page_range=predict_psat_context.page_range header='predict_psat_list' %}
+{% endpartialdef %}

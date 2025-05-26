@@ -9,6 +9,7 @@ from django.urls import reverse
 from a_psat import models
 from common.constants import icon_set_new
 from common.models import User
+from common.utils import get_paginator_context
 
 
 def get_list_data(custom_data) -> list:
@@ -141,6 +142,15 @@ def get_custom_data(user: User) -> dict:
     return {
         'like': [], 'rate': [], 'solve': [], 'memo': [], 'tag': [], 'collection': [],
     }
+
+
+def get_problem_context(user, queryset, page_number=1):
+    custom_data = get_custom_data(user)
+    problem_context = get_paginator_context(queryset, page_number)
+    if problem_context:
+        for problem in problem_context['page_obj']:
+            get_custom_icons(problem, custom_data)
+        return problem_context
 
 
 def get_custom_icons(problem, custom_data: dict):

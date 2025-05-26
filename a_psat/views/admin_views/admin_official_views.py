@@ -1,5 +1,4 @@
 import itertools
-from collections import defaultdict
 
 import pandas as pd
 from django.http import HttpResponse
@@ -9,7 +8,7 @@ from django.urls import reverse_lazy
 from a_psat import models, forms, filters
 from common.constants import icon_set_new
 from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data, get_paginator_data
+from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
 from ...utils import admin_view_utils
 
 
@@ -43,18 +42,13 @@ def official_list_view(request: HtmxHttpRequest):
 
     sub_title = admin_view_utils.get_sub_title_by_psat(exam_year, exam_exam, '', end_string='PSAT')
     filterset = filters.PsatFilter(data=request.GET, request=request)
-    context = update_context_data(config=config, sub_title=sub_title, psat_form=filterset.form)
-    template_name = 'a_psat/admin_official_list.html'
+    psat_context = get_paginator_context(filterset.qs, page_number)
+    admin_view_utils.update_official_problem_count(psat_context['page_obj'])
+    context = update_context_data(
+        config=config, sub_title=sub_title, psat_form=filterset.form, psat_context=psat_context)
 
     if view_type == 'exam_list':
-        page_obj, page_range = get_paginator_data(filterset.qs, page_number)
-        admin_view_utils.update_official_problem_count(page_obj)
-        context = update_context_data(context, page_obj=page_obj, page_range=page_range)
-        return render(request, f'{template_name}#exam_list', context)
-
-    page_obj, page_range = get_paginator_data(filterset.qs, page_number)
-    admin_view_utils.update_official_problem_count(page_obj)
-    context = update_context_data(context, page_obj=page_obj, page_range=page_range)
+        return render(request, f'a_psat/admin_official_list.html#exam_list', context)
     return render(request, 'a_psat/admin_official_list.html', context)
 
 
@@ -66,24 +60,16 @@ def official_detail_view(request: HtmxHttpRequest, pk: int):
 
     psat = get_object_or_404(models.Psat, pk=pk)
     qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
-    page_obj, page_range = get_paginator_data(qs_problem, page_number)
-
-    sub_list = admin_view_utils.get_sub_list(psat)
-
-    problem_dict = defaultdict(list)
-    for qs_p in qs_problem.order_by('id'):
-        problem_dict[qs_p.subject].append(qs_p)
-    answer_official_list = [problem_dict[sub] for sub in sub_list]
-
-    context = update_context_data(
-        config=config, psat=psat, subjects=sub_list,
-        answer_official_list=answer_official_list,
-        page_obj=page_obj, page_range=page_range,
-    )
+    subject_vars = admin_view_utils.get_subject_vars(psat)
+    subject_vars.pop('평균')
+    problem_context = get_paginator_context(qs_problem, page_number)
+    context = update_context_data(config=config, psat=psat, problem_context=problem_context)
 
     if view_type == 'problem_list':
         return render(request, 'a_psat/problem_list_content.html', context)
 
+    context = update_context_data(
+        context, answer_official_context=admin_view_utils.get_predict_only_answer_context(qs_problem, subject_vars))
     return render(request, 'a_psat/admin_official_detail.html', context)
 
 

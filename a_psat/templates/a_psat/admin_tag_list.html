@@ -153,7 +153,7 @@
             </thead>
 
             <tbody>
-                {% for obj in problem_page_obj %}
+                {% for obj in problem_context.page_obj %}
                     <tr class="text-center cursor-pointer">
                         <td class="text-nowrap" aria-label="ID">
                             {{ obj.id }}
@@ -176,7 +176,7 @@
         </table>
     </article>
 
-    {% include 'a_psat/snippets/pagination.html' with header='problem_list' page_obj=problem_page_obj page_range=problem_page_range %}
+    {% include 'a_psat/snippets/pagination.html' with page_obj=problem_context.page_obj page_range=problem_context.page_range header='problem_list' %}
 {% endpartialdef %}
 
 {% partialdef tagged_problem_filter_accordion %}
@@ -196,7 +196,7 @@
                       hx-get="{{ request.path }}">
                     <input id="id_data" type="text" name="keyword"
                            value="{{ keyword }}" hidden title="키워드">
-                    {% for field in tag_form %}
+                    {% for field in tagged_problem_form %}
                         {% if field.errors %}
                             {% crispy_field field 'class' 'form-select is-invalid' %}
                         {% else %}
@@ -254,7 +254,7 @@
             </thead>
 
             <tbody>
-                {% for obj in tagged_item_page_obj %}
+                {% for obj in tagged_problem_context.page_obj %}
                     <tr class="text-center cursor-pointer">
                         <td class="text-nowrap" aria-label="ID">
                             {{ obj.id }}
@@ -289,7 +289,7 @@
         </table>
     </article>
 
-    {% include 'a_psat/snippets/pagination.html' with header='tagged_problem_list' page_obj=tagged_item_page_obj page_range=tagged_item_page_range %}
+    {% include 'a_psat/snippets/pagination.html' with page_obj=tagged_problem_context.page_obj page_range=tagged_problem_context.page_range header='tagged_problem_list' %}
 {% endpartialdef %}
 
 {% partialdef tag_list %}
@@ -305,7 +305,7 @@
             </thead>
 
             <tbody>
-                {% for obj in tag_page_obj %}
+                {% for obj in tag_context.page_obj %}
                     <tr class="cursor-pointer">
                         <td class="text-nowrap text-center" aria-label="ID">
                             {{ obj.id }}
@@ -329,5 +329,5 @@
         </table>
     </article>
 
-    {% include 'a_psat/snippets/pagination.html' with header='tag_list' page_obj=tag_page_obj page_range=tag_page_range %}
+    {% include 'a_psat/snippets/pagination.html' with page_obj=tag_context.page_obj page_range=tag_context.page_range header='tag_list' %}
 {% endpartialdef %}

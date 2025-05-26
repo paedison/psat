@@ -112,6 +112,4 @@
     </table>
 </article>
 
-{% with page_obj=lecture_context.page_obj page_range=lecture_context.page_range %}
-    {% include 'a_psat/snippets/pagination.html' with header='lecture_list' %}
-{% endwith %}
+{% include 'a_psat/snippets/pagination.html' with page_obj=lecture_context.page_obj page_range=lecture_context.page_range header='lecture_list' %}

@@ -1,12 +1,10 @@
-from collections import defaultdict
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
 from a_psat import models, forms
 from common.constants import icon_set_new
 from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data, get_paginator_data
+from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
 from ..normal_views import predict_views
 from ...utils import admin_view_utils
 
@@ -41,18 +39,12 @@ def predict_list_view(request: HtmxHttpRequest):
     page_number = request.GET.get('page', '1')
 
     sub_title = admin_view_utils.get_sub_title_by_psat(exam_year, exam_exam, '', end_string='PSAT')
-    predict_exam_list = models.PredictPsat.objects.select_related('psat')
-    context = update_context_data(config=config, sub_title=sub_title)
-    template_name = 'a_psat/admin_predict_list.html'
+    predict_psat_list = models.PredictPsat.objects.select_related('psat')
+    predict_psat_context = get_paginator_context(predict_psat_list, page_number)
+    context = update_context_data(config=config, sub_title=sub_title, predict_psat_context=predict_psat_context)
 
-    if view_type == 'predict_exam_list':
-        page_obj, page_range = get_paginator_data(predict_exam_list, page_number)
-        context = update_context_data(context, page_obj=page_obj, page_range=page_range)
-        return render(request, f'{template_name}#study_category_list', context)
-
-    page_obj, page_range = get_paginator_data(predict_exam_list, page_number)
-    context = update_context_data(context, page_obj=page_obj, page_range=page_range)
-
+    if view_type == 'predict_psat_list':
+        return render(request, f'a_psat/admin_predict_list.html#study_category_list', context)
     return render(request, 'a_psat/admin_predict_list.html', context)
 
 
@@ -65,30 +57,12 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int):
     student_name = request.GET.get('student_name', '')
 
     psat = get_object_or_404(models.Psat, pk=pk)
-    qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
-    page_obj, page_range = get_paginator_data(qs_problem, page_number)
-
-    problem_dict = defaultdict(list)
-    for qs_p in qs_problem.order_by('id'):
-        problem_dict[qs_p.subject].append(qs_p)
-
     sub_list = admin_view_utils.get_sub_list(psat)
-    answer_official_list = [problem_dict[sub] for sub in sub_list]
-
-    qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat(psat)
-    answer_count_dict = defaultdict(list)
-    for qs_ac in qs_answer_count.order_by('id'):
-        answer_count_dict[qs_ac.sub].append(qs_ac)
-    answer_predict_list = [answer_count_dict[sub] for sub in sub_list]
-
-    context = update_context_data(
-        config=config, psat=psat, subjects=sub_list,
-        answer_official_list=answer_official_list,
-        answer_predict_list=answer_predict_list,
-        page_obj=page_obj, page_range=page_range,
-    )
+    context = update_context_data(config=config, psat=psat, subjects=sub_list)
 
     if view_type == 'problem_list':
+        qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
+        context = update_context_data(context, problem_context=get_paginator_context(qs_problem, page_number))
         return render(request, 'a_psat/problem_list_content.html', context)
 
     predict_psat = admin_view_utils.get_predict_psat(psat)
@@ -124,12 +98,19 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int):
             context = update_context_data(context, answer_data=answer_context[subject])
             return render(request, 'a_psat/snippets/admin_detail_predict_answer_analysis.html', context)
 
-        statistics_context = admin_view_utils.get_predict_statistics_context(psat)
-        catalog_context = admin_view_utils.get_predict_catalog_context(psat)
-        answer_context = admin_view_utils.get_predict_answer_context(psat)
+        subject_vars = admin_view_utils.get_subject_vars(psat)
+        subject_vars.pop('평균')
+        qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat(psat)
+        qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
+
         context = update_context_data(
-            context, statistics_context=statistics_context,
-            catalog_context=catalog_context, answer_context=answer_context
+            context,
+            statistics_context=admin_view_utils.get_predict_statistics_context(psat),
+            catalog_context=admin_view_utils.get_predict_catalog_context(psat),
+            answer_context=admin_view_utils.get_predict_answer_context(psat),
+            answer_predict_context=admin_view_utils.get_predict_only_answer_context(qs_answer_count, subject_vars),
+            answer_official_context=admin_view_utils.get_predict_only_answer_context(qs_problem, subject_vars),
+            problem_context=get_paginator_context(qs_problem),
         )
     return render(request, 'a_psat/admin_predict_detail.html', context)
 

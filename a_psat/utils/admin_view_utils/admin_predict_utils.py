@@ -9,7 +9,7 @@ from django.db.models.functions import Rank
 from django.http import HttpResponse
 
 from a_psat import models
-from common.utils import get_paginator_data
+from common.utils import get_paginator_context
 from . import common_utils
 
 
@@ -374,28 +374,27 @@ def update_predict_answer_count_model(model_dict, rank_type='all', is_filtered=F
     return common_utils.bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
 
 
+def get_predict_only_answer_context(queryset, subject_vars):
+    query_dict = defaultdict(list)
+    for query in queryset.order_by('id'):
+        query_dict[query.subject].append(query)
+    return {
+        sub: {'id': str(idx), 'title': sub, 'page_obj': query_dict[sub]}
+        for sub, (_, _, idx) in subject_vars.items()
+    }
+
+
 def get_predict_statistics_context(psat, page_number=1, per_page=10):
     total_data, filtered_data = get_predict_statistics_data(psat)
-    total_page_obj, total_page_range = get_paginator_data(total_data, page_number, per_page)
-    filtered_page_obj, filtered_page_range = get_paginator_data(filtered_data, page_number, per_page)
-    return {
-        'total': {
-            'id': '0',
-            'title': '전체',
-            'prefix': 'TotalStatistics',
-            'header': 'total_statistics_list',
-            'page_obj': total_page_obj,
-            'page_range': total_page_range,
-        },
-        'filtered': {
-            'id': '1',
-            'title': '필터링',
-            'prefix': 'FilteredStatistics',
-            'header': 'filtered_statistics_list',
-            'page_obj': filtered_page_obj,
-            'page_range': filtered_page_range,
-        },
-    }
+    total_context = get_paginator_context(total_data, page_number, per_page)
+    filtered_context = get_paginator_context(filtered_data, page_number, per_page)
+    total_context.update({
+        'id': '0', 'title': '전체', 'prefix': 'TotalStatistics', 'header': 'total_statistics_list',
+    })
+    filtered_context.update({
+        'id': '1', 'title': '필터링', 'prefix': 'FilteredStatistics', 'header': 'filtered_statistics_list',
+    })
+    return {'total': total_context, 'filtered': filtered_context}
 
 
 def get_predict_statistics_data(psat):
@@ -478,28 +477,16 @@ def get_predict_catalog_context(psat, page_number=1, total_list=None):
     if total_list is None:
         total_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
     filtered_list = total_list.filter(is_filtered=True)
-    total_page_obj, total_page_range = get_paginator_data(total_list, page_number)
-    filtered_page_obj, filtered_page_range = get_paginator_data(filtered_list, page_number)
-    update_predict_filtered_catalog(filtered_page_obj)
-
-    return {
-        'total': {
-            'id': '0',
-            'title': '전체',
-            'prefix': 'TotalCatalog',
-            'header': 'total_catalog_list',
-            'page_obj': total_page_obj,
-            'page_range': total_page_range,
-        },
-        'filtered': {
-            'id': '1',
-            'title': '필터링',
-            'prefix': 'FilteredCatalog',
-            'header': 'filtered_catalog_list',
-            'page_obj': filtered_page_obj,
-            'page_range': filtered_page_range,
-        },
-    }
+    total_context = get_paginator_context(total_list, page_number)
+    filtered_context = get_paginator_context(filtered_list, page_number)
+    update_predict_filtered_catalog(filtered_context['page_obj'])
+    total_context.update({
+        'id': '0', 'title': '전체', 'prefix': 'TotalCatalog', 'header': 'total_catalog_list',
+    })
+    filtered_context.update({
+        'id': '1', 'title': '필터링', 'prefix': 'FilteredCatalog', 'header': 'filtered_catalog_list',
+    })
+    return {'total': total_context, 'filtered': filtered_context}
 
 
 def update_predict_filtered_catalog(filtered_catalog_page_obj):
@@ -526,17 +513,17 @@ def get_predict_answer_context(psat, subject=None, page_number=1, per_page=10):
         qs_answer_count_group[sub].append(qs_ac)
 
     for sub, qs_answer_count in qs_answer_count_group.items():
-        data_answers = get_predict_answer_data(qs_answer_count, subject_vars)
-        page_obj, page_range = get_paginator_data(data_answers, page_number, per_page)
-        answer_context[sub] = {
-            'id': str(subject_vars[sub][2]),
-            'title': sub,
-            'prefix': 'Answer',
-            'header': 'answer_list',
-            'answer_count': 4 if sub == '헌법' else 5,
-            'page_obj': page_obj,
-            'page_range': page_range,
-        }
+        if qs_answer_count:
+            data_answers = get_predict_answer_data(qs_answer_count, subject_vars)
+            context = get_paginator_context(data_answers, page_number, per_page)
+            context.update({
+                'id': str(subject_vars[sub][2]),
+                'title': sub,
+                'prefix': 'Answer',
+                'header': 'answer_list',
+                'answer_count': 4 if sub == '헌법' else 5,
+            })
+            answer_context[sub] = context
 
     return answer_context
 

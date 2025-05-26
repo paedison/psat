@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from a_psat import models, forms, filters
 from common.constants import icon_set_new
 from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data, get_paginator_data
+from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
 from ...utils import admin_view_utils
 
 
@@ -37,39 +37,37 @@ def tag_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', '1')
-
-    qs_tag = models.ProblemTag.objects.order_by('-id')
-    problem_tag_filterset = filters.ProblemTagFilter(data=request.GET, request=request)
-    tagged_item_filterset = filters.ProblemTaggedItemFilter(data=request.GET, request=request)
-    context = update_context_data(
-        config=config, icon_image=icon_set_new.ICON_IMAGE,
-        problem_form=problem_tag_filterset.form,
-        tag_form=tagged_item_filterset.form
-    )
+    context = update_context_data(config=config, icon_image=icon_set_new.ICON_IMAGE)
 
     if view_type in ['problem_container', 'problem_list']:
-        problem_page_obj, problem_page_range = get_paginator_data(problem_tag_filterset.qs, page_number)
-        context = update_context_data(context, problem_page_obj=problem_page_obj, problem_page_range=problem_page_range)
+        problem_tag_filterset = filters.ProblemTagFilter(data=request.GET, request=request)
+        problem_context = get_paginator_context(problem_tag_filterset.qs, page_number)
+        context = update_context_data(
+            context, problem_form=problem_tag_filterset.form, problem_context=problem_context)
         return render(request, f'a_psat/admin_tag_list.html#{view_type}', context)
 
     if view_type in ['tagged_problem_container', 'tagged_problem_list']:
-        tagged_item_page_obj, tagged_item_page_range = get_paginator_data(tagged_item_filterset.qs, page_number)
-        context = update_context_data(context, tagged_item_page_obj=tagged_item_page_obj, tagged_item_page_range=tagged_item_page_range)
+        tagged_item_filterset = filters.ProblemTaggedItemFilter(data=request.GET, request=request)
+        tagged_problem_context = get_paginator_context(tagged_item_filterset.qs, page_number)
+        context = update_context_data(
+            context, tagged_problem_form=tagged_item_filterset.form, tagged_problem_context=tagged_problem_context)
         return render(request, f'a_psat/admin_tag_list.html#{view_type}', context)
 
     if view_type in ['tag_container', 'tag_list']:
-        tag_page_obj, tag_page_range = get_paginator_data(qs_tag, page_number)
-        context = update_context_data(context, tag_page_obj=tag_page_obj, tag_page_range=tag_page_range)
+        qs_tag = models.ProblemTag.objects.order_by('-id')
+        context = update_context_data(context, tag_context=get_paginator_context(qs_tag, page_number))
         return render(request, f'a_psat/admin_tag_list.html#{view_type}', context)
 
-    problem_page_obj, problem_page_range = get_paginator_data(problem_tag_filterset.qs, page_number)
-    tagged_item_page_obj, tagged_item_page_range = get_paginator_data(tagged_item_filterset.qs, page_number)
-    tag_page_obj, tag_page_range = get_paginator_data(qs_tag, page_number)
+    problem_tag_filterset = filters.ProblemTagFilter(data=request.GET, request=request)
+    tagged_item_filterset = filters.ProblemTaggedItemFilter(data=request.GET, request=request)
+    qs_tag = models.ProblemTag.objects.order_by('-id')
     context = update_context_data(
         context,
-        tagged_item_page_obj=tagged_item_page_obj, tagged_item_page_range=tagged_item_page_range,
-        problem_page_obj=problem_page_obj, problem_page_range=problem_page_range,
-        tag_page_obj=tag_page_obj, tag_page_range=tag_page_range,
+        problem_form=problem_tag_filterset.form,
+        problem_context=get_paginator_context(problem_tag_filterset.qs),
+        tagged_problem_form=tagged_item_filterset.form,
+        tagged_problem_context=get_paginator_context(tagged_item_filterset.qs),
+        tag_context=get_paginator_context(qs_tag),
     )
     return render(request, 'a_psat/admin_tag_list.html', context)
 

@@ -92,6 +92,4 @@
     </table>
 </article>
 
-{% with page_obj=answer_data.page_obj page_range=answer_data.page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header=answer_data.header %}
-{% endwith %}
+{% include 'a_prime/snippets/pagination.html' with page_obj=answer_data.page_obj page_range=answer_data.page_range header=answer_data.header %}

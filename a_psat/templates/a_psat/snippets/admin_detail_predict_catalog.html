@@ -108,6 +108,4 @@
     </table>
 </article>
 
-{% with page_obj=catalog_data.page_obj page_range=catalog_data.page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header=catalog_data.header %}
-{% endwith %}
+{% include 'a_prime/snippets/pagination.html' with page_obj=catalog_data.page_obj page_range=catalog_data.page_range header=catalog_data.header %}

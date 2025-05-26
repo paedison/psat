@@ -5,7 +5,7 @@
 <article class="table-responsive">
     <table class="table align-middle m-0">
         <tbody>
-            {% for problem in page_obj %}
+            {% for problem in problem_context.page_obj %}
                 {% ifchanged %}
                     <tr class="table-warning">
                         <td class="text-nowrap text-primary p-2">
@@ -45,9 +45,7 @@
     </table>
 </article>
 
-{% if page_obj.has_next or page_obj.has_previous %}
-    {% include 'a_psat/snippets/pagination.html' with header='problem_list' %}
-{% endif %}
+{% include 'a_psat/snippets/pagination.html' with page_obj=problem_context.page_obj page_range=problem_context.page_range header='problem_list' %}
 
 {% partialdef reference %}
     <a class="text-decoration-none fw-bold cursor-pointer"

@@ -3,25 +3,27 @@
 <div class="row score-progress">
     <div class="col-12">
         <h6>총점</h6>
-            {% if my_total_result.rank %}
-                <h5>
-                    <span class="text-primary fw-bold">{{ my_total_result.score_sum }}</span>
-                    <span class="fs-6">
-                        / {{ my_total_result.total_score_sum }}
-                        {{ my_total_result.rank }}등({{ my_total_result.rank|percentageby:my_total_result.participants|floatformat:1 }}%) |
-                        {{ my_total_result.score_1 }}(언) / {{ my_total_result.score_2 }}(자) / {{ my_total_result.score_3 }}(상)
-                    </span>
+            {% with total_result=my_result_context.total %}
+                {% if total_result.rank %}
+                    <h5>
+                        <span class="text-primary fw-bold">{{ total_result.score_sum }}</span>
+                        <span class="fs-6">
+                            / {{ total_result.total_score_sum }}
+                            {{ total_result.rank }}등({{ my_total_result.rank|percentageby:total_result.participants|floatformat:1 }}%) |
+                            {{ total_result.score_1 }}(언) / {{ total_result.score_2 }}(자) / {{ total_result.score_3 }}(상)
+                        </span>
 
-                </h5>
-                <div class="progress">
-                    <div class="progress-bar bg-c-blue" style="width:{{ my_total_result.score_sum|percentageby:my_total_result.total_score_sum }}%"></div>
-                </div>
-            {% else %}
-                <span class="badge rounded-pill text-bg-danger">성적 자료가 없습니다.</span>
-            {% endif %}
+                    </h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-c-blue" style="width:{{ total_result.score_sum|percentageby:total_result.total_score_sum }}%"></div>
+                    </div>
+                {% else %}
+                    <span class="badge rounded-pill text-bg-danger">성적 자료가 없습니다.</span>
+                {% endif %}
+            {% endwith %}
         <hr>
     </div>
-    {% for stat in my_result_page_obj %}
+    {% for stat in my_result_context.page_obj %}
         <div class="col-md-6">
             <h6>{{ stat.psat.get_round_display }}</h6>
             {% if current_time >= stat.schedule.lecture_open_datetime and current_time < stat.schedule.homework_end_datetime %}
@@ -68,6 +70,4 @@
     {% endfor %}
 </div>
 
-{% with page_obj=my_result_page_obj page_range=my_result_page_range %}
-    {% include 'a_psat/snippets/pagination.html' with header='my_result' %}
-{% endwith %}
+{% include 'a_psat/snippets/pagination.html' with page_obj=my_result_context.page_obj page_range=my_result_context.page_range header='my_result' %}

@@ -188,7 +188,10 @@ class AnswerCountManager(models.Manager):
 
     def get_filtered_qs_by_psat(self, psat):
         return self.filter(problem__psat=psat).annotate(
-            no=models.F('problem__number'), sub=models.F('problem__subject'), ans=models.F('answer_predict'),
+            no=models.F('problem__number'),
+            sub=models.F('problem__subject'),
+            subject=models.F('problem__subject'),
+            ans=models.F('answer_predict'),
             ans_official=models.F('problem__answer')).order_by('sub', 'no')
 
 

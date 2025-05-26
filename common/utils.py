@@ -29,6 +29,18 @@ def get_paginator_data(target_data, page_number, per_page=10, on_each_side=3, on
     return page_obj, page_range
 
 
+def get_paginator_context(queryset, page_number=1, per_page=10, on_each_side=3, on_ends=1, **kwargs):
+    try:
+        page_obj, page_range = get_paginator_data(queryset, page_number, per_page, on_each_side, on_ends)
+        if kwargs:
+            for obj in page_obj:
+                for key, value in kwargs.items():
+                    setattr(obj, key, value.get(obj.id))
+        return {'page_obj': page_obj, 'page_range': page_range}
+    except TypeError:
+        return None
+
+
 def get_local_time(target_date, target_time=time(9, 0)):
     if not target_date:
         raise ValidationError("Date is required for timezone conversion.")

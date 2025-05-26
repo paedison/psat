@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 from a_psat import models, forms, filters
 from a_psat.utils.admin_view_utils import get_sub_title_by_psat
 from common.constants import icon_set_new
-from common.utils import HtmxHttpRequest, update_context_data, get_paginator_data
+from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
 from ...utils import normal_view_utils
 
 
@@ -37,32 +37,25 @@ def official_problem_list_view(request: HtmxHttpRequest):
     page_number = request.GET.get('page', 1)
     keyword = request.POST.get('keyword', '') or request.GET.get('keyword', '')
 
-    sub_title = get_sub_title_by_psat(exam_year, exam_exam, exam_subject)
-
-    if request.user.is_authenticated:
-        filterset = filters.ProblemFilter(data=request.GET, request=request)
-    else:
-        filterset = filters.AnonymousProblemFilter(data=request.GET, request=request)
-
-    custom_data = normal_view_utils.get_custom_data(request.user)
-    page_obj, page_range = get_paginator_data(filterset.qs, page_number)
-    for problem in page_obj:
-        normal_view_utils.get_custom_icons(problem, custom_data)
+    problem_filter = filters.ProblemFilter if request.user.is_authenticated else filters.ProblemFilter
+    filterset = problem_filter(data=request.GET, request=request)
     context = update_context_data(
-        config=config, sub_title=sub_title, form=filterset.form,
-        icon_image=icon_set_new.ICON_IMAGE,
-        keyword=keyword,
-        custom_data=custom_data, page_obj=page_obj, page_range=page_range,
+        config=config, icon_image=icon_set_new.ICON_IMAGE, keyword=keyword,
+        sub_title=get_sub_title_by_psat(exam_year, exam_exam, exam_subject),
     )
+
     if view_type == 'problem_list':
+        problem_context = normal_view_utils.get_problem_context(request.user, filterset.qs, page_number)
+        context = update_context_data(context, problem_context=problem_context)
         return render(request, 'a_psat/problem_list_content.html', context)
 
+    collections = []
     if request.user.is_authenticated:
         collections = models.ProblemCollection.objects.filter(user=request.user).order_by('order')
-    else:
-        collections = []
 
-    context = update_context_data(context, collections=collections)
+    problem_context = normal_view_utils.get_problem_context(request.user, filterset.qs)
+    context = update_context_data(
+        context, form=filterset.form, collections=collections, problem_context=problem_context)
     return render(request, 'a_psat/problem_list.html', context)
 
 
@@ -445,10 +438,10 @@ def official_comment_list_view(request: HtmxHttpRequest):
         )
     )
     all_comments = normal_view_utils.get_all_comments(comment_qs)
-    page_obj, page_range = get_paginator_data(all_comments, page_number)
+    comment_context = get_paginator_context(all_comments, page_number)
     pagination_url = reverse_lazy('psat:comment-list')
     context = update_context_data(
-        page_obj=page_obj, page_range=page_range, pagination_url=pagination_url,
+        comment_context=comment_context, pagination_url=pagination_url,
         form=forms.ProblemCommentForm(),
         icon_board=icon_set_new.ICON_BOARD,
         icon_question=icon_set_new.ICON_QUESTION,

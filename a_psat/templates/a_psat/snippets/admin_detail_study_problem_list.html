@@ -27,9 +27,7 @@
     </table>
 </article>
 
-{% with page_obj=problem_context.page_obj page_range=problem_context.page_range %}
-    {% include 'a_psat/snippets/pagination.html' with header='problem_list' %}
-{% endwith %}
+{% include 'a_psat/snippets/pagination.html' with page_obj=problem_context.page_obj page_range=problem_context.page_range header='problem_list' %}
 
 {% partialdef reference %}
     <span class="fw-bold">{{ study_problem.problem_info }} |</span>

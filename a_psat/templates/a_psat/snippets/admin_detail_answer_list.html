@@ -47,7 +47,7 @@
                                 </button>
                             {% endfor %}
                         {% endif %}
-                    {% else %}
+                    {% elif predict_psat %}
                         {% if predict_psat.is_collecting_answer or predict_psat.is_answer_predict_opened %}
                             <button data-number="{{ answer.no }}"
                                     class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
@@ -60,6 +60,10 @@
                                 {{ answer.ans }}
                             </button>
                         {% endif %}
+                    {% else %}
+                        <button data-number="{{ answer.no }}" class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                            {{ answer.ans }}
+                        </button>
                     {% endif %}
                 </td>
             {% endif %}

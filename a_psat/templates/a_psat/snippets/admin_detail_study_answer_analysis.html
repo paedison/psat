@@ -89,9 +89,7 @@
     </table>
 </article>
 
-{% with page_obj=answer_context.page_obj page_range=answer_context.page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header='answer_list' %}
-{% endwith %}
+{% include 'a_prime/snippets/pagination.html' with page_obj=answer_context.page_obj page_range=answer_context.page_range header='answer_list' %}
 
 {% partialdef reference %}
     <div class="text-start">

@@ -6,7 +6,7 @@ from django.db.models import Count, F
 from django.urls import reverse_lazy
 
 from a_psat import models
-from common.utils import get_paginator_data
+from common.utils import get_paginator_context
 from . import common_utils
 
 
@@ -30,12 +30,13 @@ def update_study_statistics(page_obj, is_curriculum=False):
             obj.avg = round(sum(score_list) / participants, 1)
 
 
-def update_study_lecture_paginator_data(lecture_page_obj):
+def get_study_lecture_context(qs_schedule, page_number=1, per_page=4):
+    context = get_paginator_context(qs_schedule, page_number, per_page)
     lecture_dict = {}
     for lec in models.Lecture.objects.all():
         lecture_dict[(lec.subject, lec.order)] = lec.id
 
-    for obj in lecture_page_obj:
+    for obj in context['page_obj']:
         obj: models.StudyCurriculumSchedule
         theme = obj.get_lecture_theme_display()
 
@@ -60,16 +61,7 @@ def update_study_lecture_paginator_data(lecture_page_obj):
             obj.url_lecture_list = [
                 reverse_lazy('psat:lecture-detail', args=[l_id]) for l_id in lecture_ids
             ]
-
-
-def get_study_page_context(queryset, page_number=1, per_page=10, **kwargs):
-    if queryset:
-        page_obj, page_range = get_paginator_data(queryset, page_number, per_page)
-        if kwargs:
-            for obj in page_obj:
-                for key, value in kwargs.items():
-                    setattr(obj, key, value.get(obj.id))
-        return {'page_obj': page_obj, 'page_range': page_range}
+    return context
 
 
 def get_study_score_stat_dict(qs_student) -> dict:

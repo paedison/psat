@@ -66,7 +66,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for obj in category_page_obj %}
+                {% for obj in category_context.page_obj %}
                     <tr class="cursor-pointer" hx-get="{{ obj.get_admin_study_category_detail_url }}">
                         <th class="text-center text-nowrap td-left-no-border">{{ obj.id }}</th>
                         <th class="text-nowrap">
@@ -89,9 +89,7 @@
         </table>
     </article>
 
-    {% with page_obj=category_page_obj page_range=category_page_range %}
-        {% include 'a_psat/snippets/pagination.html' with header='predict_exam_list' %}
-    {% endwith %}
+    {% include 'a_psat/snippets/pagination.html' with page_obj=category_context.page_obj page_range=category_context.page_range header='predict_exam_list' %}
 {% endpartialdef study_category_list %}
 
 {% partialdef study_curriculum_list %}
@@ -112,7 +110,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for obj in curriculum_page_obj %}
+                {% for obj in curriculum_context.page_obj %}
                     <tr class="cursor-pointer" hx-get="{{ obj.get_admin_study_curriculum_detail_url }}">
                         <th class="text-center text-nowrap td-left-no-border">{{ obj.id }}</th>
                         <th class="text-nowrap">
@@ -136,9 +134,7 @@
         </table>
     </article>
 
-    {% with page_obj=curriculum_page_obj page_range=curriculum_page_range %}
-        {% include 'a_psat/snippets/pagination.html' with header='study_curriculum_list' %}
-    {% endwith %}
+        {% include 'a_psat/snippets/pagination.html' with page_obj=curriculum_context.page_obj page_range=curriculum_context.page_range header='study_curriculum_list' %}
 {% endpartialdef study_curriculum_list %}
 
 {% partialdef data_update_accordion %}

@@ -138,7 +138,7 @@
             </thead>
 
             <tbody>
-                {% for obj in page_obj %}
+                {% for obj in psat_context.page_obj %}
                     <tr class="text-center cursor-pointer">
                         <td class="text-nowrap" hx-get="{{ obj.get_admin_official_detail_url }}" aria-label="ID">
                             {{ obj.id }}
@@ -181,5 +181,5 @@
         </table>
     </article>
 
-    {% include 'a_psat/snippets/pagination.html' with header='exam_list' %}
+    {% include 'a_psat/snippets/pagination.html' with page_obj=psat_context.page_obj page_range=psat_context.page_range header='exam_list' %}
 {% endpartialdef %}

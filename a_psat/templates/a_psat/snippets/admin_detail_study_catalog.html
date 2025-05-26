@@ -59,6 +59,4 @@
     </table>
 </article>
 
-{% with page_obj=catalog_context.page_obj page_range=catalog_context.page_range %}
-    {% include 'a_prime/snippets/pagination.html' with header='catalog_list' %}
-{% endwith %}
+{% include 'a_prime/snippets/pagination.html' with page_obj=catalog_context.page_obj page_range=catalog_context.page_range header='catalog_list' %}
