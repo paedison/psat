@@ -164,6 +164,7 @@ class AnswerCountManager(models.Manager):
             'ans_predict': models.F(f'problem__predict_answer_count__answer_predict'),
             'ans_official': models.F('problem__answer'),
         }
+
         for prefix in ['', 'filtered_']:
             for rank in ['all', 'top', 'mid', 'low']:
                 for fld in ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']:
@@ -172,9 +173,19 @@ class AnswerCountManager(models.Manager):
                     else:
                         f_expr = f'problem__predict_answer_count_{rank}_rank__{prefix}{fld}'
                     annotate_dict[f'{prefix}{fld}_{rank}'] = models.F(f_expr)
+
+        annotate_dict['subject_code'] = models.Case(
+                models.When(subject='헌법', then=0),
+                models.When(subject='언어', then=1),
+                models.When(subject='자료', then=2),
+                models.When(subject='상황', then=3),
+                default=4,
+                output_field=models.IntegerField(),
+            )
+
         qs_answer_count = (
             self.filter(problem__psat=psat)
-            .order_by('problem__subject', 'problem__number').annotate(**annotate_dict)
+            .annotate(**annotate_dict).order_by('subject_code', 'problem__number')
             .select_related(
                 f'problem',
                 f'problem__predict_answer_count_top_rank',

@@ -4,50 +4,31 @@ import django.db.utils
 from django.db import transaction
 
 
-def get_sub_list(psat) -> list:
+def get_subject_vars(psat, remove_avg=False) -> dict[str, tuple[str, str, int, int]]:
     if psat.exam in ['칠급', '칠예', '민경']:
-        return ['언어', '자료', '상황']
-    return ['헌법', '언어', '자료', '상황']
-
-
-def get_problem_count(psat):
-    if psat.exam in ['칠급', '칠예', '민경']:
-        return {'언어': 25, '자료': 25, '상황': 25, '평균': 75}
-    return {'헌법': 25, '언어': 40, '자료': 40, '상황': 40, '평균': 120}
-
-
-def get_subject_vars(psat) -> dict[str, tuple[str, str, int]]:
-    if psat.exam in ['칠급', '칠예', '민경']:
-        return {
-            '언어': ('언어논리', 'subject_1', 0),
-            '자료': ('자료해석', 'subject_2', 1),
-            '상황': ('상황판단', 'subject_3', 2),
-            '평균': ('PSAT 평균', 'average', 3),
+        subject_vars = {
+            '언어': ('언어논리', 'subject_1', 1, 25),
+            '자료': ('자료해석', 'subject_2', 2, 25),
+            '상황': ('상황판단', 'subject_3', 3, 25),
+            '평균': ('PSAT 평균', 'average', 4, 75),
         }
-    return {
-        '헌법': ('헌법', 'subject_0', 0),
-        '언어': ('언어논리', 'subject_1', 1),
-        '자료': ('자료해석', 'subject_2', 2),
-        '상황': ('상황판단', 'subject_3', 3),
-        '평균': ('PSAT 평균', 'average', 4),
-    }
-
-
-def get_field_vars(psat) -> dict[str, tuple[str, str, int]]:
-    if psat.exam in ['칠급', '칠예', '민경']:
-        return {
-            'subject_1': ('언어', '언어논리', 0),
-            'subject_2': ('자료', '자료해석', 1),
-            'subject_3': ('상황', '상황판단', 2),
-            'average': ('평균', 'PSAT 평균', 3),
+    else:
+        subject_vars = {
+            '헌법': ('헌법', 'subject_0', 0, 25),
+            '언어': ('언어논리', 'subject_1', 1, 40),
+            '자료': ('자료해석', 'subject_2', 2, 40),
+            '상황': ('상황판단', 'subject_3', 3, 40),
+            '평균': ('PSAT 평균', 'average', 4, 120),
         }
-    return {
-        'subject_0': ('헌법', '헌법', 0),
-        'subject_1': ('언어', '언어논리', 1),
-        'subject_2': ('자료', '자료해석', 2),
-        'subject_3': ('상황', '상황판단', 3),
-        'average': ('평균', 'PSAT 평균', 4),
-    }
+    if remove_avg:
+        subject_vars.pop('평균')
+    return subject_vars
+
+
+def get_subject_variable(psat, subject_field) -> tuple[str, str, int, int]:
+    for sub, (subject, field, idx, problem_count) in get_subject_vars(psat).items():
+        if subject_field == field:
+            return sub, subject, idx, problem_count
 
 
 def get_prev_next_obj(pk, custom_data) -> tuple:

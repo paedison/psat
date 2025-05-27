@@ -154,6 +154,8 @@ class PredictAnswer(abstract_models.Answer):
     student = models.ForeignKey(PredictStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='predict_answers')
 
+    answer_student = answer_correct = None
+
     class Meta:
         verbose_name = verbose_name_plural = f'{verbose_name_prefix}04_답안'
         db_table = 'a_psat_predict_answer'

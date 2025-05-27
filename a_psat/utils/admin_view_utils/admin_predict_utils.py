@@ -1,10 +1,8 @@
 import io
-import zipfile
 from collections import defaultdict
 
 import pandas as pd
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Count, Window, F
+from django.db.models import Count, Window, F, QuerySet
 from django.db.models.functions import Rank
 from django.http import HttpResponse
 
@@ -13,14 +11,7 @@ from common.utils import get_paginator_context
 from . import common_utils
 
 
-def get_predict_psat(psat):
-    try:
-        return psat.predict_psat
-    except ObjectDoesNotExist:
-        return None
-
-
-def create_predict_answer_count_model_instances(original_psat):
+def create_predict_answer_count_model_instances(original_psat: models.Psat) -> None:
     problems = models.Problem.objects.filter(psat=original_psat).order_by('id')
     model_list = [
         models.PredictAnswerCount,
@@ -35,7 +26,7 @@ def create_predict_answer_count_model_instances(original_psat):
         common_utils.bulk_create_or_update(model, list_create, [], [])
 
 
-def create_predict_statistics_model_instances(original_psat):
+def create_predict_statistics_model_instances(original_psat: models.Psat) -> None:
     department_list = list(
         models.PredictCategory.objects.filter(exam=original_psat.exam).order_by('order')
         .values_list('department', flat=True)
@@ -49,7 +40,7 @@ def create_predict_statistics_model_instances(original_psat):
     common_utils.bulk_create_or_update(models.PredictStatistics, list_create, [], [])
 
 
-def update_problem_model_for_answer_official(psat, form, file) -> tuple:
+def update_problem_model_for_answer_official(psat: models.Psat, form, file) -> tuple[bool | None, str]:
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '문제 정답을 업데이트했습니다.',
@@ -85,8 +76,12 @@ def update_problem_model_for_answer_official(psat, form, file) -> tuple:
     return is_updated, message_dict[is_updated]
 
 
-def update_predict_scores(psat, qs_student, model_dict: dict):
-    sub_list = common_utils.get_sub_list(psat)
+def update_predict_scores(
+        psat:models.Psat,
+        qs_student: QuerySet[models.PredictStudent],
+        model_dict: dict,
+) -> tuple[bool | None, str]:
+    sub_list = [sub for sub in common_utils.get_subject_vars(psat, True)]
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '점수를 업데이트했습니다.',
@@ -102,7 +97,11 @@ def update_predict_scores(psat, qs_student, model_dict: dict):
     return is_updated, message_dict[is_updated]
 
 
-def update_predict_score_model(qs_student, model_dict: dict, sub_list: list):
+def update_predict_score_model(
+        qs_student: QuerySet[models.PredictStudent],
+        model_dict: dict,
+        sub_list: list
+) -> bool | None:
     answer_model = model_dict['answer']
     score_model = model_dict['score']
 
@@ -147,17 +146,21 @@ def update_predict_score_model(qs_student, model_dict: dict, sub_list: list):
     return common_utils.bulk_create_or_update(score_model, list_create, list_update, update_fields)
 
 
-def update_predict_ranks(psat, qs_student, model_dict: dict):
-    sub_list = common_utils.get_sub_list(psat)
+def update_predict_ranks(
+        psat: models.Psat,
+        qs_student: QuerySet[models.PredictStudent],
+        model_dict: dict
+) -> tuple[bool | None, str]:
+    sub_list = [sub for sub in common_utils.get_subject_vars(psat, True)]
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '등수를 업데이트했습니다.',
         False: '기존 등수와 일치합니다.',
     }
     is_updated_list = [
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'total'),
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'total', True),
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'department'),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'all', False),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'all', True),
+        update_predict_rank_model(qs_student, model_dict, sub_list, 'department', False),
         update_predict_rank_model(qs_student, model_dict, sub_list, 'department', True),
     ]
     if None in is_updated_list:
@@ -169,7 +172,13 @@ def update_predict_ranks(psat, qs_student, model_dict: dict):
     return is_updated, message_dict[is_updated]
 
 
-def update_predict_rank_model(qs_student, model_dict: dict, sub_list: list, stat_type='total', is_filtered=False):
+def update_predict_rank_model(
+        qs_student: QuerySet[models.PredictStudent],
+        model_dict: dict,
+        sub_list: list,
+        stat_type: str,
+        is_filtered: bool,
+) -> bool | None:
     rank_model = model_dict[stat_type]
     prefix = ''
     if is_filtered:
@@ -219,7 +228,7 @@ def update_predict_rank_model(qs_student, model_dict: dict, sub_list: list, stat
     return common_utils.bulk_create_or_update(rank_model, list_create, list_update, update_fields)
 
 
-def update_predict_statistics(psat):
+def update_predict_statistics(psat: models.Psat) -> tuple[bool | None, str]:
     total_data, filtered_data = get_predict_statistics_data(psat)
     message_dict = {
         None: '에러가 발생했습니다.',
@@ -227,7 +236,7 @@ def update_predict_statistics(psat):
         False: '기존 통계와 일치합니다.',
     }
     is_updated_list = [
-        update_predict_statistics_model(psat, total_data),
+        update_predict_statistics_model(psat, total_data, False),
         update_predict_statistics_model(psat, filtered_data, True),
     ]
     if None in is_updated_list:
@@ -239,8 +248,11 @@ def update_predict_statistics(psat):
     return is_updated, message_dict[is_updated]
 
 
-def update_predict_statistics_model(psat, data_statistics, is_filtered=False):
-    field_vars = common_utils.get_field_vars(psat)
+def update_predict_statistics_model(
+        psat: models.Psat,
+        data_statistics,
+        is_filtered: bool,
+) -> tuple[bool | None, str]:
     prefix = 'filtered_' if is_filtered else ''
 
     message_dict = {
@@ -254,7 +266,7 @@ def update_predict_statistics_model(psat, data_statistics, is_filtered=False):
     for data_stat in data_statistics:
         department = data_stat['department']
         stat_dict = {'department': department}
-        for fld in field_vars.keys():
+        for (_, fld, _, _) in common_utils.get_subject_vars(psat).values():
             stat_dict.update({
                 f'{prefix}{fld}': {
                     'participants': data_stat[fld]['participants'],
@@ -284,17 +296,17 @@ def update_predict_statistics_model(psat, data_statistics, is_filtered=False):
     return is_updated, message_dict[is_updated]
 
 
-def update_predict_answer_counts(model_dict):
+def update_predict_answer_counts(model_dict: dict) -> tuple[bool | None, str]:
     message_dict = {
         None: '에러가 발생했습니다.',
         True: '문항분석표를 업데이트했습니다.',
         False: '기존 문항분석표 데이터와 일치합니다.',
     }
     is_updated_list = [
-        update_predict_answer_count_model(model_dict, 'all'),
-        update_predict_answer_count_model(model_dict, 'top'),
-        update_predict_answer_count_model(model_dict, 'mid'),
-        update_predict_answer_count_model(model_dict, 'low'),
+        update_predict_answer_count_model(model_dict, 'all', False),
+        update_predict_answer_count_model(model_dict, 'top', False),
+        update_predict_answer_count_model(model_dict, 'mid', False),
+        update_predict_answer_count_model(model_dict, 'low', False),
         update_predict_answer_count_model(model_dict, 'all', True),
         update_predict_answer_count_model(model_dict, 'top', True),
         update_predict_answer_count_model(model_dict, 'mid', True),
@@ -309,7 +321,7 @@ def update_predict_answer_counts(model_dict):
     return is_updated, message_dict[is_updated]
 
 
-def update_predict_answer_count_model(model_dict, rank_type='all', is_filtered=False):
+def update_predict_answer_count_model(model_dict: dict, rank_type: str, is_filtered: bool) -> bool | None:
     answer_model = model_dict['answer']
     answer_count_model = model_dict[rank_type]
     prefix = 'filtered_' if is_filtered else ''
@@ -374,17 +386,17 @@ def update_predict_answer_count_model(model_dict, rank_type='all', is_filtered=F
     return common_utils.bulk_create_or_update(answer_count_model, list_create, list_update, update_fields)
 
 
-def get_predict_only_answer_context(queryset, subject_vars):
+def get_predict_only_answer_context(queryset: QuerySet, subject_vars: dict) -> dict:
     query_dict = defaultdict(list)
     for query in queryset.order_by('id'):
         query_dict[query.subject].append(query)
     return {
         sub: {'id': str(idx), 'title': sub, 'page_obj': query_dict[sub]}
-        for sub, (_, _, idx) in subject_vars.items()
+        for sub, (_, _, idx, _) in subject_vars.items()
     }
 
 
-def get_predict_statistics_context(psat, page_number=1, per_page=10):
+def get_predict_statistics_context(psat: models.Psat, page_number=1, per_page=10) -> dict:
     total_data, filtered_data = get_predict_statistics_data(psat)
     total_context = get_paginator_context(total_data, page_number, per_page)
     filtered_context = get_paginator_context(filtered_data, page_number, per_page)
@@ -397,8 +409,8 @@ def get_predict_statistics_context(psat, page_number=1, per_page=10):
     return {'total': total_context, 'filtered': filtered_context}
 
 
-def get_predict_statistics_data(psat):
-    field_vars = common_utils.get_field_vars(psat)
+def get_predict_statistics_data(psat: models.Psat) -> tuple[list, list]:
+    subject_vars = common_utils.get_subject_vars(psat)
 
     department_list = list(
         models.PredictCategory.objects.filter(exam=psat.exam).order_by('order')
@@ -406,13 +418,13 @@ def get_predict_statistics_data(psat):
     )
     department_list.insert(0, '전체')
 
-    total_data, filtered_data = [], []
-    total_scores, filtered_scores = {}, {}
+    total_data, filtered_data = defaultdict(dict), defaultdict(dict)
+    total_scores, filtered_scores = defaultdict(dict), defaultdict(dict)
     for department in department_list:
-        total_data.append({'department': department, 'participants': 0})
-        filtered_data.append({'department': department, 'participants': 0})
-        total_scores.update({department: {fld: [] for fld in field_vars}})
-        filtered_scores.update({department: {fld: [] for fld in field_vars}})
+        total_data[department] = {'department': department, 'participants': 0}
+        filtered_data[department] = {'department': department, 'participants': 0}
+        total_scores[department] = {sub: [] for sub in subject_vars}
+        filtered_scores[department] = {sub: [] for sub in subject_vars}
 
     qs_students = (
         models.PredictStudent.objects.filter(psat=psat)
@@ -427,27 +439,29 @@ def get_predict_statistics_data(psat):
         )
     )
     for qs_s in qs_students:
-        for field, subject_tuple in field_vars.items():
+        for sub, (_,field, _, _) in subject_vars.items():
             score = getattr(qs_s, field)
             if score is not None:
-                total_scores['전체'][field].append(score)
-                total_scores[qs_s.department][field].append(score)
+                total_scores['전체'][sub].append(score)
+                total_scores[qs_s.department][sub].append(score)
                 if qs_s.is_filtered:
-                    filtered_scores['전체'][field].append(score)
-                    filtered_scores[qs_s.department][field].append(score)
+                    filtered_scores['전체'][sub].append(score)
+                    filtered_scores[qs_s.department][sub].append(score)
 
-    update_predict_statistics_data(total_data, field_vars, total_scores, department_list)
-    update_predict_statistics_data(filtered_data, field_vars, filtered_scores, department_list)
+    update_predict_statistics_data(total_data, subject_vars, total_scores)
+    update_predict_statistics_data(filtered_data, subject_vars, filtered_scores)
 
-    return total_data, filtered_data
+    return list(total_data.values()), list(filtered_data.values())
 
 
-def update_predict_statistics_data(data_statistics, field_vars, score_list, department_list):
+def update_predict_statistics_data(
+        data_statistics: dict,
+        subject_vars: dict,
+        score_list: dict,
+) -> None:
     for department, score_dict in score_list.items():
-        department_idx = department_list.index(department)
-        for field, scores in score_dict.items():
-            sub = field_vars[field][0]
-            subject = field_vars[field][1]
+        for sub, scores in score_dict.items():
+            subject, field, _, _ = subject_vars[sub]
             participants = len(scores)
 
             sorted_scores = sorted(scores, reverse=True)
@@ -460,7 +474,7 @@ def update_predict_statistics_data(data_statistics, field_vars, score_list, depa
                 top_score_20 = sorted_scores[top_20_threshold - 1]
                 avg_score = round(sum(scores) / participants, 1)
 
-            data_statistics[department_idx][field] = {
+            data_statistics[department][field] = {
                 'field': field,
                 'is_confirmed': True,
                 'sub': sub,
@@ -473,7 +487,7 @@ def update_predict_statistics_data(data_statistics, field_vars, score_list, depa
             }
 
 
-def get_predict_catalog_context(psat, page_number=1, total_list=None):
+def get_predict_catalog_context(psat: models.Psat, page_number=1, total_list=None) -> dict:
     if total_list is None:
         total_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
     filtered_list = total_list.filter(is_filtered=True)
@@ -489,7 +503,7 @@ def get_predict_catalog_context(psat, page_number=1, total_list=None):
     return {'total': total_context, 'filtered': filtered_context}
 
 
-def update_predict_filtered_catalog(filtered_catalog_page_obj):
+def update_predict_filtered_catalog(filtered_catalog_page_obj: list) -> None:
     field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
     for obj in filtered_catalog_page_obj:
         obj.rank_tot_num = obj.filtered_rank_tot_num
@@ -499,9 +513,9 @@ def update_predict_filtered_catalog(filtered_catalog_page_obj):
             setattr(obj, f'rank_dep_{key}', getattr(obj, f'filtered_rank_dep_{key}'))
 
 
-def get_predict_answer_context(psat, subject=None, page_number=1, per_page=10):
-    subject_vars = common_utils.get_subject_vars(psat)
-    subject_vars.pop('평균')
+def get_predict_answer_context(psat: models.Psat, subject=None, page_number=1, per_page=10) -> dict:
+    subject_vars = common_utils.get_subject_vars(psat, True)
+    sub_list = [sub for sub in subject_vars]
     qs_answer_count_group = {sub: [] for sub in subject_vars}
     answer_context = {}
 
@@ -517,7 +531,7 @@ def get_predict_answer_context(psat, subject=None, page_number=1, per_page=10):
             data_answers = get_predict_answer_data(qs_answer_count, subject_vars)
             context = get_paginator_context(data_answers, page_number, per_page)
             context.update({
-                'id': str(subject_vars[sub][2]),
+                'id': str(sub_list.index(sub)),
                 'title': sub,
                 'prefix': 'Answer',
                 'header': 'answer_list',
@@ -528,7 +542,7 @@ def get_predict_answer_context(psat, subject=None, page_number=1, per_page=10):
     return answer_context
 
 
-def get_predict_answer_data(qs_answer_count, subject_vars):
+def get_predict_answer_data(qs_answer_count: QuerySet, subject_vars: dict) -> QuerySet:
     for qs_ac in qs_answer_count:
         sub = qs_ac.subject
         field = subject_vars[sub][1]
@@ -557,7 +571,7 @@ def get_predict_answer_data(qs_answer_count, subject_vars):
     return qs_answer_count
 
 
-def get_predict_statistics_response(psat):
+def get_predict_statistics_response(psat: models.Psat) -> HttpResponse:
     qs_statistics = models.PredictStatistics.objects.filter(psat=psat).order_by('id')
     df = pd.DataFrame.from_records(qs_statistics.values())
 
@@ -565,25 +579,26 @@ def get_predict_statistics_response(psat):
     drop_columns = ['id', 'psat_id']
     column_label = [('직렬', '')]
 
-    field_vars = common_utils.get_total_field_vars(psat)
-    for fld, val in field_vars.items():
+    subject_vars = common_utils.get_subject_vars(psat)
+    subject_vars_total = subject_vars.copy()
+    for sub, (subject, fld, idx, problem_count) in subject_vars.items():
+        subject_vars_total[f'[필터링]{sub}'] = (f'[필터링]{subject}', f'filtered_{fld}', idx, problem_count)
+
+    for (subject, fld, _, _) in subject_vars_total.values():
         drop_columns.append(fld)
         column_label.extend([
-            (val[1], '총 인원'),
-            (val[1], '최고'),
-            (val[1], '상위10%'),
-            (val[1], '상위20%'),
-            (val[1], '평균'),
+            (subject, '총 인원'), (subject, '최고'), (subject, '상위10%'), (subject, '상위20%'), (subject, '평균'),
         ])
         df_subject = pd.json_normalize(df[fld])
         df = pd.concat([df, df_subject], axis=1)
+
     df.drop(columns=drop_columns, inplace=True)
     df.columns = pd.MultiIndex.from_tuples(column_label)
 
     return common_utils.get_response_for_excel_file(df, filename)
 
 
-def get_predict_prime_id_response(psat):
+def get_predict_prime_id_response(psat: models.Psat) -> HttpResponse:
     qs_student = models.PredictStudent.objects.filter(psat=psat).values(
         'id', 'created_at', 'name', 'prime_id').order_by('id')
     df = pd.DataFrame.from_records(qs_student)
@@ -595,102 +610,99 @@ def get_predict_prime_id_response(psat):
     return common_utils.get_response_for_excel_file(df, filename)
 
 
-def get_predict_catalog_response(psat):
+def get_predict_catalog_response(psat: models.Psat) -> HttpResponse:
     student_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
     filtered_student_list = student_list.filter(is_filtered=True)
+    filename = f'{psat.full_reference}_성적일람표.xlsx'
 
-    df1, filename1 = get_predict_catalog_info(student_list, psat)
-    df2, filename2 = get_predict_catalog_info(filtered_student_list, psat, True)
+    df1 = get_predict_catalog_df_for_excel(student_list, psat)
+    df2 = get_predict_catalog_df_for_excel(filtered_student_list, psat, True)
 
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-        excel_buffer1 = io.BytesIO()
-        df1.to_excel(excel_buffer1, engine='xlsxwriter')
-        zip_file.writestr(filename1, excel_buffer1.getvalue())
+    excel_data = io.BytesIO()
+    with pd.ExcelWriter(excel_data, engine='openpyxl') as writer:
+        df1.to_excel(writer, sheet_name='전체')
+        df2.to_excel(writer, sheet_name='필터링')
 
-        excel_buffer2 = io.BytesIO()
-        df2.to_excel(excel_buffer2, engine='xlsxwriter')
-        zip_file.writestr(filename2, excel_buffer2.getvalue())
-
-    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename="catalog_files.zip"'
-    return response
+    return common_utils.get_response_for_excel_file(df1, filename, excel_data)
 
 
-def get_predict_catalog_info(student_list, psat, is_filtered=False):
-    filtered_type = '필터링' if is_filtered else '전체'
-    filename = f'{psat.full_reference}_성적일람표_{filtered_type}.xlsx'
-
-    df = pd.DataFrame.from_records(student_list.values())
-    if is_filtered:
-        field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
-        df['rank_tot_num'] = df['filtered_rank_tot_num']
-        df['rank_dep_num'] = df['filtered_rank_dep_num']
-        for key, fld in field_dict.items():
-            df[f'rank_tot_{key}'] = df[f'filtered_rank_tot_{key}']
-            df[f'rank_dep_{key}'] = df[f'filtered_rank_dep_{key}']
-
+def get_predict_catalog_df_for_excel(
+        student_list: QuerySet, psat: models.Psat, is_filtered=False) -> pd.DataFrame:
+    column_list = [
+        'id', 'psat_id', 'category_id', 'user_id',
+        'name', 'serial', 'password', 'is_filtered', 'prime_id', 'unit', 'department',
+        'created_at', 'latest_answer_time', 'answer_count',
+        'score_sum', 'rank_tot_num', 'rank_dep_num', 'filtered_rank_tot_num', 'filtered_rank_dep_num',
+    ]
+    for sub_type in ['0', '1', '2', '3', 'avg']:
+        column_list.append(f'score_{sub_type}')
+        for stat_type in ['rank', 'filtered_rank']:
+            for dep_type in ['tot', 'dep']:
+                column_list.append(f'{stat_type}_{dep_type}_{sub_type}')
+    df = pd.DataFrame.from_records(student_list.values(*column_list))
     df['created_at'] = df['created_at'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
     df['latest_answer_time'] = df['latest_answer_time'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
 
-    drop_columns = ['filtered_rank_tot_num', 'filtered_rank_dep_num']
-    field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
-    for key in field_dict:
-        drop_columns.extend([f'filtered_rank_tot_{key}', f'filtered_rank_dep_{key}'])
-    column_label = [
-        ('ID', ''), ('등록일시', ''), ('이름', ''), ('수험번호', ''), ('비밀번호', ''),
-        ('PSAT ID', ''), ('카테고리 ID', ''), ('사용자 ID', ''),
-        ('필터링 여부', ''), ('프라임 ID', ''), ('직렬', ''), ('최종답안 등록일시', ''),
-        ('제출 답안수', ''), ('PSAT 총점', ''), ('전체 총 인원', ''), ('직렬 총 인원', ''),
-    ]
+    field_list = ['num', '0', '1', '2', '3', 'avg']
+    if is_filtered:
+        for key in field_list:
+            df[f'rank_tot_{key}'] = df[f'filtered_rank_tot_{key}']
+            df[f'rank_dep_{key}'] = df[f'filtered_rank_dep_{key}']
 
-    field_vars = common_utils.get_field_vars(psat)
-    for _, val in field_vars.items():
+    drop_columns = []
+    for key in field_list:
+        drop_columns.extend([f'filtered_rank_tot_{key}', f'filtered_rank_dep_{key}'])
+
+    column_label = [
+        ('DB정보', 'ID'), ('DB정보', 'PSAT ID'), ('DB정보', '카테고리 ID'), ('DB정보', '사용자 ID'),
+        ('수험정보', '이름'), ('수험정보', '수험번호'), ('수험정보', '비밀번호'),
+        ('수험정보', '필터링 여부'), ('수험정보', '프라임 ID'), ('수험정보', '모집단위'), ('수험정보', '직렬'),
+        ('답안정보', '등록일시'), ('답안정보', '최종답안 등록일시'), ('답안정보', '제출 답안수'),
+        ('성적정보', 'PSAT 총점'), ('성적정보', '전체 총 인원'), ('성적정보', '직렬 총 인원'),
+    ]
+    for sub in common_utils.get_subject_vars(psat):
+        column_label.extend([(sub, '점수'), (sub, '전체 등수'), (sub, '직렬 등수')])
+
+    df.drop(columns=drop_columns, inplace=True)
+    df.columns = pd.MultiIndex.from_tuples(column_label)
+
+    return df
+
+
+def get_predict_answer_response(psat: models.Psat) -> HttpResponse:
+    qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat_and_subject(psat)
+    filename = f'{psat.full_reference}_문항분석표.xlsx'
+
+    df1 = get_predict_answer_df_for_excel(qs_answer_count)
+    df2 = get_predict_answer_df_for_excel(qs_answer_count, True)
+
+    excel_data = io.BytesIO()
+    with pd.ExcelWriter(excel_data, engine='openpyxl') as writer:
+        df1.to_excel(writer, sheet_name='전체')
+        df2.to_excel(writer, sheet_name='필터링')
+
+    return common_utils.get_response_for_excel_file(df1, filename, excel_data)
+
+
+def get_predict_answer_df_for_excel(
+        qs_answer_count: QuerySet[models.PredictAnswerCount], is_filtered=False
+) -> pd.DataFrame:
+    prefix = 'filtered_' if is_filtered else ''
+    column_list = ['id',  'problem_id', 'subject', 'number', 'ans_official', 'ans_predict']
+    for rank_type in ['all', 'top', 'mid', 'low']:
+        for num in ['1', '2', '3', '4', '5', 'sum']:
+            column_list.append(f'{prefix}count_{num}_{rank_type}')
+
+    column_label = [
+        ('DB정보', 'ID'), ('DB정보', '문제 ID'),
+        ('문제정보', '과목'), ('문제정보', '번호'), ('문제정보', '정답'), ('문제정보', '예상 정답'),
+    ]
+    for rank_type in ['전체', '상위권', '중위권', '하위권']:
         column_label.extend([
-            (val[1], '점수'),
-            (val[1], '전체 등수'),
-            (val[1], '직렬 등수'),
+            (rank_type, '①'), (rank_type, '②'), (rank_type, '③'),
+            (rank_type, '④'), (rank_type, '⑤'), (rank_type, '합계'),
         ])
 
-    df.drop(columns=drop_columns, inplace=True)
+    df = pd.DataFrame.from_records(qs_answer_count.values(*column_list))
     df.columns = pd.MultiIndex.from_tuples(column_label)
-
-    return df, filename
-
-
-def get_predict_answer_response(psat):
-    qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat_and_subject(psat)
-    df = pd.DataFrame.from_records(qs_answer_count.values())
-
-    def move_column(col_name: str, loc: int):
-        col = df.pop(col_name)
-        df.insert(loc, col_name, col)
-
-    move_column('problem_id', 1)
-    move_column('subject', 2)
-    move_column('number', 3)
-    move_column('ans_official', 4)
-    move_column('ans_predict', 5)
-
-    filename = f'{psat.full_reference}_문항분석표.xlsx'
-    drop_columns = [
-        'answer_predict',
-        'count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_0', 'count_multiple', 'count_sum',
-        'filtered_count_1', 'filtered_count_2', 'filtered_count_3', 'filtered_count_4',
-        'filtered_count_5', 'filtered_count_0', 'filtered_count_multiple', 'filtered_count_sum',
-    ]
-    column_label = [
-        ('ID', '', ''), ('문제 ID', '', ''), ('과목', '', ''),
-        ('번호', '', ''), ('정답', '', ''), ('예상 정답', '', ''),
-    ]
-    for top in ['전체 데이터', '필터링 데이터']:
-        for mid in ['전체', '상위권', '중위권', '하위권']:
-            column_label.extend([
-                (top, mid, '①'), (top, mid, '②'), (top, mid, '③'),
-                (top, mid, '④'), (top, mid, '⑤'), (top, mid, '합계'),
-            ])
-
-    df.drop(columns=drop_columns, inplace=True)
-    df.columns = pd.MultiIndex.from_tuples(column_label)
-
-    return common_utils.get_response_for_excel_file(df, filename)
+    return df

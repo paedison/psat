@@ -57,19 +57,17 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int):
     student_name = request.GET.get('student_name', '')
 
     psat = get_object_or_404(models.Psat, pk=pk)
-    sub_list = admin_view_utils.get_sub_list(psat)
-    context = update_context_data(config=config, psat=psat, subjects=sub_list)
+    context = update_context_data(config=config, psat=psat)
 
     if view_type == 'problem_list':
         qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
         context = update_context_data(context, problem_context=get_paginator_context(qs_problem, page_number))
         return render(request, 'a_psat/problem_list_content.html', context)
 
-    predict_psat = admin_view_utils.get_predict_psat(psat)
-    if predict_psat:
+    if hasattr(psat, 'predict_psat'):
         config.url_admin_predict_update = reverse_lazy('psat:admin-predict-update', args=[pk])
         context = update_context_data(
-            context, predict_psat=predict_psat, icon_nav=icon_set_new.ICON_NAV, icon_search=icon_set_new.ICON_SEARCH)
+            context, predict_psat=psat.predict_psat, icon_nav=icon_set_new.ICON_NAV, icon_search=icon_set_new.ICON_SEARCH)
 
         if view_type == 'total_statistics_list':
             statistics_context = admin_view_utils.get_predict_statistics_context(psat, page_number)
@@ -98,8 +96,7 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int):
             context = update_context_data(context, answer_data=answer_context[subject])
             return render(request, 'a_psat/snippets/admin_detail_predict_answer_analysis.html', context)
 
-        subject_vars = admin_view_utils.get_subject_vars(psat)
-        subject_vars.pop('평균')
+        subject_vars = admin_view_utils.get_subject_vars(psat, True)
         qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat(psat)
         qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
 
@@ -171,7 +168,7 @@ def predict_update_view(request: HtmxHttpRequest, pk: int):
         context = update_context_data(context, header='점수 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'rank':
-        model_dict = {'total': models.PredictRankTotal, 'department': models.PredictRankCategory}
+        model_dict = {'all': models.PredictRankTotal, 'department': models.PredictRankCategory}
         is_updated, message = admin_view_utils.update_predict_ranks(psat, qs_student, model_dict)
         context = update_context_data(context, header='등수 업데이트', is_updated=is_updated, message=message)
 

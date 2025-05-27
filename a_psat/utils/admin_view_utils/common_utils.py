@@ -7,66 +7,25 @@ from django.db import transaction
 from django.http import HttpResponse
 
 
-def get_sub_list(psat) -> list:
+def get_subject_vars(psat, remove_avg=False) -> dict[str, tuple[str, str, int, int]]:
     if psat.exam in ['칠급', '칠예', '민경']:
-        return ['언어', '자료', '상황']
-    return ['헌법', '언어', '자료', '상황']
-
-
-def get_subject_vars(psat) -> dict[str, tuple[str, str, int]]:
-    subject_vars = {
-        '헌법': ('헌법', 'subject_0', 0),
-        '언어': ('언어논리', 'subject_1', 1),
-        '자료': ('자료해석', 'subject_2', 2),
-        '상황': ('상황판단', 'subject_3', 3),
-        '평균': ('PSAT 평균', 'average', 4),
-    }
-    if psat.exam in ['칠급', '칠예', '민경']:
-        subject_vars.pop('헌법')
-    return subject_vars
-
-
-def get_field_vars(psat, is_filtered=False) -> dict[str, tuple[str, str, int]]:
-    if is_filtered:
-        field_vars = {
-            'filtered_subject_0': ('[필터링]헌법', '[필터링]헌법', 0),
-            'filtered_subject_1': ('[필터링]언어', '[필터링]언어논리', 1),
-            'filtered_subject_2': ('[필터링]자료', '[필터링]자료해석', 2),
-            'filtered_subject_3': ('[필터링]상황', '[필터링]상황판단', 3),
-            'filtered_average': ('[필터링]평균', '[필터링]PSAT 평균', 4),
+        subject_vars = {
+            '언어': ('언어논리', 'subject_1', 1, 25),
+            '자료': ('자료해석', 'subject_2', 2, 25),
+            '상황': ('상황판단', 'subject_3', 3, 25),
+            '평균': ('PSAT 평균', 'average', 4, 75),
         }
-        if psat.exam in ['칠급', '칠예', '민경']:
-            field_vars.pop('filtered_subject_0')
-        return field_vars
-    field_vars = {
-        'subject_0': ('헌법', '헌법', 0),
-        'subject_1': ('언어', '언어논리', 1),
-        'subject_2': ('자료', '자료해석', 2),
-        'subject_3': ('상황', '상황판단', 3),
-        'average': ('평균', 'PSAT 평균', 4),
-    }
-    if psat.exam in ['칠급', '칠예', '민경']:
-        field_vars.pop('subject_0')
-    return field_vars
-
-
-def get_total_field_vars(psat) -> dict[str, tuple[str, str, int]]:
-    field_vars = {
-        'subject_0': ('헌법', '헌법', 0),
-        'subject_1': ('언어', '언어논리', 1),
-        'subject_2': ('자료', '자료해석', 2),
-        'subject_3': ('상황', '상황판단', 3),
-        'average': ('평균', 'PSAT 평균', 4),
-        'filtered_subject_0': ('[필터링]헌법', '[필터링]헌법', 0),
-        'filtered_subject_1': ('[필터링]언어', '[필터링]언어논리', 1),
-        'filtered_subject_2': ('[필터링]자료', '[필터링]자료해석', 2),
-        'filtered_subject_3': ('[필터링]상황', '[필터링]상황판단', 3),
-        'filtered_average': ('[필터링]평균', '[필터링]PSAT 평균', 4),
-    }
-    if psat.exam in ['칠급', '칠예', '민경']:
-        field_vars.pop('subject_0')
-        field_vars.pop('filtered_subject_0')
-    return field_vars
+    else:
+        subject_vars = {
+            '헌법': ('헌법', 'subject_0', 0, 25),
+            '언어': ('언어논리', 'subject_1', 1, 40),
+            '자료': ('자료해석', 'subject_2', 2, 40),
+            '상황': ('상황판단', 'subject_3', 3, 40),
+            '평균': ('PSAT 평균', 'average', 4, 120),
+        }
+    if remove_avg:
+        subject_vars.pop('평균')
+    return subject_vars
 
 
 def get_sub_title_by_psat(year, exam, subject, end_string='기출문제') -> str:
@@ -190,9 +149,10 @@ def bulk_create_or_update(model, list_create, list_update, update_fields):
     return is_updated
 
 
-def get_response_for_excel_file(df, filename):
-    excel_data = io.BytesIO()
-    df.to_excel(excel_data, engine='xlsxwriter')
+def get_response_for_excel_file(df, filename, excel_data=None) -> HttpResponse:
+    if excel_data is None:
+        excel_data = io.BytesIO()
+        df.to_excel(excel_data, engine='xlsxwriter')
 
     response = HttpResponse(
         excel_data.getvalue(),

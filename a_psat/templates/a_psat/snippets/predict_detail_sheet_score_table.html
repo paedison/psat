@@ -1,5 +1,5 @@
 <div class="row score-progress py-3">
-    {% for stat in stat_data.page_obj %}
+    {% for stat in stat_data.page_obj.values %}
         {% if stat.is_confirmed %}
             <div class="{% if forloop.last %}col-12{% else %}col-md-6{% endif %}">
                 {% if forloop.last %}<hr class="d-none d-md-block">{% endif %}
@@ -42,7 +42,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for stat in stat_data.page_obj %}
+            {% for stat in stat_data.page_obj.values %}
                 {% if stat %}{% partial sub_stat_line %}{% endif %}
             {% endfor %}
         </tbody>

@@ -60,8 +60,7 @@ def official_detail_view(request: HtmxHttpRequest, pk: int):
 
     psat = get_object_or_404(models.Psat, pk=pk)
     qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
-    subject_vars = admin_view_utils.get_subject_vars(psat)
-    subject_vars.pop('평균')
+    subject_vars = admin_view_utils.get_subject_vars(psat, True)
     problem_context = get_paginator_context(qs_problem, page_number)
     context = update_context_data(config=config, psat=psat, problem_context=problem_context)
 

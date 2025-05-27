@@ -97,7 +97,7 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
         # chart: 성적 분포 차트
         stat_chart=normal_view_utils.get_predict_dict_stat_chart(student, total_statistics_context),
         stat_frequency=normal_view_utils.get_predict_dict_stat_frequency(student),
-        all_confirmed=is_confirmed_data[-1],
+        all_confirmed=is_confirmed_data['평균'],
     )
 
     if view_type == 'info_answer':
@@ -127,10 +127,19 @@ def predict_modal_view(request: HtmxHttpRequest, pk: int):
 
 def predict_register_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
+    current_time = timezone.now()
     view_type = request.headers.get('View-Type', '')
+    context = update_context_data(current_time=current_time, config=config)
+
     psat = models.Psat.objects.filter(year=2025, exam='행시').first()
-    if not psat or not psat.predict_psat or not psat.predict_psat.is_active:
-        return redirect('prime:predict-list')
+    if not psat or not hasattr(psat, 'predict_psat') or not psat.predict_psat.is_active:
+        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
+        return render(request, 'a_psat/redirect.html', context)
+
+    student = models.PredictStudent.objects.get_filtered_qs_by_psat_and_user_with_answer_count(request.user, psat)
+    if student:
+        context = update_context_data(context, message='등록된 수험정보가 존재합니다.', next_url=config.url_list)
+        return render(request, 'a_psat/redirect.html', context)
 
     form = forms.PredictStudentForm()
     title = f'{psat.full_reference} 합격예측 수험정보 등록'
@@ -207,8 +216,7 @@ def predict_answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: 
         return render(request, 'a_psat/redirect.html', context)
     
     config.url_detail = psat.get_predict_detail_url()
-    field_vars = normal_view_utils.get_field_vars(psat)
-    sub, subject, field_idx = field_vars[subject_field]
+    sub, subject, _, problem_count = normal_view_utils.get_subject_variable(psat, subject_field)
 
     time_schedule = normal_view_utils.get_time_schedule(psat.predict_psat).get(sub)
     if config.current_time < time_schedule[0]:
@@ -220,7 +228,6 @@ def predict_answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: 
         context = update_context_data(context, message='이미 답안을 제출하셨습니다.', next_url=config.url_detail)
         return render(request, 'a_psat/redirect.html', context)
 
-    problem_count = normal_view_utils.get_problem_count(psat)
     answer_data_set = normal_view_utils.get_predict_input_answer_data_set(request, psat)
     answer_data = answer_data_set[subject_field]
 
@@ -237,7 +244,7 @@ def predict_answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: 
         context = update_context_data(subject=subject, answer=answer_temporary, exam=psat)
         response = render(request, 'a_prime/snippets/predict_answer_button.html', context)
 
-        if 1 <= no <= problem_count[sub] and 1 <= ans <= 5:
+        if 1 <= no <= problem_count and 1 <= ans <= 5:
             answer_data[no - 1] = ans
             response.set_cookie('answer_data_set', json.dumps(answer_data_set), max_age=3600)
             return response
@@ -264,8 +271,7 @@ def predict_answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field
         return render(request, 'a_psat/redirect.html', context)
 
     student = models.PredictStudent.objects.get_filtered_qs_by_psat_and_user_with_answer_count(request.user, psat)
-    field_vars = normal_view_utils.get_field_vars(psat)
-    sub, subject, field_idx = field_vars[subject_field]
+    sub, subject, field_idx, _ = normal_view_utils.get_subject_variable(psat, subject_field)
 
     if request.method == 'POST':
         answer_data_set = normal_view_utils.get_predict_input_answer_data_set(request, psat)
@@ -274,7 +280,10 @@ def predict_answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field
         is_confirmed = all(answer_data)
         if is_confirmed:
             normal_view_utils.create_predict_confirmed_answers(student, sub, answer_data)
-            normal_view_utils.update_predict_answer_counts_after_confirm(psat.predict_psat, sub, answer_data)
+
+            qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat(psat).filter(sub=sub)
+            normal_view_utils.update_predict_answer_counts_after_confirm(qs_answer_count, psat, answer_data)
+
             qs_answer = models.PredictAnswer.objects.get_filtered_qs_by_student_and_sub(student, sub)
             normal_view_utils.update_predict_score_for_each_student(qs_answer, subject_field, sub)
 
@@ -285,8 +294,7 @@ def predict_answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field
                 qs_student, student, subject_field, field_idx, 'department')
 
             answer_all_confirmed = normal_view_utils.get_predict_answer_all_confirmed(student)
-            normal_view_utils.update_predict_statistics_after_confirm(
-                student, psat.predict_psat, subject_field, answer_all_confirmed)
+            normal_view_utils.update_predict_statistics_after_confirm(student, subject_field, answer_all_confirmed)
 
             if answer_all_confirmed:
                 if not psat.predict_psat.is_answer_official_opened:
