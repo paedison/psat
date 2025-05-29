@@ -193,7 +193,7 @@
             <button class="accordion-button fw-bold" type="button"
                     data-bs-toggle="collapse" data-bs-target="#collapseStudyPsatUpdate"
                     aria-expanded="true" aria-controls="collapseStudyPsatUpdate">
-                카테고리 업데이트
+                카테고리 업로드
             </button>
         </h2>
         <div id="collapseStudyPsatUpdate" class="accordion-collapse collapse show"
@@ -201,13 +201,13 @@
             <div class="accordion-body pb-2" hx-boost="true">
                 <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
                     <div class="col-12">
-                        <a class="btn btn-primary w-100" href="{{ config.url_study_category_upload  }}">
-                            카테고리 자료 업로드
+                        <a class="btn btn-outline-primary w-100" href="{{ config.url_study_category_create  }}">
+                            카테고리 등록
                         </a>
                     </div>
-                    <div class="col-6 col-md-12 col-lg-6">
-                        <a class="btn btn-primary w-100" href="{{ config.url_study_category_create  }}">
-                            카테고리 등록
+                    <div class="col-12">
+                        <a class="btn btn-outline-primary w-100" href="{{ config.url_study_category_upload  }}">
+                            카테고리 자료 업로드
                         </a>
                     </div>
                 </div>
@@ -222,7 +222,7 @@
             <button class="accordion-button fw-bold" type="button"
                     data-bs-toggle="collapse" data-bs-target="#collapseStudyCurriculumUpdate"
                     aria-expanded="true" aria-controls="collapseStudyCurriculumUpdate">
-                커리큘럼 업데이트
+                커리큘럼 업로드
             </button>
         </h2>
         <div id="collapseStudyCurriculumUpdate" class="accordion-collapse collapse show"
@@ -230,27 +230,27 @@
             <div class="accordion-body pb-2" hx-boost="true">
                 <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
                     <div class="col-12">
-                        <a class="btn btn-primary w-100" href="{{ config.url_study_curriculum_upload  }}">
+                        <a class="btn btn-outline-primary w-100" href="{{ config.url_study_curriculum_create  }}">
+                            커리큘럼 등록
+                        </a>
+                    </div>
+                    <div class="col-12">
+                        <a class="btn btn-outline-primary w-100" href="{{ config.url_study_curriculum_upload  }}">
                             커리큘럼 자료 업로드
                         </a>
                     </div>
                     <div class="col-12">
-                        <a class="btn btn-primary w-100" href="{{ config.url_study_answer_add  }}">
+                        <a class="btn btn-outline-primary w-100" href="{{ config.url_study_answer_upload  }}">
                             커리큘럼 답안 업로드
                         </a>
                     </div>
-                    <div class="col-6 col-md-12 col-lg-6">
-                        <a class="btn btn-primary w-100" href="{{ config.url_study_organization_create  }}">
+                    <div class="col-12">
+                        <a class="btn btn-outline-primary w-100" href="{{ config.url_study_organization_create  }}">
                             교육기관 등록
                         </a>
                     </div>
-                    <div class="col-6 col-md-12 col-lg-6">
-                        <a class="btn btn-primary w-100" href="{{ config.url_study_curriculum_create  }}">
-                            커리큘럼 등록
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-12 col-lg-6">
-                        <a class="btn btn-primary w-100" href="{{ config.url_study_student_create  }}">
+                    <div class="col-12">
+                        <a class="btn btn-outline-primary w-100" href="{{ config.url_study_student_create  }}">
                             학생 등록
                         </a>
                     </div>

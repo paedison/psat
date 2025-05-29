@@ -2,11 +2,11 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
 from a_psat import models, forms
+from a_psat.utils import predict_utils
 from common.constants import icon_set_new
 from common.decorators import admin_required
 from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
 from ..normal_views import predict_views
-from ...utils import admin_view_utils
 
 
 class ViewConfiguration:
@@ -38,13 +38,13 @@ def predict_list_view(request: HtmxHttpRequest):
     exam_exam = request.GET.get('exam', '')
     page_number = request.GET.get('page', '1')
 
-    sub_title = admin_view_utils.get_sub_title_by_psat(exam_year, exam_exam, '', end_string='PSAT')
+    sub_title = predict_utils.get_sub_title_by_psat(exam_year, exam_exam, '', end_string='PSAT')
     predict_psat_list = models.PredictPsat.objects.select_related('psat')
     predict_psat_context = get_paginator_context(predict_psat_list, page_number)
     context = update_context_data(config=config, sub_title=sub_title, predict_psat_context=predict_psat_context)
 
     if view_type == 'predict_psat_list':
-        return render(request, f'a_psat/admin_predict_list.html#study_category_list', context)
+        return render(request, f'a_psat/admin_predict_list.html#study_category_list', context)  # noqa
     return render(request, 'a_psat/admin_predict_list.html', context)
 
 
@@ -70,43 +70,43 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int):
             context, predict_psat=psat.predict_psat, icon_nav=icon_set_new.ICON_NAV, icon_search=icon_set_new.ICON_SEARCH)
 
         if view_type == 'total_statistics_list':
-            statistics_context = admin_view_utils.get_predict_statistics_context(psat, page_number)
+            statistics_context = predict_utils.get_admin_statistics_context(psat, page_number)
             context = update_context_data(context, statistics_data=statistics_context['total'])
             return render(request, 'a_psat/snippets/admin_detail_predict_statistics.html', context)
         if view_type == 'filtered_statistics_list':
-            statistics_context = admin_view_utils.get_predict_statistics_context(psat, page_number)
+            statistics_context = predict_utils.get_admin_statistics_context(psat, page_number)
             context = update_context_data(context, statistics_data=statistics_context['filtered'])
             return render(request, 'a_psat/snippets/admin_detail_predict_statistics.html', context)
         if view_type == 'total_catalog_list':
-            catalog_context = admin_view_utils.get_predict_catalog_context(psat, page_number)
+            catalog_context = predict_utils.get_admin_catalog_context(psat, page_number)
             context = update_context_data(context, catalog_data=catalog_context['total'])
             return render(request, 'a_psat/snippets/admin_detail_predict_catalog.html', context)
         if view_type == 'filtered_catalog_list':
-            catalog_context = admin_view_utils.get_predict_catalog_context(psat, page_number)
+            catalog_context = predict_utils.get_admin_catalog_context(psat, page_number)
             context = update_context_data(context, catalog_data=catalog_context['filtered'])
             return render(request, 'a_psat/snippets/admin_detail_predict_catalog.html', context)
         if view_type == 'student_search':
             searched_student = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(
                 psat).filter(name=student_name)
-            catalog_context = admin_view_utils.get_predict_catalog_context(psat, page_number, searched_student)
+            catalog_context = predict_utils.get_admin_catalog_context(psat, page_number, searched_student)
             context = update_context_data(context, catalog_data=catalog_context['total'])
             return render(request, 'a_psat/snippets/admin_detail_predict_catalog.html', context)
         if view_type == 'answer_list':
-            answer_context = admin_view_utils.get_predict_answer_context(psat, subject, page_number)
+            answer_context = predict_utils.get_admin_answer_context(psat, subject, page_number)
             context = update_context_data(context, answer_data=answer_context[subject])
             return render(request, 'a_psat/snippets/admin_detail_predict_answer_analysis.html', context)
 
-        subject_vars = admin_view_utils.get_subject_vars(psat, True)
+        subject_vars = predict_utils.get_subject_vars(psat, True)
         qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat(psat)
         qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
 
         context = update_context_data(
             context,
-            statistics_context=admin_view_utils.get_predict_statistics_context(psat),
-            catalog_context=admin_view_utils.get_predict_catalog_context(psat),
-            answer_context=admin_view_utils.get_predict_answer_context(psat),
-            answer_predict_context=admin_view_utils.get_predict_only_answer_context(qs_answer_count, subject_vars),
-            answer_official_context=admin_view_utils.get_predict_only_answer_context(qs_problem, subject_vars),
+            statistics_context=predict_utils.get_admin_statistics_context(psat),
+            catalog_context=predict_utils.get_admin_catalog_context(psat),
+            answer_context=predict_utils.get_admin_answer_context(psat),
+            answer_predict_context=predict_utils.get_admin_only_answer_context(qs_answer_count, subject_vars),
+            answer_official_context=predict_utils.get_admin_only_answer_context(qs_problem, subject_vars),
             problem_context=get_paginator_context(qs_problem),
         )
     return render(request, 'a_psat/admin_predict_detail.html', context)
@@ -135,8 +135,8 @@ def predict_create_view(request: HtmxHttpRequest):
             new_predict_psat.predict_closed_at = form.cleaned_data['predict_closed_at']
             new_predict_psat.save()
 
-            admin_view_utils.create_predict_answer_count_model_instances(original_psat)
-            admin_view_utils.create_predict_statistics_model_instances(original_psat)
+            predict_utils.create_admin_answer_count_model_instances(original_psat)
+            predict_utils.create_admin_statistics_model_instances(original_psat)
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -159,21 +159,21 @@ def predict_update_view(request: HtmxHttpRequest, pk: int):
     if view_type == 'answer_official':
         form = forms.UploadFileForm(request.POST, request.FILES)
         file = request.FILES.get('file')
-        is_updated, message = admin_view_utils.update_problem_model_for_answer_official(psat, form, file)
+        is_updated, message = predict_utils.update_admin_problem_model_for_answer_official(psat, form, file)
         context = update_context_data(context, header='정답 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'score':
         model_dict = {'answer': models.PredictAnswer, 'score': models.PredictScore}
-        is_updated, message = admin_view_utils.update_predict_scores(psat, qs_student, model_dict)
+        is_updated, message = predict_utils.update_admin_scores(psat, qs_student, model_dict)
         context = update_context_data(context, header='점수 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'rank':
         model_dict = {'all': models.PredictRankTotal, 'department': models.PredictRankCategory}
-        is_updated, message = admin_view_utils.update_predict_ranks(psat, qs_student, model_dict)
+        is_updated, message = predict_utils.update_admin_ranks(psat, qs_student, model_dict)
         context = update_context_data(context, header='등수 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'statistics':
-        is_updated, message = admin_view_utils.update_predict_statistics(psat)
+        is_updated, message = predict_utils.update_admin_statistics(psat)
         context = update_context_data(context, header='통계 업데이트', is_updated=is_updated, message=message)
 
     if view_type == 'answer_count':
@@ -184,7 +184,7 @@ def predict_update_view(request: HtmxHttpRequest, pk: int):
             'mid': models.PredictAnswerCountMidRank,
             'low': models.PredictAnswerCountLowRank,
         }
-        is_updated, message = admin_view_utils.update_predict_answer_counts(model_dict)
+        is_updated, message = predict_utils.update_admin_answer_counts(model_dict)
         context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
 
     return render(request, 'a_psat/snippets/admin_modal_predict_update.html', context)
@@ -202,7 +202,7 @@ def predict_student_detail_view(request: HtmxHttpRequest, pk: int):
 @admin_required
 def predict_statistics_print(request: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    statistics_context = admin_view_utils.get_predict_statistics_context(psat, 1, 200)
+    statistics_context = predict_utils.get_admin_statistics_context(psat, 1, 200)
     context = update_context_data(psat=psat, statistics_context=statistics_context)
     return render(request, 'a_psat/admin_print_statistics.html', context)
 
@@ -218,7 +218,7 @@ def predict_catalog_print(request: HtmxHttpRequest, pk: int):
 @admin_required
 def predict_answer_print(request: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    answer_context = admin_view_utils.get_predict_answer_context(psat, None, 1, 1000)
+    answer_context = predict_utils.get_admin_answer_context(psat, None, 1, 1000)
     context = update_context_data(psat=psat, answer_context=answer_context)
     return render(request, 'a_psat/admin_print_answers.html', context)
 
@@ -226,22 +226,22 @@ def predict_answer_print(request: HtmxHttpRequest, pk: int):
 @admin_required
 def predict_statistics_excel(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    return admin_view_utils.get_predict_statistics_response(psat)
+    return predict_utils.get_admin_statistics_response(psat)
 
 
 @admin_required
 def predict_prime_id_excel(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    return admin_view_utils.get_predict_prime_id_response(psat)
+    return predict_utils.get_admin_prime_id_response(psat)
 
 
 @admin_required
 def predict_catalog_excel(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    return admin_view_utils.get_predict_catalog_response(psat)
+    return predict_utils.get_admin_catalog_response(psat)
 
 
 @admin_required
 def predict_answer_excel(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    return admin_view_utils.get_predict_answer_response(psat)
+    return predict_utils.get_admin_answer_response(psat)

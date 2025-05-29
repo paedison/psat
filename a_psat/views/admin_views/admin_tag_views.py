@@ -3,10 +3,10 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 
 from a_psat import models, forms, filters
+from a_psat.utils import tag_utils
 from common.constants import icon_set_new
 from common.decorators import admin_required
 from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
-from ...utils import admin_view_utils
 
 
 class ViewConfiguration:
@@ -134,7 +134,7 @@ def tag_export_problem_list(_: HtmxHttpRequest):
             'tags': tag_string,
         })
     df = pd.DataFrame(rows, index=None)
-    return admin_view_utils.get_response_for_excel_file(df, 'problem_list.xlsx')
+    return tag_utils.get_response_for_excel_file(df, 'problem_list.xlsx')
 
 
 @admin_required
@@ -162,4 +162,4 @@ def tag_export_tag_list(_: HtmxHttpRequest):
             'username': qs_tp.user.username,
         })
     df = pd.DataFrame(rows, index=None)
-    return admin_view_utils.get_response_for_excel_file(df, 'tag_list.xlsx')
+    return tag_utils.get_response_for_excel_file(df, 'tag_list.xlsx')

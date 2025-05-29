@@ -1,18 +1,14 @@
 import json
 
 from django.contrib.auth.decorators import login_not_required
-from django.db.models import F
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django_htmx.http import reswap
 
 from a_psat import models, forms
+from a_psat.utils import study_utils
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from ...utils import admin_view_utils
-from ...utils.normal_view_utils import study_utils
 
 
 class ViewConfiguration:
@@ -38,14 +34,8 @@ class ViewConfiguration:
 def study_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     current_time = timezone.now()
-    qs_student = None
-
-    # 로그인한 경우 수험 정보 추출
-    if request.user.is_authenticated:
-        schedule_info = study_utils.get_study_schedule_info()
-        qs_student = models.StudyStudent.objects.get_filtered_qs_by_user(request.user)
-        study_utils.update_study_qs_student(qs_student, schedule_info)
-    context = update_context_data(config=config, current_time=current_time, students=qs_student)
+    student_context = study_utils.get_normal_student_context(request)
+    context = update_context_data(config=config, current_time=current_time, students=student_context)
     return render(request, 'a_psat/study_list.html', context)
 
 
@@ -71,43 +61,42 @@ def study_detail_view(request: HtmxHttpRequest, pk: int, student=None):
 
     qs_schedule = models.StudyCurriculumSchedule.objects.filter(
         curriculum=curriculum, lecture_open_datetime__lt=current_time).order_by('-lecture_number')
-    homework_schedule = study_utils.get_study_homework_schedule(qs_schedule)
+    homework_schedule = study_utils.get_normal_homework_schedule(qs_schedule)
     opened_rounds = qs_schedule.values_list('lecture_round', flat=True)
     qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(student.curriculum)
 
     if view_type == 'lecture_list':
-        lecture_context = admin_view_utils.get_study_lecture_context(qs_schedule, page_number)
+        lecture_context = study_utils.get_study_lecture_context(qs_schedule, page_number)
         context = update_context_data(context, lecture_context=lecture_context)
         return render(request, 'a_psat/snippets/study_detail_lecture.html', context)
 
     if view_type == 'answer_analysis':
-        answer_context = study_utils.get_study_answer_context(homework_schedule, student, opened_rounds, page_number)
+        answer_context = study_utils.get_normal_answer_context(homework_schedule, student, opened_rounds, page_number)
         context = update_context_data(context, answer_context=answer_context)
         return render(request, 'a_psat/snippets/study_detail_answer_analysis.html', context)
 
-    curriculum_statistics = study_utils.get_study_curriculum_statistics(qs_student)
+    curriculum_statistics = study_utils.get_normal_curriculum_statistics(qs_student)
     qs_result = models.StudyResult.objects.select_related('psat').filter(
         student=student, psat__round__in=opened_rounds).order_by('-psat__round')
 
     if view_type == 'my_result':
-        my_result_context = study_utils.get_study_my_result_context(
+        my_result_context = study_utils.get_normal_my_result_context(
             homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number)
         context = update_context_data(context, my_result_context=my_result_context)
         return render(request, 'a_psat/snippets/study_detail_my_result.html', context)
 
     if view_type == 'statistics':
-        statistics_context = study_utils.get_study_statistics_context(
+        statistics_context = study_utils.get_normal_statistics_context(
             homework_schedule, qs_result, curriculum_statistics, page_number)
         context = update_context_data(
             context, curriculum_stat=curriculum_statistics['total'], statistics_context=statistics_context)
         return render(request, 'a_psat/snippets/study_detail_statistics.html', context)
 
-    lecture_context = admin_view_utils.get_study_lecture_context(qs_schedule)
-    my_result_context = study_utils.get_study_my_result_context(
+    lecture_context = study_utils.get_study_lecture_context(qs_schedule)
+    my_result_context = study_utils.get_normal_my_result_context(
         homework_schedule, student, opened_rounds, qs_result, curriculum_statistics)
-    statistics_context = study_utils.get_study_statistics_context(
-        homework_schedule, qs_result, curriculum_statistics)
-    answer_context = study_utils.get_study_answer_context(homework_schedule, student, opened_rounds)
+    statistics_context = study_utils.get_normal_statistics_context(homework_schedule, qs_result, curriculum_statistics)
+    answer_context = study_utils.get_normal_answer_context(homework_schedule, student, opened_rounds)
     context = update_context_data(
         context,
         lecture_context=lecture_context, my_result_context=my_result_context,
@@ -182,27 +171,10 @@ def study_answer_input_view(request: HtmxHttpRequest, pk: int):
         return render(request, 'a_psat/redirect.html', context)
 
     problem_count = result.psat.problems.count()
-    answer_data = study_utils.get_study_answer_data(request, problem_count)
+    answer_data = study_utils.get_normal_answer_data(request, problem_count)
 
-    # answer_submit
     if request.method == 'POST':
-        try:
-            no = int(request.POST.get('number'))
-            ans = int(request.POST.get('answer'))
-        except Exception as e:
-            print(e)
-            return reswap(HttpResponse(''), 'none')
-
-        context = update_context_data(context, answer={'no': no, 'ans': ans})
-        response = render(request, 'a_psat/snippets/predict_answer_button.html', context)
-
-        if 1 <= no <= problem_count and 1 <= ans <= 5:
-            answer_data[no - 1] = ans
-            response.set_cookie('answer_data_set', json.dumps(answer_data), max_age=3600)
-            return response
-        else:
-            print('Answer is not appropriate.')
-            return reswap(HttpResponse(''), 'none')
+        return study_utils.get_normal_answer_submit_response(request, context, problem_count, answer_data)
 
     answer_student = [{'no': no, 'ans': ans} for no, ans in enumerate(answer_data, start=1)]
     context = update_context_data(
@@ -220,39 +192,11 @@ def study_answer_confirm_view(request: HtmxHttpRequest, pk: int):
 
     if request.method == 'POST':
         problem_count = result.psat.problems.count()
-        answer_data = study_utils.get_study_answer_data(request, problem_count)
+        answer_data = study_utils.get_normal_answer_data(request, problem_count)
 
         is_confirmed = all(answer_data)
         if is_confirmed:
-            list_create = []
-            for no, ans in enumerate(answer_data, start=1):
-                problem = models.StudyProblem.objects.get(psat=result.psat, number=no)
-                list_create.append(models.StudyAnswer(
-                    student=result.student, problem=problem, answer=ans))
-            admin_view_utils.bulk_create_or_update(models.StudyAnswer, list_create, [], [])
-
-            qs_answer_count = models.StudyAnswerCount.objects.get_filtered_qs_by_psat(result.psat)
-            for qs_ac in qs_answer_count:
-                ans_student = answer_data[qs_ac.problem.number - 1]
-                setattr(qs_ac, f'count_{ans_student}', F(f'count_{ans_student}') + 1)
-                setattr(qs_ac, f'count_sum', F(f'count_sum') + 1)
-                qs_ac.save()
-
-            qs_answer = models.StudyAnswer.objects.filter(student=result.student, problem__psat=result.psat)
-            score = 0
-            for qs_a in qs_answer:
-                answer_correct_list = {int(digit) for digit in str(qs_a.answer_correct)}
-                if qs_a.answer in answer_correct_list:
-                    score += 1
-            result.score = score
-            result.save()
-
-            student = result.student
-            if student.score_total is None:
-                student.score_total = score
-            else:
-                student.score_total = F('student__score_total') + score
-            student.save()
+            study_utils.update_normal_result_and_student_model_instance(answer_data, result)
 
         next_url = result.student.get_study_curriculum_detail_url()
         context = update_context_data(header=f'답안 제출', is_confirmed=is_confirmed, next_url=next_url)

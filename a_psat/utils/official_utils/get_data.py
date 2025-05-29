@@ -2,16 +2,33 @@ from pathlib import Path
 
 from PIL import Image
 from django.conf import settings
-from django.db import transaction
 from django.templatetags.static import static
 from django.urls import reverse
 
 from a_psat import models
+from a_psat.utils.decorators import *
 from common.constants import icon_set_new
 from common.models import User
 from common.utils import get_paginator_context
 
 
+@for_normal_views
+def get_prev_next_obj(pk, custom_data) -> tuple:
+    custom_list = list(custom_data.values_list('id', flat=True))
+    prev_obj = next_obj = None
+    last_id = len(custom_list) - 1
+    try:
+        q = custom_list.index(pk)
+        if q != 0:
+            prev_obj = custom_data[q - 1]
+        if q != last_id:
+            next_obj = custom_data[q + 1]
+        return prev_obj, next_obj
+    except ValueError:
+        return None, None
+
+
+@for_normal_views
 def get_list_data(custom_data) -> list:
     organized_dict = {}
     organized_list = []
@@ -39,21 +56,7 @@ def get_list_data(custom_data) -> list:
     return organized_list
 
 
-def create_new_custom_record(request, problem, model, **kwargs):
-    base_info = {'problem': problem, 'user': request.user, 'is_active': True}
-    latest_record = model.objects.filter(**base_info).first()
-    if latest_record:
-        if isinstance(latest_record, models.ProblemLike):
-            kwargs = {'is_liked': not latest_record.is_liked}
-        with transaction.atomic():
-            new_record = model.objects.create(**base_info, **kwargs)
-            latest_record.is_active = False
-            latest_record.save()
-    else:
-        new_record = model.objects.create(**base_info, **kwargs)
-    return new_record
-
-
+@for_normal_views
 def process_image(problem):
     if not problem.absolute_img_path.exists():
         problem.img_normal = problem.img_wide = {'alt': 'Preparing Image', 'src': static('image/preparing.png')}
@@ -77,6 +80,7 @@ def process_image(problem):
         problem.img_wide = img_wide
 
 
+@for_normal_views
 def create_img_wide(img, width, height, threshold_height, img_wide_path):
     target_height = 1500 if height < threshold_height + 500 else height // 2
     split_y = find_split_point(img, target_height)
@@ -94,6 +98,7 @@ def create_img_wide(img, width, height, threshold_height, img_wide_path):
     img_wide.save(img_wide_path, format='PNG')
 
 
+@for_normal_views
 def find_split_point(image, target_height=1000, margin=50) -> int:
     """target_height ± margin 내에서 여백(밝은 부분)을 찾아 분할 위치를 반환"""
     width, height = image.size
@@ -112,14 +117,7 @@ def find_split_point(image, target_height=1000, margin=50) -> int:
     return split_y
 
 
-def create_new_collection(request, form):
-    my_collection = form.save(commit=False)
-    collection_counts = models.ProblemCollection.objects.filter(user=request.user, is_active=True).count()
-    my_collection.user = request.user
-    my_collection.order = collection_counts + 1
-    my_collection.save()
-
-
+@for_normal_views
 def get_custom_data(user: User) -> dict:
     def get_filtered_qs(model, *args):
         if not args:
@@ -144,6 +142,7 @@ def get_custom_data(user: User) -> dict:
     }
 
 
+@for_normal_views
 def get_problem_context(user, queryset, page_number=1):
     custom_data = get_custom_data(user)
     problem_context = get_paginator_context(queryset, page_number)
@@ -153,6 +152,7 @@ def get_problem_context(user, queryset, page_number=1):
         return problem_context
 
 
+@for_normal_views
 def get_custom_icons(problem, custom_data: dict):
     def get_status(status_type, field=None, default: bool | int | None = False):
         for dt in custom_data[status_type]:
@@ -176,6 +176,7 @@ def get_custom_icons(problem, custom_data: dict):
     problem.icon_collection = icon_set_new.ICON_COLLECTION[f'{is_collected}']
 
 
+@for_normal_views
 def get_all_comments(queryset, problem_id=None):
     if problem_id:
         queryset = queryset.filter(problem_id=problem_id)
@@ -186,3 +187,10 @@ def get_all_comments(queryset, problem_id=None):
         all_comments.append(comment)
         all_comments.extend(child_comments.filter(parent=comment))
     return all_comments
+
+
+@for_admin_views
+def update_official_problem_count(page_obj):
+    for psat in page_obj:
+        psat.updated_problem_count = sum(1 for prob in psat.problems.all() if prob.question and prob.data)
+        psat.image_problem_count = sum(1 for prob in psat.problems.all() if prob.has_image)

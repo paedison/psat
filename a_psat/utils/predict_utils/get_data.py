@@ -2,18 +2,18 @@ import json
 from collections import defaultdict
 from datetime import timedelta
 
-from django.db.models import Count, Window, F, QuerySet
-from django.db.models.functions import Rank
-from django.shortcuts import get_object_or_404
+from django.db.models import Count, F, QuerySet
 
 from a_psat import models
-from common.utils import HtmxHttpRequest
-from . import common_utils
+from a_psat.utils.variables import *
+from a_psat.utils.decorators import *
+from common.utils import HtmxHttpRequest, get_paginator_context
 
 
-def get_predict_is_confirmed_data(
+@for_normal_views
+def get_normal_is_confirmed_data(
         qs_student_answer: QuerySet[models.PredictAnswer], psat: models.Psat) -> dict:
-    is_confirmed_data = {sub: False for sub in common_utils.get_subject_vars(psat)}
+    is_confirmed_data = {sub: False for sub in get_subject_vars(psat)}
     confirmed_sub_list = qs_student_answer.values_list('subject', flat=True).distinct()
     for sub in confirmed_sub_list:
         is_confirmed_data[sub] = True
@@ -21,16 +21,18 @@ def get_predict_is_confirmed_data(
     return is_confirmed_data
 
 
-def get_predict_input_answer_data_set(request: HtmxHttpRequest, psat: models.Psat) -> dict:
+@for_normal_views
+def get_normal_input_answer_data_set(request: HtmxHttpRequest, psat: models.Psat) -> dict:
     empty_answer_data = {
-        fld: [0 for _ in range(cnt)] for _, (_, fld, _, cnt) in common_utils.get_subject_vars(psat).items()
+        fld: [0 for _ in range(cnt)] for _, (_, fld, _, cnt) in get_subject_vars(psat).items()
     }
     answer_data_set_cookie = request.COOKIES.get('answer_data_set', '{}')
     answer_data_set = json.loads(answer_data_set_cookie) or empty_answer_data
     return answer_data_set
 
 
-def get_statistics_context(
+@for_normal_views
+def get_normal_statistics_context(
         psat: models.Psat,
         student: models.PredictStudent,
         is_confirmed_data: dict,
@@ -39,11 +41,12 @@ def get_statistics_context(
         is_filtered: bool,
 ) -> dict:
     suffix = 'Filtered' if is_filtered else 'Total'
-    statistics_all = get_predict_stat_data(
+    statistics_all = get_normal_statistics_data(
         student, is_confirmed_data, answer_data_set, 'all', is_filtered)
-    update_predict_score_predict(statistics_all, qs_student_answer, psat)
-    statistics_department = get_predict_stat_data(
+    statistics_department = get_normal_statistics_data(
         student, is_confirmed_data, answer_data_set, 'department', is_filtered)
+    update_normal_score_predict(statistics_all, qs_student_answer, psat)
+
     return {
         'all': {
             'id': '0', 'title': '전체 기준',
@@ -56,7 +59,8 @@ def get_statistics_context(
     }
 
 
-def get_predict_stat_data(
+@for_normal_views
+def get_normal_statistics_data(
         student: models.PredictStudent,
         is_confirmed_data: dict,
         answer_data_set: dict,
@@ -65,7 +69,7 @@ def get_predict_stat_data(
 ) -> dict:
     psat = student.psat
     predict_psat = student.psat.predict_psat
-    subject_vars = common_utils.get_subject_vars(psat)
+    subject_vars = get_subject_vars(psat)
 
     stat_data = {}
     for sub, (subject, fld, _, problem_count) in subject_vars.items():
@@ -100,7 +104,7 @@ def get_predict_stat_data(
     participants_dict = {qs_a['problem__subject']: qs_a['participant_count'] for qs_a in qs_answer}
     participants_dict['평균'] = participants_dict[min(participants_dict)] if participants_dict else 0
 
-    scores = {sub: [] for sub in common_utils.get_subject_vars(psat)}
+    scores = {sub: [] for sub in get_subject_vars(psat)}
     is_confirmed_for_average = []
     qs_score = models.PredictScore.objects.get_filtered_qs_by_psat_student_stat_type_and_is_filtered(
         psat, student, stat_type, is_filtered)
@@ -138,12 +142,13 @@ def get_predict_stat_data(
     return stat_data
 
 
-def update_predict_score_predict(
+@for_normal_views
+def update_normal_score_predict(
         statistics_all: dict,
         qs_student_answer: QuerySet[models.PredictAnswer],
         psat: models.Psat,
 ) -> None:
-    subject_vars = common_utils.get_subject_vars(psat, True)
+    subject_vars = get_subject_vars(psat, True)
     score_predict = {sub: 0 for sub in subject_vars}
     predict_correct_count_list = qs_student_answer.filter(predict_result=True).values(
         'subject').annotate(correct_counts=Count('predict_result'))
@@ -162,10 +167,11 @@ def update_predict_score_predict(
     statistics_all['평균']['score_predict'] = round(psat_sum / 3, 1)
 
 
-def get_predict_dict_stat_chart(
+@for_normal_views
+def get_normal_dict_stat_chart(
         student: models.PredictStudent, total_statistics_context: dict) -> dict:
     student_score = [
-        getattr(student.score, fld) for (_, fld, _, _) in common_utils.get_subject_vars(student.psat).values()
+        getattr(student.score, fld) for (_, fld, _, _) in get_subject_vars(student.psat).values()
     ]
     chart_score = {
         'my_score': student_score,
@@ -189,11 +195,12 @@ def get_predict_dict_stat_chart(
     return chart_score
 
 
-def get_predict_dict_stat_frequency(student: models.PredictStudent) -> dict:
+@for_normal_views
+def get_normal_dict_stat_frequency(student: models.PredictStudent) -> dict:
     score_frequency_list = models.PredictStudent.objects.filter(
         psat=student.psat, score__average__gte=50).values_list('score__average', flat=True)
     scores = [round(score, 1) for score in score_frequency_list]
-    sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.average)
+    sorted_freq, target_bin = frequency_table_by_bin(scores, target_score=student.score.average)  # noqa
 
     score_label, score_data, score_color = [], [], []
     for key, val in sorted_freq.items():
@@ -205,6 +212,7 @@ def get_predict_dict_stat_frequency(student: models.PredictStudent) -> dict:
     return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
 
 
+@for_normal_views
 def frequency_table_by_bin(
         scores: list, bin_size: int = 5, target_score: float | None = None) -> tuple[dict, str | None]:
     freq = defaultdict(int)
@@ -227,12 +235,13 @@ def frequency_table_by_bin(
     return sorted_freq, target_bin
 
 
-def get_predict_answer_context(
+@for_normal_views
+def get_normal_answer_context(
         qs_student_answer: QuerySet[models.PredictAnswer],
         psat: models.Psat,
         is_confirmed_data: dict,
 ) -> dict:
-    subject_vars = common_utils.get_subject_vars(psat, True)
+    subject_vars = get_subject_vars(psat, True)
     context = {
         sub: {
             'id': str(idx), 'title': sub, 'subject': subject, 'field': field,
@@ -277,6 +286,7 @@ def get_predict_answer_context(
     return context
 
 
+@for_normal_views
 def get_loop_list(problem_count: int):
     loop_list = []
     quotient = problem_count // 10
@@ -291,6 +301,7 @@ def get_loop_list(problem_count: int):
     return loop_list
 
 
+@for_normal_views
 def get_time_schedule(predict_psat: models.PredictPsat) -> dict:
     start_time = predict_psat.exam_started_at
     exam_1_end_time = start_time + timedelta(minutes=115)  # 1교시 시험 종료 시각
@@ -307,137 +318,199 @@ def get_time_schedule(predict_psat: models.PredictPsat) -> dict:
     }
 
 
-def create_predict_confirmed_answers(
-        student: models.PredictStudent, sub: str, answer_data: list) -> None:
-    list_create = []
-    for no, ans in enumerate(answer_data, start=1):
-        problem = models.Problem.objects.get(psat=student.psat, subject=sub, number=no)
-        list_create.append(models.PredictAnswer(student=student, problem=problem, answer=ans))
-    common_utils.bulk_create_or_update(models.PredictAnswer, list_create, [], [])
-
-
-def update_predict_answer_counts_after_confirm(
-        qs_answer_count: QuerySet[models.PredictAnswerCount],
-        psat: models.Psat,
-        answer_data: list,
-) -> None:
-    for qs_ac in qs_answer_count:
-        ans_student = answer_data[qs_ac.problem.number - 1]
-        setattr(qs_ac, f'count_{ans_student}', F(f'count_{ans_student}') + 1)
-        setattr(qs_ac, f'count_sum', F(f'count_sum') + 1)
-        if not psat.predict_psat.is_answer_official_opened:
-            setattr(qs_ac, f'filtered_count_{ans_student}', F(f'count_{ans_student}') + 1)
-            setattr(qs_ac, f'filtered_count_sum', F(f'count_sum') + 1)
-        qs_ac.save()
-
-
-def get_predict_answer_all_confirmed(student: models.PredictStudent) -> bool:
+@for_normal_views
+def get_normal_answer_all_confirmed(student: models.PredictStudent) -> bool:
     answer_student_counts = models.PredictAnswer.objects.filter(student=student).count()
-    problem_count_sum = sum([
-        value[3] for value in common_utils.get_subject_vars(student.psat, True).values()
-    ])
+    problem_count_sum = sum([value[3] for value in get_subject_vars(student.psat, True).values()])
     return answer_student_counts == problem_count_sum
 
 
-def update_predict_statistics_after_confirm(
-        student: models.PredictStudent,
-        subject_field: str,
-        answer_all_confirmed: bool
+@for_admin_views
+def get_admin_statistics_context(psat: models.Psat, page_number=1, per_page=10) -> dict:
+    total_data, filtered_data = get_admin_statistics_data(psat)
+    total_context = get_paginator_context(total_data, page_number, per_page)
+    filtered_context = get_paginator_context(filtered_data, page_number, per_page)
+    total_context.update({
+        'id': '0', 'title': '전체', 'prefix': 'TotalStatistics', 'header': 'total_statistics_list',
+    })
+    filtered_context.update({
+        'id': '1', 'title': '필터링', 'prefix': 'FilteredStatistics', 'header': 'filtered_statistics_list',
+    })
+    return {'total': total_context, 'filtered': filtered_context}
+
+
+@for_admin_views
+def get_admin_statistics_data(psat: models.Psat) -> tuple[list, list]:
+    subject_vars = get_subject_vars(psat)
+
+    department_list = list(
+        models.PredictCategory.objects.filter(exam=psat.exam).order_by('order')
+        .values_list('department', flat=True)
+    )
+    department_list.insert(0, '전체')
+
+    total_data, filtered_data = defaultdict(dict), defaultdict(dict)
+    total_scores, filtered_scores = defaultdict(dict), defaultdict(dict)
+    for department in department_list:
+        total_data[department] = {'department': department, 'participants': 0}
+        filtered_data[department] = {'department': department, 'participants': 0}
+        total_scores[department] = {sub: [] for sub in subject_vars}
+        filtered_scores[department] = {sub: [] for sub in subject_vars}
+
+    qs_students = (
+        models.PredictStudent.objects.filter(psat=psat)
+        .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
+        .annotate(
+            department=F('category__department'),
+            subject_0=F('score__subject_0'),
+            subject_1=F('score__subject_1'),
+            subject_2=F('score__subject_2'),
+            subject_3=F('score__subject_3'),
+            average=F('score__average'),
+        )
+    )
+    for qs_s in qs_students:
+        for sub, (_, field, _, _) in subject_vars.items():
+            score = getattr(qs_s, field)
+            if score is not None:
+                total_scores['전체'][sub].append(score)
+                total_scores[qs_s.department][sub].append(score)
+                if qs_s.is_filtered:
+                    filtered_scores['전체'][sub].append(score)
+                    filtered_scores[qs_s.department][sub].append(score)
+
+    update_admin_statistics_data(total_data, subject_vars, total_scores)
+    update_admin_statistics_data(filtered_data, subject_vars, filtered_scores)
+
+    return list(total_data.values()), list(filtered_data.values())
+
+
+@for_admin_views
+def update_admin_statistics_data(
+        data_statistics: dict,
+        subject_vars: dict,
+        score_list: dict,
 ) -> None:
-    predict_psat = student.psat.predict_psat
+    for department, score_dict in score_list.items():
+        for sub, scores in score_dict.items():
+            subject, field, _, _ = subject_vars[sub]
+            participants = len(scores)
 
-    def get_statistics_and_edit_participants(department: str):
-        stat = get_object_or_404(models.PredictStatistics, psat=student.psat, department=department)
+            sorted_scores = sorted(scores, reverse=True)
+            max_score = top_score_10 = top_score_20 = avg_score = None
+            if sorted_scores:
+                max_score = sorted_scores[0]
+                top_10_threshold = max(1, int(participants * 0.1))
+                top_20_threshold = max(1, int(participants * 0.2))
+                top_score_10 = sorted_scores[top_10_threshold - 1]
+                top_score_20 = sorted_scores[top_20_threshold - 1]
+                avg_score = round(sum(scores) / participants, 1)
 
-        # Update participants for each subject [All, Filtered]
-        getattr(stat, subject_field)['participants'] += 1
-        if not predict_psat.is_answer_official_opened:
-            getattr(stat, f'filtered_{subject_field}')['participants'] += 1
-
-        # Update participants for average [All, Filtered]
-        if answer_all_confirmed:
-            stat.average['participants'] += 1
-            if not predict_psat.is_answer_official_opened:
-                stat.filtered_average['participants'] += 1
-                student.is_filtered = True
-                student.save()
-        stat.save()
-
-    get_statistics_and_edit_participants('전체')
-    get_statistics_and_edit_participants(student.department)
-
-
-def update_predict_score_for_each_student(
-        qs_answer: QuerySet[models.PredictAnswer],
-        subject_field: str,
-        sub: str
-) -> None:
-    student = qs_answer.first().student
-    score = student.score
-    correct_count = 0
-    for qs_a in qs_answer:
-        correct_count += 1 if qs_a.answer_student == qs_a.answer_correct else 0
-
-    problem_count = common_utils.get_subject_vars(student.psat)[sub][3]
-    score_point = correct_count * 100 / problem_count
-    setattr(score, subject_field, score_point)
-
-    score_list = [sco for sco in [score.subject_1, score.subject_2, score.subject_3] if sco is not None]
-    score_sum = sum(score_list) if score_list else None
-    score_average = round(score_sum / 3, 1) if score_sum else None
-
-    score.sum = score_sum
-    score.average = score_average
-    score.save()
+            data_statistics[department][field] = {
+                'field': field,
+                'is_confirmed': True,
+                'sub': sub,
+                'subject': subject,
+                'participants': participants,
+                'max': max_score,
+                't10': top_score_10,
+                't20': top_score_20,
+                'avg': avg_score,
+            }
 
 
-def update_predict_rank_for_each_student(
-        qs_student: QuerySet[models.PredictStudent],
-        student: models.PredictStudent,
-        subject_field: str,
-        field_idx: int,
-        stat_type: str
-) -> None:
-    field_average = 'average'
+@for_admin_views
+def get_admin_catalog_context(psat: models.Psat, page_number=1, total_list=None) -> dict:
+    if total_list is None:
+        total_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
+    filtered_list = total_list.filter(is_filtered=True)
+    total_context = get_paginator_context(total_list, page_number)
+    filtered_context = get_paginator_context(filtered_list, page_number)
 
-    rank_model = models.PredictRankTotal
-    if stat_type == 'department':
-        rank_model = models.PredictRankCategory
+    field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
+    for obj in filtered_context['page_obj']:
+        obj.rank_tot_num = obj.filtered_rank_tot_num
+        obj.rank_dep_num = obj.filtered_rank_dep_num
+        for key, fld in field_dict.items():
+            setattr(obj, f'rank_tot_{key}', getattr(obj, f'filtered_rank_tot_{key}'))
+            setattr(obj, f'rank_dep_{key}', getattr(obj, f'filtered_rank_dep_{key}'))
 
-    def rank_func(field_name) -> Window:
-        return Window(expression=Rank(), order_by=F(field_name).desc())
+    total_context.update({
+        'id': '0', 'title': '전체', 'prefix': 'TotalCatalog', 'header': 'total_catalog_list',
+    })
+    filtered_context.update({
+        'id': '1', 'title': '필터링', 'prefix': 'FilteredCatalog', 'header': 'filtered_catalog_list',
+    })
 
-    annotate_dict = {
-        f'rank_{field_idx}': rank_func(f'score__{subject_field}'),
-        'rank_average': rank_func(f'score__{field_average}')
+    return {'total': total_context, 'filtered': filtered_context}
+
+
+@for_admin_views
+def get_admin_answer_context(psat: models.Psat, subject=None, page_number=1, per_page=10) -> dict:
+    subject_vars = get_subject_vars(psat, True)
+    sub_list = [sub for sub in subject_vars]
+    qs_answer_count_group = {sub: [] for sub in subject_vars}
+    answer_context = {}
+
+    qs_answer_count = models.PredictAnswerCount.objects.get_filtered_qs_by_psat_and_subject(psat, subject)
+    for qs_ac in qs_answer_count:
+        sub = qs_ac.subject
+        if sub not in qs_answer_count_group:
+            qs_answer_count_group[sub] = []
+        qs_answer_count_group[sub].append(qs_ac)
+
+    for sub, qs_answer_count in qs_answer_count_group.items():
+        if qs_answer_count:
+            data_answers = get_admin_answer_data(qs_answer_count, subject_vars)
+            context = get_paginator_context(data_answers, page_number, per_page)
+            context.update({
+                'id': str(sub_list.index(sub)),
+                'title': sub,
+                'prefix': 'Answer',
+                'header': 'answer_list',
+                'answer_count': 4 if sub == '헌법' else 5,
+            })
+            answer_context[sub] = context
+
+    return answer_context
+
+
+@for_admin_views
+def get_admin_answer_data(qs_answer_count: QuerySet, subject_vars: dict) -> QuerySet:
+    for qs_ac in qs_answer_count:
+        sub = qs_ac.subject
+        field = subject_vars[sub][1]
+        ans_official = qs_ac.ans_official
+
+        answer_official_list = []
+        if ans_official > 5:
+            answer_official_list = [int(digit) for digit in str(ans_official)]
+
+        qs_ac.no = qs_ac.number
+        qs_ac.ans_official = ans_official
+        qs_ac.ans_official_circle = qs_ac.problem.get_answer_display()
+        qs_ac.ans_predict_circle = models.choices.answer_choice()[qs_ac.ans_predict] if qs_ac.ans_predict else None
+        qs_ac.ans_list = answer_official_list
+        qs_ac.field = field
+
+        qs_ac.rate_correct = qs_ac.get_answer_rate(ans_official)
+        qs_ac.rate_correct_top = qs_ac.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
+        qs_ac.rate_correct_mid = qs_ac.problem.predict_answer_count_mid_rank.get_answer_rate(ans_official)
+        qs_ac.rate_correct_low = qs_ac.problem.predict_answer_count_low_rank.get_answer_rate(ans_official)
+        try:
+            qs_ac.rate_gap = qs_ac.rate_correct_top - qs_ac.rate_correct_low
+        except TypeError:
+            qs_ac.rate_gap = None
+
+    return qs_answer_count
+
+
+@for_admin_views
+def get_admin_only_answer_context(queryset: QuerySet, subject_vars: dict) -> dict:
+    query_dict = defaultdict(list)
+    for query in queryset.order_by('id'):
+        query_dict[query.subject].append(query)
+    return {
+        sub: {'id': str(idx), 'title': sub, 'page_obj': query_dict[sub]}
+        for sub, (_, _, idx, _) in subject_vars.items()
     }
-
-    rank_list = qs_student.annotate(**annotate_dict)
-    if stat_type == 'department':
-        rank_list = rank_list.filter(category=student.category)
-    participants = rank_list.count()
-
-    target, _ = rank_model.objects.get_or_create(student=student)
-    fields_not_match = [target.participants != participants]
-
-    for entry in rank_list:
-        if entry.id == student.id:
-            score_for_field = getattr(entry, f'rank_{field_idx}')
-            score_for_average = getattr(entry, f'rank_average')
-            fields_not_match.append(getattr(target, subject_field) != score_for_field)
-            fields_not_match.append(target.average != entry.rank_average)
-
-            if any(fields_not_match):
-                target.participants = participants
-                setattr(target, subject_field, score_for_field)
-                setattr(target, field_average, score_for_average)
-                target.save()
-
-
-def get_predict_next_url_for_answer_input(
-        student: models.PredictStudent, psat: models.Psat) -> str:
-    subject_vars = common_utils.get_subject_vars(psat, True)
-    for sub, (_, fld, _, _) in subject_vars.items():
-        if student.answer_count[sub] == 0:
-            return psat.get_predict_answer_input_url(fld)
-    return psat.get_predict_detail_url()

@@ -1,28 +1,15 @@
-import traceback
 from collections import defaultdict
-from functools import wraps
-from typing import Callable
 
-import django.db.utils
 import pandas as pd
-from django.db import transaction
-from django.db.models import Count, Window, F
-from django.db.models import QuerySet
+from django.db.models import Count, Window, F, QuerySet
 from django.db.models.functions import Rank
+from django.shortcuts import get_object_or_404
 
 from a_psat import models
-from . import common_utils, get_data_utils
-
-
-def get_update_messages(target: str, final_syllable=False) -> dict:
-    particle_1 = '을' if final_syllable else '를'
-    particle_2 = '과' if final_syllable else '와'
-    return {
-        None: '에러가 발생했습니다.',
-        True: f'{target}{particle_1} 업데이트했습니다.',
-        False: f'기존 {target}{particle_2} 일치합니다.',
-    }
-
+from a_psat.utils.decorators import *
+from a_psat.utils.modify_models_methods import *
+from a_psat.utils.variables import *
+from .get_data import get_admin_statistics_data
 
 UPDATE_MESSAGES = {
     'score': get_update_messages('점수'),
@@ -32,7 +19,133 @@ UPDATE_MESSAGES = {
 }
 
 
-def create_predict_answer_count_model_instances(original_psat: models.Psat) -> None:
+@for_normal_views
+@with_bulk_create_or_update()
+def create_normal_confirmed_answers(
+        student: models.PredictStudent, sub: str, answer_data: list):
+    list_create, list_update = [], []
+    for no, ans in enumerate(answer_data, start=1):
+        problem = models.Problem.objects.get(psat=student.psat, subject=sub, number=no)
+        list_create.append(models.PredictAnswer(student=student, problem=problem, answer=ans))
+    return models.PredictAnswer, list_create, list_update, []
+
+
+@for_normal_views
+def update_normal_answer_counts_after_confirm(
+        qs_answer_count: QuerySet[models.PredictAnswerCount],
+        psat: models.Psat,
+        answer_data: list,
+) -> None:
+    for qs_ac in qs_answer_count:
+        ans_student = answer_data[qs_ac.problem.number - 1]
+        setattr(qs_ac, f'count_{ans_student}', F(f'count_{ans_student}') + 1)
+        setattr(qs_ac, f'count_sum', F(f'count_sum') + 1)
+        if not psat.predict_psat.is_answer_official_opened:
+            setattr(qs_ac, f'filtered_count_{ans_student}', F(f'count_{ans_student}') + 1)
+            setattr(qs_ac, f'filtered_count_sum', F(f'count_sum') + 1)
+        qs_ac.save()
+
+
+@for_normal_views
+def update_normal_statistics_after_confirm(
+        student: models.PredictStudent,
+        subject_field: str,
+        answer_all_confirmed: bool
+) -> None:
+    predict_psat = student.psat.predict_psat
+
+    def get_statistics_and_edit_participants(department: str):
+        stat = get_object_or_404(models.PredictStatistics, psat=student.psat, department=department)
+
+        # Update participants for each subject [All, Filtered]
+        getattr(stat, subject_field)['participants'] += 1
+        if not predict_psat.is_answer_official_opened:
+            getattr(stat, f'filtered_{subject_field}')['participants'] += 1
+
+        # Update participants for average [All, Filtered]
+        if answer_all_confirmed:
+            stat.average['participants'] += 1
+            if not predict_psat.is_answer_official_opened:
+                stat.filtered_average['participants'] += 1
+                student.is_filtered = True
+                student.save()
+        stat.save()
+
+    get_statistics_and_edit_participants('전체')
+    get_statistics_and_edit_participants(student.department)
+
+
+@for_normal_views
+def update_normal_score_for_each_student(
+        qs_answer: QuerySet[models.PredictAnswer],
+        subject_field: str,
+        sub: str
+) -> None:
+    student = qs_answer.first().student
+    score = student.score
+    correct_count = 0
+    for qs_a in qs_answer:
+        correct_count += 1 if qs_a.answer_student == qs_a.answer_correct else 0
+
+    problem_count = get_subject_vars(student.psat)[sub][3]
+    score_point = correct_count * 100 / problem_count
+    setattr(score, subject_field, score_point)
+
+    score_list = [sco for sco in [score.subject_1, score.subject_2, score.subject_3] if sco is not None]
+    score_sum = sum(score_list) if score_list else None
+    score_average = round(score_sum / 3, 1) if score_sum else None
+
+    score.sum = score_sum
+    score.average = score_average
+    score.save()
+
+
+@for_normal_views
+def update_normal_rank_for_each_student(
+        qs_student: QuerySet[models.PredictStudent],
+        student: models.PredictStudent,
+        subject_field: str,
+        field_idx: int,
+        stat_type: str
+) -> None:
+    field_average = 'average'
+
+    rank_model = models.PredictRankTotal
+    if stat_type == 'department':
+        rank_model = models.PredictRankCategory
+
+    def rank_func(field_name) -> Window:
+        return Window(expression=Rank(), order_by=F(field_name).desc())
+
+    annotate_dict = {
+        f'rank_{field_idx}': rank_func(f'score__{subject_field}'),
+        'rank_average': rank_func(f'score__{field_average}')
+    }
+
+    rank_list = qs_student.annotate(**annotate_dict)
+    if stat_type == 'department':
+        rank_list = rank_list.filter(category=student.category)
+    participants = rank_list.count()
+
+    target, _ = rank_model.objects.get_or_create(student=student)
+    fields_not_match = [target.participants != participants]
+
+    for entry in rank_list:
+        if entry.id == student.id:
+            score_for_field = getattr(entry, f'rank_{field_idx}')
+            score_for_average = getattr(entry, f'rank_average')
+            fields_not_match.append(getattr(target, subject_field) != score_for_field)
+            fields_not_match.append(target.average != entry.rank_average)
+
+            if any(fields_not_match):
+                target.participants = participants
+                setattr(target, subject_field, score_for_field)
+                setattr(target, field_average, score_for_average)
+                target.save()
+
+
+@for_admin_views
+def create_admin_answer_count_model_instances(original_psat: models.Psat) -> None:
     problems = models.Problem.objects.filter(psat=original_psat).order_by('id')
     model_list = [
         models.PredictAnswerCount,
@@ -47,7 +160,9 @@ def create_predict_answer_count_model_instances(original_psat: models.Psat) -> N
         bulk_create_or_update(model, list_create, [], [])
 
 
-def create_predict_statistics_model_instances(original_psat: models.Psat) -> None:
+@for_admin_views
+@with_bulk_create_or_update()
+def create_admin_statistics_model_instances(original_psat: models.Psat):
     department_list = list(
         models.PredictCategory.objects.filter(exam=original_psat.exam).order_by('order')
         .values_list('department', flat=True)
@@ -56,19 +171,18 @@ def create_predict_statistics_model_instances(original_psat: models.Psat) -> Non
 
     list_create = []
     for department in department_list:
-        append_list_create(
-            models.PredictStatistics, list_create, psat=original_psat, department=department)
-    bulk_create_or_update(models.PredictStatistics, list_create, [], [])
+        append_list_create(models.PredictStatistics, list_create, psat=original_psat, department=department)
+    return models.PredictStatistics, list_create, [], []
 
 
-def update_problem_model_for_answer_official(psat: models.Psat, form, file) -> tuple[bool | None, str]:
+@for_admin_views
+def update_admin_problem_model_for_answer_official(psat: models.Psat, form, file) -> tuple[bool | None, str]:
     message_dict = {
         None: '에러가 발생했습니다.',
-        True: '문제 정답을 업데이트했습니다.',
-        False: '기존 정답 데이터와 일치합니다.',
+        True: '정답을 업데이트했습니다.',
+        False: '기존 정답과 일치합니다.',
     }
-    list_update = []
-    list_create = []
+    list_create, list_update = [], []
 
     if form.is_valid():
         df = pd.read_excel(file, sheet_name='정답', header=0, index_col=0)
@@ -97,105 +211,60 @@ def update_problem_model_for_answer_official(psat: models.Psat, form, file) -> t
     return is_updated, message_dict[is_updated]
 
 
-def with_update_message(message_dict: dict):
-    def decorator(func: Callable):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            is_updated_list = func(*args, **kwargs)
-
-            if None in is_updated_list:
-                is_updated = None
-            elif any(is_updated_list):
-                is_updated = True
-            else:
-                is_updated = False
-
-            return is_updated, message_dict[is_updated]
-        return wrapper
-    return decorator
-
-
+@for_admin_views
 @with_update_message(UPDATE_MESSAGES['score'])
-def update_predict_scores(psat: models.Psat, qs_student, model_dict):
-    sub_list = [sub for sub in common_utils.get_subject_vars(psat, True)]
-    return [update_predict_score_model(qs_student, model_dict, sub_list)]
+def update_admin_scores(psat: models.Psat, qs_student, model_dict):
+    sub_list = [sub for sub in get_subject_vars(psat, True)]
+    return [update_admin_score_model(qs_student, model_dict, sub_list)]
 
 
+@for_admin_views
 @with_update_message(UPDATE_MESSAGES['rank'])
-def update_predict_ranks(psat: models.Psat, qs_student, model_dict):
-    sub_list = [sub for sub in common_utils.get_subject_vars(psat, True)]
+def update_admin_ranks(psat: models.Psat, qs_student, model_dict):
+    sub_list = [sub for sub in get_subject_vars(psat, True)]
     return [
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'all', False),
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'all', True),
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'department', False),
-        update_predict_rank_model(qs_student, model_dict, sub_list, 'department', True),
+        update_admin_rank_model(qs_student, model_dict, sub_list, 'all', False),
+        update_admin_rank_model(qs_student, model_dict, sub_list, 'all', True),
+        update_admin_rank_model(qs_student, model_dict, sub_list, 'department', False),
+        update_admin_rank_model(qs_student, model_dict, sub_list, 'department', True),
     ]
 
 
+@for_admin_views
 @with_update_message(UPDATE_MESSAGES['statistics'])
-def update_predict_statistics(psat: models.Psat):
-    total_data, filtered_data = get_data_utils.get_predict_statistics_data(psat)
+def update_admin_statistics(psat: models.Psat):
+    total_data, filtered_data = get_admin_statistics_data(psat)
     return [
-        update_predict_statistics_model(psat, total_data, False),
-        update_predict_statistics_model(psat, filtered_data, True),
+        update_admin_statistics_model(psat, total_data, False),
+        update_admin_statistics_model(psat, filtered_data, True),
     ]
 
 
+@for_admin_views
 @with_update_message(UPDATE_MESSAGES['answer_count'])
-def update_predict_answer_counts(model_dict: dict):
+def update_admin_answer_counts(model_dict: dict):
     return [
-        update_predict_answer_count_model(model_dict, 'all', False),
-        update_predict_answer_count_model(model_dict, 'top', False),
-        update_predict_answer_count_model(model_dict, 'mid', False),
-        update_predict_answer_count_model(model_dict, 'low', False),
-        update_predict_answer_count_model(model_dict, 'all', True),
-        update_predict_answer_count_model(model_dict, 'top', True),
-        update_predict_answer_count_model(model_dict, 'mid', True),
-        update_predict_answer_count_model(model_dict, 'low', True),
+        update_admin_answer_count_model(model_dict, 'all', False),
+        update_admin_answer_count_model(model_dict, 'top', False),
+        update_admin_answer_count_model(model_dict, 'mid', False),
+        update_admin_answer_count_model(model_dict, 'low', False),
+        update_admin_answer_count_model(model_dict, 'all', True),
+        update_admin_answer_count_model(model_dict, 'top', True),
+        update_admin_answer_count_model(model_dict, 'mid', True),
+        update_admin_answer_count_model(model_dict, 'low', True),
     ]
 
 
-def with_bulk_create_or_update():
-    def decorator(func: Callable):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            model, list_create, list_update, update_fields = func(*args, **kwargs)
-            model_name = model._meta.model_name
-            try:
-                with transaction.atomic():
-                    if list_create:
-                        model.objects.bulk_create(list_create)
-                        message = f'Successfully created {len(list_create)} {model_name} instances.'
-                        is_updated = True
-                    elif list_update:
-                        model.objects.bulk_update(list_update, list(update_fields))
-                        message = f'Successfully updated {len(list_update)} {model_name} instances.'
-                        is_updated = True
-                    else:
-                        message = f'No changes were made to {model_name} instances.'
-                        is_updated = False
-            except django.db.utils.IntegrityError:
-                traceback_message = traceback.format_exc()
-                print(traceback_message)
-                message = f'Error occurred.'
-                is_updated = None
-            print(message)
-            return is_updated
-        return wrapper
-    return decorator
-
-
+@for_admin_views
 @with_bulk_create_or_update()
-def update_predict_score_model(
+def update_admin_score_model(
         qs_student: QuerySet[models.PredictStudent],
         model_dict: dict,
         sub_list: list
 ):
     answer_model = model_dict['answer']
     score_model = model_dict['score']
-
-    list_update = []
-    list_create = []
+    list_create, list_update = [], []
 
     for student in qs_student:
         original_score_instance, _ = score_model.objects.get_or_create(student=student)
@@ -235,8 +304,9 @@ def update_predict_score_model(
     return score_model, list_create, list_update, update_fields
 
 
+@for_admin_views
 @with_bulk_create_or_update()
-def update_predict_rank_model(
+def update_admin_rank_model(
         qs_student: QuerySet[models.PredictStudent],
         model_dict: dict,
         sub_list: list,
@@ -292,7 +362,8 @@ def update_predict_rank_model(
     return rank_model, list_create, list_update, update_fields
 
 
-def update_predict_statistics_model(
+@for_admin_views
+def update_admin_statistics_model(
         psat: models.Psat,
         data_statistics,
         is_filtered: bool,
@@ -305,7 +376,7 @@ def update_predict_statistics_model(
     for data_stat in data_statistics:
         department = data_stat['department']
         stat_dict = {'department': department}
-        for (_, fld, _, _) in common_utils.get_subject_vars(psat).values():
+        for (_, fld, _, _) in get_subject_vars(psat).values():
             stat_dict.update({
                 f'{prefix}{fld}': {
                     'participants': data_stat[fld]['participants'],
@@ -335,8 +406,9 @@ def update_predict_statistics_model(
     return is_updated, message_dict[is_updated]
 
 
+@for_admin_views
 @with_bulk_create_or_update()
-def update_predict_answer_count_model(model_dict: dict, rank_type: str, is_filtered: bool):
+def update_admin_answer_count_model(model_dict: dict, rank_type: str, is_filtered: bool):
     answer_model = model_dict['answer']
     answer_count_model = model_dict[rank_type]
     prefix = 'filtered_' if is_filtered else ''
@@ -399,34 +471,3 @@ def update_predict_answer_count_model(model_dict: dict, rank_type: str, is_filte
         f'{prefix}count_4', f'{prefix}count_5', f'{prefix}count_multiple', f'{prefix}count_sum',
     ]
     return answer_count_model, list_create, list_update, update_fields
-
-
-def append_list_create(model, list_create, **kwargs):
-    try:
-        model.objects.get(**kwargs)
-    except model.DoesNotExist:
-        list_create.append(model(**kwargs))
-
-
-def bulk_create_or_update(model, list_create, list_update, update_fields):
-    model_name = model._meta.model_name
-    try:
-        with transaction.atomic():
-            if list_create:
-                model.objects.bulk_create(list_create)
-                message = f'Successfully created {len(list_create)} {model_name} instances.'
-                is_updated = True
-            elif list_update:
-                model.objects.bulk_update(list_update, list(update_fields))
-                message = f'Successfully updated {len(list_update)} {model_name} instances.'
-                is_updated = True
-            else:
-                message = f'No changes were made to {model_name} instances.'
-                is_updated = False
-    except django.db.utils.IntegrityError:
-        traceback_message = traceback.format_exc()
-        print(traceback_message)
-        message = f'Error occurred.'
-        is_updated = None
-    print(message)
-    return is_updated

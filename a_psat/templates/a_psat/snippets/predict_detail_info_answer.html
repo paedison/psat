@@ -54,8 +54,7 @@
         </tr>
     {% else %}
         {% if not stat_tot.is_confirmed %}
-            <tr class="text-center{% if stat_tot.field == 'average' %} table-warning{% else %} cursor-pointer{% endif %}"
-                {% if stat_tot.field != 'average' %}hx-get="{{ stat_tot.url_answer_input }}"{% endif %}>
+            <tr class="text-center{% if stat_tot.field == 'average' %} table-warning{% endif %}">
                 <th class="text-nowrap" aria-label="과목">
                     {% if stat_tot.field == 'average' %}
                         {{ stat_tot.icon|safe }} {{ stat_tot.subject }}

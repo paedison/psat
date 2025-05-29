@@ -1,12 +1,3 @@
-import io
-import traceback
-from urllib.parse import quote
-
-import django.db.utils
-from django.db import transaction
-from django.http import HttpResponse
-
-
 def get_subject_vars(psat, remove_avg=False) -> dict[str, tuple[str, str, int, int]]:
     if psat.exam in ['칠급', '칠예', '민경']:
         subject_vars = {
@@ -26,6 +17,12 @@ def get_subject_vars(psat, remove_avg=False) -> dict[str, tuple[str, str, int, i
     if remove_avg:
         subject_vars.pop('평균')
     return subject_vars
+
+
+def get_subject_variable(psat, subject_field) -> tuple[str, str, int, int]:
+    for sub, (subject, field, idx, problem_count) in get_subject_vars(psat).items():
+        if subject_field == field:
+            return sub, subject, idx, problem_count
 
 
 def get_sub_title_by_psat(year, exam, subject, end_string='기출문제') -> str:
@@ -116,48 +113,3 @@ class ConstantList:
         if exam == '하프':
             return {'언어': 15, '추리': 20}
         return {'언어': 30, '추리': 40}
-
-
-def append_list_create(model, list_create, **kwargs):
-    try:
-        model.objects.get(**kwargs)
-    except model.DoesNotExist:
-        list_create.append(model(**kwargs))
-
-
-def bulk_create_or_update(model, list_create, list_update, update_fields):
-    model_name = model._meta.model_name
-    try:
-        with transaction.atomic():
-            if list_create:
-                model.objects.bulk_create(list_create)
-                message = f'Successfully created {len(list_create)} {model_name} instances.'
-                is_updated = True
-            elif list_update:
-                model.objects.bulk_update(list_update, list(update_fields))
-                message = f'Successfully updated {len(list_update)} {model_name} instances.'
-                is_updated = True
-            else:
-                message = f'No changes were made to {model_name} instances.'
-                is_updated = False
-    except django.db.utils.IntegrityError:
-        traceback_message = traceback.format_exc()
-        print(traceback_message)
-        message = f'Error occurred.'
-        is_updated = None
-    print(message)
-    return is_updated
-
-
-def get_response_for_excel_file(df, filename, excel_data=None) -> HttpResponse:
-    if excel_data is None:
-        excel_data = io.BytesIO()
-        df.to_excel(excel_data, engine='xlsxwriter')
-
-    response = HttpResponse(
-        excel_data.getvalue(),
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = f'attachment; filename={quote(filename)}'
-
-    return response

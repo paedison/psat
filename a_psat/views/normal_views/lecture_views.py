@@ -4,9 +4,9 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
 from a_psat import models, forms
+from a_psat.utils import lecture_utils
 from common.constants import icon_set_new
 from common.utils import Configuration, HtmxHttpRequest, update_context_data
-from ...utils import normal_view_utils
 
 
 class ViewConfiguration(Configuration):
@@ -27,12 +27,12 @@ def lecture_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     lecture_list = models.Lecture.objects.order_by_subject_code()
     lecture: models.Lecture = get_object_or_404(lecture_list, pk=pk)
-    prev_lec, next_lec = normal_view_utils.get_prev_next_obj(pk, lecture_list)
-    lec_images = normal_view_utils.get_lecture_images(lecture)
+    prev_lec, next_lec = lecture_utils.get_prev_next_obj(pk, lecture_list)
+    lec_images = lecture_utils.get_lecture_images(lecture)
 
     memo_form = forms.LectureMemoForm()
     memo_url = reverse_lazy('psat:memo-lecture', args=[pk])
-    custom_data = normal_view_utils.get_lecture_memo_custom_data(request.user)
+    custom_data = lecture_utils.get_lecture_memo_custom_data(request.user)
 
     my_memo = None
     for dt in custom_data['memo']:
@@ -83,7 +83,7 @@ def memo_lecture(request: HtmxHttpRequest, pk: int):
         else:
             update_base_form = forms.LectureMemoForm(instance=instance)
             context = update_context_data(context, memo_form=update_base_form, my_memo=instance)
-            return render(request, 'a_psat/snippets/memo_container.html#update_form', context)
+            return render(request, 'a_psat/snippets/memo_container.html#update_form', context)  # noqa
 
     blank_form = forms.LectureMemoForm()
     context = update_context_data(context, memo_form=blank_form)

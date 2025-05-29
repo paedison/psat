@@ -35,17 +35,17 @@ admin_study_patterns = [
     path('list/', admin_views.study_list_view, name='admin-study-list'),
     path('detail/<str:study_type>/<int:pk>/', admin_views.study_detail_view, name='admin-study-detail'),
 
-    path('category/create/', admin_views.study_category_create_view, name='admin-study-category-create'),
-    path('category/upload/', admin_views.study_category_upload_view, name='admin-study-category-upload'),
-    path('category/update/<int:pk>/', admin_views.study_category_update_view, name='admin-study-category-update'),
+    path('create/category/', admin_views.study_create_category_view, name='admin-study-category-create'),
+    path('create/curriculum/', admin_views.study_create_curriculum_view, name='admin-study-curriculum-create'),
+    path('create/organization/', admin_views.study_create_organization_view, name='admin-study-organization-create'),
+    path('create/student/', admin_views.study_create_student_view, name='admin-study-student-create'),
 
-    path('curriculum/create/', admin_views.study_curriculum_create_view, name='admin-study-curriculum-create'),
-    path('curriculum/upload/', admin_views.study_curriculum_upload_view, name='admin-study-curriculum-upload'),
-    path('curriculum/update/<int:pk>/', admin_views.study_curriculum_update_view, name='admin-study-curriculum-update'),
+    path('upload/category/', admin_views.study_upload_category_view, name='admin-study-category-upload'),
+    path('upload/curriculum/', admin_views.study_upload_curriculum_view, name='admin-study-curriculum-upload'),
+    path('upload/answer/', admin_views.study_upload_answer_view, name='admin-study-answer-upload'),
 
-    path('organization/create/', admin_views.study_organization_create_view, name='admin-study-organization-create'),
-    path('student/create/', admin_views.study_student_create_view, name='admin-study-student-create'),
-    path('answer/add/', admin_views.study_answer_add_view, name='admin-study-answer-add'),
+    path('update/category/<int:pk>/', admin_views.study_update_category_view, name='admin-study-category-update'),
+    path('update/curriculum/<int:pk>/', admin_views.study_update_curriculum_view, name='admin-study-curriculum-update'),
 
     path('student/<int:pk>/', admin_views.study_student_detail_view, name='admin-study-student-detail'),
 ]

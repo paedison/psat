@@ -364,6 +364,26 @@ class StudyAnswerManager(models.Manager):
             .values('round', 'subject', 'is_correct')
         )
 
+    def get_study_answer_distribution(self, rank_type):
+        lookup_field = f'student__rank_total'
+        top_rank_threshold = 0.27
+        mid_rank_threshold = 0.73
+        participants = models.F('student__curriculum__category__participants')
+
+        lookup_exp = {}
+        if rank_type == 'top':
+            lookup_exp[f'{lookup_field}__lte'] = participants * top_rank_threshold
+        elif rank_type == 'mid':
+            lookup_exp[f'{lookup_field}__gt'] = participants * top_rank_threshold
+            lookup_exp[f'{lookup_field}__lte'] = participants * mid_rank_threshold
+        elif rank_type == 'low':
+            lookup_exp[f'{lookup_field}__gt'] = participants * mid_rank_threshold
+
+        return (
+            self.filter(**lookup_exp).values('problem_id', 'answer')
+            .annotate(count=models.Count('id')).order_by('problem_id', 'answer')
+        )
+
 
 class StudyAnswerCountManager(models.Manager):
     def with_select_related(self):

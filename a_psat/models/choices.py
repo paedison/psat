@@ -277,6 +277,7 @@ def study_semester_choice() -> list:
 
 def study_lecture_theme() -> list:
     return [
+        (-1, '휴강'),
         (0, '보강'),
         (1, '강의개요'),
         (2, '공부법'),
