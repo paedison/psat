@@ -1,3 +1,66 @@
+from dataclasses import dataclass
+
+from a_psat import filters
+from common.utils import HtmxHttpRequest
+
+
+@dataclass(kw_only=True)
+class RequestDataBase:
+    request: HtmxHttpRequest
+
+    def __post_init__(self):
+        self.view_type = self.request.headers.get('View-Type', '')
+        self.exam_year = self.request.GET.get('year', '')
+        self.exam_exam = self.request.GET.get('exam', '')
+        self.exam_subject = self.request.GET.get('subject', '')
+        self.page_number = self.request.GET.get('page', 1)
+        self.keyword = self.request.POST.get('keyword', '') or self.request.GET.get('keyword', '')
+        self.student_name = self.request.GET.get('student_name', '')
+
+    def get_filterset(self):
+        problem_filter = filters.ProblemFilter if self.request.user.is_authenticated else filters.AnonymousProblemFilter
+        return problem_filter(data=self.request.GET, request=self.request)
+
+    def get_sub_title(self, end_string='기출문제') -> str:
+        year = self.exam_year
+        exam = self.exam_exam
+        subject = self.exam_subject
+        title_parts = []
+        if year:
+            title_parts.append(f'{year}년')
+            if isinstance(year, str):
+                year = int(year)
+
+        if exam:
+            exam_dict = {
+                '행시': '5급공채/행정고시', '외시': '외교원/외무고시', '칠급': '7급공채',
+                '입시': '입법고시', '칠예': '7급공채 예시', '민경': '민간경력', '견습': '견습',
+            }
+            if not year:
+                exam_name = exam_dict[exam]
+            else:
+                if exam == '행시':
+                    exam_name = '행정고시' if year < 2011 else '5급공채'
+                elif exam == '외시':
+                    exam_name = '외교원' if year == 2013 else '외무고시'
+                elif exam == '칠급':
+                    exam_name = '7급공채 모의고사' if year == 2020 else '7급공채'
+                else:
+                    exam_name = exam_dict[exam]
+            title_parts.append(exam_name)
+
+        if subject:
+            subject_dict = {'헌법': '헌법', '언어': '언어논리', '자료': '자료해석', '상황': '상황판단'}
+            title_parts.append(subject_dict[subject])
+
+        if not year and not exam and not subject:
+            title_parts.append('전체')
+        else:
+            title_parts.append('전체')
+        sub_title = f'{" ".join(title_parts)} {end_string}'
+        return sub_title
+
+
 def get_subject_vars(psat, remove_avg=False) -> dict[str, tuple[str, str, int, int]]:
     if psat.exam in ['칠급', '칠예', '민경']:
         subject_vars = {
@@ -17,12 +80,6 @@ def get_subject_vars(psat, remove_avg=False) -> dict[str, tuple[str, str, int, i
     if remove_avg:
         subject_vars.pop('평균')
     return subject_vars
-
-
-def get_subject_variable(psat, subject_field) -> tuple[str, str, int, int]:
-    for sub, (subject, field, idx, problem_count) in get_subject_vars(psat).items():
-        if subject_field == field:
-            return sub, subject, idx, problem_count
 
 
 def get_sub_title_by_psat(year, exam, subject, end_string='기출문제') -> str:
@@ -60,6 +117,21 @@ def get_sub_title_by_psat(year, exam, subject, end_string='기출문제') -> str
         title_parts.append('전체')
     sub_title = f'{" ".join(title_parts)} {end_string}'
     return sub_title
+
+
+def get_prev_next_obj(pk, custom_data) -> tuple:
+    custom_list = list(custom_data.values_list('id', flat=True))
+    prev_obj = next_obj = None
+    last_id = len(custom_list) - 1
+    try:
+        q = custom_list.index(pk)
+        if q != 0:
+            prev_obj = custom_data[q - 1]
+        if q != last_id:
+            next_obj = custom_data[q + 1]
+        return prev_obj, next_obj
+    except ValueError:
+        return None, None
 
 
 class BaseConstantList(list):

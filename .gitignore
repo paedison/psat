@@ -200,3 +200,4 @@ cython_debug/
 /scripts/analysis/
 /image_crop/output_images/
 /a_psat/data/psat_images/
+/static/image/PSAT/temp_images/

@@ -7,8 +7,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
-from a_psat import models, forms, filters
+from a_psat import models, forms
 from a_psat.utils import official_utils
+from a_psat.utils.official import NormalListData, NormalDetailData
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
 
@@ -29,32 +30,24 @@ class ViewConfiguration:
 @login_not_required
 def official_problem_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    view_type = request.headers.get('View-Type', '')
-    exam_year = request.GET.get('year', '')
-    exam_exam = request.GET.get('exam', '')
-    exam_subject = request.GET.get('subject', '')
-    page_number = request.GET.get('page', 1)
-    keyword = request.POST.get('keyword', '') or request.GET.get('keyword', '')
-
-    problem_filter = filters.ProblemFilter if request.user.is_authenticated else filters.ProblemFilter
-    filterset = problem_filter(data=request.GET, request=request)
+    list_data = NormalListData(request)
     context = update_context_data(
-        config=config, icon_image=icon_set_new.ICON_IMAGE, keyword=keyword,
-        sub_title=official_utils.get_sub_title_by_psat(exam_year, exam_exam, exam_subject),
+        config=config,
+        icon_image=icon_set_new.ICON_IMAGE,
+        keyword=list_data.keyword,
+        sub_title=list_data.sub_title,
     )
 
-    if view_type == 'problem_list':
-        problem_context = official_utils.get_problem_context(request.user, filterset.qs, page_number)
-        context = update_context_data(context, problem_context=problem_context)
+    if list_data.view_type == 'problem_list':
+        context = update_context_data(context, problem_context=list_data.get_problem_context())
         return render(request, 'a_psat/problem_list_content.html', context)
 
-    collections = []
-    if request.user.is_authenticated:
-        collections = models.ProblemCollection.objects.filter(user=request.user).order_by('order')
-
-    problem_context = official_utils.get_problem_context(request.user, filterset.qs)
     context = update_context_data(
-        context, form=filterset.form, collections=collections, problem_context=problem_context)
+        context,
+        form=list_data.filterset.form,
+        collections=list_data.get_collections(),
+        problem_context=list_data.get_problem_context()
+    )
     return render(request, 'a_psat/problem_list.html', context)
 
 
@@ -62,16 +55,11 @@ def official_problem_list_view(request: HtmxHttpRequest):
 def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     view_type = request.headers.get('View-Type', 'main')
-    queryset = models.Problem.objects.all()
-    problem: models.Problem = get_object_or_404(queryset, pk=pk)
+    problem = get_object_or_404(models.Problem, pk=pk)
     config.url_admin = reverse_lazy(f'admin:a_psat_problem_change', args=[pk])
-    user_id = request.user.id if request.user.is_authenticated else None
 
-    official_utils.process_image(problem)
-    context = update_context_data(config=config, problem_id=pk, problem=problem)
-
-    problem_data = queryset.filter(psat__year=problem.psat.year, psat__exam=problem.psat.exam, subject=problem.subject)
-    prob_prev, prob_next = official_utils.get_prev_next_obj(pk, problem_data)
+    detail_data = NormalDetailData(request, problem)
+    context = update_context_data(config=config, problem_id=pk, problem=detail_data.problem)
 
     template_nav = 'a_psat/snippets/navigation_container.html'
     template_nav_problem_list = f'{template_nav}#nav_problem_list'
@@ -81,69 +69,28 @@ def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
         return render(request, 'a_psat/problem_detail.html#modal_image', context)  # noqa
 
     if view_type == 'problem_list':
-        list_data = official_utils.get_list_data(problem_data)
-        context = update_context_data(context, list_title='', list_data=list_data, color='primary')
+        context = update_context_data(context, **detail_data.problem_data.get_problem_list_context())
         return render(request, template_nav_problem_list, context)
 
     if view_type == 'like_list':
-        problem_data = queryset.prefetch_related('likes').filter(
-            likes__is_liked=True, likes__user_id=user_id, likes__is_active=True).annotate(
-            is_liked=F('likes__is_liked'))
-        list_data = official_utils.get_list_data(problem_data)
-        context = update_context_data(context, list_title='즐겨찾기 추가 문제', list_data=list_data, color='danger')
+        context = update_context_data(context, **detail_data.problem_data.get_like_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'rate_list':
-        problem_data = queryset.prefetch_related('rates').filter(
-            rates__isnull=False, rates__user_id=user_id, rates__is_active=True).annotate(
-            rating=F('rates__rating'))
-        list_data = official_utils.get_list_data(problem_data)
-        context = update_context_data(context, list_title='난이도 선택 문제', list_data=list_data, color='warning')
+        context = update_context_data(context, **detail_data.problem_data.get_rate_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'solve_list':
-        problem_data = queryset.prefetch_related('solves').filter(
-            solves__isnull=False, solves__user_id=user_id, solves__is_active=True).annotate(
-            user_answer=F('solves__answer'), is_correct=F('solves__is_correct'))
-        list_data = official_utils.get_list_data(problem_data)
-        context = update_context_data(context, list_title='정답 확인 문제', list_data=list_data, color='success')
+        context = update_context_data(context, **detail_data.problem_data.get_solve_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'memo_list':
-        problem_data = queryset.prefetch_related('memos').filter(
-            memos__isnull=False, memos__user_id=user_id, memos__is_active=True)
-        list_data = official_utils.get_list_data(problem_data)
-        context = update_context_data(context, list_title='메모 작성 문제', list_data=list_data, color='warning')
+        context = update_context_data(context, **detail_data.problem_data.get_memo_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'tag_list':
-        problem_data = queryset.prefetch_related('tagged_problems').filter(
-            tags__isnull=False, tagged_problems__user=request.user).distinct()
-        list_data = official_utils.get_list_data(problem_data)
-        context = update_context_data(context, list_title='태그 작성 문제', list_data=list_data, color='primary')
+        context = update_context_data(context, **detail_data.problem_data.get_tag_list_context())
         return render(request, template_nav_other_list, context)
-
-    memo_form = forms.ProblemMemoForm()
-    memo_url = reverse_lazy('psat:memo-problem', args=[pk])
-    # reply_form = forms.ProblemCommentForm()
-    # comment_form = forms.ProblemCommentForm()
-
-    custom_data = official_utils.get_custom_data(request.user)
-    official_utils.get_custom_icons(problem, custom_data)
-
-    my_memo = None
-    for dt in custom_data['memo']:
-        if dt.problem_id == problem.id:
-            my_memo = models.ProblemMemo.objects.filter(user=request.user, problem=problem).first()
-
-    tags = []
-    for dt in custom_data['tag']:
-        if dt.content_object_id == problem.id:
-            tags = models.ProblemTag.objects.filter(
-                tagged_items__user=request.user,
-                tagged_items__content_object=problem,
-                tagged_items__is_active=True,
-            ).values_list('name', flat=True)
 
     # page = int(request.GET.get('page', 1))
     # comment_qs = (
@@ -174,12 +121,16 @@ def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
         icon_tag_white=icon_set_new.ICON_TAG['white'],
 
         # navigation data
-        prob_prev=prob_prev, prob_next=prob_next,
+        prob_prev=detail_data.prob_prev,
+        prob_next=detail_data.prob_next,
 
         # custom_data & forms
-        custom_data=custom_data, my_memo=my_memo, tags=tags,
-        memo_form=memo_form, memo_url=memo_url,
-        # comment_form=comment_form, reply_form=reply_form,
+        custom_data=detail_data.custom_data,
+        my_memo=detail_data.get_my_memo(),
+        tags=detail_data.get_my_tags(),
+        memo_form=forms.ProblemMemoForm(),
+        # comment_form=forms.ProblemCommentForm(),
+        # reply_form=forms.ProblemCommentForm(),
     )
     return render(request, 'a_psat/problem_detail.html', context)
 

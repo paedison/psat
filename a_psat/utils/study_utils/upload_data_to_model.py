@@ -4,8 +4,8 @@ from datetime import timedelta
 import pandas as pd
 
 from a_psat import models
-from a_psat.utils.decorators import *
-from a_psat.utils.modify_models_methods import *
+from common.utils.decorators import *
+from common.utils.modify_models_methods import *
 
 
 @for_admin_views

@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.timezone import make_aware
 from django_htmx.middleware import HtmxDetails
 
-from .constants import icon_set_new
+from common.constants import icon_set_new
 
 
 class HtmxHttpRequest(HttpRequest):

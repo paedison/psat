@@ -5,7 +5,7 @@ from typing import Callable
 import django.db.utils
 from django.db import transaction
 
-from a_psat.utils.decorators import for_all_views
+from common.utils.decorators import for_all_views
 
 
 @for_all_views

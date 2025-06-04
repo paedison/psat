@@ -3,9 +3,8 @@ from collections import defaultdict
 from django.db.models import F
 
 from a_psat import models
-from a_psat.utils.decorators import *
-from a_psat.utils.modify_models_methods import *
-from a_psat.utils.study_utils import get_normal_answer_data
+from common.utils.decorators import *
+from common.utils.modify_models_methods import *
 
 UPDATE_MESSAGES = {
     'score': get_update_messages('점수'),

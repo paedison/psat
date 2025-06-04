@@ -1,6 +1,6 @@
 from a_psat import models
-from a_psat.utils.decorators import *
-from a_psat.utils.modify_models_methods import *
+from common.utils.decorators import *
+from common.utils.modify_models_methods import *
 
 
 @for_normal_views

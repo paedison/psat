@@ -181,13 +181,14 @@ def update_catalog_page_obj(page_obj, for_registry=False):
     if page_obj:
         for obj in page_obj:
             student = obj.student if for_registry else obj
-            obj.stats = {
-                fld: {
-                    'score': getattr(student.score, fld, ''),
-                    'raw_score': getattr(student.score, f'raw_{fld}', ''),
-                    'rank_info': get_rank_info(student, fld),
-                } for fld in constant_list.sub_field.sum_first
-            }
+            if hasattr(student, 'score'):
+                obj.stats = {
+                    fld: {
+                        'score': getattr(student.score, fld, ''),
+                        'raw_score': getattr(student.score, f'raw_{fld}', ''),
+                        'rank_info': get_rank_info(student, fld),
+                    } for fld in constant_list.sub_field.sum_first
+                }
 
 
 def get_rank_info(target_student, subject: str):

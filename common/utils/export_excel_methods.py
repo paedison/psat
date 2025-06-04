@@ -3,7 +3,7 @@ from urllib.parse import quote
 
 from django.http import HttpResponse
 
-from a_psat.utils.decorators import *
+from common.utils.decorators import *
 
 
 @for_all_views

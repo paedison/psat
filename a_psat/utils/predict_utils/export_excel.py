@@ -2,8 +2,8 @@ import pandas as pd
 from django.db.models import QuerySet
 
 from a_psat import models
-from a_psat.utils.export_excel_methods import *
 from a_psat.utils.variables import *
+from common.utils.export_excel_methods import *
 
 
 @for_normal_views

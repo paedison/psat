@@ -97,7 +97,7 @@ class StudentManager(models.Manager):
     def get_filtered_qs_by_psat_and_user_with_answer_count(self, user, psat):
         annotate_dict = self.get_annotate_dict_for_score_and_rank()
         qs_student = (
-            self.with_select_related().filter(user=user, psat=psat)
+            self.with_select_related().select_related('user').filter(user=user, psat=psat)
             .prefetch_related('answers')
             .annotate(department=models.F('category__department'), **annotate_dict)
             .order_by('id').last()
@@ -140,6 +140,32 @@ class AnswerManager(models.Manager):
                 output_field=models.BooleanField()
             )
         )
+
+    def predict_filtered_qs_answer_by_student(self, student):
+        return self.with_selected_related().filter(student=student).annotate(
+            subject=models.F('problem__subject'),
+            result=models.Case(
+                models.When(answer=models.F('problem__answer'), then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField()
+            ),
+            predict_result=models.Case(
+                models.When(
+                    answer=models.F('problem__predict_answer_count__answer_predict'), then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField()
+            )
+        )
+
+    def predict_filtered_qs_answer_by_student_stat_type_and_is_filtered(
+            self, student, stat_type='all', is_filtered=False):
+        qs = self.filter(problem__psat=student.psat).values('problem__subject').annotate(
+            participant_count=models.Count('student_id', distinct=True))
+        if stat_type == 'department':
+            qs = qs.filter(student__category__department=student.category.department)
+        if is_filtered:
+            qs = qs.filter(student__is_filtered=True)
+        return qs
 
     def get_filtered_qs_by_student_and_sub(self, student, sub: str):
         return self.filter(student=student, problem__subject=sub).annotate(
@@ -210,6 +236,15 @@ class ScoreManager(models.Manager):
     def get_filtered_qs_by_psat_student_stat_type_and_is_filtered(
             self, psat, student, stat_type='all', is_filtered=False):
         qs = self.filter(student__psat=psat)
+        if stat_type == 'department':
+            qs = qs.filter(student__category__department=student.category.department)
+        if is_filtered:
+            qs = qs.filter(student__is_filtered=True)
+        return qs.values()
+
+    def predict_filtered_qs_score_by_student_stat_type_and_is_filtered(
+            self, student, stat_type='all', is_filtered=False):
+        qs = self.filter(student__psat=student.psat)
         if stat_type == 'department':
             qs = qs.filter(student__category__department=student.category.department)
         if is_filtered:

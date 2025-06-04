@@ -6,10 +6,10 @@ from django.templatetags.static import static
 from django.urls import reverse
 
 from a_psat import models
-from a_psat.utils.decorators import *
 from common.constants import icon_set_new
 from common.models import User
 from common.utils import get_paginator_context
+from common.utils.decorators import *
 
 
 @for_normal_views

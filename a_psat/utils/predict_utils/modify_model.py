@@ -6,10 +6,10 @@ from django.db.models.functions import Rank
 from django.shortcuts import get_object_or_404
 
 from a_psat import models
-from a_psat.utils.decorators import *
-from a_psat.utils.modify_models_methods import *
+from a_psat.utils.predict_utils.get_data import get_admin_statistics_data
 from a_psat.utils.variables import *
-from .get_data import get_admin_statistics_data
+from common.utils.decorators import *
+from common.utils.modify_models_methods import *
 
 UPDATE_MESSAGES = {
     'score': get_update_messages('점수'),

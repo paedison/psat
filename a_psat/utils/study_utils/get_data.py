@@ -7,8 +7,8 @@ from django.urls import reverse_lazy
 from django_htmx.http import reswap
 
 from a_psat import models
-from a_psat.utils.decorators import *
 from common.utils import get_paginator_context, HtmxHttpRequest, update_context_data
+from common.utils.decorators import *
 
 
 @for_all_views

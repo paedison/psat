@@ -6,8 +6,8 @@ from django.db.models import Count, F, QuerySet
 
 from a_psat import models
 from a_psat.utils.variables import *
-from a_psat.utils.decorators import *
 from common.utils import HtmxHttpRequest, get_paginator_context
+from common.utils.decorators import *
 
 
 @for_normal_views
