@@ -277,9 +277,10 @@ def get_data_fake_statistics(leet):
     if qs_fake_student:
         score_dict = defaultdict(list)
         for qs_fs in qs_fake_student:
-            score_dict['score_0'].append((qs_fs.score.raw_subject_0, qs_fs.score.subject_0))
-            score_dict['score_1'].append((qs_fs.score.raw_subject_1, qs_fs.score.subject_1))
-            score_dict['score_sum'].append(qs_fs.score.sum)
+            if hasattr(qs_fs, 'score'):
+                score_dict['score_0'].append((qs_fs.score.raw_subject_0, qs_fs.score.subject_0))
+                score_dict['score_1'].append((qs_fs.score.raw_subject_1, qs_fs.score.subject_1))
+                score_dict['score_sum'].append(qs_fs.score.sum)
         return {
             'score_conversion': {
                 '언어이해': calculate_percentile_ranks_from_score_pairs(score_dict['score_0']),
@@ -301,41 +302,42 @@ def calculate_percentile_ranks_from_score_pairs(score_pairs):
 
 
 def get_distribution_by_interval(scores, bin_size=5):
-    scores = np.array(scores)
+    if scores:
+        scores = np.array(scores)
 
-    # 최소/최대 점수로부터 구간 경계 생성
-    min_score = int(np.floor(scores.min() / bin_size) * bin_size)
-    max_score = int(np.ceil(scores.max() / bin_size) * bin_size)
-    bins = list(range(min_score, max_score + bin_size, bin_size))
+        # 최소/최대 점수로부터 구간 경계 생성
+        min_score = int(np.floor(scores.min() / bin_size) * bin_size)
+        max_score = int(np.ceil(scores.max() / bin_size) * bin_size)
+        bins = list(range(min_score, max_score + bin_size, bin_size))
 
-    # 도수 및 비율
-    freq, bin_edges = np.histogram(scores, bins=bins)
-    total = freq.sum()
-    ratio = (freq / total * 100).round(2)
+        # 도수 및 비율
+        freq, bin_edges = np.histogram(scores, bins=bins)
+        total = freq.sum()
+        ratio = (freq / total * 100).round(2)
 
-    # 구간 라벨 생성
-    labels = []
-    for i in range(len(freq)):
-        start = int(bin_edges[i])
-        end = int(bin_edges[i + 1])
-        if i == len(freq) - 1:
-            labels.append(f'{start}점 이상')
-        else:
-            labels.append(f'{start} 이상 {end} 미만')
+        # 구간 라벨 생성
+        labels = []
+        for i in range(len(freq)):
+            start = int(bin_edges[i])
+            end = int(bin_edges[i + 1])
+            if i == len(freq) - 1:
+                labels.append(f'{start}점 이상')
+            else:
+                labels.append(f'{start} 이상 {end} 미만')
 
-    # 데이터프레임 생성
-    df = pd.DataFrame({
-        'label': labels,
-        'ratio': ratio,
-    })
+        # 데이터프레임 생성
+        df = pd.DataFrame({
+            'label': labels,
+            'ratio': ratio,
+        })
 
-    # 높은 점수 구간부터 오도록 정렬 (구간의 시작값 기준)
-    df['start'] = [int(label.split()[0].replace('점', '')) for label in df['label']]
-    df = df.sort_values(by='start', ascending=False).reset_index(drop=True)
-    df['cum_ratio'] = df['ratio'].cumsum().round(1)
-    df.drop(columns='start', inplace=True)
+        # 높은 점수 구간부터 오도록 정렬 (구간의 시작값 기준)
+        df['start'] = [int(label.split()[0].replace('점', '')) for label in df['label']]
+        df = df.sort_values(by='start', ascending=False).reset_index(drop=True)
+        df['cum_ratio'] = df['ratio'].cumsum().round(1)
+        df.drop(columns='start', inplace=True)
 
-    return df.to_dict(orient='records')
+        return df.to_dict(orient='records')
 
 
 def update_problem_model_for_answer_official(leet, form, file) -> tuple:
@@ -1055,7 +1057,7 @@ def update_student_score_rank_models_for_fake_data(leet, file):
             aspiration = '' if aspiration_input == '미선택' else aspiration_input
             student_info[f'aspiration_{i}'] = aspiration
 
-        student = qs_student_dict.get((serial, serial))
+        student = qs_student_dict.get((str(serial), str(serial)))
         if student is None:
             list_create_student.append(student_model(leet=leet, serial=serial, name=serial, **student_info))
         else:
@@ -1082,7 +1084,7 @@ def update_student_score_rank_models_for_fake_data(leet, file):
             'participants': 1000,
         }
 
-        student = qs_student_dict.get((serial, serial))
+        student = qs_student_dict.get((str(serial), str(serial)))
         score_instance = qs_score_dict.get(student)
         if score_instance is None:
             list_create_score.append(score_model(student=student, **score_info))
