@@ -148,4 +148,19 @@
             </div>
         </div>
     </section>
+
+    {% if data_fake_statistics %}
+    <section class="section" aria-label="점수 변환표 및 백분위">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">점수 변환표 및 백분위</div>
+                    <div class="card-body">
+                        {% include 'a_prime_leet/snippets/admin_detail_score_conversion.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
 {% endblock main_content %}

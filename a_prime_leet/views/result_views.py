@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
-from . import normal_utils
+from . import normal_utils, admin_utils
 from .. import models, forms
 
 
@@ -71,6 +71,7 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
 
     qs_student_answer = models.ResultAnswer.objects.get_qs_answer_by_student(student)
     data_answers = normal_utils.get_data_answers_for_result(qs_student_answer)
+    data_fake_statistics = admin_utils.get_data_fake_statistics(leet)
 
     context = update_context_data(
         context, leet=leet, head_title=f'{leet.name} 성적표',
@@ -100,6 +101,8 @@ def detail_view(request: HtmxHttpRequest, pk: int, student=None, is_for_print=Fa
         stat_chart=stat_chart,
         stat_frequency_dict=stat_frequency_dict,
         all_confirmed=True,
+
+        data_fake_statistics=data_fake_statistics,
     )
     if is_for_print:
         return render(request, 'a_prime_leet/result_print.html', context)
