@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 
 from a_psat import models, forms
-from a_psat.utils import study_utils
+from a_psat.utils.study_utils import *
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 
@@ -34,74 +34,54 @@ class ViewConfiguration:
 def study_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
     current_time = timezone.now()
-    student_context = study_utils.get_normal_student_context(request)
-    context = update_context_data(config=config, current_time=current_time, students=student_context)
+    list_data = NormalListData(request=request)
+    context = update_context_data(config=config, current_time=current_time, students=list_data.get_student_context())
     return render(request, 'a_psat/study_list.html', context)
 
 
 def study_detail_view(request: HtmxHttpRequest, pk: int, student=None):
     config = ViewConfiguration()
-    current_time = timezone.now()
-    curriculum = models.StudyCurriculum.objects.with_select_related().filter(pk=pk).first()
-    context = update_context_data(
-        config=config, current_time=current_time, curriculum=curriculum, icon_image=icon_set_new.ICON_IMAGE)
+    curriculum = models.StudyCurriculum.objects.select_related('organization', 'category').filter(pk=pk).first()
+    context = update_context_data(config=config, curriculum=curriculum, icon_image=icon_set_new.ICON_IMAGE)
     if not curriculum:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)
-
     if student is None:
-        student = models.StudyStudent.objects.get_filtered_student(curriculum=curriculum, user=request.user)
+        student = models.StudyStudent.objects.requested_student(curriculum, request.user)
     if not student:
         context = update_context_data(context, message='등록된 커리큘럼이 없습니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)
 
-    view_type = request.headers.get('View-Type', '')
-    page_number = request.GET.get('page', '1')
-    context = update_context_data(context, page_title=curriculum.full_reference, student=student)
+    detail_data = NormalDetailData(request=request, student=student)
+    context = update_context_data(
+        context, current_time=detail_data.current_time,
+        student=student, page_title=curriculum.full_reference,
+    )
 
-    qs_schedule = models.StudyCurriculumSchedule.objects.filter(
-        curriculum=curriculum, lecture_open_datetime__lt=current_time).order_by('-lecture_number')
-    homework_schedule = study_utils.get_normal_homework_schedule(qs_schedule)
-    opened_rounds = qs_schedule.values_list('lecture_round', flat=True)
-    qs_student = models.StudyStudent.objects.get_filtered_qs_by_curriculum_for_catalog(student.curriculum)
-
-    if view_type == 'lecture_list':
-        lecture_context = study_utils.get_study_lecture_context(qs_schedule, page_number)
-        context = update_context_data(context, lecture_context=lecture_context)
+    if detail_data.view_type == 'lecture_list':
+        context = update_context_data(context, lecture_context=detail_data.lecture_context)
         return render(request, 'a_psat/snippets/study_detail_lecture.html', context)
-
-    if view_type == 'answer_analysis':
-        answer_context = study_utils.get_normal_answer_context(homework_schedule, student, opened_rounds, page_number)
-        context = update_context_data(context, answer_context=answer_context)
+    if detail_data.view_type == 'my_result':
+        context = update_context_data(context, my_result_context=detail_data.get_my_result_context())
+        return render(request, 'a_psat/snippets/study_detail_my_result.html', context)
+    if detail_data.view_type == 'statistics':
+        context = update_context_data(
+            context,
+            curriculum_stat=detail_data.statistics['total'],
+            statistics_context=detail_data.get_statistics_context(),
+        )
+        return render(request, 'a_psat/snippets/study_detail_statistics.html', context)
+    if detail_data.view_type == 'answer_analysis':
+        context = update_context_data(context, answer_context=detail_data.get_answer_context())
         return render(request, 'a_psat/snippets/study_detail_answer_analysis.html', context)
 
-    curriculum_statistics = study_utils.get_normal_curriculum_statistics(qs_student)
-    qs_result = models.StudyResult.objects.select_related('psat').filter(
-        student=student, psat__round__in=opened_rounds).order_by('-psat__round')
-
-    if view_type == 'my_result':
-        my_result_context = study_utils.get_normal_my_result_context(
-            homework_schedule, student, opened_rounds, qs_result, curriculum_statistics, page_number)
-        context = update_context_data(context, my_result_context=my_result_context)
-        return render(request, 'a_psat/snippets/study_detail_my_result.html', context)
-
-    if view_type == 'statistics':
-        statistics_context = study_utils.get_normal_statistics_context(
-            homework_schedule, qs_result, curriculum_statistics, page_number)
-        context = update_context_data(
-            context, curriculum_stat=curriculum_statistics['total'], statistics_context=statistics_context)
-        return render(request, 'a_psat/snippets/study_detail_statistics.html', context)
-
-    lecture_context = study_utils.get_study_lecture_context(qs_schedule)
-    my_result_context = study_utils.get_normal_my_result_context(
-        homework_schedule, student, opened_rounds, qs_result, curriculum_statistics)
-    statistics_context = study_utils.get_normal_statistics_context(homework_schedule, qs_result, curriculum_statistics)
-    answer_context = study_utils.get_normal_answer_context(homework_schedule, student, opened_rounds)
     context = update_context_data(
         context,
-        lecture_context=lecture_context, my_result_context=my_result_context,
-        curriculum_stat=curriculum_statistics['total'],
-        statistics_context=statistics_context, answer_context=answer_context,
+        lecture_context=detail_data.lecture_context,
+        my_result_context=detail_data.get_my_result_context(),
+        curriculum_stat=detail_data.statistics['total'],
+        statistics_context=detail_data.get_statistics_context(),
+        answer_context=detail_data.get_answer_context(),
     )
     return render(request, 'a_psat/study_detail.html', context)
 
@@ -140,8 +120,7 @@ def study_student_register_view(request: HtmxHttpRequest):
 def study_answer_input_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     current_time = timezone.now()
-    result: models.StudyResult = models.StudyResult.objects.with_select_related().filter(
-        pk=pk, student__user=request.user).first()
+    result = models.StudyResult.objects.user_result(pk, request.user)
     context = update_context_data(config=config, current_time=current_time)
 
     if result is None:
@@ -156,50 +135,41 @@ def study_answer_input_view(request: HtmxHttpRequest, pk: int):
     config.url_answer_confirm = result.get_answer_confirm_url()
     page_title = f'미니테스트 {result.psat.round}회차'
 
-    schedule: models.StudyCurriculumSchedule = models.StudyCurriculumSchedule.objects.filter(
-        curriculum=result.student.curriculum, homework_round=result.psat.round).first()
+    schedule = models.StudyCurriculumSchedule.objects.homework_schedule(result.student.curriculum, result.psat.round)
     if not schedule:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)
-
     if current_time < schedule.lecture_open_datetime:
         context = update_context_data(context, message='답안 제출 기간이 아닙니다.', next_url=config.url_detail)
         return render(request, 'a_psat/redirect.html', context)
-
     if current_time > schedule.homework_end_datetime:
         context = update_context_data(context, message='답안 제출 마감일이 지났습니다.', next_url=config.url_detail)
         return render(request, 'a_psat/redirect.html', context)
 
-    problem_count = result.psat.problems.count()
-    answer_data = study_utils.get_normal_answer_data(request, problem_count)
+    answer_process_data = NormalAnswerProcessData(request=request, result=result)
 
     if request.method == 'POST':
-        return study_utils.get_normal_answer_submit_response(request, context, problem_count, answer_data)
+        return answer_process_data.process_post_request_to_submit_answer(context)
 
-    answer_student = [{'no': no, 'ans': ans} for no, ans in enumerate(answer_data, start=1)]
     context = update_context_data(
         context, page_title=page_title, schedule=schedule,
-        student=result.student, answer_student=answer_student,
+        student=result.student, answer_student=answer_process_data.get_answer_student(),
     )
     return render(request, 'a_psat/study_answer_input.html', context)
 
 
 def study_answer_confirm_view(request: HtmxHttpRequest, pk: int):
-    result: models.StudyResult = models.StudyResult.objects.with_select_related().filter(
-        pk=pk, student__user=request.user).first()
+    result = models.StudyResult.objects.user_result(pk, request.user)
     if not result:
         return redirect('psat:study-list')
 
     if request.method == 'POST':
-        problem_count = result.psat.problems.count()
-        answer_data = study_utils.get_normal_answer_data(request, problem_count)
-
-        is_confirmed = all(answer_data)
-        if is_confirmed:
-            study_utils.update_normal_result_and_student_model_instance(answer_data, result)
+        answer_process_data = NormalAnswerProcessData(request=request, result=result)
+        answer_process_data.process_post_request_to_confirm_answer()
 
         next_url = result.student.get_study_curriculum_detail_url()
-        context = update_context_data(header=f'답안 제출', is_confirmed=is_confirmed, next_url=next_url)
+        context = update_context_data(
+            header=f'답안 제출', is_confirmed=answer_process_data.is_confirmed, next_url=next_url)
         response = render(request, 'a_predict/snippets/modal_answer_confirmed.html', context)
         response.set_cookie('answer_data_set', json.dumps({}), max_age=3600)
         return response
@@ -213,8 +183,7 @@ def study_answer_confirm_view(request: HtmxHttpRequest, pk: int):
 @login_not_required
 def study_detail_redirect_view(request: HtmxHttpRequest, organization: str, semester: int):
     config = ViewConfiguration()
-    curriculum = models.StudyCurriculum.objects.filter(
-        organization__name=organization, year=timezone.now().year, semester=semester).first()
+    curriculum = models.StudyCurriculum.objects.current_year_curriculum(organization, semester)
     if curriculum is None:
         context = update_context_data(
             config=config, curriculum=curriculum, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_list)
@@ -225,8 +194,7 @@ def study_detail_redirect_view(request: HtmxHttpRequest, organization: str, seme
 def study_answer_input_redirect_view(request: HtmxHttpRequest, organization: str, semester: int, homework_round: int):
     config = ViewConfiguration()
     current_time = timezone.now()
-    curriculum = models.StudyCurriculum.objects.filter(
-        organization__name=organization, year=timezone.now().year, semester=semester).first()
+    curriculum = models.StudyCurriculum.objects.current_year_curriculum(organization, semester)
     context = update_context_data(config=config, current_time=current_time, curriculum=curriculum)
     if not curriculum:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_list)
@@ -234,26 +202,21 @@ def study_answer_input_redirect_view(request: HtmxHttpRequest, organization: str
 
     config.url_detail = reverse_lazy('psat:study-detail', args=[curriculum.id])
 
-    student = models.StudyStudent.objects.filter(curriculum=curriculum, user=request.user).first()
-    result = models.StudyResult.objects.filter(student=student, psat__round=homework_round).first()
+    student = models.StudyStudent.objects.requested_student(curriculum, request.user)
+    result = models.StudyResult.objects.homework_round_result(student, homework_round)
+    schedule = models.StudyCurriculumSchedule.objects.homework_schedule(curriculum, homework_round)
     if student is None or result is None:
         context = update_context_data(context, message='등록된 커리큘럼이 없습니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)
-
-    schedule: models.StudyCurriculumSchedule = models.StudyCurriculumSchedule.objects.filter(
-        curriculum=curriculum, homework_round=homework_round).first()
     if not schedule:
         context = update_context_data(context, message='해당 커리큘럼이 존재하지 않습니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)
-
     if current_time < schedule.lecture_open_datetime:
         context = update_context_data(context, message='답안 제출 기간이 아닙니다.', next_url=config.url_detail)
         return render(request, 'a_psat/redirect.html', context)
-
     if current_time > schedule.homework_end_datetime:
         context = update_context_data(context, message='답안 제출 마감일이 지났습니다.', next_url=config.url_detail)
         return render(request, 'a_psat/redirect.html', context)
-
     if result.score is not None:
         context = update_context_data(context, message='답안을 이미 제출하셨습니다.', next_url=config.url_detail)
         return render(request, 'a_psat/redirect.html', context)

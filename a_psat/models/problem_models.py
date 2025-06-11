@@ -2,17 +2,20 @@ from datetime import datetime
 
 from ckeditor.fields import RichTextField
 from django.db import models
+from django.templatetags.static import static
 from django.urls import reverse_lazy
-from taggit.managers import TaggableManager
+from taggit.managers import TaggableManager, _TaggableManager  # noqa
 from taggit.models import TaggedItemBase, TagBase
 
 from _config.settings.base import BASE_DIR
+from a_psat.models import choices
+from a_psat.models.queryset import official_queryset as queryset
 from common.constants import icon_set_new
 from common.models import User
-from . import choices, managers
 
 
 class Psat(models.Model):
+    objects = queryset.PsatQuerySet.as_manager()
     year = models.IntegerField(choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
     exam = models.CharField(max_length=2, choices=choices.exam_choice, default='행시', verbose_name='시험')
     order = models.IntegerField(verbose_name='순서')
@@ -113,6 +116,7 @@ class Psat(models.Model):
 
 
 class ProblemTag(TagBase):
+    objects = queryset.ProblemTagQuerySet.as_manager()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -141,8 +145,13 @@ class ProblemTaggedItem(TaggedItemBase):
         return self.content_object.reference
 
 
+class _ProblemTagManager(_TaggableManager):
+    def names(self):
+        return self.get_queryset({'tagged_items__is_active': True}).values_list("name", flat=True).distinct()
+
+
 class Problem(models.Model):
-    objects = managers.ProblemManager()
+    objects = queryset.ProblemQuerySet.as_manager()
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='problems', verbose_name='PSAT')
     subject = models.CharField(max_length=2, choices=choices.subject_choice, default='언어', verbose_name='과목')
     paper_type = models.CharField(max_length=2, default='', verbose_name='책형')
@@ -151,7 +160,7 @@ class Problem(models.Model):
     question = models.TextField(default='', verbose_name='발문')
     data = models.TextField(default='', verbose_name='자료')
 
-    tags = TaggableManager(through=ProblemTaggedItem, blank=True, manager=managers._ProblemTagManager)
+    tags = TaggableManager(through=ProblemTaggedItem, blank=True, manager=_ProblemTagManager)
 
     like_users = models.ManyToManyField(User, related_name='liked_psat_problems', through='ProblemLike')
     rate_users = models.ManyToManyField(User, related_name='rated_psat_problems', through='ProblemRate')
@@ -202,6 +211,10 @@ class Problem(models.Model):
     @property
     def static_img_path(self):
         return f'image/PSAT/{self.psat.year}/{self.img_name}.png'
+
+    @property
+    def relative_img_path(self):
+        return static(self.static_img_path)
 
     @property
     def absolute_img_path(self):
@@ -263,6 +276,7 @@ class Problem(models.Model):
 
 
 class ProblemOpen(models.Model):
+    objects = queryset.ProblemOpenQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     user_id = models.IntegerField(blank=True, null=True)
     ip_address = models.TextField(blank=True, null=True)
@@ -283,6 +297,7 @@ class ProblemOpen(models.Model):
 
 
 class ProblemLike(models.Model):
+    objects = queryset.ProblemLikeQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_likes')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -312,6 +327,7 @@ class ProblemRate(models.Model):
         STAR4 = 4, '⭐️⭐️⭐️⭐️'
         STAR5 = 5, '⭐️⭐️⭐️⭐️⭐️'
 
+    objects = queryset.ProblemRateQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='rates')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_rates')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -339,6 +355,7 @@ class ProblemSolve(models.Model):
         ANSWER4 = 4, '④'
         ANSWER5 = 5, '⑤'
 
+    objects = queryset.ProblemSolveQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='solves')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_solves')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -362,6 +379,7 @@ class ProblemSolve(models.Model):
 
 
 class ProblemMemo(models.Model):
+    objects = queryset.ProblemMemoQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='memos')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_memos')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -385,6 +403,7 @@ class ProblemMemo(models.Model):
 
 
 class ProblemCollection(models.Model):
+    objects = queryset.ProblemCollectionQuerySet.as_manager()
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_collections')
     title = models.CharField(max_length=20)
     order = models.IntegerField()
@@ -401,6 +420,7 @@ class ProblemCollection(models.Model):
 
 
 class ProblemCollectionItem(models.Model):
+    objects = queryset.ProblemCollectionItemQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='collected_problems')
     collection = models.ForeignKey(ProblemCollection, on_delete=models.CASCADE, related_name='collection_items')
     order = models.IntegerField()
@@ -425,6 +445,7 @@ class ProblemCollectionItem(models.Model):
 
 
 class ProblemComment(models.Model):
+    objects = queryset.ProblemCommentQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_comments')
     content = models.TextField()
@@ -450,6 +471,7 @@ class ProblemComment(models.Model):
 
 
 class ProblemCommentLike(models.Model):
+    objects = queryset.ProblemCommentLikeQuerySet.as_manager()
     comment = models.ForeignKey(ProblemComment, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_comment_likes')
     is_liked = models.BooleanField(default=True)

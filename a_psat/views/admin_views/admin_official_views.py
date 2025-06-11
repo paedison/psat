@@ -1,15 +1,12 @@
-import itertools
-
-import pandas as pd
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
-from a_psat import models, forms, filters
-from a_psat.utils import official_utils
+from a_psat import models, forms
+from a_psat.utils.official_utils import *
 from common.constants import icon_set_new
 from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
+from common.utils import HtmxHttpRequest, update_context_data
 
 
 class ViewConfiguration:
@@ -35,19 +32,14 @@ class ViewConfiguration:
 @admin_required
 def official_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    view_type = request.headers.get('View-Type', '')
-    exam_year = request.GET.get('year', '')
-    exam_exam = request.GET.get('exam', '')
-    page_number = request.GET.get('page', '1')
-
-    sub_title = official_utils.get_sub_title_by_psat(exam_year, exam_exam, '', end_string='PSAT')
-    filterset = filters.PsatFilter(data=request.GET, request=request)
-    psat_context = get_paginator_context(filterset.qs, page_number)
-    official_utils.update_official_problem_count(psat_context['page_obj'])
+    list_data = AdminListData(request=request)
     context = update_context_data(
-        config=config, sub_title=sub_title, psat_form=filterset.form, psat_context=psat_context)
-
-    if view_type == 'exam_list':
+        config=config,
+        sub_title=list_data.sub_title,
+        psat_form=list_data.filterset.form,
+        psat_context=list_data.get_psat_context()
+    )
+    if list_data.view_type == 'exam_list':
         return render(request, f'a_psat/admin_official_list.html#exam_list', context)  # noqa
     return render(request, 'a_psat/admin_official_list.html', context)
 
@@ -55,20 +47,14 @@ def official_list_view(request: HtmxHttpRequest):
 @admin_required
 def official_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
-    view_type = request.headers.get('View-Type', '')
-    page_number = request.GET.get('page', '1')
-
     psat = get_object_or_404(models.Psat, pk=pk)
-    qs_problem = models.Problem.objects.get_filtered_qs_by_psat(psat)
-    subject_vars = official_utils.get_subject_vars(psat, True)
-    problem_context = get_paginator_context(qs_problem, page_number)
-    context = update_context_data(config=config, psat=psat, problem_context=problem_context)
+    detail_data = AdminDetailData(request=request, psat=psat)
+    context = update_context_data(config=config, psat=psat, problem_context=detail_data.get_problem_context())
 
-    if view_type == 'problem_list':
+    if detail_data.view_type == 'problem_list':
         return render(request, 'a_psat/problem_list_content.html', context)
 
-    context = update_context_data(
-        context, answer_official_context=official_utils.get_admin_only_answer_context(qs_problem, subject_vars))
+    context = update_context_data(context, answer_official_context=detail_data.get_answer_official_context())
     return render(request, 'a_psat/admin_official_detail.html', context)
 
 
@@ -81,12 +67,8 @@ def official_psat_create_view(request: HtmxHttpRequest):
     if request.method == 'POST':
         form = forms.PsatForm(request.POST, request.FILES)
         if form.is_valid():
-            psat = form.save(commit=False)
-            exam = form.cleaned_data['exam']
-            exam_order = {'행시': 1, '입시': 2, '칠급': 3}
-            psat.order = exam_order.get(exam)
-            psat.save()
-            official_utils.create_official_problem_model_instances(psat, exam)
+            create_data = AdminCreateData(form=form)
+            create_data.process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -121,33 +103,8 @@ def official_update_view(request: HtmxHttpRequest):
             year = form.cleaned_data['year']
             exam = form.cleaned_data['exam']
             psat = get_object_or_404(models.Psat, year=year, exam=exam)
-
-            file = request.FILES['file']
-            df = pd.read_excel(file, header=0, index_col=0)
-
-            answer_symbol = {'①': 1, '②': 2, '③': 3, '④': 4, '⑤': 5}
-            keys = list(answer_symbol.keys())
-            combinations = []
-            for i in range(1, 6):
-                combinations.extend(itertools.combinations(keys, i))
-
-            replace_dict = {}
-            for combination in combinations:
-                key = ''.join(combination)
-                value = int(''.join(str(answer_symbol[k]) for k in combination))
-                replace_dict[key] = value
-
-            df['answer'].replace(to_replace=replace_dict, inplace=True)
-            df = df.infer_objects(copy=False)
-
-            for index, row in df.iterrows():
-                problem = models.Problem.objects.get(psat=psat, subject=row['subject'], number=row['number'])
-                problem.paper_type = row['paper_type']
-                problem.answer = row['answer']
-                problem.question = row['question']
-                problem.data = row['data']
-                problem.save()
-
+            update_data = AdminUpdateData(request=request, psat=psat)
+            update_data.process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)

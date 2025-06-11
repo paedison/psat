@@ -12,8 +12,9 @@ from django.db import models
 from django.urls import reverse_lazy
 from taggit.models import TagBase, TaggedItemBase
 
+from a_psat.models import choices
+from a_psat.models.queryset import lecture_queryset as queryset
 from common.models import User
-from . import choices, managers
 
 
 def get_remarks(message_type: str, remarks: str | None) -> str:
@@ -27,6 +28,7 @@ def get_remarks(message_type: str, remarks: str | None) -> str:
 
 
 class LectureTag(TagBase):
+    objects = queryset.LectureTagQuerySet.as_manager()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -38,6 +40,7 @@ class LectureTag(TagBase):
 
 
 class LectureTaggedItem(TaggedItemBase):
+    objects = queryset.LectureTaggedItemQuerySet.as_manager()
     tag = models.ForeignKey(LectureTag, on_delete=models.CASCADE, related_name="tagged_items")
     content_object = models.ForeignKey('Lecture', on_delete=models.CASCADE, related_name='tagged_lectures')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_tagged_lectures')
@@ -73,8 +76,7 @@ class LectureTaggedItem(TaggedItemBase):
 
 
 class Lecture(models.Model):
-    objects = managers.LectureManager()
-
+    objects = queryset.LectureQuerySet.as_manager()
     subject = models.CharField(max_length=2, choices=choices.lecture_subject_choice, default='언어')
     title = models.CharField(max_length=20, null=True, blank=True)
     sub_title = models.CharField(max_length=50, null=True, blank=True)
@@ -125,6 +127,7 @@ class Lecture(models.Model):
 
 
 class LectureOpen(models.Model):
+    objects = queryset.LectureOpenQuerySet.as_manager()
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='opens')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_lecture_opens')
     ip_address = models.TextField(blank=True, null=True)
@@ -140,6 +143,7 @@ class LectureOpen(models.Model):
 
 
 class LectureLike(models.Model):
+    objects = queryset.LectureLikeQuerySet.as_manager()
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_lecture_likes')
     is_liked = models.BooleanField(default=True)
@@ -166,6 +170,7 @@ class LectureLike(models.Model):
 
 
 class LectureMemo(models.Model):
+    objects = queryset.LectureMemoQuerySet.as_manager()
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='memos')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='lecture_memos')
     content = RichTextField(config_name='minimal')
@@ -191,6 +196,7 @@ class LectureMemo(models.Model):
 
 
 class LectureComment(models.Model):
+    objects = queryset.LectureCommentQuerySet.as_manager()
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_lecture_comments')
     content = RichTextField(config_name='minimal')

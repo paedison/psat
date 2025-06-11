@@ -1,10 +1,10 @@
+from django.db import models
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.db import models
 
+from a_psat.models import choices, abstract_models, Psat, Problem
+from a_psat.models.queryset import predict_queryset as queryset
 from common.models import User
-from .problem_models import Psat, Problem
-from . import choices, abstract_models, managers
 
 verbose_name_prefix = '[합격예측] '
 
@@ -81,7 +81,7 @@ class PredictPsat(models.Model):
 
 
 class PredictCategory(models.Model):
-    objects = managers.CategoryManager()
+    objects = queryset.PredictCategoryQuerySet.as_manager()
     exam = models.CharField(
         max_length=2, choices=choices.predict_exam_choice, default='행시', verbose_name='시험')
     unit = models.CharField(
@@ -101,7 +101,7 @@ class PredictCategory(models.Model):
 
 
 class PredictStatistics(abstract_models.ExtendedStatistics):
-    objects = managers.StatisticsManager()
+    objects = queryset.PredictStatisticsQuerySet.as_manager()
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_statistics')
 
     class Meta:
@@ -122,7 +122,7 @@ class PredictStatistics(abstract_models.ExtendedStatistics):
 
 
 class PredictStudent(abstract_models.Student):
-    objects = managers.StudentManager()
+    objects = queryset.PredictStudentQuerySet.as_manager()
     psat = models.ForeignKey(Psat, on_delete=models.CASCADE, related_name='predict_students')
     category = models.ForeignKey(
         PredictCategory, on_delete=models.CASCADE, related_name='predict_students')
@@ -149,7 +149,7 @@ class PredictStudent(abstract_models.Student):
 
 
 class PredictAnswer(abstract_models.Answer):
-    objects = managers.AnswerManager()
+    objects = queryset.PredictAnswerQuerySet.as_manager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='작성 일시')
     student = models.ForeignKey(PredictStudent, on_delete=models.CASCADE, related_name='answers')
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='predict_answers')
@@ -182,7 +182,7 @@ class PredictAnswer(abstract_models.Answer):
 
 
 class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
-    objects = managers.AnswerCountManager()
+    objects = queryset.PredictAnswerCountQuerySet.as_manager()
     problem = models.OneToOneField(
         Problem, on_delete=models.CASCADE, related_name='predict_answer_count')
 
@@ -199,7 +199,7 @@ class PredictAnswerCount(abstract_models.ExtendedAnswerCount):
 
 
 class PredictScore(abstract_models.Score):
-    objects = managers.ScoreManager()
+    objects = queryset.PredictScoreQuerySet.as_manager()
     student = models.OneToOneField(PredictStudent, on_delete=models.CASCADE, related_name='score')
 
     class Meta:

@@ -4,9 +4,9 @@ from django.db import models
 from django.db.models import functions
 from django.urls import reverse_lazy
 
+from a_psat.models import choices, abstract_models, Problem
+from a_psat.models.queryset import study_queryset as queryset
 from common.models import User
-from . import choices, abstract_models, managers
-from .problem_models import Problem
 
 verbose_name_prefix = '[스터디] '
 
@@ -32,7 +32,7 @@ def get_study_student_total_rank_calculated_annotation(qs_student):
 
 
 class StudyCategory(models.Model):
-    objects = managers.StudyCategoryManager()
+    objects = queryset.StudyCategoryQuerySet.as_manager()
     season = models.PositiveSmallIntegerField(default=1, verbose_name='시즌')
     study_type = models.CharField(
         max_length=5, choices=choices.study_category_choice, default='기본', verbose_name='종류')
@@ -66,7 +66,7 @@ class StudyCategory(models.Model):
 
 
 class StudyPsat(models.Model):
-    objects = managers.StudyPsatManager()
+    objects = queryset.StudyPsatQuerySet.as_manager()
     category = models.ForeignKey(StudyCategory, models.CASCADE, related_name='psats', verbose_name='카테고리')
     round = models.PositiveSmallIntegerField(
         choices=choices.study_round_choice, default=1, verbose_name='회차')
@@ -107,7 +107,7 @@ class StudyPsat(models.Model):
 
 
 class StudyProblem(models.Model):
-    objects = managers.StudyProblemManager()
+    objects = queryset.StudyProblemQuerySet.as_manager()
     psat = models.ForeignKey(StudyPsat, models.CASCADE, related_name='problems', verbose_name='PSAT')
     number = models.PositiveSmallIntegerField(
         choices=choices.number_choice, default=1, verbose_name='번호')
@@ -167,7 +167,7 @@ class StudyOrganization(models.Model):
 
 
 class StudyCurriculum(models.Model):
-    objects = managers.StudyCurriculumManager()
+    objects = queryset.StudyCurriculumQuerySet.as_manager()
     year = models.PositiveSmallIntegerField(
         choices=choices.year_choice, default=datetime.now().year, verbose_name='연도')
     organization = models.ForeignKey(
@@ -215,7 +215,7 @@ class StudyCurriculum(models.Model):
 
 
 class StudyCurriculumSchedule(models.Model):
-    objects = managers.StudyCurriculumScheduleManager()
+    objects = queryset.StudyCurriculumScheduleQuerySet.as_manager()
     curriculum = models.ForeignKey(
         StudyCurriculum, on_delete=models.CASCADE, related_name='schedules', verbose_name='커리큘럼')
     lecture_number = models.PositiveSmallIntegerField(default=1, verbose_name='강의 주차')
@@ -245,7 +245,7 @@ class StudyCurriculumSchedule(models.Model):
 
 
 class StudyStudent(models.Model):
-    objects = managers.StudyStudentManager()
+    objects = queryset.StudyStudentQuerySet.as_manager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='수정 일시')
     curriculum = models.ForeignKey(StudyCurriculum, models.CASCADE, related_name='students', verbose_name='커리큘럼')
@@ -299,7 +299,7 @@ class StudyStudent(models.Model):
 
 
 class StudyAnswer(models.Model):
-    objects = managers.StudyAnswerManager()
+    objects = queryset.StudyAnswerQuerySet.as_manager()
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성 일시')
     student = models.ForeignKey(
         StudyStudent, on_delete=models.CASCADE, related_name='answers', verbose_name='학생')
@@ -348,7 +348,7 @@ class StudyAnswer(models.Model):
 
 
 class StudyAnswerCount(abstract_models.AnswerCount):
-    objects = managers.StudyAnswerCountManager()
+    objects = queryset.StudyAnswerCountQuerySet.as_manager()
     problem = models.OneToOneField(StudyProblem, on_delete=models.CASCADE, related_name='answer_count')
 
     class Meta:
@@ -385,7 +385,7 @@ class StudyAnswerCount(abstract_models.AnswerCount):
 
 
 class StudyResult(models.Model):
-    objects = managers.StudyResultManager()
+    objects = queryset.StudyResultQuerySet.as_manager()
     student = models.ForeignKey(StudyStudent, on_delete=models.CASCADE, related_name='results', verbose_name='학생')
     psat = models.ForeignKey(StudyPsat, on_delete=models.CASCADE, related_name='results', verbose_name='PSAT')
     rank = models.PositiveIntegerField(null=True, blank=True, verbose_name='등수')

@@ -183,7 +183,7 @@ def get_problem_list(wb_filepath: Path, sheet_name):
 
     for sub in subjects:
         problems = (
-            Problem.objects.psat_problem_qs_annotate_subject_code().select_related('psat')
+            Problem.objects.annotate_subject_code().select_related('psat')
             .filter(psat__year__range=(start_year, end_year), subject=sub)
             .exclude(psat__exam='입시').exclude(question='')
         )

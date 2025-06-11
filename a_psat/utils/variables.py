@@ -1,11 +1,12 @@
 from dataclasses import dataclass
+from datetime import timedelta
 
-from a_psat import filters
+from a_psat import filters, models
 from common.utils import HtmxHttpRequest
 
 
 @dataclass(kw_only=True)
-class RequestDataBase:
+class RequestData:
     request: HtmxHttpRequest
 
     def __post_init__(self):
@@ -59,6 +60,59 @@ class RequestDataBase:
             title_parts.append('전체')
         sub_title = f'{" ".join(title_parts)} {end_string}'
         return sub_title
+
+
+@dataclass(kw_only=True)
+class PsatData:
+    psat: models.Psat
+
+    def __post_init__(self):
+        # 외부 호출 변수 정의
+        self.subject_vars_avg = self.get_subject_vars()
+        self.subject_vars = self.get_subject_vars()
+        self.subject_vars.pop('평균')
+        self.subject_fields = [fld for (_, fld, _, _) in self.subject_vars.values()]
+
+        has_predict = self.get_has_predict()
+        self.predict_psat = self.psat.predict_psat if has_predict else None
+        self.time_schedule = self.get_time_schedule() if has_predict else {}
+
+    def get_subject_vars(self) -> dict[str, tuple[str, str, int, int]]:
+        if self.psat.exam in ['칠급', '칠예', '민경']:
+            subject_vars = {
+                '언어': ('언어논리', 'subject_1', 1, 25),
+                '자료': ('자료해석', 'subject_2', 2, 25),
+                '상황': ('상황판단', 'subject_3', 3, 25),
+                '평균': ('PSAT 평균', 'average', 4, 75),
+            }
+        else:
+            subject_vars = {
+                '헌법': ('헌법', 'subject_0', 0, 25),
+                '언어': ('언어논리', 'subject_1', 1, 40),
+                '자료': ('자료해석', 'subject_2', 2, 40),
+                '상황': ('상황판단', 'subject_3', 3, 40),
+                '평균': ('PSAT 평균', 'average', 4, 145),
+            }
+        return subject_vars
+
+    def get_has_predict(self):
+        if hasattr(self.psat, 'predict_psat'):
+            return all([self.psat, self.psat.predict_psat.is_active])
+
+    def get_time_schedule(self) -> dict:
+        start_time = self.predict_psat.exam_started_at
+        exam_1_end_time = start_time + timedelta(minutes=115)  # 1교시 시험 종료 시각
+        exam_2_start_time = exam_1_end_time + timedelta(minutes=110)  # 2교시 시험 시작 시각
+        exam_2_end_time = exam_2_start_time + timedelta(minutes=90)  # 2교시 시험 종료 시각
+        exam_3_start_time = exam_2_end_time + timedelta(minutes=45)  # 3교시 시험 시작 시각
+        finish_time = self.predict_psat.exam_finished_at  # 3교시 시험 종료 시각
+        return {
+            '헌법': (start_time, exam_1_end_time),
+            '언어': (start_time, exam_1_end_time),
+            '자료': (exam_2_start_time, exam_2_end_time),
+            '상황': (exam_3_start_time, finish_time),
+            '평균': (start_time, finish_time),
+        }
 
 
 def get_subject_vars(psat, remove_avg=False) -> dict[str, tuple[str, str, int, int]]:

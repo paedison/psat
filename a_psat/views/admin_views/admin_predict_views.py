@@ -2,11 +2,11 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
 from a_psat import models, forms
-from a_psat.utils.predict import RequestData, AdminDetailData, AdminCreateData, AdminUpdateData, AdminExportExcelData
+from a_psat.utils.predict_utils import *
 from a_psat.views.normal_views import predict_views
 from common.constants import icon_set_new
 from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
+from common.utils import HtmxHttpRequest, update_context_data
 
 
 class ViewConfiguration:
@@ -33,13 +33,10 @@ class ViewConfiguration:
 @admin_required
 def predict_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    request_data = RequestData(request=request)
+    list_data = AdminListData(request=request)
+    context = update_context_data(config=config, predict_psat_context=list_data.get_predict_psat_context())
 
-    predict_psat_list = models.PredictPsat.objects.select_related('psat')
-    predict_psat_context = get_paginator_context(predict_psat_list, request_data.page_number)
-    context = update_context_data(config=config, predict_psat_context=predict_psat_context)
-
-    if request_data.view_type == 'predict_psat_list':
+    if list_data.view_type == 'predict_psat_list':
         return render(request, f'a_psat/admin_predict_list.html#study_category_list', context)  # noqa
     return render(request, 'a_psat/admin_predict_list.html', context)
 
@@ -53,7 +50,7 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int):
         context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
         return render(request, 'a_psat/redirect.html', context)
 
-    detail_data = AdminDetailData(request, psat)
+    detail_data = AdminDetailData(request=request, psat=psat)
 
     if detail_data.view_type == 'problem_list':
         context = update_context_data(context, **detail_data.get_admin_problem_context())
@@ -109,8 +106,8 @@ def predict_create_view(request: HtmxHttpRequest):
     if request.method == 'POST':
         form = forms.PredictPsatForm(request.POST, request.FILES)
         if form.is_valid():
-            create_data = AdminCreateData(form)
-            create_data.process_post_request_to_create_psat()
+            create_data = AdminCreateData(form=form)
+            create_data.process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -125,26 +122,26 @@ def predict_create_view(request: HtmxHttpRequest):
 def predict_update_view(request: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
     context = update_context_data(next_url=psat.get_admin_predict_detail_url())
-    update_data = AdminUpdateData(request, psat)
+    update_data = AdminUpdateData(request=request, psat=psat)
 
     if update_data.view_type == 'answer_official':
-        is_updated, message = update_data.update_admin_problem_model_for_answer_official()
+        is_updated, message = update_data.update_problem_model_for_answer_official()
         context = update_context_data(context, header='정답 업데이트', is_updated=is_updated, message=message)
 
     if update_data.view_type == 'score':
-        is_updated, message = update_data.update_admin_scores()
+        is_updated, message = update_data.update_scores()
         context = update_context_data(context, header='점수 업데이트', is_updated=is_updated, message=message)
 
     if update_data.view_type == 'rank':
-        is_updated, message = update_data.update_admin_ranks()
+        is_updated, message = update_data.update_ranks()
         context = update_context_data(context, header='등수 업데이트', is_updated=is_updated, message=message)
 
     if update_data.view_type == 'statistics':
-        is_updated, message = update_data.update_admin_statistics()
+        is_updated, message = update_data.update_statistics()
         context = update_context_data(context, header='통계 업데이트', is_updated=is_updated, message=message)
 
     if update_data.view_type == 'answer_count':
-        is_updated, message = update_data.update_admin_answer_counts()
+        is_updated, message = update_data.update_answer_counts()
         context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
 
     return render(request, 'a_psat/snippets/admin_modal_predict_update.html', context)
@@ -154,7 +151,7 @@ def predict_update_view(request: HtmxHttpRequest, pk: int):
 def predict_student_detail_view(request: HtmxHttpRequest, pk: int):
     student: models.PredictStudent = models.PredictStudent.objects.filter(pk=pk).first()
     if student:
-        student = models.PredictStudent.objects.get_filtered_qs_by_psat_and_user_with_answer_count(student.user, student.psat)
+        student = models.PredictStudent.objects.psat_student_with_answer_count(student.user, student.psat)
         return predict_views.predict_detail_view(request, student.psat.id, student=student)
     return redirect('psat:admin-predict-list')
 
@@ -162,7 +159,7 @@ def predict_student_detail_view(request: HtmxHttpRequest, pk: int):
 @admin_required
 def predict_statistics_print(request: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    detail_data = AdminDetailData(request, psat)
+    detail_data = AdminDetailData(request=request, psat=psat)
     context = update_context_data(psat=psat, **detail_data.get_admin_statistics_context(200))
     return render(request, 'a_psat/admin_print_statistics.html', context)
 
@@ -170,7 +167,7 @@ def predict_statistics_print(request: HtmxHttpRequest, pk: int):
 @admin_required
 def predict_catalog_print(request: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    student_list = models.PredictStudent.objects.get_filtered_qs_student_list_by_psat(psat)
+    student_list = models.PredictStudent.objects.filtered_student_by_psat(psat)
     context = update_context_data(psat=psat, student_list=student_list)
     return render(request, 'a_psat/admin_print_catalog.html', context)
 
@@ -178,7 +175,7 @@ def predict_catalog_print(request: HtmxHttpRequest, pk: int):
 @admin_required
 def predict_answer_print(request: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    detail_data = AdminDetailData(request, psat)
+    detail_data = AdminDetailData(request=request, psat=psat)
     context = update_context_data(psat=psat, **detail_data.get_admin_answer_context(per_page=1000))
     return render(request, 'a_psat/admin_print_answers.html', context)
 
@@ -186,22 +183,22 @@ def predict_answer_print(request: HtmxHttpRequest, pk: int):
 @admin_required
 def predict_statistics_excel(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    return AdminExportExcelData(psat).get_admin_statistics_response()
+    return AdminExportExcelData(psat=psat).get_statistics_response()
 
 
 @admin_required
 def predict_prime_id_excel(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    return AdminExportExcelData(psat).get_admin_prime_id_response()
+    return AdminExportExcelData(psat=psat).get_prime_id_response()
 
 
 @admin_required
 def predict_catalog_excel(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    return AdminExportExcelData(psat).get_admin_catalog_response()
+    return AdminExportExcelData(psat=psat).get_catalog_response()
 
 
 @admin_required
 def predict_answer_excel(_: HtmxHttpRequest, pk: int):
     psat = get_object_or_404(models.Psat, pk=pk)
-    return AdminExportExcelData(psat).get_admin_answer_response()
+    return AdminExportExcelData(psat=psat).get_answer_response()
