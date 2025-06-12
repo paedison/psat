@@ -129,7 +129,9 @@ def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
         # comment_form=forms.ProblemCommentForm(),
         # reply_form=forms.ProblemCommentForm(),
     )
-    return render(request, 'a_psat/problem_detail.html', context)
+    response = render(request, 'a_psat/problem_detail.html', context)
+    response['HX-Trigger-After-Settle'] = 'initAnnotation'
+    return response
 
 
 @require_POST
