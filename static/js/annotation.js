@@ -1,159 +1,113 @@
-let canvas, ctx;
-let drawing = false;
-let drawMode = false;
-let textMode = false;
-let mode = "pen";  // pen | highlighter | eraser
-let currentColor = "#000000";
-let eraserSize = 20;
-let lastX = 0;
-let lastY = 0;
-
 function initAnnotationFunction() {
-    const img = document.getElementById('problem-image-wide');
-    if (img) {
-        canvas = document.getElementById('annotation-canvas-wide');
-        ctx = canvas.getContext('2d');
+  const $canvas = $('#annotation-canvas-wide');
+  const $image = $('#problem-image-wide');
 
-        canvas.width = img.clientWidth;
-        canvas.height = img.clientHeight;
-
-        ctx.lineWidth = 2;
-        ctx.lineJoin = "round";
-        ctx.lineCap = "round";
-        ctx.strokeStyle = currentColor;
-        ctx.fillStyle = currentColor;
-
-        $('#pen-button').on('click', () => activatePen())
-        function activatePen() {
-            drawMode = true;
-            textMode = false;
-            mode = "pen";
-            canvas.classList.remove("eraser-cursor");
-            canvas.style.cursor = 'crosshair';
-        }
-
-        $('#highlighter-button').on('click', () => activateHighlighter())
-        function activateHighlighter() {
-            drawMode = true;
-            textMode = false;
-            mode = "highlighter";
-            canvas.classList.remove("eraser-cursor");
-            canvas.style.cursor = 'crosshair';
-        }
-
-        $('#eraser-button').on('click', () => activateEraser())
-        function activateEraser() {
-            drawMode = true;
-            textMode = false;
-            mode = "eraser";
-            canvas.classList.add("eraser-cursor");
-        }
-
-        $('#text-button').on('click', () => enableTextMode())
-        function enableTextMode() {
-            textMode = true;
-            drawMode = false;
-            mode = null;
-            canvas.classList.remove("eraser-cursor");
-            canvas.style.cursor = 'text';
-        }
-
-        function changeColor(color) {
-            currentColor = color;
-            ctx.strokeStyle = color;
-            ctx.fillStyle = color;
-        }
-
-        function updateBrushStyle() {
-            if (mode === "pen") {
-                ctx.globalAlpha = 1.0;
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = 2;
-            } else if (mode === "highlighter") {
-                ctx.globalAlpha = 0.3;
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = 10;
-            } else if (mode === "eraser") {
-                ctx.globalAlpha = 1.0;
-                ctx.lineWidth = eraserSize;
-            }
-        }
-
-        $('#save-button').on('click', () => saveAnnotation())
-        function saveAnnotation() {
-            const imageData = canvas.toDataURL("image/png");
-            fetch("", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({image: imageData})
-            }).then(response => {
-                if (response.ok) {
-                    alert("저장 완료!");
-                } else {
-                    alert("저장 실패");
-                }
-            });
-        }
-
-
-        function getPosition(event) {
-            let x, y;
-            if (event.touches) {
-                const touch = event.touches[0];
-                const rect = canvas.getBoundingClientRect();
-                x = touch.clientX - rect.left;
-                y = touch.clientY - rect.top;
-            } else {
-                x = event.offsetX;
-                y = event.offsetY;
-            }
-            return [x, y]
-        }
-
-        function drawStart(e) {
-            if (!drawMode) return;
-            e.preventDefault();
-            drawing = true;
-
-            let [x, y] = getPosition(e);
-            [lastX, lastY] = [x, y]
-
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            updateBrushStyle();
-        }
-
-        function drawWorking(e) {
-            if (!drawing) return;
-            e.preventDefault();
-
-            let [x, y] = getPosition(e);
-            if (mode === "eraser") {
-                ctx.clearRect(x - eraserSize / 2, y - eraserSize / 2, eraserSize, eraserSize);
-            } else {
-                ctx.lineTo(x, y);
-                ctx.stroke();
-            }
-        }
-
-        function drawEnd() {
-            drawing = false;
-            ctx.globalAlpha = 1.0;  // 항상 원상 복귀
-        }
-
-        $('#eraser-size').on('input', (e) => {
-            eraserSize = parseInt(e.target.value);
-            $('#eraser-size-label').text(`${eraserSize}px`);
-        })
-
-        $('#annotation-canvas-wide')
-            .on('mousedown touchstart', (e) => drawStart(e))
-            .on('mousemove touchmove', (e) => drawWorking(e))
-            .on('mouseup touchend', () => drawEnd())
+  if ($canvas || $image) {
+    function resizeCanvasToImage() {
+      $canvas[0].width = $image[0].clientWidth;
+      $canvas[0].height = $image[0].clientHeight;
     }
+
+    $image.on('load', resizeCanvasToImage);
+    resizeCanvasToImage();
+
+    paper.setup($canvas[0]);
+
+    let path = null;
+    let drawingEnabled = false;
+    let opacity = 0.4;
+    let currentColor = `rgba(0, 0, 0, ${opacity})`; // 검은색, 투명도 80%
+    let eraserEnabled = false; // 지우개 모드 변수 추가
+
+    const colorMap = {
+      black: '0, 0, 0',
+      red: '255, 0, 0',
+      blue: '0, 0, 255',
+      green: '0, 128, 0'
+    }
+
+    const tool = new paper.Tool();
+
+    function getHitResultFromEvent(event) {
+      return paper.project.hitTest(event.point, {
+        segments: false,
+        stroke: true,
+        fill: false,
+        tolerance: 5
+      });
+    }
+
+    function processErase(event) {
+      const hitResult = getHitResultFromEvent(event);
+      if (hitResult && hitResult.item) {
+        hitResult.item.remove();
+        paper.view.update();
+      }
+    }
+
+    // 마우스 클릭 시 삭제 여부 확인
+    tool.onMouseDown = function (event) {
+      if (eraserEnabled) {
+        processErase(event);
+      } else if (drawingEnabled) {
+        path = new paper.Path({
+          strokeColor: currentColor,
+          strokeWidth: 2
+        });
+        path.add(event.point);
+      }
+    };
+
+    tool.onMouseDrag = function (event) {
+      if (eraserEnabled) {
+        processErase(event);
+      } else if (drawingEnabled && path) {
+        path.add(event.point);
+      }
+    };
+
+    tool.onMouseUp = function () {
+      if (path) {
+        path.simplify();
+        path = null;
+      }
+    };
+
+    // 필기 토글 버튼
+    $('#toggle-drawing-button').on('click', function () {
+      drawingEnabled = !drawingEnabled;
+      $(this).text(drawingEnabled ? '🛑 필기 중지' : '✍️ 필기 시작');
+      // $(this).toggleClass('active', drawingEnabled);
+    });
+
+    // 지우개 버튼 이벤트 처리
+    $('#eraser-button').on('click', function () {
+      eraserEnabled = !eraserEnabled;
+      $(this).text(eraserEnabled ? '🧹 삭제 모드' : '📝 필기 모드');
+    });
+
+    // 색상 선택 버튼
+    $('.annotate-color').on('click', function () {
+      const selectedColor = $(this).data('color');
+      let colorcode = colorMap[selectedColor]
+      if (colorcode) {
+        currentColor = `rgba(${colorcode}, ${opacity})`; // RGBA 적용
+      }
+      // $('.colorBtn').removeClass('active');
+      // $(this).addClass('active');
+    });
+
+    // 지우기 버튼
+    $('#clear-button').on('click', function () {
+      paper.project.activeLayer.removeChildren();
+      paper.view.update();
+    });
+
+    // 터치 방지
+    $canvas.on('touchstart touchmove', function (e) {
+      e.preventDefault();
+    });
+  }
 }
 
 $(window).on('load', () => initAnnotationFunction());
