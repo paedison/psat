@@ -116,6 +116,10 @@ class ProblemCollectionItemQuerySet(models.QuerySet):
         return self.filter(collection=collection, is_active=True).order_by('order')
 
 
+class ProblemAnnotationQuerySet(models.QuerySet):
+    pass
+
+
 class ProblemCommentQuerySet(models.QuerySet):
     pass
 

@@ -444,6 +444,12 @@ class ProblemCollectionItem(models.Model):
         return self.problem.reference
 
 
+# class ProblemAnnotation(models.Model):
+#     objects = queryset.ProblemAnnotationQuerySet.as_manager()
+#     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='annotations')
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_annotations')
+#
+#
 class ProblemComment(models.Model):
     objects = queryset.ProblemCommentQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments')

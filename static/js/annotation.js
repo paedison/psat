@@ -1,8 +1,8 @@
-function initAnnotationFunction() {
-  const $canvas = $('#annotation-canvas-wide');
-  const $image = $('#problem-image-wide');
+function initAnnotation(annotateType) {
+  const $canvas = $(`#${annotateType}Canvas`);
+  const $image = $(`#${annotateType}Image`);
 
-  if ($canvas || $image) {
+  if ($canvas.length && $image.length) {
     function resizeCanvasToImage() {
       $canvas[0].width = $image[0].clientWidth;
       $canvas[0].height = $image[0].clientHeight;
@@ -11,7 +11,8 @@ function initAnnotationFunction() {
     $image.on('load', resizeCanvasToImage);
     resizeCanvasToImage();
 
-    paper.setup($canvas[0]);
+    const paperScope = new paper.PaperScope(); // 개별적인 PaperScope 생성
+    paperScope.setup($canvas[0]); // 해당 캔버스에 Paper.js 설정
 
     let path = null;
     let drawingEnabled = false;
@@ -26,10 +27,10 @@ function initAnnotationFunction() {
       green: '0, 128, 0'
     }
 
-    const tool = new paper.Tool();
+    const tool = new paperScope.Tool(); // 개별적인 Tool 생성
 
     function getHitResultFromEvent(event) {
-      return paper.project.hitTest(event.point, {
+      return paperScope.project.hitTest(event.point, {
         segments: false,
         stroke: true,
         fill: false,
@@ -41,7 +42,7 @@ function initAnnotationFunction() {
       const hitResult = getHitResultFromEvent(event);
       if (hitResult && hitResult.item) {
         hitResult.item.remove();
-        paper.view.update();
+        paperScope.view.update();
       }
     }
 
@@ -50,7 +51,7 @@ function initAnnotationFunction() {
       if (eraserEnabled) {
         processErase(event);
       } else if (drawingEnabled) {
-        path = new paper.Path({
+        path = new paperScope.Path({
           strokeColor: currentColor,
           strokeWidth: 2
         });
@@ -74,20 +75,20 @@ function initAnnotationFunction() {
     };
 
     // 필기 토글 버튼
-    $('#toggle-drawing-button').on('click', function () {
+    $(`#${annotateType}DrawingBtn`).on('click', function () {
       drawingEnabled = !drawingEnabled;
       $(this).text(drawingEnabled ? '🛑 필기 중지' : '✍️ 필기 시작');
       // $(this).toggleClass('active', drawingEnabled);
     });
 
     // 지우개 버튼 이벤트 처리
-    $('#eraser-button').on('click', function () {
+    $(`#${annotateType}EraserBtn`).on('click', function () {
       eraserEnabled = !eraserEnabled;
       $(this).text(eraserEnabled ? '🧹 삭제 모드' : '📝 필기 모드');
     });
 
     // 색상 선택 버튼
-    $('.annotate-color').on('click', function () {
+    $(`.${annotateType}-annotate-color`).on('click', function () {
       const selectedColor = $(this).data('color');
       let colorcode = colorMap[selectedColor]
       if (colorcode) {
@@ -98,9 +99,9 @@ function initAnnotationFunction() {
     });
 
     // 지우기 버튼
-    $('#clear-button').on('click', function () {
-      paper.project.activeLayer.removeChildren();
-      paper.view.update();
+    $(`#${annotateType}ClearBtn`).on('click', function () {
+      paperScope.project.activeLayer.removeChildren();
+      paperScope.view.update();
     });
 
     // 터치 방지
@@ -110,5 +111,13 @@ function initAnnotationFunction() {
   }
 }
 
-$(window).on('load', () => initAnnotationFunction());
-$('body').on('initAnnotation', () => initAnnotationFunction());
+$(window)
+    .on('load', () => {
+      initAnnotation('normal');
+      initAnnotation('wide');
+    })
+$('body')
+    .on('initAnnotation', () => {
+      initAnnotation('normal');
+      initAnnotation('wide');
+    })
