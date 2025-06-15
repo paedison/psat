@@ -201,3 +201,5 @@ cython_debug/
 /image_crop/output_images/
 /a_psat/data/psat_images/
 /static/image/PSAT/temp_images/
+/static/vendor/paperjs/docs/
+/static/vendor/paperjs/examples/

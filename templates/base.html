@@ -84,6 +84,7 @@
 {#      hx-ext="debug, event-header"#}
       hx-ext="event-header"
       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+{% csrf_token %}
 
 {% block header %}{% endblock header %}
 {% block aside %}{% endblock aside %}

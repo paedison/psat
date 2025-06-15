@@ -444,12 +444,19 @@ class ProblemCollectionItem(models.Model):
         return self.problem.reference
 
 
-# class ProblemAnnotation(models.Model):
-#     objects = queryset.ProblemAnnotationQuerySet.as_manager()
-#     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='annotations')
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_annotations')
-#
-#
+class ProblemAnnotation(models.Model):
+    objects = queryset.ProblemAnnotationQuerySet.as_manager()
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='annotations')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_annotations')
+    annotate_type = models.CharField(max_length=50)
+    image = models.ImageField(upload_to='annotations/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-id']
+        db_table = 'a_psat_problem_annotation'
+
+
 class ProblemComment(models.Model):
     objects = queryset.ProblemCommentQuerySet.as_manager()
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE, related_name='comments')

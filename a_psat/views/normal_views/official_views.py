@@ -355,13 +355,10 @@ def official_collect_problem(request: HtmxHttpRequest, pk: int):
 
 
 def official_annotate_problem(request: HtmxHttpRequest, pk: int):
-    config = ViewConfiguration()
-    problem: models.Problem = get_object_or_404(models.Problem, pk=pk)
-    detail_data = NormalDetailData(request=request, problem=problem)
-    detail_data.process_image()
-    context = update_context_data(config=config, problem_id=pk, problem=problem)
-    return render(request, 'a_psat/problem_annotate.html', context)
-
+    annotate_data = NormalAnnotateProblem(request=request, pk=pk)
+    if request.method == 'POST':
+        return annotate_data.process_post_request_to_save_annotation()
+    return annotate_data.process_get_request_to_load_annotation()
 
 # def official_comment_list_view(request: HtmxHttpRequest):
 #     page_number = int(request.GET.get('page', 1))
