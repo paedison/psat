@@ -66,11 +66,17 @@ def study_detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         curriculum = None
         category = get_object_or_404(models.StudyCategory, pk=pk)
         config.url_study_update = reverse_lazy('psat:admin-study-category-update', args=[category.pk])
+        config.url_export_statistics_excel = category.get_admin_study_statistics_excel_url()
+        config.url_export_catalog_excel = category.get_admin_study_catalog_excel_url()
+        config.url_export_answers_excel = category.get_admin_study_answer_excel_url()
         page_title = category.full_reference
     else:
         curriculum = get_object_or_404(models.StudyCurriculum, pk=pk)
         category = curriculum.category
         config.url_study_update = reverse_lazy('psat:admin-study-curriculum-update', args=[curriculum.pk])
+        config.url_export_statistics_excel = curriculum.get_admin_study_statistics_excel_url()
+        config.url_export_catalog_excel = curriculum.get_admin_study_catalog_excel_url()
+        config.url_export_answers_excel = curriculum.get_admin_study_answer_excel_url()
         page_title = curriculum.full_reference
 
     detail_data = AdminDetailData(request=request, category=category, curriculum=curriculum)
@@ -311,3 +317,31 @@ def study_student_detail_view(request: HtmxHttpRequest, pk: int):
     student: models.StudyStudent = models.StudyStudent.objects.filter(pk=pk).first()
     if student:
         return normal_study_detail_view(request, student.curriculum.id, student=student)
+
+
+@admin_required
+def study_statistics_excel(request: HtmxHttpRequest, study_type: str, pk: int):
+    category, curriculum = get_category_and_curriculum(study_type, pk)
+    return AdminDetailData(request=request, category=category, curriculum=curriculum).get_statistics_response()
+
+
+@admin_required
+def study_catalog_excel(request: HtmxHttpRequest, study_type: str, pk: int):
+    category, curriculum = get_category_and_curriculum(study_type, pk)
+    return AdminDetailData(request=request, category=category, curriculum=curriculum).get_catalog_response()
+
+
+@admin_required
+def study_answer_excel(request: HtmxHttpRequest, study_type: str, pk: int):
+    psat = get_object_or_404(models.Psat, pk=pk)
+    return AdminDetailData(psat=psat).get_answer_response()
+
+
+def get_category_and_curriculum(study_type: str, pk: int):
+    if study_type == 'category':
+        curriculum = None
+        category = get_object_or_404(models.StudyCategory, pk=pk)
+    else:
+        curriculum = get_object_or_404(models.StudyCurriculum, pk=pk)
+        category = curriculum.category
+    return category, curriculum

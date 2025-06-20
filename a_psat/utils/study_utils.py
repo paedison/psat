@@ -12,8 +12,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 import pandas as pd
-from django.db.models import F
-from django.http import HttpResponse
+from django.db.models import F, QuerySet
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -22,6 +21,7 @@ from django_htmx.http import reswap
 from a_psat import models, forms
 from a_psat.utils.variables import RequestData
 from common.utils import get_paginator_context, HtmxHttpRequest, update_context_data
+from common.utils.export_excel_methods import *
 from common.utils.modify_models_methods import *
 
 UPDATE_MESSAGES = {
@@ -413,6 +413,71 @@ class AdminDetailData:
             except TypeError:
                 entry.rate_gap = None
         return qs_problem
+
+    def get_statistics_response(self) -> HttpResponse:
+        column_label = ['회차', '응시 인원', '최고', '상위 10%', '상위 25%', '상위 50%', '평균']
+
+        statistics = [{"study_round": 0}]
+        statistics[0].update(self.category_stat)
+        for qs_p in self.qs_psat:
+            statistics.append(qs_p.statistics)
+        df = pd.DataFrame.from_records(statistics, columns=column_label)
+
+        info = self.curriculum.curriculum_info if self.curriculum else self.category.category_info
+        filename = f'{info}_성적통계.xlsx'
+
+        return get_response_for_excel_file(df, filename)
+
+    def get_catalog_response(self) -> HttpResponse:
+        column_list = ['id', 'curriculum_id', 'user_id', 'serial', 'name']
+        column_label = ['ID', '커리큘럼 ID', '사용자 ID', '수험번호', '이름', '답안 제출횟수']
+
+        student_list = self.qs_student.order_by('serial').values(*column_list)
+        for student in student_list:
+            student['result_count'] = self.result_count_dict.get(student['id'], 0)
+        df = pd.DataFrame.from_records(student_list, columns=column_label)
+
+        info = self.curriculum.curriculum_info if self.curriculum else self.category.category_info
+        filename = f'{info}_성적일람표.xlsx'
+
+        return get_response_for_excel_file(df, filename)
+
+    def get_answer_response(self) -> HttpResponse:
+        qs_answer_count = models.PredictAnswerCount.objects.filtered_by_psat_and_subject(self.psat)
+        filename = f'{self.psat.full_reference}_문항분석표.xlsx'
+
+        df1 = self.get_answer_df_for_excel(qs_answer_count)
+        df2 = self.get_answer_df_for_excel(qs_answer_count, True)
+
+        excel_data = io.BytesIO()
+        with pd.ExcelWriter(excel_data, engine='openpyxl') as writer:
+            df1.to_excel(writer, sheet_name='전체')
+            df2.to_excel(writer, sheet_name='필터링')
+
+        return get_response_for_excel_file(df1, filename, excel_data)
+
+    @staticmethod
+    def get_answer_df_for_excel(
+            qs_answer_count: QuerySet[models.PredictAnswerCount], is_filtered=False) -> pd.DataFrame:
+        prefix = 'filtered_' if is_filtered else ''
+        column_list = ['id', 'problem_id', 'subject', 'number', 'ans_official', 'ans_predict']
+        for rank_type in ['all', 'top', 'mid', 'low']:
+            for num in ['1', '2', '3', '4', '5', 'sum']:
+                column_list.append(f'{prefix}count_{num}_{rank_type}')
+
+        column_label = [
+            ('DB정보', 'ID'), ('DB정보', '문제 ID'),
+            ('문제정보', '과목'), ('문제정보', '번호'), ('문제정보', '정답'), ('문제정보', '예상 정답'),
+        ]
+        for rank_type in ['전체', '상위권', '중위권', '하위권']:
+            column_label.extend([
+                (rank_type, '①'), (rank_type, '②'), (rank_type, '③'),
+                (rank_type, '④'), (rank_type, '⑤'), (rank_type, '합계'),
+            ])
+
+        df = pd.DataFrame.from_records(qs_answer_count.values(*column_list))
+        df.columns = pd.MultiIndex.from_tuples(column_label)
+        return df
 
 
 @dataclass(kw_only=True)

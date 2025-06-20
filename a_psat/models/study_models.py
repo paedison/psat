@@ -64,6 +64,15 @@ class StudyCategory(models.Model):
     def get_admin_study_category_detail_url(self):
         return reverse_lazy('psat:admin-study-detail', args=['category', self.id])
 
+    def get_admin_study_statistics_excel_url(self):
+        return reverse_lazy('psat:admin-study-statistics-excel', args=['category', self.id])
+
+    def get_admin_study_catalog_excel_url(self):
+        return reverse_lazy('psat:admin-study-catalog-excel', args=['category', self.id])
+
+    def get_admin_study_answer_excel_url(self):
+        return reverse_lazy('psat:admin-study-answer-excel', args=['category', self.id])
+
 
 class StudyPsat(models.Model):
     objects = queryset.StudyPsatQuerySet.as_manager()
@@ -209,6 +218,15 @@ class StudyCurriculum(models.Model):
 
     def get_admin_study_curriculum_detail_url(self):
         return reverse_lazy('psat:admin-study-detail', args=['curriculum', self.id])
+
+    def get_admin_study_statistics_excel_url(self):
+        return reverse_lazy('psat:admin-study-statistics-excel', args=['curriculum', self.id])
+
+    def get_admin_study_catalog_excel_url(self):
+        return reverse_lazy('psat:admin-study-catalog-excel', args=['curriculum', self.id])
+
+    def get_admin_study_answer_excel_url(self):
+        return reverse_lazy('psat:admin-study-answer-excel', args=['curriculum', self.id])
 
     def get_study_curriculum_detail_url(self):
         return reverse_lazy('psat:study-detail', args=[self.id])

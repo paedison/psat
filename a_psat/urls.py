@@ -48,6 +48,13 @@ admin_study_patterns = [
     path('update/curriculum/<int:pk>/', admin_views.study_update_curriculum_view, name='admin-study-curriculum-update'),
 
     path('student/<int:pk>/', admin_views.study_student_detail_view, name='admin-study-student-detail'),
+
+    path('excel/statistics/<str:study_type>/<int:pk>/',
+         admin_views.study_statistics_excel, name='admin-study-statistics-excel'),
+    path('excel/catalog/<str:study_type>/<int:pk>/',
+         admin_views.study_catalog_excel, name='admin-study-catalog-excel'),
+    path('excel/answer/<str:study_type>/<int:pk>/',
+         admin_views.study_answer_excel, name='admin-study-answer-excel'),
 ]
 
 admin_tag_patterns = [
