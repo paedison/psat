@@ -421,7 +421,8 @@ class AdminDetailData:
         statistics[0].update(self.category_stat)
         for qs_p in self.qs_psat:
             statistics.append(qs_p.statistics)
-        df = pd.DataFrame.from_records(statistics, columns=column_label)
+        df = pd.DataFrame.from_records(statistics)
+        df.columns = column_label
 
         info = self.curriculum.curriculum_info if self.curriculum else self.category.category_info
         filename = f'{info}_성적통계.xlsx'
@@ -435,7 +436,8 @@ class AdminDetailData:
         student_list = self.qs_student.order_by('serial').values(*column_list)
         for student in student_list:
             student['result_count'] = self.result_count_dict.get(student['id'], 0)
-        df = pd.DataFrame.from_records(student_list, columns=column_label)
+        df = pd.DataFrame.from_records(student_list)
+        df.columns = column_label
 
         info = self.curriculum.curriculum_info if self.curriculum else self.category.category_info
         filename = f'{info}_성적일람표.xlsx'
