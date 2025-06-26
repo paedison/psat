@@ -15,7 +15,7 @@
                 <canvas id="scoreChartTotal"></canvas>
                 {% partial chart_contents_total %}
             </div>
-        {% endpartialdef chart_canvas %}
+        {% endpartialdef %}
     {% else %}
         {% #responsive_table %}
             <tbody>
@@ -126,7 +126,7 @@
         new Chart(chart_canvas, chart_data);
     }
 </script>
-{% endpartialdef chart_contents %}
+{% endpartialdef %}
 
 {% partialdef chart_contents_total %}
 <script type="text/javascript">
@@ -186,4 +186,4 @@
         new Chart(chart_canvas_total, chart_data_total);
     }
 </script>
-{% endpartialdef chart_contents %}
+{% endpartialdef %}
