@@ -10,8 +10,8 @@ OUTPUT_FOLDER = BASE_DIR / 'output'
 
 
 def run():
-    input_folder_input = utils.get_user_input('폴더 경로: ', 'D:/projects/#merge_hwp_files', str)
-    output_folder_input = utils.get_user_input('폴더 경로: ', 'D:/projects/#merge_hwp_files/output', str)
+    input_folder_input = utils.get_user_input('폴더 경로: ', BASE_DIR, str)
+    output_folder_input = utils.get_user_input('폴더 경로: ', OUTPUT_FOLDER, str)
     output_filename = utils.get_user_input('출력 파일(hwp): ', '작업 결과', str)
 
     output_folder = Path(output_folder_input)
