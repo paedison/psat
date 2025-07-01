@@ -7,7 +7,7 @@ import pandas as pd
 
 from . import utils
 
-BASE_DIR = Path('D:/projects/#arrange_psat_problems')
+BASE_DIR = Path('D:/projects/#script_data/#arrange_psat_problems')
 SUBJECTS = ['언어', '자료', '상황']
 
 
@@ -16,7 +16,12 @@ def run():
     output_filename = utils.get_user_input('출력 파일(xlsx): ', '문제 리스트', str)
     problems_per_round = utils.get_user_input('회차별 문제 수', 10, int)
 
-    input_file = BASE_DIR / f'{input_filename}.xlsx'
+    input_path = Path(input_filename).with_suffix('.xlsx')
+    if input_path.parent == Path('.'):
+        input_file = BASE_DIR / f'{input_filename}.xlsx'
+    else:
+        input_file = Path(input_filename)
+
     output_file = BASE_DIR / f'{output_filename}.xlsx'
 
     run_assignment(input_file, output_file, problems_per_round)
@@ -158,7 +163,10 @@ def run_assignment(filepath, output_file, problems_per_round=10):
     result_df, updated_slot_df = assign_problems_to_slots(df.copy(), slot_df)
     summary_df = create_summary(result_df)
     with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-        result_df.sort_values(by=['#1'], inplace=True)
+        try:
+            result_df.sort_values(by=['#1'], inplace=True)
+        except KeyError:
+            result_df.sort_values(by=['순서'], inplace=True)
         result_df.to_excel(writer, sheet_name="문제배정", index=False)
         updated_slot_df.to_excel(writer, sheet_name="슬롯구성", index=False)
         summary_df.to_excel(writer, sheet_name="회차통계요약", index=False)

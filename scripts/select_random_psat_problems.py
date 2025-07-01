@@ -15,7 +15,7 @@ from a_psat.models.choices import answer_choice
 
 BASE_IMAGE_FOLDER = Path('static/image/PSAT')
 BASE_NAS_FOLDER = Path('//Newpsatncs/3_배승철/#PSAT 기출문제')
-BASE_OUTPUT_FOLDER = Path('a_psat/data/selected_problems')
+BASE_OUTPUT_FOLDER = Path('d:/projects/#script_data/#select_random_psat_problems')
 DEFAULT_EXCEL_FILENAME = 'problem_list'
 
 BLANK_PNG = BASE_OUTPUT_FOLDER / 'blank.png'

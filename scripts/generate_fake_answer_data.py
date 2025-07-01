@@ -38,7 +38,7 @@ def run():
 
 
 class LeetFakeAnswer:
-    BASE_DIR = Path('D:/projects/#generate_virtual_answers')
+    BASE_DIR = Path('D:/projects/#script_data/#generate_virtual_answers')
 
     SUBJECTS = ['subject_0', 'subject_1']
     SUBJECTS_PLUS_TOTAL = SUBJECTS + ['total']

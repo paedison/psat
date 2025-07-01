@@ -8,7 +8,7 @@ from PIL import Image, ImageChops
 
 from . import utils
 
-BASE_DIR = Path('D:/projects/#extract_png_images')
+BASE_DIR = Path('D:/projects/#script_data/#extract_png_images')
 SAVE_DIR = BASE_DIR / 'output_images'
 
 

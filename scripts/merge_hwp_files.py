@@ -5,7 +5,7 @@ import win32com.client as win32
 
 from . import utils
 
-BASE_DIR = Path('D:/projects/#merge_hwp_files')
+BASE_DIR = Path('D:/projects/#script_data/#merge_hwp_files')
 OUTPUT_FOLDER = BASE_DIR / 'output'
 
 

@@ -5,7 +5,7 @@ from pyhwpx import Hwp  # noqa
 
 from . import utils
 
-BASE_DIR = Path('D:/projects/#extract_hwp_pages')
+BASE_DIR = Path('D:/projects/#script_data/#extract_hwp_pages')
 SAVE_DIR = BASE_DIR / 'output_pages'
 
 

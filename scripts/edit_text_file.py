@@ -6,7 +6,7 @@ import chardet
 
 from . import utils
 
-BASE_DIR = Path('D:/projects/#edit_text_file')
+BASE_DIR = Path('D:/projects/#script_data/#edit_text_file')
 OUTPUT_FOLDER = BASE_DIR / 'output'
 
 
