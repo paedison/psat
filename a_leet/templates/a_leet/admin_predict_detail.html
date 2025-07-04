@@ -1,0 +1,228 @@
+{% extends 'a_leet/_leet_admin_base.html' %}
+{% load static %}
+
+{% block main_content %}
+    <section class="section" aria-label="합격 예측 업데이트">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ leet.year }}년도 {{ leet.exam_name }} | 합격 예측 업데이트</div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <form enctype="multipart/form-data"
+                                      hx-headers='{"View-Type":"answer_official"}'
+                                      hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false"
+                                      hx-post="{{ config.url_admin_predict_update }}">
+                                    <div class="input-group">
+                                        <input type="file" name="file" class="form-control" required id="id_file">
+                                        <button class="btn btn-outline-secondary prevent_double_click" type="submit"
+                                                data-bs-toggle="modal" data-bs-target="#modalContainer">
+                                            정답 업데이트
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="col-md-6 d-flex"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_leet/snippets/admin_detail_button_update.html' with view_type='raw_score' button_name='원점수 업데이트' %}
+                                    {% include 'a_leet/snippets/admin_detail_button_update.html' with view_type='score' button_name='표준점수 업데이트' %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 d-flex"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_leet/snippets/admin_detail_button_update.html' with view_type='rank' button_name='등수 업데이트' %}
+                                    {% include 'a_leet/snippets/admin_detail_button_update.html' with view_type='statistics' button_name='통계 업데이트' %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex"
+                                 hx-target="#modalContainer" hx-swap="innerHTML" hx-push-url="false">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_leet/snippets/admin_detail_button_update.html' with view_type='answer_count' button_name='문항분석표 업데이트' %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="성적통계">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">성적통계</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 d-flex">
+                                <div class="btn-group flex-fill">
+                                    <a class="btn btn-outline-secondary" title="목록" hx-target="#main"
+                                       href="{{ config.url_list }}" hx-get="{{ config.url_list }}">
+                                        목록
+                                    </a>
+                                    {% include 'a_leet/snippets/admin_detail_button_export.html' with button_name='엑셀 내려받기' export_url=leet.get_admin_predict_statistics_excel_url %}
+                                    {% include 'a_leet/snippets/admin_detail_button_export.html' with button_name='인쇄' export_url=leet.get_admin_predict_statistics_print_url %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
+                                {% for statistics_data in statistics_context.values %}
+                                    {% #nav_tab prefix=statistics_data.prefix id=statistics_data.id %}{{ statistics_data.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div id="statisticsContent" class="tab-content">
+                            {% for statistics_data in statistics_context.values %}
+                                {% #nav_content prefix=statistics_data.prefix id=statistics_data.id %}
+                                    {% include 'a_leet/snippets/admin_predict_detail_statistics.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>전체 대학에 대한 '전체' 응시 인원은 총 응시생 수입니다.</li>
+                                <li>각 대학별 '전체' 응시 인원은 각 대학에 1지망 또는 2지망으로 지원한 응시생 수의 합입니다.</li>
+                                <li>윗줄은 표준점수를, 아랫줄은 원점수를 의미합니다.</li>
+                                <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="성적일람표">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">성적일람표</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_leet/snippets/admin_detail_button_export.html' with button_name='엑셀 내려받기' export_url=leet.get_admin_predict_catalog_excel_url %}
+                                    {% include 'a_leet/snippets/admin_detail_button_export.html' with button_name='프라임ID' export_url=leet.get_admin_predict_prime_id_excel_url %}
+                                    {% include 'a_leet/snippets/admin_detail_button_export.html' with button_name='인쇄' export_url=leet.get_admin_predict_catalog_print_url %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-7 col-xxl-8 order-md-0 d-flex">
+                                {% include 'a_leet/snippets/admin_detail_search.html' %}
+                            </div>
+                        </div>
+
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
+                                {% for catalog_data in catalog_context.values %}
+                                    {% #nav_tab prefix=catalog_data.prefix id=catalog_data.id %}{{ catalog_data.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div id="catalogContent" class="tab-content">
+                            {% for catalog_data in catalog_context.values %}
+                                {% #nav_content prefix=catalog_data.prefix id=catalog_data.id %}
+                                    {% include 'a_leet/snippets/admin_predict_detail_catalog.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>점수 칸에서 윗줄은 표준점수를, 아랫줄은 원점수를 의미합니다.</li>
+                                <li>석차 칸에서 윗줄은 퍼센트 등수를, 아랫줄은 등수를 의미합니다.</li>
+                                <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="문항분석표">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">문항분석표</div>
+                    <div class="card-body">
+                        <div class="row justify-content-md-end g-3 mb-3">
+                            <div class="col-md-6 col-lg-5 col-xxl-4 order-md-1 d-flex">
+                                <div class="btn-group flex-fill">
+                                    {% include 'a_leet/snippets/admin_detail_button_export.html' with button_name='엑셀 내려받기' export_url=leet.get_admin_predict_answer_excel_url %}
+                                    {% include 'a_leet/snippets/admin_detail_button_export.html' with button_name='인쇄' export_url=leet.get_admin_predict_answer_print_url %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="answerAnalysisTab" role="tablist">
+                                {% for answer_data in answer_context.values %}
+                                    {% #nav_tab prefix=answer_data.prefix id=answer_data.id %}{{ answer_data.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+
+                        <div id="answerAnalysisContent" class="tab-content">
+                            {% for answer_data in answer_context.values %}
+                                {% #nav_content prefix=answer_data.prefix id=answer_data.id %}
+                                    {% include 'a_leet/snippets/admin_predict_detail_answer_analysis.html' %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-3">
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li>상/중/하위권은 상위 백분율 27%와 73%를 경계로 나뉩니다.</li>
+                                <li>변별도는 상위권 정답률에서 하위권 정답률을 뺀 값입니다.</li>
+                                <li>답안 선택 현황에서 윗줄은 비율을, 아랫줄은 학생수를 의미합니다.</li>
+                                <li>해당 자료가 없거나 0일 경우 빈 칸으로 표시됩니다.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" aria-label="예상 정답">
+        <div class="row">
+            <div class="col-12">
+                <div id="problemCard" class="card" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">예상 정답</div>
+                    <div class="card-body">
+                        <nav>
+                            <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerOfficialTab" role="tablist">
+                                {% for answer_predict in answer_predict_context.values %}
+                                    {% #nav_tab prefix='AnswerPredict' id=answer_predict.id %}{{ answer_predict.title }}{% /nav_tab %}
+                                {% endfor %}
+                            </div>
+                        </nav>
+                        <div id="scoreAnswerPredictContent" class="tab-content">
+                            {% for answer_predict in answer_predict_context.values %}
+                                {% #nav_content prefix='AnswerPredict' id=answer_predict.id %}
+                                    {% include 'a_leet/snippets/admin_detail_answer_list.html' with answers=answer_predict.page_obj %}
+                                {% /nav_content %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'a_leet/snippets/admin_official_detail_answer.html' %}
+    {% include 'a_leet/snippets/admin_official_detail_problem.html' %}
+{% endblock %}

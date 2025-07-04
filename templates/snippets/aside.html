@@ -6,6 +6,8 @@
         {% partial menu_board %}
         {% if user.is_admin %}{% partial menu_psat_admin %}{% endif %}
         {% partial menu_psat %}
+        {% if user.is_admin %}{% partial menu_leet_admin %}{% endif %}
+        {% if user.is_admin %}{% partial menu_leet %}{% endif %}
         {% partial menu_prime %}
         {% partial menu_prime_leet %}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
@@ -101,6 +103,60 @@
                 <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="study"
                    href="{% url 'psat:study-list' %}">
                     <i class="fa-regular fa-fw fa-square"></i> 스터디
+                </a>
+            </li>
+        </ul>
+    </li>
+{% endpartialdef %}
+
+{% partialdef menu_leet_admin %}
+    <li class="nav-item" role="menuitem" aria-label="LEET Menu">
+        <a class="nav-link collapsed" href="#leetAdminNavContent" data-menu="leet_admin"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="leetNavContent">
+            <i class="fa-solid fa-fw fa-layer-group"></i> LEET 관리자
+            <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
+        </a>
+        <ul id="leetAdminNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="leet_admin" data-menu-self="official"
+                   href="{% url 'leet:admin-official-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 기출문제
+                </a>
+            </li>
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="leet_admin" data-menu-self="predict"
+                   href="{% url 'leet:admin-predict-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 합격 예측
+                </a>
+            </li>
+{#            <li>#}
+{#                <a class="aside-nav-icon" data-menu-parent="leet_admin" data-menu-self="tag"#}
+{#                   href="{% url 'leet:admin-tag-list' %}">#}
+{#                    <i class="fa-regular fa-fw fa-square"></i> 태그#}
+{#                </a>#}
+{#            </li>#}
+        </ul>
+    </li>
+{% endpartialdef %}
+
+{% partialdef menu_leet %}
+    <li class="nav-item" role="menuitem" aria-label="LEET Menu">
+        <a class="nav-link collapsed" href="#leetNavContent" data-menu="leet"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="leetNavContent">
+            <i class="fa-solid fa-fw fa-layer-group"></i> LEET
+            <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
+        </a>
+        <ul id="leetNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="leet" data-menu-self="official"
+                   href="{% url 'leet:problem-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 기출문제
+                </a>
+            </li>
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="leet" data-menu-self="predict"
+                   href="{% url 'leet:predict-list' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 합격 예측
                 </a>
             </li>
         </ul>

@@ -1,0 +1,8 @@
+{% extends 'a_leet/_leet_admin_base.html' %}
+{% load static %}
+{% load crispy_forms_field %}
+
+{% block main_content %}
+    {% include 'a_leet/snippets/admin_official_detail_answer.html' %}
+    {% include 'a_leet/snippets/admin_official_detail_problem.html' %}
+{% endblock main_content %}

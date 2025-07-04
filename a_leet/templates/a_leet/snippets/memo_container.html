@@ -1,0 +1,83 @@
+{% load i18n %}
+{% load static %}
+
+<div hx-swap-oob="innerHTML:#leetMemo{{ problem.id }}">
+    {% if my_memo %}
+        {{ icon_memo.True|safe }}
+    {% else %}
+        {{ icon_memo.False|safe }}
+    {% endif %}
+</div>
+
+{% if my_memo %}
+    {% partial memo_content %}
+{% else %}
+    {% partial create_form %}
+{% endif %}
+
+{% partialdef memo_content %}
+    <ul class="list-group list-group-flush">
+        <li id="myMemoContent" class="list-group-item justify-content-between align-items-start p-0">
+            <div class="row">
+                <span class="text-gray-900 text-break">{{ my_memo.content|safe }}</span>
+            </div>
+            <div class="row">
+                <div class="d-flex justify-content-end">
+                    <form>
+                        <div class="btn-group" role="group" aria-label="Memo buttons">
+                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Update' %}"
+                                    hx-headers='{"View-Type":"update"}'
+                                    hx-get="{{ my_memo.get_memo_url }}">
+                                {{ icon_board.update|safe }} {% trans 'Update' %}
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger"
+{#                                    hx-post=""#}
+                                    hx-headers='{"View-Type":"delete"}'
+                                    hx-post="{{ my_memo.get_memo_url }}"
+                                    hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
+                                    title="{% trans 'Delete' %}">
+                                {{ icon_board.delete|safe }} {% trans 'Delete' %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </li>
+    </ul>
+{% endpartialdef memo_content %}
+
+{% partialdef create_form %}
+    <form hx-headers='{"View-Type":"create"}'
+          hx-post="{{ memo_url }}">
+        {{ memo_form.media }}
+        {{ memo_form.content }}
+        <textarea id="content_memo" name="content" class="ckeditor-content" hidden></textarea>
+        <div class="d-flex justify-content-end mt-2">
+            <div class="btn-group">
+                <button type="submit" class="btn btn-sm btn-outline-primary ckeditor-submit">
+                    {% trans 'Create' %}
+                </button>
+            </div>
+        </div>
+    </form>
+{% endpartialdef create_form %}
+
+{% partialdef update_form %}
+    <form hx-headers='{"View-Type":"update"}'
+          hx-post="{{ my_memo.get_memo_url }}">
+        {{ memo_form.media }}
+        {{ memo_form.content }}
+        <textarea id="content_memo" name="content" class="ckeditor-content" hidden></textarea>
+        <div class="d-flex justify-content-end mt-2">
+            <div class="btn-group">
+                <button type="submit" class="btn btn-sm btn-outline-primary ckeditor-submit">
+                    {% trans 'Update' %}
+                </button>
+                <button class="btn btn-sm btn-danger" hx-headers='{"View-Type":""}'
+                        hx-get="{{ my_memo.get_memo_url }}">
+                    {% trans 'Cancel' %}
+                </button>
+            </div>
+        </div>
+    </form>
+{% endpartialdef update_form %}

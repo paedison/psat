@@ -1,0 +1,185 @@
+{% extends 'a_leet/_leet_base.html' %}
+{% load static %}
+
+{% block main_content %}
+{#    <section class="section" aria-label="안내문">#}
+{#        <div class="row">#}
+{#            <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">#}
+{#                <div class="card htmx-fade-in htmx-fade-out">#}
+{#                    <div class="container my-4 text-center">#}
+{#                        <div class="mb-2">#}
+{#                            {% include 'a_leet/snippets/predict_main_cover.html' %}#}
+{#                        </div>#}
+{##}
+{#                        <div class="d-md-none">#}
+{#                            <p>수험생 여러분, 그 동안 수고 많으셨습니다.</p>#}
+{#                            <p>여러분의 합격을 기원하며 아래와 같이</p>#}
+{#                            <p><span class="text-bg-success fw-bold">합격예측시스템</span>을 준비했습니다.</p>#}
+{#                            <p>수험정보 등록 후 답안을 제출해주시면</p>#}
+{#                            <p>성적 분포 및 합격 여부를 예측해드립니다.</p>#}
+{#                            <p>자세한 사항은 <a class="fw-bold" target="_blank" href="https://paedison.com/board/notice/18/">아래 링크</a>를 참고해주세요.</p>#}
+{#                            <p class="text-primary fw-bold fs-5">여러분의 합격을 응원합니다!</p>#}
+{#                        </div>#}
+{##}
+{#                        <div class="d-none d-md-block">#}
+{#                            <p>수험생 여러분, 그 동안 수고 많으셨습니다.</p>#}
+{#                            <p>여러분의 합격을 기원하며 아래와 같이 <span class="text-bg-success fw-bold">합격예측시스템</span>을 준비했습니다.</p>#}
+{#                            <p>수험정보 등록 후 답안을 제출해주시면 성적 분포 및 합격 여부를 예측해드립니다.</p>#}
+{#                            <p>자세한 사항은 <a class="fw-bold" target="_blank" href="https://paedison.com/board/notice/18/">아래 링크</a>를 참고해주세요.</p>#}
+{#                            <p class="text-primary fw-bold fs-5">여러분의 합격을 응원합니다!</p>#}
+{#                        </div>#}
+{##}
+{#                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">#}
+{#                            <a class="btn btn-outline-primary w-auto" target="_blank"#}
+{#                               href="https://paedison.com/board/notice/18/">#}
+{#                                서비스 참여 안내#}
+{#                            </a>#}
+{#                            {% if not user.is_authenticated %}#}
+{#                                <a class="btn btn-outline-danger w-auto"#}
+{#                                   hx-target="body" hx-swap="innerHTML swap:0.25s"#}
+{#                                   hx-get="{% url 'account_login' %}">#}
+{#                                    로그인이 필요합니다.#}
+{#                                </a>#}
+{#                            {% endif %}#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </section>#}
+
+    {% for leet in leets %}
+        <section class="section" aria-label="합격 예측">
+            <div class="row" hx-boost="true">
+                <div class="col-12">
+                    {% partial leet_card %}
+                </div>
+            </div>
+        </section>
+    {% empty %}
+        <section class="section" aria-label="수험정보 등록">
+            <div class="row" hx-boost="true">
+                <div class="col-12">
+                    {% partial registry_card %}
+                </div>
+            </div>
+        </section>
+    {% endfor %}
+
+{#    <section class="section" aria-label="배너">#}
+{#        <div class="row">#}
+{#            {% include '_banner/predict_leet_2025_haengsi.html' %}#}
+{#        </div>#}
+{#    </section>#}
+{% endblock main_content %}
+
+{% partialdef leet_card %}
+    <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="text-primary">{{ leet.full_reference }} 합격예측</div>
+            <div>
+                {% if leet.predict_leet.is_not_started %}
+                    <span class="badge rounded-pill bg-primary fs-6">시험 시작전</span>
+                {% elif leet.predict_leet.is_going_on %}
+                    <span class="badge rounded-pill bg-success fs-6">시험 진행중</span>
+                {% elif leet.predict_leet.is_collecting_answer %}
+                    <span class="badge rounded-pill bg-success fs-6">답안 수집중</span>
+                {% elif leet.predict_leet.is_answer_predict_opened %}
+                    <span class="badge rounded-pill bg-success fs-6">예상 정답 공개</span>
+                {% elif leet.predict_leet.is_answer_official_opened %}
+                    <span class="badge rounded-pill bg-danger fs-6">합격 예측 진행중</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="d-grid d-sm-flex align-items-sm-center">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                    {% if leet.student %}
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center mb-2"
+                           href="{{ leet.get_predict_detail_url }}">
+                            <i class="fa-solid fa-fw fa-arrows-up-to-line"></i>
+                        </a>
+                        <a class="btn btn-outline-primary" hx-boost="true"
+                           href="{{ leet.get_predict_detail_url }}">
+                            성적 확인
+                        </a>
+                    {% else %}
+                        <a class="card-icon rounded-circle d-flex align-items-center justify-content-center mb-2"
+                           href="{{ config.url_register }}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <a class="btn btn-outline-primary text-nowrap" hx-boost="true"
+                           href="{{ config.url_register }}">
+                            수험정보 등록
+                        </a>
+                    {% endif %}
+                </div>
+                <article class="table-responsive flex-fill ps-sm-3">
+                    <table class="table m-0">
+                        <tbody>
+                            <tr>
+                                <th class="text-nowrap px-0">시험 일시</th>
+                                <td class="text-nowrap">
+                                    {{ leet.predict_leet.exam_started_at|date:'Y.n.j(D)' }}
+                                    {{ leet.predict_leet.exam_started_at|date:'H:i' }}
+                                    ~ {{ leet.predict_leet.exam_finished_at|date:'H:i' }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-nowrap px-0">정답 공개</th>
+                                <td class="text-nowrap">
+                                    {{ leet.predict_leet.answer_predict_opened_at|date:'H:i' }} (예상 정답) /
+                                    {{ leet.predict_leet.answer_official_opened_at|date:'H:i' }} (공식 정답)
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-nowrap px-0">수험 번호</th>
+                                <td>
+                                    {% if leet.student %}
+                                        {{ leet.student.serial }}
+                                    {% else %}
+                                        <a class="badge rounded-pill text-bg-primary" hx-boost="true"
+                                           href="{{ config.url_register }}">
+                                            수험정보를 등록해주세요.
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+            </div>
+        </div>
+    </div>
+{% endpartialdef leet_card %}
+
+{% partialdef registry_card %}
+    <div class="card study-card" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true">
+        <div class="card-header">수험정보 등록</div>
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                {% if not user.is_authenticated %}
+                    <a class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                       hx-boost="true" hx-target="body"
+                       href="{% url 'account_login' %}">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                    <div class="fw-bold ms-4">로그인이 필요합니다.</div>
+                    <a class="btn btn-outline-danger ms-auto" hx-boost="true" hx-target="body"
+                       href="{% url 'account_login' %}">
+                        로그인
+                    </a>
+                {% else %}
+                    <a class="card-icon rounded-circle d-flex align-items-center justify-content-center"
+                       href="{{ config.url_register }}">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                    <div class="fw-bold ms-4">수험정보를 등록해주세요.</div>
+                    <a class="btn btn-outline-primary ms-auto" href="{{ config.url_register }}">
+                        수험정보 등록
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endpartialdef registry_card %}

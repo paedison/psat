@@ -1,0 +1,138 @@
+{% if not stat_data.page_obj %}
+    <h6 class="d-flex justify-content-center fw-bold text-danger mt-4">
+        {{ stat_data.title }} 대학을 선택하지 않으셨습니다.
+    </h6>
+{% else %}
+    {% partial score_progress_bar %}
+    {% partial score_table %}
+{% endif %}
+
+{% partialdef score_progress_bar %}
+    <div class="row score-progress py-3">
+        {% for stat in stat_data.page_obj.values %}
+            {% if stat.is_confirmed %}
+                <div class="{% if forloop.last %}col-12{% else %}col-md-6{% endif %}">
+                    {% if forloop.last %}<hr class="d-none d-md-block">{% endif %}
+                        <h6>{{ stat.subject }}</h6>
+                        {% if is_analyzing %}
+                            <h5 class="badge rounded-pill text-bg-warning">통계 분석중입니다.</h5>
+                        {% else %}
+                            <h5>
+                                <span class="text-primary fw-bold">{{ stat.score|floatformat:1 }}</span>
+                                <span class="fs-6">
+                                    {{ stat.rank }}등
+                                    ({{ stat.rank|percentageby:stat.participants|floatformat:1 }}%)
+                                    | 원점수 {{ stat.raw_score }}
+                                </span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-c-blue"
+                                     style="width:{{ stat.rank|percentageby:stat.participants|subtract:100 }}%"></div>
+                            </div>
+                        {% endif %}
+                    {% if not forloop.last %}
+                        <hr class="d-md-none">
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endpartialdef %}
+
+{% partialdef score_table %}
+    <article class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr class="d-table-row d-sm-none text-center align-middle table-warning">
+                    <th class="text-nowrap">과목</th>
+                    <th class="text-nowrap">최고<br/>점수</th>
+                    <th class="text-nowrap">상위<br/>10%</th>
+                    <th class="text-nowrap">상위<br/>25%</th>
+                    <th class="text-nowrap">상위<br/>50%</th>
+                    <th class="text-nowrap">평균<br/>점수</th>
+                </tr>
+                <tr class="d-none d-sm-table-row text-center align-middle table-warning">
+                    <th class="text-nowrap">과목</th>
+                    <th class="text-nowrap">최고 점수(점)</th>
+                    <th class="text-nowrap">상위 10%(점)</th>
+                    <th class="text-nowrap">상위 25%(점)</th>
+                    <th class="text-nowrap">상위 50%(점)</th>
+                    <th class="text-nowrap">평균 점수(점)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in stat_data.page_obj.values %}
+                    {% if stat %}
+                        <tr class="text-center {% if stat.field == 'average' %}table-warning{% endif %}">
+                            {% partial th_subject %}
+
+                            {% if stat.is_confirmed %}
+                                {% partial answer_is_confirmed %}
+                            {% else %}
+                                {% partial answer_is_not_confirmed %}
+                            {% endif %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+{% endpartialdef %}
+
+{% partialdef th_subject %}
+    <th class="text-nowrap" aria-label="과목">
+        {% if stat.is_confirmed or stat.field == 'average' %}
+            {{ stat.subject }}
+        {% else %}
+            <a class="text-decoration-none" href="{{ stat_tot.url_answer_input }}" hx-boost="true">
+                {{ stat.subject }}
+            </a>
+        {% endif %}
+    </th>
+{% endpartialdef %}
+
+{% partialdef answer_is_confirmed %}
+    {% if is_analyzing %}
+        <td colspan="5">
+            <h5 class="badge rounded-pill text-bg-warning">통계 분석중입니다.</h5>
+        </td>
+    {% else %}
+        <td>
+            <div id="{{ stat_data.prefix }}Max{{ stat.field|title }}" class="htmx-fade-up-in delay-2">
+                {{ stat.max|floatformat:1 }}
+            </div>
+        </td>
+        <td>
+            <div id="{{ stat_data.prefix }}T10{{ stat.field|title }}" class="htmx-fade-up-in delay-3">
+                {{ stat.t10|floatformat:1 }}
+            </div>
+        </td>
+        <td>
+            <div id="{{ stat_data.prefix }}T25{{ stat.field|title }}" class="htmx-fade-up-in delay-4">
+                {{ stat.t25|floatformat:1 }}
+            </div>
+        </td>
+        <td>
+            <div id="{{ stat_data.prefix }}T50{{ stat.field|title }}" class="htmx-fade-up-in delay-4">
+                {{ stat.t50|floatformat:1 }}
+            </div>
+        </td>
+        <td>
+            <div id="{{ stat_data.prefix }}Avg{{ stat.field|title }}" class="htmx-fade-up-in delay-5">
+                {{ stat.avg|floatformat:1 }}
+            </div>
+        </td>
+    {% endif %}
+{% endpartialdef %}
+
+{% partialdef answer_is_not_confirmed %}
+    <td colspan="6">
+        {% if stat.field == 'average' %}
+            <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
+        {% else %}
+            <a hx-boost="true" href="{{ stat_tot.url_answer_input }}">
+                <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
+            </a>
+        {% endif %}
+    </td>
+{% endpartialdef %}

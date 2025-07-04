@@ -1,0 +1,123 @@
+{% load psat_filter %}
+
+<article class="table-responsive">
+    <table class="table align-middle">
+        <tbody>
+            {% if not answer_data.is_confirmed %}
+                <tr class="text-center">
+                    <th>
+                        <a class="btn btn-outline-danger my-4" hx-boost="true" href="{{ tab.url_answer_input }}">
+                            답안을 제출해주세요.
+                        </a>
+                    </th>
+                </tr>
+            {% else %}
+                {% for loop in answer_data.loop_list %}
+                    {% partial answer_table_tr %}
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</article>
+
+{% partialdef answer_table_tr %}
+    <tr class="text-center table-warning" aria-label="문제 번호">
+        <th class="text-nowrap" scope="row">문제 번호</th>
+        {% for _ in 'x'|ljust:loop.counter %}
+            <th>{{ forloop.counter|add:loop.min }}</th>
+        {% endfor %}
+    </tr>
+
+    {% if current_time > predict_leet.answer_predict_opened_at %}
+        <tr class="text-center" aria-label="공식 정답">
+            <th class="text-nowrap" scope="row">공식 정답</th>
+            {% for answer in answer_data.page_obj %}
+                {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}
+                    <td data-number="{{ answer.no }}">
+                        {% if answer.ans_list %}
+                            {% if answer.ans_official == 1234 or answer.ans_official == 12345 %}
+                                <span class="fw-bold text-success">전체<br/> 정답</span>
+                            {% else %}
+                                {% for ans in answer.ans_list %}
+                                    <button class="btn btn-circle btn-sm fs-6 my-2 btn-success">
+                                        {{ ans }}
+                                    </button>
+                                {% endfor %}
+                            {% endif %}
+                        {% else %}
+                            <button class="btn btn-circle btn-sm fs-6 mx-1 my-2 btn-success">
+                                {{ answer.ans_official }}
+                            </button>
+                        {% endif %}
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+
+        <tr class="text-center" aria-label="정답률">
+            <th class="text-nowrap" scope="row">정답률(%)</th>
+            {% for answer in answer_data.page_obj %}
+                {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}
+                    <td data-number="{{ answer.no }}">
+                        <div class="fw-bold text-success">
+                            {% partialdef rate_correct inline=True %}
+                                <div id="answerSubmitRateCorrect{{ tab.id }}-{{ answer.no|stringformat:'02d' }}"
+                                     class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}"
+                                     {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
+                                    {{ answer.rate_correct|floatformat:0 }}
+                                </div>
+                            {% endpartialdef %}
+                        </div>
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    {% endif %}
+
+    <tr class="text-center" aria-label="선택 답안">
+        <th class="text-nowrap" scope="row">선택 답안</th>
+        {% for answer in answer_data.page_obj %}
+            {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}
+                <td data-number="{{ answer.no }}">
+                    {% if current_time <= predict_leet.answer_predict_opened_at %}
+                        <button class="btn btn-circle btn-sm btn-primary fs-6 mx-1 my-2">
+                            {{ answer.ans_student }}
+                        </button>
+                    {% else %}
+                        <button class="btn btn-circle btn-sm fs-6 mx-1 my-2
+                                btn-{% if answer.result %}success{% else %}danger{% endif %}">
+                            {% if answer.ans_student > 0 and answer.ans_student < 6 %}
+                                {{ answer.ans_student }}
+                            {% endif %}
+                        </button>
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+
+    <tr class="text-center" aria-label="선택률">
+        <th class="text-nowrap" scope="row">선택률(%)</th>
+        {% for answer in answer_data.page_obj %}
+            {% if forloop.counter > loop.min and forloop.counter <= loop.min|add:loop.counter %}
+                <td data-number="{{ answer.no }}">
+                    {% if current_time <= predict_leet.answer_predict_opened_at %}
+                        <div class="fw-bold text-primary">
+                            {% partialdef rate_selection inline=True %}
+                                <div id="answerSubmitRateSelect{{ answer.no|stringformat:'02d' }}"
+                                     class="htmx-fade-up-in delay-{{ forloop.counter|digit_of_one }}"
+                                     {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
+                                    {{ answer.rate_selection|floatformat:0 }}
+                                </div>
+                            {% endpartialdef %}
+                        </div>
+                    {% else %}
+                        <div class="fw-bold {% if answer.result %}text-success{% else %}text-danger{% endif %}">
+                            {% partial rate_selection %}
+                        </div>
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{% endpartialdef answer_table_tr %}

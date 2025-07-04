@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load psat_filter %}
+{% load humanize %}
+
+{% block head_title %}{{ leet.year }}년도_{{ leet.get_exam_display }}_성적통계{% endblock head_title %}
+{% block page_image %}<meta property="og:image" content="{% static 'image/prime/2024/exam/message-1.jpg' %}"/>{% endblock %}
+{% block google_adsense %}{% endblock %}
+
+{% block html_body %}
+<body class="bg-white">
+    {{ info|json_script:'info' }}
+    <h2 class="fw-bold text-center mb-4">{{ leet.year }}년도 {{ leet.get_exam_display }} 성적통계</h2>
+    {% for statistics_data in statistics_context.values %}
+        {% partial statistics_table %}
+    {% endfor %}
+
+    <script>
+        window.onload = function () {
+            setTimeout(function () {
+                window.print();
+            }, 1000);
+        };
+    </script>
+</body>
+{% endblock %}
+
+{% partialdef statistics_table %}
+    <div class="mb-2">
+        <table class="table table-sm table-bordered small align-middle">
+            <thead>
+                <tr class="text-center align-middle">
+                    <th class="text-primary" colspan="22">{{ statistics_data.title }} 데이터</th>
+                </tr>
+                <tr class="text-center small align-middle">
+                    <th rowspan="2">직렬</th>
+                    <th rowspan="2">응시 인원</th>
+                    <th colspan="4">헌법</th>
+                    <th colspan="4">언어논리</th>
+                    <th colspan="4">자료해석</th>
+                    <th colspan="4">상황판단</th>
+                    <th colspan="4">PSAT</th>
+                </tr>
+
+                <tr class="text-center small align-middle">
+                    {% for _ in '01234' %}
+                        <th>최고<br/>점수</th>
+                        <th>상위<br/>10%</th>
+                        <th>상위<br/>20%</th>
+                        <th>평균<br/>점수</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in statistics_data.page_obj %}
+                    <tr class="text-center small align-middle">
+                        <th>{{ obj.department }}</th>
+                        <th>{{ obj.average.participants|intcomma }}</th>
+                        {% for _ in '01234' %}
+                            {% cycle obj.average obj.subject_0 obj.subject_1 obj.subject_2 obj.subject_3 as data_stat silent %}
+                            <td>{{ data_stat.max|floatformat:1 }}</td>
+                            <td>{{ data_stat.t10|floatformat:1 }}</td>
+                            <td>{{ data_stat.t20|floatformat:1 }}</td>
+                            <td>{{ data_stat.avg|floatformat:1 }}</td>
+                        {% endfor %}
+                    </tr>
+                {% empty %}
+                    <tr class="text-center">
+                        <td class="text-nowrap p-2" colspan="22">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endpartialdef %}

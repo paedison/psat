@@ -1,0 +1,34 @@
+<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h6 id="modalContainerLabel" class="modal-title fw-bold text-secondary">
+                문제 저장
+            </h6>
+            <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+            {% for collection in collections %}
+                <form class="{% if forloop.first %}mb-2{% elif forloop.last %}mt-2{% else %}my-2{% endif %}">
+                    <input type="text" name="collection_id" value="{{ collection.id }}" aria-label="Collection ID" hidden/>
+                    <div class="form-check text-start">
+                        <input class="form-check-input" type="checkbox" name="is_checked" id="collection{{ collection.id }}"
+                               hx-post="{% url 'leet:collect-problem' problem_id %}"
+                               hx-trigger="click" hx-target="#leetCollection{{ problem_id }}" hx-swap="innerHTML swap:0.25s"
+                               {% if collection.item_exists %}checked{% endif %}/>
+                        <label class="form-check-label" for="collection{{ collection.id }}">{{ collection.title }}</label>
+                    </div>
+                </form>
+            {% empty %}
+                추가된 컬렉션이 없습니다.
+            {% endfor %}
+        </div>
+        <div class="modal-footer justify-content-center htmx-fade-out htmx-fade-in"
+             hx-target="this" hx-swap="innerHTML swap:0.25s" hx-push-url="false">
+            <a type="button" class="text-secondary" href=""
+               hx-headers='{"View-Type":"create_in_modal"}'
+               hx-get="{% url 'leet:collection-create' %}?problem_id={{ problem_id }}">
+                <i class="fa-solid fa-plus"></i> 새 컬렉션 만들기
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,147 @@
+{% load humanize %}
+
+<article class="table-responsive">
+    <table class="table align-middle" hx-boost="true" hx-push-url="true">
+        <thead>
+            <tr class="text-center align-middle table-warning">
+                <th rowspan="2" aria-label="과목">과목</th>
+
+                <th class="text-nowrap" aria-label="예상 점수">
+                    <span class="d-sm-none">예상 점수<br/>(점)</span>
+                    <span class="d-none d-sm-inline">예상 점수(점)</span>
+                </th>
+
+                <th class="text-nowrap" aria-label="총 참여자수">
+                    <span class="d-sm-none">총 참여자수<br/>(명)</span>
+                    <span class="d-none d-sm-inline">총 참여자수(명)</span>
+                </th>
+
+                <th class="text-nowrap" aria-label="선택 답안수">
+                    <span class="d-sm-none">선택 답안수<br/>(문제)</span>
+                    <span class="d-none d-sm-inline">선택 답안수(문제)</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stat_tot in total_statistics_context.all.page_obj.values %}
+                {% partial sub_answer_line %}
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% partialdef sub_answer_line %}
+    {% if current_time < stat_tot.end_time %}
+        {% partial exam_is_not_finished %}
+    {% else %}
+        {% if stat_tot.is_confirmed %}
+            {% partial answers_are_confirmed %}
+        {% else %}
+            {% partial answers_are_not_confirmed %}
+        {% endif %}
+    {% endif %}
+{% endpartialdef sub_answer_line %}
+
+{% partialdef exam_is_not_finished %}
+    <tr class="text-center{% if stat_tot.field == 'sum' %} table-warning{% endif %}">
+        <th class="text-nowrap" aria-label="과목">{{ stat_tot.subject }}</th>
+        {% if current_time < stat_tot.start_time %}
+            <td colspan="3" aria-label="시험 시작 전">
+                <span class="badge rounded-pill text-bg-primary">시험 시작 전입니다.</span>
+            </td>
+        {% else %}
+            <td colspan="3" aria-label="시험 진행 중">
+                <span class="badge rounded-pill text-bg-primary">시험 진행 중입니다.</span>
+            </td>
+        {% endif %}
+    </tr>
+{% endpartialdef %}
+
+{% partialdef answers_are_confirmed %}
+    <tr class="text-center{% if stat_tot.field == 'sum' %} table-warning{% endif %}">
+        <th class="text-nowrap" aria-label="과목">
+            {{ stat_tot.subject }}
+        </th>
+
+        <td aria-label="점수">
+            {% if current_time <= predict_leet.answer_predict_opened_at %}
+                <span class="badge rounded-pill text-bg-warning">답안 수집중입니다.</span>
+            {% elif current_time <= predict_leet.answer_official_opened_at %}
+                {% partialdef score_predict inline=True %}
+                    <div id="{{ stat_tot.field }}ScorePredict"
+                         class="htmx-fade-up-in delay-1 text-primary fw-bold"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
+                        {{ stat_tot.raw_score_predict|default:'' }}
+                    </div>
+                {% endpartialdef %}
+            {% else %}
+                {% partialdef score_real inline=True %}
+                    <div id="{{ stat_tot.field }}Score"
+                         class="htmx-fade-up-in delay-1 text-success fw-bold"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
+                        {{ stat_tot.score|floatformat:1|default:'' }} /
+                        {{ stat_tot.raw_score|default:'' }}
+                    </div>
+                {% endpartialdef %}
+            {% endif %}
+        </td>
+
+        <td aria-label="총 참여자수">
+            {% partialdef participants inline=True %}
+                <div id="{{ stat_tot.field }}Participants"
+                     class="htmx-fade-up-in delay-2 fw-bold"
+                         {% if is_hx_request %}hx-swap-oob="true"{% endif %}>
+                    {{ stat_tot.participants|default:0 }}
+                </div>
+            {% endpartialdef %}
+        </td>
+
+        <td class="text-nowrap fw-bold" aria-label="선택 답안수">
+            {{ stat_tot.answer_count|default:0 }} / {{ stat_tot.problem_count }}
+            <span class="badge rounded-pill text-bg-success">제출 완료</span>
+        </td>
+    </tr>
+{% endpartialdef %}
+
+{% partialdef answers_are_not_confirmed %}
+    <tr class="text-center{% if stat_tot.field == 'sum' %} table-warning{% else %} cursor-pointer{% endif %}"
+        {% if stat_tot.field != 'sum' %}hx-get="{{ stat_tot.url_answer_input }}"{% endif %}>
+        <th class="text-nowrap" aria-label="과목">
+            {% if stat_tot.field == 'sum' %}
+                {{ stat_tot.subject }}
+            {% else %}
+                <a class="text-decoration-none" href="{{ stat_tot.url_answer_input }}">
+                    {{ stat_tot.subject }}
+                </a>
+            {% endif %}
+        </th>
+
+        <td aria-label="점수">
+            {% if stat_tot.field == 'sum' %}
+                <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+            {% else %}
+                <a href="{{ stat_tot.url_answer_input }}">
+                    <span class="badge rounded-pill text-bg-danger">답안을 제출해주세요.</span>
+                </a>
+            {% endif %}
+        </td>
+
+        <td aria-label="총 참여자수">
+            <div id="{{ stat_tot.field }}Participants" class="htmx-fade-up-in delay-2 fw-bold">
+                {{ stat_tot.participants|default:0 }}
+            </div>
+        </td>
+
+        <td class="text-nowrap fw-bold" aria-label="선택 답안수">
+            {% if stat_tot.field == 'sum' %}
+                {{ stat_tot.answer_count|default:0 }} / {{ stat_tot.problem_count }}
+                <span class="badge rounded-pill text-bg-danger">미제출</span>
+            {% else %}
+                <a class="text-decoration-none fw-bold" href="{{ stat_tot.url_answer_input }}">
+                    {{ stat_tot.answer_count|default:0 }} / {{ stat_tot.problem_count }}
+                    <span class="badge rounded-pill text-bg-danger">미제출</span>
+                </a>
+            {% endif %}
+        </td>
+    </tr>
+{% endpartialdef %}

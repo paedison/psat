@@ -1,0 +1,185 @@
+{% extends 'a_leet/_leet_admin_base.html' %}
+{% load crispy_forms_field %}
+
+{% block main_content %}
+    <section class="section" aria-label="LEET 시험 목록">
+        <div class="row">
+            <div class="col-12">
+                <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                    <div class="card-header">{{ sub_title }} 시험 목록</div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        <div class="row flex-column flex-md-row-reverse">
+                            <div id="examFilter"
+                                 class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                                {% partial leet_filter_accordion %}
+                                {% partial data_update_accordion %}
+                                {% partial admin_page_list_accordion %}
+                            </div>
+
+                            <div id="examContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                                {% partial exam_list %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+{% partialdef leet_filter_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseFilter"
+                    aria-expanded="true" aria-controls="collapseFilter">
+                <i class="fa-solid fa-fw fa-filter me-1"></i>
+                LEET 필터
+            </button>
+        </h2>
+        <div id="collapseFilter" class="accordion-collapse collapse show"
+             data-bs-parent="#examFilter">
+            <div class="accordion-body pb-2">
+                <form class="row g-2 align-items-center justify-content-start" hx-trigger="change"
+                      hx-get="{{ request.path }}">
+                    <input id="id_data" type="text" name="keyword"
+                           value="{{ keyword }}" hidden title="키워드">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a type="button" class="btn btn-secondary fw-bold w-100" hx-boost="true"
+                           hx-push-url="{{ request.path }}"
+                           href="{{ request.path }}">
+                            <i class="fa-solid fa-fw fa-filter-circle-xmark"></i>
+                            필터 제거
+                        </a>
+                    </div>
+                    {% for field in leet_form %}
+                        <div class="col-6 col-md-12 col-lg-6">
+                            {% if field.errors %}
+                                {% crispy_field field 'class' 'form-select is-invalid' %}
+                            {% else %}
+                                {% if field.value == None or field.value == '' %}
+                                    {% crispy_field field 'class' 'form-select' %}
+                                {% else %}
+                                    {% crispy_field field 'class' 'form-select option-selected' %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef data_update_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseDataUpdate"
+                    aria-expanded="true" aria-controls="collapseDataUpdate">
+                자료 업데이트
+            </button>
+        </h2>
+        <div id="collapseDataUpdate" class="accordion-collapse collapse show"
+             data-bs-parent="#examFilter">
+            <div class="accordion-body pb-2" hx-boost="true">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_leet_create  }}">LEET 등록</a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ config.url_problem_update  }}">문제 업데이트</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef admin_page_list_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseAdminPageList"
+                    aria-expanded="true" aria-controls="collapseAdminPageList">
+                관리자 페이지 목록
+            </button>
+        </h2>
+        <div id="collapseAdminPageList" class="accordion-collapse collapse show"
+             data-bs-parent="#examFilter">
+            <div class="accordion-body pb-2">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" target="#admin" href="{{ config.url_admin_leet_list }}">시험 목록</a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" target="#admin" href="{{ config.url_admin_problem_list }}">문제 목록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef exam_list %}
+    <article class="table-responsive">
+        <table class="table table-striped align-middle m-0" hx-push-url="true">
+            <thead>
+                <tr class="text-center table-warning align-middle">
+                    <th class="text-primary text-nowrap">ID</th>
+                    <th class="text-primary text-nowrap">연도</th>
+                    <th class="text-primary text-nowrap">시험</th>
+                    <th class="text-primary text-nowrap">문제 개수</th>
+                    <th class="text-primary text-nowrap">이미지 개수</th>
+                    <th class="text-primary text-nowrap">활성</th>
+                    <th class="text-primary text-nowrap">합격 예측</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for obj in leet_context.page_obj %}
+                    <tr class="text-center cursor-pointer">
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_official_detail_url }}" aria-label="ID">
+                            {{ obj.id }}
+                        </td>
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_official_detail_url }}" aria-label="연도">
+                            {{ obj.get_year_display }}
+                        </td>
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_official_detail_url }}" aria-label="시험">
+                            {{ obj.exam_name }}
+                        </td>
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_official_detail_url }}" aria-label="문제 개수">
+                            {{ obj.problems.count }} / {{ obj.updated_problem_count }}
+                        </td>
+                        <td class="text-nowrap" hx-get="{{ obj.get_admin_official_detail_url }}" aria-label="이미지 개수">
+                            {{ obj.image_problem_count }}
+                        </td>
+                        <td class="text-nowrap" aria-label="활성">
+                            <form class="d-flex justify-content-center"
+                                  hx-trigger="change" hx-swap="none"
+                                  hx-post="{{ obj.get_admin_leet_active_url }}">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_active" value="true"
+                                           aria-label="활성"{% if obj.is_active %} checked{% endif %}>
+                                </div>
+                            </form>
+                        </td>
+                        <td class="text-nowrap" aria-label="합격 예측">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="true" disabled
+                                       aria-label="활성"{% if obj.predict_leet.is_active %} checked{% endif %}>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td class="text-center text-nowrap px-2" colspan="8">자료가 없습니다.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </article>
+
+    {% include 'a_leet/snippets/pagination.html' with page_obj=leet_context.page_obj page_range=leet_context.page_range header='exam_list' %}
+{% endpartialdef %}

@@ -1,0 +1,101 @@
+{% load psat_filter %}
+{% load humanize %}
+
+<article class="table-responsive htmx-fade-in htmx-fade-out">
+    <table class="table table-bordered table-striped align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap td-left-no-border" rowspan="2">ID</th>
+                <th class="text-primary text-nowrap" rowspan="2">등수</th>
+                <th class="text-primary text-nowrap" rowspan="2">이름<hr class="m-0"/>(수험번호)</th>
+                <th class="text-primary text-nowrap" rowspan="2">1지망<hr class="m-0"/>2지망</th>
+                <th class="text-primary text-nowrap" rowspan="2">출신대학<hr class="m-0"/>전공</th>
+                <th class="text-primary text-nowrap" rowspan="2">학점(GPA)<hr class="m-0"/>공인 영어성적</th>
+
+                <th class="text-primary text-nowrap" colspan="4">총점</th>
+                <th class="text-primary text-nowrap" colspan="4">언어이해</th>
+                <th class="text-primary text-nowrap td-right-no-border" colspan="4">추리논증</th>
+                <th class="text-primary text-nowrap" rowspan="2">등록 및<br/>답안 제출<br/>일시</th>
+                <th class="text-primary text-nowrap" rowspan="2">제출<br/>답안<br/>개수</th>
+                <th class="text-primary text-nowrap" rowspan="2">필터링<br/>여부</th>
+{#                <th class="text-primary text-nowrap td-right-no-border" rowspan="2">프라임ID</th>#}
+            </tr>
+
+            <tr class="text-center table-warning align-middle">
+                {% for _ in '전12' %}
+                    <th class="text-primary text-nowrap td-right-no-border">점수</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">전체<br/>석차</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">1지망<br/>석차</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">2지망<br/>석차</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in catalog_data.page_obj %}
+                <tr class="text-center small">
+                    <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
+                    <td class="text-nowrap">{{ obj.stat_data.sum.rank_info.rank.integer|default:'' }}</td>
+{#                    <td class="text-nowrap">{{ obj.rank_sum|default:'' }}</td>#}
+                    <td class="text-nowrap">
+                        <a href="{{ obj.get_admin_predict_student_detail_url }}" target="score_print">
+                            {{ obj.name }}<hr class="m-0"/>({{ obj.serial }})
+                        </a>
+                    </td>
+                    <td class="text-nowrap">
+                        {{ obj.aspiration_1|default:'' }}
+                        {% if obj.participants_1 %}({{ obj.participants_1 }}명){% endif %}
+                            <hr class="m-0"/>
+                        {{ obj.aspiration_2|default:'' }}
+                        {% if obj.participants_2 %}({{ obj.participants_2 }}명){% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        {% if obj.school or obj.major %}
+                            {{ obj.school|default:'' }}<hr class="m-0"/>{{ obj.major }}
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        {% if obj.gpa or obj.gpa_type or obj.english or ob.english_type %}
+                            {{ obj.gpa }} / {{ obj.gpa_type }}
+                            <hr class="m-0"/>
+                            {{ obj.english }} / {{ obj.english_type }}
+                        {% endif %}
+                    </td>
+
+                    {% for stat in obj.stat_data.values %}
+                        <td class="text-nowrap td-right-no-border">
+                            <span class="text-primary fw-bold">{{ stat.score|floatformat:1 }}</span><br/>
+                            {{ stat.raw_score|floatformat:0 }}
+                        </td>
+                        {% for rank in stat.rank_info.values %}
+                            <td class="text-nowrap td-left-no-border td-right-no-border">
+                                {% if rank.integer and rank.ratio %}
+                                    <span class="text-primary fw-bold">{{ rank.ratio }}</span><br/>
+                                    {{ rank.integer }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    {% endfor %}
+
+                    <td class="text-nowrap align-top">
+                        {{ obj.created_at|date:'n/j G:i' }}<br/>
+                        {{ obj.latest_answer_time|date:'n/j G:i' }}
+                    </td>
+                    <td class="text-nowrap">{{ obj.answer_count }}</td>
+                    <td class="text-nowrap">
+                        <div class="form-check form-switch d-flex justify-content-center">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="true" disabled aria-label="활성"
+                                   {% if obj.is_filtered %}checked{% endif %}>
+                        </div>
+                    </td>
+{#                    <td class="text-nowrap td-right-no-border">{{ obj.prime_id }}</td>#}
+                </tr>
+            {% empty %}
+                <tr class="text-center">
+                    <td class="text-nowrap" colspan="31">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% include 'a_prime/snippets/pagination.html' with page_obj=catalog_data.page_obj page_range=catalog_data.page_range header=catalog_data.header %}

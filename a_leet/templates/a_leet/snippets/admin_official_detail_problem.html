@@ -1,0 +1,79 @@
+{% load crispy_forms_field %}
+
+<section class="section" aria-label="문제 목록">
+    <div class="row">
+        <div class="col-12">
+            <div id="problemCard" class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
+                <div class="card-header">
+                    {{ leet.full_reference }}
+                    {% if keyword %}(검색어: {{ keyword }}){% endif %}
+                </div>
+
+                <div class="card-body">
+                    <div class="row flex-column flex-md-row-reverse">
+                        <div id="problemFilter"
+                             class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
+                            {% partial problem_filter %}
+                        </div>
+
+                        <div id="problemContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
+                            {% include 'a_leet/problem_list_content.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% partialdef problem_filter %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                    aria-expanded="true" aria-controls="collapseOne">
+                <i class="fa-solid fa-fw fa-filter me-1"></i>
+                문제 필터
+            </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show"
+             data-bs-parent="#problemFilter">
+            <div class="accordion-body pb-2">
+                <form class="row g-2 align-items-center justify-content-center" hx-trigger="change"
+                      hx-get="{{ request.path }}">
+                    <input id="id_data" type="text" name="keyword"
+                           value="{{ keyword }}" hidden title="키워드를 입력하세요.">
+                    {% for field in form %}
+                        <div class="col-6 col-md-12 col-lg-6">
+                            {% if field.errors %}
+                                {% crispy_field field 'class' 'form-select is-invalid' %}
+                            {% else %}
+                                {% if field.value == None or field.value == '' %}
+                                    {% crispy_field field 'class' 'form-select' %}
+                                {% else %}
+                                    {% crispy_field field 'class' 'form-select option-selected' %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a type="button" class="btn btn-secondary fw-bold col-12" hx-boost="true"
+                           hx-push-url="{{ request.path }}"
+                           href="{{ request.path }}?keyword={{ keyword }}">
+                            <i class="fa-solid fa-fw fa-filter-circle-xmark"></i>
+                            필터 제거
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a type="button" class="btn btn-success fw-bold col-12" hx-boost="true"
+                           hx-push-url="{{ request.path }}"
+                           href="{{ request.path }}">
+                            <i class="fa-solid fa-fw fa-layer-group"></i>
+                            전체 문제
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}

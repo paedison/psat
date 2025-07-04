@@ -1,0 +1,59 @@
+<div role="button" aria-label="answer-button">
+    <form class="m-1 answer-group" aria-label="Answer Button">
+        <input type="hidden" name="icon_id" value="#leetAnswer{{ problem.id }}" aria-label="Input ID"/>
+        <input type="hidden" name="problem_id" value="{{ problem.id }}" aria-label="Problem ID"/>
+
+        {% for i in '12345' %}
+            <input type="radio" class="btn-check" name="answer" id="answer{{ i }}" value="{{ i }}">
+            <label class="btn btn-circle btn-outline-success btn-sm fs-6 m-0" for="answer{{ i }}">
+                {{ i }}
+            </label>
+        {% endfor %}
+
+        {% if user.is_authenticated %}
+            <a class="btn btn-circle btn-success btn-sm fs-6"
+               hx-post="{{ problem.get_solve_url }}"
+               hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                <i class="fa-solid fa-check"></i>
+            </a>
+        {% else %}
+            <a hx-get="{% url 'account_login_modal' %}" href=""
+               hx-target="#modalContainer" hx-trigger="click" hx-swap="innerHTML"
+               data-bs-toggle="modal" data-bs-target="#modalContainer">
+                <button class="btn btn-circle btn-success btn-sm fs-6">
+                    <i class="fa-solid fa-check"></i>
+                </button>
+            </a>
+        {% endif %}
+    </form>
+</div>
+
+
+{######## partials ########}
+
+{% partialdef answer_modal %} {# answer_modal partial #}
+    {% #modal header='정답 확인' %}
+        <input id="solve_answer" type="text" name="answer" value="{{ answer }}"
+               hidden aria-label="Answer"/>
+        {% if is_correct is None %}
+            <h5 class="modal-title fw-bold text-danger">
+                정답을 선택해주세요.
+            </h5>
+        {% else %}
+            <h5 class="modal-title mx-auto fw-bold"
+                hx-post="{% url 'leet:custom_update' 'solve' problem_id %}"
+                hx-include="#solve_answer" hx-trigger="load"
+                hx-target="#leetSolve{{ problem_id }}" hx-swap="innerHTML swap:0.25s">
+                {% if is_correct %}
+                    <span class="text-success">정답입니다.</span>
+                {% else %}
+                    <span class="text-danger">오답입니다.</span>
+                {% endif %}
+            </h5>
+            {% if not is_correct %}
+                <p class="text-secondary small">다시 풀어보세요.</p>
+            {% endif %}
+        {% endif %}
+    {% /modal %}
+{% endpartialdef answer_modal %}

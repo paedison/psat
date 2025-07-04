@@ -1,0 +1,25 @@
+<section class="section" aria-label="공식 정답">
+    <div class="row">
+        <div class="col-12">
+            <div id="problemCard" class="card" hx-swap="innerHTML swap:0.25s">
+                <div class="card-header">공식 정답</div>
+                <div class="card-body">
+                    <nav>
+                        <div class="nav nav-tabs nav-tabs-colored" id="scoreAnswerOfficialTab" role="tablist">
+                            {% for answer_official in answer_official_context.values %}
+                                {% #nav_tab prefix='AnswerOfficial' id=answer_official.id %}{{ answer_official.title }}{% /nav_tab %}
+                            {% endfor %}
+                        </div>
+                    </nav>
+                    <div id="scoreAnswerOfficialContent" class="tab-content">
+                        {% for answer_official in answer_official_context.values %}
+                            {% #nav_content prefix='AnswerOfficial' id=answer_official.id %}
+                                {% include 'a_leet/snippets/admin_detail_answer_list.html' with answers=answer_official.page_obj %}
+                            {% /nav_content %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

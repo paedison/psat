@@ -1,0 +1,287 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+
+{% block main %}
+    {% include 'snippets/page_title.html' %}
+
+    <section class="section">
+        <div class="row">
+            <article class="col-xxl-8">
+                <problem id="containerProblem" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-body">
+                        <div class="card-title mb-0 row">
+                            <div class="d-flex align-items-center fs-6">
+                                <div class="d-flex align-items-center">
+                                    {% include 'a_leet/snippets/navigation_container.html' %}
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center fs-6">
+                                <div class="text-nowrap me-auto">
+                                    {% include 'a_leet/snippets/custom_icons.html' %}
+                                </div>
+                                <div class="ms-auto justify-content-end">
+                                    {% include 'a_leet/snippets/solve_container.html' %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="problemDetail" class="htmx-fade-in htmx-fade-out">
+                            {% if problem.img_dict.alt == 'Preparing Image' %}
+                                <div class="border-top pt-2">
+                                    <div class="d-flex">
+                                        <h6 class="lh-base text-nowrap me-2 fw-bold text-primary">
+                                            문&nbsp;{{ problem.number|add_space }}.
+                                        </h6>
+                                        <h6 class="lh-base fw-bold text-secondary">
+                                            {{ problem.question }}
+                                        </h6>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="d-lg-none">
+                                {% with annotate_type='normal' problem_img=problem.img_normal %}
+                                    {% partial container_image %}
+                                {% endwith %}
+                            </div>
+
+                            <div class="d-none d-lg-block">
+                                {% with annotate_type='wide' problem_img=problem.img_wide %}
+                                    {% partial container_image %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </problem>
+            </article>
+
+            <div class="col-xxl-4">
+                <div class="row">
+                    <div class="col-md-6 col-xxl-12">{% partial container_memo %}</div>
+                    <div class="col-md-6 col-xxl-12">{% partial container_tag %}</div>
+                </div>
+            </div>
+        </div>
+{#        <div class="row">#}
+{#            <div class="col-12">{% partial container_comment %}</div>#}
+{#        </div>#}
+    </section>
+
+    <div id="modalContainerPsat" class="modal fade htmx-fade-in htmx-fade-out" style="display: none"
+         aria-hidden="true" tabindex="-1" aria-labelledby="modalContainerLabel">
+        {% partial modal_image %}
+    </div><!-- Modal Container: Problem Image -->
+{% endblock main %}
+
+{% partialdef drawing_button %}
+    <label class="switch">
+      <input type="checkbox" id="{{ annotate_type }}{{ property|title }}Btn">
+      <span class="slider slider-drawing"></span>
+    </label>
+    <span id="{{ annotate_type }}{{ property|title }}Status" class="fw-bold {{ property|title }}-btn me-2">
+        {{ button_name }}
+    </span>
+{% endpartialdef drawing_button %}
+
+{% partialdef container_image %}
+    {% if user.is_admin %}
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="switch-group">
+                {% with property='drawing' button_name='필기' %}{% partial drawing_button %}{% endwith %}
+                {% with property='line' button_name='직선' %}{% partial drawing_button %}{% endwith %}
+                {% with property='highlighter' button_name='형광펜' %}{% partial drawing_button %}{% endwith %}
+                {% with property='eraser' button_name='지우개' %}{% partial drawing_button %}{% endwith %}
+            </div>
+            <div class="color-picker" role="group">
+                <button class="color-btn color-btn-black {{ annotate_type }}-color-btn active" data-color="black"></button>
+                <button class="color-btn color-btn-red {{ annotate_type }}-color-btn" data-color="red"></button>
+                <button class="color-btn color-btn-blue {{ annotate_type }}-color-btn" data-color="blue"></button>
+                <button class="color-btn color-btn-green {{ annotate_type }}-color-btn" data-color="green"></button>
+                <button class="color-btn color-btn-yellow {{ annotate_type }}-color-btn" data-color="yellow"></button>
+            </div>
+            <div class="btn-group" role="group">
+                <button id="{{ annotate_type }}UndoBtn" class="btn btn-outline-success"
+                        data-bs-toggle="tooltip" data-bs-title="되돌리기">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+                <button id="{{ annotate_type }}RedoBtn" class="btn btn-outline-success"
+                        data-bs-toggle="tooltip" data-bs-title="되돌리기 취소">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button id="{{ annotate_type }}LoadBtn" class="btn btn-outline-success"
+                        data-bs-toggle="tooltip" data-bs-title="불러오기">
+                    <i class="fa-solid fa-folder-open"></i>
+                </button>
+                <button id="{{ annotate_type }}SaveBtn" class="btn btn-outline-success"
+                        data-bs-toggle="tooltip" data-bs-title="저장">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                </button>
+                <button id="{{ annotate_type }}ClearBtn" class="btn btn-danger"
+                        data-bs-toggle="tooltip" data-bs-title="전체 삭제">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="position-relative">
+        <img id="{{ annotate_type }}Image" class="img-fluid" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
+        <canvas id="{{ annotate_type }}Canvas" class="position-absolute top-0 start-0"
+                style="z-index: 10; touch-action: none" data-annotate-url="{{ problem.get_annotate_url }}"></canvas>
+    </div>
+{% endpartialdef %}
+
+{% partialdef container_memo %}
+    <div id="containerMemo" class="card htmx-fade-in htmx-fade-out">
+        <div class="card-body">
+            <div id="accordionMemo" class="accordion accordion-flush">
+                <div class="accordion-item">
+                    <h2 id="headingMemo" class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseMemo"
+                                aria-expanded="true" aria-controls="collapseMemo">
+                            <span class="badge bg-warning me-2">{{ icon_memo.white|safe }} 메모</span>
+                            <div class="small text-warning fw-bold">
+                                나만 볼 수 있는 메모를 남겨보세요.
+                            </div>
+                        </button>
+                    </h2>
+                    <hr class="border-secondary mt-0">
+                    <div id="collapseMemo" class="accordion-collapse collapse show"
+                         aria-labelledby="headingMemo" data-bs-parent="#accordionMemo">
+                        <div id="collapseMemoContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseMemoContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+                                {% include 'a_leet/snippets/memo_container.html' %}
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef container_tag %}
+    <div id="containerTag" class="card htmx-fade-in htmx-fade-out">
+        <div class="card-body">
+            <div id="accordionTag" class="accordion accordion-flush">
+                <div class="accordion-item">
+                    <h2 id="headingTag" class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseTag"
+                                aria-expanded="true" aria-controls="collapseTag">
+                            <span class="badge bg-primary me-2">{{ icon_tag.white|safe }} 태그</span>
+                            <div class="small text-primary fw-bold">
+                                나만 볼 수 있는 태그를 남겨보세요.
+                            </div>
+                        </button>
+                    </h2>
+                    <hr class="border-secondary mt-0">
+                    <div id="collapseTag" class="accordion-collapse collapse show"
+                         aria-labelledby="headingTag" data-bs-parent="#accordionTag">
+                        <div id="collapseTagContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseTagContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+                                <div class="tw-text-sm tw-mb-2 tw-px-2">
+                                    <input id="problemTag{{ problem.id }}"
+                                           placeholder='태그를 입력해주세요' type="hidden"
+                                           data-tag-target="#psatTag{{ problem.id }}"
+                                           data-tagify data-action="{{ problem.get_tag_url }}"
+                                           data-tags="{{ tags|join:',' }}">
+                                </div>
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef container_comment %}
+    <div id="containerComment" class="card htmx-fade-in htmx-fade-out">
+        <div class="card-body">
+            <div id="accordionComment" class="accordion accordion-flush">
+                <div class="accordion-item">
+                    <h2 id="headingComment" class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseComment"
+                                aria-expanded="true" aria-controls="collapseComment">
+                            <span class="badge bg-success me-2">{{ icon_question.white|safe }} 질문</span>
+                            <div class="small text-success fw-bold">
+                                문제에 관한 질문이나 댓글을 남겨보세요.
+                            </div>
+                        </button>
+                    </h2>
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Reload' %}"
+                                    hx-target="#collapseCommentContent" hx-swap="innerHTL swap:0.25s"
+                                    hx-get="">
+{#                                    hx-get="{% url 'psat:comment_container' problem.id %}">#}
+                                <i class="fa-solid fa-rotate-right"></i> 새로고침
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Comment' %}"
+                                    hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                    hx-get="">
+{#                                    hx-get="{% url 'psat:comment_create' problem.id %}">#}
+                                {{ icon_question.filter|safe }} 질문하기
+                            </button>
+                    {#        <button class="btn btn-sm btn-outline-success"#}
+                    {#                hx-get="{% url 'psat:comment_container' problem_id %}">#}
+                    {#            <i class="fa-regular fa-window-maximize"></i>#}
+                    {#            새 창#}
+                    {#        </button>#}
+                        </div>
+                    </div>
+                    <hr class="border-secondary"/>
+                    <div id="collapseComment" class="accordion-collapse collapse show"
+                         aria-labelledby="headingComment" data-bs-parent="#accordionComment">
+                        <div id="collapseCommentContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseCommentContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+{#                                <div hx-trigger="load" hx-get="{% url 'psat:comment_container' problem.id %}"></div>#}
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef modal_image %}
+    {% #modal header=problem.full_reference size="modal-xl" %}
+        {% partialdef problem_image inline %}
+            <div class="d-flex d-lg-none justify-content-center">
+                <img class="mw-100" alt="{{ problem.img_normal.alt }}" src="{{ problem.img_normal.src }}"/>
+            </div>
+            <div class="d-none d-lg-flex justify-content-center">
+                <img class="mw-100" alt="{{ problem.img_wide.alt }}" src="{{ problem.img_wide.src }}"/>
+            </div>
+        {% endpartialdef problem_image %}
+    {% /modal %}
+{% endpartialdef %}
+
+{% partialdef need_login %}
+    <ul class="list-group">
+        <li class="list-group-item">
+            <a class="text-secondary" hx-target="body"
+               href="{% url 'account_login' %}" hx-boost="true"
+               hx-swap="innerHTML swap:0.25s" hx-trigger="click">
+                {% trans 'Please login first.' %}
+            </a>
+        </li>
+    </ul>
+{% endpartialdef %}
+
+{% block page_script %}
+{% endblock page_script %}

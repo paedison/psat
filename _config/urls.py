@@ -12,6 +12,7 @@ urlpatterns = [
 
     path('board/', include('a_board.urls')),  # Board
     path('psat/', include('a_psat.urls')),  # PSAT
+    path('leet/', include('a_leet.urls')),  # LEET
 
     path('psat_old/', include('psat.urls')),  # PSAT(Old)
     path('schedule/', include('schedule.urls')),  # Schedule

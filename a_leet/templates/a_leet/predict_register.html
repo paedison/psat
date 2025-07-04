@@ -1,0 +1,86 @@
+{% extends 'a_leet/_leet_base.html' %}
+{% load crispy_forms_field %}
+
+{% block main_content %}
+    <section class="section htmx-fade-in htmx-fade-out"
+             hx-target="#main" hx-swap="innerHTML swap:0.25s show:window:top">
+        <div class="row">
+            <div class="col-lg-6" aria-label="{{ title }}">
+                <div id="examCard" class="card">
+                    <div id="examCardHeader" class="card-header">{{ title }}</div>
+
+                    <div class="card-body htmx-fade-in htmx-fade-out">
+                        <form class="row g-3" enctype="multipart/form-data" method="post">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
+
+                            {% for _ in '123' %}
+                                {% cycle form.serial form.name form.password as field silent %}
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        {{ field }}
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    </div>
+                                    {% if field.errors %}{{ field.errors }}{% endif %}
+                                </div>
+                            {% endfor %}
+
+                            {% with field_1=form.aspiration_1 field_2=form.aspiration_2 %}{% partial form_field %}{% endwith %}
+                            {% with field_1=form.school field_2=form.major %}{% partial form_field %}{% endwith %}
+                            {% with field_1=form.gpa field_2=form.gpa_type %}{% partial form_field %}{% endwith %}
+                            {% with field_1=form.english field_2=form.english_type %}{% partial form_field %}{% endwith %}
+
+                            <div class="d-flex justify-content-end mt-3">
+                                <div class="btn-group" role="group" aria-label="취소·등록 버튼">
+                                    <a type="button" class="btn btn-outline-danger" hx-boost="true"
+                                       href="{{ config.url_list }}">
+                                        취소
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        등록
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div>
+                            <span class="badge bg-success"><i class="fa-regular fa-circle-check"></i> 참고</span><br/>
+                            <ol class="text-success small fw-bold m-0">
+                                <li class="text-danger">입력하신 수험정보는 변경 및 삭제가 불가하니 주의하시기 바랍니다.</li>
+                                <li>프라임법학원 ID를 입력해주시면 쿠폰 이벤트에 자동 응모됩니다.</li>
+                                <li>쿠폰 이벤트에 관한 보다 자세한 내용은
+                                    <a class="fw-bold text-primary" target="_blank"
+                                       href="https://renew.primeedunet.com/leet/examInfo?tab=academy_notice&seq=40079">
+                                        여기</a>를 참고해주세요.
+                                </li>
+                                <li>수험정보 등록시 오류가 발생한 경우에는 아래 연락처로 문의해주세요.</li>
+                                <li>
+                                    카카오톡 오픈프로필:
+                                    <a href="https://open.kakao.com/me/paedison" target="_blank">
+                                        https://open.kakao.com/me/paedison
+                                    </a>
+                                </li>
+                                <li>구글 이메일: <a href="mailto:paedison@gmail.com">paedison@gmail.com</a> </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main_content %}
+
+{% partialdef form_field %}
+    <div class="col-12">
+        <div class="input-group">
+            {{ field_1 }}
+            {{ field_2 }}
+        </div>
+        {% if field_1.errors or field_2.errors %}
+            <div class="px-2 pt-1">
+                {% if field_1.errors %}{{ field_1.errors }}{% endif %}
+                {% if field_2.errors %}{{ field_2.errors }}{% endif %}
+            </div>
+        {% endif %}
+    </div>
+{% endpartialdef %}

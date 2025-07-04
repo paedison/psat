@@ -1,0 +1,69 @@
+{% load humanize %}
+
+<article class="table-responsive">
+    <table class="table table-bordered table-striped align-middle m-0">
+        <thead>
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap td-left-no-border" rowspan="2">지망 대학</th>
+                <th class="text-primary text-nowrap" colspan="2">응시 인원</th>
+                <th class="text-primary text-nowrap" colspan="5">총점</th>
+                <th class="text-primary text-nowrap" colspan="5">언어이해</th>
+                <th class="text-primary text-nowrap td-right-no-border" colspan="5">추리논증</th>
+            </tr>
+
+            <tr class="text-center table-warning align-middle">
+                <th class="text-primary text-nowrap td-right-no-border">전체</th>
+                <th class="text-primary text-nowrap td-left-no-border">1지망<br/>2지망</th>
+                {% for _ in '총언추' %}
+                    <th class="text-primary text-nowrap td-right-no-border">최고<br/>점수</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>10%</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>25%</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">상위<br/>50%</th>
+                    <th class="text-primary text-nowrap td-left-no-border td-right-no-border">평균<br/>점수</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if statistics_data.all %}
+                {% with obj=statistics_data.all %}{% partial aspiration_stat_tr %}{% endwith %}
+                <tr>
+                    <td class="td-no-border" colspan="19"></td>
+                </tr>
+            {% endif %}
+            {% for obj in statistics_data.page_obj %}
+                {% partial aspiration_stat_tr %}
+            {% empty %}
+                <tr class="text-center small">
+                    <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+
+{% include 'a_prime/snippets/pagination.html' with page_obj=statistics_data.page_obj page_range=statistics_data.page_range header=statistics_data.header %}
+
+{% partialdef aspiration_stat_tr %}
+    <tr class="text-center small">
+        <th class="text-nowrap td-left-no-border">{{ obj.aspiration }}</th>
+
+        <td class="text-nowrap td-right-no-border">
+            {{ obj.members.participants|default:''|intcomma }}
+        </td>
+        <td class="text-nowrap td-left-no-border">
+            {% if obj.members.participants_1 or obj.members.participants_2 %}
+                {{ obj.members.participants_1|default:0|intcomma }}<br/>
+                {{ obj.members.participants_2|default:0|intcomma }}
+            {% endif %}
+        </td>
+
+        {% for stat_data in obj.stat_data.values %}
+            {% for stat in stat_data.values %}
+                <td class="text-nowrap {% if not forloop.first %}td-left-no-border {% endif %}td-right-no-border">
+                    <span class="text-primary fw-bold">{{ stat.score|default:''|floatformat:1 }}</span><br/>
+                    {{ stat.raw_score|default:'' }}
+                </td>
+            {% endfor %}
+        {% endfor %}
+    </tr>
+{% endpartialdef %}
