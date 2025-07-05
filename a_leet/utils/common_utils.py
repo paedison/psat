@@ -68,6 +68,8 @@ class ModelData:
         self.ac_low = models.PredictAnswerCountLowRank
         self.ac_model_set = {'all': self.ac_all, 'top': self.ac_top, 'mid': self.ac_mid, 'low': self.ac_low}
 
+        self.aspirations = models.choices.get_aspirations()
+
 
 @dataclass(kw_only=True)
 class LeetData:
@@ -114,13 +116,13 @@ class LeetData:
 
     def get_time_schedule(self) -> dict:
         start_time = self.predict_leet.exam_started_at
-        exam_1_end_time = start_time + timedelta(minutes=70)  # 1교시 시험 종료 시각
-        exam_2_start_time = exam_1_end_time + timedelta(minutes=35)  # 2교시 시험 시작 시각
-        exam_2_end_time = exam_2_start_time + timedelta(minutes=125)  # 2교시 시험 종료 시각
+        subject_0_end_time = start_time + timedelta(minutes=70)  # 1교시 시험 종료 시각
+        subject_1_start_time = subject_0_end_time + timedelta(minutes=35)  # 2교시 시험 시작 시각
+        subject_2_end_time = subject_1_start_time + timedelta(minutes=125)  # 2교시 시험 종료 시각
         finish_time = self.predict_leet.exam_finished_at  # 3교시 시험 종료 시각
         return {
-            '언어': (start_time, exam_1_end_time),
-            '추리': (exam_2_start_time, exam_2_end_time),
+            '언어': (start_time, subject_0_end_time),
+            '추리': (subject_1_start_time, subject_2_end_time),
             '총점': (start_time, finish_time),
         }
 

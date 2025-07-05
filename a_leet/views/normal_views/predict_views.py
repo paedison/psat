@@ -45,8 +45,13 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
         context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
         return render(request, 'a_leet/redirect.html', context)
 
+    if current_time < leet.predict_leet.exam_started_at:
+        context = update_context_data(context, message='시험 시작 전입니다.', next_url=config.url_list)
+        return render(request, 'a_leet/redirect.html', context)
+
     if student is None:
         student = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)
+
     if not student:
         context = update_context_data(context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)
         return render(request, 'a_leet/redirect.html', context)
@@ -160,6 +165,11 @@ def predict_answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field
     leet = models.Leet.objects.filter(pk=pk).first()
     if not leet or not hasattr(leet, 'predict_leet') or not leet.predict_leet.is_active:
         context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
+        return render(request, 'a_leet/redirect.html', context)
+
+    config.url_detail = leet.get_predict_detail_url()
+    if config.current_time < leet.predict_leet.exam_started_at:
+        context = update_context_data(context, message='시험 시작 전입니다.', next_url=config.url_detail)
         return render(request, 'a_leet/redirect.html', context)
 
     answer_data = NormalAnswerConfirmData(_request=request, _leet=leet, _subject_field=subject_field)

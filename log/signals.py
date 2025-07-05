@@ -10,27 +10,30 @@ from .models import AccountLog
 
 
 def get_user_info(request):
-    user = request.user or None
-    session_key = request.COOKIES.get('sessionid')
-    url = urllib.parse.unquote(request.build_absolute_uri())
-    ip = request.META.get('REMOTE_ADDR')
-    return user, session_key, ip, url
-
+    if hasattr(request, 'user'):
+        user = request.user or None
+        session_key = request.COOKIES.get('sessionid')
+        url = urllib.parse.unquote(request.build_absolute_uri())
+        ip = request.META.get('REMOTE_ADDR')
+        return user, session_key, ip, url
+    return None, None, None, None
 
 @receiver(user_logged_in)
 def account_log_login(sender, user, request, **kwargs):
     user, session_key, ip, url = get_user_info(request)
-    log_content = f'Login User: {user.username}(User ID: {user.id} IP: {ip})'
-    account_log = AccountLog(user=user, session_key=session_key, log_url=url, log_content=log_content)
-    account_log.save()
+    if user:
+        log_content = f'Login User: {user.username}(User ID: {user.id} IP: {ip})'
+        account_log = AccountLog(user=user, session_key=session_key, log_url=url, log_content=log_content)
+        account_log.save()
 
 
 @receiver(user_logged_out)
 def account_log_logout(sender, user, request, **kwargs):
     user, session_key, ip, url = get_user_info(request)
-    log_content = f'Logout User: {user.username}(User ID: {user.id} IP: {ip})'
-    account_log = AccountLog(user=user, session_key=session_key, log_url=url, log_content=log_content)
-    account_log.save()
+    if user:
+        log_content = f'Logout User: {user.username}(User ID: {user.id} IP: {ip})'
+        account_log = AccountLog(user=user, session_key=session_key, log_url=url, log_content=log_content)
+        account_log.save()
 
 
 @receiver(user_login_failed)

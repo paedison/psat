@@ -355,15 +355,16 @@ class NormalDetailStatisticsData:
 
     def get_participants(self, stat_type: str, is_filtered: bool, sub: str):
         df = self._participants_df
-        if stat_type != 'all':
-            aspiration = getattr(self._student, stat_type)
-            if aspiration:
-                df = df[df[stat_type] == aspiration]
-        if is_filtered:
-            df = df[df['is_filtered'] is True]
-        if sub == '총점':
-            return min([df[df['sub'] == _sub].shape[0] for _sub in self._subject_vars])
-        return df[df['sub'] == sub].shape[0]
+        if not df.empty:
+            if stat_type != 'all':
+                aspiration = getattr(self._student, stat_type)
+                if aspiration:
+                    df = df[df[stat_type] == aspiration]
+            if is_filtered:
+                df = df[df['is_filtered'] is True]
+            if sub == '총점':
+                return min([df[df['sub'] == _sub].shape[0] for _sub in self._subject_vars])
+            return df[df['sub'] == sub].shape[0]
 
     def get_score_np(self, stat_type: str, is_filtered: bool, fld: str):
         df = self._score_df
