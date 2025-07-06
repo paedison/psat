@@ -20,6 +20,7 @@ google_sheet.json
 /score/management/commands/temporary.csv
 temporary.csv
 /a_psat/data/selected_problems/
+pytest.ini
 
 ### Django ###
 *.log

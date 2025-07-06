@@ -135,7 +135,7 @@ def predict_answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: 
     if not student:
         context = update_context_data(context, message='수험 정보를 입력해주세요.', next_url=config.url_list)
         return render(request, 'a_leet/redirect.html', context)
-    
+
     config.url_detail = leet.get_predict_detail_url()
     if config.current_time < leet.predict_leet.exam_started_at:
         context = update_context_data(context, message='시험 시작 전입니다.', next_url=config.url_detail)
@@ -165,6 +165,11 @@ def predict_answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field
     leet = models.Leet.objects.filter(pk=pk).first()
     if not leet or not hasattr(leet, 'predict_leet') or not leet.predict_leet.is_active:
         context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
+        return render(request, 'a_leet/redirect.html', context)
+
+    student: models.PredictStudent = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)
+    if not student:
+        context = update_context_data(context, message='수험 정보를 입력해주세요.', next_url=config.url_list)
         return render(request, 'a_leet/redirect.html', context)
 
     config.url_detail = leet.get_predict_detail_url()
