@@ -61,7 +61,7 @@ class NormalDetailData:
     def __post_init__(self):
         # 외부 클래스 호출
         self.current_time = timezone.now()
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
 
         # 내부 변수 정의
         self._schedule = models.StudyCurriculumSchedule.objects.open_curriculum_schedule(
@@ -299,7 +299,7 @@ class AdminListData:
 
     def __post_init__(self):
         # 외부 클래스 호출
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
 
         # 외부 호출 변수 정의
         self.sub_title = request_data.get_sub_title()
@@ -338,7 +338,7 @@ class AdminDetailData:
 
     def __post_init__(self):
         # 외부 클래스 호출
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
 
         # 외부 호출 변수 정의
         self.view_type = request_data.view_type
@@ -488,7 +488,7 @@ class AdminCreateCurriculumData:
 
     def __post_init__(self):
         # 외부 클래스 호출
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
 
         # 변수 정의
         self.view_type = request_data.view_type
@@ -898,7 +898,7 @@ class AdminUpdateData:
     update_target: models.StudyCategory | models.StudyCurriculum
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
         self.view_type = request_data.view_type
         self.qs_student = self.get_qs_student()
         self.qs_category_student = self.get_qs_category_student()

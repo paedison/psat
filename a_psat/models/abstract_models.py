@@ -139,6 +139,11 @@ class Score(models.Model):
     class Meta:
         abstract = True
 
+    def save(self, *args, **kwargs):
+        self.sum = sum(score for i in range(1, 4) if (score := getattr(self, f'subject_{i}')) is not None)
+        self.average = round(self.sum / 3, 1)
+        super().save(*args, **kwargs)
+
 
 class Rank(models.Model):
     subject_0 = models.IntegerField(null=True, blank=True, verbose_name='헌법')

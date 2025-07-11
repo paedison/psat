@@ -1,26 +1,19 @@
 __all__ = [
-    'NormalListData', 'NormalDetailData',
-    'NormalRegisterData', 'NormalAnswerProcessData',
     'AdminListData', 'AdminDetailData',
     'AdminCreateData', 'AdminUpdateData',
     'AdminExportExcelData',
 ]
 
-import json
 from collections import defaultdict
 from dataclasses import dataclass
-from dataclasses import field as dataclass_field
 
-import numpy as np
 import pandas as pd
 from django.db.models import Count, F, QuerySet, Window
 from django.db.models.functions import Rank
-from django.shortcuts import render, get_object_or_404, redirect
-from django_htmx.http import reswap
 
 from a_psat import models, forms
-from a_psat.utils.variables import RequestData, PsatData
-from common.utils import HtmxHttpRequest, get_paginator_context, update_context_data
+from a_psat.utils.variables import RequestData, SubjectVariants
+from common.utils import HtmxHttpRequest, get_paginator_context
 from common.utils.export_excel_methods import *
 from common.utils.modify_models_methods import *
 
@@ -47,537 +40,11 @@ class ModelData:
 
 
 @dataclass(kw_only=True)
-class StudentAnswerData:
-    psat_data: PsatData
-    student: models.PredictStudent
-    answer_data_set: dataclass_field(default_factory=dict)
-
-    def __post_init__(self):
-        self._predict_psat = self.psat_data.predict_psat
-        self._subject_vars = self.psat_data.subject_vars
-        self._subject_vars_avg = self.psat_data.subject_vars_avg
-        self._time_schedule = self.psat_data.time_schedule
-        self._subject_fields = self.psat_data.subject_fields
-
-        self.qs_student_answer = models.PredictAnswer.objects.filtered_by_psat_student(self.student)
-        self.is_confirmed_data = self.get_is_confirmed_data()
-
-    def get_student_score_list(self):
-        return [getattr(self.student.score, fld) for (_, fld, _, _) in self._subject_vars.values()]
-
-    def get_is_confirmed_data(self) -> dict[str, bool]:
-        is_confirmed_data = {sub: False for sub in self._subject_vars}
-        confirmed_sub_list = self.qs_student_answer.values_list('subject', flat=True).distinct()
-        for sub in confirmed_sub_list:
-            is_confirmed_data[sub] = True
-        is_confirmed_data['평균'] = all(is_confirmed_data.values())  # Add is_confirmed_data for '평균'
-        return is_confirmed_data
-
-    def get_statistics_data(self, stat_type: str, is_filtered: bool) -> dict:
-        participants_dict = self.get_participants_dict(stat_type, is_filtered)
-        score_np_dict = self.get_score_np_dict(stat_type, is_filtered)
-        answer_count_dict = self.get_answer_count_dict()
-
-        is_confirmed_for_average = []
-        stat_data = {}
-        for sub, (subject, fld, _, problem_count) in self._subject_vars_avg.items():
-            url_answer_input = self.student.psat.get_predict_answer_input_url(fld) if sub != '평균' else ''
-            answer_count = answer_count_dict[sub] if sub != '평균' else sum(answer_count_dict.values())
-            participants = 0
-            rank = student_score = max_score = top_score_10 = top_score_20 = avg_score = 0
-            if sub in participants_dict.keys():
-                scores = score_np_dict[fld]
-                participants = participants_dict[sub]
-                is_confirmed_for_average.append(True)
-                if self._predict_psat.is_answer_predict_opened:
-                    pass
-                if self._predict_psat.is_answer_official_opened:
-                    student_score = getattr(self.student.score, fld)
-                    if scores.any() and student_score:
-                        sorted_scores = np.sort(scores)[::-1]
-                        rank = int(np.where(sorted_scores == student_score)[0][0] + 1)
-                        max_score = to_float(np.max(scores))
-                        top_score_10 = to_float(np.percentile(scores, 90))
-                        top_score_20 = to_float(np.percentile(scores, 80))
-                        avg_score = to_float(np.mean(scores))
-            stat_data[sub] = {
-                'field': fld, 'sub': sub, 'subject': subject,
-                'start_time': self._time_schedule[sub][0],
-                'end_time': self._time_schedule[sub][1],
-
-                'participants': participants,
-                'is_confirmed': self.is_confirmed_data[sub],
-                'url_answer_input': url_answer_input,
-
-                'score_predict': 0,
-                'problem_count': problem_count,
-                'answer_count': answer_count,
-
-                'rank': rank, 'score': student_score, 'max_score': max_score,
-                'top_score_10': top_score_10, 'top_score_20': top_score_20, 'avg_score': avg_score,
-            }
-        return stat_data
-
-    def get_participants_dict(self, stat_type: str, is_filtered: bool) -> dict[str, int]:
-        qs_answer = models.PredictAnswer.objects.filtered_by_psat_student_and_stat_type(
-            self.student, stat_type, is_filtered)
-        participants_dict = {qs_a['problem__subject']: qs_a['participant_count'] for qs_a in qs_answer}
-        participants_dict['평균'] = participants_dict[min(participants_dict)] if participants_dict else 0
-        return participants_dict
-
-    def get_score_np_dict(self, stat_type: str, is_filtered: bool) -> dict[str, np.array]:
-        qs_score = models.PredictScore.objects.predict_filtered_scores_of_student(self.student, stat_type, is_filtered)
-        fields = self._subject_fields + ['average']
-        subject_dict = {fld: [] for fld in fields}
-
-        for row in qs_score:
-            for fld in fields:
-                subject_dict[fld].append(row[fld])
-
-        return {fld: np.array(scores) for fld, scores in subject_dict.items()}
-
-    def get_answer_count_dict(self) -> dict[str, int]:
-        answer_count_dict = {}
-        for sub, (subject, fld, _, problem_count) in self._subject_vars.items():
-            answer_list = self.answer_data_set.get(fld)
-            saved_answers = []
-            if answer_list:
-                saved_answers = [ans for ans in answer_list if ans]
-            answer_count_dict[sub] = max(self.student.answer_count.get(sub, 0), len(saved_answers))
-        return answer_count_dict
-
-
-@dataclass(kw_only=True)
-class ChartData:
-    statistics_context: dict
-    student: models.PredictStudent | None
-
-    def __post_init__(self):
-        psat_data = PsatData(psat=self.student.psat)
-
-        self._subject_vars = psat_data.subject_vars
-        self._student_score_list = self.get_student_score_list()
-
-    def get_student_score_list(self):
-        if self.student:
-            return [getattr(self.student.score, fld) for (_, fld, _, _) in self._subject_vars.values()]
-
-    def get_dict_stat_chart(self) -> dict:
-        chart_score = {
-            'all_avg': [], 'all_top_20': [], 'all_top_10': [], 'all_max': [],
-            'dep_avg': [], 'dep_top_20': [], 'dep_top_10': [], 'dep_max': [],
-        }
-        if self.student:
-            chart_score['my_score'] = self._student_score_list
-
-        for stat in self.statistics_context['all']['page_obj'].values():
-            chart_score['all_avg'].append(stat['avg_score'])
-            chart_score['all_top_20'].append(stat['top_score_20'])
-            chart_score['all_top_10'].append(stat['top_score_10'])
-            chart_score['all_max'].append(stat['max_score'])
-        for stat in self.statistics_context['department']['page_obj'].values():
-            chart_score['dep_avg'].append(stat['avg_score'])
-            chart_score['dep_top_20'].append(stat['top_score_20'])
-            chart_score['dep_top_10'].append(stat['top_score_10'])
-            chart_score['dep_max'].append(stat['max_score'])
-
-        score_list = [score for score in self._student_score_list if score is not None]
-        chart_score['min_score'] = (min(score_list) // 5) * 5 if score_list else 0
-        return chart_score
-
-    def get_dict_stat_frequency(self) -> dict:
-        score_frequency_list = models.PredictStudent.objects.average_scores_over(self.student.psat, 50)
-        scores = [round(score, 1) for score in score_frequency_list]
-        sorted_freq, target_bin = self.frequency_table_by_bin(scores)
-
-        score_label, score_data, score_color = [], [], []
-        for key, val in sorted_freq.items():
-            score_label.append(key)
-            score_data.append(val)
-            color = 'rgba(255, 99, 132, 0.5)' if key == target_bin else 'rgba(54, 162, 235, 0.5)'
-            score_color.append(color)
-
-        return {'score_data': score_data, 'score_label': score_label, 'score_color': score_color}
-
-    def frequency_table_by_bin(self, scores: list, bin_size: int = 5) -> tuple[dict, str | None]:
-        freq = defaultdict(int)
-        for score in scores:
-            bin_start = int((score // bin_size) * bin_size)
-            bin_end = bin_start + bin_size
-            bin_label = f'{bin_start}~{bin_end}'
-            freq[bin_label] += 1
-
-        # bin_start 기준으로 정렬
-        sorted_freq = dict(sorted(freq.items(), key=lambda x: int(x[0].split('~')[0])))
-
-        # 특정 점수의 구간 구하기
-        target_bin = None
-        if self.student and self.student.score.average:  # noqa
-            bin_start = int((self.student.score.average // bin_size) * bin_size)  # noqa
-            bin_end = bin_start + bin_size
-            target_bin = f'{bin_start}~{bin_end}'
-
-        return sorted_freq, target_bin
-
-
-@dataclass(kw_only=True)
-class NormalListData:
-    request: HtmxHttpRequest
-
-    def __post_init__(self):
-        self.qs_psat = self.get_qs_psat()
-
-    def get_qs_psat(self):
-        qs_psat = models.Psat.objects.predict_psat_active()
-        student_dict = {}
-        if self.request.user.is_authenticated:
-            qs_student = models.PredictStudent.objects.registered_psat_student(self.request.user, qs_psat)
-            student_dict = {qs_s.psat: qs_s for qs_s in qs_student}
-        for qs_p in qs_psat:
-            qs_p.student = student_dict.get(qs_p, None)
-        return qs_psat
-
-
-@dataclass(kw_only=True)
-class NormalDetailData:
-    request: HtmxHttpRequest
-    student: models.PredictStudent
-
-    def __post_init__(self):
-        request_data = RequestData(request=self.request)
-        psat_data = PsatData(psat=self.student.psat)
-        answer_data_set = get_input_answer_data_set(self.request, psat_data)
-
-        self._subject_vars = psat_data.subject_vars
-        self._student_answer_data = StudentAnswerData(
-            psat_data=psat_data, student=self.student, answer_data_set=answer_data_set)
-        self._qs_student_answer = self._student_answer_data.qs_student_answer
-
-        self.view_type = request_data.view_type
-        self.is_confirmed_data = self._student_answer_data.is_confirmed_data
-        self.total_statistics_context = self.get_normal_statistics_context(False)
-        self.filtered_statistics_context = self.get_normal_statistics_context(True)
-
-        self.chart_data = ChartData(statistics_context=self.total_statistics_context, student=self.student)
-
-    def get_normal_statistics_context(self, is_filtered: bool) -> dict:
-        if is_filtered and not self.student.is_filtered:
-            return {}
-
-        suffix = 'Filtered' if is_filtered else 'Total'
-        statistics_all = self._student_answer_data.get_statistics_data('all', is_filtered)
-        statistics_department = self._student_answer_data.get_statistics_data('department', is_filtered)
-        self.update_normal_score_predict(statistics_all)
-
-        return {
-            'all': {
-                'id': '0', 'title': '전체 기준',
-                'prefix': f'All{suffix}Score', 'page_obj': statistics_all,
-            },
-            'department': {
-                'id': '1', 'title': '직렬 기준',
-                'prefix': f'Department{suffix}Score', 'page_obj': statistics_department,
-            },
-        }
-
-    def update_normal_score_predict(self, statistics_all: dict) -> None:
-        score_predict = {sub: 0 for sub in self._subject_vars}
-        predict_correct_count_list = self._qs_student_answer.filter(predict_result=True).values(
-            'subject').annotate(correct_counts=Count('predict_result'))
-
-        psat_sum = 0
-        for entry in predict_correct_count_list:
-            score = 0
-            sub = entry['subject']
-            problem_count = self._subject_vars[sub][3]
-            if problem_count:
-                score = entry['correct_counts'] * 100 / problem_count
-
-            score_predict[sub] = score
-            psat_sum += score if sub != '헌법' else 0
-            statistics_all[sub]['score_predict'] = score
-        statistics_all['평균']['score_predict'] = round(psat_sum / 3, 1)
-
-    def get_normal_answer_context(self) -> dict:
-        subject_vars = self._subject_vars
-        context = {
-            sub: {
-                'id': str(idx), 'title': sub, 'subject': subject, 'field': fld,
-                'url_answer_input': self.student.psat.get_predict_answer_input_url(fld),
-                'is_confirmed': self.is_confirmed_data[sub],
-                'loop_list': get_loop_list(problem_count),
-                'page_obj': [],
-            }
-            for sub, (subject, fld, idx, problem_count) in subject_vars.items()
-        }
-
-        for line in self._qs_student_answer:
-            sub = line.problem.subject
-            ans_official = line.problem.answer
-            ans_student = line.answer
-            ans_predict = line.problem.predict_answer_count.answer_predict
-
-            line.no = line.problem.number
-            line.ans_official = ans_official
-            line.ans_official_circle = line.problem.get_answer_display
-
-            line.ans_student = ans_student
-            line.field = subject_vars[sub][1]
-
-            line.ans_predict = ans_predict
-            line.rate_accuracy = line.problem.predict_answer_count.get_answer_predict_rate()
-
-            line.rate_correct = line.problem.predict_answer_count.get_answer_rate(ans_official)
-            line.rate_correct_top = line.problem.predict_answer_count_top_rank.get_answer_rate(ans_official)
-            line.rate_correct_mid = line.problem.predict_answer_count_mid_rank.get_answer_rate(ans_official)
-            line.rate_correct_low = line.problem.predict_answer_count_low_rank.get_answer_rate(ans_official)
-            if line.rate_correct_top is not None and line.rate_correct_low is not None:
-                line.rate_gap = line.rate_correct_top - line.rate_correct_low
-            else:
-                line.rate_gap = 0
-
-            line.rate_selection = line.problem.predict_answer_count.get_answer_rate(ans_student)
-            line.rate_selection_top = line.problem.predict_answer_count_top_rank.get_answer_rate(ans_student)
-            line.rate_selection_mid = line.problem.predict_answer_count_mid_rank.get_answer_rate(ans_student)
-            line.rate_selection_low = line.problem.predict_answer_count_low_rank.get_answer_rate(ans_student)
-
-            context[sub]['page_obj'].append(line)
-        return context
-
-
-@dataclass(kw_only=True)
-class NormalRegisterData:
-    request: HtmxHttpRequest
-    psat: models.Psat
-
-    def __post_init__(self):
-        request_data = RequestData(request=self.request)
-        self.view_type = request_data.view_type
-
-    def process_register(self, form, context):
-        unit = form.cleaned_data['unit']
-        department = form.cleaned_data['department']
-        serial = form.cleaned_data['serial']
-        name = form.cleaned_data['name']
-        password = form.cleaned_data['password']
-        prime_id = form.cleaned_data['prime_id']
-
-        categories = models.PredictCategory.objects.filtered_category_by_psat_unit(unit)
-        context = update_context_data(context, categories=categories)
-
-        category = models.PredictCategory.objects.filter(unit=unit, department=department).first()
-        if category:
-            qs_student = models.PredictStudent.objects.filter(psat=self.psat, user=self.request.user)
-            if qs_student.exists():
-                form.add_error(None, '이미 수험정보를 등록하셨습니다.')
-                form.add_error(None, '만약 수험정보를 등록하신 적이 없다면 관리자에게 문의해주세요.')
-                context = update_context_data(context, form=form)
-                return render(self.request, 'a_psat/predict_register.html', context)
-
-            qs_student = models.PredictStudent.objects.filter(serial=serial)
-            if qs_student.exists():
-                form.add_error('serial', '이미 등록된 수험번호입니다.')
-                form.add_error('serial', '만약 수험번호를 등록하신 적이 없다면 관리자에게 문의해주세요.')
-                context = update_context_data(context, form=form)
-                return render(self.request, 'a_psat/predict_register.html', context)
-
-            student = models.PredictStudent.objects.create(
-                psat=self.psat, user=self.request.user, category=category,
-                serial=serial, name=name, password=password, prime_id=prime_id,
-            )
-            models.PredictScore.objects.create(student=student)
-            models.PredictRankTotal.objects.create(student=student)
-            models.PredictRankCategory.objects.create(student=student)
-            return redirect(self.psat.get_predict_detail_url())
-        else:
-            form.add_error(None, '직렬을 잘못 선택하셨습니다. 다시 선택해주세요.')
-            context = update_context_data(context, form=form)
-            return render(self.request, 'a_psat/predict_register.html', context)
-
-
-@dataclass(kw_only=True)
-class NormalAnswerProcessData:
-    request: HtmxHttpRequest
-    student: models.PredictStudent
-    subject_field: str
-
-    def __post_init__(self):
-        psat_data = PsatData(psat=self.student.psat)
-
-        self._psat = self.student.psat
-        self._predict_psat = self.student.psat.predict_psat
-        self._subject_vars = psat_data.subject_vars
-        self._answer_data_set = get_input_answer_data_set(self.request, psat_data)
-        self._answer_data = self._answer_data_set[self.subject_field]
-        self._sub, self._subject, self._field_idx, self._problem_count = self.get_subject_variable()
-        self._qs_answer = models.PredictAnswer.objects.filtered_by_psat_student_and_sub(self.student, self._sub)
-        self._qs_answer_count = models.PredictAnswerCount.objects.predict_filtered_by_psat(
-            self._psat).filter(sub=self._sub)
-
-        self.subject_name = self._subject
-        self.time_schedule = psat_data.time_schedule.get(self._sub)
-        self.answer_student = self.get_answer_student()
-        self.answer_submitted = self._qs_answer.exists()
-        self.qs_student = models.PredictStudent.objects.filter(psat=self._psat).order_by('id')
-        self.answer_all_confirmed = self.get_answer_all_confirmed()
-
-    def get_subject_variable(self) -> tuple[str, str, int, int]:
-        for sub, (subject, fld, fld_idx, problem_count) in self._subject_vars.items():
-            if self.subject_field == fld:
-                return sub, subject, fld_idx, problem_count
-
-    def get_answer_student(self):
-        return [{'no': no, 'ans': ans} for no, ans in enumerate(self._answer_data, start=1)]
-
-    def process_post_request_to_answer_input(self):
-        try:
-            no = int(self.request.POST.get('number'))
-            ans = int(self.request.POST.get('answer'))
-        except Exception as e:
-            print(e)
-            return reswap(HttpResponse(''), 'none')
-
-        answer_temporary = {'no': no, 'ans': ans}
-        context = update_context_data(subject=self._subject, answer=answer_temporary, exam=self._psat)
-        response = render(self.request, 'a_prime/snippets/predict_answer_button.html', context)
-
-        if 1 <= no <= self._problem_count and 1 <= ans <= 5:
-            self._answer_data[no - 1] = ans
-            response.set_cookie('answer_data_set', json.dumps(self._answer_data_set), max_age=3600)
-            return response
-        else:
-            print('Answer is not appropriate.')
-            return reswap(HttpResponse(''), 'none')
-
-    def process_post_request_to_answer_confirm(self):
-        is_confirmed = all(self._answer_data)
-        if is_confirmed:
-            self.create_confirmed_answers()
-            self.update_answer_counts_after_confirm()
-            self.update_score_for_each_student()
-            self.update_rank_for_each_student('total')
-            self.update_rank_for_each_student('department')
-            self.update_statistics_by_department('전체')
-            self.update_statistics_by_department(self.student.department)
-
-            if self.answer_all_confirmed:
-                if not self._predict_psat.is_answer_official_opened:
-                    self.student.is_filtered = True
-                    self.student.save()
-
-        # Load student instance after save
-        next_url = self.get_next_url_for_answer_input()
-
-        context = update_context_data(header=f'{self._subject} 답안 제출', is_confirmed=is_confirmed, next_url=next_url)
-        return render(self.request, 'a_predict/snippets/modal_answer_confirmed.html', context)
-
-    @with_bulk_create_or_update()
-    def create_confirmed_answers(self):
-        list_create, list_update = [], []
-        for no, ans in enumerate(self._answer_data, start=1):
-            problem = models.Problem.objects.get(psat=self._psat, subject=self._sub, number=no)
-            list_create.append(models.PredictAnswer(student=self.student, problem=problem, answer=ans))
-        return models.PredictAnswer, list_create, list_update, []
-
-    def update_answer_counts_after_confirm(self) -> None:
-        for qs_ac in self._qs_answer_count:
-            ans_student = self._answer_data[qs_ac.problem.number - 1]
-            setattr(qs_ac, f'count_{ans_student}', F(f'count_{ans_student}') + 1)
-            setattr(qs_ac, f'count_sum', F(f'count_sum') + 1)
-            if not self._predict_psat.is_answer_official_opened:
-                setattr(qs_ac, f'filtered_count_{ans_student}', F(f'count_{ans_student}') + 1)
-                setattr(qs_ac, f'filtered_count_sum', F(f'count_sum') + 1)
-            qs_ac.save()
-
-    def update_score_for_each_student(self) -> None:
-        score = self.student.score
-        correct_count = 0
-        for qs_a in self._qs_answer:
-            correct_count += 1 if qs_a.answer_student == qs_a.answer_correct else 0
-
-        score_point = correct_count * 100 / self._problem_count
-        setattr(score, self.subject_field, score_point)
-
-        score_list = [sco for sco in [score.subject_1, score.subject_2, score.subject_3] if sco is not None]  # noqa
-        score_sum = sum(score_list) if score_list else None
-        score_average = round(score_sum / 3, 1) if score_sum else None
-
-        score.sum = score_sum
-        score.average = score_average
-        score.save()
-
-    def update_rank_for_each_student(self, stat_type: str) -> None:
-        field_average = 'average'
-
-        rank_model = models.PredictRankTotal
-        if stat_type == 'department':
-            rank_model = models.PredictRankCategory
-
-        def rank_func(field_name) -> Window:
-            return Window(expression=Rank(), order_by=F(field_name).desc())
-
-        annotate_dict = {
-            f'rank_{self._field_idx}': rank_func(f'score__{self.subject_field}'),
-            'rank_average': rank_func(f'score__{field_average}')
-        }
-
-        rank_list = self.qs_student.annotate(**annotate_dict)
-        if stat_type == 'department':
-            rank_list = rank_list.filter(category=self.student.category)
-        participants = rank_list.count()
-
-        target, _ = rank_model.objects.get_or_create(student=self.student)
-        fields_not_match = [target.participants != participants]
-
-        for entry in rank_list:
-            if entry.id == self.student.id:
-                score_for_field = getattr(entry, f'rank_{self._field_idx}')
-                score_for_average = getattr(entry, f'rank_average')
-                fields_not_match.append(getattr(target, self.subject_field) != score_for_field)
-                fields_not_match.append(target.average != entry.rank_average)
-
-                if any(fields_not_match):
-                    target.participants = participants
-                    setattr(target, self.subject_field, score_for_field)
-                    setattr(target, field_average, score_for_average)
-                    target.save()
-
-    def get_answer_all_confirmed(self) -> bool:
-        answer_student_counts = models.PredictAnswer.objects.filter(student=self.student).count()
-        problem_count_sum = sum([value[3] for value in self._subject_vars.values()])
-        return answer_student_counts == problem_count_sum
-
-    def update_statistics_by_department(self, department: str) -> None:
-        stat = get_object_or_404(models.PredictStatistics, psat=self._psat, department=department)
-
-        # Update participants for each subject [All, Filtered]
-        getattr(stat, self.subject_field)['participants'] += 1
-        if not self._predict_psat.is_answer_official_opened:
-            getattr(stat, f'filtered_{self.subject_field}')['participants'] += 1
-
-        # Update participants for average [All, Filtered]
-        if self.answer_all_confirmed:
-            stat.average['participants'] += 1
-            if not self._predict_psat.is_answer_official_opened:
-                stat.filtered_average['participants'] += 1
-                self.student.is_filtered = True
-                self.student.save()
-        stat.save()
-
-    def get_next_url_for_answer_input(self) -> str:
-        self.student = models.PredictStudent.objects.psat_student_with_answer_count(self.request.user, self._psat)
-        for sub, (_, fld, _, _) in self._subject_vars.items():
-            if self.student.answer_count[sub] == 0:
-                return self._psat.get_predict_answer_input_url(fld)
-        return self._psat.get_predict_detail_url()
-
-
-@dataclass(kw_only=True)
 class AdminListData:
     request: HtmxHttpRequest
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
         self.view_type = request_data.view_type
         self.page_number = request_data.page_number
 
@@ -592,11 +59,11 @@ class AdminDetailData:
     psat: models.Psat
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
-        psat_data = PsatData(psat=self.psat)
+        request_data = RequestData(_request=self.request)
+        self._subject_variants = SubjectVariants(_psat=self.psat)
 
-        self._subject_vars = psat_data.subject_vars
-        self._subject_vars_avg = psat_data.subject_vars_avg
+        self._subject_vars = self._subject_variants.subject_vars
+        self._subject_vars_avg = self._subject_variants.subject_vars_avg
         self._qs_problem = models.Problem.objects.filtered_problem_by_psat(self.psat)
         self._qs_answer_count = models.PredictAnswerCount.objects.predict_filtered_by_psat(self.psat)
 
@@ -844,12 +311,12 @@ class AdminUpdateData:
     psat: models.Psat
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
-        psat_data = PsatData(psat=self.psat)
+        request_data = RequestData(_request=self.request)
         model_data = ModelData()
+        self._subject_variants = SubjectVariants(_psat=self.psat)
 
-        self._subject_vars = psat_data.subject_vars
-        self._subject_vars_avg = psat_data.subject_vars_avg
+        self._subject_vars = self._subject_variants.subject_vars
+        self._subject_vars_avg = self._subject_variants.subject_vars_avg
         self._sub_list = [sub for sub in self._subject_vars]
         self._qs_student = models.PredictStudent.objects.filter(psat=self.psat).order_by('id')
 
@@ -1204,10 +671,9 @@ class AdminExportExcelData:
     psat: models.Psat
 
     def __post_init__(self):
-        psat_data = PsatData(psat=self.psat)
-
-        self._subject_vars = psat_data.subject_vars
-        self._subject_vars_avg = psat_data.subject_vars_avg
+        self._subject_variants = SubjectVariants(_psat=self.psat)
+        self._subject_vars = self._subject_variants.subject_vars
+        self._subject_vars_avg = self._subject_variants.subject_vars_avg
         self._sub_list = [sub for sub in self._subject_vars]
 
     def get_statistics_response(self) -> HttpResponse:
@@ -1339,30 +805,3 @@ class AdminExportExcelData:
         df = pd.DataFrame.from_records(qs_answer_count.values(*column_list))
         df.columns = pd.MultiIndex.from_tuples(column_label)
         return df
-
-
-def to_float(data, decimal=1):
-    return round(float(data), decimal)
-
-
-def get_input_answer_data_set(request: HtmxHttpRequest, psat_data: PsatData) -> dict:
-    empty_answer_data = {
-        fld: [0 for _ in range(cnt)] for _, (_, fld, _, cnt) in psat_data.subject_vars.items()
-    }
-    answer_data_set_cookie = request.COOKIES.get('answer_data_set', '{}')
-    answer_data_set = json.loads(answer_data_set_cookie) or empty_answer_data
-    return answer_data_set
-
-
-def get_loop_list(problem_count: int):
-    loop_list = []
-    quotient = problem_count // 10
-    counter_list = [10] * quotient
-    remainder = problem_count % 10
-    if remainder:
-        counter_list.append(remainder)
-    loop_min = 0
-    for idx, counter in enumerate(counter_list):
-        loop_list.append({'counter': counter, 'min': loop_min})
-        loop_min += 10
-    return loop_list

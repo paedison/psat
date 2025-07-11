@@ -20,7 +20,7 @@
                                         hx-push-url="false" hx-trigger="change"
                                         hx-target="#id_department" hx-swap="outerHTML"
                                         hx-headers='{"View-Type":"department"}'
-                                        hx-get="{{ exam.get_predict_register_url }}">
+                                        hx-get="{{ psat.get_predict_register_url }}">
                                     <option value="">모집단위를 선택해주세요.</option>
                                     {% for unit in units %}
                                         {% if unit == form.unit.value %}

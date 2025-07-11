@@ -160,6 +160,7 @@ class PredictAnswerCountQuerySet(models.QuerySet):
     def predict_filtered_by_psat(self, psat):
         return self.filter(problem__psat=psat).annotate(
             no=models.F('problem__number'),
+            number=models.F('problem__number'),
             sub=models.F('problem__subject'),
             subject=models.F('problem__subject'),
             ans=models.F('answer_predict'),

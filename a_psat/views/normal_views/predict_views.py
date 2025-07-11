@@ -4,7 +4,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 
 from a_psat import models, forms
-from a_psat.utils.predict_utils import *
+from a_psat.utils.predict.normal_utils import *
+from a_psat.utils.variables import PsatData, RequestData, SubjectVariants
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 
@@ -30,39 +31,45 @@ class ViewConfiguration:
 @login_not_required
 def predict_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    list_data = NormalListData(request=request)
+    list_data = NormalListData(_request=request)
     context = update_context_data(current_time=timezone.now(), config=config, psats=list_data.qs_psat)
     return render(request, 'a_psat/predict_list.html', context)
 
 
 def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
-    config = ViewConfiguration()
     current_time = timezone.now()
-    context = update_context_data(current_time=current_time, config=config)
-
+    config = ViewConfiguration()
     psat = models.Psat.objects.filter(pk=pk).select_related('predict_psat').first()
-    if not psat or not hasattr(psat, 'predict_psat') or not psat.predict_psat.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_psat/redirect.html', context)
+    context = update_context_data(current_time=current_time, config=config, psat=psat)
 
+    psat_data = PsatData(_psat=psat)
+    subject_variants = SubjectVariants(_psat=psat)
+    redirect_data = NormalRedirectData(_request=request, _context=context)
+
+    if psat_data.is_not_for_predict():
+        return redirect_data.redirect_to_no_predict_psat()
+
+    student_data = StudentData(_request=request, _psat=psat)
     if student is None:
-        student = models.PredictStudent.objects.psat_student_with_answer_count(request.user, psat)
+        student = student_data.get_student()
     if not student:
-        context = update_context_data(context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)
-        return render(request, 'a_psat/redirect.html', context)
-
-    config.submenu_kor = f'{psat.get_year_display()} {psat.exam_abbr} {config.submenu_kor}'
-    detail_data = NormalDetailData(request=request, student=student)
+        return redirect_data.redirect_to_no_student()
 
     context = update_context_data(
-        context, psat=psat, sub_title=f'{psat.full_reference} 합격 예측',
-        predict_psat=psat.predict_psat,
+        context, student=student, time_schedule=psat_data.time_schedule,
+        subject_vars=subject_variants.subject_vars,
+    )
+    detail_data = NormalDetailData(_request=request, _context=context)
+    config.submenu_kor = f'{psat.get_year_display()} {psat.exam_abbr} {config.submenu_kor}'
+
+    context = update_context_data(
+        context,
+        sub_title=f'{psat.full_reference} 합격 예측',
+        predict_psat=psat_data.get_predict_psat(),
 
         # icon
-        icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
-
-        # info_student: 수험 정보
-        student=student,
+        icon_menu=icon_set_new.ICON_MENU,
+        icon_nav=icon_set_new.ICON_NAV,
 
         # sheet_score: 성적 예측 I [Total] / 성적 예측 II [Filtered]
         total_statistics_context=detail_data.total_statistics_context,
@@ -77,14 +84,14 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
         all_confirmed=detail_data.is_confirmed_data['평균'],
     )
 
-    if detail_data.view_type == 'info_answer':
-        return render(request, 'a_prime/snippets/predict_update_info_answer.html', context)
-    if detail_data.view_type == 'score_all':
-        return render(request, 'a_prime/snippets/predict_update_sheet_score.html', context)
-    if detail_data.view_type == 'answer_submit':
-        return render(request, 'a_prime/snippets/predict_update_sheet_answer_submit.html', context)
-    if detail_data.view_type == 'answer_predict':
-        return render(request, 'a_prime/snippets/predict_update_sheet_answer_predict.html', context)
+    # if detail_data.view_type == 'info_answer':
+    #     return render(request, 'a_prime/snippets/predict_update_info_answer.html', context)
+    # if detail_data.view_type == 'score_all':
+    #     return render(request, 'a_prime/snippets/predict_update_sheet_score.html', context)
+    # if detail_data.view_type == 'answer_submit':
+    #     return render(request, 'a_prime/snippets/predict_update_sheet_answer_submit.html', context)
+    # if detail_data.view_type == 'answer_predict':
+    #     return render(request, 'a_prime/snippets/predict_update_sheet_answer_predict.html', context)
     return render(request, 'a_psat/predict_detail.html', context)
 
 
@@ -104,32 +111,35 @@ def predict_modal_view(request: HtmxHttpRequest, pk: int):
 
 def predict_register_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    current_time = timezone.now()
-    context = update_context_data(current_time=current_time, config=config)
-
     psat = models.Psat.objects.filter(year=2025, exam='행시').first()
-    if not psat or not hasattr(psat, 'predict_psat') or not psat.predict_psat.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_psat/redirect.html', context)
+    context = update_context_data(config=config, psat=psat)
 
-    student = models.PredictStudent.objects.psat_student_with_answer_count(request.user, psat)
+    psat_data = PsatData(_psat=psat)
+    redirect_data = NormalRedirectData(_request=request, _context=context)
+
+    # Redirect page
+    if psat_data.is_not_for_predict():
+        return redirect_data.redirect_to_no_predict_psat()
+
+    student_data = StudentData(_request=request, _psat=psat)
+    student = student_data.get_student()
     if student:
-        context = update_context_data(context, message='등록된 수험정보가 존재합니다.', next_url=config.url_list)
-        return render(request, 'a_psat/redirect.html', context)
+        return redirect_data.redirect_to_has_student()
 
+    # Process register
     form = forms.PredictStudentForm()
     title = f'{psat.full_reference} 합격예측 수험정보 등록'
     units = models.choices.predict_unit_choice()[psat.exam_abbr]
-    context = update_context_data(config=config, title=title, exam=psat, form=form, units=units)
+    context = update_context_data(context, title=title, form=form, units=units)
 
-    register_data = NormalRegisterData(request=request, psat=psat)
-
-    if register_data.view_type == 'department':
+    request_data = RequestData(_request=request)
+    if request_data.view_type == 'department':
         unit = request.GET.get('unit')
         categories = models.PredictCategory.objects.filtered_category_by_psat_unit(unit)
         context = update_context_data(context, categories=categories)
         return render(request, 'a_psat/snippets/predict_department_list.html', context)
 
+    register_data = NormalRegisterData(_request=request, _psat=psat)
     if request.method == 'POST':
         form = forms.PredictStudentForm(request.POST)
         if form.is_valid():
@@ -144,59 +154,86 @@ def predict_register_view(request: HtmxHttpRequest):
 
 
 def predict_answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
-    config = ViewConfiguration()
-    context = update_context_data(config=config)
+    result, redirect_response = prepare_psat_context(request, pk, subject_field)
+    if redirect_response:
+        return redirect_response
 
-    psat = models.Psat.objects.filter(pk=pk).first()
-    if not psat or not hasattr(psat, 'predict_psat') or not psat.predict_psat.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_psat/redirect.html', context)
+    temporary_answer_data = TemporaryAnswerData(_request=request, _context=result['context'])
+    answer_input_data = NormalAnswerInputData(
+        _request=request, _context=result['context'],
+        _temporary_answer_data=temporary_answer_data
+    )
 
-    student = models.PredictStudent.objects.psat_student_with_answer_count(request.user, psat)
-    if not student:
-        context = update_context_data(context, message='수험 정보를 입력해주세요.', next_url=config.url_list)
-        return render(request, 'a_psat/redirect.html', context)
-    
-    config.url_detail = psat.get_predict_detail_url()
-    answer_process_data = NormalAnswerProcessData(request=request, student=student, subject_field=subject_field)
+    if answer_input_data.already_submitted():
+        return result['redirect_data'].redirect_to_already_submitted()
 
-    if config.current_time < answer_process_data.time_schedule[0]:
-        context = update_context_data(context, message='시험 시작 전입니다.', next_url=config.url_detail)
-        return render(request, 'a_psat/redirect.html', context)
-
-    if answer_process_data.answer_submitted:
-        context = update_context_data(context, message='이미 답안을 제출하셨습니다.', next_url=config.url_detail)
-        return render(request, 'a_psat/redirect.html', context)
-
-    # answer_submit
     if request.method == 'POST':
-        return answer_process_data.process_post_request_to_answer_input()
+        return answer_input_data.process_post_request_to_answer_input()
 
     context = update_context_data(
-        exam=psat, config=config, student=student,
-        subject=answer_process_data.subject_name,
-        answer_student=answer_process_data.answer_student,
-        url_answer_confirm=psat.get_predict_answer_confirm_url(subject_field),
+        result['context'],
+        answer_student=temporary_answer_data.get_answer_student_for_subject(),
+        url_answer_confirm=result['psat'].get_predict_answer_confirm_url(subject_field),
     )
     return render(request, 'a_psat/predict_answer_input.html', context)
 
 
 def predict_answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
-    config = ViewConfiguration()
-    context = update_context_data(config=config)
+    result, redirect_response = prepare_psat_context(request, pk, subject_field)
+    if redirect_response:
+        return redirect_response
 
-    psat = models.Psat.objects.filter(pk=pk).first()
-    if not psat or not hasattr(psat, 'predict_psat') or not psat.predict_psat.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_psat/redirect.html', context)
-
-    student = models.PredictStudent.objects.psat_student_with_answer_count(request.user, psat)
-    answer_confirm_data = NormalAnswerProcessData(request=request, student=student, subject_field=subject_field)
+    temporary_answer_data = TemporaryAnswerData(_request=request, _context=result['context'])
+    answer_confirm_data = NormalAnswerConfirmData(
+        _request=request, _context=result['context'],
+        _temporary_answer_data=temporary_answer_data,
+        time_schedule=result['psat_data'].time_schedule
+    )
 
     if request.method == 'POST':
         return answer_confirm_data.process_post_request_to_answer_confirm()
 
     context = update_context_data(
-        url_answer_confirm=psat.get_predict_answer_confirm_url(subject_field),
-        header=f'{answer_confirm_data.subject_name} 답안을 제출하시겠습니까?', verifying=True)
+        result['context'],
+        verifying=True,
+        header=answer_confirm_data.get_header(),
+        url_answer_confirm=result['psat'].get_predict_answer_confirm_url(subject_field),
+    )
     return render(request, 'a_predict/snippets/modal_answer_confirmed.html', context)
+
+
+def prepare_psat_context(request: HtmxHttpRequest, pk: int, subject_field: str):
+    config = ViewConfiguration()
+    psat = models.Psat.objects.filter(pk=pk).select_related('predict_psat').first()
+    config.url_detail = psat.get_predict_detail_url()
+    context = update_context_data(config=config, psat=psat, subject_field=subject_field)
+
+    psat_data = PsatData(_psat=psat)
+    redirect_data = NormalRedirectData(_request=request, _context=context)
+
+    if psat_data.is_not_for_predict():
+        return None, redirect_data.redirect_to_no_predict_psat()
+    if psat_data.before_exam_start():
+        return None, redirect_data.redirect_to_before_exam_start()
+
+    student_data = StudentData(_request=request, _psat=psat)
+    student = student_data.get_student()
+    if not student:
+        return None, redirect_data.redirect_to_no_student()
+
+    subject_variants = SubjectVariants(_psat=psat)
+    sub, subject, fld_idx, problem_count = subject_variants.get_subject_variable(subject_field)
+
+    context = update_context_data(
+        context,
+        sub=sub, subject=subject, fld_idx=fld_idx, problem_count=problem_count,
+        subject_vars=subject_variants.subject_vars,
+        student=student,
+    )
+    return {
+        'psat': psat,
+        'context': context,
+        'student': student,
+        'psat_data': psat_data,
+        'redirect_data': redirect_data,
+    }, None

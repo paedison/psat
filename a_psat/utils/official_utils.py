@@ -24,7 +24,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 
 from a_psat import models, filters, forms
-from a_psat.utils.variables import RequestData, PsatData, get_prev_next_obj
+from a_psat.utils.variables import RequestData, get_prev_next_obj, SubjectVariants
 from common.constants import icon_set_new
 from common.models import User
 from common.utils import get_paginator_context, HtmxHttpRequest
@@ -119,7 +119,7 @@ class NormalListData:
     request: HtmxHttpRequest
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
         self.keyword = request_data.keyword
         self.sub_title = request_data.get_sub_title()
         self.view_type = request_data.view_type
@@ -145,7 +145,7 @@ class NormalDetailData:
     problem: models.Problem
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
         self.process_image()
         self.problem_data = ProblemData(request=self.request, problem=self.problem)
         self.view_type = request_data.view_type
@@ -207,7 +207,7 @@ class NormalUpdateData:
     problem: models.Problem
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
         self.view_type = request_data.view_type
 
     def get_like_problem_response(self):
@@ -297,7 +297,7 @@ class AdminListData:
     request: HtmxHttpRequest
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
+        request_data = RequestData(_request=self.request)
         self.sub_title = request_data.get_sub_title()
         self.view_type = request_data.view_type
         self.page_number = request_data.page_number
@@ -317,12 +317,12 @@ class AdminDetailData:
     psat: models.Psat
 
     def __post_init__(self):
-        request_data = RequestData(request=self.request)
-        psat_data = PsatData(psat=self.psat)
+        request_data = RequestData(_request=self.request)
+        self._subject_variants = SubjectVariants(_psat=self.psat)
         self.view_type = request_data.view_type
         self.page_number = request_data.page_number
         self.qs_problem = models.Problem.objects.filtered_problem_by_psat(self.psat)
-        self.subject_vars = psat_data.subject_vars
+        self.subject_vars = self._subject_variants.subject_vars
 
     def get_problem_context(self):
         return get_paginator_context(self.qs_problem, self.page_number)

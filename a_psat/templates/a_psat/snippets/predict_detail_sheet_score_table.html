@@ -19,6 +19,19 @@
                     <hr class="d-md-none">
                 {% endif %}
             </div>
+        {% else %}
+            {% if stat.field != 'average' %}
+                <div class="{% if forloop.last %}col-12{% else %}col-md-6{% endif %}">
+                    {% if forloop.last %}<hr class="d-none d-md-block">{% endif %}
+                    <h6>{{ stat.subject }}</h6>
+                    <a class="btn btn-outline-danger" hx-boost="true" href="{{ answer_data.url_answer_input }}">
+                        답안을 제출해주세요.
+                    </a>
+                    {% if not forloop.last %}
+                        <hr class="d-md-none">
+                    {% endif %}
+                </div>
+            {% endif %}
         {% endif %}
     {% endfor %}
 </div>
@@ -43,11 +56,79 @@
         </thead>
         <tbody>
             {% for stat in stat_data.page_obj.values %}
-                {% if stat %}{% partial sub_stat_line %}{% endif %}
+                {% if stat %}
+                    <tr class="text-center {% if stat.field == 'average' %}table-warning{% endif %}">
+                        {% partial th_subject %}
+
+                        {% if stat.is_confirmed %}
+                            {% partial answer_is_confirmed %}
+                        {% else %}
+                            {% partial answer_is_not_confirmed %}
+                        {% endif %}
+                    </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>
 </article>
+
+{% partialdef th_subject %}
+    <th class="text-nowrap" aria-label="과목">
+        {% if stat.is_confirmed or stat.field == 'average' %}
+            {{ stat.subject }}
+        {% else %}
+            <a class="text-decoration-none" href="{{ stat_tot.url_answer_input }}" hx-boost="true">
+                {{ stat.subject }}
+            </a>
+        {% endif %}
+    </th>
+{% endpartialdef %}
+
+{% partialdef answer_is_confirmed %}
+    {% if is_analyzing %}
+        <td colspan="5">
+            <h5 class="badge rounded-pill text-bg-warning">통계 분석중입니다.</h5>
+        </td>
+    {% else %}
+        <td>
+            <div id="{{ stat_data.prefix }}Max{{ stat.field|title }}" class="htmx-fade-up-in delay-2">
+                {{ stat.max|floatformat:1 }}
+            </div>
+        </td>
+        <td>
+            <div id="{{ stat_data.prefix }}T10{{ stat.field|title }}" class="htmx-fade-up-in delay-3">
+                {{ stat.t10|floatformat:1 }}
+            </div>
+        </td>
+        <td>
+            <div id="{{ stat_data.prefix }}T25{{ stat.field|title }}" class="htmx-fade-up-in delay-4">
+                {{ stat.t25|floatformat:1 }}
+            </div>
+        </td>
+        <td>
+            <div id="{{ stat_data.prefix }}T50{{ stat.field|title }}" class="htmx-fade-up-in delay-4">
+                {{ stat.t50|floatformat:1 }}
+            </div>
+        </td>
+        <td>
+            <div id="{{ stat_data.prefix }}Avg{{ stat.field|title }}" class="htmx-fade-up-in delay-5">
+                {{ stat.avg|floatformat:1 }}
+            </div>
+        </td>
+    {% endif %}
+{% endpartialdef %}
+
+{% partialdef answer_is_not_confirmed %}
+    <td colspan="6">
+        {% if stat.field == 'average' %}
+            <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
+        {% else %}
+            <a hx-boost="true" href="{{ stat_tot.url_answer_input }}">
+                <span class="badge rounded-pill bg-danger">답안을 제출해주세요.</span>
+            </a>
+        {% endif %}
+    </td>
+{% endpartialdef %}
 
 {% partialdef sub_stat_line %}
     <tr class="text-center {% if stat.field == 'average' %}table-warning{% endif %}">

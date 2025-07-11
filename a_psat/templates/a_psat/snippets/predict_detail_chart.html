@@ -47,12 +47,12 @@
     chart_datasets = [
         {label: '내 점수',       borderWidth: 1, data: {{ stat_chart.my_score }}},
         {label: '직렬 평균',     borderWidth: 1, data: {{ stat_chart.dep_avg }}},
-        {label: '직렬 상위 20%', borderWidth: 1, data: {{ stat_chart.dep_top_20 }}},
-        {label: '직렬 상위 10%', borderWidth: 1, data: {{ stat_chart.dep_top_10 }}},
+        {label: '직렬 상위 20%', borderWidth: 1, data: {{ stat_chart.dep_t20 }}},
+        {label: '직렬 상위 10%', borderWidth: 1, data: {{ stat_chart.dep_t10 }}},
         {label: '직렬 최고',     borderWidth: 1, data: {{ stat_chart.dep_max }}},
         {label: '전체 평균',     borderWidth: 1, data: {{ stat_chart.all_avg }}, hidden: true},
-        {label: '전체 상위 20%', borderWidth: 1, data: {{ stat_chart.all_top_20 }}, hidden: true},
-        {label: '전체 상위 10%', borderWidth: 1, data: {{ stat_chart.all_top_10 }}, hidden: true},
+        {label: '전체 상위 20%', borderWidth: 1, data: {{ stat_chart.all_t20 }}, hidden: true},
+        {label: '전체 상위 10%', borderWidth: 1, data: {{ stat_chart.all_t10 }}, hidden: true},
         {label: '전체 최고',     borderWidth: 1, data: {{ stat_chart.all_max }}, hidden: true},
     ]
     index_property = {ticks: {font: {weight: 'bold'}}}
@@ -68,7 +68,7 @@
     chart_data = {
         type: 'bar',
         data: {
-            labels: [{% if stat_total|length > 4 %}'헌법', {% endif %}'언어논리', '자료해석', '상황판단', 'PSAT 평균'],
+            labels: [{% if stat_chart.all_avg|length > 4 %}'헌법', {% endif %}'언어논리', '자료해석', '상황판단', 'PSAT 평균'],
             datasets: chart_datasets,
         },
         options: {

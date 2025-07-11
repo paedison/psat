@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
 from a_psat import models, forms
-from a_psat.utils.predict_utils import *
+from a_psat.utils.predict.admin_utils import *
 from a_psat.views.normal_views import predict_views
 from common.constants import icon_set_new
 from common.decorators import admin_required

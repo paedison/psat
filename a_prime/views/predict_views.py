@@ -68,7 +68,7 @@ def list_view(request: HtmxHttpRequest):
             if obj.student:
                 setattr(obj, f'score_{idx}', getattr(obj.student.score, f'subject_{idx}'))
         answer_student_counts = models.PredictAnswer.objects.filter(student=obj.student).count()
-        obj.answer_all_confirmed = answer_student_counts == 145
+        obj._answer_all_confirmed = answer_student_counts == 145
 
     context = update_context_data(
         current_time=timezone.now(),
