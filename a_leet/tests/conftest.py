@@ -1,10 +1,69 @@
 import datetime
+from dataclasses import dataclass
+
 import pytest
 from django.urls import reverse
-
 from django.utils import timezone
 
+from a_leet import models
+from common.models import User
 from . import factories
+
+
+@dataclass
+class TestTimeFixture:
+    fixed_now: datetime.datetime
+
+    def __post_init__(self):
+        self.now = self.fixed_now
+        self.before_exam = self.fixed_now - datetime.timedelta(minutes=10)
+        self.after_subject_0_end = self.fixed_now + datetime.timedelta(minutes=100)
+        self.after_subject_1_end = self.fixed_now + datetime.timedelta(minutes=250)
+        self.waiting_answer_predict = self.fixed_now + datetime.timedelta(minutes=325)
+        self.waiting_answer_official = self.fixed_now + datetime.timedelta(minutes=375)
+        self.during_predicting = self.fixed_now + datetime.timedelta(minutes=425)
+
+
+@dataclass
+class BaseFixture:
+    subject_vars: dict
+    test_time: TestTimeFixture
+    user: User
+    leet: models.Leet
+    problems: list[models.Problem]
+    urls: dict
+
+
+@dataclass
+class PredictFixture:
+    base: BaseFixture
+    predict_leet: models.PredictLeet
+
+    def __post_init__(self):
+        self.subject_vars = self.base.subject_vars
+        self.test_time = self.base.test_time
+        self.user = self.base.user
+        self.leet = self.base.leet
+        self.problems = self.base.problems
+        self.urls = self.base.urls
+
+
+@dataclass
+class StudentFixture:
+    predict_fixture: PredictFixture
+    student: models.PredictStudent
+    score: models.PredictScore
+    rank: models.PredictRank
+    student_info: dict
+
+    def __post_init__(self):
+        self.subject_vars = self.predict_fixture.subject_vars
+        self.test_time = self.predict_fixture.test_time
+        self.user = self.predict_fixture.user
+        self.leet = self.predict_fixture.leet
+        self.problems = self.predict_fixture.problems
+        self.urls = self.predict_fixture.urls
+        self.predict_leet = self.predict_fixture.predict_leet
 
 
 @pytest.fixture(scope="session")
@@ -14,14 +73,14 @@ def fixed_now():
 
 @pytest.fixture(scope="session")
 def test_time(fixed_now):
+    return TestTimeFixture(fixed_now)
+
+
+@pytest.fixture
+def subject_vars():
     return {
-        'now': fixed_now,
-        'before_exam': fixed_now - datetime.timedelta(minutes=10),
-        'after_subject_0_end': fixed_now + datetime.timedelta(minutes=100),
-        'after_subject_1_end': fixed_now + datetime.timedelta(minutes=250),
-        'waiting_answer_predict': fixed_now + datetime.timedelta(minutes=325),
-        'waiting_answer_official': fixed_now + datetime.timedelta(minutes=375),
-        'during_predicting': fixed_now + datetime.timedelta(minutes=425),
+        '언어': ('언어이해', 'subject_0', 0, 30),
+        '추리': ('추리논증', 'subject_1', 1, 40),
     }
 
 
@@ -36,11 +95,11 @@ def leet(db):
 
 
 @pytest.fixture
-def problems(leet):
-    subject_count = {'언어': 30, '추리': 40}
+def problems(leet, subject_vars):
     created = []
-    for subject, count in subject_count.items():
-        created += factories.ProblemFactory.create_batch(count, leet=leet, subject=subject)
+    for sub, (_, _, _, count) in subject_vars.items():
+        for number in range(1, count + 1):
+            created.append(factories.ProblemFactory(leet=leet, subject=sub, number=number))
     return created
 
 
@@ -63,9 +122,10 @@ def statistics(leet):
 
 @pytest.fixture
 def answer_counts(problems):
+    created = []
     for problem in problems:
-        factories.PredictAnswerCountFactory(problem=problem)
-    return True
+        created.append(factories.PredictAnswerCountFactory(problem=problem))
+    return created
 
 
 @pytest.fixture
@@ -81,39 +141,42 @@ def urls(leet):
 
 
 @pytest.fixture
-def base_data(test_time, test_user, leet, problems, urls):
+def student_info():
     return {
-        'test_time': test_time,
-        'user': test_user,
-        'leet': leet,
-        'problems': problems,
-        'urls': urls,
+        'serial': '9999',
+        'name': '홍길동',
+        'password': '1234',
     }
 
 
 @pytest.fixture
-def predict_data(test_time, test_user, leet, problems, urls, predict_leet):
-    return {
-        'test_time': test_time,
-        'user': test_user,
-        'leet': leet,
-        'problems': problems,
-        'urls': urls,
-        'predict_leet': predict_leet,
-        # 'statistics': statistics,
-        # 'answer_counts': answer_counts,
-    }
+def test_student(test_user, leet, student_info):
+    return factories.PredictStudentFactory(user=test_user, leet=leet, **student_info)
 
 
 @pytest.fixture
-def student(test_user, leet):
-    return factories.PredictStudentFactory(
-        user=test_user,
-        leet=leet,
-        serial='9999',
-        name='홍길동',
-        password='1234',
-    )
+def test_score(test_student):
+    return factories.PredictScoreFactory(student=test_student)
+
+
+@pytest.fixture
+def test_rank(test_student):
+    return factories.PredictRankFactory(student=test_student)
+
+
+@pytest.fixture
+def base_fixture(subject_vars, test_time, test_user, leet, problems, urls):
+    return BaseFixture(subject_vars, test_time, test_user, leet, problems, urls)
+
+
+@pytest.fixture
+def predict_fixture(base_fixture, predict_leet):
+    return PredictFixture(base_fixture, predict_leet)
+
+
+@pytest.fixture
+def student_fixture(predict_fixture, test_student, test_score, test_rank, student_info):
+    return StudentFixture(predict_fixture, test_student, test_score, test_rank, student_info)
 
 
 @pytest.fixture
@@ -121,24 +184,3 @@ def student_with_answers(student, problems):
     for problem in problems:
         factories.PredictAnswerFactory(student=student, problem=problem)
     return student
-
-# @pytest.mark.django_db
-# @pytest.fixture(scope='module')
-# def setup_predict_data(django_db_blocker):
-#     # DB 접근 허용
-#     with django_db_blocker.unblock():
-#         setup = SetUpPredictData()
-#         setup.create_predict_leet()
-#         setup.create_problems()
-#         setup.create_statistics()
-#         setup.create_answer_count()
-#     return setup
-#
-#
-# @pytest.fixture
-# def predict_user(db):
-#     return User.objects.create_user(
-#         email='test@test.com',
-#         username='testuser',
-#         password='password123!'
-#     )

@@ -20,6 +20,15 @@ class LeetFactory(factory.django.DjangoModelFactory):
         model = models.Leet
 
 
+class ProblemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Problem
+
+    leet = factory.SubFactory(LeetFactory)
+    subject = factory.Iterator(['언어', '추리'])
+    number = factory.Sequence(lambda n: n + 1)
+
+
 class PredictLeetFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PredictLeet
@@ -33,15 +42,6 @@ class PredictStatisticsFactory(factory.django.DjangoModelFactory):
         model = models.PredictStatistics
 
     leet = factory.SubFactory(LeetFactory)
-
-
-class ProblemFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Problem
-
-    leet = factory.SubFactory(LeetFactory)
-    subject = factory.Iterator(['언어', '추리'])
-    number = factory.Sequence(lambda n: n + 1)
 
 
 class PredictStudentFactory(factory.django.DjangoModelFactory):
@@ -67,5 +67,54 @@ class PredictAnswerFactory(factory.django.DjangoModelFactory):
 class PredictAnswerCountFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PredictAnswerCount
+
+    problem = factory.SubFactory(ProblemFactory)
+
+
+class PredictScoreFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PredictScore
+
+    student = factory.SubFactory(PredictStudentFactory)
+
+
+class PredictRankFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PredictRank
+
+    student = factory.SubFactory(PredictStudentFactory)
+
+
+class PredictRankAspiration1Factory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PredictRankAspiration1
+
+    student = factory.SubFactory(PredictStudentFactory)
+
+
+class PredictRankAspiration2Factory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PredictRankAspiration2
+
+    student = factory.SubFactory(PredictStudentFactory)
+
+
+class PredictAnswerCountTopRankFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PredictAnswerCountTopRank
+
+    problem = factory.SubFactory(ProblemFactory)
+
+
+class PredictAnswerCountMidRankFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PredictAnswerCountMidRank
+
+    problem = factory.SubFactory(ProblemFactory)
+
+
+class PredictAnswerCountLowRankFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PredictAnswerCountLowRank
 
     problem = factory.SubFactory(ProblemFactory)
