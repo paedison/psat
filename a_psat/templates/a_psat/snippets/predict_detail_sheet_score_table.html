@@ -1,4 +1,4 @@
-<div class="row score-progress py-3">
+<div class="row score-progress py-3 g-3">
     {% for stat in stat_data.page_obj.values %}
         {% if stat.is_confirmed %}
             <div class="{% if forloop.last %}col-12{% else %}col-md-6{% endif %}">
