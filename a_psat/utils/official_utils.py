@@ -156,9 +156,11 @@ class NormalDetailData:
 
     def process_image(self):
         img_normal = img_wide = {'alt': 'Preparing Image', 'src': static('image/preparing.png')}
+        self.problem.has_img = False
         if self.problem.absolute_img_path.exists():
             img_normal = {'alt': 'Problem Image', 'src': self.problem.relative_img_path}
             img_wide = img_normal.copy()
+            self.problem.has_img = True
 
             threshold_height = 2000
             img = Image.open(self.problem.absolute_img_path)
@@ -347,7 +349,7 @@ class AdminCreateData:
 
     def create_psat(self):
         psat = self.form.save(commit=False)
-        exam_order = {'행시': 1, '입시': 2, '칠급': 3}
+        exam_order = {'행시': 1, '입시': 2, '칠급': 3, '국8': 4}
         psat.order = exam_order.get(self.exam)
         psat.save()
         return psat
@@ -367,6 +369,8 @@ class AdminCreateData:
             append_list(25, '헌법')
         elif self.exam in ['칠급']:
             append_list(25, '언어', '자료', '상황')
+        elif self.exam in ['국8']:
+            append_list(20, '언어', '자료', '상황')
 
         return models.Problem, list_create, list_update, []
 

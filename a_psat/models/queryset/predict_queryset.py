@@ -85,20 +85,25 @@ class PredictAnswerQuerySet(models.QuerySet):
             'problem__predict_answer_count_mid_rank',
             'problem__predict_answer_count_low_rank'
         ]
-        result = models.Case(
+        is_result_correct = models.Case(
             models.When(answer=models.F('problem__answer'), then=models.Value(True)),
             default=models.Value(False),
             output_field=models.BooleanField()
         )
-        predict_result = models.Case(
+        is_predict_correct = models.Case(
             models.When(
-                answer=models.F('problem__predict_answer_count__answer_predict'), then=models.Value(True)),
+                answer=models.F('problem__predict_answer_count__answer_predict'), then=models.Value(True)
+            ),
             default=models.Value(False),
             output_field=models.BooleanField()
         )
         return (
             self.select_related(*fields).filter(student=student)
-            .annotate(subject=models.F('problem__subject'), result=result, predict_result=predict_result)
+            .annotate(
+                subject=models.F('problem__subject'),
+                is_result_correct=is_result_correct,
+                is_predict_correct=is_predict_correct,
+            )
         )
 
     def filtered_by_psat_student_and_stat_type(

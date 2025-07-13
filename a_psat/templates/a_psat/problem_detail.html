@@ -28,7 +28,7 @@
                         </div>
 
                         <div id="problemDetail" class="htmx-fade-in htmx-fade-out">
-                            {% if problem.img_dict.alt == 'Preparing Image' %}
+                            {% if not problem.has_img %}
                                 <div class="border-top pt-2">
                                     <div class="d-flex">
                                         <h6 class="lh-base text-nowrap me-2 fw-bold text-primary">
@@ -40,6 +40,7 @@
                                     </div>
                                 </div>
                             {% endif %}
+
                             <div class="d-lg-none">
                                 {% with annotate_type='normal' problem_img=problem.img_normal %}
                                     {% partial container_image %}
@@ -85,51 +86,55 @@
 {% endpartialdef drawing_button %}
 
 {% partialdef container_image %}
-    {% if user.is_admin %}
-        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="switch-group">
-                {% with property='drawing' button_name='필기' %}{% partial drawing_button %}{% endwith %}
-                {% with property='line' button_name='직선' %}{% partial drawing_button %}{% endwith %}
-                {% with property='highlighter' button_name='형광펜' %}{% partial drawing_button %}{% endwith %}
-                {% with property='eraser' button_name='지우개' %}{% partial drawing_button %}{% endwith %}
+    {% if problem_img.alt == 'Preparing Image' %}
+        <img class="d-block mx-auto" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
+    {% else %}
+        {% if user.is_admin %}
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="switch-group">
+                    {% with property='drawing' button_name='필기' %}{% partial drawing_button %}{% endwith %}
+                    {% with property='line' button_name='직선' %}{% partial drawing_button %}{% endwith %}
+                    {% with property='highlighter' button_name='형광펜' %}{% partial drawing_button %}{% endwith %}
+                    {% with property='eraser' button_name='지우개' %}{% partial drawing_button %}{% endwith %}
+                </div>
+                <div class="color-picker" role="group">
+                    <button class="color-btn color-btn-black {{ annotate_type }}-color-btn active" data-color="black"></button>
+                    <button class="color-btn color-btn-red {{ annotate_type }}-color-btn" data-color="red"></button>
+                    <button class="color-btn color-btn-blue {{ annotate_type }}-color-btn" data-color="blue"></button>
+                    <button class="color-btn color-btn-green {{ annotate_type }}-color-btn" data-color="green"></button>
+                    <button class="color-btn color-btn-yellow {{ annotate_type }}-color-btn" data-color="yellow"></button>
+                </div>
+                <div class="btn-group" role="group">
+                    <button id="{{ annotate_type }}UndoBtn" class="btn btn-outline-success"
+                            data-bs-toggle="tooltip" data-bs-title="되돌리기">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button id="{{ annotate_type }}RedoBtn" class="btn btn-outline-success"
+                            data-bs-toggle="tooltip" data-bs-title="되돌리기 취소">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <button id="{{ annotate_type }}LoadBtn" class="btn btn-outline-success"
+                            data-bs-toggle="tooltip" data-bs-title="불러오기">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </button>
+                    <button id="{{ annotate_type }}SaveBtn" class="btn btn-outline-success"
+                            data-bs-toggle="tooltip" data-bs-title="저장">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                    </button>
+                    <button id="{{ annotate_type }}ClearBtn" class="btn btn-danger"
+                            data-bs-toggle="tooltip" data-bs-title="전체 삭제">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
-            <div class="color-picker" role="group">
-                <button class="color-btn color-btn-black {{ annotate_type }}-color-btn active" data-color="black"></button>
-                <button class="color-btn color-btn-red {{ annotate_type }}-color-btn" data-color="red"></button>
-                <button class="color-btn color-btn-blue {{ annotate_type }}-color-btn" data-color="blue"></button>
-                <button class="color-btn color-btn-green {{ annotate_type }}-color-btn" data-color="green"></button>
-                <button class="color-btn color-btn-yellow {{ annotate_type }}-color-btn" data-color="yellow"></button>
-            </div>
-            <div class="btn-group" role="group">
-                <button id="{{ annotate_type }}UndoBtn" class="btn btn-outline-success"
-                        data-bs-toggle="tooltip" data-bs-title="되돌리기">
-                    <i class="fa-solid fa-rotate-left"></i>
-                </button>
-                <button id="{{ annotate_type }}RedoBtn" class="btn btn-outline-success"
-                        data-bs-toggle="tooltip" data-bs-title="되돌리기 취소">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
-                <button id="{{ annotate_type }}LoadBtn" class="btn btn-outline-success"
-                        data-bs-toggle="tooltip" data-bs-title="불러오기">
-                    <i class="fa-solid fa-folder-open"></i>
-                </button>
-                <button id="{{ annotate_type }}SaveBtn" class="btn btn-outline-success"
-                        data-bs-toggle="tooltip" data-bs-title="저장">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                </button>
-                <button id="{{ annotate_type }}ClearBtn" class="btn btn-danger"
-                        data-bs-toggle="tooltip" data-bs-title="전체 삭제">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+        {% endif %}
+
+        <div class="position-relative">
+            <img id="{{ annotate_type }}Image" class="img-fluid" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
+            <canvas id="{{ annotate_type }}Canvas" class="position-absolute top-0 start-0"
+                    style="z-index: 10; touch-action: none" data-annotate-url="{{ problem.get_annotate_url }}"></canvas>
         </div>
     {% endif %}
-
-    <div class="position-relative">
-        <img id="{{ annotate_type }}Image" class="img-fluid" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
-        <canvas id="{{ annotate_type }}Canvas" class="position-absolute top-0 start-0"
-                style="z-index: 10; touch-action: none" data-annotate-url="{{ problem.get_annotate_url }}"></canvas>
-    </div>
 {% endpartialdef %}
 
 {% partialdef container_memo %}

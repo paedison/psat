@@ -111,7 +111,7 @@ def predict_modal_view(request: HtmxHttpRequest, pk: int):
 
 def predict_register_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    psat = models.Psat.objects.filter(year=2025, exam='행시').first()
+    psat = models.Psat.objects.filter(year=2025, exam='칠급').first()
     context = update_context_data(config=config, psat=psat)
 
     psat_data = PsatData(_psat=psat)
@@ -172,7 +172,7 @@ def predict_answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: 
 
     context = update_context_data(
         result['context'],
-        answer_student=temporary_answer_data.get_answer_student_for_subject(),
+        answer_student=temporary_answer_data.get_answer_student_list_for_subject(),
         url_answer_confirm=result['psat'].get_predict_answer_confirm_url(subject_field),
     )
     return render(request, 'a_psat/predict_answer_input.html', context)

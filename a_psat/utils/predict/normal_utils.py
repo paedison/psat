@@ -86,8 +86,6 @@ class TemporaryAnswerData:
         self._subject_field = self._context.get('subject_field', '')
         self._student = self._context['student']
 
-        self.total_answer_set = self.get_total_answer_set()
-
     def get_total_answer_set(self) -> dict:
         subject_vars = self._context['subject_vars']
         empty_answer_set = {fld: [0 for _ in range(cnt)] for _, (_, fld, _, cnt) in subject_vars.items()}
@@ -95,9 +93,14 @@ class TemporaryAnswerData:
         total_answer_set = json.loads(total_answer_set_cookie) or empty_answer_set
         return total_answer_set
 
-    def get_answer_student_for_subject(self):
-        answer_data = self.total_answer_set.get(self._subject_field, [])
+    def get_answer_student_list_for_subject(self):
+        total_answer_set = self.get_total_answer_set()
+        answer_data = total_answer_set.get(self._subject_field, [])
         return [{'no': no, 'ans': ans} for no, ans in enumerate(answer_data, start=1)]
+
+    def get_answer_student_for_subject(self):
+        total_answer_set = self.get_total_answer_set()
+        return total_answer_set.get(self._subject_field, [])
 
 
 @dataclass(kw_only=True)
@@ -151,7 +154,9 @@ class NormalDetailData:
         suffix = 'Filtered' if is_filtered else 'Total'
         statistics_all = self._student_answer_data.get_statistics_data('all', is_filtered)
         statistics_department = self._student_answer_data.get_statistics_data('department', is_filtered)
-        self.update_normal_score_predict(statistics_all)
+
+        self.update_normal_statistics_context_for_score(statistics_all, 'result')
+        self.update_normal_statistics_context_for_score(statistics_department, 'predict')
 
         return {
             'all': {
@@ -164,24 +169,25 @@ class NormalDetailData:
             },
         }
 
-    def update_normal_score_predict(self, statistics_all: dict) -> None:
+    def update_normal_statistics_context_for_score(self, statistics_all: dict, score_type: str) -> None:
         subject_vars = self._subject_variants.subject_vars
-        score_predict = {sub: 0 for sub in subject_vars}
-        predict_correct_count_list = self._qs_student_answer.filter(predict_result=True).values(
-            'subject').annotate(correct_counts=Count('predict_result'))
+        correct_count_list = (
+            self._qs_student_answer
+            .filter(**{f'is_{score_type}_correct': True})
+            .values('subject').annotate(correct_counts=Count(f'is_{score_type}_correct'))
+        )
 
         psat_sum = 0
-        for entry in predict_correct_count_list:
+        for entry in correct_count_list:
             score = 0
             sub = entry['subject']
             problem_count = subject_vars[sub][3]
             if problem_count:
                 score = entry['correct_counts'] * 100 / problem_count
 
-            score_predict[sub] = score
             psat_sum += score if sub != '헌법' else 0
-            statistics_all[sub]['score_predict'] = score
-        statistics_all['평균']['score_predict'] = round(psat_sum / 3, 1)
+            statistics_all[sub][f'score_{score_type}'] = score
+        statistics_all['평균'][f'score_{score_type}'] = round(psat_sum / 3, 1)
 
     def get_normal_answer_context(self) -> dict:
         subject_vars = self._subject_variants.subject_vars
@@ -299,7 +305,8 @@ class NormalRegisterData:
         return render(self._request, 'a_psat/predict_register.html', context)
 
     def redirect_to_no_category(self, form, context):
-        form.add_error(None, '직렬을 잘못 선택하셨습니다. 다시 선택해주세요.')
+        form.add_error(None, '직렬을 잘못 선택하셨습니다.')
+        form.add_error(None, '다시 선택해주세요.')
         context = update_context_data(context, form=form)
         return render(self._request, 'a_psat/predict_register.html', context)
 
@@ -319,7 +326,7 @@ class NormalAnswerInputData:
     def process_post_request_to_answer_input(self):
         problem_count = self._context['problem_count']
         subject_field = self._context['subject_field']
-        total_answer_set = self._temporary_answer_data.total_answer_set
+        total_answer_set = self._temporary_answer_data.get_total_answer_set()
 
         try:
             no = int(self._request.POST.get('number'))
@@ -382,7 +389,7 @@ class NormalAnswerConfirmData:
         is_confirmed = all(answer_student)
         if is_confirmed:
             self.create_confirmed_answers(answer_student)
-            self.update_answer_counts_after_confirm()
+            self.update_answer_counts_after_confirm(answer_student)
             self.update_score_of_student()
 
             score_df = self.get_score_df()
@@ -407,13 +414,12 @@ class NormalAnswerConfirmData:
     @with_bulk_create_or_update()
     def create_confirmed_answers(self, answer_student):
         list_create = []
-        for entry in answer_student:
-            problem = _model.problem.objects.get(psat=self._psat, subject=self._sub, number=entry['no'])
-            list_create.append(_model.answer(student=self._student, problem=problem, answer=entry['ans']))
+        for number, answer in enumerate(answer_student, start=1):
+            problem = _model.problem.objects.get(psat=self._psat, subject=self._sub, number=number)
+            list_create.append(_model.answer(student=self._student, problem=problem, answer=answer))
         return _model.answer, list_create, [], []
 
-    def update_answer_counts_after_confirm(self) -> None:
-        answer_student = self._temporary_answer_data.get_answer_student_for_subject()
+    def update_answer_counts_after_confirm(self, answer_student) -> None:
         qs_answer_count = _model.ac_all.objects.predict_filtered_by_psat(self._psat).filter(sub=self._sub)
 
         count_all, count_filtered = 0, 0
@@ -577,12 +583,16 @@ class StudentAnswerData:
                 'is_confirmed': self.is_confirmed_data[sub],
                 'url_answer_input': url_answer_input,
 
+                'score_result': student_score,
                 'score_predict': 0,
                 'problem_count': problem_count,
                 'answer_count': answer_count,
 
-                'rank': rank, 'score': student_score, 'max': max_score,
-                't10': top_score_10, 't20': top_score_20, 'avg': avg_score,
+                'rank': rank,
+                'max': max_score,
+                't10': top_score_10,
+                't20': top_score_20,
+                'avg': avg_score,
             }
         return stat_data
 
