@@ -94,22 +94,19 @@ def official_psat_active_view(request: HtmxHttpRequest, pk: int):
 @admin_required
 def official_update_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    title = 'PSAT 문제 업데이트'
+    title = 'PSAT 자료 업데이트'
     context = update_context_data(config=config, title=title)
 
     if request.method == 'POST':
-        form = forms.ProblemUpdateForm(request.POST, request.FILES)
+        form = forms.UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            year = form.cleaned_data['year']
-            exam = form.cleaned_data['exam']
-            psat = get_object_or_404(models.Psat, year=year, exam=exam)
-            update_data = AdminUpdateData(request=request, psat=psat)
+            update_data = AdminUpdateData(request=request)
             update_data.process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
             return render(request, 'a_psat/admin_form.html', context)
 
-    form = forms.ProblemUpdateForm()
+    form = forms.UploadFileForm()
     context = update_context_data(context, form=form)
     return render(request, 'a_psat/admin_form.html', context)

@@ -378,12 +378,44 @@ class AdminCreateData:
 @dataclass(kw_only=True)
 class AdminUpdateData:
     request: HtmxHttpRequest
-    psat: models.Psat
 
+    @with_bulk_create_or_update()
     def process_post_request(self):
-        file = self.request.FILES['file']
-        df = pd.read_excel(file, header=0, index_col=0)
+        problem_model = models.Problem
+        replace_dict = self.get_replace_dict()
 
+        file = self.request.FILES['file']
+        df = pd.read_excel(file)
+        df['answer'] = df['answer'].replace(to_replace=replace_dict)
+        df = df.infer_objects(copy=False)
+        df.fillna(value={'answer': 1, 'question': '', 'data': ''}, inplace=True)
+
+        qs_problem = problem_model.objects.select_related('psat')
+        problem_dict = {
+            (qs_p.psat.year, qs_p.psat.exam, qs_p.subject, qs_p.number): qs_p for qs_p in qs_problem
+        }
+
+        list_update = []
+        update_fields = ['paper_type', 'answer', 'question', 'data']
+        for index, row in df.iterrows():
+            year = row['year']
+            exam = row['exam']
+            subject = row['subject']
+            number = row['number']
+            problem = problem_dict.get((year, exam, subject, number))
+
+            update_info = {fld: row[fld] for fld in update_fields}
+            if problem:
+                fields_not_match = any(getattr(problem, fld) != val for fld, val in update_info.items())
+                if fields_not_match:
+                    for fld, val in update_info.items():
+                        setattr(problem, fld, val)
+                    list_update.append(problem)
+
+        return problem_model, [], list_update, update_fields
+
+    @staticmethod
+    def get_replace_dict():
         answer_symbol = {'①': 1, '②': 2, '③': 3, '④': 4, '⑤': 5}
         keys = list(answer_symbol.keys())
         combinations = []
@@ -396,16 +428,7 @@ class AdminUpdateData:
             value = int(''.join(str(answer_symbol[k]) for k in combination))
             replace_dict[key] = value
 
-        df['answer'].replace(to_replace=replace_dict, inplace=True)
-        df = df.infer_objects(copy=False)
-
-        for index, row in df.iterrows():
-            problem = models.Problem.objects.get(psat=self.psat, subject=row['subject'], number=row['number'])
-            problem.paper_type = row['paper_type']
-            problem.answer = row['answer']
-            problem.question = row['question']
-            problem.data = row['data']
-            problem.save()
+        return replace_dict
 
 
 def create_img_wide(img, width, height, threshold_height, img_wide_path):
