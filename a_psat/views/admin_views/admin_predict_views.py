@@ -46,10 +46,6 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     psat = models.Psat.objects.filter(pk=pk).select_related('predict_psat').first()
     context = update_context_data(config=config, psat=psat)
-    if not psat or not hasattr(psat, 'predict_psat') or not psat.predict_psat.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_psat/redirect.html', context)
-
     detail_data = AdminDetailData(request=request, psat=psat)
 
     if detail_data.view_type == 'problem_list':

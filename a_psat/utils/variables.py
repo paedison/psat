@@ -69,19 +69,6 @@ class RequestData:
 class PsatData:
     _psat: models.Psat
 
-    def __post_init__(self):
-        has_predict = self.get_has_predict()
-        self.predict_psat = self._psat.predict_psat if has_predict else None
-        self.time_schedule = self.get_time_schedule() if has_predict else {}
-
-    def get_predict_psat(self):
-        if self.get_has_predict():
-            return self._psat.predict_psat
-
-    def get_has_predict(self):
-        if hasattr(self._psat, 'predict_psat'):
-            return all([self._psat, self._psat.predict_psat.is_active])
-
     def is_not_for_predict(self):
         return any([
             not self._psat,
@@ -93,8 +80,8 @@ class PsatData:
         return timezone.now() < self._psat.predict_psat.exam_started_at
 
     def get_time_schedule(self) -> dict:
-        if self.get_has_predict():
-            predict_psat = self.get_predict_psat()
+        if hasattr(self._psat, 'predict_psat'):
+            predict_psat = self._psat.predict_psat
             start_time = predict_psat.exam_started_at
             finish_time = predict_psat.exam_finished_at
 

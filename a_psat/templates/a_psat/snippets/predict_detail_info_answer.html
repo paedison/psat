@@ -57,10 +57,10 @@
             <tr class="text-center{% if stat_tot.field == 'average' %} table-warning{% endif %}">
                 <th class="text-nowrap" aria-label="과목">
                     {% if stat_tot.field == 'average' %}
-                        {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
+                        {{ stat_tot.subject }}
                     {% else %}
                         <a class="text-decoration-none" href="{{ stat_tot.url_answer_input }}">
-                            {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
+                            {{ stat_tot.subject }}
                         </a>
                     {% endif %}
                 </th>
@@ -95,9 +95,7 @@
             </tr>
         {% else %}
             <tr class="text-center{% if stat_tot.field == 'average' %} table-warning{% endif %}">
-                <th class="text-nowrap" aria-label="과목">
-                    {{ stat_tot.icon|safe }} {{ stat_tot.subject }}
-                </th>
+                <th class="text-nowrap" aria-label="과목">{{ stat_tot.subject }}</th>
 
                 <td aria-label="점수">
                     {% if current_time <= predict_psat.answer_predict_opened_at %}
@@ -108,7 +106,7 @@
                         </div>
                     {% else %}
                         <div id="{{ stat_tot.field }}Score" class="htmx-fade-up-in delay-1 text-success fw-bold">
-                            {{ stat_tot.score|floatformat:1|default:'' }}
+                            {{ stat_tot.score_result|floatformat:1|default:'' }}
                         </div>
                     {% endif %}
                 </td>

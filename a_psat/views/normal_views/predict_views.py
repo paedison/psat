@@ -46,7 +46,7 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
     subject_variants = SubjectVariants(_psat=psat)
     redirect_data = NormalRedirectData(_request=request, _context=context)
 
-    if psat_data.is_not_for_predict():
+    if not request.user.is_admin and psat_data.is_not_for_predict():  # noqa
         return redirect_data.redirect_to_no_predict_psat()
 
     student_data = StudentData(_request=request, _psat=psat)
@@ -56,7 +56,7 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
         return redirect_data.redirect_to_no_student()
 
     context = update_context_data(
-        context, student=student, time_schedule=psat_data.time_schedule,
+        context, student=student, time_schedule=psat_data.get_time_schedule(),
         subject_vars=subject_variants.subject_vars,
     )
     detail_data = NormalDetailData(_request=request, _context=context)
@@ -65,7 +65,7 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
     context = update_context_data(
         context,
         sub_title=f'{psat.full_reference} 합격 예측',
-        predict_psat=psat_data.get_predict_psat(),
+        predict_psat=psat.predict_psat,
 
         # icon
         icon_menu=icon_set_new.ICON_MENU,
@@ -187,7 +187,7 @@ def predict_answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field
     answer_confirm_data = NormalAnswerConfirmData(
         _request=request, _context=result['context'],
         _temporary_answer_data=temporary_answer_data,
-        time_schedule=result['psat_data'].time_schedule
+        time_schedule=result['psat_data'].get_time_schedule()
     )
 
     if request.method == 'POST':
