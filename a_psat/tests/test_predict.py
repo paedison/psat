@@ -28,7 +28,7 @@ def test_register_page_error_without_predict_psat(logged_client: Client, base_fi
     assert_response_contains(
         logged_client,
         base_fixture['urls']['register'],
-        '합격 예측 대상 시험이 아닙니다.'
+        '합격 예측 대상 시험이 아닙니다.',
     )
 
 
@@ -36,7 +36,7 @@ def test_register_page_error_existing_student(logged_client: Client, student_fix
     assert_response_contains(
         logged_client,
         student_fixture['urls']['register'],
-        '등록된 수험정보가 존재합니다.'
+        '등록된 수험정보가 존재합니다.',
     )
 
 
@@ -90,7 +90,7 @@ def test_register_page_success(logged_client: Client, predict_fixture: dict):
         _, decoded = assert_response_contains_not(
             logged_client,
             url_detail,
-            '등록된 수험정보가 없습니다.'
+            '등록된 수험정보가 없습니다.',
         )
 
         assert url_input_current in decoded
@@ -101,7 +101,7 @@ def test_answer_input_page_error_without_predict_exam(logged_client: Client, bas
     assert_response_contains(
         logged_client,
         base_fixture['urls']['detail'],
-        '합격 예측 대상 시험이 아닙니다.'
+        '합격 예측 대상 시험이 아닙니다.',
     )
 
 
@@ -113,25 +113,33 @@ def test_answer_input_page_error_without_student(logged_client: Client, predict_
         assert_response_contains(
             logged_client,
             predict_fixture['urls'][f'answer_input_{field_idx}'],
-            '등록된 수험정보가 없습니다.'
+            '등록된 수험정보가 없습니다.',
         )
 
 
 def test_answer_input_page_success(logged_client: Client, student_fixture: dict):
     test_time = student_fixture['test_time']
     _, subject_fld, field_idx, _ = student_fixture['subject_tuples']
+    url_answer_input = student_fixture['urls'][f'answer_input_{field_idx}']
+    url_answer_confirm = student_fixture['urls'][f'answer_confirm_{field_idx}']
 
     with freeze_time(test_time[f'after_exam_{field_idx}_end']):
+        assert_response_contains(
+            logged_client,
+            url_answer_input,
+            url_answer_confirm,
+        )
+
         number = 1
         answer = 4
-        response = logged_client.post(
-            student_fixture['urls'][f'answer_input_{field_idx}'],
-            data={'number': number, 'answer': answer},
-        )
+        response = logged_client.post(url_answer_input, data={'number': number, 'answer': answer})
         assert 'total_answer_set' in response.client.cookies
 
         answer_data_set = json.loads(response.client.cookies.get('total_answer_set').value)
         assert answer_data_set[subject_fld][number - 1] == answer
+
+        response = logged_client.get(url_answer_input)
+        assert response.context[0]['answer_student_list'][number - 1]['ans'] == answer
 
 
 # Test Answer Confirm Page

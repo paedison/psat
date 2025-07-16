@@ -1,5 +1,5 @@
 __all__ = [
-    'NormalRedirectData', 'StudentData', 'TemporaryAnswerData',
+    'NormalRedirectData', 'TemporaryAnswerData',
     'NormalListData', 'NormalDetailData', 'NormalRegisterData',
     'NormalAnswerInputData', 'NormalAnswerConfirmData',
 ]
@@ -7,7 +7,6 @@ __all__ = [
 import json
 from collections import defaultdict
 from dataclasses import dataclass
-from dataclasses import field as dataclass_field
 
 import numpy as np
 import pandas as pd
@@ -21,14 +20,14 @@ from common.utils import HtmxHttpRequest, update_context_data
 from common.utils.export_excel_methods import *
 from common.utils.modify_models_methods import *
 
+_model = ModelData()
+
 UPDATE_MESSAGES = {
     'score': get_update_messages('점수'),
     'rank': get_update_messages('등수'),
     'statistics': get_update_messages('통계'),
     'answer_count': get_update_messages('문항분석표'),
 }
-
-_model = ModelData()
 
 
 @dataclass(kw_only=True)
@@ -68,15 +67,6 @@ class NormalRedirectData:
 
 
 @dataclass(kw_only=True)
-class StudentData:
-    _request: HtmxHttpRequest
-    _psat: _model.psat
-
-    def get_student(self) -> _model.student:
-        return _model.student.objects.psat_student_with_answer_count(self._request.user, self._psat)
-
-
-@dataclass(kw_only=True)
 class TemporaryAnswerData:
     _request: HtmxHttpRequest
     _context: dict
@@ -107,9 +97,6 @@ class TemporaryAnswerData:
 class NormalListData:
     _request: HtmxHttpRequest
 
-    def __post_init__(self):
-        self.qs_psat = self.get_qs_psat()
-
     def get_qs_psat(self):
         qs_psat = _model.psat.objects.predict_psat_active()
         psat_list = qs_psat.values_list('id', flat=True)
@@ -129,16 +116,9 @@ class NormalDetailData:
 
     def __post_init__(self):
         self._student = self._context['student']
-        self._subject_variants = SubjectVariants(_psat=self._context['psat'])
+        self._subject_vars = self._context['subject_vars']
 
-        self._temporary_answer_data = TemporaryAnswerData(_request=self._request, _context=self._context)
-        self._answer_data_set = self._temporary_answer_data.get_total_answer_set()
-
-        self._student_answer_data = StudentAnswerData(
-            _time_schedule=self._context['time_schedule'],
-            _subject_variants=self._subject_variants,
-            _student=self._student, _answer_data_set=self._answer_data_set
-        )
+        self._student_answer_data = StudentAnswerData(_context=self._context)
         self._qs_student_answer = self._student_answer_data.qs_student_answer
 
         self.is_confirmed_data = self._student_answer_data.is_confirmed_data
@@ -170,7 +150,7 @@ class NormalDetailData:
         }
 
     def update_normal_statistics_context_for_score(self, statistics_all: dict, score_type: str) -> None:
-        subject_vars = self._subject_variants.subject_vars
+        subject_vars = self._subject_vars
         correct_count_list = (
             self._qs_student_answer
             .filter(**{f'is_{score_type}_correct': True})
@@ -190,8 +170,9 @@ class NormalDetailData:
         statistics_all['평균'][f'score_{score_type}'] = round(psat_sum / 3, 1)
 
     def get_normal_answer_context(self) -> dict:
-        subject_vars = self._subject_variants.subject_vars
-        context = {sub: {'id': str(idx)} for idx, sub in enumerate(self._subject_variants.sub_list)}
+        subject_vars = self._subject_vars
+        sub_list = [sub for sub in subject_vars]
+        context = {sub: {'id': str(idx)} for idx, sub in enumerate(sub_list)}
 
         for sub, (subject, fld, idx, problem_count) in subject_vars.items():
             context[sub].update({
@@ -315,7 +296,6 @@ class NormalRegisterData:
 class NormalAnswerInputData:
     _request: HtmxHttpRequest
     _context: dict
-    _temporary_answer_data: TemporaryAnswerData
 
     def already_submitted(self):
         student = self._context['student']
@@ -326,7 +306,7 @@ class NormalAnswerInputData:
     def process_post_request_to_answer_input(self):
         problem_count = self._context['problem_count']
         subject_field = self._context['subject_field']
-        total_answer_set = self._temporary_answer_data.get_total_answer_set()
+        total_answer_set = self._context['total_answer_set']
 
         try:
             no = int(self._request.POST.get('number'))
@@ -352,8 +332,6 @@ class NormalAnswerInputData:
 class NormalAnswerConfirmData:
     _request: HtmxHttpRequest
     _context: dict
-    _temporary_answer_data: TemporaryAnswerData
-    time_schedule: dict
 
     def __post_init__(self):
         self._student: _model.student = self._context['student']
@@ -385,7 +363,7 @@ class NormalAnswerConfirmData:
         )
 
     def process_post_request_to_answer_confirm(self):
-        answer_student = self._temporary_answer_data.get_answer_student_for_subject()
+        answer_student = self._context['answer_student']
         is_confirmed = all(answer_student)
         if is_confirmed:
             self.create_confirmed_answers(answer_student)
@@ -521,17 +499,18 @@ class NormalAnswerConfirmData:
 
 @dataclass(kw_only=True)
 class StudentAnswerData:
-    _time_schedule: dict
-    _subject_variants: SubjectVariants
-    _student: _model.student
-    _answer_data_set: dataclass_field(default_factory=dict)
+    _context: dict
 
     def __post_init__(self):
+        self._student = self._context['student']
+        self._subject_vars = self._context['subject_vars']
+        self._subject_variants = SubjectVariants(_psat=self._context['psat'])
+
         self.qs_student_answer = _model.answer.objects.filtered_by_psat_student(self._student)
         self.is_confirmed_data = self.get_is_confirmed_data()
 
     def get_is_confirmed_data(self) -> dict[str, bool]:
-        is_confirmed_data = {sub: False for sub in self._subject_variants.sub_list}
+        is_confirmed_data = {sub: False for sub in self._subject_vars}
         confirmed_sub_list = self.qs_student_answer.values_list('subject', flat=True).distinct()
 
         for sub in confirmed_sub_list:
@@ -545,7 +524,7 @@ class StudentAnswerData:
         score_np_dict = self.get_score_np_dict(stat_type, is_filtered)
         answer_count_dict = self.get_answer_count_dict()
 
-        time_schedule = self._time_schedule
+        time_schedule = self._context['time_schedule']
         predict_psat = self._student.psat.predict_psat
 
         is_confirmed_for_average = []
@@ -617,9 +596,10 @@ class StudentAnswerData:
         return {fld: np.array(scores) for fld, scores in subject_dict.items()}
 
     def get_answer_count_dict(self) -> dict[str, int]:
+        total_answer_set = self._context['total_answer_set']
         answer_count_dict = {}
-        for sub, (subject, fld, _, problem_count) in self._subject_variants.subject_vars.items():
-            answer_list = self._answer_data_set.get(fld)
+        for sub, (subject, fld, _, problem_count) in self._subject_vars.items():
+            answer_list = total_answer_set.get(fld)
             saved_answers = []
             if answer_list:
                 saved_answers = [ans for ans in answer_list if ans]

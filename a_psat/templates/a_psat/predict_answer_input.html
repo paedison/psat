@@ -24,7 +24,7 @@
 
                         <div class="row d-flex mb-3">
                             <div class="col-6">
-                                {% for answer in answer_student %}
+                                {% for answer in answer_student_list %}
                                     {% if answer_student|length <= 30 %}
                                         {% if forloop.counter <= 15 %}
                                             {% partial form %}

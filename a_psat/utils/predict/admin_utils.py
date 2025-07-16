@@ -1,7 +1,5 @@
 __all__ = [
-    'AdminListData', 'AdminDetailData',
-    'AdminCreateData', 'AdminUpdateData',
-    'AdminExportExcelData',
+    'AdminDetailContext', 'AdminCreateContext', 'AdminUpdateContext', 'AdminExportExcelContext',
 ]
 
 from collections import defaultdict
@@ -11,11 +9,14 @@ import pandas as pd
 from django.db.models import Count, F, QuerySet, Window
 from django.db.models.functions import Rank
 
-from a_psat import models, forms
-from a_psat.utils.variables import RequestData, SubjectVariants
+from a_psat import forms
+from a_psat.models.choices import answer_choice
+from a_psat.utils.variables import ModelData, SubjectVariants
 from common.utils import HtmxHttpRequest, get_paginator_context
 from common.utils.export_excel_methods import *
 from common.utils.modify_models_methods import *
+
+_model = ModelData()
 
 UPDATE_MESSAGES = {
     'score': get_update_messages('점수'),
@@ -26,59 +27,26 @@ UPDATE_MESSAGES = {
 
 
 @dataclass(kw_only=True)
-class ModelData:
-    def __post_init__(self):
-        self.student = models.PredictStudent
-        self.answer = models.PredictAnswer
-        self.score = models.PredictScore
-        self.rank_total = models.PredictRankTotal
-        self.rank_category = models.PredictRankCategory
-        self.answer_count_all = models.PredictAnswerCount
-        self.answer_count_top = models.PredictAnswerCountTopRank
-        self.answer_count_mid = models.PredictAnswerCountMidRank
-        self.answer_count_low = models.PredictAnswerCountLowRank
-
-
-@dataclass(kw_only=True)
-class AdminListData:
+class AdminDetailContext:
     request: HtmxHttpRequest
+    _context: dict
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-
-    def get_predict_psat_context(self):
-        predict_psat_list = models.PredictPsat.objects.select_related('psat')
-        return get_paginator_context(predict_psat_list, self.page_number)
-
-
-@dataclass(kw_only=True)
-class AdminDetailData:
-    request: HtmxHttpRequest
-    psat: models.Psat
-
-    def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        self._subject_variants = SubjectVariants(_psat=self.psat)
+        self._psat = self._context['psat']
+        self._subject_variants = SubjectVariants(_psat=self._psat)
 
         self._subject_vars = self._subject_variants.subject_vars
         self._subject_vars_avg = self._subject_variants.subject_vars_avg
-        self._qs_problem = models.Problem.objects.filtered_problem_by_psat(self.psat)
-        self._qs_answer_count = models.PredictAnswerCount.objects.predict_filtered_by_psat(self.psat)
+        self._qs_problem = _model.problem.objects.filtered_problem_by_psat(self._psat)
+        self._qs_answer_count = _model.ac_all.objects.predict_filtered_by_psat(self._psat)
 
-        self.exam_subject = request_data.exam_subject
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-        self.student_name = request_data.student_name
+    def get_admin_problem_context(self, page_number=1):
+        return {'problem_context': get_paginator_context(self._qs_problem, page_number)}
 
-    def get_admin_problem_context(self):
-        return {'problem_context': get_paginator_context(self._qs_problem, self.page_number)}
-
-    def get_admin_statistics_context(self, per_page=10) -> dict:
+    def get_admin_statistics_context(self, page_number=1, per_page=10) -> dict:
         total_data, filtered_data = self.get_admin_statistics_data()
-        total_context = get_paginator_context(total_data, self.page_number, per_page)
-        filtered_context = get_paginator_context(filtered_data, self.page_number, per_page)
+        total_context = get_paginator_context(total_data, page_number, per_page)
+        filtered_context = get_paginator_context(filtered_data, page_number, per_page)
         total_context.update({
             'id': '0', 'title': '전체', 'prefix': 'TotalStatistics', 'header': 'total_statistics_list',
         })
@@ -89,7 +57,7 @@ class AdminDetailData:
 
     def get_admin_statistics_data(self) -> tuple[list, list]:
         department_list = list(
-            models.PredictCategory.objects.filter(exam=self.psat.exam).order_by('order')
+            _model.category.objects.filter(exam=self._psat.exam).order_by('order')
             .values_list('department', flat=True)
         )
         department_list.insert(0, '전체')
@@ -103,7 +71,7 @@ class AdminDetailData:
             filtered_scores[department] = {sub: [] for sub in self._subject_vars_avg}
 
         qs_students = (
-            models.PredictStudent.objects.filter(psat=self.psat)
+            _model.student.objects.filter(psat=self._psat)
             .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
             .annotate(
                 department=F('category__department'),
@@ -157,13 +125,13 @@ class AdminDetailData:
                     'avg': avg_score,
                 }
 
-    def get_admin_catalog_context(self, for_search=False) -> dict:
-        total_list = models.PredictStudent.objects.filtered_student_by_psat(self.psat)
-        if for_search:
-            total_list = total_list.filter(name=self.student_name)
+    def get_admin_catalog_context(self, page_number=1, student_name=None) -> dict:
+        total_list = _model.student.objects.filtered_student_by_psat(self._psat)
+        if student_name:
+            total_list = total_list.filter(name=student_name)
         filtered_list = total_list.filter(is_filtered=True)
-        total_context = get_paginator_context(total_list, self.page_number)
-        filtered_context = get_paginator_context(filtered_list, self.page_number)
+        total_context = get_paginator_context(total_list, page_number)
+        filtered_context = get_paginator_context(filtered_list, page_number)
 
         field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
         for obj in filtered_context['page_obj']:
@@ -182,13 +150,12 @@ class AdminDetailData:
 
         return {'catalog_context': {'total': total_context, 'filtered': filtered_context}}
 
-    def get_admin_answer_context(self, for_pagination=False, per_page=10) -> dict:
+    def get_admin_answer_context(self, subject=None, page_number=1, per_page=10) -> dict:
         sub_list = [sub for sub in self._subject_vars]
         qs_answer_count_group = {sub: [] for sub in self._subject_vars}
         answer_context = {}
 
-        subject = self.exam_subject if for_pagination else None
-        qs_answer_count = models.PredictAnswerCount.objects.filtered_by_psat_and_subject(self.psat, subject)
+        qs_answer_count = _model.ac_all.objects.filtered_by_psat_and_subject(self._psat, subject)
         for qs_ac in qs_answer_count:
             sub = qs_ac.subject
             if sub not in qs_answer_count_group:
@@ -198,7 +165,7 @@ class AdminDetailData:
         for sub, qs_answer_count in qs_answer_count_group.items():
             if qs_answer_count:
                 data_answers = self.get_admin_answer_data(qs_answer_count)
-                context = get_paginator_context(data_answers, self.page_number, per_page)
+                context = get_paginator_context(data_answers, page_number, per_page)
                 context.update({
                     'id': str(sub_list.index(sub)),
                     'title': sub,
@@ -223,7 +190,7 @@ class AdminDetailData:
             qs_ac.no = qs_ac.number
             qs_ac.ans_official = ans_official
             qs_ac.ans_official_circle = qs_ac.problem.get_answer_display()
-            qs_ac.ans_predict_circle = models.choices.answer_choice()[qs_ac.ans_predict] if qs_ac.ans_predict else None
+            qs_ac.ans_predict_circle = answer_choice()[qs_ac.ans_predict] if qs_ac.ans_predict else None
             qs_ac.ans_list = answer_official_list
             qs_ac.field = field
 
@@ -239,12 +206,13 @@ class AdminDetailData:
         return qs_answer_count
 
     def get_admin_only_answer_context(self, queryset: QuerySet) -> dict:
+        sub_list = self._subject_variants.sub_list
         query_dict = defaultdict(list)
         for query in queryset.order_by('id'):
             query_dict[query.subject].append(query)
         return {
             sub: {'id': str(idx), 'title': sub, 'page_obj': query_dict[sub]}
-            for sub, (_, _, idx, _) in self._subject_vars.items()
+            for idx, sub in enumerate(sub_list)
         }
 
     def get_admin_answer_predict_context(self):
@@ -255,16 +223,16 @@ class AdminDetailData:
 
 
 @dataclass(kw_only=True)
-class AdminCreateData:
+class AdminCreateContext:
     form: forms.PredictPsatForm
 
     def __post_init__(self):
         year = self.form.cleaned_data['year']
         exam = self.form.cleaned_data['exam']
-        self._psat = models.Psat.objects.get(year=year, exam=exam)
+        self._psat = _model.psat.objects.get(year=year, exam=exam)
 
     def process_post_request(self):
-        predict_psat, _ = models.PredictPsat.objects.get_or_create(psat=self._psat)
+        predict_psat, _ = _model.predict_psat.objects.get_or_create(psat=self._psat)
         predict_psat.is_active = True
         predict_psat.page_opened_at = self.form.cleaned_data['page_opened_at']
         predict_psat.exam_started_at = self.form.cleaned_data['exam_started_at']
@@ -278,14 +246,8 @@ class AdminCreateData:
         self.create_statistics_model_instances()
 
     def create_answer_count_model_instances(self) -> None:
-        problems = models.Problem.objects.filter(psat=self._psat).order_by('id')
-        model_list = [
-            models.PredictAnswerCount,
-            models.PredictAnswerCountTopRank,
-            models.PredictAnswerCountMidRank,
-            models.PredictAnswerCountLowRank,
-        ]
-        for model in model_list:
+        problems = _model.problem.objects.filter(psat=self._psat).order_by('id')
+        for model in _model.ac_model_set.values():
             list_create = []
             for problem in problems:
                 append_list_create(model, list_create, problem=problem)
@@ -293,43 +255,30 @@ class AdminCreateData:
 
     @with_bulk_create_or_update()
     def create_statistics_model_instances(self):
+        category_model = _model.category
         department_list = list(
-            models.PredictCategory.objects.filter(exam=self._psat.exam).order_by('order')
+            category_model.objects.filter(exam=self._psat.exam).order_by('order')
             .values_list('department', flat=True)
         )
         department_list.insert(0, '전체')
 
         list_create = []
         for department in department_list:
-            append_list_create(models.PredictStatistics, list_create, psat=self._psat, department=department)
-        return models.PredictStatistics, list_create, [], []
+            append_list_create(category_model, list_create, psat=self._psat, department=department)
+        return category_model, list_create, [], []
 
 
 @dataclass(kw_only=True)
-class AdminUpdateData:
+class AdminUpdateContext:
     request: HtmxHttpRequest
-    psat: models.Psat
+    psat: _model.psat
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        model_data = ModelData()
         self._subject_variants = SubjectVariants(_psat=self.psat)
-
         self._subject_vars = self._subject_variants.subject_vars
         self._subject_vars_avg = self._subject_variants.subject_vars_avg
-        self._sub_list = [sub for sub in self._subject_vars]
-        self._qs_student = models.PredictStudent.objects.filter(psat=self.psat).order_by('id')
-
-        self._answer_model = model_data.answer
-        self._score_model = model_data.score
-        self._rank_total_model = model_data.rank_total
-        self._rank_category_model = model_data.rank_category
-        self._answer_count_all_model = model_data.answer_count_all
-        self._answer_count_top_model = model_data.answer_count_top
-        self._answer_count_mid_model = model_data.answer_count_mid
-        self._answer_count_low_model = model_data.answer_count_low
-
-        self.view_type = request_data.view_type
+        self._sub_list = self._subject_variants.sub_list
+        self._qs_student = _model.student.objects.filter(psat=self.psat).order_by('id')
 
     def update_problem_model_for_answer_official(self) -> tuple[bool | None, str]:
         message_dict = {
@@ -339,6 +288,7 @@ class AdminUpdateData:
         }
         list_create, list_update = [], []
 
+        problem_model = _model.problem
         form = forms.UploadFileForm(self.request.POST, self.request.FILES)
         file = self.request.FILES.get('file')
 
@@ -351,18 +301,17 @@ class AdminUpdateData:
                 for number, answer in rows.items():
                     if answer:
                         try:
-                            problem = models.Problem.objects.get(psat=self.psat, subject=subject[0:2], number=number)
+                            problem = problem_model.objects.get(psat=self.psat, subject=subject[0:2], number=number)
                             if problem.answer != answer:
                                 problem.answer = answer
                                 list_update.append(problem)
-                        except models.Problem.DoesNotExist:
-                            problem = models.Problem(
-                                psat=self.psat, subject=subject, number=number, answer=answer)
+                        except problem_model.DoesNotExist:
+                            problem = problem_model(psat=self.psat, subject=subject, number=number, answer=answer)
                             list_create.append(problem)
                         except ValueError as error:
                             print(error)
             update_fields = ['answer']
-            is_updated = bulk_create_or_update(models.Problem, list_create, list_update, update_fields)
+            is_updated = bulk_create_or_update(problem_model, list_create, list_update, update_fields)
         else:
             is_updated = None
             print(form)
@@ -374,12 +323,11 @@ class AdminUpdateData:
 
     @with_update_message(UPDATE_MESSAGES['rank'])
     def update_ranks(self):
-        return [
-            self.update_rank_model(self._rank_total_model, False),
-            self.update_rank_model(self._rank_total_model, True),
-            self.update_rank_model(self._rank_category_model, False),
-            self.update_rank_model(self._rank_category_model, True),
-        ]
+        result_list = []
+        for _bool in [False, True]:
+            for model in _model.rank_model_set.values():
+                result_list.append(self.update_rank_model(model, _bool))
+        return result_list
 
     @with_update_message(UPDATE_MESSAGES['statistics'])
     def update_statistics(self):
@@ -391,24 +339,19 @@ class AdminUpdateData:
 
     @with_update_message(UPDATE_MESSAGES['answer_count'])
     def update_answer_counts(self):
-        return [
-            self.update_answer_count_model(self._answer_count_all_model, False),
-            self.update_answer_count_model(self._answer_count_top_model, False),
-            self.update_answer_count_model(self._answer_count_mid_model, False),
-            self.update_answer_count_model(self._answer_count_low_model, False),
-
-            self.update_answer_count_model(self._answer_count_all_model, True),
-            self.update_answer_count_model(self._answer_count_top_model, True),
-            self.update_answer_count_model(self._answer_count_mid_model, True),
-            self.update_answer_count_model(self._answer_count_low_model, True),
-        ]
+        result_list = []
+        for _bool in [False, True]:
+            for model in _model.ac_model_set.values():
+                result_list.append(self.update_answer_count_model(model, _bool))
+        return result_list
 
     @with_bulk_create_or_update()
     def update_score_model(self):
+        score_model = _model.score
         list_create, list_update = [], []
 
         for student in self._qs_student:
-            original_score_instance, _ = self._score_model.objects.get_or_create(student=student)
+            original_score_instance, _ = score_model.objects.get_or_create(student=student)
 
             score_list = []
             fields_not_match = []
@@ -417,7 +360,7 @@ class AdminUpdateData:
                 correct_count = 0
 
                 qs_answer = (
-                    self._answer_model.objects.filter(student=student, problem__subject=sub)
+                    _model.answer.objects.filter(student=student, problem__subject=sub)
                     .annotate(answer_correct=F('problem__answer'), answer_student=F('answer'))
                 )
                 for entry in qs_answer:
@@ -442,7 +385,7 @@ class AdminUpdateData:
                 list_update.append(original_score_instance)
 
         update_fields = ['subject_0', 'subject_1', 'subject_2', 'subject_3', 'sum', 'average']
-        return self._score_model, list_create, list_update, update_fields
+        return score_model, list_create, list_update, update_fields
 
     @with_bulk_create_or_update()
     def update_rank_model(self, rank_model, is_filtered: bool):
@@ -465,7 +408,7 @@ class AdminUpdateData:
         participants = qs_student.count()
         for student in qs_student:
             rank_list = qs_student.annotate(**annotate_dict)
-            if rank_model == self._rank_category_model:
+            if rank_model == _model.rank_category:
                 rank_list = rank_list.filter(category=student.category)
                 participants = rank_list.count()
             target, _ = rank_model.objects.get_or_create(student=student)
@@ -496,7 +439,7 @@ class AdminUpdateData:
 
     def get_statistics_data(self) -> tuple[list, list]:
         department_list = list(
-            models.PredictCategory.objects.filter(exam=self.psat.exam).order_by('order')
+            _model.category.objects.filter(exam=self.psat.exam).order_by('order')
             .values_list('department', flat=True)
         )
         department_list.insert(0, '전체')
@@ -510,7 +453,7 @@ class AdminUpdateData:
             filtered_scores[department] = {sub: [] for sub in self._subject_vars_avg}
 
         qs_students = (
-            models.PredictStudent.objects.filter(psat=self.psat)
+            _model.student.objects.filter(psat=self.psat)
             .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
             .annotate(
                 department=F('category__department'),
@@ -565,6 +508,7 @@ class AdminUpdateData:
                 }
 
     def update_statistics_model(self, data_statistics, is_filtered: bool) -> tuple[bool | None, str]:
+        statistics_model = _model.statistics
         prefix = 'filtered_' if is_filtered else ''
         message_dict = get_update_messages('통계')
         list_update = []
@@ -585,7 +529,7 @@ class AdminUpdateData:
                 })
 
             try:
-                instance = models.PredictStatistics.objects.get(psat=self.psat, department=department)
+                instance = statistics_model.objects.get(psat=self.psat, department=department)
                 fields_not_match = any(
                     getattr(instance, fld) != val for fld, val in stat_dict.items()
                 )
@@ -593,13 +537,13 @@ class AdminUpdateData:
                     for fld, val in stat_dict.items():
                         setattr(instance, fld, val)
                     list_update.append(instance)
-            except models.PredictStatistics.DoesNotExist:
-                list_create.append(models.PredictStatistics(psat=self.psat, **stat_dict))
+            except statistics_model.DoesNotExist:
+                list_create.append(statistics_model(psat=self.psat, **stat_dict))
         update_fields = [
             'department', f'{prefix}subject_0', f'{prefix}subject_1',
             f'{prefix}subject_2', f'{prefix}subject_3', f'{prefix}average',
         ]
-        is_updated = bulk_create_or_update(models.PredictStatistics, list_create, list_update, update_fields)
+        is_updated = bulk_create_or_update(statistics_model, list_create, list_update, update_fields)
         return is_updated, message_dict[is_updated]
 
     @with_bulk_create_or_update()
@@ -617,16 +561,16 @@ class AdminUpdateData:
         lookup_exp = {}
         if is_filtered:
             lookup_exp['student__is_filtered'] = is_filtered
-        if answer_count_model == self._answer_count_top_model:
+        if answer_count_model == _model.ac_top:
             lookup_exp[f'{lookup_field}__lte'] = participants_function * top_rank_threshold
-        elif answer_count_model == self._answer_count_mid_model:
+        elif answer_count_model == _model.ac_mid:
             lookup_exp[f'{lookup_field}__gt'] = participants_function * top_rank_threshold
             lookup_exp[f'{lookup_field}__lte'] = participants_function * mid_rank_threshold
-        elif answer_count_model == self._answer_count_low_model:
+        elif answer_count_model == _model.ac_low:
             lookup_exp[f'{lookup_field}__gt'] = participants_function * mid_rank_threshold
 
         qs_answer = (
-            self._answer_model.objects.filter(**lookup_exp)
+            _model.answer.objects.filter(**lookup_exp)
             .select_related('student', 'student__rank_total')
             .values('problem_id', 'answer')
             .annotate(count=Count('id')).order_by('problem_id', 'answer')
@@ -667,8 +611,8 @@ class AdminUpdateData:
 
 
 @dataclass(kw_only=True)
-class AdminExportExcelData:
-    psat: models.Psat
+class AdminExportExcelContext:
+    psat: _model.psat
 
     def __post_init__(self):
         self._subject_variants = SubjectVariants(_psat=self.psat)
@@ -677,7 +621,7 @@ class AdminExportExcelData:
         self._sub_list = [sub for sub in self._subject_vars]
 
     def get_statistics_response(self) -> HttpResponse:
-        qs_statistics = models.PredictStatistics.objects.filter(psat=self.psat).order_by('id')
+        qs_statistics = _model.statistics.objects.filter(psat=self.psat).order_by('id')
         df = pd.DataFrame.from_records(qs_statistics.values())
 
         filename = f'{self.psat.full_reference}_성적통계.xlsx'
@@ -703,7 +647,7 @@ class AdminExportExcelData:
         return get_response_for_excel_file(df, filename)
 
     def get_prime_id_response(self) -> HttpResponse:
-        qs_student = models.PredictStudent.objects.filter(psat=self.psat).values(
+        qs_student = _model.student.objects.filter(psat=self.psat).values(
             'id', 'created_at', 'name', 'prime_id').order_by('id')
         df = pd.DataFrame.from_records(qs_student)
         df['created_at'] = df['created_at'].dt.tz_convert('Asia/Seoul').dt.tz_localize(None)
@@ -714,7 +658,7 @@ class AdminExportExcelData:
         return get_response_for_excel_file(df, filename)
 
     def get_catalog_response(self) -> HttpResponse:
-        total_student_list = models.PredictStudent.objects.filtered_student_by_psat(self.psat)
+        total_student_list = _model.student.objects.filtered_student_by_psat(self.psat)
         filtered_student_list = total_student_list.filter(is_filtered=True)
         filename = f'{self.psat.full_reference}_성적일람표.xlsx'
 
@@ -770,7 +714,7 @@ class AdminExportExcelData:
         return df
 
     def get_answer_response(self) -> HttpResponse:
-        qs_answer_count = models.PredictAnswerCount.objects.filtered_by_psat_and_subject(self.psat)
+        qs_answer_count = _model.ac_all.objects.filtered_by_psat_and_subject(self.psat)
         filename = f'{self.psat.full_reference}_문항분석표.xlsx'
 
         df1 = self.get_answer_df_for_excel(qs_answer_count)
@@ -784,8 +728,7 @@ class AdminExportExcelData:
         return get_response_for_excel_file(df1, filename, excel_data)
 
     @staticmethod
-    def get_answer_df_for_excel(
-            qs_answer_count: QuerySet[models.PredictAnswerCount], is_filtered=False) -> pd.DataFrame:
+    def get_answer_df_for_excel(qs_answer_count: QuerySet, is_filtered=False) -> pd.DataFrame:
         prefix = 'filtered_' if is_filtered else ''
         column_list = ['id', 'problem_id', 'subject', 'number', 'ans_official', 'ans_predict']
         for rank_type in ['all', 'top', 'mid', 'low']:
