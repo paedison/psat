@@ -107,28 +107,27 @@
             <thead>
                 <tr class="text-center table-warning align-middle">
                     <th class="text-primary text-nowrap" rowspan="2">ID</th>
-                    <th class="text-primary text-nowrap" rowspan="2">사용자 정보</th>
+                    <th class="text-primary text-nowrap" rowspan="2">성적 확인 일시</th>
+                    <th class="text-primary text-nowrap" rowspan="2">이름<hr class="m-0">수험번호</th>
+                    <th class="text-primary text-nowrap" rowspan="2">사용자명<hr class="m-0">사용자ID</th>
                     <th class="text-primary text-nowrap" rowspan="2">시험명</th>
-                    <th class="text-primary text-nowrap" rowspan="2">수험번호</th>
-                    <th class="text-primary text-nowrap" rowspan="2">이름</th>
                 </tr>
             </thead>
             <tbody>
                 {% if student_page_obj %}
                     {% for obj in student_page_obj %}
-                        <tr class="text-center small">
+                        <tr class="text-center">
                             <td class="text-nowrap">{{ obj.id }}</td>
+                            <td class="text-nowrap">{{ obj.created_at }}</td>
                             <td class="text-nowrap">
-                                <div class="d-flex justify-content-between">
-                                    <div>{{ obj.user.username }}</div>
-                                    <div class="ms-2">[{{ obj.user_id }}]</div>
-                                </div>
+                                {{ obj.student.name }}<hr class="m-0">{{ obj.student.serial }}
+                            </td>
+                            <td class="text-nowrap">
+                                {{ obj.user.username }}<hr class="m-0">{{ obj.user_id }}
                             </td>
                             <td class="text-nowrap">
                                 <div class="text-start">{{ obj.student.leet.name }}</div>
                             </td>
-                            <td class="text-nowrap">{{ obj.student.serial }}</td>
-                            <td class="text-nowrap">{{ obj.student.name }}</td>
                         </tr>
                     {% endfor %}
                 {% endif %}
