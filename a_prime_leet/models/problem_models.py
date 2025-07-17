@@ -11,7 +11,7 @@ class Leet(models.Model):
     year = models.PositiveSmallIntegerField(choices=choices.year_choice, default=datetime.now().year + 1, verbose_name='연도')
     exam = models.CharField(max_length=2, choices=choices.exam_choice, default='프모', verbose_name='시험')
     round = models.PositiveSmallIntegerField(default=1, verbose_name='회차')
-    name = models.CharField(max_length=30, verbose_name='시험명')
+    name = models.CharField(max_length=100, verbose_name='시험명')
     abbr = models.CharField(max_length=30, verbose_name='약칭')
     is_active = models.BooleanField(default=False, verbose_name='활성')
 
