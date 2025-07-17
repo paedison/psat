@@ -93,6 +93,7 @@
             </tbody>
         </table>
     </article>
+    {% include 'a_prime/snippets/pagination.html' with page_obj=exam_page_obj page_range=exam_page_range header='exam_list' %}
 
     {% if user.is_admin %}
         <button class="btn btn-primary" hx-get="{{ config.url_leet_create  }}">시험 추가</button>
@@ -135,7 +136,5 @@
         </table>
     </article>
 
-    {% with page_obj=student_page_obj page_range=student_page_range %}
-        {% include 'a_prime/snippets/pagination.html' with header='student_list' %}
-    {% endwith %}
+    {% include 'a_prime/snippets/pagination.html' with page_obj=student_page_obj page_range=student_page_range header='student_list' %}
 {% endpartialdef student_list %}

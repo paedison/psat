@@ -28,7 +28,6 @@ class ViewConfiguration:
 
 @only_staff_allowed()
 def list_view(request: HtmxHttpRequest):
-    view_type = request.headers.get('View-Type', '')
     page_number = request.GET.get('page', 1)
 
     exam_list = models.Leet.objects.all()
@@ -48,6 +47,10 @@ def list_view(request: HtmxHttpRequest):
         student_page_obj=student_page_obj,
         student_page_range=student_page_range,
     )
+
+    view_type = request.headers.get('View-Type', '')
+    if view_type == 'exam_list':
+        return render(request, 'a_prime_leet/admin_list.html#exam_list', context)
     if view_type == 'student_list':
         return render(request, 'a_prime_leet/admin_list.html#student_list', context)
     return render(request, 'a_prime_leet/admin_list.html', context)
