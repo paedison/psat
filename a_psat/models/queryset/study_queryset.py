@@ -32,7 +32,14 @@ class StudyProblemQuerySet(models.QuerySet):
             'psat', 'psat__category', 'problem', 'problem__psat')
 
     def annotate_answer_count_in_category(self, category):
-        annotate_dict = {'ans_official': models.F('problem__answer')}
+        annotate_dict = {
+            'original_psat_id': models.F('problem__psat_id'),
+            'season': models.F('psat__category__season'),
+            'study_type': models.F('psat__category__study_type'),
+            'round': models.F('psat__round'),
+            'subject': models.F('problem__subject'),
+            'ans_official': models.F('problem__answer'),
+        }
         field_list = ['count_1', 'count_2', 'count_3', 'count_4', 'count_5', 'count_sum']
         for fld in field_list:
             annotate_dict[f'{fld}_all'] = models.F(f'answer_count__{fld}')

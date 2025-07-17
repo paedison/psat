@@ -1,7 +1,8 @@
 __all__ = [
-    'NormalRedirectData', 'TemporaryAnswerData',
-    'NormalListData', 'NormalDetailData', 'NormalRegisterData',
-    'NormalAnswerInputData', 'NormalAnswerConfirmData',
+    'NormalRedirectContext', 'TemporaryAnswerContext',
+    'NormalListContext', 'NormalDetailContext', 'NormalRegisterContext',
+    'NormalAnswerInputContext', 'NormalAnswerConfirmContext',
+    'ChartContext',
 ]
 
 import json
@@ -12,6 +13,7 @@ import numpy as np
 import pandas as pd
 from django.db.models import Count, F
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django_htmx.http import reswap
 
 from a_psat.utils.predict.common_utils import ModelData
@@ -31,7 +33,7 @@ UPDATE_MESSAGES = {
 
 
 @dataclass(kw_only=True)
-class NormalRedirectData:
+class NormalRedirectContext:
     _request: HtmxHttpRequest
     _context: dict
 
@@ -67,7 +69,7 @@ class NormalRedirectData:
 
 
 @dataclass(kw_only=True)
-class TemporaryAnswerData:
+class TemporaryAnswerContext:
     _request: HtmxHttpRequest
     _context: dict
 
@@ -94,10 +96,10 @@ class TemporaryAnswerData:
 
 
 @dataclass(kw_only=True)
-class NormalListData:
+class NormalListContext:
     _request: HtmxHttpRequest
 
-    def get_qs_psat(self):
+    def get_psats_context(self):
         qs_psat = _model.psat.objects.predict_psat_active()
         psat_list = qs_psat.values_list('id', flat=True)
         student_dict = {}
@@ -108,32 +110,29 @@ class NormalListData:
             qs_p.student = student_dict.get(qs_p, None)
         return qs_psat
 
+    def get_login_url_context(self):
+        return reverse_lazy('account_login') + '?next=' + self._request.get_full_path()
+
 
 @dataclass(kw_only=True)
-class NormalDetailData:
+class NormalDetailContext:
     _request: HtmxHttpRequest
     _context: dict
 
     def __post_init__(self):
-        self._student = self._context['student']
-        self._subject_vars = self._context['subject_vars']
+        self._student_answer_context = StudentAnswerContext(_context=self._context)
+        self._qs_student_answer = self._student_answer_context.qs_student_answer
 
-        self._student_answer_data = StudentAnswerData(_context=self._context)
-        self._qs_student_answer = self._student_answer_data.qs_student_answer
-
-        self.is_confirmed_data = self._student_answer_data.is_confirmed_data
-        self.total_statistics_context = self.get_normal_statistics_context(False)
-        self.filtered_statistics_context = self.get_normal_statistics_context(True)
-
-        self.chart_data = ChartData(_statistics_context=self.total_statistics_context, _student=self._student)
+        self.is_confirmed_data = self._student_answer_context.is_confirmed_data
 
     def get_normal_statistics_context(self, is_filtered: bool) -> dict:
-        if is_filtered and not self._student.is_filtered:
+        student = self._context['student']
+        if is_filtered and not student.is_filtered:
             return {}
 
         suffix = 'Filtered' if is_filtered else 'Total'
-        statistics_all = self._student_answer_data.get_statistics_data('all', is_filtered)
-        statistics_department = self._student_answer_data.get_statistics_data('department', is_filtered)
+        statistics_all = self._student_answer_context.get_statistics_data('all', is_filtered)
+        statistics_department = self._student_answer_context.get_statistics_data('department', is_filtered)
 
         self.update_normal_statistics_context_for_score(statistics_all, 'result')
         self.update_normal_statistics_context_for_score(statistics_department, 'predict')
@@ -150,7 +149,7 @@ class NormalDetailData:
         }
 
     def update_normal_statistics_context_for_score(self, statistics_all: dict, score_type: str) -> None:
-        subject_vars = self._subject_vars
+        subject_vars = self._context['subject_vars']
         correct_count_list = (
             self._qs_student_answer
             .filter(**{f'is_{score_type}_correct': True})
@@ -170,14 +169,16 @@ class NormalDetailData:
         statistics_all['평균'][f'score_{score_type}'] = round(psat_sum / 3, 1)
 
     def get_normal_answer_context(self) -> dict:
-        subject_vars = self._subject_vars
+        subject_vars = self._context['subject_vars']
+        student = self._context['student']
+
         sub_list = [sub for sub in subject_vars]
         context = {sub: {'id': str(idx)} for idx, sub in enumerate(sub_list)}
 
         for sub, (subject, fld, idx, problem_count) in subject_vars.items():
             context[sub].update({
                 'title': sub, 'subject': subject, 'field': fld,
-                'url_answer_input': self._student.psat.get_predict_answer_input_url(fld),
+                'url_answer_input': student.psat.get_predict_answer_input_url(fld),
                 'is_confirmed': self.is_confirmed_data[sub],
                 'loop_list': self.get_loop_list(problem_count),
                 'page_obj': [],
@@ -232,7 +233,7 @@ class NormalDetailData:
 
 
 @dataclass(kw_only=True)
-class NormalRegisterData:
+class NormalRegisterContext:
     _request: HtmxHttpRequest
     _psat: _model.psat
 
@@ -293,7 +294,7 @@ class NormalRegisterData:
 
 
 @dataclass(kw_only=True)
-class NormalAnswerInputData:
+class NormalAnswerInputContext:
     _request: HtmxHttpRequest
     _context: dict
 
@@ -329,7 +330,7 @@ class NormalAnswerInputData:
 
 
 @dataclass(kw_only=True)
-class NormalAnswerConfirmData:
+class NormalAnswerConfirmContext:
     _request: HtmxHttpRequest
     _context: dict
 
@@ -498,7 +499,7 @@ class NormalAnswerConfirmData:
 
 
 @dataclass(kw_only=True)
-class StudentAnswerData:
+class StudentAnswerContext:
     _context: dict
 
     def __post_init__(self):
@@ -608,7 +609,7 @@ class StudentAnswerData:
 
 
 @dataclass(kw_only=True)
-class ChartData:
+class ChartContext:
     _statistics_context: dict
     _student: _model.student | None
 

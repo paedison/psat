@@ -9,7 +9,7 @@ from common.utils import HtmxHttpRequest
 
 
 @dataclass(kw_only=True)
-class RequestData:
+class RequestContext:
     _request: HtmxHttpRequest
 
     def __post_init__(self):
@@ -90,7 +90,7 @@ class ModelData:
 
 
 @dataclass(kw_only=True)
-class PsatData:
+class PsatContext:
     _psat: models.Psat
 
     def is_not_for_predict(self):

@@ -1,9 +1,9 @@
 __all__ = [
-    'NormalListData', 'NormalDetailData', 'NormalAnswerProcessData',
-    'AdminListData', 'AdminDetailData',
-    'AdminCreateCurriculumData', 'AdminCreateStudentData',
-    'AdminUploadCategoryData', 'AdminUploadCurriculumData', 'AdminUploadAnswerData',
-    'AdminUpdateData',
+    'NormalListContext', 'NormalDetailContext', 'NormalAnswerProcessContext',
+    'AdminListContext', 'AdminDetailContext',
+    'AdminCreateCurriculumContext', 'AdminCreateStudentContext',
+    'AdminUploadCategoryContext', 'AdminUploadCurriculumContext', 'AdminUploadAnswerContext',
+    'AdminUpdateContext',
 ]
 
 import json
@@ -12,14 +12,14 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 import pandas as pd
-from django.db.models import F, QuerySet
+from django.db.models import F
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django_htmx.http import reswap
 
 from a_psat import models, forms
-from a_psat.utils.variables import RequestData
+from a_psat.utils.variables import RequestContext
 from common.utils import get_paginator_context, HtmxHttpRequest, update_context_data
 from common.utils.export_excel_methods import *
 from common.utils.modify_models_methods import *
@@ -33,13 +33,14 @@ UPDATE_MESSAGES = {
 
 
 @dataclass(kw_only=True)
-class NormalListData:
-    request: HtmxHttpRequest
+class NormalListContext:
+    _request: HtmxHttpRequest
 
     def get_student_context(self):
+        user = self._request.user
         student_context = None
-        if self.request.user.is_authenticated:
-            student_context = models.StudyStudent.objects.get_filtered_qs_by_user(self.request.user)
+        if user.is_authenticated:
+            student_context = models.StudyStudent.objects.get_filtered_qs_by_user(user)
 
             qs_curriculum_schedule_info = models.StudyCurriculumSchedule.objects.schedule_info()
             schedule_info = defaultdict()
@@ -54,14 +55,12 @@ class NormalListData:
 
 
 @dataclass(kw_only=True)
-class NormalDetailData:
+class NormalDetailContext:
     request: HtmxHttpRequest
     student: models.StudyStudent
 
     def __post_init__(self):
-        # 외부 클래스 호출
         self.current_time = timezone.now()
-        request_data = RequestData(_request=self.request)
 
         # 내부 변수 정의
         self._schedule = models.StudyCurriculumSchedule.objects.open_curriculum_schedule(
@@ -69,14 +68,12 @@ class NormalDetailData:
         self._homework_schedule = self.get_homework_schedule()
         self._opened_rounds = self._schedule.values_list('lecture_round', flat=True)
         self._score_dict = self.get_score_dict()
+        self._page_number = self.request.GET.get('page', 1)
 
         # 외부 호출 변수 정의
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-
         self.statistics = self.get_curriculum_statistics()
         self.my_results = models.StudyResult.objects.opened_round_student_results(self.student, self._opened_rounds)
-        self.lecture_context = get_study_lecture_context(self._schedule, self.page_number)
+        self.lecture_context = get_study_lecture_context(self._schedule, self._page_number)
 
     def get_homework_schedule(self):
         homework_schedule = defaultdict(dict)
@@ -109,7 +106,7 @@ class NormalDetailData:
         return score_dict
 
     def get_my_result_context(self):
-        context = get_paginator_context(self.my_results, self.page_number, 4)
+        context = get_paginator_context(self.my_results, self._page_number, 4)
 
         # 전체 등수 및 통계
         context['total'] = self.get_my_total_result()
@@ -171,7 +168,7 @@ class NormalDetailData:
 
     def get_statistics_context(self):
         per_round_stat = self.statistics['per_round']
-        context = get_paginator_context(self.my_results, self.page_number, 4)
+        context = get_paginator_context(self.my_results, self._page_number, 4)
         for obj in context['page_obj']:
             data_stat = per_round_stat.get(obj.psat.round)
             if data_stat:
@@ -185,7 +182,7 @@ class NormalDetailData:
     def get_answer_context(self):
         qs_problem = models.StudyProblem.objects.annotate_answer_count_in_category(
             self.student.curriculum.category).filter(psat__round__in=self._opened_rounds).order_by('-psat')
-        context = get_paginator_context(qs_problem, self.page_number, on_each_side=1)
+        context = get_paginator_context(qs_problem, self._page_number, on_each_side=1)
 
         homework_rounds = []
         for obj in context['page_obj']:
@@ -224,7 +221,7 @@ class NormalDetailData:
 
 
 @dataclass(kw_only=True)
-class NormalAnswerProcessData:
+class NormalAnswerProcessContext:
     request: HtmxHttpRequest
     result: models.StudyResult
 
@@ -294,22 +291,14 @@ class NormalAnswerProcessData:
 
 
 @dataclass(kw_only=True)
-class AdminListData:
-    request: HtmxHttpRequest
-
-    def __post_init__(self):
-        # 외부 클래스 호출
-        request_data = RequestData(_request=self.request)
-
-        # 외부 호출 변수 정의
-        self.sub_title = request_data.get_sub_title()
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
+class AdminListContext:
+    _request: HtmxHttpRequest
 
     def get_list_context(self, is_category: bool):
+        page_number = self._request.GET.get('page', 1)
         model = models.StudyCategory if is_category else models.StudyCurriculum
         target_list = model.objects.annotate_student_count()
-        context = get_paginator_context(target_list, self.page_number)
+        context = get_paginator_context(target_list, page_number)
         for obj in context['page_obj']:
             if is_category:
                 qs_student = models.StudyStudent.objects.filter(curriculum__category=obj, score_total__isnull=False)
@@ -331,17 +320,16 @@ class AdminListData:
 
 
 @dataclass(kw_only=True)
-class AdminDetailData:
+class AdminDetailContext:
     request: HtmxHttpRequest
     category: models.StudyCategory
     curriculum: models.StudyCurriculum | None
 
     def __post_init__(self):
         # 외부 클래스 호출
-        request_data = RequestData(_request=self.request)
+        request_data = RequestContext(_request=self.request)
 
         # 외부 호출 변수 정의
-        self.view_type = request_data.view_type
         self.page_number = request_data.page_number
         self.student_name = request_data.student_name
 
@@ -445,31 +433,21 @@ class AdminDetailData:
         return get_response_for_excel_file(df, filename)
 
     def get_answer_response(self) -> HttpResponse:
-        qs_answer_count = models.PredictAnswerCount.objects.filtered_by_psat_and_subject(self.psat)
-        filename = f'{self.psat.full_reference}_문항분석표.xlsx'
-
-        df1 = self.get_answer_df_for_excel(qs_answer_count)
-        df2 = self.get_answer_df_for_excel(qs_answer_count, True)
-
-        excel_data = io.BytesIO()
-        with pd.ExcelWriter(excel_data, engine='openpyxl') as writer:
-            df1.to_excel(writer, sheet_name='전체')
-            df2.to_excel(writer, sheet_name='필터링')
-
-        return get_response_for_excel_file(df1, filename, excel_data)
-
-    @staticmethod
-    def get_answer_df_for_excel(
-            qs_answer_count: QuerySet[models.PredictAnswerCount], is_filtered=False) -> pd.DataFrame:
-        prefix = 'filtered_' if is_filtered else ''
-        column_list = ['id', 'problem_id', 'subject', 'number', 'ans_official', 'ans_predict']
+        column_list = [
+            'psat_id', 'id',
+            'original_psat_id', 'problem_id',
+            'season', 'study_type', 'round',
+            'number', 'subject', 'ans_official',
+        ]
         for rank_type in ['all', 'top', 'mid', 'low']:
             for num in ['1', '2', '3', '4', '5', 'sum']:
-                column_list.append(f'{prefix}count_{num}_{rank_type}')
+                column_list.append(f'count_{num}_{rank_type}')
 
         column_label = [
-            ('DB정보', 'ID'), ('DB정보', '문제 ID'),
-            ('문제정보', '과목'), ('문제정보', '번호'), ('문제정보', '정답'), ('문제정보', '예상 정답'),
+            ('DB정보(카테고리)', 'PSAT ID'), ('DB정보(카테고리)', '문제 ID'),
+            ('DB정보(원본)', 'PSAT ID'), ('DB정보(원본)', '문제 ID'),
+            ('카테고리', '시즌'), ('카테고리', '구분'), ('카테고리', '회차'),
+            ('문제정보', '번호'), ('문제정보', '과목'), ('문제정보', '정답'),
         ]
         for rank_type in ['전체', '상위권', '중위권', '하위권']:
             column_label.extend([
@@ -477,22 +455,18 @@ class AdminDetailData:
                 (rank_type, '④'), (rank_type, '⑤'), (rank_type, '합계'),
             ])
 
-        df = pd.DataFrame.from_records(qs_answer_count.values(*column_list))
+        qs_problem = models.StudyProblem.objects.annotate_answer_count_in_category(self.category)
+        df = pd.DataFrame.from_records(qs_problem.values(*column_list))
         df.columns = pd.MultiIndex.from_tuples(column_label)
-        return df
+
+        filename = f'{self.category.category_info}_문항분석표.xlsx'
+        return get_response_for_excel_file(df, filename)
 
 
 @dataclass(kw_only=True)
-class AdminCreateCurriculumData:
+class AdminCreateCurriculumContext:
     request: HtmxHttpRequest
-
-    def __post_init__(self):
-        # 외부 클래스 호출
-        request_data = RequestData(_request=self.request)
-
-        # 변수 정의
-        self.view_type = request_data.view_type
-        self.form = forms.StudyCurriculumForm(self.request.POST, self.request.FILES)
+    form: forms.StudyCurriculumForm
 
     def get_category_form(self):
         organization_id = self.request.POST.get('organization')
@@ -584,7 +558,7 @@ class AdminCreateCurriculumData:
 
 
 @dataclass(kw_only=True)
-class AdminCreateStudentData:
+class AdminCreateStudentContext:
     student: models.StudyStudent
 
     @with_bulk_create_or_update()
@@ -600,7 +574,7 @@ class AdminCreateStudentData:
 
 
 @dataclass(kw_only=True)
-class AdminUploadCategoryData:
+class AdminUploadCategoryContext:
     request: HtmxHttpRequest
 
     def __post_init__(self):
@@ -716,7 +690,7 @@ class AdminUploadCategoryData:
 
 
 @dataclass(kw_only=True)
-class AdminUploadCurriculumData:
+class AdminUploadCurriculumContext:
     request: HtmxHttpRequest
 
     def __post_init__(self):
@@ -840,7 +814,7 @@ class AdminUploadCurriculumData:
 
 
 @dataclass(kw_only=True)
-class AdminUploadAnswerData:
+class AdminUploadAnswerContext:
     request: HtmxHttpRequest
     curriculum: models.StudyCurriculum
 
@@ -893,13 +867,11 @@ class AdminUploadAnswerData:
 
 
 @dataclass(kw_only=True)
-class AdminUpdateData:
+class AdminUpdateContext:
     request: HtmxHttpRequest
     update_target: models.StudyCategory | models.StudyCurriculum
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        self.view_type = request_data.view_type
         self.qs_student = self.get_qs_student()
         self.qs_category_student = self.get_qs_category_student()
         self.psats = self.get_psats()

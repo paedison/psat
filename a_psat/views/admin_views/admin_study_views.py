@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 
 from a_psat import models, forms
 from a_psat.utils.study_utils import *
+from a_psat.utils.variables import RequestContext
 from a_psat.views.normal_views.study_views import study_detail_view as normal_study_detail_view
 from common.constants import icon_set_new
 from common.decorators import admin_required
@@ -38,21 +39,22 @@ class ViewConfiguration:
 @admin_required
 def study_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    list_data = AdminListData(request=request)
-    context = update_context_data(config=config, sub_title=list_data.sub_title)
+    request_context = RequestContext(_request=request)
+    list_context = AdminListContext(_request=request)
+    context = update_context_data(config=config, sub_title=request_context.get_sub_title())
     template_name = 'a_psat/admin_study_list.html'
 
-    if list_data.view_type == 'study_category_list':
-        context = update_context_data(context, category_context=list_data.get_list_context(True))
+    if request_context.view_type == 'study_category_list':
+        context = update_context_data(context, category_context=list_context.get_list_context(True))
         return render(request, f'{template_name}#study_category_list', context)
-    elif list_data.view_type == 'study_curriculum_list':
-        context = update_context_data(context, curriculum_context=list_data.get_list_context(False))
+    elif request_context.view_type == 'study_curriculum_list':
+        context = update_context_data(context, curriculum_context=list_context.get_list_context(False))
         return render(request, f'{template_name}#study_curriculum_list', context)
 
     context = update_context_data(
         context,
-        category_context=list_data.get_list_context(True),
-        curriculum_context=list_data.get_list_context(False),
+        category_context=list_context.get_list_context(True),
+        curriculum_context=list_context.get_list_context(False),
     )
     return render(request, 'a_psat/admin_study_list.html', context)
 
@@ -79,41 +81,43 @@ def study_detail_view(request: HtmxHttpRequest, study_type: str, pk: int):
         config.url_export_answers_excel = curriculum.get_admin_study_answer_excel_url()
         page_title = curriculum.full_reference
 
-    detail_data = AdminDetailData(request=request, category=category, curriculum=curriculum)
+    detail_context = AdminDetailContext(request=request, category=category, curriculum=curriculum)
 
     context = update_context_data(
-        config=config, category=category, curriculum=curriculum, study_rounds=detail_data.study_rounds,
+        config=config, category=category, curriculum=curriculum, study_rounds=detail_context.study_rounds,
         page_title=page_title, icon_image=icon_set_new.ICON_IMAGE, icon_search=icon_set_new.ICON_SEARCH,
     )
-    if detail_data.view_type == 'lecture_list':
-        context = update_context_data(context, lecture_context=detail_data.lecture_context)
+
+    view_type = request.headers.get('View-Type', '')
+    if view_type == 'lecture_list':
+        context = update_context_data(context, lecture_context=detail_context.lecture_context)
         return render(request, 'a_psat/snippets/study_detail_lecture.html', context)
-    if detail_data.view_type == 'statistics_list':
+    if view_type == 'statistics_list':
         context = update_context_data(
-            context, category_stat=detail_data.category_stat, statistics_context=detail_data.statistics_context)
+            context, category_stat=detail_context.category_stat, statistics_context=detail_context.statistics_context)
         return render(request, 'a_psat/snippets/admin_detail_study_statistics.html', context)
-    if detail_data.view_type == 'catalog_list':
-        context = update_context_data(context, catalog_context=detail_data.catalog_context)
+    if view_type == 'catalog_list':
+        context = update_context_data(context, catalog_context=detail_context.catalog_context)
         return render(request, 'a_psat/snippets/admin_detail_study_catalog.html', context)
-    if detail_data.view_type == 'student_search':
-        context = update_context_data(context, catalog_context=detail_data.catalog_context)
+    if view_type == 'student_search':
+        context = update_context_data(context, catalog_context=detail_context.catalog_context)
         return render(request, 'a_psat/snippets/admin_detail_study_catalog.html', context)
-    if detail_data.view_type == 'answer_list':
-        context = update_context_data(context, answer_context=detail_data.answer_context)
+    if view_type == 'answer_list':
+        context = update_context_data(context, answer_context=detail_context.answer_context)
         return render(request, 'a_psat/snippets/admin_detail_study_answer_analysis.html', context)
-    if detail_data.view_type == 'problem_list':
-        context = update_context_data(context, problem_context=detail_data.problem_context)
+    if view_type == 'problem_list':
+        context = update_context_data(context, problem_context=detail_context.problem_context)
         return render(request, 'a_psat/snippets/admin_detail_study_problem_list.html', context)
 
     context = update_context_data(
         context,
-        schedules=detail_data.qs_schedule,
-        lecture_context=detail_data.lecture_context,
-        category_stat=detail_data.category_stat,
-        statistics_context=detail_data.statistics_context,
-        catalog_context=detail_data.catalog_context,
-        answer_context=detail_data.answer_context,
-        problem_context=detail_data.problem_context,
+        schedules=detail_context.qs_schedule,
+        lecture_context=detail_context.lecture_context,
+        category_stat=detail_context.category_stat,
+        statistics_context=detail_context.statistics_context,
+        catalog_context=detail_context.catalog_context,
+        answer_context=detail_context.answer_context,
+        problem_context=detail_context.problem_context,
     )
     return render(request, f'a_psat/admin_study_detail.html', context)
 
@@ -155,16 +159,18 @@ def study_create_curriculum_view(request: HtmxHttpRequest):
     context = update_context_data(config=config, title=title)
 
     if request.method == 'POST':
-        create_data = AdminCreateCurriculumData(request=request)
+        form = forms.StudyCurriculumForm(request.POST, request.FILES)
+        create_context = AdminCreateCurriculumContext(request=request, form=form)
 
-        if create_data.view_type == 'category':
-            context = update_context_data(context, form=create_data.get_category_form())
+        view_type = request.headers.get('View-Type', '')
+        if view_type == 'category':
+            context = update_context_data(context, form=create_context.get_category_form())
             return render(request, 'a_psat/admin_form.html#form_field', context)  # noqa
-        if create_data.form.is_valid():
-            create_data.process_post_request()
+        if create_context.form.is_valid():
+            create_context.process_post_request()
             return redirect(config.url_list)
         else:
-            context = update_context_data(context, form=create_data.form)
+            context = update_context_data(context, form=create_context.form)
             return render(request, 'a_psat/admin_form.html', context)
 
     form = forms.StudyCurriculumForm()
@@ -202,8 +208,8 @@ def study_create_student_view(request: HtmxHttpRequest):
         form = forms.StudyStudentCreateForm(request.POST, request.FILES)
         if form.is_valid():
             student = form.save()
-            create_data = AdminCreateStudentData(student=student)
-            create_data.create_default_result_instances()
+            create_context = AdminCreateStudentContext(student=student)
+            create_context.create_default_result_instances()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -223,8 +229,8 @@ def study_upload_category_view(request: HtmxHttpRequest):
     if request.method == 'POST':
         form = forms.UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            upload_data = AdminUploadCategoryData(request=request)
-            upload_data.process_post_request()
+            upload_context = AdminUploadCategoryContext(request=request)
+            upload_context.process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -244,8 +250,8 @@ def study_upload_curriculum_view(request: HtmxHttpRequest):
     if request.method == 'POST':
         form = forms.UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            upload_data = AdminUploadCurriculumData(request=request)
-            upload_data.process_post_request()
+            upload_context = AdminUploadCurriculumContext(request=request)
+            upload_context.process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -266,8 +272,8 @@ def study_upload_answer_view(request: HtmxHttpRequest):
         form = forms.StudyAnswerForm(request.POST, request.FILES)
         if form.is_valid():
             study_curriculum = form.cleaned_data['curriculum']
-            upload_data = AdminUploadAnswerData(request=request, curriculum=study_curriculum)
-            upload_data.process_post_request()
+            upload_context = AdminUploadAnswerContext(request=request, curriculum=study_curriculum)
+            upload_context.process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -294,20 +300,22 @@ def study_update_curriculum_view(request: HtmxHttpRequest, pk: int):
 
 @admin_required
 def get_study_update_context(request, update_target):
-    update_data = AdminUpdateData(request=request, update_target=update_target)
+    update_context = AdminUpdateContext(request=request, update_target=update_target)
     next_url = request.headers.get('HX-Current-URL', request.META.get('HTTP_REFERER', '/'))
     context = update_context_data(next_url=next_url)
-    if update_data.view_type == 'score':
-        is_updated, message = update_data.update_scores()
+
+    view_type = request.headers.get('View-Type', '')
+    if view_type == 'score':
+        is_updated, message = update_context.update_scores()
         context = update_context_data(context, header='점수 업데이트', is_updated=is_updated, message=message)
-    if update_data.view_type == 'rank':
-        is_updated, message = update_data.update_ranks()
+    if view_type == 'rank':
+        is_updated, message = update_context.update_ranks()
         context = update_context_data(context, header='등수 업데이트', is_updated=is_updated, message=message)
-    if update_data.view_type == 'statistics':
-        is_updated, message = update_data.update_statistics()
+    if view_type == 'statistics':
+        is_updated, message = update_context.update_statistics()
         context = update_context_data(context, header='통계 업데이트', is_updated=is_updated, message=message)
-    if update_data.view_type == 'answer_count':
-        is_updated, message = update_data.update_answer_counts()
+    if view_type == 'answer_count':
+        is_updated, message = update_context.update_answer_counts()
         context = update_context_data(context, header='문항분석표 업데이트', is_updated=is_updated, message=message)
     return context
 
@@ -322,19 +330,19 @@ def study_student_detail_view(request: HtmxHttpRequest, pk: int):
 @admin_required
 def study_statistics_excel(request: HtmxHttpRequest, study_type: str, pk: int):
     category, curriculum = get_category_and_curriculum(study_type, pk)
-    return AdminDetailData(request=request, category=category, curriculum=curriculum).get_statistics_response()
+    return AdminDetailContext(request=request, category=category, curriculum=curriculum).get_statistics_response()
 
 
 @admin_required
 def study_catalog_excel(request: HtmxHttpRequest, study_type: str, pk: int):
     category, curriculum = get_category_and_curriculum(study_type, pk)
-    return AdminDetailData(request=request, category=category, curriculum=curriculum).get_catalog_response()
+    return AdminDetailContext(request=request, category=category, curriculum=curriculum).get_catalog_response()
 
 
 @admin_required
 def study_answer_excel(request: HtmxHttpRequest, study_type: str, pk: int):
-    psat = get_object_or_404(models.Psat, pk=pk)
-    return AdminDetailData(psat=psat).get_answer_response()
+    category, curriculum = get_category_and_curriculum(study_type, pk)
+    return AdminDetailContext(request=request, category=category, curriculum=curriculum).get_answer_response()
 
 
 def get_category_and_curriculum(study_type: str, pk: int):

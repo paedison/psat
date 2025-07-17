@@ -2,11 +2,12 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
-from a_psat import models, forms
+from a_psat import models, forms, filters
 from a_psat.utils.official_utils import *
+from a_psat.utils.variables import RequestContext
 from common.constants import icon_set_new
 from common.decorators import admin_required
-from common.utils import HtmxHttpRequest, update_context_data
+from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
 
 
 class ViewConfiguration:
@@ -32,14 +33,21 @@ class ViewConfiguration:
 @admin_required
 def official_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    list_data = AdminListData(request=request)
+    request_context = RequestContext(_request=request)
+    filterset = filters.PsatFilter(data=request.GET, request=request)
+
+    psat_context = get_paginator_context(filterset.qs, request_context.page_number)
+    for psat in psat_context['page_obj']:
+        psat.updated_problem_count = sum(1 for prob in psat.problems.all() if prob.question and prob.data)
+        psat.image_problem_count = sum(1 for prob in psat.problems.all() if prob.has_image)
+
     context = update_context_data(
         config=config,
-        sub_title=list_data.sub_title,
-        psat_form=list_data.filterset.form,
-        psat_context=list_data.get_psat_context()
+        sub_title=request_context.get_sub_title(),
+        psat_form=filterset.form,
+        psat_context=psat_context,
     )
-    if list_data.view_type == 'exam_list':
+    if request_context.view_type == 'exam_list':
         return render(request, f'a_psat/admin_official_list.html#exam_list', context)  # noqa
     return render(request, 'a_psat/admin_official_list.html', context)
 
@@ -48,13 +56,14 @@ def official_list_view(request: HtmxHttpRequest):
 def official_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
     psat = get_object_or_404(models.Psat, pk=pk)
-    detail_data = AdminDetailData(request=request, psat=psat)
-    context = update_context_data(config=config, psat=psat, problem_context=detail_data.get_problem_context())
+    detail_context = AdminDetailContext(request=request, psat=psat)
+    context = update_context_data(config=config, psat=psat, problem_context=detail_context.get_problem_context())
 
-    if detail_data.view_type == 'problem_list':
+    view_type = request.headers.get('View-Type', '')
+    if view_type == 'problem_list':
         return render(request, 'a_psat/problem_list_content.html', context)
 
-    context = update_context_data(context, answer_official_context=detail_data.get_answer_official_context())
+    context = update_context_data(context, answer_official_context=detail_context.get_answer_official_context())
     return render(request, 'a_psat/admin_official_detail.html', context)
 
 
@@ -67,8 +76,7 @@ def official_psat_create_view(request: HtmxHttpRequest):
     if request.method == 'POST':
         form = forms.PsatForm(request.POST, request.FILES)
         if form.is_valid():
-            create_data = AdminCreateData(form=form)
-            create_data.process_post_request()
+            AdminCreateContext(form=form).process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)
@@ -100,8 +108,7 @@ def official_update_view(request: HtmxHttpRequest):
     if request.method == 'POST':
         form = forms.UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            update_data = AdminUpdateData(request=request)
-            update_data.process_post_request()
+            AdminUpdateContext(request=request).process_post_request()
             return redirect(config.url_list)
         else:
             context = update_context_data(context, form=form)

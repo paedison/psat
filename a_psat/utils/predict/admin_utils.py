@@ -40,10 +40,12 @@ class AdminDetailContext:
         self._qs_problem = _model.problem.objects.filtered_problem_by_psat(self._psat)
         self._qs_answer_count = _model.ac_all.objects.predict_filtered_by_psat(self._psat)
 
-    def get_admin_problem_context(self, page_number=1):
+    def get_admin_problem_context(self):
+        page_number = self.request.GET.get('page', 1)
         return {'problem_context': get_paginator_context(self._qs_problem, page_number)}
 
-    def get_admin_statistics_context(self, page_number=1, per_page=10) -> dict:
+    def get_admin_statistics_context(self, per_page=10) -> dict:
+        page_number = self.request.GET.get('page', 1)
         total_data, filtered_data = self.get_admin_statistics_data()
         total_context = get_paginator_context(total_data, page_number, per_page)
         filtered_context = get_paginator_context(filtered_data, page_number, per_page)
@@ -125,7 +127,8 @@ class AdminDetailContext:
                     'avg': avg_score,
                 }
 
-    def get_admin_catalog_context(self, page_number=1, student_name=None) -> dict:
+    def get_admin_catalog_context(self, student_name=None) -> dict:
+        page_number = self.request.GET.get('page', 1)
         total_list = _model.student.objects.filtered_student_by_psat(self._psat)
         if student_name:
             total_list = total_list.filter(name=student_name)
@@ -150,7 +153,8 @@ class AdminDetailContext:
 
         return {'catalog_context': {'total': total_context, 'filtered': filtered_context}}
 
-    def get_admin_answer_context(self, subject=None, page_number=1, per_page=10) -> dict:
+    def get_admin_answer_context(self, subject=None, per_page=10) -> dict:
+        page_number = self.request.GET.get('page', 1)
         sub_list = [sub for sub in self._subject_vars]
         qs_answer_count_group = {sub: [] for sub in self._subject_vars}
         answer_context = {}

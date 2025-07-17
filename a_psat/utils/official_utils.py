@@ -1,8 +1,8 @@
 __all__ = [
-    'NormalListData', 'NormalDetailData',
-    'NormalUpdateData', 'NormalAnnotateProblem',
-    'AdminListData', 'AdminDetailData',
-    'AdminCreateData', 'AdminUpdateData',
+    'NormalListContext', 'NormalDetailContext',
+    'NormalUpdateContext', 'NormalAnnotateProblem',
+    'AdminDetailContext',
+    'AdminCreateContext', 'AdminUpdateContext',
     'get_custom_data', 'get_custom_icons',
 ]
 
@@ -23,8 +23,8 @@ from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
 from django.urls import reverse
 
-from a_psat import models, filters, forms
-from a_psat.utils.variables import RequestData, get_prev_next_obj, SubjectVariants
+from a_psat import models, forms
+from a_psat.utils.variables import get_prev_next_obj, SubjectVariants
 from common.constants import icon_set_new
 from common.models import User
 from common.utils import get_paginator_context, HtmxHttpRequest
@@ -115,42 +115,30 @@ class ProblemData:
 
 
 @dataclass(kw_only=True)
-class NormalListData:
-    request: HtmxHttpRequest
+class NormalListContext:
+    _request: HtmxHttpRequest
 
-    def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        self.keyword = request_data.keyword
-        self.sub_title = request_data.get_sub_title()
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-        self.filterset = request_data.get_filterset()
-
-    def get_problem_context(self):
-        custom_data = get_custom_data(self.request.user)
-        problem_context = get_paginator_context(self.filterset.qs, self.page_number)
+    def get_problem_context(self, queryset, page_number=1):
+        custom_data = get_custom_data(self._request.user)
+        problem_context = get_paginator_context(queryset, page_number)
         if problem_context:
             for problem in problem_context['page_obj']:
                 get_custom_icons(problem, custom_data)
             return problem_context
 
     def get_collections(self):
-        if self.request.user.is_authenticated:
-            return models.ProblemCollection.objects.user_collection(self.request.user)
+        if self._request.user.is_authenticated:
+            return models.ProblemCollection.objects.user_collection(self._request.user)
 
 
 @dataclass(kw_only=True)
-class NormalDetailData:
+class NormalDetailContext:
     request: HtmxHttpRequest
     problem: models.Problem
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
         self.process_image()
         self.problem_data = ProblemData(request=self.request, problem=self.problem)
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-        self.filterset = request_data.get_filterset()
         self.prob_prev, self.prob_next = get_prev_next_obj(self.problem.pk, self.problem_data.base_list_data)
         self.custom_data = self.problem_data.get_custom_data()
 
@@ -204,13 +192,9 @@ class NormalDetailData:
 
 
 @dataclass(kw_only=True)
-class NormalUpdateData:
+class NormalUpdateContext:
     request: HtmxHttpRequest
     problem: models.Problem
-
-    def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        self.view_type = request_data.view_type
 
     def get_like_problem_response(self):
         new_record = self.create_new_custom_record(models.ProblemLike)
@@ -295,52 +279,31 @@ class NormalAnnotateProblem:
 
 
 @dataclass(kw_only=True)
-class AdminListData:
-    request: HtmxHttpRequest
-
-    def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        self.sub_title = request_data.get_sub_title()
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-        self.filterset = filters.PsatFilter(data=self.request.GET, request=self.request)
-
-    def get_psat_context(self):
-        psat_context = get_paginator_context(self.filterset.qs, self.page_number)
-        for psat in psat_context['page_obj']:
-            psat.updated_problem_count = sum(1 for prob in psat.problems.all() if prob.question and prob.data)
-            psat.image_problem_count = sum(1 for prob in psat.problems.all() if prob.has_image)
-        return psat_context
-
-
-@dataclass(kw_only=True)
-class AdminDetailData:
+class AdminDetailContext:
     request: HtmxHttpRequest
     psat: models.Psat
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
         self._subject_variants = SubjectVariants(_psat=self.psat)
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-        self.qs_problem = models.Problem.objects.filtered_problem_by_psat(self.psat)
-        self.subject_vars = self._subject_variants.subject_vars
+        self._qs_problem = models.Problem.objects.filtered_problem_by_psat(self.psat)
 
     def get_problem_context(self):
-        return get_paginator_context(self.qs_problem, self.page_number)
+        page_number = self.request.GET.get('page', 1)
+        return get_paginator_context(self._qs_problem, page_number)
 
     def get_answer_official_context(self):
+        sub_list = self._subject_variants.sub_list
         query_dict = defaultdict(list)
-        for query in self.qs_problem.order_by('id'):
+        for query in self._qs_problem.order_by('id'):
             query_dict[query.subject].append(query)
         return {
             sub: {'id': str(idx), 'title': sub, 'page_obj': query_dict[sub]}
-            for sub, (_, _, idx, _) in self.subject_vars.items()
+            for idx, sub in enumerate(sub_list)
         }
 
 
 @dataclass(kw_only=True)
-class AdminCreateData:
+class AdminCreateContext:
     form: forms.PsatForm
 
     def __post_init__(self):
@@ -376,7 +339,7 @@ class AdminCreateData:
 
 
 @dataclass(kw_only=True)
-class AdminUpdateData:
+class AdminUpdateContext:
     request: HtmxHttpRequest
 
     @with_bulk_create_or_update()

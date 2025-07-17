@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 
 from a_psat import models, forms
 from a_psat.utils.official_utils import *
+from a_psat.utils.variables import RequestContext
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
 
@@ -27,23 +28,28 @@ class ViewConfiguration:
 @login_not_required
 def official_problem_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    list_data = NormalListData(request=request)
+    request_context = RequestContext(_request=request)
+    list_context = NormalListContext(_request=request)
     context = update_context_data(
         config=config,
         icon_image=icon_set_new.ICON_IMAGE,
-        keyword=list_data.keyword,
-        sub_title=list_data.sub_title,
+        keyword=request_context.keyword,
+        sub_title=request_context.get_sub_title(),
     )
 
-    if list_data.view_type == 'problem_list':
-        context = update_context_data(context, problem_context=list_data.get_problem_context())
+    filterset = request_context.get_filterset()
+    page_number = request_context.page_number
+
+    if request_context.view_type == 'problem_list':
+        context = update_context_data(
+            context, problem_context=list_context.get_problem_context(filterset.qs, page_number))
         return render(request, 'a_psat/problem_list_content.html', context)
 
     context = update_context_data(
         context,
-        form=list_data.filterset.form,
-        collections=list_data.get_collections(),
-        problem_context=list_data.get_problem_context()
+        form=filterset.form,
+        collections=list_context.get_collections(),
+        problem_context=list_context.get_problem_context(filterset.qs, page_number)
     )
     return render(request, 'a_psat/problem_list.html', context)
 
@@ -51,42 +57,42 @@ def official_problem_list_view(request: HtmxHttpRequest):
 @login_not_required
 def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
-    view_type = request.headers.get('View-Type', 'main')
     problem = get_object_or_404(models.Problem, pk=pk)
     config.url_admin = reverse_lazy(f'admin:a_psat_problem_change', args=[pk])
 
-    detail_data = NormalDetailData(request=request, problem=problem)
-    context = update_context_data(config=config, problem_id=pk, problem=detail_data.problem)
+    detail_context = NormalDetailContext(request=request, problem=problem)
+    context = update_context_data(config=config, problem_id=pk, problem=detail_context.problem)
 
     template_nav = 'a_psat/snippets/navigation_container.html'
     template_nav_problem_list = f'{template_nav}#nav_problem_list'
     template_nav_other_list = f'{template_nav}#nav_other_list'
 
+    view_type = request.headers.get('View-Type', 'main')
     if view_type == 'image':
         return render(request, 'a_psat/problem_detail.html#modal_image', context)  # noqa
 
     if view_type == 'problem_list':
-        context = update_context_data(context, **detail_data.problem_data.get_problem_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_problem_list_context())
         return render(request, template_nav_problem_list, context)
 
     if view_type == 'like_list':
-        context = update_context_data(context, **detail_data.problem_data.get_like_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_like_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'rate_list':
-        context = update_context_data(context, **detail_data.problem_data.get_rate_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_rate_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'solve_list':
-        context = update_context_data(context, **detail_data.problem_data.get_solve_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_solve_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'memo_list':
-        context = update_context_data(context, **detail_data.problem_data.get_memo_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_memo_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'tag_list':
-        context = update_context_data(context, **detail_data.problem_data.get_tag_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_tag_list_context())
         return render(request, template_nav_other_list, context)
 
     # page = int(request.GET.get('page', 1))
@@ -118,13 +124,13 @@ def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
         icon_tag_white=icon_set_new.ICON_TAG['white'],
 
         # navigation data
-        prob_prev=detail_data.prob_prev,
-        prob_next=detail_data.prob_next,
+        prob_prev=detail_context.prob_prev,
+        prob_next=detail_context.prob_next,
 
         # custom_data & forms
-        custom_data=detail_data.custom_data,
-        my_memo=detail_data.get_my_memo(),
-        tags=detail_data.get_my_tags(),
+        custom_data=detail_context.custom_data,
+        my_memo=detail_context.get_my_memo(),
+        tags=detail_context.get_my_tags(),
         memo_form=forms.ProblemMemoForm(),
         # comment_form=forms.ProblemCommentForm(),
         # reply_form=forms.ProblemCommentForm(),
@@ -137,17 +143,15 @@ def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
 @require_POST
 def official_like_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
-    update_data = NormalUpdateData(request=request, problem=problem)
-    return update_data.get_like_problem_response()
+    return NormalUpdateContext(request=request, problem=problem).get_like_problem_response()
 
 
 def official_rate_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
 
     if request.method == 'POST':
-        update_data = NormalUpdateData(request=request, problem=problem)
         rating = request.POST.get('rating')
-        return update_data.get_rate_problem_response(rating)
+        return NormalUpdateContext(request=request, problem=problem).get_rate_problem_response(rating)
 
     context = update_context_data(problem=problem)
     return render(request, 'a_psat/snippets/rate_modal.html', context)
@@ -157,17 +161,17 @@ def official_rate_problem(request: HtmxHttpRequest, pk: int):
 def official_solve_problem(request: HtmxHttpRequest, pk: int):
     answer = request.POST.get('answer')
     problem = get_object_or_404(models.Problem, pk=pk)
-    update_data = NormalUpdateData(request=request, problem=problem)
-    context = update_context_data(**update_data.get_solve_problem_response_context(answer))
+    context = update_context_data(
+        **NormalUpdateContext(request=request, problem=problem).get_solve_problem_response_context(answer))
     return render(request, 'a_psat/snippets/solve_modal.html', context)
 
 
 def official_memo_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
-    update_data = NormalUpdateData(request=request, problem=problem)
     context = update_context_data(problem=problem, icon_memo=icon_set_new.ICON_MEMO, icon_board=icon_set_new.ICON_BOARD)
 
-    if update_data.view_type == 'create' and request.method == 'POST':
+    view_type = request.headers.get('View-Type', 'main')
+    if view_type == 'create' and request.method == 'POST':
         create_form = forms.ProblemMemoForm(request.POST)
         if create_form.is_valid():
             my_memo = create_form.save(commit=False)
@@ -179,12 +183,13 @@ def official_memo_problem(request: HtmxHttpRequest, pk: int):
 
     latest_record = models.ProblemMemo.objects.filter(problem=problem, user=request.user, is_active=True).first()
 
-    if update_data.view_type == 'update':
+    if view_type == 'update':
         if request.method == 'POST':
             update_form = forms.ProblemMemoForm(request.POST, instance=latest_record)
             if update_form.is_valid():
                 content = update_form.cleaned_data['content']
-                context = update_context_data(context, my_memo=update_data.get_my_memo(content))
+                context = update_context_data(
+                    context, my_memo=NormalUpdateContext(request=request, problem=problem).get_my_memo(content))
                 return render(request, 'a_psat/snippets/memo_container.html', context)
         else:
             update_base_form = forms.ProblemMemoForm(instance=latest_record)
@@ -193,7 +198,7 @@ def official_memo_problem(request: HtmxHttpRequest, pk: int):
 
     blank_form = forms.ProblemMemoForm()
     context = update_context_data(context, memo_form=blank_form)
-    if update_data.view_type == 'delete' and request.method == 'POST':
+    if view_type == 'delete' and request.method == 'POST':
         latest_record.is_active = False
         latest_record.save()
         memo_url = reverse_lazy('psat:memo-problem', args=[pk])
@@ -206,11 +211,11 @@ def official_memo_problem(request: HtmxHttpRequest, pk: int):
 
 @require_POST
 def official_tag_problem(request: HtmxHttpRequest, pk: int):
-    view_type = request.headers.get('View-Type', '')
     problem = get_object_or_404(models.Problem, pk=pk)
     name = request.POST.get('tag')
     base_info = {'content_object': problem, 'user': request.user, 'is_active': True}
 
+    view_type = request.headers.get('View-Type', '')
     if view_type == 'add':
         tag, _ = models.ProblemTag.objects.get_or_create(name=name)
         models.ProblemTaggedItem.objects.create(tag=tag, **base_info)
