@@ -7,7 +7,7 @@
         {% if user.is_admin %}{% partial menu_psat_admin %}{% endif %}
         {% partial menu_psat %}
         {% if user.is_admin %}{% partial menu_leet_admin %}{% endif %}
-        {% if user.is_admin %}{% partial menu_leet %}{% endif %}
+        {% partial menu_leet %}
         {% partial menu_prime %}
         {% partial menu_prime_leet %}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
@@ -147,12 +147,14 @@
             <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
         </a>
         <ul id="leetNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            {% if user.is_admin %}
             <li>
                 <a class="aside-nav-icon" data-menu-parent="leet" data-menu-self="official"
                    href="{% url 'leet:problem-list' %}">
                     <i class="fa-regular fa-fw fa-square"></i> 기출문제
                 </a>
             </li>
+            {% endif %}
             <li>
                 <a class="aside-nav-icon" data-menu-parent="leet" data-menu-self="predict"
                    href="{% url 'leet:predict-list' %}">
