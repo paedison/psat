@@ -530,7 +530,8 @@ class NormalAnswerConfirmContext:
         return answer_student_counts == problem_count_sum
 
     def get_header(self):
-        return f'{self._context['subject']} 답안 제출'
+        subject = self._context['subject']
+        return f'{subject} 답안 제출'
 
     def process_post_request_to_answer_confirm(self):
         answer_student = self._context['answer_student']
