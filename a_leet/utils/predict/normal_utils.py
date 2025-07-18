@@ -10,7 +10,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
-from django.contrib import messages
 from django.db.models import Count, F
 from django.shortcuts import render, redirect
 from django_htmx.http import reswap
@@ -36,37 +35,34 @@ class NormalRedirectContext:
     _request: HtmxHttpRequest
     _context: dict
 
-    def add_error_message(self, message: str):
-        messages.error(self._request, message, extra_tags='alert-danger')
-
     def redirect_to_no_predict_psat(self):
-        self.add_error_message('합격 예측 대상 시험이 아닙니다.')
         next_url = self._context['config'].url_list
-        context = update_context_data(self._context, next_url=next_url)
+        context = update_context_data(
+            self._context, message='합격 예측 대상 시험이 아닙니다.', next_url=next_url)
         return render(self._request, 'redirect.html', context)
 
     def redirect_to_has_student(self):
-        self.add_error_message('등록된 수험정보가 존재합니다.')
         next_url = self._context['config'].url_list
-        context = update_context_data(self._context, next_url=next_url)
+        context = update_context_data(
+            self._context, message='등록된 수험정보가 존재합니다.', next_url=next_url)
         return render(self._request, 'redirect.html', context)
 
     def redirect_to_no_student(self):
-        self.add_error_message('등록된 수험정보가 없습니다.')
         next_url = self._context['config'].url_list
-        context = update_context_data(self._context, next_url=next_url)
+        context = update_context_data(
+            self._context, message='등록된 수험정보가 없습니다.', next_url=next_url)
         return render(self._request, 'redirect.html', context)
 
     def redirect_to_before_exam_start(self):
-        self.add_error_message('시험 시작 전입니다.')
         next_url = self._context['config'].url_detail
-        context = update_context_data(self._context, next_url=next_url)
+        context = update_context_data(
+            self._context, message='시험 시작 전입니다.', next_url=next_url)
         return render(self._request, 'redirect.html', context)
 
     def redirect_to_already_submitted(self):
-        self.add_error_message('이미 답안을 제출하셨습니다.')
         next_url = self._context['config'].url_detail
-        context = update_context_data(self._context, next_url=next_url)
+        context = update_context_data(
+            self._context, message='이미 답안을 제출하셨습니다.', next_url=next_url)
         return render(self._request, 'redirect.html', context)
 
 

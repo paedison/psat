@@ -19,12 +19,10 @@
             <div class="col-12" hx-trigger="load delay:1s"
                  hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-push-url="true"
                  hx-get="{{ next_url }}">
-                {% for message in messages %}
-                    <div class="alert {{ message.extra_tags }} alert-dismissible fade show fw-bold" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+                <div class="alert alert-danger alert-dismissible fade show fw-bold" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             </div>
         </div>
     </section>
