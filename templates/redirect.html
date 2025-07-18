@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'list.html' %}
 
 {% block main %}
     {% if config.info %}{{ config.info|json_script:'info' }}{% endif %}
