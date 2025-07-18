@@ -2,17 +2,17 @@
 {% load static %}
 
 {% block main_content %}
-    <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center p-4">
-                        {% include 'a_leet/snippets/predict_main_cover.html' %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+{#    <section class="section" hx-target="#main" hx-swap="innerHTML swap:0.25s">#}
+{#        <div class="row">#}
+{#            <div class="col-12">#}
+{#                <div class="card">#}
+{#                    <div class="card-body text-center p-4">#}
+{#                        {% include 'a_leet/snippets/predict_main_cover.html' %}#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </section>#}
 
     <section class="section" aria-label="수험 정보">
         <div class="row">
@@ -31,18 +31,8 @@
         <div class="row">
             <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
                 <div id="info_answer" class="card htmx-fade-in htmx-fade-out">
-                    <div class="card-header">
-                        답안 제출 현황
-                        <a class="text-decoration-none ms-2" href=""
-                           hx-swap="none" hx-indicator="#stat_tot_spinner"
-                           hx-headers='{"View-Type":"info_answer"}' hx-get="">
-                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
-                        </a>
-                        <div id="stat_tot_spinner" role="status"
-                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
+                    <div class="card-header">답안 제출 현황</div>
+
                     <div class="card-body">
                         {% include 'a_leet/snippets/predict_detail_info_answer.html' %}
                         <div>
@@ -72,17 +62,7 @@
         <div class="row">
             <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
                 <div id="info_student" class="card htmx-fade-in htmx-fade-out">
-                    <div class="card-header">
-                        예상 정답
-                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#answer_predict_spinner"
-                           hx-headers='{"View-Type":"answer_predict"}' hx-get="">
-                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
-                        </a>
-                        <div id="answer_predict_spinner" role="status"
-                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
+                    <div class="card-header">예상 정답</div>
 
                     <div class="card-body">
                         <nav>
@@ -211,17 +191,7 @@
         <div class="row">
             <div class="col-12" hx-target="#main" hx-swap="innerHTML swap:0.25s">
                 <div id="sheet_answer" class="card htmx-fade-in htmx-fade-out">
-                    <div class="card-header">
-                        정답 확인
-                        <a class="text-decoration-none ms-2" href="" hx-swap="none" hx-indicator="#sheet_answer_spinner"
-                           hx-headers='{"View-Type":"answer_submit"}' hx-get="">
-                            <span class="badge rounded-pill text-bg-warning">업데이트</span>
-                        </a>
-                        <div id="sheet_answer_spinner" role="status"
-                             class="htmx-indicator spinner-border text-warning spinner-border-sm">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
+                    <div class="card-header">정답 확인</div>
 
                     <div class="card-body">
                         <nav>

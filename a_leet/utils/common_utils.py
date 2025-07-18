@@ -1,14 +1,46 @@
+__all__ = [
+    'ModelData', 'RequestContext', 'LeetContext', 'SubjectVariants',
+    'get_prev_next_obj', 'get_stat_from_scores',
+]
+
 from dataclasses import dataclass
 from datetime import timedelta
 
 import numpy as np
+from django.utils import timezone
 
 from a_leet import filters, models
 from common.utils import HtmxHttpRequest
 
 
 @dataclass(kw_only=True)
-class RequestData:
+class ModelData:
+    def __post_init__(self):
+        self.leet = models.Leet
+        self.problem = models.Problem
+
+        self.predict_leet = models.PredictLeet
+        self.statistics = models.PredictStatistics
+        self.student = models.PredictStudent
+        self.answer = models.PredictAnswer
+        self.score = models.PredictScore
+
+        self.rank = models.PredictRank
+        self.rank_1 = models.PredictRankAspiration1
+        self.rank_2 = models.PredictRankAspiration2
+        self.rank_model_set = {'all': self.rank, 'aspiration_1': self.rank_1, 'aspiration_2': self.rank_2}
+
+        self.ac_all = models.PredictAnswerCount
+        self.ac_top = models.PredictAnswerCountTopRank
+        self.ac_mid = models.PredictAnswerCountMidRank
+        self.ac_low = models.PredictAnswerCountLowRank
+        self.ac_model_set = {'all': self.ac_all, 'top': self.ac_top, 'mid': self.ac_mid, 'low': self.ac_low}
+
+        self.aspirations = models.choices.get_aspirations()
+
+
+@dataclass(kw_only=True)
+class RequestContext:
     _request: HtmxHttpRequest
 
     def __post_init__(self):
@@ -46,33 +78,7 @@ class RequestData:
 
 
 @dataclass(kw_only=True)
-class ModelData:
-    def __post_init__(self):
-        self.leet = models.Leet
-        self.problem = models.Problem
-
-        self.predict_leet = models.PredictLeet
-        self.statistics = models.PredictStatistics
-        self.student = models.PredictStudent
-        self.answer = models.PredictAnswer
-        self.score = models.PredictScore
-
-        self.rank = models.PredictRank
-        self.rank_1 = models.PredictRankAspiration1
-        self.rank_2 = models.PredictRankAspiration2
-        self.rank_model_set = {'all': self.rank, 'aspiration_1': self.rank_1, 'aspiration_2': self.rank_2}
-
-        self.ac_all = models.PredictAnswerCount
-        self.ac_top = models.PredictAnswerCountTopRank
-        self.ac_mid = models.PredictAnswerCountMidRank
-        self.ac_low = models.PredictAnswerCountLowRank
-        self.ac_model_set = {'all': self.ac_all, 'top': self.ac_top, 'mid': self.ac_mid, 'low': self.ac_low}
-
-        self.aspirations = models.choices.get_aspirations()
-
-
-@dataclass(kw_only=True)
-class LeetData:
+class LeetContext:
     _leet: models.Leet
 
     def __post_init__(self):
@@ -110,6 +116,16 @@ class LeetData:
         subject_vars.pop('총점')
         return subject_vars
 
+    def is_not_for_predict(self):
+        return any([
+            not self._leet,
+            not hasattr(self._leet, 'predict_leet'),
+            not self._leet.predict_leet.is_active if hasattr(self._leet, 'predict_leet') else True,
+        ])
+
+    def before_exam_start(self):
+        return timezone.now() < self._leet.predict_leet.exam_started_at
+
     def get_has_predict(self):
         if hasattr(self._leet, 'predict_leet'):
             return all([self._leet, self._leet.predict_leet.is_active])
@@ -125,6 +141,44 @@ class LeetData:
             '추리': (subject_1_start_time, subject_2_end_time),
             '총점': (start_time, finish_time),
         }
+
+
+@dataclass(kw_only=True)
+class SubjectVariants:
+    def __post_init__(self):
+        self.subject_vars, self.subject_vars_sum, self.subject_vars_sum_first, self.subject_vars_dict =\
+            self.get_vars_all()
+
+        self.sub_list, self.subject_list, self.subject_fields = self.get_all_list(self.subject_vars)
+        self.sub_list_sum, self.subject_list_sum, self.subject_fields_sum = self.get_all_list(self.subject_vars_sum)
+        self.sub_list_sum_first, self.subject_list_sum_first, self.subject_fields_sum_first = self.get_all_list(
+            self.subject_vars_sum_first)
+
+    def get_vars_all(self):
+        sum_vars = {'총점': ('총점', 'sum', 2, 70)}
+        subject_vars = {
+            '언어': ('언어이해', 'subject_0', 0, 30),
+            '추리': ('추리논증', 'subject_1', 1, 40),
+        }
+        subject_vars_sum = dict(subject_vars, **sum_vars)
+        subject_vars_sum_first = dict(sum_vars, **subject_vars)
+        subject_vars_dict = {
+            'base': subject_vars, 'sum_last': subject_vars_sum, 'sum_first': subject_vars_sum_first
+        }
+        return subject_vars, subject_vars_sum, subject_vars_sum_first, subject_vars_dict
+
+    @staticmethod
+    def get_all_list(_vars: dict):
+        sub = list(_vars.keys())
+        tuple_lists = list(zip(*_vars.values()))
+        subject = tuple_lists[0]
+        field = tuple_lists[1]
+        return sub, subject, field
+
+    def get_subject_variable(self, subject_field) -> tuple[str, str, int, int]:
+        for sub, (subject, fld, field_idx, problem_count) in self.subject_vars.items():
+            if subject_field == fld:
+                return sub, subject, field_idx, problem_count
 
 
 def get_prev_next_obj(pk, custom_data) -> tuple:

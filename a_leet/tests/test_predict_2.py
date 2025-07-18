@@ -85,16 +85,12 @@ def test_warning_message_without_predict_leet(logged_client, base_fixture):
 def test_warning_message_without_student_by_time(logged_client, predict_fixture):
     test_time = predict_fixture.test_time
 
-    with freeze_time(test_time.before_exam):
-        response = logged_client.get(predict_fixture.urls['detail'])
-        assert '시험 시작 전입니다.' in response.content.decode('utf-8')
-
     with freeze_time(test_time.after_subject_0_end):
         response = logged_client.get(predict_fixture.urls['detail'])
         assert '등록된 수험정보가 없습니다.' in response.content.decode('utf-8')
 
         response = logged_client.get(predict_fixture.urls['answer_input_0'])
-        assert '수험 정보를 입력해주세요.' in response.content.decode('utf-8')
+        assert '등록된 수험정보가 없습니다.' in response.content.decode('utf-8')
 
 
 def test_warning_message_with_student_by_time(logged_client, student_fixture):
@@ -123,10 +119,10 @@ def test_answer_input_page(logged_client, student_fixture):
             student_fixture.urls['answer_input_0'],
             data={'number': number, 'answer': answer},
         )
-        assert 'answer_data_set' in response.client.cookies
+        assert 'total_answer_set' in response.client.cookies
 
-        answer_data_set = json.loads(response.client.cookies.get('answer_data_set').value)
-        assert answer_data_set['subject_0'][number - 1] == answer
+        total_answer_set = json.loads(response.client.cookies.get('total_answer_set').value)
+        assert total_answer_set['subject_0'][number - 1] == answer
 
 
 def test_answer_confirm_page(logged_client, student_fixture):
@@ -137,8 +133,8 @@ def test_answer_confirm_page(logged_client, student_fixture):
 
     with freeze_time(test_time.after_subject_1_end):
         for sub, (_, subject_fld, field_idx, problem_count) in subject_vars.items():
-            answer_data_set = {f'{subject_fld}': [random.randint(1, 5) for _ in range(problem_count)]}
-            logged_client.cookies['answer_data_set'] = json.dumps(answer_data_set)
+            total_answer_set = {f'{subject_fld}': [random.randint(1, 5) for _ in range(problem_count)]}
+            logged_client.cookies['total_answer_set'] = json.dumps(total_answer_set)
 
             response = logged_client.post(student_fixture.urls[f'answer_confirm_{field_idx}'])
             assert response.status_code == 200

@@ -13,7 +13,7 @@ from django.db.models import Count, F, QuerySet, Avg, StdDev, Q
 from scipy.stats import rankdata
 
 from a_leet import models, forms
-from a_leet.utils.common_utils import RequestData, ModelData, LeetData, get_stat_from_scores
+from a_leet.utils.common_utils import *
 from common.utils import HtmxHttpRequest, get_paginator_context
 from common.utils.export_excel_methods import *
 from common.utils.modify_models_methods import *
@@ -32,7 +32,7 @@ class AdminListData:
     _request: HtmxHttpRequest
 
     def __post_init__(self):
-        request_data = RequestData(_request=self._request)
+        request_data = RequestContext(_request=self._request)
         self.view_type = request_data.view_type
         self.page_number = request_data.page_number
 
@@ -47,10 +47,10 @@ class AdminDetailData:
     _leet: models.Leet
 
     def __post_init__(self):
-        request_data = RequestData(_request=self._request)
-        leet_data = LeetData(_leet=self._leet)
+        request_data = RequestContext(_request=self._request)
+        leet_context = LeetContext(_leet=self._leet)
         self._model = ModelData()
-        self._subject_vars = leet_data.subject_vars
+        self._subject_vars = leet_context.subject_vars
         self._qs_problem = self._model.problem.objects.filtered_problem_by_leet(self._leet)
 
         self.exam_subject = request_data.exam_subject
@@ -87,10 +87,10 @@ class AdminDetailStatisticsData:
     _leet: models.Leet
 
     def __post_init__(self):
-        request_data = RequestData(_request=self._request)
-        leet_data = LeetData(_leet=self._leet)
+        request_data = RequestContext(_request=self._request)
+        leet_context = LeetContext(_leet=self._leet)
         self._model = ModelData()
-        self._subject_fields_sum_first = leet_data.subject_fields_sum_first
+        self._subject_fields_sum_first = leet_context.subject_fields_sum_first
         self.page_number = request_data.page_number
 
     def get_admin_statistics_context(self, per_page=10) -> dict:
@@ -145,10 +145,10 @@ class AdminDetailCatalogData:
     _leet: models.Leet
 
     def __post_init__(self):
-        request_data = RequestData(_request=self._request)
-        leet_data = LeetData(_leet=self._leet)
+        request_data = RequestContext(_request=self._request)
+        leet_context = LeetContext(_leet=self._leet)
         self._model = ModelData()
-        self._subject_fields_sum_first = leet_data.subject_fields_sum_first
+        self._subject_fields_sum_first = leet_context.subject_fields_sum_first
 
         self.page_number = request_data.page_number
         self.student_name = request_data.student_name
@@ -217,10 +217,10 @@ class AdminDetailAnswerData:
     _leet: models.Leet
 
     def __post_init__(self):
-        request_data = RequestData(_request=self._request)
-        leet_data = LeetData(_leet=self._leet)
+        request_data = RequestContext(_request=self._request)
+        leet_context = LeetContext(_leet=self._leet)
         self._model = ModelData()
-        self._subject_vars = leet_data.subject_vars
+        self._subject_vars = leet_context.subject_vars
         self.exam_subject = request_data.exam_subject
         self.page_number = request_data.page_number
 
@@ -334,7 +334,7 @@ class AdminUpdateData:
     _leet: models.Leet
 
     def __post_init__(self):
-        request_data = RequestData(_request=self._request)
+        request_data = RequestContext(_request=self._request)
         self.view_type = request_data.view_type
 
         self.answer_official = AdminUpdateAnswerOfficialData(_request=self._request, _leet=self._leet)
@@ -395,9 +395,9 @@ class AdminUpdateScoreData:
     _leet: models.Leet
 
     def __post_init__(self):
-        leet_data = LeetData(_leet=self._leet)
+        leet_context = LeetContext(_leet=self._leet)
         self._model = ModelData()
-        self._sub_list = leet_data.sub_list
+        self._sub_list = leet_context.sub_list
         self._qs_student = self._model.student.objects.filter(leet=self._leet).order_by('id')
 
     @with_update_message(UPDATE_MESSAGES['raw_score'])
@@ -493,9 +493,9 @@ class AdminUpdateRankData:
     _leet: models.Leet
 
     def __post_init__(self):
-        leet_data = LeetData(_leet=self._leet)
+        leet_context = LeetContext(_leet=self._leet)
         self._model = ModelData()
-        self._subject_fields_sum = leet_data.subject_fields_sum
+        self._subject_fields_sum = leet_context.subject_fields_sum
         self._qs_student = self._model.student.objects.filter(leet=self._leet).order_by('id')
 
     @with_update_message(UPDATE_MESSAGES['rank'])
@@ -627,9 +627,9 @@ class AdminUpdateStatisticsData:
     _leet: models.Leet
 
     def __post_init__(self):
-        leet_data = LeetData(_leet=self._leet)
+        leet_context = LeetContext(_leet=self._leet)
         self._model = ModelData()
-        self._all_subject_fields_sum = leet_data.all_subject_fields_sum
+        self._all_subject_fields_sum = leet_context.all_subject_fields_sum
         self._qs_student = self._model.student.objects.filter(leet=self._leet).order_by('id')
 
     @with_update_message(UPDATE_MESSAGES['statistics'])
@@ -854,10 +854,10 @@ class AdminExportExcelData:
     _leet: models.Leet
 
     def __post_init__(self):
-        leet_data = LeetData(_leet=self._leet)
+        leet_context = LeetContext(_leet=self._leet)
 
-        self._subject_vars = leet_data.subject_vars
-        self._subject_vars_avg = leet_data.subject_vars_sum
+        self._subject_vars = leet_context.subject_vars
+        self._subject_vars_avg = leet_context.subject_vars_sum
         self._sub_list = [sub for sub in self._subject_vars]
 
     def get_statistics_response(self) -> HttpResponse:

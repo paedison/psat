@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
 from a_leet import models, forms
+from a_leet.utils.common_utils import RequestContext
 from a_leet.utils.official_utils import *
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
@@ -27,66 +28,65 @@ class ViewConfiguration:
 @login_not_required
 def official_problem_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    list_data = NormalListData(request=request)
+
+    request_context = RequestContext(_request=request)
+    list_context = NormalListContext(_request=request)
+    filterset = request_context.get_filterset()
+
     context = update_context_data(
         config=config,
         icon_image=icon_set_new.ICON_IMAGE,
-        keyword=list_data.keyword,
-        sub_title=list_data.sub_title,
+        keyword=request_context.keyword,
+        sub_title=request_context.get_sub_title(),
+        problem_context=list_context.get_problem_context(filterset.qs)
     )
 
-    if list_data.view_type == 'problem_list':
-        context = update_context_data(context, problem_context=list_data.get_problem_context())
+    if request_context.view_type == 'problem_list':
         return render(request, 'a_leet/problem_list_content.html', context)
 
-    context = update_context_data(
-        context,
-        form=list_data.filterset.form,
-        collections=list_data.get_collections(),
-        problem_context=list_data.get_problem_context()
-    )
+    context = update_context_data(context, form=filterset.form, collections=list_context.get_collections())
     return render(request, 'a_leet/problem_list.html', context)
 
 
 @login_not_required
 def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
-    view_type = request.headers.get('View-Type', 'main')
     problem = get_object_or_404(models.Problem, pk=pk)
     config.url_admin = reverse_lazy(f'admin:a_leet_problem_change', args=[pk])
 
-    detail_data = NormalDetailData(request=request, problem=problem)
-    context = update_context_data(config=config, problem_id=pk, problem=detail_data.problem)
+    detail_context = NormalDetailContext(request=request, problem=problem)
+    context = update_context_data(config=config, problem_id=pk, problem=detail_context.problem)
 
     template_nav = 'a_leet/snippets/navigation_container.html'
     template_nav_problem_list = f'{template_nav}#nav_problem_list'
     template_nav_other_list = f'{template_nav}#nav_other_list'
 
+    view_type = request.headers.get('View-Type', 'main')
     if view_type == 'image':
         return render(request, 'a_leet/problem_detail.html#modal_image', context)  # noqa
 
     if view_type == 'problem_list':
-        context = update_context_data(context, **detail_data.problem_data.get_problem_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_problem_list_context())
         return render(request, template_nav_problem_list, context)
 
     if view_type == 'like_list':
-        context = update_context_data(context, **detail_data.problem_data.get_like_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_like_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'rate_list':
-        context = update_context_data(context, **detail_data.problem_data.get_rate_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_rate_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'solve_list':
-        context = update_context_data(context, **detail_data.problem_data.get_solve_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_solve_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'memo_list':
-        context = update_context_data(context, **detail_data.problem_data.get_memo_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_memo_list_context())
         return render(request, template_nav_other_list, context)
 
     if view_type == 'tag_list':
-        context = update_context_data(context, **detail_data.problem_data.get_tag_list_context())
+        context = update_context_data(context, **detail_context.problem_data.get_tag_list_context())
         return render(request, template_nav_other_list, context)
 
     # page = int(request.GET.get('page', 1))
@@ -118,13 +118,13 @@ def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
         icon_tag_white=icon_set_new.ICON_TAG['white'],
 
         # navigation data
-        prob_prev=detail_data.prob_prev,
-        prob_next=detail_data.prob_next,
+        prob_prev=detail_context.prob_prev,
+        prob_next=detail_context.prob_next,
 
         # custom_data & forms
-        custom_data=detail_data.custom_data,
-        my_memo=detail_data.get_my_memo(),
-        tags=detail_data.get_my_tags(),
+        custom_data=detail_context.custom_data,
+        my_memo=detail_context.get_my_memo(),
+        tags=detail_context.get_my_tags(),
         memo_form=forms.ProblemMemoForm(),
         # comment_form=forms.ProblemCommentForm(),
         # reply_form=forms.ProblemCommentForm(),

@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from freezegun import freeze_time
 
-from a_leet.utils.common_utils import LeetData, ModelData
+from a_leet.utils.common_utils import LeetContext, ModelData
 from common.models import User
 
 NOW = timezone.now()
@@ -28,8 +28,8 @@ class SetUpPredictData:
     def __post_init__(self):
         self._model = ModelData()
         self._leet = self._model.leet.objects.get(year=2026)
-        self._leet_data = LeetData(_leet=self._leet)
-        self._subject_vars = self._leet_data.subject_vars
+        self._leet_context = LeetContext(_leet=self._leet)
+        self._subject_vars = self._leet_context.subject_vars
         self.EXAM_TIME = {
             'exam_started_at': NOW,
             'exam_finished_at': NOW + datetime.timedelta(minutes=300),
@@ -98,7 +98,7 @@ class PredictFlowTest(TestCase):
         cls._answer_confirm_url_0 = _setup.get_answer_confirm_url('subject_0')
         cls._answer_confirm_url_1 = _setup.get_answer_confirm_url('subject_1')
 
-        cls._leet_data = LeetData(_leet=leet)
+        cls._leet_context = LeetContext(_leet=leet)
         _setup.create_problems()
         _setup.create_statistics()
         _setup.create_answer_count()
@@ -173,7 +173,7 @@ class PredictFlowTest(TestCase):
         self.assertEqual(answer_data_set['subject_0'][number - 1], answer)
 
     def proceed_test_answer_confirm(self, sub: str):
-        subject_vars = self._leet_data.subject_vars
+        subject_vars = self._leet_context.subject_vars
         subject, field, field_idx, problem_count = subject_vars[sub]
         answer_data_set = {f'subject_{field_idx}': [random.randint(1, 5) for _ in range(problem_count)]}
         self.client.cookies['answer_data_set'] = json.dumps(answer_data_set)
@@ -193,7 +193,7 @@ class PredictFlowTest(TestCase):
 
     @freeze_time(TEST_TIME['waiting_answer_predict'])
     def test_07_answer_confirm_for_subject_1(self):
-        subject_vars = self._leet_data.subject_vars
+        subject_vars = self._leet_context.subject_vars
 
         self.create_student()
         self.proceed_test_answer_confirm('언어')

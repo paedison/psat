@@ -152,6 +152,11 @@ class Score(models.Model):
     class Meta:
         abstract = True
 
+    def save(self, *args, **kwargs):
+        self.raw_sum = sum(score for i in range(2) if (score := getattr(self, f'raw_subject_{i}')) is not None)
+        self.sum = sum(score for i in range(2) if (score := getattr(self, f'subject_{i}')) is not None)
+        super().save(*args, **kwargs)
+
 
 class Rank(models.Model):
     subject_0 = models.IntegerField(null=True, blank=True, verbose_name='언어이해 등수')

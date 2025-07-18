@@ -1,5 +1,5 @@
 __all__ = [
-    'NormalListData', 'NormalDetailData',
+    'NormalListContext', 'NormalDetailContext',
     'NormalUpdateData', 'NormalAnnotateProblem',
     'AdminListData', 'AdminDetailData',
     'AdminCreateData', 'AdminUpdateData',
@@ -24,7 +24,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 
 from a_leet import models, filters, forms
-from a_leet.utils.common_utils import RequestData, LeetData, get_prev_next_obj
+from a_leet.utils.common_utils import *
 from common.constants import icon_set_new
 from common.models import User
 from common.utils import get_paginator_context, HtmxHttpRequest
@@ -115,42 +115,32 @@ class ProblemData:
 
 
 @dataclass(kw_only=True)
-class NormalListData:
-    request: HtmxHttpRequest
+class NormalListContext:
+    _request: HtmxHttpRequest
 
-    def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        self.keyword = request_data.keyword
-        self.sub_title = request_data.get_sub_title()
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-        self.filterset = request_data.get_filterset()
-
-    def get_problem_context(self):
-        custom_data = get_custom_data(self.request.user)
-        problem_context = get_paginator_context(self.filterset.qs, self.page_number)
+    def get_problem_context(self, queryset):
+        page_number = self._request.GET.get('page', 1)
+        custom_data = get_custom_data(self._request.user)
+        problem_context = get_paginator_context(queryset, page_number)
         if problem_context:
             for problem in problem_context['page_obj']:
                 get_custom_icons(problem, custom_data)
             return problem_context
 
     def get_collections(self):
-        if self.request.user.is_authenticated:
-            return models.ProblemCollection.objects.user_collection(self.request.user)
+        user = self._request.user
+        if user.is_authenticated:
+            return models.ProblemCollection.objects.user_collection(user)
 
 
 @dataclass(kw_only=True)
-class NormalDetailData:
+class NormalDetailContext:
     request: HtmxHttpRequest
     problem: models.Problem
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
         self.process_image()
         self.problem_data = ProblemData(request=self.request, problem=self.problem)
-        self.view_type = request_data.view_type
-        self.page_number = request_data.page_number
-        self.filterset = request_data.get_filterset()
         self.prob_prev, self.prob_next = get_prev_next_obj(self.problem.pk, self.problem_data.base_list_data)
         self.custom_data = self.problem_data.get_custom_data()
 
@@ -207,7 +197,7 @@ class NormalUpdateData:
     problem: models.Problem
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
+        request_data = RequestContext(_request=self.request)
         self.view_type = request_data.view_type
 
     def get_like_problem_response(self):
@@ -297,7 +287,7 @@ class AdminListData:
     request: HtmxHttpRequest
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
+        request_data = RequestContext(_request=self.request)
         self.sub_title = request_data.get_sub_title()
         self.view_type = request_data.view_type
         self.page_number = request_data.page_number
@@ -317,12 +307,12 @@ class AdminDetailData:
     leet: models.Leet
 
     def __post_init__(self):
-        request_data = RequestData(_request=self.request)
-        leet_data = LeetData(_leet=self.leet)
+        request_data = RequestContext(_request=self.request)
+        leet_context = LeetContext(_leet=self.leet)
         self.view_type = request_data.view_type
         self.page_number = request_data.page_number
         self.qs_problem = models.Problem.objects.filtered_problem_by_leet(self.leet)
-        self.subject_vars = leet_data.subject_vars
+        self.subject_vars = leet_context.subject_vars
 
     def get_problem_context(self):
         return get_paginator_context(self.qs_problem, self.page_number)

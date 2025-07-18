@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_not_required
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
 
 from a_leet import models, forms
+from a_leet.utils.common_utils import *
 from a_leet.utils.predict.normal_utils import *
 from common.constants import icon_set_new
 from common.utils import HtmxHttpRequest, update_context_data
@@ -30,158 +31,170 @@ class ViewConfiguration:
 @login_not_required
 def predict_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    list_data = NormalListData(_request=request)
-    context = update_context_data(current_time=timezone.now(), config=config, leets=list_data.qs_leet)
+    list_context = NormalListContext(_request=request)
+    context = update_context_data(current_time=timezone.now(), config=config, leets=list_context.qs_leet)
     return render(request, 'a_leet/predict_list.html', context)
 
 
 def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
-    config = ViewConfiguration()
     current_time = timezone.now()
-    context = update_context_data(current_time=current_time, config=config)
-
-    leet = models.Leet.objects.filter(pk=pk).select_related('predict_leet').first()
-    if not leet or not hasattr(leet, 'predict_leet') or not leet.predict_leet.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
-
-    if current_time < leet.predict_leet.exam_started_at:
-        context = update_context_data(context, message='시험 시작 전입니다.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
-
-    if student is None:
-        student = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)
-
-    if not student:
-        context = update_context_data(context, message='등록된 수험정보가 없습니다.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
-
+    config = ViewConfiguration()
+    leet = get_object_or_404(models.Leet.objects.select_related('predict_leet'), pk=pk)  # Queryset
     config.submenu_kor = f'{leet.get_year_display()} {config.submenu_kor}'
-    detail_data = NormalDetailData(_request=request, _student=student)
 
     context = update_context_data(
-        context, leet=leet, sub_title=f'{leet.full_reference} 합격 예측',
-        predict_leet=leet.predict_leet,
-
-        # icon
+        current_time=current_time, config=config,
+        leet=leet, sub_title=f'{leet.full_reference} 합격 예측',
         icon_menu=icon_set_new.ICON_MENU, icon_nav=icon_set_new.ICON_NAV,
-
-        # info_student: 수험 정보
-        student=student,
-
-        # sheet_score: 성적 예측 I [Total] / 성적 예측 II [Filtered]
-        is_analyzing=detail_data.is_analyzing,
-        total_statistics_context=detail_data.total_statistics_context,
-        filtered_statistics_context=detail_data.filtered_statistics_context,
-
-        # sheet_answer: 예상 정답 / 답안 확인
-        answer_context=detail_data.get_normal_answer_context(),
-
-        # chart: 성적 분포 차트
-        stat_chart=detail_data.chart_data.get_dict_stat_chart(),
-        stat_frequency=detail_data.chart_data.get_dict_stat_frequency(),
-        all_confirmed=detail_data.is_confirmed_data['총점'],
     )
 
-    if detail_data.view_type == 'info_answer':
-        return render(request, 'a_prime/snippets/predict_update_info_answer.html', context)
-    if detail_data.view_type == 'score_all':
-        return render(request, 'a_prime/snippets/predict_update_sheet_score.html', context)
-    if detail_data.view_type == 'answer_submit':
-        return render(request, 'a_prime/snippets/predict_update_sheet_answer_submit.html', context)
-    if detail_data.view_type == 'answer_predict':
-        return render(request, 'a_prime/snippets/predict_update_sheet_answer_predict.html', context)
+    leet_context = LeetContext(_leet=leet)
+    subject_variants = SubjectVariants()
+    redirect_context = NormalRedirectContext(_request=request, _context=context)
+
+    if not request.user.is_admin and leet_context.is_not_for_predict():  # noqa
+        return redirect_context.redirect_to_no_predict_psat()
+
+    if student is None:
+        student = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)  # Queryset
+    if not student:
+        return redirect_context.redirect_to_no_student()
+    qs_student_answer = models.PredictAnswer.objects.filtered_by_leet_student(student)  # Queryset
+
+    context = update_context_data(
+        context,
+        student=student,
+        predict_leet=leet.predict_leet,
+        time_schedule=leet_context.get_time_schedule(),
+        subject_vars=subject_variants.subject_vars,
+        subject_vars_dict=subject_variants.subject_vars_dict,
+        qs_student_answer=qs_student_answer,
+    )
+
+    temporary_answer_context = TemporaryAnswerContext(_request=request, _context=context)
+    context = update_context_data(context, total_answer_set=temporary_answer_context.get_total_answer_set())
+
+    detail_answer_context = NormalDetailAnswerContext(_request=request, _context=context)
+    is_confirmed_data = detail_answer_context.is_confirmed_data
+    context = update_context_data(context, is_confirmed_data=is_confirmed_data)
+
+    statistics_context = NormalDetailStatisticsContext(_request=request, _context=context)
+    total_statistics_context = statistics_context.get_normal_statistics_context(False)
+    filtered_statistics_context = statistics_context.get_normal_statistics_context(True)
+
+    chart_context = ChartContext(_statistics_context=total_statistics_context, _student=student)
+
+    context = update_context_data(
+        context,
+
+        # sheet_score: 성적 예측 I [Total] / 성적 예측 II [Filtered]
+        is_analyzing=statistics_context.is_analyzing(),
+        total_statistics_context=total_statistics_context,
+        filtered_statistics_context=filtered_statistics_context,
+
+        # sheet_answer: 예상 정답 / 답안 확인
+        answer_context=detail_answer_context.get_normal_answer_context(),
+
+        # chart: 성적 분포 차트
+        stat_chart=chart_context.get_dict_stat_chart(),
+        stat_frequency=chart_context.get_dict_stat_frequency(),
+        all_confirmed=is_confirmed_data['총점'],
+    )
     return render(request, 'a_leet/predict_detail.html', context)
 
 
 def predict_register_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
-    current_time = timezone.now()
-    context = update_context_data(current_time=current_time, config=config)
+    leet = get_object_or_404(models.Leet.objects.select_related('predict_leet'), year=2026)  # Queryset
+    context = update_context_data(config=config, leet=leet)
 
-    leet = models.Leet.objects.filter(year=2026).first()
-    if not leet or not hasattr(leet, 'predict_leet') or not leet.predict_leet.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
+    leet_context = LeetContext(_leet=leet)
+    redirect_context = NormalRedirectContext(_request=request, _context=context)
 
-    student = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)
+    # Redirect page
+    if leet_context.is_not_for_predict():
+        return redirect_context.redirect_to_no_predict_psat()
+
+    student = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)  # Queryset
     if student:
-        context = update_context_data(context, message='등록된 수험정보가 존재합니다.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
+        return redirect_context.redirect_to_has_student()
 
+    # Process register
     form = forms.PredictStudentForm()
-    title = f'{leet.full_reference} 합격예측 수험정보 등록'
-    context = update_context_data(config=config, title=title, exam=leet, form=form)
+    context = update_context_data(context, title=f'{leet.full_reference} 합격예측 수험정보 등록', form=form)
 
     if request.method == 'POST':
         form = forms.PredictStudentForm(request.POST)
-        if form.is_valid():
-            register_data = NormalRegisterData(_request=request, _leet=leet, _form=form)
-            return register_data.process_register(context)
         context = update_context_data(context, form=form)
+        if form.is_valid():
+            return NormalRegisterContext(_request=request, _context=context).process_register()
     return render(request, 'a_leet/predict_register.html', context)
 
 
 def predict_answer_input_view(request: HtmxHttpRequest, pk: int, subject_field: str):
-    config = ViewConfiguration()
-    context = update_context_data(config=config)
+    context, redirect_data, redirect_response = prepare_leet_context(request, pk, subject_field)
+    if redirect_response:
+        return redirect_response
 
-    leet: models.Leet = models.Leet.objects.filter(pk=pk).first()
-    if not leet or not hasattr(leet, 'predict_leet') or not leet.predict_leet.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
-
-    student: models.PredictStudent = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)
-    if not student:
-        context = update_context_data(context, message='수험 정보를 입력해주세요.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
-
-    config.url_detail = leet.get_predict_detail_url()
-    if config.current_time < leet.predict_leet.exam_started_at:
-        context = update_context_data(context, message='시험 시작 전입니다.', next_url=config.url_detail)
-        return render(request, 'a_leet/redirect.html', context)
-
-    answer_data = NormalAnswerInputData(_request=request, _leet=leet, _subject_field=subject_field)
-    if answer_data.answer_submitted:
-        context = update_context_data(context, message='이미 답안을 제출하셨습니다.', next_url=config.url_detail)
-        return render(request, 'a_leet/redirect.html', context)
+    answer_input_context = NormalAnswerInputContext(_request=request, _context=context)
+    if answer_input_context.already_submitted():
+        return redirect_data.redirect_to_already_submitted()
 
     if request.method == 'POST':
-        return answer_data.process_post_request_to_answer_input()
+        return answer_input_context.process_post_request_to_answer_input()
 
-    context = update_context_data(
-        leet=leet, config=config, student=student,
-        subject=answer_data.subject_name,
-        answer_student=answer_data.answer_student,
-        url_answer_confirm=leet.get_predict_answer_confirm_url(subject_field),
-    )
     return render(request, 'a_leet/predict_answer_input.html', context)
 
 
 def predict_answer_confirm_view(request: HtmxHttpRequest, pk: int, subject_field: str):
-    config = ViewConfiguration()
-    context = update_context_data(config=config)
+    context, _, redirect_response = prepare_leet_context(request, pk, subject_field)
+    if redirect_response:
+        return redirect_response
 
-    leet = models.Leet.objects.filter(pk=pk).first()
-    if not leet or not hasattr(leet, 'predict_leet') or not leet.predict_leet.is_active:
-        context = update_context_data(context, message='합격 예측 대상 시험이 아닙니다.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
-
-    student: models.PredictStudent = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)
-    if not student:
-        context = update_context_data(context, message='수험 정보를 입력해주세요.', next_url=config.url_list)
-        return render(request, 'a_leet/redirect.html', context)
-
-    config.url_detail = leet.get_predict_detail_url()
-    if config.current_time < leet.predict_leet.exam_started_at:
-        context = update_context_data(context, message='시험 시작 전입니다.', next_url=config.url_detail)
-        return render(request, 'a_leet/redirect.html', context)
-
-    answer_data = NormalAnswerConfirmData(_request=request, _leet=leet, _subject_field=subject_field)
+    answer_confirm_context = NormalAnswerConfirmContext(_request=request, _context=context)
     if request.method == 'POST':
-        return answer_data.process_post_request_to_answer_confirm()
+        return answer_confirm_context.process_post_request_to_answer_confirm()
+
+    context = update_context_data(context, verifying=True, header=answer_confirm_context.get_header())
+    return render(request, 'a_leet/snippets/modal_answer_confirmed.html', context)
+
+
+def prepare_leet_context(request: HtmxHttpRequest, pk: int, subject_field: str):
+    config = ViewConfiguration()
+    leet = get_object_or_404(models.Leet.objects.select_related('predict_leet'), pk=pk)  # Queryset
+    config.url_detail = leet.get_predict_detail_url()
+    url_answer_confirm = leet.get_predict_answer_confirm_url(subject_field)
 
     context = update_context_data(
-        url_answer_confirm=leet.get_predict_answer_confirm_url(subject_field),
-        header=f'{answer_data.subject_name} 답안을 제출하시겠습니까?', verifying=True)
-    return render(request, 'a_predict/snippets/modal_answer_confirmed.html', context)
+        config=config, leet=leet, subject_field=subject_field, url_answer_confirm=url_answer_confirm)
+
+    leet_context = LeetContext(_leet=leet)
+    subject_variants = SubjectVariants()
+    redirect_context = NormalRedirectContext(_request=request, _context=context)
+    sub, subject, field_idx, problem_count = subject_variants.get_subject_variable(subject_field)
+
+    if leet_context.is_not_for_predict():
+        return None, None, redirect_context.redirect_to_no_predict_psat()
+    if leet_context.before_exam_start():
+        return None, None, redirect_context.redirect_to_before_exam_start()
+
+    student = models.PredictStudent.objects.leet_student_with_answer_count(request.user, leet)
+    if not student:
+        return None, None, redirect_context.redirect_to_no_student()
+
+    context = update_context_data(
+        context,
+        subject_vars=subject_variants.subject_vars,
+        subject_vars_dict=subject_variants.subject_vars_dict,
+        sub=sub, subject=subject, field_idx=field_idx, problem_count=problem_count,
+        student=student,
+    )
+
+    temporary_answer_context = TemporaryAnswerContext(_request=request, _context=context)
+    context = update_context_data(
+        context,
+        total_answer_set=temporary_answer_context.get_total_answer_set(),
+        answer_student_list=temporary_answer_context.get_answer_student_list_for_subject(),
+        answer_student=temporary_answer_context.get_answer_student_for_subject(),
+    )
+    return context, redirect_context, None
