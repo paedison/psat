@@ -33,157 +33,126 @@ class AdminDetailContext:
 
     def __post_init__(self):
         self._psat = self._context['psat']
-        self._subject_variants = SubjectVariants(_psat=self._psat)
-
-        self._subject_vars = self._subject_variants.subject_vars
-        self._subject_vars_avg = self._subject_variants.subject_vars_avg
-        self._qs_problem = _model.problem.objects.filtered_problem_by_psat(self._psat)
-        self._qs_answer_count = _model.ac_all.objects.predict_filtered_by_psat(self._psat)
+        self._subject_vars = self._context['subject_vars']
+        self._subject_fields_avg_first = self._context['subject_fields_avg_first']
+        self._sub_list = self._context['sub_list']
 
     def get_admin_problem_context(self):
         page_number = self.request.GET.get('page', 1)
-        return {'problem_context': get_paginator_context(self._qs_problem, page_number)}
+        qs_problem = self._context['qs_problem']
+        return get_paginator_context(qs_problem, page_number)
+
+    def get_admin_answer_predict_context(self):
+        qs_answer_count = self._context['qs_answer_count']
+        return self.get_admin_only_answer_context(qs_answer_count)
+
+    def get_admin_answer_official_context(self):
+        qs_problem = self._context['qs_problem']
+        return self.get_admin_only_answer_context(qs_problem)
+
+    def get_admin_only_answer_context(self, queryset: QuerySet) -> dict:
+        query_dict = defaultdict(list)
+        for query in queryset.order_by('id'):
+            query_dict[query.subject].append(query)
+        return {
+            sub: {'id': str(idx), 'title': sub, 'page_obj': query_dict[sub]}
+            for idx, sub in enumerate(self._sub_list)
+        }
 
     def get_admin_statistics_context(self, per_page=10) -> dict:
+        return {
+            'total': self.get_admin_statistics_data(False, per_page),
+            'filtered': self.get_admin_statistics_data(True, per_page),
+        }
+
+    def get_admin_catalog_context(self, per_page=10) -> dict:
+        return {
+            'total': self.get_admin_catalog_data(False, per_page),
+            'filtered': self.get_admin_catalog_data(True, per_page),
+        }
+
+    def get_admin_statistics_data(self, is_filtered: bool, per_page=10) -> tuple[list, list]:
         page_number = self.request.GET.get('page', 1)
-        total_data, filtered_data = self.get_admin_statistics_data()
-        total_context = get_paginator_context(total_data, page_number, per_page)
-        filtered_context = get_paginator_context(filtered_data, page_number, per_page)
-        total_context.update({
-            'id': '0', 'title': '전체', 'prefix': 'TotalStatistics', 'header': 'total_statistics_list',
+        qs_statistics = _model.statistics.objects.filter(psat=self._psat).order_by('id')
+        qs_statistics_all = qs_statistics[0] if qs_statistics else None
+        qs_statistics_department = qs_statistics[1:] if qs_statistics else None
+        context = get_paginator_context(qs_statistics_department, page_number, per_page)
+
+        prefix = 'filtered_' if is_filtered else ''
+        if is_filtered:
+            for fld in self._subject_fields_avg_first:
+                setattr(qs_statistics_all, fld, getattr(qs_statistics_all, f'{prefix}{fld}'))
+            for obj in context['page_obj']:
+                for fld in self._subject_fields_avg_first:
+                    setattr(obj, fld, getattr(obj, f'{prefix}{fld}'))
+
+        context.update({
+            'id': '1' if is_filtered else '0',
+            'title': '필터링' if is_filtered else '전체',
+            'prefix': 'FilteredStatistics' if is_filtered else 'TotalStatistics',
+            'header': 'filtered_statistics_list' if is_filtered else 'total_statistics_list',
+            'all': qs_statistics_all,
         })
-        filtered_context.update({
-            'id': '1', 'title': '필터링', 'prefix': 'FilteredStatistics', 'header': 'filtered_statistics_list',
-        })
-        return {'statistics_context': {'total': total_context, 'filtered': filtered_context}}
 
-    def get_admin_statistics_data(self) -> tuple[list, list]:
-        department_list = list(
-            _model.category.objects.filter(exam=self._psat.exam).order_by('order')
-            .values_list('department', flat=True)
-        )
-        department_list.insert(0, '전체')
+        return context
 
-        total_data, filtered_data = defaultdict(dict), defaultdict(dict)
-        total_scores, filtered_scores = defaultdict(dict), defaultdict(dict)
-        for department in department_list:
-            total_data[department] = {'department': department, 'participants': 0}
-            filtered_data[department] = {'department': department, 'participants': 0}
-            total_scores[department] = {sub: [] for sub in self._subject_vars_avg}
-            filtered_scores[department] = {sub: [] for sub in self._subject_vars_avg}
-
-        qs_students = (
-            _model.student.objects.filter(psat=self._psat)
-            .select_related('psat', 'category', 'score', 'rank_total', 'rank_category')
-            .annotate(
-                department=F('category__department'),
-                subject_0=F('score__subject_0'),
-                subject_1=F('score__subject_1'),
-                subject_2=F('score__subject_2'),
-                subject_3=F('score__subject_3'),
-                average=F('score__average'),
-            )
-        )
-        for qs_s in qs_students:
-            for sub, (_, field, _, _) in self._subject_vars_avg.items():
-                score = getattr(qs_s, field)
-                if score is not None:
-                    total_scores['전체'][sub].append(score)
-                    total_scores[qs_s.department][sub].append(score)
-                    if qs_s.is_filtered:
-                        filtered_scores['전체'][sub].append(score)
-                        filtered_scores[qs_s.department][sub].append(score)
-
-        self.update_admin_statistics_data(total_data, total_scores)
-        self.update_admin_statistics_data(filtered_data, filtered_scores)
-
-        return list(total_data.values()), list(filtered_data.values())
-
-    def update_admin_statistics_data(self, data_statistics: dict, score_list: dict) -> None:
-        for department, score_dict in score_list.items():
-            for sub, scores in score_dict.items():
-                subject, fld, _, _ = self._subject_vars_avg[sub]
-                participants = len(scores)
-
-                sorted_scores = sorted(scores, reverse=True)
-                max_score = top_score_10 = top_score_20 = avg_score = None
-                if sorted_scores:
-                    max_score = sorted_scores[0]
-                    top_10_threshold = max(1, int(participants * 0.1))
-                    top_20_threshold = max(1, int(participants * 0.2))
-                    top_score_10 = sorted_scores[top_10_threshold - 1]
-                    top_score_20 = sorted_scores[top_20_threshold - 1]
-                    avg_score = round(sum(scores) / participants, 1)
-
-                data_statistics[department][fld] = {
-                    'field': fld,
-                    'is_confirmed': True,
-                    'sub': sub,
-                    'subject': subject,
-                    'participants': participants,
-                    'max': max_score,
-                    't10': top_score_10,
-                    't20': top_score_20,
-                    'avg': avg_score,
-                }
-
-    def get_admin_catalog_context(self, student_name=None) -> dict:
+    def get_admin_catalog_data(self, is_filtered: bool, per_page=10) -> dict:
         page_number = self.request.GET.get('page', 1)
+        student_name = self.request.GET.get('student_name', '')
+
         total_list = _model.student.objects.filtered_student_by_psat(self._psat)
         if student_name:
             total_list = total_list.filter(name=student_name)
-        filtered_list = total_list.filter(is_filtered=True)
-        total_context = get_paginator_context(total_list, page_number)
-        filtered_context = get_paginator_context(filtered_list, page_number)
+        if is_filtered:
+            total_list = total_list.filter(is_filtered=True)
+        context = get_paginator_context(total_list, page_number, per_page)
 
         field_dict = {0: 'subject_0', 1: 'subject_1', 2: 'subject_2', 3: 'subject_3', 'avg': 'average'}
-        for obj in filtered_context['page_obj']:
-            obj.rank_tot_num = obj.filtered_rank_tot_num
-            obj.rank_dep_num = obj.filtered_rank_dep_num
-            for key, fld in field_dict.items():
-                setattr(obj, f'rank_tot_{key}', getattr(obj, f'filtered_rank_tot_{key}'))
-                setattr(obj, f'rank_dep_{key}', getattr(obj, f'filtered_rank_dep_{key}'))
+        if is_filtered:
+            for obj in context['page_obj']:
+                obj.rank_tot_num = obj.filtered_rank_tot_num
+                obj.rank_dep_num = obj.filtered_rank_dep_num
+                for key, fld in field_dict.items():
+                    setattr(obj, f'rank_tot_{key}', getattr(obj, f'filtered_rank_tot_{key}'))
+                    setattr(obj, f'rank_dep_{key}', getattr(obj, f'filtered_rank_dep_{key}'))
 
-        total_context.update({
-            'id': '0', 'title': '전체', 'prefix': 'TotalCatalog', 'header': 'total_catalog_list',
+        context.update({
+            'id': '1' if is_filtered else '0',
+            'title': '필터링' if is_filtered else '전체',
+            'prefix': 'FilteredCatalog' if is_filtered else 'TotalCatalog',
+            'header': 'filtered_catalog_list' if is_filtered else 'total_catalog_list',
         })
-        filtered_context.update({
-            'id': '1', 'title': '필터링', 'prefix': 'FilteredCatalog', 'header': 'filtered_catalog_list',
-        })
 
-        return {'catalog_context': {'total': total_context, 'filtered': filtered_context}}
+        return context
 
-    def get_admin_answer_context(self, subject=None, per_page=10) -> dict:
-        page_number = self.request.GET.get('page', 1)
-        sub_list = [sub for sub in self._subject_vars]
-        qs_answer_count_group = {sub: [] for sub in self._subject_vars}
+    def get_admin_answer_context(self, per_page=10) -> dict:
+        qs_answer_count_set = {sub: [] for sub in self._subject_vars}
+        qs_answer_count = _model.ac_all.objects.filtered_by_psat_and_subject(self._psat)
+        for qs_ac in qs_answer_count:
+            sub = qs_ac.subject
+            qs_answer_count_set[sub].append(qs_ac)
+
         answer_context = {}
-
-        qs_answer_count = _model.ac_all.objects.filtered_by_psat_and_subject(self._psat, subject)
-        for qs_ac in qs_answer_count:
-            sub = qs_ac.subject
-            if sub not in qs_answer_count_group:
-                qs_answer_count_group[sub] = []
-            qs_answer_count_group[sub].append(qs_ac)
-
-        for sub, qs_answer_count in qs_answer_count_group.items():
+        for sub, qs_answer_count in qs_answer_count_set.items():
             if qs_answer_count:
-                data_answers = self.get_admin_answer_data(qs_answer_count)
-                context = get_paginator_context(data_answers, page_number, per_page)
-                context.update({
-                    'id': str(sub_list.index(sub)),
-                    'title': sub,
-                    'prefix': 'Answer',
-                    'header': 'answer_list',
-                    'answer_count': 4 if sub == '헌법' else 5,
-                })
-                answer_context[sub] = context
+                answer_context[sub] = self.get_admin_answer_context_for_sub(sub, qs_answer_count, per_page)
 
-        return {'answer_context': answer_context}
+        return answer_context
 
-    def get_admin_answer_data(self, qs_answer_count: QuerySet) -> QuerySet:
+    def get_admin_answer_context_for_sub(
+            self,
+            sub: str | None = None,
+            qs_answer_count: QuerySet | None = None,
+            per_page=10,
+    ) -> dict:
+        if sub is None:
+            sub = self.request.GET.get('subject', '')
+        if qs_answer_count is None:
+            qs_answer_count = _model.ac_all.objects.filtered_by_psat_and_subject(self._psat, sub)
+
+        page_number = self.request.GET.get('page', 1)
+
         for qs_ac in qs_answer_count:
-            sub = qs_ac.subject
             field = self._subject_vars[sub][1]
             ans_official = qs_ac.ans_official
 
@@ -207,23 +176,16 @@ class AdminDetailContext:
             except TypeError:
                 qs_ac.rate_gap = None
 
-        return qs_answer_count
+        context = get_paginator_context(qs_answer_count, page_number, per_page)
+        context.update({
+            'id': str(self._sub_list.index(sub)),
+            'title': sub,
+            'prefix': 'Answer',
+            'header': 'answer_list',
+            'answer_count': 4 if sub == '헌법' else 5,
+        })
 
-    def get_admin_only_answer_context(self, queryset: QuerySet) -> dict:
-        sub_list = self._subject_variants.sub_list
-        query_dict = defaultdict(list)
-        for query in queryset.order_by('id'):
-            query_dict[query.subject].append(query)
-        return {
-            sub: {'id': str(idx), 'title': sub, 'page_obj': query_dict[sub]}
-            for idx, sub in enumerate(sub_list)
-        }
-
-    def get_admin_answer_predict_context(self):
-        return {'answer_predict_context': self.get_admin_only_answer_context(self._qs_answer_count)}
-
-    def get_admin_answer_official_context(self):
-        return {'answer_official_context': self.get_admin_only_answer_context(self._qs_problem)}
+        return context
 
 
 @dataclass(kw_only=True)

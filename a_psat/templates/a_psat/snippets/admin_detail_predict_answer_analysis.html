@@ -29,7 +29,7 @@
         </thead>
         <tbody>
             {% for obj in answer_data.page_obj %}
-                <tr class="text-center small">
+                <tr class="text-center">
                     <th class="td-left-no-border">{{ obj.no }}</th>
                     <th class="fs-6 text-success">{{ obj.ans_official_circle|default:'' }}</th>
                     <th class="fs-6 text-{% if obj.ans_predict == obj.ans_official %}success{% else %}danger{% endif %}">

@@ -23,21 +23,15 @@
             </tr>
         </thead>
         <tbody>
-            {% for obj in statistics_data.page_obj %}
-                <tr class="text-center small">
-                    <td class="text-nowrap td-left-no-border">{{ obj.department }}</td>
-                    <td class="text-nowrap">
-                        {% if obj.average.participants %}{{ obj.average.participants|intcomma }}{% endif %}
-                    </td>
-
-                    {% for _ in '01234' %}
-                        {% cycle obj.average obj.subject_0 obj.subject_1 obj.subject_2 obj.subject_3 as data_stat silent %}
-                        <td class="text-nowrap td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t20|floatformat:1 }}</td>
-                        <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.avg|floatformat:1 }}</td>
-                    {% endfor %}
+            {% if statistics_data.all %}
+                {% with obj=statistics_data.all %}{% partial department_stat_tr %}{% endwith %}
+                <tr>
+                    <td class="td-no-border" colspan="19"></td>
                 </tr>
+            {% endif %}
+
+            {% for obj in statistics_data.page_obj %}
+                {% partial department_stat_tr %}
             {% empty %}
                 <tr class="text-center small">
                     <td class="text-nowrap" colspan="22">자료가 없습니다.</td>
@@ -46,5 +40,22 @@
         </tbody>
     </table>
 </article>
-
+{{ statistics_data.page_range.0 }}
 {% include 'a_prime/snippets/pagination.html' with page_obj=statistics_data.page_obj page_range=statistics_data.page_range header=statistics_data.header %}
+
+{% partialdef department_stat_tr %}
+    <tr class="text-center">
+        <td class="text-nowrap td-left-no-border">{{ obj.department }}</td>
+        <td class="text-nowrap">
+            {% if obj.average.participants %}{{ obj.average.participants|intcomma }}{% endif %}
+        </td>
+
+        {% for _ in '01234' %}
+            {% cycle obj.average obj.subject_0 obj.subject_1 obj.subject_2 obj.subject_3 as data_stat silent %}
+            <td class="text-nowrap td-right-no-border">{{ data_stat.max|floatformat:1 }}</td>
+            <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t10|floatformat:1 }}</td>
+            <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.t20|floatformat:1 }}</td>
+            <td class="text-nowrap td-left-no-border td-right-no-border">{{ data_stat.avg|floatformat:1 }}</td>
+        {% endfor %}
+    </tr>
+{% endpartialdef %}

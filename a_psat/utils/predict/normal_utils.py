@@ -120,10 +120,10 @@ class NormalDetailContext:
     _context: dict
 
     def __post_init__(self):
-        self._student_answer_context = StudentAnswerContext(_context=self._context)
-        self._qs_student_answer = self._student_answer_context.qs_student_answer
+        self._student_answer_ctx = StudentAnswerContext(_context=self._context)
+        self._qs_student_answer = self._student_answer_ctx.qs_student_answer
 
-        self.is_confirmed_data = self._student_answer_context.is_confirmed_data
+        self.is_confirmed_data = self._student_answer_ctx.is_confirmed_data
 
     def get_normal_statistics_context(self, is_filtered: bool) -> dict:
         student = self._context['student']
@@ -131,8 +131,8 @@ class NormalDetailContext:
             return {}
 
         suffix = 'Filtered' if is_filtered else 'Total'
-        statistics_all = self._student_answer_context.get_statistics_data('all', is_filtered)
-        statistics_department = self._student_answer_context.get_statistics_data('department', is_filtered)
+        statistics_all = self._student_answer_ctx.get_statistics_data('all', is_filtered)
+        statistics_department = self._student_answer_ctx.get_statistics_data('department', is_filtered)
 
         self.update_normal_statistics_context_for_score(statistics_all, 'result')
         self.update_normal_statistics_context_for_score(statistics_department, 'predict')

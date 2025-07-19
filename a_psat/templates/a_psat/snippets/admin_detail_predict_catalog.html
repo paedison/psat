@@ -35,7 +35,7 @@
         </thead>
         <tbody>
             {% for obj in catalog_data.page_obj %}
-                <tr class="text-center small">
+                <tr class="text-center">
                     <td class="text-nowrap td-left-no-border">{{ obj.id }}</td>
                     <td class="text-nowrap">{{ obj.rank_tot_avg|default:'' }}</td>
                     <td class="text-nowrap">
