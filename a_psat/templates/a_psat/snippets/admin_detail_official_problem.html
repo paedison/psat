@@ -14,6 +14,7 @@
                         <div id="problemFilter"
                              class="col-12 col-md-4 accordion htmx-fade-in htmx-fade-out">
                             {% partial problem_filter %}
+                            {% partial data_update_accordion %}
                         </div>
 
                         <div id="problemContent" class="col-12 col-md-8 htmx-fade-in htmx-fade-out">
@@ -73,6 +74,28 @@
                         </a>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef data_update_accordion %}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button fw-bold" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#collapseDataUpdate"
+                    aria-expanded="true" aria-controls="collapseDataUpdate">
+                PSAT 업데이트
+            </button>
+        </h2>
+        <div id="collapseDataUpdate" class="accordion-collapse collapse show"
+             data-bs-parent="#examFilter">
+            <div class="accordion-body pb-2" hx-boost="true">
+                <div class="row g-2 align-items-center justify-content-start htmx-fade-in htmx-fade-out">
+                    <div class="col-6 col-md-12 col-lg-6">
+                        <a class="btn btn-primary w-100" href="{{ psat.get_admin_official_update_by_psat_url  }}">자료 업데이트</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

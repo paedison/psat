@@ -11,6 +11,7 @@ admin_official_patterns = [
     path('create/', admin_views.official_psat_create_view, name='admin-official-psat-create'),
     path('active/<int:pk>/', admin_views.official_psat_active_view, name='admin-official-psat-active'),
     path('update/', admin_views.official_update_view, name='admin-official-update'),
+    path('update/<int:pk>/', admin_views.official_update_by_psat_view, name='admin-official-update-by-psat'),
 ]
 
 admin_predict_patterns = [

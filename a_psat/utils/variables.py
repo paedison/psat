@@ -90,6 +90,26 @@ class ModelData:
 
 
 @dataclass(kw_only=True)
+class OfficialModelData:
+    def __post_init__(self):
+        self.psat = models.Psat
+        self.problem = models.Problem
+
+        self.tag = models.ProblemTag
+        self.tagged = models.ProblemTaggedItem
+        self.open = models.ProblemOpen
+        self.like = models.ProblemLike
+        self.rate = models.ProblemRate
+        self.solve = models.ProblemSolve
+        self.memo = models.ProblemMemo
+        self.collection = models.ProblemCollection
+        self.collection_item = models.ProblemCollectionItem
+        self.annotation = models.ProblemAnnotation
+        self.comment = models.ProblemComment
+        self.comment_like = models.ProblemCommentLike
+
+
+@dataclass(kw_only=True)
 class PsatContext:
     _psat: models.Psat
 

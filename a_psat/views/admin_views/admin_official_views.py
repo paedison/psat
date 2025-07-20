@@ -2,12 +2,14 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 
-from a_psat import models, forms, filters
+from a_psat import forms, filters
 from a_psat.utils.official_utils import *
-from a_psat.utils.variables import RequestContext
+from a_psat.utils.variables import RequestContext, OfficialModelData
 from common.constants import icon_set_new
 from common.decorators import admin_required
 from common.utils import HtmxHttpRequest, update_context_data, get_paginator_context
+
+_model = OfficialModelData()
 
 
 class ViewConfiguration:
@@ -55,7 +57,7 @@ def official_list_view(request: HtmxHttpRequest):
 @admin_required
 def official_detail_view(request: HtmxHttpRequest, pk: int):
     config = ViewConfiguration()
-    psat = get_object_or_404(models.Psat, pk=pk)
+    psat = get_object_or_404(_model.psat, pk=pk)
     detail_context = AdminDetailContext(request=request, psat=psat)
     context = update_context_data(config=config, psat=psat, problem_context=detail_context.get_problem_context())
 
@@ -92,7 +94,7 @@ def official_psat_active_view(request: HtmxHttpRequest, pk: int):
     if request.method == 'POST':
         form = forms.PsatActiveForm(request.POST)
         if form.is_valid():
-            psat = get_object_or_404(models.Psat, pk=pk)
+            psat = get_object_or_404(_model.psat, pk=pk)
             is_active = form.cleaned_data['is_active']
             psat.is_active = is_active
             psat.save()
@@ -107,12 +109,31 @@ def official_update_view(request: HtmxHttpRequest):
 
     if request.method == 'POST':
         form = forms.UploadFileForm(request.POST, request.FILES)
+        context = update_context_data(context, form=form)
         if form.is_valid():
-            AdminUpdateContext(request=request).process_post_request()
+            AdminUpdateContext(_request=request, _context=context).process_post_request()
             return redirect(config.url_list)
-        else:
-            context = update_context_data(context, form=form)
-            return render(request, 'a_psat/admin_form.html', context)
+        return render(request, 'a_psat/admin_form.html', context)
+
+    form = forms.UploadFileForm()
+    context = update_context_data(context, form=form)
+    return render(request, 'a_psat/admin_form.html', context)
+
+
+@admin_required
+def official_update_by_psat_view(request: HtmxHttpRequest, pk: int):
+    config = ViewConfiguration()
+    psat = get_object_or_404(_model.psat, pk=pk)
+    title = f'{psat.full_reference} 자료 업데이트'
+    context = update_context_data(config=config, title=title, psat=psat)
+
+    if request.method == 'POST':
+        form = forms.UploadFileForm(request.POST, request.FILES)
+        context = update_context_data(context, form=form)
+        if form.is_valid():
+            AdminUpdateContext(_request=request, _context=context).process_post_request()
+            return redirect(config.url_list)
+        return render(request, 'a_psat/admin_form.html', context)
 
     form = forms.UploadFileForm()
     context = update_context_data(context, form=form)

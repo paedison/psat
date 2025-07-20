@@ -64,6 +64,9 @@ class Psat(models.Model):
     def get_admin_official_detail_url(self):
         return reverse_lazy('psat:admin-official-detail', args=[self.id])
 
+    def get_admin_official_update_by_psat_url(self):
+        return reverse_lazy('psat:admin-official-update-by-psat', args=[self.id])
+
     def get_admin_predict_detail_url(self):
         return reverse_lazy('psat:admin-predict-detail', args=[self.id])
 

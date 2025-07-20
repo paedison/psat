@@ -23,22 +23,24 @@ from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
 from django.urls import reverse
 
-from a_psat import models, forms
-from a_psat.utils.variables import get_prev_next_obj, SubjectVariants
+from a_psat import forms
+from a_psat.utils.variables import get_prev_next_obj, SubjectVariants, OfficialModelData
 from common.constants import icon_set_new
 from common.models import User
 from common.utils import get_paginator_context, HtmxHttpRequest
 from common.utils.modify_models_methods import with_bulk_create_or_update, append_list_create
 
+_model = OfficialModelData()
+
 
 @dataclass(kw_only=True)
 class ProblemData:
     request: HtmxHttpRequest
-    problem: models.Problem
+    problem: _model.problem
 
     def __post_init__(self):
         self._user = self.request.user if self.request.user.is_authenticated else None
-        self.base_list_data = models.Problem.objects.base_list(self.problem)
+        self.base_list_data = _model.problem.objects.base_list(self.problem)
 
     def get_problem_list_context(self):
         return {
@@ -47,35 +49,35 @@ class ProblemData:
         }
 
     def get_like_list_context(self):
-        like_list = models.Problem.objects.like_list(self.problem, self._user)
+        like_list = _model.problem.objects.like_list(self.problem, self._user)
         return {
             'list_title': '즐겨찾기 추가 문제', 'color': 'danger',
             'list_data': self.get_list_data(like_list),
         }
 
     def get_rate_list_context(self):
-        rate_list = models.Problem.objects.rate_list(self.problem, self._user)
+        rate_list = _model.problem.objects.rate_list(self.problem, self._user)
         return {
             'list_title': '난이도 선택 문제', 'color': 'warning',
             'list_data': self.get_list_data(rate_list),
         }
 
     def get_solve_list_context(self):
-        solve_list = models.Problem.objects.solve_list(self.problem, self._user)
+        solve_list = _model.problem.objects.solve_list(self.problem, self._user)
         return {
             'list_title': '정답 확인 문제', 'color': 'success',
             'list_data': self.get_list_data(solve_list),
         }
 
     def get_memo_list_context(self):
-        memo_list = models.Problem.objects.memo_list(self.problem, self._user)
+        memo_list = _model.problem.objects.memo_list(self.problem, self._user)
         return {
             'list_title': '메모 작성 문제', 'color': 'warning',
             'list_data': self.get_list_data(memo_list),
         }
 
     def get_tag_list_context(self):
-        tag_list = models.Problem.objects.tag_list(self.problem, self._user)
+        tag_list = _model.problem.objects.tag_list(self.problem, self._user)
         return {
             'list_title': '태그 작성 문제', 'color': 'primary',
             'list_data': self.get_list_data(tag_list),
@@ -128,13 +130,13 @@ class NormalListContext:
 
     def get_collections(self):
         if self._request.user.is_authenticated:
-            return models.ProblemCollection.objects.user_collection(self._request.user)
+            return _model.collection.objects.user_collection(self._request.user)
 
 
 @dataclass(kw_only=True)
 class NormalDetailContext:
     request: HtmxHttpRequest
-    problem: models.Problem
+    problem: _model.problem
 
     def __post_init__(self):
         self.process_image()
@@ -182,27 +184,27 @@ class NormalDetailContext:
     def get_my_memo(self):
         for dt in self.custom_data['memo']:
             if dt.problem_id == self.problem.id:
-                return models.ProblemMemo.objects.user_memo_for_problem(self.request.user, self.problem)
+                return _model.memo.objects.user_memo_for_problem(self.request.user, self.problem)
 
     def get_my_tags(self):
         for dt in self.custom_data['tag']:
             if dt.content_object_id == self.problem.id:
-                return models.ProblemTag.objects.user_tags_for_problem(self.request.user, self.problem)
+                return _model.tag.objects.user_tags_for_problem(self.request.user, self.problem)
         return []
 
 
 @dataclass(kw_only=True)
 class NormalUpdateContext:
     request: HtmxHttpRequest
-    problem: models.Problem
+    problem: _model.problem
 
     def get_like_problem_response(self):
-        new_record = self.create_new_custom_record(models.ProblemLike)
+        new_record = self.create_new_custom_record(_model.like)
         icon_like = icon_set_new.ICON_LIKE[f'{new_record.is_liked}']
         return HttpResponse(f'{icon_like}')
 
     def get_rate_problem_response(self, rating):
-        _ = self.create_new_custom_record(models.ProblemRate, **{'rating': rating})
+        _ = self.create_new_custom_record(_model.rate, **{'rating': rating})
         icon_rate = icon_set_new.ICON_RATE[f'star{rating}']
         return HttpResponse(icon_rate)
 
@@ -211,20 +213,20 @@ class NormalUpdateContext:
         if answer:
             answer = int(answer)
             is_correct = answer == self.problem.answer
-            _ = self.create_new_custom_record(models.ProblemSolve, **{'answer': answer, 'is_correct': is_correct})
+            _ = self.create_new_custom_record(_model.solve, **{'answer': answer, 'is_correct': is_correct})
         return {
             'problem': self.problem, 'answer': answer, 'is_correct': is_correct,
             'icon_solve': icon_set_new.ICON_SOLVE[f'{is_correct}'],
         }
 
     def get_my_memo(self, content):
-        return self.create_new_custom_record(models.ProblemMemo, **{'content': content})
+        return self.create_new_custom_record(_model.memo, **{'content': content})
 
     def create_new_custom_record(self, model, **kwargs):
         base_info = {'problem': self.problem, 'user': self.request.user, 'is_active': True}
         latest_record = model.objects.filter(**base_info).first()
         if latest_record:
-            if isinstance(latest_record, models.ProblemLike):
+            if isinstance(latest_record, _model.like):
                 kwargs = {'is_liked': not latest_record.is_liked}
             with transaction.atomic():
                 new_record = model.objects.create(**base_info, **kwargs)
@@ -242,7 +244,7 @@ class NormalAnnotateProblem:
 
     def __post_init__(self):
         self.lookup_expr = {'problem_id': self.pk, 'user': self.request.user}
-        self.problem: models.Problem = models.Problem.objects.filter(pk=self.pk).first()
+        self.problem: _model.problem = _model.problem.objects.filter(pk=self.pk).first()
 
     def process_post_request_to_save_annotation(self):
         try:
@@ -254,7 +256,7 @@ class NormalAnnotateProblem:
                 return JsonResponse({'success': False, 'error': '이미지 형식이 잘못 설정되었습니다.'})
 
             self.lookup_expr['image'] = self.get_image_file(image_data)
-            annotation = models.ProblemAnnotation.objects.create(**self.lookup_expr)
+            annotation = _model.annotation.objects.create(**self.lookup_expr)
             return JsonResponse({'success': True, 'image_url': annotation.image.url})
 
         except Exception as e:
@@ -269,7 +271,7 @@ class NormalAnnotateProblem:
     def process_get_request_to_load_annotation(self):
         try:
             self.lookup_expr['annotate_type'] = self.request.GET.get('annotate_type')
-            annotation = models.ProblemAnnotation.objects.filter(**self.lookup_expr).first()
+            annotation = _model.annotation.objects.filter(**self.lookup_expr).first()
             if annotation and annotation.image:
                 return JsonResponse({'success': True, 'image_url': annotation.image.url})
             else:
@@ -281,11 +283,11 @@ class NormalAnnotateProblem:
 @dataclass(kw_only=True)
 class AdminDetailContext:
     request: HtmxHttpRequest
-    psat: models.Psat
+    psat: _model.psat
 
     def __post_init__(self):
         self._subject_variants = SubjectVariants(_psat=self.psat)
-        self._qs_problem = models.Problem.objects.filtered_problem_by_psat(self.psat)
+        self._qs_problem = _model.problem.objects.filtered_problem_by_psat(self.psat)
 
     def get_problem_context(self):
         page_number = self.request.GET.get('page', 1)
@@ -325,7 +327,7 @@ class AdminCreateContext:
             for subject in subject_list:
                 for number in range(1, problem_count + 1):
                     problem_info = {'psat': self.psat, 'subject': subject, 'number': number}
-                    append_list_create(models.Problem, list_create, **problem_info)
+                    append_list_create(_model.problem, list_create, **problem_info)
 
         if self.exam in ['행시', '입시']:
             append_list(40, '언어', '자료', '상황')
@@ -335,25 +337,29 @@ class AdminCreateContext:
         elif self.exam in ['국8']:
             append_list(20, '언어', '자료', '상황')
 
-        return models.Problem, list_create, list_update, []
+        return _model.problem, list_create, list_update, []
 
 
 @dataclass(kw_only=True)
 class AdminUpdateContext:
-    request: HtmxHttpRequest
+    _request: HtmxHttpRequest
+    _context: dict
 
     @with_bulk_create_or_update()
     def process_post_request(self):
-        problem_model = models.Problem
+        problem_model = _model.problem
+        psat = self._context.get('psat')
         replace_dict = self.get_replace_dict()
 
-        file = self.request.FILES['file']
+        file = self._request.FILES['file']
         df = pd.read_excel(file)
         df['answer'] = df['answer'].replace(to_replace=replace_dict)
         df = df.infer_objects(copy=False)
         df.fillna(value={'answer': 1, 'question': '', 'data': ''}, inplace=True)
 
         qs_problem = problem_model.objects.select_related('psat')
+        if psat:
+            qs_problem = qs_problem.filter(psat=psat)
         problem_dict = {
             (qs_p.psat.year, qs_p.psat.exam, qs_p.subject, qs_p.number): qs_p for qs_p in qs_problem
         }
@@ -435,25 +441,25 @@ def get_custom_data(user: User) -> dict:
             args = ['user', 'problem']
         qs = model.objects.filter(is_active=True).select_related(*args)
 
-        if model == models.ProblemCollectionItem:
+        if model == _model.collection_item:
             return qs.filter(collection__user=user)
         return qs.filter(user=user)
 
     if user and user.is_authenticated:
         return {
-            'like': get_filtered_qs(models.ProblemLike),
-            'rate': get_filtered_qs(models.ProblemRate),
-            'solve': get_filtered_qs(models.ProblemSolve),
-            'memo': get_filtered_qs(models.ProblemMemo),
-            'tag': get_filtered_qs(models.ProblemTaggedItem, *['user', 'content_object']),
-            'collection': get_filtered_qs(models.ProblemCollectionItem, *['collection__user', 'problem']),
+            'like': get_filtered_qs(_model.like),
+            'rate': get_filtered_qs(_model.rate),
+            'solve': get_filtered_qs(_model.solve),
+            'memo': get_filtered_qs(_model.memo),
+            'tag': get_filtered_qs(_model.tagged, *['user', 'content_object']),
+            'collection': get_filtered_qs(_model.collection_item, *['collection__user', 'problem']),
         }
     return {
         'like': [], 'rate': [], 'solve': [], 'memo': [], 'tag': [], 'collection': [],
     }
 
 
-def get_custom_icons(problem: models.Problem, custom_data: dict):
+def get_custom_icons(problem: _model.problem, custom_data: dict):
     def get_status(status_type, field=None, default: bool | int | None = False):
         for dt in custom_data[status_type]:
             problem_id = getattr(dt, 'problem_id', getattr(dt, 'content_object_id', ''))
