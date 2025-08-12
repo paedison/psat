@@ -10,6 +10,7 @@
         {% partial menu_leet %}
         {% partial menu_prime %}
         {% partial menu_prime_leet %}
+        {% if user.is_admin %}{% partial boardgame_set %}{% endif %}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
         {% if user.is_admin %}{% partial menu_predict %}{% endif %}
         {% if user.is_admin %}{% partial menu_old_predict %}{% endif %}
@@ -227,6 +228,24 @@
                     </a>
                 </li>
             {% endif %}
+        </ul>
+    </li>
+{% endpartialdef %}
+
+{% partialdef boardgame_set %}
+    <li class="nav-item" role="menuitem" aria-label="Boardgame Menu">
+        <a class="nav-link collapsed" href="#boardgameNavContent" data-menu="boardgame"
+           data-bs-toggle="collapse" aria-expanded="false" aria-controls="boardgameNavContent">
+            <i class="fa-solid fa-gamepad"></i> 보드게임
+            <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
+        </a>
+        <ul id="boardgameNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+            <li>
+                <a class="aside-nav-icon" data-menu-parent="boardgame" data-menu-self="set"
+                   href="{% url 'boardgame:set-title-scene' %}">
+                    <i class="fa-regular fa-fw fa-square"></i> 관리자 메뉴
+                </a>
+            </li>
         </ul>
     </li>
 {% endpartialdef %}

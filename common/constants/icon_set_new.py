@@ -41,6 +41,7 @@ ICON_MENU = {
     'prime': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
     'prime_leet': '<i class="fa-solid fa-fw fa-chart-simple"></i>',
     'schedule': '<i class="fa-regular fa-fw fa-calendar-days"></i>',
+    'boardgame': '<i class="fa-solid fa-gamepad"></i>',
 
     'qna': '<i class="fa-solid fa-fw fa-clipboard-question"></i>',
     'profile': '<i class="fa-solid fa-fw fa-user"></i>',

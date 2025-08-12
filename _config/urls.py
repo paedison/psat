@@ -24,6 +24,8 @@ urlpatterns = [
     path('score/', include('a_score.urls')),  # Score
     path('predict/', include('a_predict.urls')),  # Predict
 
+    path('boardgame/set/', include('a_boardgame_set.urls')),  # Boardgame Set
+
     path('score_old/', include('score.urls')),  # Old score
     path('predict_old/', include('predict.urls')),  # Old predict
 ]

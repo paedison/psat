@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head_title %}보드게임 세트{% endblock %}
+{% block header %}{% include 'snippets/header.html' %}{% endblock header %}
+
+{% block aside %}{% include 'snippets/aside.html' %}{% endblock aside %}
+
+{% block main %}
+    {{ config.info|json_script:'info' }}
+
+    <section class="section">
+        <div class="row">
+            <div class="col-12" aria-label="보드게임 세트">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="game-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main %}
+
+{% block footer %}{% include 'snippets/footer.html' %}{% endblock footer %}
+
+{% block page_script %}
+    <script src="{% static 'a_boardgame_set/js/phaser.js' %}"></script>
+    <script type="module" src="{% static 'a_boardgame_set/js/src/main.js' %}"></script>
+{% endblock page_script %}

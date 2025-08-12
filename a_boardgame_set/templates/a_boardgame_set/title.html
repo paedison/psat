@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head_title %}보드게임 세트{% endblock %}
+{% block header %}{% include 'snippets/header.html' %}{% endblock header %}
+
+{% block aside %}{% include 'snippets/aside.html' %}{% endblock aside %}
+
+{% block main %}
+    {{ config.info|json_script:'info' }}
+
+    <section class="section">
+        <div class="row">
+            <div class="col-12" aria-label="보드게임 세트">
+                <div class="card">
+                    <img src="{% static 'a_boardgame_set/assets/title.png' %}"
+                         title="보드게임 세트" alt="보드게임 세트"/>
+                    <div class="card-body">
+                        <div class="card-title mb-0 pb-0 text-center">
+                            {% if request.user.is_authenticated %}
+                                <form action="{% url 'boardgame:set-game-start' %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-primary">게임 시작</button>
+                                </form>
+                            {% else %}
+                                <a class="btn btn-outline-danger" hx-boost="true" hx-target="#main"
+                                   hx-swap="innerHTML swap:0.25s"
+                                   href="{% url 'account_login' %}">
+                                    로그인이 필요합니다.
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock main %}
+
+{% block footer %}{% include 'snippets/footer.html' %}{% endblock footer %}

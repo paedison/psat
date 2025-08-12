@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     'a_prime',
     'a_prime_leet',
     'a_leet',
+    'a_boardgame_set',
 ]
 
 MIDDLEWARE = [
