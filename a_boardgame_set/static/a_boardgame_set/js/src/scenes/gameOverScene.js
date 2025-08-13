@@ -32,10 +32,10 @@ export default class GameOverScene extends Phaser.Scene {
     const container = this.add.container(width / 2, height / 2);
     const bg = this.add.graphics().
       fillStyle(settings.window.BACKGROUND).
-      fillRoundedRect(-width / 4, -height / 4, width / 2, height / 2, 10);
+      fillRoundedRect(-width * 3 / 8, -height / 8, width * 3 / 4, height / 4, 10);
     
     // 텍스트 표시
-    const titleText = this.add.text(0, -height / 8, '게임이 종료됐습니다.', {
+    const titleText = this.add.text(0, -height / 16, '게임이 종료됐습니다.', {
       fontSize: '32px',
       fontFamily: 'Noto Sans KR',
       fontStyle: 'bold',
@@ -48,8 +48,8 @@ export default class GameOverScene extends Phaser.Scene {
       color: '#000000',
     }).setOrigin(0.5);
     
-    const x = width / 4 - settings.button.WIDTH - 25;
-    const y = height / 4 - settings.button.HEIGHT - 25;
+    const x = width * 3 / 8 - settings.button.WIDTH - 25;
+    const y = height / 8 - settings.button.HEIGHT - 25;
     const resetButton = new ResetGameButton(this, y, {x: x, text: '새로 시작(R)'});
     
     container.add([bg, titleText, scoreText, resetButton]);

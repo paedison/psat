@@ -24,9 +24,9 @@ export default class MainScene extends Phaser.Scene {
     
     this.cameras.main.fadeIn(250, 255, 255, 255);
     this.handleHotKeys();
+    this.createInformationBoxes();
     this.createInitialSprites();
     this.createButtons();
-    this.createInformationBoxes();
     this.createThumbnail();
   }
   
@@ -68,7 +68,7 @@ export default class MainScene extends Phaser.Scene {
   }
   
   setDefaultToBoxData() {
-    this.messageTextBox.label.setText('');
+    this.addLog('게임을 새로 시작했습니다.', 'success');
     this.elapsedTimeBox.data.setText('0:00');
     this.remainingCardsBox.data.setText(`${this.remainingCards}`);
     this.hintRequestsBox.data.setText(`${this.hintRequests}`);
@@ -135,7 +135,9 @@ export default class MainScene extends Phaser.Scene {
       .then(res => res.json())
       .then(data => {
         const {session, newCards, remainingCards} = data;
-        
+        const {POSITION_X, POSITION_Y} = settings.card;
+        const cardContainer = this.add.container(POSITION_X, POSITION_Y);
+
         this.session = session;
         this.remainingCards = remainingCards;
         this.remainingCardsBox.data.setText(remainingCards);
@@ -152,18 +154,51 @@ export default class MainScene extends Phaser.Scene {
             .on('pointerup', () => this.handleCardSelection(cardSprite));
           this.cardSprites.push(cardSprite);
         });
+        
+        cardContainer.add(this.cardSprites);
       });
   }
   
+  createInformationBoxes() {
+    const {POSITION_X, POSITION_Y, WIDTH} = settings.textbox;
+    const textContainer = this.add.container(POSITION_X, POSITION_Y);
+
+    let x = 0;
+    this.elapsedTimeBox = new InformationBox(
+      this, x, {labelText: '게임 시간', dataText: this.formatElapsedTime(this.elapsedTime)});
+    
+    x += WIDTH;
+    this.remainingCardsBox = new InformationBox(
+      this, x, {labelText: '남은 카드', dataText: `${this.remainingCards}`});
+    
+    x += WIDTH;
+    this.hintRequestsBox = new InformationBox(
+      this, x, {labelText: '힌트 확인', dataText: `${this.hintRequests}`});
+    
+    x += WIDTH;
+    this.failSuccessBox = new InformationBox(
+      this, x, {labelText: '실패/성공', dataText: `${this.failureCount} / ${this.successCount}`});
+    
+    x += WIDTH;
+    this.currentScoreBox = new InformationBox(
+      this, x, {labelText: '현재 점수', dataText: `${this.score}`});
+    
+    textContainer.add([
+      this.elapsedTimeBox, this.remainingCardsBox, this.hintRequestsBox, this.failSuccessBox, this.currentScoreBox
+    ]);
+  }
+  
   createButtons() {
-    const incrementY = settings.button.HEIGHT + settings.button.MARGIN;
     const {
+      POSITION_X, POSITION_Y, HEIGHT, PADDING,
       BACKGROUND_RESTART: backgroundRestart,
       BACKGROUND_CHANGE: backgroundChange,
       BACKGROUND_HINT: backgroundHint,
     } = settings.button;
+    const buttonContainer = this.add.container(POSITION_X, POSITION_Y);
 
-    let y = settings.window.MARGIN_Y;
+    const incrementY = HEIGHT + PADDING;
+    let y = 0;
     this.restartButton = new ResetButton(this, y, {backgroundColor: backgroundRestart, text: '새로 시작(R)'});
     
     y += incrementY;
@@ -174,55 +209,34 @@ export default class MainScene extends Phaser.Scene {
     
     y += incrementY;
     this.messageTextBox = new TextBox(this, y);
-  }
-  
-  createInformationBoxes() {
-    const incrementY = settings.textbox.HEIGHT;
 
-    let y = settings.window.MARGIN_Y + settings.card.HEIGHT + settings.card.MARGIN;
-    this.elapsedTimeBox = new InformationBox(
-      this, y, {labelText: '게임 시간', dataText: this.formatElapsedTime(this.elapsedTime)});
-    
-    y += incrementY;
-    this.remainingCardsBox = new InformationBox(
-      this, y, {labelText: '남은 카드', dataText: `${this.remainingCards}`});
-    
-    y += incrementY;
-    this.hintRequestsBox = new InformationBox(
-      this, y, {labelText: '힌트 확인', dataText: `${this.hintRequests}`});
-    
-    y += incrementY;
-    this.failSuccessBox = new InformationBox(
-      this, y, {labelText: '실패/성공', dataText: `${this.failureCount} / ${this.successCount}`});
-    
-    y += incrementY;
-    this.currentScoreBox = new InformationBox(
-      this, y, {labelText: '현재 점수', dataText: `${this.score}`});
+    buttonContainer.add([this.restartButton, this.cardChangeButton, this.hintButton, this.messageTextBox]);
   }
   
   createThumbnail() {
-    const {WIDTH, HEIGHT, BORDER_WIDTH, BACKGROUND_COLOR} = settings.textbox;
-    
+    const {
+      POSITION_X, POSITION_Y, WIDTH, HEIGHT, BORDER_WIDTH, BACKGROUND_COLOR
+    } = settings.thumbnailText;
+    const thumbnailContainer = this.add.container(POSITION_X, POSITION_Y);
+
     const bg = this.add.graphics()
-      .lineStyle(BORDER_WIDTH, BACKGROUND_COLOR)
-      .fillStyle(BACKGROUND_COLOR).setAlpha(1)
+      .fillStyle(BACKGROUND_COLOR)
       .fillRect(0, 0, WIDTH, HEIGHT)
       .strokeRect(0, 0, WIDTH, HEIGHT);
     
     const label = this.add.text(WIDTH / 2, HEIGHT / 2, '찾은 세트', {
       fontFamily: '"Noto Sans KR"',
-      fontSize: '20px',
+      fontSize: '18px',
       fontStyle: 'bold',
       color: '#ffffff',
     }).setOrigin(0.5);
-    
-    this.thumbnailTextBox = this.add.container(
-      settings.window.MARGIN_X, 440, [bg, label]).setSize(WIDTH, HEIGHT);
+    thumbnailContainer.add([bg, label]);
     
     for (let i = 0; i < 3; i++) {
       const thumbnailSprite = new CardThumbnailSprite(
         this, i, null).setup();
       this.thumbnailSprites.push(thumbnailSprite);
+      thumbnailContainer.add(thumbnailSprite);
     }
   }
   
@@ -244,7 +258,7 @@ export default class MainScene extends Phaser.Scene {
     const seconds = totalSeconds % 60;
     
     return hours > 0
-      ? `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      ? `${hours}:${minutes.toString().padStart(2, '0')}`
       : `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
   

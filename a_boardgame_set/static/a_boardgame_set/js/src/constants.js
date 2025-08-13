@@ -1,5 +1,5 @@
-const CSRFToken = document.cookie.split('; ').
-    find(row => row.startsWith('csrftoken='))?.split('=')[1];
+const CSRFToken = document.cookie.split('; ')
+  .find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
 function getFrameKey(card) {
   return card ? `${card.color}_${card.shape}_${card.count}_${card.fill}` : 'empty';
@@ -9,53 +9,77 @@ const URL_BASE = '/boardgame/set/'
 const URL_STATIC = '/static/a_boardgame_set/'
 
 const windowSettings = {
-  WIDTH: 800,
-  HEIGHT: 600,
+  WIDTH: 600,
+  HEIGHT: 800,
   BACKGROUND: 0xffffff,
   FONT_FAMILY: 'Noto Sans KR',
-  MARGIN_X: 55,
-  MARGIN_Y: 40,
-}
-
-const cardSettings = {
-  ATLAS_KEY: 'cardsheet',
-  getFrameKey: getFrameKey,
-  WIDTH: 100,
-  HEIGHT: 150,
-  MARGIN: 30,
-  BORDER_WIDTH: 4,
-  BORDER_COLOR_DEFAULT: 0xeeeeee,
-  BORDER_COLOR_SELECTED: 0x008800,
-}
-
-const thumbnailSettings = {
-  ATLAS_KEY: 'cardsheet_small',
-  getFrameKey: getFrameKey,
-  WIDTH: 50,
-  HEIGHT: 73,
-  MARGIN: 10,
-  BORDER_WIDTH: 2,
-  BORDER_COLOR: 0xeeeeee,
-}
-
-const buttonSettings = {
-  WIDTH: 170,
-  HEIGHT: 30,
-  MARGIN: 10,
-  TEXT_COLOR: '#ffffff',
-  BACKGROUND_RESTART: 0x007bff,
-  BACKGROUND_CHANGE: 0xc45816,
-  BACKGROUND_HINT: 0x28a745,
+  MARGIN_X: 10,
+  MARGIN_Y: 10,
 }
 
 const textboxSettings = {
-  WIDTH: 170,
+  POSITION_X: windowSettings.MARGIN_X,
+  POSITION_Y: windowSettings.MARGIN_Y,
+  WIDTH: 116,
   HEIGHT: 30,
   MARGIN: 5,
   TEXT_COLOR_LABEL: '#ffffff',
   TEXT_COLOR_DATA: '#002060',
   BACKGROUND_COLOR: 0x002060,
   BORDER_WIDTH: 2,
+}
+
+const cardSize = {
+  WIDTH: 120,
+  HEIGHT: 180,
+}
+
+const cardSettings = {
+  ATLAS_KEY: 'cardsheet',
+  getFrameKey: getFrameKey,
+  POSITION_X: windowSettings.MARGIN_X,
+  POSITION_Y: 50,
+  WIDTH: cardSize.WIDTH,
+  HEIGHT: cardSize.HEIGHT,
+  PADDING_X: (windowSettings.WIDTH - 2 * windowSettings.MARGIN_X - 4 * cardSize.WIDTH) / 3,
+  PADDING_Y: 10,
+  BORDER_WIDTH: 4,
+  BORDER_COLOR_DEFAULT: 0xeeeeee,
+  BORDER_COLOR_SELECTED: 0x008800,
+}
+
+const buttonSettings = {
+  POSITION_X: windowSettings.MARGIN_X,
+  POSITION_Y: 623,
+  WIDTH: cardSize.WIDTH,
+  HEIGHT: 35,
+  PADDING: 10,
+  TEXT_COLOR: '#ffffff',
+  BACKGROUND_RESTART: 0x007bff,
+  BACKGROUND_CHANGE: 0xc45816,
+  BACKGROUND_HINT: 0x28a745,
+}
+
+const thumbnailTextSettings = {
+  POSITION_X: 316,
+  POSITION_Y: 623,
+  WIDTH: 275,
+  HEIGHT: 30,
+  MARGIN: 10,
+  BACKGROUND_COLOR: textboxSettings.BACKGROUND_COLOR,
+  BORDER_WIDTH: 2,
+  BORDER_COLOR: 0xeeeeee,
+}
+
+const thumbnailSettings = {
+  ATLAS_KEY: 'cardsheet_small',
+  getFrameKey: getFrameKey,
+  WIDTH: 85,
+  HEIGHT: 129,
+  MARGIN: 10,
+  BACKGROUND_COLOR: textboxSettings.BACKGROUND_COLOR,
+  BORDER_WIDTH: 2,
+  BORDER_COLOR: 0xeeeeee,
 }
 
 function fadeOutAnimation(
@@ -84,6 +108,7 @@ export const settings = {
   window: windowSettings,
   card: cardSettings,
   thumbnail: thumbnailSettings,
+  thumbnailText: thumbnailTextSettings,
   button: buttonSettings,
   textbox: textboxSettings,
   fadeOutAnimation: fadeOutAnimation,
