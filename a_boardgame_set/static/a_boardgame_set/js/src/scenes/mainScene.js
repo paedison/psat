@@ -111,7 +111,7 @@ export default class MainScene extends Phaser.Scene {
           cs.replaceCard(newCards[i]);
           cs.setInteractive();
         });
-    });
+      });
   }
   
   getSessionStatus() {
@@ -137,7 +137,7 @@ export default class MainScene extends Phaser.Scene {
         const {session, newCards, remainingCards} = data;
         const {POSITION_X, POSITION_Y} = settings.card;
         const cardContainer = this.add.container(POSITION_X, POSITION_Y);
-
+        
         this.session = session;
         this.remainingCards = remainingCards;
         this.remainingCardsBox.data.setText(remainingCards);
@@ -162,7 +162,7 @@ export default class MainScene extends Phaser.Scene {
   createInformationBoxes() {
     const {POSITION_X, POSITION_Y, WIDTH} = settings.textbox;
     const textContainer = this.add.container(POSITION_X, POSITION_Y);
-
+    
     let x = 0;
     this.elapsedTimeBox = new InformationBox(
       this, x, {labelText: '게임 시간', dataText: this.formatElapsedTime(this.elapsedTime)});
@@ -190,26 +190,27 @@ export default class MainScene extends Phaser.Scene {
   
   createButtons() {
     const {
-      POSITION_X, POSITION_Y, HEIGHT, PADDING,
-      BACKGROUND_RESTART: backgroundRestart,
-      BACKGROUND_CHANGE: backgroundChange,
-      BACKGROUND_HINT: backgroundHint,
+      POSITION_X, POSITION_Y, HEIGHT, WIDTH, PADDING,
+      FILL_RESTART: fillRestart,
+      FILL_CHANGE: fillChange,
+      FILL_HINT: fillHint,
     } = settings.button;
     const buttonContainer = this.add.container(POSITION_X, POSITION_Y);
-
+    
+    let x = WIDTH / 2;
+    let y = HEIGHT / 2;
     const incrementY = HEIGHT + PADDING;
-    let y = 0;
-    this.restartButton = new ResetButton(this, y, {backgroundColor: backgroundRestart, text: '새로 시작(R)'});
+    this.restartButton = new ResetButton(this, x, y, {text: '새로 시작(R)', fillColor: fillRestart});
     
     y += incrementY;
-    this.cardChangeButton = new CardChangeButton(this, y, {backgroundColor: backgroundChange, text: '카드 교체(C)'});
+    this.cardChangeButton = new CardChangeButton(this, x, y, {text: '카드 교체(C)', fillColor: fillChange});
     
     y += incrementY;
-    this.hintButton = new HintButton(this, y, {backgroundColor: backgroundHint, text: '힌트 보기(H)'});
+    this.hintButton = new HintButton(this, x, y, {text: '힌트 보기(H)', fillColor: fillHint});
     
-    y += incrementY;
+    y += HEIGHT / 2 + PADDING;
     this.messageTextBox = new TextBox(this, y);
-
+    
     buttonContainer.add([this.restartButton, this.cardChangeButton, this.hintButton, this.messageTextBox]);
   }
   
@@ -218,7 +219,7 @@ export default class MainScene extends Phaser.Scene {
       POSITION_X, POSITION_Y, WIDTH, HEIGHT, BORDER_WIDTH, BACKGROUND_COLOR
     } = settings.thumbnailText;
     const thumbnailContainer = this.add.container(POSITION_X, POSITION_Y);
-
+    
     const bg = this.add.graphics()
       .fillStyle(BACKGROUND_COLOR)
       .fillRect(0, 0, WIDTH, HEIGHT)

@@ -88,7 +88,7 @@ export class CardSprite extends Phaser.GameObjects.Image {
     const {
       ATLAS_KEY, getFrameKey, WIDTH, HEIGHT, PADDING_X, PADDING_Y
     } = settings.card;
-    const x = (index % 4) * (WIDTH + PADDING_X)  - settings.textbox.BORDER_WIDTH
+    const x = (index % 4) * (WIDTH + PADDING_X) - settings.textbox.BORDER_WIDTH
     const y = Math.floor(index / 4) * (HEIGHT + PADDING_Y)
     
     super(scene, x, y, ATLAS_KEY, getFrameKey(card));
@@ -181,13 +181,13 @@ export class CardThumbnailSprite extends Phaser.GameObjects.Image {
   cardHeight = settings.thumbnail.HEIGHT;
   borderWidth = settings.thumbnail.BORDER_WIDTH;
   borderColor = settings.thumbnail.BORDER_COLOR;
-
+  
   constructor(scene, index, card) {
     const {
-      ATLAS_KEY, getFrameKey, WIDTH, HEIGHT, MARGIN,
+      ATLAS_KEY, getFrameKey, WIDTH, MARGIN,
     } = settings.thumbnail;
-    const x = index * (WIDTH + MARGIN)
-    const y = settings.thumbnailText.HEIGHT + 10
+    const x = index * (WIDTH + MARGIN);
+    const y = settings.thumbnailText.HEIGHT + settings.thumbnailText.MARGIN;
     
     super(scene, x, y, ATLAS_KEY, getFrameKey(card));
     
@@ -225,73 +225,66 @@ export class CardThumbnailSprite extends Phaser.GameObjects.Image {
 }
 
 export class TextButton extends Phaser.GameObjects.Container {
-  constructor(scene, y, options = {}) {
-    const {x = 0} = options;
+  buttonWidth = settings.button.WIDTH;
+  buttonHeight = settings.button.HEIGHT;
+  textColor = settings.button.TEXT_COLOR;
+  alphaFill = 0.8;
+  radius = 8;
+  
+  constructor(scene, x, y, options = {}) {
     super(scene, x, y);
-    
     this.options = options;
     this.#draw();
-    this.#hooverEffect();
-    this.#add();
-    
-    scene.add.existing(this);
   }
   
   #draw() {
-    const {
-      WIDTH, HEIGHT, TEXT_COLOR, BACKGROUND_RESTART,
-    } = settings.button;
-    
-    const {
-      text = '',
-      width = WIDTH,
-      height = HEIGHT,
-      backgroundColor = BACKGROUND_RESTART,
-      alpha = 0.8,
-      textColor = TEXT_COLOR,
-      fontFamily = settings.window.FONT_FAMILY,
-      fontStyle = 'bold',
-      fontSize = '18px',
-      radius = 8,
-    } = this.options;
+    const {text, fillColor, textColor = this.textColor} = this.options;
+    const width = this.buttonWidth;
+    const height = this.buttonHeight;
     
     this.bg = this.scene.add.graphics()
-      .fillStyle(backgroundColor)
-      .setAlpha(alpha)
-      .fillRoundedRect(0, 0, width, height, radius)
+      .fillStyle(fillColor)
+      .setAlpha(this.alphaFill)
+      .fillRoundedRect(-width / 2, -height / 2, width, height, this.radius);
+    
+    this.shadow = this.scene.add.graphics()
+      .fillStyle(0x000000, 0.1)
+      .fillRoundedRect(-width / 2 + 3, -height / 2 + 3, width, height, this.radius);
+    
+    this.label = this.scene.add.text(0, 0, text, {
+      fontFamily: settings.window.FONT_FAMILY,
+      fontSize: '18px',
+      fontStyle: 'bold',
+      color: textColor,
+    }).setOrigin(0.5);
+    
+    this.add([this.shadow, this.bg, this.label]);
+    this.#setInteractive();
+  }
+  
+  #setInteractive() {
+    const width = this.buttonWidth;
+    const height = this.buttonHeight;
+    
+    this.setSize(width, height)
       .setInteractive(
         new Phaser.Geom.Rectangle(0, 0, width, height), // 히트 영역 정의
         Phaser.Geom.Rectangle.Contains,                 // 포인터가 영역 안에 있는지 판단하는 함수
       );
+    this.input.cursor = 'pointer'; // 커서 손가락으로
+    this.on('pointerover', () => this.#alphaEffect(1));
+    this.on('pointerout', () => this.#alphaEffect(this.alphaFill));
     
-    // 텍스트
-    this.label = this.scene.add.text(width / 2, height / 2, text, {
-      fontFamily: fontFamily,
-      fontSize: fontSize,
-      fontStyle: fontStyle,
-      color: textColor,
-    }).setOrigin(0.5);
-  }
-  
-  #hooverEffect() {
-    const {alpha = 0.8} = this.options;
-    this.bg.input.cursor = 'pointer'; // 커서 손가락으로
-    this.bg.on('pointerover', () => this.#alphaEffect(1));
-    this.bg.on('pointerout', () => this.#alphaEffect(alpha));
-    
-    this.bg.on('pointerup', () => {
-      this.bg.disableInteractive();
+    this.on('pointerup', () => {
+      this.disableInteractive();
       this.scene.tweens.add({
-        targets: this.bg, alpha: 0.5, duration: 100, yoyo: true,
-        onComplete: () => this.bg.setInteractive(),
+        targets: this, duration: 100, yoyo: true,
+        alpha: 0.5, scaleX: 0.95, scaleY: 0.95,
+        onComplete: () => this.setInteractive(),
       });
       this.execute();
     });
-  }
-  
-  #add() {
-    this.add(this.bg);
-    this.add(this.label);
+    
     this.scene.add.existing(this);
   }
   

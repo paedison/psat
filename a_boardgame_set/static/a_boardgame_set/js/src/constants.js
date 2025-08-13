@@ -55,9 +55,9 @@ const buttonSettings = {
   HEIGHT: 35,
   PADDING: 10,
   TEXT_COLOR: '#ffffff',
-  BACKGROUND_RESTART: 0x007bff,
-  BACKGROUND_CHANGE: 0xc45816,
-  BACKGROUND_HINT: 0x28a745,
+  FILL_RESTART: 0x007bff,
+  FILL_CHANGE: 0xc45816,
+  FILL_HINT: 0x28a745,
 }
 
 const thumbnailTextSettings = {
