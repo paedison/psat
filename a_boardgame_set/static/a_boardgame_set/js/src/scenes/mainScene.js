@@ -5,6 +5,34 @@ import {CardSprite, CardThumbnailSprite, TextBox, InformationBox} from './interf
 import {ResetButton, CardChangeButton, HintButton} from './buttonHandler.js';
 
 export default class MainScene extends Phaser.Scene {
+    session = {};
+    cardSprites = [];
+    isSelecting = false;
+    selectedCardSprites = new Set();
+    
+    hintSets = [];
+    logMessages = [];
+    elapsedTime = 0;
+    formattedTime = '0:00';
+    remainingCards = 69;
+    hintRequests = 0;
+    failureCount = 0;
+    successCount = 0;
+    score = 0;
+    thumbnailSprites = [];
+    
+    restartButton = null;
+    cardChangeButton = null;
+    hintButton = null;
+    
+    messageTextBox = null;
+    elapsedTimeBox = null;
+    remainingCardsBox = null;
+    hintRequestsBox = null;
+    failSuccessBox = null;
+    currentScoreBox = null;
+    thumbnailTextBox = null;
+
   constructor() {
     super('MainScene');
   }
@@ -20,60 +48,12 @@ export default class MainScene extends Phaser.Scene {
   }
   
   create() {
-    this.SetDefaultToAllFields();
-    
     this.cameras.main.fadeIn(250, 255, 255, 255);
     this.handleHotKeys();
     this.createInformationBoxes();
     this.createInitialSprites();
     this.createButtons();
     this.createThumbnail();
-  }
-  
-  SetDefaultToAllFields() {
-    this.session = {};
-    this.cardSprites = [];
-    this.isSelecting = false;
-    this.selectedCardSprites = new Set();
-    
-    this.SetDefaultToSessionData();
-    this.SetNullButtonAndBox();
-  }
-  
-  SetDefaultToSessionData() {
-    this.hintSets = [];
-    this.logMessages = [];
-    this.elapsedTime = 0;
-    this.formattedTime = '0:00';
-    this.remainingCards = 69;
-    this.hintRequests = 0;
-    this.failureCount = 0;
-    this.successCount = 0;
-    this.score = 0;
-    this.thumbnailSprites = [];
-  }
-  
-  SetNullButtonAndBox() {
-    this.restartButton = null;
-    this.cardChangeButton = null;
-    this.hintButton = null;
-    
-    this.messageTextBox = null;
-    this.elapsedTimeBox = null;
-    this.remainingCardsBox = null;
-    this.hintRequestsBox = null;
-    this.failSuccessBox = null;
-    this.currentScoreBox = null;
-    this.thumbnailTextBox = null;
-  }
-  
-  setDefaultToBoxData() {
-    this.addLog('게임을 새로 시작했습니다.', 'success');
-    this.elapsedTimeBox.data.setText('0:00');
-    this.remainingCardsBox.data.setText(`${this.remainingCards}`);
-    this.hintRequestsBox.data.setText(`${this.hintRequests}`);
-    this.failSuccessBox.data.setText(`${this.failureCount} / ${this.successCount}`);
-    this.currentScoreBox.data.setText(`${this.score}`);
   }
   
   SetDefaultToSelectRecords() {
@@ -105,13 +85,32 @@ export default class MainScene extends Phaser.Scene {
         this.isSelecting = false;
         this.selectedCardSprites.clear();
         
-        this.SetDefaultToSessionData();
-        this.setDefaultToBoxData();
+        this.setDefaultFields();
         cardSprites.forEach((cs, i) => {
           cs.replaceCard(newCards[i]);
           cs.setInteractive();
         });
       });
+  }
+  
+  setDefaultFields() {
+    this.hintSets = [];
+    this.logMessages = [];
+    this.elapsedTime = 0;
+    this.formattedTime = '0:00';
+    this.remainingCards = 69;
+    this.hintRequests = 0;
+    this.failureCount = 0;
+    this.successCount = 0;
+    this.score = 0;
+    this.thumbnailSprites = [];
+
+    this.addLog('게임을 새로 시작했습니다.', 'success');
+    this.elapsedTimeBox.data.setText('0:00');
+    this.remainingCardsBox.data.setText(`${this.remainingCards}`);
+    this.hintRequestsBox.data.setText(`${this.hintRequests}`);
+    this.failSuccessBox.data.setText(`${this.failureCount} / ${this.successCount}`);
+    this.currentScoreBox.data.setText(`${this.score}`);
   }
   
   getSessionStatus() {
@@ -150,7 +149,7 @@ export default class MainScene extends Phaser.Scene {
         this.successCount = success_count;
         
         newCards.forEach((newCard, index) => {
-          const cardSprite = new CardSprite(this, index, newCard).setup()
+          const cardSprite = new CardSprite(this, index, newCard)
             .on('pointerup', () => this.handleCardSelection(cardSprite));
           this.cardSprites.push(cardSprite);
         });
