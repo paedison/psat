@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_not_required
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from rest_framework.decorators import api_view
@@ -19,7 +20,7 @@ class ViewConfiguration:
     menu_title = {'kor': menu_kor, 'eng': menu.capitalize()}
     submenu_title = {'kor': submenu_kor, 'eng': submenu.capitalize()}
     # url_admin = reverse_lazy('admin:a_psat_problem_changelist')
-    # url_list = reverse_lazy('psat:problem-list')
+    url_title = reverse_lazy('boardgame:set-title-scene')
 
 
 def get_session(request):
@@ -35,10 +36,15 @@ def title_scene(request):
 
 
 def game_start(request):
+    if request.htmx:
+        response = HttpResponse()
+        response['HX-Redirect'] = reverse_lazy('boardgame:set-game-start')
+        return response
     config = ViewConfiguration()
     session = SessionData(None).create_session(request)
     context = update_context_data(config=config, session=session)
-    return render(request, 'a_boardgame_set/game.html', context)
+    response = render(request, 'a_boardgame_set/game.html', context)
+    return response
 
 
 @api_view(['POST'])

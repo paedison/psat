@@ -1,12 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'a_boardgame_set/_boardgame_set_base.html' %}
 {% load static %}
 
-{% block head_title %}보드게임 세트{% endblock %}
-{% block header %}{% include 'snippets/header.html' %}{% endblock header %}
-
-{% block aside %}{% include 'snippets/aside.html' %}{% endblock aside %}
-
-{% block main %}
+{% block main_content %}
     {{ config.info|json_script:'info' }}
 
     <section class="section">
@@ -18,11 +13,9 @@
             </div>
         </div>
     </section>
-{% endblock main %}
-
-{% block footer %}{% include 'snippets/footer.html' %}{% endblock footer %}
+{% endblock %}
 
 {% block page_script %}
     <script src="{% static 'a_boardgame_set/js/phaser.js' %}"></script>
     <script type="module" src="{% static 'a_boardgame_set/js/src/main.js' %}"></script>
-{% endblock page_script %}
+{% endblock %}

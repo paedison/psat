@@ -10,7 +10,7 @@
         {% partial menu_leet %}
         {% partial menu_prime %}
         {% partial menu_prime_leet %}
-        {% if user.is_admin %}{% partial boardgame_set %}{% endif %}
+        {% partial boardgame_set %}
         {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
         {% if user.is_admin %}{% partial menu_predict %}{% endif %}
         {% if user.is_admin %}{% partial menu_old_predict %}{% endif %}

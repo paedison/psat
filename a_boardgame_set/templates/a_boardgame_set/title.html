@@ -1,30 +1,25 @@
-{% extends 'base.html' %}
+{% extends 'a_boardgame_set/_boardgame_set_base.html' %}
 {% load static %}
 
-{% block head_title %}보드게임 세트{% endblock %}
-{% block header %}{% include 'snippets/header.html' %}{% endblock header %}
-
-{% block aside %}{% include 'snippets/aside.html' %}{% endblock aside %}
-
-{% block main %}
+{% block main_content %}
     {{ config.info|json_script:'info' }}
 
     <section class="section">
         <div class="row">
             <div class="col-12" aria-label="보드게임 세트">
-                <div class="card">
-                    <img src="{% static 'a_boardgame_set/assets/title.png' %}"
+                <div class="card" hx-swap="innerHTML swap:0.25s">
+                    <img class="card-img-top cursor-pointer" src="{% static 'a_boardgame_set/assets/title.png' %}"
+                         hx-get="{% url 'boardgame:set-game-start' %}" hx-trigger="click"
                          title="보드게임 세트" alt="보드게임 세트"/>
                     <div class="card-body">
                         <div class="card-title mb-0 pb-0 text-center">
                             {% if request.user.is_authenticated %}
-                                <form action="{% url 'boardgame:set-game-start' %}" method="post">
-                                    {% csrf_token %}
-                                    <button class="btn btn-outline-primary">게임 시작</button>
-                                </form>
+                                <a class="btn btn-outline-primary" hx-boost="true"
+                                   href="{% url 'boardgame:set-game-start' %}">
+                                    게임 시작
+                                </a>
                             {% else %}
-                                <a class="btn btn-outline-danger" hx-boost="true" hx-target="#main"
-                                   hx-swap="innerHTML swap:0.25s"
+                                <a class="btn btn-outline-danger" hx-boost="true"
                                    href="{% url 'account_login' %}">
                                     로그인이 필요합니다.
                                 </a>
@@ -35,6 +30,4 @@
             </div>
         </div>
     </section>
-{% endblock main %}
-
-{% block footer %}{% include 'snippets/footer.html' %}{% endblock footer %}
+{% endblock %}
