@@ -113,7 +113,7 @@ export default class MainScene extends Phaser.Scene {
     this.failureCount = 0;
     this.successCount = 0;
     this.score = 0;
-    this.thumbnailSprites = [];
+    this.thumbnailSprites.forEach(cs => cs.replaceCard(null));
     
     this.addLog('게임을 새로 시작했습니다.', 'success');
     this.elapsedTimeBox.dataValue.setText('0:00');
