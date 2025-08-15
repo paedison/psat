@@ -222,7 +222,7 @@ export default class MainScene extends Phaser.Scene {
     const
       {
         POSITION_X, POSITION_Y,
-        WIDTH, HEIGHT, PADDING,
+        WIDTH, HEIGHT, PADDING_X, PADDING_Y,
         FILL_RESTART: fillRestart,
         FILL_CHANGE: fillChange,
         FILL_HINT: fillHint,
@@ -230,26 +230,26 @@ export default class MainScene extends Phaser.Scene {
     
     let x = WIDTH / 2;
     let y = HEIGHT / 2;
-    const incrementY = HEIGHT + PADDING;
     this.restartButton = new ResetButton(this, x, y, {
       text: '새로 시작(R)',
       fillColor: fillRestart,
     });
     
-    y += incrementY;
+    x += WIDTH + PADDING_X
     this.cardChangeButton = new CardChangeButton(this, x, y, {
       text: '카드 교체(C)',
       fillColor: fillChange,
     });
     
-    y += incrementY;
+    y += HEIGHT + PADDING_Y;
     this.hintButton = new HintButton(this, x, y, {
       text: '힌트 보기(H)',
       fillColor: fillHint,
     });
     
-    y += HEIGHT / 2 + PADDING;
-    this.messageTextBox = new TextBox(this, y);
+    x -= WIDTH / 2
+    y += HEIGHT / 2 + PADDING_Y;
+    this.messageTextBox = new TextBox(this, x, y);
     
     this.add.container(POSITION_X, POSITION_Y, [
       this.restartButton,

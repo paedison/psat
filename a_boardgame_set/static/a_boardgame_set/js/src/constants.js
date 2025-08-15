@@ -50,11 +50,14 @@ const cardSettings = {
 }
 
 const buttonSettings = {
-  POSITION_X: windowSettings.MARGIN_X,
+  POSITION_X: windowSettings.WIDTH - windowSettings.MARGIN_X -
+    cardSettings.WIDTH * 2 - cardSettings.PADDING_X
+    - cardSettings.BORDER_WIDTH,
   POSITION_Y: 623,
-  WIDTH: cardSize.WIDTH,
+  WIDTH: cardSettings.WIDTH + cardSettings.BORDER_WIDTH,
   HEIGHT: 35,
-  PADDING: 10,
+  PADDING_X: cardSettings.PADDING_X -cardSettings.BORDER_WIDTH,
+  PADDING_Y: 20,
   TEXT_COLOR: '#ffffff',
   FILL_RESTART: 0x007bff,
   FILL_CHANGE: 0xc45816,
@@ -63,7 +66,7 @@ const buttonSettings = {
 }
 
 const thumbnailTextSettings = {
-  POSITION_X: 316,
+  POSITION_X: windowSettings.MARGIN_X,
   POSITION_Y: 623,
   WIDTH: 275,
   HEIGHT: 30,

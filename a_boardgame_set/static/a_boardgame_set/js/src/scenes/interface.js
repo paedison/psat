@@ -394,8 +394,7 @@ export class TextBox extends Phaser.GameObjects.Container {
   #bg = null;
   label = null;
   
-  constructor(scene, y, options = {}) {
-    const {x = 0} = options;
+  constructor(scene, x, y, options = {}) {
     super(scene, x, y);
     
     this.#options = options;
@@ -412,6 +411,7 @@ export class TextBox extends Phaser.GameObjects.Container {
       height = this.height,
       backgroundColor = settings.window.BACKGROUND,
       alpha = 0,
+      align = 'right',
       textColor = '#000000',
       fontFamily = settings.window.FONT_FAMILY,
       fontSize = '18px',
@@ -423,11 +423,12 @@ export class TextBox extends Phaser.GameObjects.Container {
       .setAlpha(alpha)
       .fillRoundedRect(0, 0, width, height, radius);
     
-    this.label = this.scene.add.text(0, 0, text, {
+    this.label = this.scene.add.text(width, 0, text, {
+      align: align,
       fontFamily: fontFamily,
       fontSize: fontSize,
       fontStyle: 'bold',
       color: textColor,
-    });
+    }).setOrigin(1, 0);
   }
 }
