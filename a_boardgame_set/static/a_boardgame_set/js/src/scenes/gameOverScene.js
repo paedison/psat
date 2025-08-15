@@ -1,20 +1,5 @@
 import {settings} from '../constants.js';
-import {TextButton} from './interface.js';
-
-class ResetGameButton extends TextButton {
-  execute() {
-    const cameras = this.scene.cameras;
-    const scene = this.scene.scene;
-    
-    cameras.main.fadeOut(250, 255, 255, 255);
-    cameras.main.once('camerafadeoutcomplete', () => {
-      const mainScene = scene.get('MainScene');
-      mainScene.restart();
-      scene.resume('MainScene');
-      scene.stop();
-    });
-  }
-}
+import {ResetGameButton} from './buttons.js';
 
 export default class GameOverScene extends Phaser.Scene {
   constructor() {
@@ -22,36 +7,53 @@ export default class GameOverScene extends Phaser.Scene {
   }
   
   create(data) {
-    const width = settings.window.WIDTH;
-    const height = settings.window.HEIGHT;
+    // 상수 설정
+    const
+      width = this.game.config.width + 0,
+      height = this.game.config.height + 0,
+      
+      {
+        WIDTH: buttonWidth, HEIGHT: buttonHeight,
+        FILL_RESTART, FONT_FAMILY,
+      } = settings.button,
+      
+      {score} = data,
+      
+      titleStyle = {
+        fontSize: '32px',
+        fontFamily: FONT_FAMILY,
+        fontStyle: 'bold',
+        color: '#000000',
+      },
+      scoreStyle = {...titleStyle};
     
-    const {score} = data;
+    scoreStyle.fontSize = '24px';
+    scoreStyle.fontStyle = 'normal';
     
-    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.5);
+    // 그래픽 그리기
+    const
+      overlay = this.add.rectangle(
+        0, 0, width, height, 0x000000, 0.5),
+      bg = this.add.graphics()
+        .fillStyle(this.game.config.backgroundColor.color)
+        .fillRoundedRect(
+          -width * 3 / 8, -height / 8,
+          width * 3 / 4, height / 4, 10),
+      titleText = this.add
+        .text(0, -height / 16, '게임이 종료됐습니다.', titleStyle)
+        .setOrigin(0.5),
+      scoreText = this.add
+        .text(0, 0, `점수: ${score}`, scoreStyle).setOrigin(0.5),
+      
+      x = width * 3 / 8 - buttonWidth / 2 - 25,
+      y = height / 8 - buttonHeight / 2 - 25,
+      resetButton = new ResetGameButton(this, x, y, {
+        text: '새로 시작(R)',
+        fillColor: FILL_RESTART,
+      });
     
-    const container = this.add.container(width / 2, height / 2);
-    const bg = this.add.graphics().
-      fillStyle(settings.window.BACKGROUND).
-      fillRoundedRect(-width * 3 / 8, -height / 8, width * 3 / 4, height / 4, 10);
-    
-    // 텍스트 표시
-    const titleText = this.add.text(0, -height / 16, '게임이 종료됐습니다.', {
-      fontSize: '32px',
-      fontFamily: 'Noto Sans KR',
-      fontStyle: 'bold',
-      color: '#000000',
-    }).setOrigin(0.5);
-    
-    const scoreText = this.add.text(0, 0, `점수: ${score}`, {
-      fontSize: '24px',
-      fontFamily: 'Noto Sans KR',
-      color: '#000000',
-    }).setOrigin(0.5);
-    
-    const x = width * 3 / 8 - settings.button.WIDTH - 25;
-    const y = height / 8 - settings.button.HEIGHT - 25;
-    const resetButton = new ResetGameButton(this, y, {x: x, text: '새로 시작(R)'});
-    
-    container.add([bg, titleText, scoreText, resetButton]);
+    this.add.container(width / 2, height / 2, [
+      overlay, bg, titleText, scoreText, resetButton
+    ]);
   }
 }

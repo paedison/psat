@@ -2,9 +2,10 @@ import {settings} from '../constants.js';
 import {TextButton} from './interface.js';
 
 function changeCards(scene, urlInput) {
-  let cardSprites = scene.cardSprites;
-  const sessionId = scene.session.id;
-  const sessionStatus = scene.getSessionStatus();
+  const
+    cardSprites = scene.cardSprites,
+    sessionId = scene.session.id,
+    sessionStatus = scene.getSessionStatus();
   
   fetch(urlInput, {
     method: 'POST',
@@ -24,8 +25,6 @@ function changeCards(scene, urlInput) {
       
       scene.session = session;
       scene.remainingCards = remainingCards;
-      scene.remainingCardsBox.data.setText(remainingCards);
-      
       scene.elapsedTime = elapsed_time;
       scene.formattedTime = scene.formatElapsedTime(elapsed_time);
       scene.score = score;
@@ -33,12 +32,12 @@ function changeCards(scene, urlInput) {
       scene.failureCount = failure_count;
       scene.successCount = success_count;
       
-      scene.elapsedTimeBox.data.setText('0:00');
-      scene.remainingCardsBox.data.setText(`${scene.remainingCards}`);
-      scene.hintRequestsBox.data.setText(`${scene.hintRequests}`);
-      scene.failSuccessBox.data.setText(
+      scene.elapsedTimeBox.dataValue.setText('0:00');
+      scene.remainingCardsBox.dataValue.setText(`${scene.remainingCards}`);
+      scene.hintRequestsBox.dataValue.setText(`${scene.hintRequests}`);
+      scene.failSuccessBox.dataValue.setText(
         `${scene.failureCount} / ${scene.successCount}`);
-      scene.currentScoreBox.data.setText(`${scene.score}`);
+      scene.currentScoreBox.dataValue.setText(`${scene.score}`);
       
       cardSprites.forEach((cs, i) => cs.replaceCard(newCards[i]));
     })
@@ -70,8 +69,9 @@ export class HintButton extends TextButton {
   }
   
   requestHint() {
-    let cardSprites = this.scene.cardSprites;
-    const sessionId = this.scene.session.id;
+    const
+      cardSprites = this.scene.cardSprites,
+      sessionId = this.scene.session.id;
     
     fetch(settings.URL_HINT, {
       method: 'POST',
@@ -105,14 +105,15 @@ export class HintButton extends TextButton {
   
   showHint() {
     this.scene.hintRequests += 1;
-    this.scene.addLog(`세트가 ${this.scene.hintSets.length}개 있습니다.`, 'success');
-    this.scene.hintRequestsBox.data.setText(`${this.scene.hintRequests}`);
+    this.scene.addLog(
+      `세트가 ${this.scene.hintSets.length}개 있습니다.`, 'success');
+    this.scene.hintRequestsBox.dataValue.setText(`${this.scene.hintRequests}`);
     this.showHintSprites();
   }
   
   showHintSprites() {
     this.scene.hintSets.forEach(hintSet => {
-      let spriteIds = [];
+      const spriteIds = [];
       hintSet.forEach(cardId => {
         this.scene.cardSprites.forEach(cs => {
           if (cs.cardData.id === cardId) spriteIds.push(cs.index);
@@ -120,6 +121,20 @@ export class HintButton extends TextButton {
       });
       spriteIds.sort((a, b) => a.index - b.index);
       console.log(spriteIds);
+    });
+  }
+}
+
+export class ResetGameButton extends TextButton {
+  execute() {
+    const {cameras, scene} = this.scene;
+    
+    cameras.main.fadeOut(250, 255, 255, 255);
+    cameras.main.once('camerafadeoutcomplete', () => {
+      const mainScene = scene.get('MainScene');
+      mainScene.restart();
+      scene.resume('MainScene');
+      scene.stop();
     });
   }
 }

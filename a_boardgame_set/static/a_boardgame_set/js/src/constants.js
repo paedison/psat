@@ -27,6 +27,7 @@ const textboxSettings = {
   TEXT_COLOR_DATA: '#002060',
   BACKGROUND_COLOR: 0x002060,
   BORDER_WIDTH: 2,
+  FONT_FAMILY: windowSettings.FONT_FAMILY,
 }
 
 const cardSize = {
@@ -58,6 +59,7 @@ const buttonSettings = {
   FILL_RESTART: 0x007bff,
   FILL_CHANGE: 0xc45816,
   FILL_HINT: 0x28a745,
+  FONT_FAMILY: windowSettings.FONT_FAMILY,
 }
 
 const thumbnailTextSettings = {
@@ -69,6 +71,7 @@ const thumbnailTextSettings = {
   BACKGROUND_COLOR: textboxSettings.BACKGROUND_COLOR,
   BORDER_WIDTH: 2,
   BORDER_COLOR: 0xeeeeee,
+  FONT_FAMILY: windowSettings.FONT_FAMILY,
 }
 
 const thumbnailSettings = {

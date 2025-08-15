@@ -3,76 +3,105 @@
 import {settings} from '../constants.js';
 
 export class InformationBox extends Phaser.GameObjects.Container {
-  constructor(scene, x, options = {}) {
-    const y = 0;
+  #options = {};
+  #labelBox = null;
+  #dataBox = null;
+  #label = null;
+  dataValue = null;
+  
+  constructor(scene, x, y = 0, options = {}) {
     super(scene, x, y);
     
-    this.options = options;
+    this.#options = options;
     this.#draw();
-    this.#add();
     
+    this.add([this.#labelBox, this.#dataBox, this.#label, this.dataValue]);
     scene.add.existing(this);
   }
   
   #draw() {
-    const {
-      WIDTH, HEIGHT,
-      BORDER_WIDTH, BACKGROUND_COLOR,
-      TEXT_COLOR_LABEL, TEXT_COLOR_DATA,
-    } = settings.textbox;
+    const
+      {
+        WIDTH, HEIGHT,
+        BORDER_WIDTH, BACKGROUND_COLOR,
+        TEXT_COLOR_LABEL, TEXT_COLOR_DATA,
+      } = settings.textbox,
+      
+      {
+        labelText = '',
+        dataText = '',
+        width = WIDTH,
+        height = HEIGHT,
+        lineWidth = BORDER_WIDTH,
+        backgroundColor = BACKGROUND_COLOR,
+        alpha = 1,
+        textColorLabel = TEXT_COLOR_LABEL,
+        textColorData = TEXT_COLOR_DATA,
+        fontFamily = settings.window.FONT_FAMILY,
+        fontStyle = 'bold',
+        fontSize = '14px',
+      } = this.#options,
+      
+      styleLabel = {
+        fontFamily: fontFamily,
+        fontSize: fontSize,
+        fontStyle: fontStyle,
+        color: textColorLabel,
+      },
+      styleData = {...styleLabel};
     
-    const {
-      labelText = '',
-      dataText = '',
-      width = WIDTH,
-      height = HEIGHT,
-      lineWidth = BORDER_WIDTH,
-      backgroundColor = BACKGROUND_COLOR,
-      alpha = 1,
-      textColorLabel = TEXT_COLOR_LABEL,
-      textColorData = TEXT_COLOR_DATA,
-      fontFamily = settings.window.FONT_FAMILY,
-      fontStyle = 'bold',
-      fontSize = '14px',
-    } = this.options;
+    styleData.color = textColorData;
+    styleData.fontStyle = 'normal';
     
-    this.labelBox = this.scene.add.graphics()
+    this.#labelBox = this.scene.add.graphics()
       .lineStyle(lineWidth, backgroundColor)
       .fillStyle(backgroundColor)
       .setAlpha(alpha)
       .fillRect(0, 0, width * 5 / 8, height)
       .strokeRect(0, 0, width * 5 / 8, height);
     
-    this.dataBox = this.scene.add.graphics()
+    this.#dataBox = this.scene.add.graphics()
       .lineStyle(lineWidth, backgroundColor)
       .setAlpha(alpha)
-      .strokeRect(width * 5 / 8, 0, width * 3 / 8, height);
+      .strokeRect(0, 0, width, height);
     
-    this.label = this.scene.add.text(width * 5 / 16, height / 2, labelText, {
-      fontFamily: fontFamily,
-      fontSize: fontSize,
-      fontStyle: fontStyle,
-      color: textColorLabel,
-    }).setOrigin(0.5);
+    this.#label = this.scene.add
+      .text(width * 5 / 16, height / 2, labelText, styleLabel)
+      .setOrigin(0.5);
     
-    this.data = this.scene.add.text(width * 13 / 16, height / 2, dataText, {
-      fontFamily: fontFamily,
-      fontSize: fontSize,
-      fontStyle: 'normal',
-      color: textColorData,
-    }).setOrigin(0.5);
-  }
-  
-  #add() {
-    this.add(this.labelBox);
-    this.add(this.dataBox);
-    this.add(this.label);
-    this.add(this.data);
-    this.scene.add.existing(this);
+    this.dataValue = this.scene.add
+      .text(width * 13 / 16, height / 2, dataText, styleData)
+      .setOrigin(0.5);
   }
 }
 
+function alphaEffect(scene, targets, alpha) {
+  scene.tweens.add({
+    targets: targets, alpha: alpha, duration: 100, ease: 'Power2',
+  });
+}
+
+function setInteractiveAndPointerOverOut(container) {
+  container.setInteractive(
+    new Phaser.Geom.Rectangle(0, 0, container.width, container.height),
+    Phaser.Geom.Rectangle.Contains,
+  );
+  container.input.cursor = 'pointer'; // 커서 손가락으로
+}
+
+function drawBorder(container, borderWidth, color) {
+  return container.scene.add.graphics()
+    .lineStyle(borderWidth, color)
+    .strokeRect(
+      -container.width / 2, -container.height / 2,
+      container.width, container.height,
+    );
+}
+
 export class CardSprite extends Phaser.GameObjects.Container {
+  width = settings.card.WIDTH;
+  height = settings.card.HEIGHT;
+  
   #borderWidth = settings.card.BORDER_WIDTH;
   #borderColor = settings.card.BORDER_COLOR_DEFAULT;
   #borderColorDefault = settings.card.BORDER_COLOR_DEFAULT;
@@ -89,40 +118,34 @@ export class CardSprite extends Phaser.GameObjects.Container {
   selected = false;
   
   constructor(scene, index, card) {
-    const {
-      ATLAS_KEY, getFrameKey, WIDTH, HEIGHT,
-      PADDING_X, PADDING_Y, BORDER_WIDTH,
-    } = settings.card;
-    const x = WIDTH / 2 + (index % 4) * (WIDTH + PADDING_X) -
-      settings.textbox.BORDER_WIDTH;
-    const y = HEIGHT / 2 +
-      Math.floor(index / 4) * (HEIGHT + PADDING_Y);
-    
+    const
+      {
+        ATLAS_KEY, getFrameKey, WIDTH, HEIGHT,
+        PADDING_X, PADDING_Y, BORDER_WIDTH,
+      } = settings.card,
+      
+      x = WIDTH / 2 + (index % 4) * (WIDTH + PADDING_X) -
+        settings.textbox.BORDER_WIDTH,
+      y = HEIGHT / 2 +
+        Math.floor(index / 4) * (HEIGHT + PADDING_Y);
     super(scene, x, y);
     
-    this.setSize(WIDTH, HEIGHT)
-      .setInteractive(
-        new Phaser.Geom.Rectangle(0, 0, WIDTH, HEIGHT),
-        Phaser.Geom.Rectangle.Contains)
     this.#setInteractive();
     
     this.#card = scene.add.image(0, 0, ATLAS_KEY, getFrameKey(card))
       .setDisplaySize(WIDTH - BORDER_WIDTH, HEIGHT - BORDER_WIDTH);
-    this.#selectionCover = this.scene.add.graphics()
-      .fillStyle(0x000000)
-      .setAlpha(this.#alphaDefault)
-      .fillRect(-WIDTH / 2, -HEIGHT / 2, WIDTH, HEIGHT);
+    this.#drawSelectionCover();
     this.#drawBorder(this.#borderColor);
     
     this.add([this.#card, this.#selectionCover, this.#border]);
     scene.add.existing(this);
-
+    
     this.index = index;
     this.cardData = card;
   }
   
   #setInteractive() {
-    this.input.cursor = 'pointer'; // 커서 손가락으로
+    setInteractiveAndPointerOverOut(this);
     this.on('pointerover', () => this.#alphaEffect(this.#alphaSelected));
     this.on('pointerout', () => this.#alphaEffect(this.#alphaDefault));
     
@@ -138,32 +161,35 @@ export class CardSprite extends Phaser.GameObjects.Container {
   
   #alphaEffect(alpha) {
     if (!this.selected) {
-      this.scene.tweens.add({
-        targets: this.#selectionCover,
-        alpha: alpha, duration: 100,ease: 'Power2',
-      });
+      alphaEffect(this.scene, this.#selectionCover, alpha);
     }
+  }
+  
+  #drawSelectionCover() {
+    this.#selectionCover = this.scene.add.graphics()
+      .fillStyle(0x000000)
+      .setAlpha(this.#alphaDefault)
+      .fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    
   }
   
   #drawBorder(color) {
     if (this.#border) this.#border.destroy(); // Clean up old border
-    this.#border = this.scene.add.graphics()
-      .lineStyle(this.#borderWidth, color)
-      .strokeRect(
-        - this.width / 2, - this.height / 2, this.width, this.height,
-      )
+    this.#border = drawBorder(this, this.#borderWidth, color);
     this.add(this.#border);
   }
   
   #updateBorder(finalColor) {
-    const duration = 100;
-    const ease = 'Poser2';
+    const
+      duration = 100,
+      ease = 'Poser2';
+    
     if (finalColor !== this.#borderColor) {
       this.scene.tweens.add({
         targets: this.#border, alpha: 0, duration: duration, ease: ease,
         onComplete: () => {
           this.#border.clear();
-          this.#drawBorder(finalColor)
+          this.#drawBorder(finalColor);
           this.#border.setAlpha(0);
           this.#borderColor = finalColor;
           this.scene.tweens.add({
@@ -204,12 +230,14 @@ export class CardSprite extends Phaser.GameObjects.Container {
   }
   
   replaceCard(newCard) {
-    const atlasKey = settings.card.ATLAS_KEY;
-    const frameKey = settings.card.getFrameKey(newCard);
+    const
+      atlasKey = settings.card.ATLAS_KEY,
+      frameKey = settings.card.getFrameKey(newCard);
+    
     this.deselect();
     settings.fadeOutAnimation(
       this.scene, this.#card,
-      (card) => card.setTexture(atlasKey, frameKey)
+      (card) => card.setTexture(atlasKey, frameKey),
     );
     this.cardData = newCard;
     this.setInteractive();
@@ -219,7 +247,7 @@ export class CardSprite extends Phaser.GameObjects.Container {
     this.deselect();
     settings.fadeOutAnimation(
       this.scene, this.#card,
-      (card) => card.setTexture('__WHITE')
+      (card) => card.setTexture('__WHITE'),
     );
     this.disableInteractive();
   }
@@ -231,107 +259,112 @@ export class CardSprite extends Phaser.GameObjects.Container {
   }
 }
 
-export class CardThumbnailSprite extends Phaser.GameObjects.Image {
-  atlasKey = settings.thumbnail.ATLAS_KEY;
-  getFrameKey = settings.thumbnail.getFrameKey;
+export class ThumbnailSprite extends Phaser.GameObjects.Container {
+  width = settings.thumbnail.WIDTH;
+  height = settings.thumbnail.HEIGHT;
   
-  cardWidth = settings.thumbnail.WIDTH;
-  cardHeight = settings.thumbnail.HEIGHT;
-  borderWidth = settings.thumbnail.BORDER_WIDTH;
-  borderColor = settings.thumbnail.BORDER_COLOR;
+  #borderWidth = settings.thumbnail.BORDER_WIDTH;
+  #borderColor = settings.thumbnail.BORDER_COLOR;
+  
+  #card = null;
+  #border = null;
+  
+  index = null;
+  cardData = null;
   
   constructor(scene, index, card) {
-    const {
-      ATLAS_KEY, getFrameKey, WIDTH, MARGIN,
-    } = settings.thumbnail;
-    const x = index * (WIDTH + MARGIN);
-    const y = settings.thumbnailText.HEIGHT + settings.thumbnailText.MARGIN;
+    const
+      {
+        ATLAS_KEY, getFrameKey, WIDTH, HEIGHT,
+        MARGIN, BORDER_WIDTH,
+      } = settings.thumbnail,
+      
+      x = WIDTH / 2 + index * (WIDTH + MARGIN),
+      y = HEIGHT / 2 + settings.thumbnailText.HEIGHT +
+        settings.thumbnailText.MARGIN;
+    super(scene, x, y);
     
-    super(scene, x, y, ATLAS_KEY, getFrameKey(card));
+    this.#card = scene.add.image(0, 0, ATLAS_KEY, getFrameKey(card))
+      .setDisplaySize(WIDTH - BORDER_WIDTH, HEIGHT - BORDER_WIDTH);
+    this.#drawBorder(this.#borderColor);
     
-    this.index = index;
-    this.cardData = card;
-    this.selected = false;
+    this.add([this.#card, this.#border]);
     
     scene.add.existing(this);
   }
   
-  setup() {
-    this.setOrigin(0, 0)
-      .setPosition(this.x + this.borderWidth / 2, this.y + this.borderWidth / 2)
-      .setDisplaySize(this.cardWidth - this.borderWidth,
-        this.cardHeight - this.borderWidth);
-    this.border = this.drawBorder(this.borderColor);
-    return this;
-  }
-  
-  drawBorder(color) {
-    if (this.border) this.border.destroy(); // Clean up old border
-    const {POSITION_X, POSITION_Y} = settings.thumbnailText;
-    const border = this.scene.add.graphics();
-    border.lineStyle(this.borderWidth, color);
-    border.strokeRect(POSITION_X + this.x, POSITION_Y + this.y, this.cardWidth, this.cardHeight);
-    return border;
+  #drawBorder(color) {
+    if (this.#border) this.#border.destroy(); // Clean up old border
+    this.#border = drawBorder(this, this.#borderWidth, color);
+    this.add(this.#border);
   }
   
   replaceCard(newCard) {
-    const frameKey = this.getFrameKey(newCard);
+    const
+      atlasKey = settings.thumbnail.ATLAS_KEY,
+      frameKey = settings.thumbnail.getFrameKey(newCard);
+    
     settings.fadeOutAnimation(
-      this.scene, this, (cs) => cs.setTexture(this.atlasKey, frameKey));
+      this.scene, this.#card,
+      (card) => card.setTexture(atlasKey, frameKey),
+    );
     this.cardData = newCard;
   }
 }
 
 export class TextButton extends Phaser.GameObjects.Container {
-  buttonWidth = settings.button.WIDTH;
-  buttonHeight = settings.button.HEIGHT;
-  textColor = settings.button.TEXT_COLOR;
-  alphaFill = 0.8;
-  radius = 8;
+  width = settings.button.WIDTH;
+  height = settings.button.HEIGHT;
+  
+  #options = {};
+  #bg = null;
+  #shadow = null;
+  #label = null;
+  
+  #textColor = settings.button.TEXT_COLOR;
+  #alphaDefault = 0.8;
+  #alphaSelected = 1;
+  #radius = 8;
   
   constructor(scene, x, y, options = {}) {
     super(scene, x, y);
-    this.options = options;
+    
+    this.#options = options;
     this.#draw();
+    
+    this.add([this.#shadow, this.#bg, this.#label]);
+    this.#setInteractive();
+    scene.add.existing(this);
   }
   
   #draw() {
-    const {text, fillColor, textColor = this.textColor} = this.options;
-    const width = this.buttonWidth;
-    const height = this.buttonHeight;
+    const
+      {text, fillColor, textColor = this.#textColor} = this.#options,
+      width = this.width,
+      height = this.height;
     
-    this.bg = this.scene.add.graphics()
+    this.#bg = this.scene.add.graphics()
       .fillStyle(fillColor)
-      .setAlpha(this.alphaFill)
-      .fillRoundedRect(-width / 2, -height / 2, width, height, this.radius);
+      .setAlpha(this.#alphaDefault)
+      .fillRoundedRect(-width / 2, -height / 2, width, height, this.#radius);
     
-    this.shadow = this.scene.add.graphics()
+    this.#shadow = this.scene.add.graphics()
       .fillStyle(0x000000, 0.1)
-      .fillRoundedRect(-width / 2 + 3, -height / 2 + 3, width, height, this.radius);
+      .fillRoundedRect(-width / 2 + 3, -height / 2 + 3, width, height,
+        this.#radius);
     
-    this.label = this.scene.add.text(0, 0, text, {
+    this.#label = this.scene.add.text(0, 0, text, {
       fontFamily: settings.window.FONT_FAMILY,
       fontSize: '18px',
       fontStyle: 'bold',
       color: textColor,
     }).setOrigin(0.5);
-    
-    this.add([this.shadow, this.bg, this.label]);
-    this.#setInteractive();
   }
   
   #setInteractive() {
-    const width = this.buttonWidth;
-    const height = this.buttonHeight;
-    
-    this.setSize(width, height)
-      .setInteractive(
-        new Phaser.Geom.Rectangle(0, 0, width, height), // 히트 영역 정의
-        Phaser.Geom.Rectangle.Contains,                 // 포인터가 영역 안에 있는지 판단하는 함수
-      );
-    this.input.cursor = 'pointer'; // 커서 손가락으로
-    this.on('pointerover', () => this.#alphaEffect(1));
-    this.on('pointerout', () => this.#alphaEffect(this.alphaFill));
+    setInteractiveAndPointerOverOut(this);
+    this.on('pointerover', () => this.#alphaEffect(this.#alphaSelected));
+    this.on('pointerout', () => this.#alphaEffect(this.#alphaDefault));
     
     this.on('pointerup', () => {
       this.disableInteractive();
@@ -342,13 +375,10 @@ export class TextButton extends Phaser.GameObjects.Container {
       });
       this.execute();
     });
-    
-    this.scene.add.existing(this);
   }
   
   #alphaEffect(alpha) {
-    this.scene.tweens.add(
-      {targets: this.bg, alpha: alpha, duration: 100, ease: 'Power2'});
+    alphaEffect(this.scene, this.#bg, alpha);
   }
   
   execute() {
@@ -357,33 +387,38 @@ export class TextButton extends Phaser.GameObjects.Container {
 }
 
 export class TextBox extends Phaser.GameObjects.Container {
+  width = settings.button.WIDTH;
+  height = settings.button.HEIGHT;
+  
+  #options = {};
+  #bg = null;
+  label = null;
+  
   constructor(scene, y, options = {}) {
     const {x = 0} = options;
     super(scene, x, y);
     
-    this.options = options;
+    this.#options = options;
     this.#draw();
-    this.#add();
     
+    this.add([this.#bg, this.label]);
     scene.add.existing(this);
   }
   
   #draw() {
-    const {WIDTH, HEIGHT} = settings.button;
-    
     const {
       text = '',
-      width = WIDTH,
-      height = HEIGHT,
+      width = this.width,
+      height = this.height,
       backgroundColor = settings.window.BACKGROUND,
       alpha = 0,
       textColor = '#000000',
       fontFamily = settings.window.FONT_FAMILY,
       fontSize = '18px',
       radius = 8,
-    } = this.options;
+    } = this.#options;
     
-    this.bg = this.scene.add.graphics()
+    this.#bg = this.scene.add.graphics()
       .fillStyle(backgroundColor)
       .setAlpha(alpha)
       .fillRoundedRect(0, 0, width, height, radius);
@@ -394,11 +429,5 @@ export class TextBox extends Phaser.GameObjects.Container {
       fontStyle: 'bold',
       color: textColor,
     });
-  }
-  
-  #add() {
-    this.add(this.bg);
-    this.add(this.label);
-    this.scene.add.existing(this);
   }
 }
