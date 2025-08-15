@@ -194,7 +194,13 @@ class SessionData:
         last_session_cards = models.SessionCard.objects.filter(card_id__in=card_ids)
 
         id_to_card = {c.card_id: c for c in last_session_cards}
-        return [id_to_card[i] for i in card_ids if i in id_to_card]
+        current_session_cards = []
+        for i in card_ids:
+            if i is None:
+                current_session_cards.append(None)
+            else:
+                current_session_cards.append(id_to_card[i])
+        return current_session_cards
 
     def update_session_card_status_to_used(self, event_type: str, session_cards):
         for card in session_cards:
@@ -210,8 +216,11 @@ class SessionData:
     def get_card_infos(cards):
         card_infos = []
         for c in cards:
-            card_info = c.card.card_info() if isinstance(c, models.SessionCard) else c.card_info()
-            card_infos.append(card_info)
+            if c is None:
+                card_infos.append(None)
+            else:
+                card_info = c.card.card_info() if isinstance(c, models.SessionCard) else c.card_info()
+                card_infos.append(card_info)
         return card_infos
 
     @staticmethod

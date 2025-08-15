@@ -262,7 +262,7 @@ export default class MainScene extends Phaser.Scene {
   createThumbnail() {
     const {
       POSITION_X, POSITION_Y, FONT_FAMILY,
-      WIDTH, HEIGHT, BORDER_WIDTH, BACKGROUND_COLOR,
+      WIDTH, HEIGHT, BACKGROUND_COLOR,
     } = settings.thumbnailText;
     
     const bg = this.add.graphics()
