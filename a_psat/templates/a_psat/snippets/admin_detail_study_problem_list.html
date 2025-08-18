@@ -48,7 +48,7 @@
             {{ icon_image.True|safe }}
         </a>
     {% endif %}
-    {% if user.is_admin %}
+    {% if user.is_superuser %}
         <span class="badge bg-warning-subtle border border-warning-subtle text-warning-emphasis rounded-pill">
             정답 {{ problem.get_answer_display }}
         </span>

@@ -12,7 +12,7 @@
                 </div>
             </div>
 
-            {% if request.user.is_admin %}
+            {% if request.user.is_superuser %}
                 <div class="col-12" aria-label="참여자 목록">
                     <div class="card">
                         <div class="card-header">참여자 목록</div>
@@ -31,7 +31,7 @@
         <table class="table table-bordered table-striped align-middle">
             <thead>
                 <tr class="text-center table-warning align-middle">
-                    {% if user.is_admin %}
+                    {% if user.is_superuser %}
                         <th class="text-primary text-nowrap">활성</th>
                     {% endif %}
                     <th class="text-primary text-nowrap">시험명</th>
@@ -47,7 +47,7 @@
                 {% if exam_page_obj %}
                     {% for obj in exam_page_obj %}
                         <tr class="text-center small">
-                            {% if user.is_admin %}
+                            {% if user.is_superuser %}
                                 <td class="text-nowrap" aria-label="활성">
                                     <form class="d-flex justify-content-center"
                                           hx-trigger="change" hx-swap="none" hx-push-url="false"
@@ -95,7 +95,7 @@
     </article>
     {% include 'a_prime/snippets/pagination.html' with page_obj=exam_page_obj page_range=exam_page_range header='exam_list' %}
 
-    {% if user.is_admin %}
+    {% if user.is_superuser %}
         <button class="btn btn-primary" hx-get="{{ config.url_leet_create  }}">시험 추가</button>
         <button class="btn btn-primary" hx-get="{{ config.url_problem_update  }}">정답 업데이트</button>
     {% endif %}

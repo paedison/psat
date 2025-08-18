@@ -35,7 +35,7 @@
         <table class="table table-bordered table-striped align-middle">
             <thead>
                 <tr class="text-center table-warning align-middle">
-                    {% if user.is_admin %}
+                    {% if user.is_superuser %}
                         <th class="text-primary text-nowrap">활성</th>
                     {% endif %}
                     <th class="text-primary text-nowrap">연도</th>
@@ -54,7 +54,7 @@
                 {% if exam_page_obj %}
                     {% for obj in exam_page_obj %}
                         <tr class="text-center">
-                            {% if user.is_admin %}
+                            {% if user.is_superuser %}
                                 <td class="text-nowrap" aria-label="활성">
                                     <form class="d-flex justify-content-center"
                                           hx-trigger="change" hx-swap="none" hx-push-url="false"
@@ -93,7 +93,7 @@
         </table>
     </article>
 
-    {% if user.is_admin %}
+    {% if user.is_superuser %}
         <div class="d-flex justify-content-end">
             <button class="btn btn-primary" hx-get="{{ config.url_psat_create  }}">시험 추가</button>
             <button class="btn btn-primary ms-2" hx-get="{{ config.url_problem_update  }}">정답 업데이트</button>

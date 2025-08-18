@@ -4,7 +4,7 @@
 {% block main_content %}
     <section class="section" aria-label="업데이트">
         <div class="row">
-            {% if user.is_admin %}
+            {% if user.is_superuser %}
                 <div class="col-12">
                     <div class="card" hx-target="#main" hx-swap="innerHTML swap:0.25s">
                         <div class="card-header">{{ page_title }} | 업데이트</div>

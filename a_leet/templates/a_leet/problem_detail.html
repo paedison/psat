@@ -85,7 +85,7 @@
 {% endpartialdef drawing_button %}
 
 {% partialdef container_image %}
-    {% if user.is_admin %}
+    {% if user.is_superuser %}
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="switch-group">
                 {% with property='drawing' button_name='필기' %}{% partial drawing_button %}{% endwith %}

@@ -19,7 +19,7 @@
                        hx-target="section .section" hx-swap="innerHTML swap:0.25s">
                         이전 달
                     </a>
-                {% if user.is_admin %}
+                {% if user.is_superuser %}
                     <a class="btn btn-outline-primary btn-sm" href=""
                        hx-get="{% url 'schedule:new' %}" hx-push-url="true"
                        hx-target="#main" hx-swap="innerHTML swap:0.25s">

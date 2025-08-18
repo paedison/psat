@@ -27,7 +27,7 @@ class IndexView(
             context = self.get_context_data()
             return self.render_to_response(context)
         else:
-            if self.request.user.is_admin or self.request.user.is_staff:
+            if self.request.user.is_superuser or self.request.user.is_staff:
                 context = self.get_context_data()
                 return self.render_to_response(context)
         return HttpResponseRedirect(reverse_lazy('score_old:prime-list'))
@@ -121,7 +121,7 @@ class StudentCreateView(
             context = self.get_context_data()
             return self.render_to_response(context)
         else:
-            if self.request.user.is_admin or self.request.user.is_staff:
+            if self.request.user.is_superuser or self.request.user.is_staff:
                 self.get_properties()
                 context = self.get_context_data()
                 return self.render_to_response(context)

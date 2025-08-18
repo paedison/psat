@@ -14,7 +14,7 @@
                 </a>
             </li>
 
-            {% if user.is_admin %}{% partial menu_admin %}{% endif %}
+            {% if user.is_superuser %}{% partial menu_admin %}{% endif %}
             {% if user.is_authenticated %}
                 {% partial menu_view_type %}
                 <div class="topbar-divider"></div>

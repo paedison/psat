@@ -4,18 +4,18 @@
 <aside id="sidebar" class="sidebar" hx-target="#main" hx-swap="innerHTML swap:0.25s" hx-boost="true">
     <ul id="sidebar-nav" class="sidebar-nav">
         {% partial menu_board %}
-        {% if user.is_admin %}{% partial menu_psat_admin %}{% endif %}
+        {% if user.is_superuser %}{% partial menu_psat_admin %}{% endif %}
         {% partial menu_psat %}
-        {% if user.is_admin %}{% partial menu_leet_admin %}{% endif %}
+        {% if user.is_superuser %}{% partial menu_leet_admin %}{% endif %}
         {% partial menu_leet %}
         {% partial menu_prime %}
         {% partial menu_prime_leet %}
         {% partial boardgame_set %}
-        {% if user.is_admin %}{% partial menu_schedule %}{% endif %}
-        {% if user.is_admin %}{% partial menu_predict %}{% endif %}
-        {% if user.is_admin %}{% partial menu_old_predict %}{% endif %}
-        {% if user.is_admin %}{% partial menu_score %}{% endif %}
-        {% if user.is_admin %}{% partial menu_old_score %}{% endif %}
+        {% if user.is_superuser %}{% partial menu_schedule %}{% endif %}
+        {% if user.is_superuser %}{% partial menu_predict %}{% endif %}
+        {% if user.is_superuser %}{% partial menu_old_predict %}{% endif %}
+        {% if user.is_superuser %}{% partial menu_score %}{% endif %}
+        {% if user.is_superuser %}{% partial menu_old_score %}{% endif %}
     </ul>
     {% partial sidebar_toggle %}
 </aside><!-- Sidebar End -->
@@ -148,7 +148,7 @@
             <i class="fa-solid fa-fw fa-chevron-down ms-auto"></i>
         </a>
         <ul id="leetNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
-            {% if user.is_admin %}
+            {% if user.is_superuser %}
             <li>
                 <a class="aside-nav-icon" data-menu-parent="leet" data-menu-self="official"
                    href="{% url 'leet:problem-list' %}">
@@ -301,7 +301,7 @@
         </a>
         <ul id="oldScoreNavContent" class="nav-content collapse" data-bs-parent="#sidebar-nav">
             <li>
-{#                {% if user.is_admin %}#}
+{#                {% if user.is_superuser %}#}
 {#                    <a id="psatScoreList" class="aside-nav-icon" hx-boost="true" href="{% url 'score_old:psat-list' %}">#}
 {#                        <i class="fa-regular fa-fw fa-file-lines"></i>#}
 {#                        <span>PSAT 기출문제</span>#}

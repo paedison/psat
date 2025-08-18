@@ -4,7 +4,7 @@
 {% block google_adsense %}{% endblock %}
 
 {% block main_content %}
-    {% if user.is_admin %}
+    {% if user.is_superuser %}
         <section class="section" aria-label="업데이트">
             <div class="row">
                 <div class="col-12">

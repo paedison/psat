@@ -1,4 +1,4 @@
-{% if user.is_admin %}
+{% if user.is_superuser %}
     <span class="fw-bold">{{ username }}</span>
 {% else %}
     {% if target_user == user %}

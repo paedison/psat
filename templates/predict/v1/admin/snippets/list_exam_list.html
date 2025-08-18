@@ -1,7 +1,7 @@
 <div class="card-header">
     <div class="d-flex align-items-center">
         <span>시험 목록</span>
-        {% if user.is_admin %}
+        {% if user.is_superuser %}
             <div class="btn-group ms-auto">
                 <a class="btn btn-sm btn-outline-secondary" title="구글시트 내보내기"
                    hx-confirm="구글시트로 내보내시겠습니까?" href=""

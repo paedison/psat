@@ -89,7 +89,7 @@
     {% if problem_img.alt == 'Preparing Image' %}
         <img class="d-block mx-auto" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
     {% else %}
-        {% if user.is_admin %}
+        {% if user.is_superuser %}
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="switch-group">
                     {% with property='drawing' button_name='필기' %}{% partial drawing_button %}{% endwith %}

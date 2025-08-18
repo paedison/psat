@@ -53,7 +53,7 @@ def predict_detail_view(request: HtmxHttpRequest, pk: int, student=None):
     subject_variants = SubjectVariants(_psat=psat)
     redirect_ctx = NormalRedirectContext(_request=request, _context=context)
 
-    if not request.user.is_admin and psat_ctx.is_not_for_predict():  # noqa
+    if not request.user.is_superuser and psat_ctx.is_not_for_predict():  # noqa
         return redirect_ctx.redirect_to_no_predict_psat()
 
     if student is None:

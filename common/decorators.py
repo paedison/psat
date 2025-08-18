@@ -9,7 +9,7 @@ def only_admin_allowed():
         @wraps(view_func)
         @login_required
         def _wrapped_view(request, *args, **kwargs):
-            if request.user.is_admin:
+            if request.user.is_superuser:
                 return view_func(request, *args, **kwargs)
             else:
                 return redirect('index')
@@ -36,7 +36,7 @@ def admin_required(view_func):
     """
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        if request.user.is_admin:
+        if request.user.is_superuser:
             return view_func(request, *args, **kwargs)
         else:
             return redirect('index')

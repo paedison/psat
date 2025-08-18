@@ -6,7 +6,7 @@
 {% block main_content %}
     <section class="section">
         <div class="row">
-            {% if user.is_admin %}
+            {% if user.is_superuser %}
                 <div class="col-12" aria-label="성적 결과 업데이트">
                     <div class="card" hx-swap="innerHTML swap:0.25s">
                         <div class="card-header">성적 결과 업데이트</div>
