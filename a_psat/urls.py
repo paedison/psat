@@ -142,6 +142,7 @@ study_patterns = [
 
 urlpatterns = [
     path('', normal_views.official_problem_list_view, name='base'),
+    path('annotation/', normal_views.annotation_view),
 
     path('admin/', include(admin_patterns)),
     path('official/', include(official_patterns)),

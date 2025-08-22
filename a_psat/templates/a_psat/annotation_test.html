@@ -1,0 +1,434 @@
+{% extends 'list.html' %}
+{% load static %}
+{% load i18n %}
+{% load psat_filter %}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Paper.js 필기 앱</title>
+</head>
+<body>
+<!-- normal 타입 -->
+<div class="annotate-section">
+    <img id="normalImage" src="{% static 'image/PSAT/2025/PSAT2025국8상황01.png' %}" alt="Normal Image"/>
+    <canvas id="normalCanvas" data-annotate-url="/save/normal" resize></canvas>
+    <div class="toolbar" data-type="normal">
+        <button id="normalDrawingBtn">✏️ 필기</button>
+        <button id="normalLineBtn">📏 직선</button>
+        <button id="normalHighlighterBtn">🖍️ 하이라이트</button>
+        <button id="normalEraserBtn">🧼 지우개</button>
+        <button class="normal-color-btn" data-color="black">⚫</button>
+        <button class="normal-color-btn" data-color="red">🔴</button>
+        <button class="normal-color-btn" data-color="blue">🔵</button>
+        <button class="normal-color-btn" data-color="green">🟢</button>
+        <button class="normal-color-btn" data-color="yellow">🟡</button>
+        <button id="normalUndoBtn">↩️ 되돌리기</button>
+        <button id="normalRedoBtn">↪️ 되돌리기 취소</button>
+        <button id="normalSaveBtn">💾 저장</button>
+        <button id="normalLoadBtn">📂 불러오기</button>
+        <button id="normalClearBtn">🗑️ 모두 삭제</button>
+    </div>
+</div>
+
+<!-- wide 타입 -->
+<div class="annotate-section">
+    <img id="wideImage" src="{% static 'image/PSAT/2025/PSAT2025국8상황01.png' %}" alt="Wide Image"/>
+    <canvas id="wideCanvas" data-annotate-url="/save/wide" resize></canvas>
+    <div class="toolbar" data-type="wide">
+        <button id="wideDrawingBtn">✏️ 필기</button>
+        <button id="wideLineBtn">📏 직선</button>
+        <button id="wideHighlighterBtn">🖍️ 하이라이트</button>
+        <button id="wideEraserBtn">🧼 지우개</button>
+        <button class="wide-color-btn" data-color="black">⚫</button>
+        <button class="wide-color-btn" data-color="red">🔴</button>
+        <button class="wide-color-btn" data-color="blue">🔵</button>
+        <button class="wide-color-btn" data-color="green">🟢</button>
+        <button class="wide-color-btn" data-color="yellow">🟡</button>
+        <button id="wideUndoBtn">↩️ 되돌리기</button>
+        <button id="wideRedoBtn">↪️ 되돌리기 취소</button>
+        <button id="wideSaveBtn">💾 저장</button>
+        <button id="wideLoadBtn">📂 불러오기</button>
+        <button id="wideClearBtn">🗑️ 모두 삭제</button>
+    </div>
+</div>
+
+</body>
+</html>
+
+{% block main %}
+    {% include 'snippets/page_title.html' %}
+
+    <section class="section">
+        <div class="row">
+            <article class="col-xxl-8">
+                <problem id="containerProblem" class="card htmx-fade-in htmx-fade-out">
+                    <div class="card-body">
+                        <div class="card-title mb-0 row">
+                            <div class="d-flex align-items-center fs-6">
+                                <div class="d-flex align-items-center">
+                                    {% include 'a_psat/snippets/navigation_container.html' %}
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center fs-6">
+                                <div class="text-nowrap me-auto">
+                                    {% include 'a_psat/snippets/custom_icons.html' %}
+                                </div>
+                                <div class="ms-auto justify-content-end">
+                                    {% include 'a_psat/snippets/solve_container.html' %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="problemDetail" class="htmx-fade-in htmx-fade-out">
+                            {% if not problem.has_img %}
+                                <div class="border-top pt-2">
+                                    <div class="d-flex">
+                                        <h6 class="lh-base text-nowrap me-2 fw-bold text-primary">
+                                            문&nbsp;{{ problem.number|add_space }}.
+                                        </h6>
+                                        <h6 class="lh-base fw-bold text-secondary">
+                                            {{ problem.question }}
+                                        </h6>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="d-lg-none">
+                                {% with annotate_type='normal' problem_img=problem.img_normal %}
+                                    {% partial container_image %}
+                                {% endwith %}
+                            </div>
+
+                            <div class="d-none d-lg-block">
+                                {% with annotate_type='wide' problem_img=problem.img_wide %}
+                                    {% partial container_image %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                </problem>
+            </article>
+
+            <div class="col-xxl-4">
+                <div class="row">
+                    <div class="col-md-6 col-xxl-12">{% partial container_memo %}</div>
+                    <div class="col-md-6 col-xxl-12">{% partial container_tag %}</div>
+                </div>
+            </div>
+        </div>
+{#        <div class="row">#}
+{#            <div class="col-12">{% partial container_comment %}</div>#}
+{#        </div>#}
+    </section>
+
+    <div id="modalContainerPsat" class="modal fade htmx-fade-in htmx-fade-out" style="display: none"
+         aria-hidden="true" tabindex="-1" aria-labelledby="modalContainerLabel">
+        {% partial modal_image %}
+    </div><!-- Modal Container: Problem Image -->
+{% endblock main %}
+
+{#{% partialdef container_image %}#}
+{#    {% if problem_img.alt == 'Preparing Image' %}#}
+{#        <img class="d-block mx-auto" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">#}
+{#    {% else %}#}
+{#        <style>#}
+{#          .tool-btn {#}
+{#            background-color: transparent;#}
+{#            border: none;#}
+{#            border-radius: 8px;#}
+{#            padding: 8px;#}
+{#            cursor: pointer;#}
+{#            color: #333; /* 기본 아이콘 색상 */#}
+{#            transition: background-color 0.2s ease, color 0.2s ease;#}
+{#          }#}
+{##}
+{#          .tool-btn:hover {#}
+{#            background-color: #e0e0e0;#}
+{#          }#}
+{#          .tool-btn.active {#}
+{#            background: #007bff;#}
+{#            color: #ffffff; /* 클릭 시 색상 (파란색) */#}
+{#          }#}
+{#        </style>#}
+{#        <div class="annotate-section">#}
+{#            <div class="toolbar" data-type="{{ annotate_type }}">#}
+{#                <button id="{{ annotate_type }}DrawingBtn">✏️ 필기</button>#}
+{#                <button id="{{ annotate_type }}LineBtn" class="tool-btn">#}
+{#                    <svg width="20" height="20" viewBox="0 0 24 24">#}
+{#                        <path d="M3 21l18-18" stroke="currentColor" stroke-width="2"></path>#}
+{#                    </svg>#}
+{#                </button>#}
+{#                <button id="{{ annotate_type }}LineBtn">📏 직선</button>#}
+{#                <button id="{{ annotate_type }}HighlighterBtn">🖍️ 하이라이트</button>#}
+{#                <button id="{{ annotate_type }}EraserBtn">🧼 지우개</button>#}
+{#                <button class="{{ annotate_type }}-color-btn" data-color="black">⚫</button>#}
+{#                <button class="{{ annotate_type }}-color-btn" data-color="red">🔴</button>#}
+{#                <button class="{{ annotate_type }}-color-btn" data-color="blue">🔵</button>#}
+{#                <button class="{{ annotate_type }}-color-btn" data-color="green">🟢</button>#}
+{#                <button class="{{ annotate_type }}-color-btn" data-color="yellow">🟡</button>#}
+{#                <button id="{{ annotate_type }}UndoBtn">↩️ 되돌리기</button>#}
+{#                <button id="{{ annotate_type }}RedoBtn">↪️ 되돌리기 취소</button>#}
+{#                <button id="{{ annotate_type }}SaveBtn">💾 저장</button>#}
+{#                <button id="{{ annotate_type }}LoadBtn">📂 불러오기</button>#}
+{#                <button id="{{ annotate_type }}ClearBtn">🗑️ 모두 삭제</button>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#        <div class="position-relative">#}
+{#            <img id="{{ annotate_type }}Image" class="img-fluid" alt="{{ problem_img.alt }}"#}
+{#                 src="{{ problem_img.src }}">#}
+{#            <canvas id="{{ annotate_type }}Canvas" class="position-absolute top-0 start-0"#}
+{#                    style="z-index: 10; touch-action: none" data-annotate-url="{{ problem.get_annotate_url }}"></canvas>#}
+{#        </div>#}
+{#    {% endif %}#}
+{#{% endpartialdef %}#}
+
+{% partialdef container_image %}
+    {% if problem_img.alt == 'Preparing Image' %}
+        <img class="d-block mx-auto" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
+    {% else %}
+        {% if user.is_superuser %}
+            <div class="d-flex align-items-center justify-content-center justify-content-md-between flex-wrap gap-2">
+                <div class="d-flex gap-1 align-items-center justify-content-center" role="group"
+                     aria-label="필기 버튼 그룹">
+                    <div class="drawing-btn-container">
+                        <label class="switch">
+                          <input type="checkbox" id="{{ annotate_type }}DrawingBtn">
+                          <span class="slider slider-drawing"></span>
+                        </label>
+                        <span id="{{ annotate_type }}DrawingStatus" class="fw-bold drawing-btn me-2">
+                            필기
+                        </span>
+                    </div>
+
+                    <div class="tool-btn-group d-flex text-nowrap gap-1">
+                        <button id="{{ annotate_type }}PenBtn" class="tool-btn" data-annotation-style="pen">
+                            <svg width="20px" height="20px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M290.74 93.24l128.02 128.02-277.99 277.99-114.14 12.6C11.35 513.54-1.56 500.62.14 485.34l12.7-114.22 277.9-277.88zm207.2-19.06l-60.11-60.11c-18.75-18.75-49.16-18.75-67.91 0l-56.55 56.55 128.02 128.02 56.55-56.55c18.75-18.76 18.75-49.16 0-67.91z" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                        <button id="{{ annotate_type }}HighlighterBtn" class="tool-btn" data-annotation-style="highlighter">
+                            <svg width="20px" height="20px" viewBox="0 -16 544 544" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 479.98L99.92 512l35.45-35.45-67.04-67.04L0 479.98zm124.61-240.01a36.592 36.592 0 0 0-10.79 38.1l13.05 42.83-50.93 50.94 96.23 96.23 50.86-50.86 42.74 13.08c13.73 4.2 28.65-.01 38.15-10.78l35.55-41.64-173.34-173.34-41.52 35.44zm403.31-160.7l-63.2-63.2c-20.49-20.49-53.38-21.52-75.12-2.35L190.55 183.68l169.77 169.78L530.27 154.4c19.18-21.74 18.15-54.63-2.35-75.13z" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                        <button id="{{ annotate_type }}EraserBtn" class="tool-btn">
+                            <svg width="20px" height="20px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M497.941 273.941c18.745-18.745 18.745-49.137 0-67.882l-160-160c-18.745-18.745-49.136-18.746-67.883 0l-256 256c-18.745 18.745-18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12-5.373 12-12v-40c0-6.627-5.373-12-12-12H355.883l142.058-142.059zm-302.627-62.627l137.373 137.373L265.373 416H150.628l-80-80 124.686-124.686z" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="tool-btn-group d-flex text-nowrap gap-1">
+                        <button id="{{ annotate_type }}CurveBtn" class="tool-btn" data-annotation-shape="curve">
+                            <svg height="20px" width="20px" viewBox="0 0 189.929 189.929" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M70.343,70.343c-30.554,30.553-44.806,72.7-39.102,115.635l-29.738,3.951C-5.442,137.659,11.917,86.34,49.129,49.13 C86.34,11.918,137.664-5.445,189.928,1.502l-3.95,29.738C143.041,25.54,100.895,39.789,70.343,70.343z"
+                                      fill="currentColor"></path>
+                            </svg>
+                        </button>
+                        <button id="{{ annotate_type }}LineBtn" class="tool-btn" data-annotation-shape="line">
+                            <svg height="20px" width="20px" viewBox="0 0 171.213 171.213" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M171.213,21.213l-150,150L0,150L150,0L171.213,21.213z" fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="color-picker" role="group">
+                    <button class="color-btn color-btn-black {{ annotate_type }}-color-btn active" data-color="black"></button>
+                    <button class="color-btn color-btn-red {{ annotate_type }}-color-btn" data-color="red"></button>
+                    <button class="color-btn color-btn-blue {{ annotate_type }}-color-btn" data-color="blue"></button>
+                    <button class="color-btn color-btn-green {{ annotate_type }}-color-btn" data-color="green"></button>
+                    <button class="color-btn color-btn-yellow {{ annotate_type }}-color-btn" data-color="yellow"></button>
+                </div>
+                <div class="btn-group" role="group">
+                    <button id="{{ annotate_type }}UndoBtn" class="btn btn-outline-success"
+                            data-bs-toggle="tooltip" data-bs-title="되돌리기">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button id="{{ annotate_type }}RedoBtn" class="btn btn-outline-success"
+                            data-bs-toggle="tooltip" data-bs-title="되돌리기 취소">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <button id="{{ annotate_type }}LoadBtn" class="btn btn-outline-success"
+                            data-bs-toggle="tooltip" data-bs-title="불러오기">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </button>
+                    <button id="{{ annotate_type }}SaveBtn" class="btn btn-outline-success"
+                            data-bs-toggle="tooltip" data-bs-title="저장">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                    </button>
+                    <button id="{{ annotate_type }}ClearBtn" class="btn btn-danger"
+                            data-bs-toggle="tooltip" data-bs-title="전체 삭제">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="position-relative">
+            <img id="{{ annotate_type }}Image" class="img-fluid" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
+            <canvas id="{{ annotate_type }}Canvas" class="position-absolute top-0 start-0"
+                    tabindex="0"
+                    style="z-index: 10; touch-action: none;"
+                    data-annotate-url="{{ problem.get_annotate_url }}"></canvas>
+        </div>
+    {% endif %}
+{% endpartialdef %}
+
+{% partialdef container_memo %}
+    <div id="containerMemo" class="card htmx-fade-in htmx-fade-out">
+        <div class="card-body">
+            <div id="accordionMemo" class="accordion accordion-flush">
+                <div class="accordion-item">
+                    <h2 id="headingMemo" class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseMemo"
+                                aria-expanded="true" aria-controls="collapseMemo">
+                            <span class="badge bg-warning me-2">{{ icon_memo.white|safe }} 메모</span>
+                            <div class="small text-warning fw-bold">
+                                나만 볼 수 있는 메모를 남겨보세요.
+                            </div>
+                        </button>
+                    </h2>
+                    <hr class="border-secondary mt-0">
+                    <div id="collapseMemo" class="accordion-collapse collapse show"
+                         aria-labelledby="headingMemo" data-bs-parent="#accordionMemo">
+                        <div id="collapseMemoContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseMemoContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+                                {% include 'a_psat/snippets/memo_container.html' %}
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef container_tag %}
+    <div id="containerTag" class="card htmx-fade-in htmx-fade-out">
+        <div class="card-body">
+            <div id="accordionTag" class="accordion accordion-flush">
+                <div class="accordion-item">
+                    <h2 id="headingTag" class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseTag"
+                                aria-expanded="true" aria-controls="collapseTag">
+                            <span class="badge bg-primary me-2">{{ icon_tag.white|safe }} 태그</span>
+                            <div class="small text-primary fw-bold">
+                                나만 볼 수 있는 태그를 남겨보세요.
+                            </div>
+                        </button>
+                    </h2>
+                    <hr class="border-secondary mt-0">
+                    <div id="collapseTag" class="accordion-collapse collapse show"
+                         aria-labelledby="headingTag" data-bs-parent="#accordionTag">
+                        <div id="collapseTagContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseTagContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+                                <div class="tw-text-sm tw-mb-2 tw-px-2">
+                                    <input id="problemTag{{ problem.id }}"
+                                           placeholder='태그를 입력해주세요' type="hidden"
+                                           data-tag-target="#psatTag{{ problem.id }}"
+                                           data-tagify data-action="{{ problem.get_tag_url }}"
+                                           data-tags="{{ tags|join:',' }}">
+                                </div>
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef container_comment %}
+    <div id="containerComment" class="card htmx-fade-in htmx-fade-out">
+        <div class="card-body">
+            <div id="accordionComment" class="accordion accordion-flush">
+                <div class="accordion-item">
+                    <h2 id="headingComment" class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseComment"
+                                aria-expanded="true" aria-controls="collapseComment">
+                            <span class="badge bg-success me-2">{{ icon_question.white|safe }} 질문</span>
+                            <div class="small text-success fw-bold">
+                                문제에 관한 질문이나 댓글을 남겨보세요.
+                            </div>
+                        </button>
+                    </h2>
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Reload' %}"
+                                    hx-target="#collapseCommentContent" hx-swap="innerHTL swap:0.25s"
+                                    hx-get="">
+{#                                    hx-get="{% url 'psat:comment_container' problem.id %}">#}
+                                <i class="fa-solid fa-rotate-right"></i> 새로고침
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" title="{% trans 'Comment' %}"
+                                    hx-target="#modalContainer" data-bs-toggle="modal" data-bs-target="#modalContainer"
+                                    hx-get="">
+{#                                    hx-get="{% url 'psat:comment_create' problem.id %}">#}
+                                {{ icon_question.filter|safe }} 질문하기
+                            </button>
+                    {#        <button class="btn btn-sm btn-outline-success"#}
+                    {#                hx-get="{% url 'psat:comment_container' problem_id %}">#}
+                    {#            <i class="fa-regular fa-window-maximize"></i>#}
+                    {#            새 창#}
+                    {#        </button>#}
+                        </div>
+                    </div>
+                    <hr class="border-secondary"/>
+                    <div id="collapseComment" class="accordion-collapse collapse show"
+                         aria-labelledby="headingComment" data-bs-parent="#accordionComment">
+                        <div id="collapseCommentContent" class="htmx-fade-in htmx-fade-out"
+                             hx-target="#collapseCommentContent" hx-swap="innerHTML swap:0.25s">
+                            {% if user.is_authenticated %}
+{#                                <div hx-trigger="load" hx-get="{% url 'psat:comment_container' problem.id %}"></div>#}
+                            {% else %}
+                                {% partial need_login %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endpartialdef %}
+
+{% partialdef modal_image %}
+    {% #modal header=problem.full_reference size="modal-xl" %}
+        {% partialdef problem_image inline %}
+            <div class="d-flex d-lg-none justify-content-center">
+                <img class="mw-100" alt="{{ problem.img_normal.alt }}" src="{{ problem.img_normal.src }}"/>
+            </div>
+            <div class="d-none d-lg-flex justify-content-center">
+                <img class="mw-100" alt="{{ problem.img_wide.alt }}" src="{{ problem.img_wide.src }}"/>
+            </div>
+        {% endpartialdef problem_image %}
+    {% /modal %}
+{% endpartialdef %}
+
+{% partialdef need_login %}
+    <ul class="list-group">
+        <li class="list-group-item">
+            <a class="text-secondary" hx-target="body"
+               href="{% url 'account_login' %}" hx-boost="true"
+               hx-swap="innerHTML swap:0.25s" hx-trigger="click">
+                {% trans 'Please login first.' %}
+            </a>
+        </li>
+    </ul>
+{% endpartialdef %}
+
+
+{% block page_script %}
+    <script type="module" src="{% static 'a_psat/annotation/js/src/main.js' %}"></script>
+{% endblock page_script %}

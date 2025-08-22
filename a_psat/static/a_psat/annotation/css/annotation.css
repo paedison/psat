@@ -1,0 +1,161 @@
+.tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  /*margin-right: 5px;*/
+  border: solid 2px #eeeeee;
+  border-radius: 25px;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  cursor: pointer;
+  color: #333; /* 기본 아이콘 색상 */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tool-btn:hover {
+  background-color: #eeeeee;
+}
+
+.tool-btn.active {
+  background: #007bff;
+  color: #ffffff; /* 클릭 시 색상 (파란색) */
+}
+
+
+.color-picker {
+  display: flex;
+  gap: 5px;
+}
+
+.color-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow 0.3s ease;
+}
+
+.color-btn-black {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.color-btn-red {
+  background-color: rgba(255, 0, 0, 0.4);
+}
+
+.color-btn-blue {
+  background-color: rgba(0, 0, 255, 0.4);
+}
+
+.color-btn-green {
+  background-color: rgba(0, 128, 0, 0.4);
+}
+
+.color-btn-yellow {
+  background-color: rgba(255, 255, 0, 0.4);
+}
+
+.color-btn.active {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+.color-btn.active::after {
+  content: "✔";
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.color-btn-yellow.color-btn.active::after {
+  color: black;
+}
+
+/* 스위치 컨테이너 */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 25px;
+}
+
+/* 체크박스 숨기기 */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* 슬라이더 스타일 */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 25px;
+}
+
+/* 슬라이더 내부 원 */
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 3.5px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+/* 체크되었을 때 스타일 */
+input:checked + .slider.slider-drawing {
+  background-color: #4CAF50;
+}
+
+input:checked + .slider.slider-line {
+  background-color: #143acc;
+}
+
+input:checked + .slider.slider-eraser {
+  background-color: #b01e1e;
+}
+
+input:checked + .slider.slider-highlighter {
+  background-color: #f3f308;
+}
+
+input:checked + .slider::before {
+  transform: translateX(25px);
+}
+
+/* 필기 상태 표시 */
+.drawing-btn {
+  transition: 0.4s;
+}
+.drawing-btn.active {
+  color: #4CAF50;
+}
+
+.line-btn.enabled {
+  color: #143acc;
+}
+
+.eraser-btn.enabled {
+  color: #b01e1e;
+}
+
+.highlighter-btn.enabled {
+  color: #f4ff81;
+}

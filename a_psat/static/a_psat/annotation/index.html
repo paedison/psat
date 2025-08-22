@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Paper.js 필기 앱</title>
+  <script src="./js/paper-full.js"></script>
+</head>
+<body>
+  <canvas id="myCanvas" resize></canvas>
+
+  <div id="toolbar">
+    <button data-tool="pen">✏️ 필기</button>
+    <button data-tool="line">📏 직선</button>
+    <button data-tool="highlight">🖍️ 하이라이트</button>
+    <button data-tool="eraser">🧼 지우개</button>
+    <button data-color="black">⚫ 검정</button>
+    <button data-color="red">🔴 빨강</button>
+    <button data-color="blue">🔵 파랑</button>
+    <button data-color="green">🟢 녹색</button>
+    <button data-color="yellow">🟡 노랑</button>
+    <button id="undoBtn">↩️ 되돌리기</button>
+    <button id="redoBtn">↪️ 되돌리기 취소</button>
+    <button id="saveBtn">💾 저장</button>
+    <button id="loadBtn">📂 불러오기</button>
+    <button id="clearBtn">🗑️ 모두 삭제</button>
+  </div>
+
+  <script type="module" src="./js/src/main.js"></script>
+</body>
+</html>

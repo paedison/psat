@@ -25,6 +25,14 @@ class ViewConfiguration:
     url_list = reverse_lazy('psat:problem-list')
 
 
+def annotation_view(request: HtmxHttpRequest):
+    config = ViewConfiguration()
+    problem = models.Problem.objects.get(id=1000)
+    detail_context = NormalDetailContext(request=request, problem=problem)
+    context = update_context_data(config=config, problem_id=problem.pk, problem=detail_context.problem)
+    return render(request, 'a_psat/annotation_test.html', context)
+
+
 @login_not_required
 def official_problem_list_view(request: HtmxHttpRequest):
     config = ViewConfiguration()
