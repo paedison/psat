@@ -23,18 +23,26 @@ export default class ToolManager {
     
     if (styleName === 'highlighter') style['strokeWidth'] = this.scope.canvas.width / 100;
     
-    if (styleName === 'eraser') this.currentTool = new EraserTool(this.scope, this.currentColor, style);
-    if (shapeName === 'curve') this.currentTool = new CurveTool(this.scope, this.currentColor, style);
-    if (shapeName === 'line') this.currentTool = new LineTool(this.scope, this.currentColor, style);
-    
+    if (styleName === 'eraser') this.currentTool = new EraserTool(
+      this.scope, this.currentColor, style);
+    if (shapeName === 'curve') this.currentTool = new CurveTool(
+      this.scope, this.currentColor, style);
+    if (shapeName === 'line') this.currentTool = new LineTool(
+      this.scope, this.currentColor, style);
+    console.log(this.currentTool)
     this.currentTool.tool.activate();
   }
   
   setColor(colorName) {
-    const rgb = COLORS[colorName] || COLORS.black;
-    this.currentColor = `rgba(${rgb}, 0.4)`;
-    if (this.currentTool?.updateColor) {
-      this.currentTool.updateColor(this.currentColor);
-    }
+    const hex = COLORS[colorName] || COLORS.black;
+    const alpha = 0.4;
+    const val = (s, e) => parseInt(hex.slice(s, e), 16)
+    
+    const r = val(1, 3)
+    const g = val(3, 5)
+    const b = val(5, 7)
+    this.currentColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+    if (this.currentTool) this.currentTool.updateColor(this.currentColor);
   }
 }

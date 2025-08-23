@@ -60,20 +60,10 @@ export default class Tool {
     throw new Error('execute() must be implemented by subclass');
   }
   
-  isStrokeSelected(event) {
-    const hitResults = this.getHitResults(event);
-    const isSelected = hitResults.length && hitResults[0].type === 'stroke';
-    return [hitResults, isSelected];
-  }
-  
   getSelectedHit(event) {
     const hitResults = this.getHitResults(event);
     const isSelected = hitResults.length && hitResults[0].type === 'stroke';
-    if (isSelected) {
-      return hitResults[0].item;
-    } else {
-      return null;
-    }
+    if (isSelected) return hitResults[0].item;
   }
   
   getHitResults(e) {
@@ -126,5 +116,6 @@ export default class Tool {
 
   updateColor(newColor) {
     this.color = newColor;
+    this.defaultAttr.strokeColor = newColor;
   }
 }

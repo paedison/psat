@@ -3,7 +3,6 @@
   align-items: center;
   justify-content: center;
   background-color: #ffffff;
-  /*margin-right: 5px;*/
   border: solid 2px #eeeeee;
   border-radius: 25px;
   width: 36px;
@@ -24,11 +23,6 @@
 }
 
 
-.color-picker {
-  display: flex;
-  gap: 5px;
-}
-
 .color-btn {
   width: 30px;
   height: 30px;
@@ -39,23 +33,23 @@
   transition: box-shadow 0.3s ease;
 }
 
-.color-btn-black {
+.color-btn[data-annotation-color="black"] {
   background-color: rgba(0, 0, 0, 0.4);
 }
 
-.color-btn-red {
+.color-btn[data-annotation-color="red"] {
   background-color: rgba(255, 0, 0, 0.4);
 }
 
-.color-btn-blue {
+.color-btn[data-annotation-color="blue"] {
   background-color: rgba(0, 0, 255, 0.4);
 }
 
-.color-btn-green {
+.color-btn[data-annotation-color="green"] {
   background-color: rgba(0, 128, 0, 0.4);
 }
 
-.color-btn-yellow {
+.color-btn[data-annotation-color="yellow"] {
   background-color: rgba(255, 255, 0, 0.4);
 }
 
@@ -72,10 +66,6 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-}
-
-.color-btn-yellow.color-btn.active::after {
-  color: black;
 }
 
 /* 스위치 컨테이너 */
@@ -138,24 +128,4 @@ input:checked + .slider.slider-highlighter {
 
 input:checked + .slider::before {
   transform: translateX(25px);
-}
-
-/* 필기 상태 표시 */
-.drawing-btn {
-  transition: 0.4s;
-}
-.drawing-btn.active {
-  color: #4CAF50;
-}
-
-.line-btn.enabled {
-  color: #143acc;
-}
-
-.eraser-btn.enabled {
-  color: #b01e1e;
-}
-
-.highlighter-btn.enabled {
-  color: #f4ff81;
 }

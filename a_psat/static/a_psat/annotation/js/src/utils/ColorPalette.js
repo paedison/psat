@@ -5,5 +5,4 @@ export const COLORS = {
   green: '#008000',
   yellow: '#ffea00',
   orange: '#ffa500',
-  highlight: 'rgba(255, 255, 0, 0.3)'
 };
