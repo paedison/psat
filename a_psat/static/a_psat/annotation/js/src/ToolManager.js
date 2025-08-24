@@ -1,7 +1,7 @@
 import CurveTool from './tools/CurveTool.js';
 import LineTool from './tools/LineTool.js';
 import EraserTool from './tools/EraserTool.js';
-import {COLORS} from './utils/ColorPalette.js';
+import {colorToRgba} from './utils/ColorPalette.js';
 import {constants} from './Constants.js';
 
 export default class ToolManager {
@@ -29,19 +29,12 @@ export default class ToolManager {
       this.scope, this.currentColor, style);
     if (shapeName === 'line') this.currentTool = new LineTool(
       this.scope, this.currentColor, style);
-    console.log(this.currentTool)
     this.currentTool.tool.activate();
   }
   
   setColor(colorName) {
-    const hex = COLORS[colorName] || COLORS.black;
     const alpha = 0.4;
-    const val = (s, e) => parseInt(hex.slice(s, e), 16)
-    
-    const r = val(1, 3)
-    const g = val(3, 5)
-    const b = val(5, 7)
-    this.currentColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    this.currentColor = colorToRgba(colorName, alpha);
 
     if (this.currentTool) this.currentTool.updateColor(this.currentColor);
   }

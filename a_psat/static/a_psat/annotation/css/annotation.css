@@ -33,23 +33,23 @@
   transition: box-shadow 0.3s ease;
 }
 
-.color-btn[data-annotation-color="black"] {
+[data-annotate-color="black"] {
   background-color: rgba(0, 0, 0, 0.4);
 }
 
-.color-btn[data-annotation-color="red"] {
+[data-annotate-color="red"] {
   background-color: rgba(255, 0, 0, 0.4);
 }
 
-.color-btn[data-annotation-color="blue"] {
+[data-annotate-color="blue"] {
   background-color: rgba(0, 0, 255, 0.4);
 }
 
-.color-btn[data-annotation-color="green"] {
+[data-annotate-color="green"] {
   background-color: rgba(0, 128, 0, 0.4);
 }
 
-.color-btn[data-annotation-color="yellow"] {
+[data-annotate-color="yellow"] {
   background-color: rgba(255, 255, 0, 0.4);
 }
 
@@ -66,6 +66,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.color-btn[data-annotate-color="yellow"].active::after {
+  color: #333;
 }
 
 /* 스위치 컨테이너 */
@@ -128,4 +132,12 @@ input:checked + .slider.slider-highlighter {
 
 input:checked + .slider::before {
   transform: translateX(25px);
+}
+
+/* 필기 상태 표시 */
+.drawing-btn {
+  transition: 0.4s;
+}
+.drawing-btn.active {
+  color: #4CAF50;
 }

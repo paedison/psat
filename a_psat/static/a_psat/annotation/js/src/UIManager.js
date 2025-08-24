@@ -1,25 +1,89 @@
+class ButtonObjects {
+  #toolGroup = null;
+  #colorGroup = null;
+
+  constructor(annotateType) {
+    this.annotateType = annotateType;
+
+    this.btnContainer = this.getElement('BtnContainer');
+    this.drawingGroup = this.getGroup('drawing');
+    this.#toolGroup = this.getGroup('tool');
+    this.#colorGroup = this.getGroup('color');
+
+    this.drawing = {
+      'btn': this.drawingGroup.querySelector('input'),
+      'status': this.drawingGroup.querySelector('span'),
+    }
+    this.style = {
+      'pen': this.getStyleButton('pen'),
+      'highlighter': this.getStyleButton('highlighter'),
+      'eraser': this.getStyleButton('eraser'),
+    }
+    this.shape = {
+      'curve': this.getShapeButton('curve'),
+      'line': this.getShapeButton('line'),
+    }
+    this.color = {
+      'black': this.getColorButton( 'black'),
+      'red': this.getColorButton( 'red'),
+      'blue': this.getColorButton( 'blue'),
+      'green': this.getColorButton( 'green'),
+      'yellow': this.getColorButton( 'yellow'),
+    }
+  }
+
+  getElement(suffix) {
+    return document.getElementById(`${this.annotateType}${suffix}`);
+  }
+
+  getGroup(groupName) {
+    return this.btnContainer.querySelector(`[data-annotate-group="${groupName}"]`);
+  }
+
+  getStyleButton(buttonName) {
+    return this.#toolGroup.querySelector(`[data-annotate-style="${buttonName}"]`);
+  }
+
+  getShapeButton(buttonName) {
+    return this.#toolGroup.querySelector(`[data-annotate-shape="${buttonName}"]`);
+  }
+
+  getColorButton(buttonName) {
+    return this.#colorGroup.querySelector(`[data-annotate-color="${buttonName}"]`);
+  }
+}
+
 export default class UIManager {
   annotateType = null;
   toolManager = null;
-  
+
+  // btnObjects = null;
   drawingBtn = null;
   drawingStatus = null;
   toolBtnGroup = null;
   eraserBtn = null;
   colorBtnGroup = null;
-  
+
   currentStyleName = null;
   currentShapeName = null;
+  currentColorName = null;
   
   constructor(annotateType, toolManager) {
     this.annotateType = annotateType;
     this.toolManager = toolManager;
-    
+
+    // this.btnObjects = new ButtonObjects(annotateType);
+    // this.drawingBtn = this.btnObjects.drawing.btn;
+    // this.drawingStatus = this.btnObjects.drawing.status;
+    // this.toolBtnGroup = this.btnObjects.toolGroup;
+    // this.eraserBtn = this.btnObjects.style.eraser;
+    // this.colorBtnGroup = this.toolBtnGroup.colorGroup;
+
     this.drawingBtn = this.getElement('DrawingBtn');
     this.drawingStatus = this.getElement('DrawingStatus');
     this.toolBtnGroup = this.getBtnGroup('tool-btn-group');
     this.eraserBtn = this.toolBtnGroup[0].querySelector(
-      `button[data-annotation-style="eraser"]`);
+      `button[data-annotate-style="eraser"]`);
     this.colorBtnGroup = this.getBtnGroup('color-btn-group');
   }
   
@@ -30,7 +94,7 @@ export default class UIManager {
   getBtnGroup(suffix) {
     return document.querySelectorAll(`.${this.annotateType}-${suffix}`);
   }
-  
+
   init() {
     this.drawingBtn.addEventListener(
       'click', () => this.handleDrawingBtnEvent());
@@ -48,7 +112,7 @@ export default class UIManager {
         this.handleColorBtnEvent(button);
       });
     });
-    
+
     // const btnName = ['Undo', 'Redo', 'Clear', 'Save', 'Load']
     // btnName.forEach(name => {
     //   document.getElementById(`${this.annotateType}${name}Btn`)?.addEventListener(
@@ -68,14 +132,8 @@ export default class UIManager {
   }
   
   handleDrawingBtnEvent() {
-    const drawingActive = this.drawingBtn.checked;
-    if (drawingActive) return this.drawingStatus.classList.add('active');
-    
-    this.currentStyleName = this.currentShapeName = null;
-    this.drawingStatus.classList.remove('active');
-    this.deactivateToolBtns();
-    
-    if (this.toolManager.currentTool) this.toolManager.deactivateCurrentTool();
+    this.drawingStatus.classList.toggle('active');
+    if (!this.drawingBtn.checked) this.deactivateToolBtns();
   }
   
   deactivateToolBtns() {
@@ -83,19 +141,21 @@ export default class UIManager {
       const buttons = group.querySelectorAll('button');
       buttons.forEach(btn => btn.classList.remove('active'));
     });
+    this.currentStyleName = this.currentShapeName = null;
+    if (this.toolManager.currentTool) this.toolManager.deactivateCurrentTool();
   }
   
   handleToolBtnEvent(button) {
     if (!button) return;
     
-    const isEraser = button.dataset.annotationStyle === 'eraser'
-    if (isEraser) return this.toggleEraserBtn();
+    const isEraser = button.dataset.annotateStyle === 'eraser'
+    if (isEraser) return this.activateEraserBtn();
     
-    const drawingIsActive = this.drawingBtn.classList.contains('active');
-    if (!drawingIsActive) this.toggleDrawingBtn(true);
+    const drawingActive = this.drawingBtn.classList.contains('active');
+    if (!drawingActive) this.toggleDrawingBtn(true);
     
-    const isStyle = button.dataset.annotationStyle !== undefined;
-    const isShape = button.dataset.annotationShape !== undefined;
+    const isStyle = button.dataset.annotateStyle !== undefined;
+    const isShape = button.dataset.annotateShape !== undefined;
     
     const style = this.currentStyleName;
     const shape = this.currentShapeName;
@@ -104,33 +164,23 @@ export default class UIManager {
     if (firstClicked || styleOrShapeClicked) this.handleClick(button);
   }
   
-  toggleEraserBtn() {
+  activateEraserBtn() {
     this.deactivateToolBtns();
-    
-    const eraseIsActive = this.eraserBtn.classList.contains('active');
-    if (eraseIsActive) {
-      this.currentStyleName = this.currentShapeName = null;
-      this.eraserBtn.classList.remove('active');
-    } else {
-      this.currentStyleName = 'eraser';
-      this.currentShapeName = null;
-      this.eraserBtn.classList.add('active');
-      this.toolManager.setTool(this.currentStyleName, this.currentShapeName);
-    }
+    this.toggleDrawingBtn(true);
+
+    this.currentStyleName = 'eraser';
+    this.eraserBtn.classList.add('active');
+    this.toolManager.setTool(this.currentStyleName, this.currentShapeName);
   }
   
   toggleDrawingBtn(active) {
     this.drawingBtn.checked = active;
     this.drawingStatus.classList.toggle('active', active);
-    
-    const changeEvent = new Event('change', {bubbles: true});
-    this.drawingBtn.dispatchEvent(changeEvent);
-    this.drawingStatus.dispatchEvent(changeEvent);
   }
   
   handleClick(button) {
-    const selectedStyle = button.dataset.annotationStyle;
-    const selectedShape = button.dataset.annotationShape;
+    const selectedStyle = button.dataset.annotateStyle;
+    const selectedShape = button.dataset.annotateShape;
     const style = this.currentStyleName;
     const shape = this.currentShapeName;
     const penBtn = this.getElement('PenBtn');
@@ -170,7 +220,8 @@ export default class UIManager {
     if (!button) return;
     this.setActive(button);
     
-    const color = button.dataset.annotationColor;
+    const color = button.dataset.annotateColor;
+    this.currentColorName = color;
     this.toolManager.setColor(color);
   }
 }
