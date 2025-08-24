@@ -83,7 +83,7 @@
             <div id="{{ annotate_type }}BtnContainer" class="d-flex align-items-center justify-content-center justify-content-md-between flex-wrap gap-3">
                 <div class="d-flex gap-1 align-items-center justify-content-center" role="group"
                      aria-label="필기 버튼 그룹">
-                    <div class="{{ annotate_type }}-drawing-btn-container" data-annotate-group="drawing">
+                    <div class="{{ annotate_type }}-drawing-btn-container" data-annotate-container="drawing">
                         <label class="switch">
                           <input type="checkbox" id="{{ annotate_type }}DrawingBtn">
                           <span class="slider slider-drawing"></span>
@@ -93,7 +93,7 @@
                         </span>
                     </div>
 
-                    <div class="{{ annotate_type }}-tool-btn-group d-flex text-nowrap gap-1" data-annotate-group="tool">
+                    <div class="{{ annotate_type }}-tool-btn-group d-flex text-nowrap gap-1" data-annotate-container="style">
                         <button id="{{ annotate_type }}PenBtn" class="tool-btn" data-annotate-style="pen">
                             <svg width="20px" height="20px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M290.74 93.24l128.02 128.02-277.99 277.99-114.14 12.6C11.35 513.54-1.56 500.62.14 485.34l12.7-114.22 277.9-277.88zm207.2-19.06l-60.11-60.11c-18.75-18.75-49.16-18.75-67.91 0l-56.55 56.55 128.02 128.02 56.55-56.55c18.75-18.76 18.75-49.16 0-67.91z" fill="currentColor"></path>
@@ -111,7 +111,7 @@
                         </button>
                     </div>
 
-                    <div class="{{ annotate_type }}-tool-btn-group d-flex text-nowrap gap-1" data-annotate-group="shape">
+                    <div class="{{ annotate_type }}-tool-btn-group d-flex text-nowrap gap-1" data-annotate-container="shape">
                         <button id="{{ annotate_type }}CurveBtn" class="tool-btn" data-annotate-shape="curve">
                             <svg height="20px" width="20px" viewBox="0 0 189.929 189.929" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M70.343,70.343c-30.554,30.553-44.806,72.7-39.102,115.635l-29.738,3.951C-5.442,137.659,11.917,86.34,49.129,49.13 C86.34,11.918,137.664-5.445,189.928,1.502l-3.95,29.738C143.041,25.54,100.895,39.789,70.343,70.343z"
@@ -126,8 +126,8 @@
                     </div>
                 </div>
 
-                <div class="{{ annotate_type }}-color-btn-group d-flex text-nowrap gap-1" role="group" data-annotate-group="color">
-                    <button class="color-btn active" data-annotate-color="black"></button>
+                <div class="{{ annotate_type }}-color-btn-group d-flex text-nowrap gap-1" role="group" data-annotate-container="color">
+                    <button class="color-btn" data-annotate-color="black"></button>
                     <button class="color-btn" data-annotate-color="red"></button>
                     <button class="color-btn" data-annotate-color="blue"></button>
                     <button class="color-btn" data-annotate-color="green"></button>

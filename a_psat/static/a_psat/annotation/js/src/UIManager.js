@@ -1,115 +1,43 @@
-class ButtonObjects {
-  #toolGroup = null;
-  #colorGroup = null;
-
-  constructor(annotateType) {
-    this.annotateType = annotateType;
-
-    this.btnContainer = this.getElement('BtnContainer');
-    this.drawingGroup = this.getGroup('drawing');
-    this.#toolGroup = this.getGroup('tool');
-    this.#colorGroup = this.getGroup('color');
-
-    this.drawing = {
-      'btn': this.drawingGroup.querySelector('input'),
-      'status': this.drawingGroup.querySelector('span'),
-    }
-    this.style = {
-      'pen': this.getStyleButton('pen'),
-      'highlighter': this.getStyleButton('highlighter'),
-      'eraser': this.getStyleButton('eraser'),
-    }
-    this.shape = {
-      'curve': this.getShapeButton('curve'),
-      'line': this.getShapeButton('line'),
-    }
-    this.color = {
-      'black': this.getColorButton( 'black'),
-      'red': this.getColorButton( 'red'),
-      'blue': this.getColorButton( 'blue'),
-      'green': this.getColorButton( 'green'),
-      'yellow': this.getColorButton( 'yellow'),
-    }
-  }
-
-  getElement(suffix) {
-    return document.getElementById(`${this.annotateType}${suffix}`);
-  }
-
-  getGroup(groupName) {
-    return this.btnContainer.querySelector(`[data-annotate-group="${groupName}"]`);
-  }
-
-  getStyleButton(buttonName) {
-    return this.#toolGroup.querySelector(`[data-annotate-style="${buttonName}"]`);
-  }
-
-  getShapeButton(buttonName) {
-    return this.#toolGroup.querySelector(`[data-annotate-shape="${buttonName}"]`);
-  }
-
-  getColorButton(buttonName) {
-    return this.#colorGroup.querySelector(`[data-annotate-color="${buttonName}"]`);
-  }
-}
+import ButtonManager from "./ButtonManager.js";
 
 export default class UIManager {
-  annotateType = null;
-  toolManager = null;
-
-  // btnObjects = null;
-  drawingBtn = null;
-  drawingStatus = null;
-  toolBtnGroup = null;
-  eraserBtn = null;
-  colorBtnGroup = null;
-
-  currentStyleName = null;
-  currentShapeName = null;
-  currentColorName = null;
-  
   constructor(annotateType, toolManager) {
     this.annotateType = annotateType;
     this.toolManager = toolManager;
-
-    // this.btnObjects = new ButtonObjects(annotateType);
-    // this.drawingBtn = this.btnObjects.drawing.btn;
-    // this.drawingStatus = this.btnObjects.drawing.status;
-    // this.toolBtnGroup = this.btnObjects.toolGroup;
-    // this.eraserBtn = this.btnObjects.style.eraser;
-    // this.colorBtnGroup = this.toolBtnGroup.colorGroup;
-
-    this.drawingBtn = this.getElement('DrawingBtn');
-    this.drawingStatus = this.getElement('DrawingStatus');
-    this.toolBtnGroup = this.getBtnGroup('tool-btn-group');
-    this.eraserBtn = this.toolBtnGroup[0].querySelector(
-      `button[data-annotate-style="eraser"]`);
-    this.colorBtnGroup = this.getBtnGroup('color-btn-group');
-  }
-  
-  getElement(suffix) {
-    return document.getElementById(`${this.annotateType}${suffix}`);
-  }
-  
-  getBtnGroup(suffix) {
-    return document.querySelectorAll(`.${this.annotateType}-${suffix}`);
-  }
-
-  init() {
-    this.drawingBtn.addEventListener(
-      'click', () => this.handleDrawingBtnEvent());
     
-    this.toolBtnGroup.forEach(group => {
-      group.addEventListener('click', e => {
-        const button = e.target.closest('button');
-        this.handleToolBtnEvent(button);
-      });
+    this.btnManager = new ButtonManager(annotateType);
+    this.drawingBtn = this.btnManager.drawingBtn;
+    this.drawingStatus = this.btnManager.drawing.status;
+    this.styleBtnGroup = this.btnManager.styleGroup;
+    this.shapeBtnGroup = this.btnManager.shapeGroup;
+    this.eraserBtn = this.btnManager.styleGroup.eraser;
+    this.colorBtnGroup = this.btnManager.colorGroup;
+    
+    this.previousStyleName = null;
+    this.previousShapeName = null;
+    this.previousColorName = null;
+    
+    this.currentStyleName = null;
+    this.currentShapeName = null;
+    this.currentColorName = null;
+  }
+  
+  init() {
+    // 필기 버튼
+    this.drawingBtn.addEventListener('click', () => {
+      this.drawingStatus.classList.toggle('active');
+      if (!this.drawingBtn.checked) this.deactivateToolBtns();
     });
     
-    this.colorBtnGroup.forEach(group => {
-      group.addEventListener('click', e => {
-        const button = e.target.closest('button');
-        this.handleColorBtnEvent(button);
+    // 툴 버튼(펜, 형광펜, 지우개, 곡선, 직선, 색상)
+    const buttonGroups = {
+      'Style': this.styleBtnGroup,
+      'Shape': this.shapeBtnGroup,
+      'Color': this.colorBtnGroup,
+    };
+    Object.entries(buttonGroups).forEach(([key, group]) => {
+      Object.entries(group).forEach(([buttonName, btn]) => {
+        btn.addEventListener('click', () => this.handleToolBtnEvent(key, buttonName, btn));
       });
     });
 
@@ -131,97 +59,91 @@ export default class UIManager {
       ?.addEventListener('click', () => this.toolManager.load());
   }
   
-  handleDrawingBtnEvent() {
-    this.drawingStatus.classList.toggle('active');
-    if (!this.drawingBtn.checked) this.deactivateToolBtns();
-  }
-  
+  // 필기 상태에서 필기 버튼을 클릭하는 경우 -> 필기 버튼 및 필기 상태가 비활성화됨
+  // 최초 로딩 후 툴 버튼을 클릭하는 경우 -> 필기 버튼은 자동으로 활성화됨
   deactivateToolBtns() {
-    this.toolBtnGroup.forEach(group => {
-      const buttons = group.querySelectorAll('button');
-      buttons.forEach(btn => btn.classList.remove('active'));
+    [this.styleBtnGroup, this.shapeBtnGroup, this.colorBtnGroup].forEach(group => {
+      Object.values(group).forEach(btn => btn.classList.remove('active'));
     });
-    this.currentStyleName = this.currentShapeName = null;
+    this.currentStyleName = this.currentShapeName = this.currentColorName = null;
     if (this.toolManager.currentTool) this.toolManager.deactivateCurrentTool();
   }
   
-  handleToolBtnEvent(button) {
-    if (!button) return;
+  // 이벤트 설정: 지우개 버튼을 제외한 툴 버튼을 클릭하는 경우
+  handleToolBtnEvent(type, buttonName, button) {
+    if (!button || !type || !buttonName) return;
     
-    const isEraser = button.dataset.annotateStyle === 'eraser'
-    if (isEraser) return this.activateEraserBtn();
+    const validTypes = new Set(['Style', 'Shape', 'Color']);
+    if (!validTypes.has(type)) return console.warn(`Invalid type: ${type}`);
     
-    const drawingActive = this.drawingBtn.classList.contains('active');
-    if (!drawingActive) this.toggleDrawingBtn(true);
+    // 기존 상태값에 현재 상태값을 입력
+    this[`previous${type}Name`] = this[`current${type}Name`];
     
-    const isStyle = button.dataset.annotateStyle !== undefined;
-    const isShape = button.dataset.annotateShape !== undefined;
-    
-    const style = this.currentStyleName;
-    const shape = this.currentShapeName;
-    const firstClicked = !style && !shape
-    const styleOrShapeClicked = (isStyle && style) || (isShape && shape)
-    if (firstClicked || styleOrShapeClicked) this.handleClick(button);
-  }
-  
-  activateEraserBtn() {
-    this.deactivateToolBtns();
-    this.toggleDrawingBtn(true);
-
-    this.currentStyleName = 'eraser';
-    this.eraserBtn.classList.add('active');
-    this.toolManager.setTool(this.currentStyleName, this.currentShapeName);
-  }
-  
-  toggleDrawingBtn(active) {
-    this.drawingBtn.checked = active;
-    this.drawingStatus.classList.toggle('active', active);
-  }
-  
-  handleClick(button) {
-    const selectedStyle = button.dataset.annotateStyle;
-    const selectedShape = button.dataset.annotateShape;
-    const style = this.currentStyleName;
-    const shape = this.currentShapeName;
-    const penBtn = this.getElement('PenBtn');
-    const curveBtn = this.getElement('CurveBtn');
-    
-    if (selectedStyle) {
-      if (!shape) {
-        this.setActive(curveBtn);
-        this.currentShapeName = 'curve';
-      }
-      this.setActive(button);
-      this.currentStyleName = selectedStyle;
+    // 필기 버튼이 비활성화되어 있으면 자동 활성화
+    if (!this.drawingBtn.classList.contains('active')) {
+      this.drawingBtn.checked = true;
+      this.drawingStatus.classList.toggle('active', true);
     }
     
-    if (selectedShape) {
-      if (!style) {
-        this.setActive(penBtn);
-        this.currentStyleName = 'pen';
-      }
-      this.setActive(button);
-      this.currentShapeName = selectedShape;
-    }
+    // 지우개 버튼을 클릭할 경우 activateEraserBtn()으로 분기
+    if (type === 'Style' && buttonName === 'eraser') return this.activateEraserBtn();
     
-    this.toolManager.setTool(this.currentStyleName, this.currentShapeName);
-  }
-  
-  setActive(button) {
-    const group = button.parentElement;
-    const buttons = group.querySelectorAll('button');
+    // 지우개 버튼이 활성화된 상태에서 다른 버튼을 클릭하면 전체 툴 버튼을 비활성화함
+    if (this.eraserBtn?.classList.contains('active')) this.deactivateToolBtns();
     
-    buttons.forEach(btn => {
-      btn.classList.toggle('active', btn === button);
+    // 현재 상태값을 입력받은 버튼 이름으로 변경
+    this[`current${type}Name`] = buttonName;
+    
+    // 현재값이 null이 아닌 경우에만 현재값 그대로 다시 설정
+    // 현재값이 null이면 이전값을, 이전값도 null이면 기본값으로 설정
+    this.currentStyleName = this.currentStyleName || this.previousStyleName || 'pen'
+    this.currentShapeName = this.currentShapeName || this.previousShapeName || 'curve'
+    this.currentColorName = this.currentColorName || this.previousColorName || 'black'
+    
+    // 각각의 툴 버튼마다 그룹별로 버튼 활성화 및 비활성화 재설정
+    // 각 그룹별로 현재 클릭한 버튼만 활성화되고 나머지는 비활성화됨
+    // 지우개 버튼에는 적용되지 않으며 대신에 activateEraserBtn()가 적용됨
+    const activeMap = {
+      styleBtnGroup: this.currentStyleName,
+      shapeBtnGroup: this.currentShapeName,
+      colorBtnGroup: this.currentColorName
+    };
+    Object.entries(activeMap).forEach(([groupName, buttonName]) => {
+      Object.entries(this[groupName]).forEach(([name, btn]) => {
+        btn.classList.toggle('active', name === buttonName);
+      });
     });
+    
+    this.initTool();
   }
   
-  handleColorBtnEvent(button) {
-    if (!button) return;
-    this.setActive(button);
+  // 이벤트 설정: 지우개 버튼을 클릭하는 경우
+  activateEraserBtn() {
+    this.previousStyleName = this.currentStyleName;
+    this.previousShapeName = this.currentShapeName;
+    this.previousColorName = this.currentColorName;
     
-    const color = button.dataset.annotateColor;
-    this.currentColorName = color;
-    this.toolManager.setColor(color);
+    this.deactivateToolBtns();
+    
+    this.currentStyleName = 'eraser';
+    this.currentShapeName = this.previousShapeName;
+    this.currentColorName = this.previousColorName || 'black';
+    this.eraserBtn.classList.add('active');
+    this.initTool();
+  }
+  
+  initTool() {
+    this.toolManager.setTool(this.currentStyleName, this.currentShapeName);
+    this.toolManager.setColor(this.currentColorName);
+  }
+  
+  consoleTest() {
+    console.log('---- test start ----')
+    console.log('previousStyleName: ' + this.previousStyleName)
+    console.log('previousShapeName: ' + this.previousShapeName)
+    console.log('previousColorName: ' + this.previousColorName)
+    console.log('currentStyleName: ' + this.currentStyleName)
+    console.log('currentShapeName: ' + this.currentShapeName)
+    console.log('currentColorName: ' + this.currentColorName)
   }
 }

@@ -22,10 +22,10 @@ export default class ScopeManager {
     // 매니저 초기화
     // const historyManager = new HistoryManager();
     // const fileManager = new FileManager(canvas, annotateUrl, annotateType);
-    const toolManager = new ToolManager(scope);
-    const uiManager = new UIManager(name, toolManager);
+    this.toolManager = new ToolManager(scope);
+    this.uiManager = new UIManager(name, this.toolManager);
     
-    uiManager.init();
+    this.uiManager.init();
     
     this.resizeCanvasToImage(scope, image);
 

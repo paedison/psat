@@ -18,7 +18,5 @@ function hexToRgba(hexCode, alpha = 0.4) {
 
 export function colorToRgba(colorName, alpha = 0.4) {
   const hexCode = COLORS[colorName]
-  console.log(colorName)
-  console.log(hexCode)
   return hexToRgba(hexCode, alpha);
 }

@@ -12,15 +12,9 @@ function totalInitAnnotation() {
 function initAnnotation(annotateType) {
   const canvas = document.getElementById(`${annotateType}Canvas`);
   const image = document.getElementById(`${annotateType}Image`);
-  
   if (!canvas || !image) return;
   
   scopeManager.create(annotateType, canvas, image);
-
-  const events = ['touchstart', 'touchmove', 'click'];
-  events.forEach(eventType => {
-    canvas.addEventListener(eventType, e => e.preventDefault(), {passive: false});
-  });
 }
 
 window.addEventListener('resize', () => {

@@ -7,7 +7,7 @@ import {constants} from './Constants.js';
 export default class ToolManager {
   scope = null;
   currentTool = null;
-  currentColor = `rgba(0, 0, 0, 0.4)`;
+  currentColor = null;
   
   constructor(scope) {
     this.scope = scope;
@@ -23,12 +23,11 @@ export default class ToolManager {
     
     if (styleName === 'highlighter') style['strokeWidth'] = this.scope.canvas.width / 100;
     
-    if (styleName === 'eraser') this.currentTool = new EraserTool(
-      this.scope, this.currentColor, style);
-    if (shapeName === 'curve') this.currentTool = new CurveTool(
-      this.scope, this.currentColor, style);
-    if (shapeName === 'line') this.currentTool = new LineTool(
-      this.scope, this.currentColor, style);
+    if (styleName === 'eraser') this.currentTool = new EraserTool(this.scope, this.currentColor, style);
+    else {
+      if (shapeName === 'curve') this.currentTool = new CurveTool(this.scope, this.currentColor, style);
+      if (shapeName === 'line') this.currentTool = new LineTool(this.scope, this.currentColor, style);
+    }
     this.currentTool.tool.activate();
   }
   
