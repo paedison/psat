@@ -1,27 +1,42 @@
 export default class HistoryManager {
-  constructor() {
+  constructor(scope) {
+    this.scope = scope;
+    this.btnManager = scope.btnManager;
+    this.undoStack = [];
     this.redoStack = [];
   }
-
-  undo() {
-    const items = paper.project.activeLayer.children;
-    if (items.length > 0) {
-      const lastItem = items[items.length - 1];
-      this.redoStack.push(lastItem);
-      lastItem.remove();
-      paper.view.update();
-    } else {
-      alert("되돌릴 필기 내용이 없습니다!");
-    }
+  
+  updateBtns() {
+    this.btnManager.undoBtn.disabled = this.undoStack.length === 0;
+    this.btnManager.redoBtn.disabled = this.redoStack.length === 0;
+  }
+  
+  pushState(item) {
+    this.undoStack.push(item);
+    this.redoStack = [];
+    this.updateBtns();
   }
 
-  redo() {
-    if (this.redoStack.length > 0) {
-      const restoredItem = this.redoStack.pop();
-      paper.project.activeLayer.addChild(restoredItem);
-      paper.view.update();
-    } else {
-      alert("되돌리기 취소할 내용이 없습니다!");
-    }
+  undoAnnotation() {
+    if (this.undoStack.length === 0) return alert("되돌릴 필기 내용이 없습니다!");
+    
+    const lastPath = this.undoStack.pop();
+    this.redoStack.push(lastPath);
+    this.updateBtns();
+    lastPath?.remove();
+  }
+
+  redoAnnotation() {
+    if (this.redoStack.length === 0) return alert("되돌리기 취소할 내용이 없습니다!");
+
+    const restoredPath = this.redoStack.pop();
+    this.undoStack.push(restoredPath);
+    this.updateBtns();
+    if (restoredPath) this.scope.project.activeLayer.addChild(restoredPath);
+  }
+  
+  clear() {
+    this.undoStack = [];
+    this.redoStack = [];
   }
 }

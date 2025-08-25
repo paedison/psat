@@ -1,17 +1,20 @@
-import ButtonManager from "./ButtonManager.js";
-
 export default class UIManager {
-  constructor(annotateType, toolManager) {
-    this.annotateType = annotateType;
-    this.toolManager = toolManager;
+  constructor(scope) {
+    this.scope = scope;
+    this.annotateType = scope.annotateType;
     
-    this.btnManager = new ButtonManager(annotateType);
-    this.drawingBtn = this.btnManager.drawingBtn;
-    this.drawingStatus = this.btnManager.drawing.status;
-    this.styleBtnGroup = this.btnManager.styleGroup;
-    this.shapeBtnGroup = this.btnManager.shapeGroup;
-    this.eraserBtn = this.btnManager.styleGroup.eraser;
-    this.colorBtnGroup = this.btnManager.colorGroup;
+    this.toolManager = scope.toolManager;
+    this.historyManager = scope.historyManager;
+    this.fileManager = scope.fileManager;
+    
+    const btnManager = scope.btnManager;
+    this.drawingBtn = btnManager.drawingBtn;
+    this.drawingStatus = btnManager.drawing.status;
+    this.styleBtnGroup = btnManager.styleGroup;
+    this.shapeBtnGroup = btnManager.shapeGroup;
+    this.eraserBtn = btnManager.styleGroup.eraser;
+    this.colorBtnGroup = btnManager.colorGroup;
+    this.actionBtnGroup = btnManager.actionGroup;
     
     this.previousStyleName = null;
     this.previousShapeName = null;
@@ -40,23 +43,16 @@ export default class UIManager {
         btn.addEventListener('click', () => this.handleToolBtnEvent(key, buttonName, btn));
       });
     });
-
-    // const btnName = ['Undo', 'Redo', 'Clear', 'Save', 'Load']
-    // btnName.forEach(name => {
-    //   document.getElementById(`${this.annotateType}${name}Btn`)?.addEventListener(
-    //     'click', () => this.toolManager[name.toLowerCase()]());
-    // });
     
-    document.getElementById(`${this.annotateType}UndoBtn`)
-      ?.addEventListener('click', () => this.toolManager.undo());
-    document.getElementById(`${this.annotateType}RedoBtn`)
-      ?.addEventListener('click', () => this.toolManager.redo());
-    document.getElementById(`${this.annotateType}ClearBtn`)
-      ?.addEventListener('click', () => this.toolManager.clear());
-    document.getElementById(`${this.annotateType}SaveBtn`)
-      ?.addEventListener('click', () => this.toolManager.save());
-    document.getElementById(`${this.annotateType}LoadBtn`)
-      ?.addEventListener('click', () => this.toolManager.load());
+    // 액션 버튼(되돌리기, 되돌리기 취소, 불러오기, 저장하기)
+    const actionMap = {
+      'undo': () => this.historyManager.undoAnnotation(),
+      'redo': () => this.historyManager.redoAnnotation(),
+      'load': () => this.fileManager.loadAnnotation(),
+      'save': () => this.fileManager.saveAnnotation(),
+      'clear': () => this.clearAll(),
+    }
+    Object.entries(this.actionBtnGroup).forEach(([key, btn]) => btn.addEventListener('click', actionMap[key]));
   }
   
   // 필기 상태에서 필기 버튼을 클릭하는 경우 -> 필기 버튼 및 필기 상태가 비활성화됨
@@ -69,7 +65,7 @@ export default class UIManager {
     if (this.toolManager.currentTool) this.toolManager.deactivateCurrentTool();
   }
   
-  // 이벤트 설정: 지우개 버튼을 제외한 툴 버튼을 클릭하는 경우
+  // 툴 버튼 이벤트 설정
   handleToolBtnEvent(type, buttonName, button) {
     if (!button || !type || !buttonName) return;
     
@@ -85,6 +81,9 @@ export default class UIManager {
       this.drawingStatus.classList.toggle('active', true);
     }
     
+    // 선택된 필기가 있으면 필기 해제
+    this.scope.toolManager.currentTool?.deactivate();
+
     // 지우개 버튼을 클릭할 경우 activateEraserBtn()으로 분기
     if (type === 'Style' && buttonName === 'eraser') return this.activateEraserBtn();
     
@@ -135,6 +134,12 @@ export default class UIManager {
   initTool() {
     this.toolManager.setTool(this.currentStyleName, this.currentShapeName);
     this.toolManager.setColor(this.currentColorName);
+  }
+
+  clearAll() {
+    if (!confirm("전체 필기 내용을 삭제하시겠습니까?")) return;
+    this.scope.project.activeLayer.removeChildren();
+    this.scope.view.update();
   }
   
   consoleTest() {

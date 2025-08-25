@@ -1,31 +1,35 @@
+import ButtonManager from "./ButtonManager.js";
+import HistoryManager from "./HistoryManager.js";
 import ToolManager from './ToolManager.js';
 import UIManager from './UIManager.js';
+import FileManager from "./FileManager.js";
 
 export default class ScopeManager {
   scopes = {};
   #activeScope = null;
   
-  create(name, canvas, image) {
-    if (this.scopes[name]) return this.scopes[name];
+  create(annotateType, canvas, image) {
+    if (this.scopes[annotateType]) return this.scopes[annotateType];
 
-    const annotateUrl = canvas?.getAttribute('data-annotate-url');
+    const annotateUrl = `${canvas?.getAttribute('data-annotate-url')}?annotate_type=${annotateType}`;
     const scope = new paper.PaperScope();
     
-    scope.name = name;
     scope.canvas = canvas;
     scope.image = image;
     scope.annotateUrl = annotateUrl;
+    scope.annotateType = annotateType;
     
     scope.setup(canvas);
-    this.scopes[name] = scope;
+    this.scopes[annotateType] = scope;
     
     // 매니저 초기화
-    // const historyManager = new HistoryManager();
-    // const fileManager = new FileManager(canvas, annotateUrl, annotateType);
-    this.toolManager = new ToolManager(scope);
-    this.uiManager = new UIManager(name, this.toolManager);
+    scope.btnManager = new ButtonManager(scope);
+    scope.historyManager = new HistoryManager(scope);
+    scope.toolManager = new ToolManager(scope);
+    scope.fileManager = new FileManager(scope);
+    scope.uiManager = new UIManager(scope);
     
-    this.uiManager.init();
+    scope.uiManager.init();
     
     this.resizeCanvasToImage(scope, image);
 
@@ -49,15 +53,15 @@ export default class ScopeManager {
     resizeCanvas();
   }
   
-  get(name) {
-    return this.scopes[name] || null;
+  get(annotateType) {
+    return this.scopes[annotateType] || null;
   }
 
   list() {
     return Object.keys(this.scopes);
   }
 
-  activate(name) {
+  activate(annotateType) {
     // 현재 활성 스코프 비활성화
     if (this.#activeScope) {
       this.#activeScope.view.element.style.pointerEvents = 'none';
@@ -65,7 +69,7 @@ export default class ScopeManager {
     }
     
     // 새 스코프 활성화
-    const scope = this.get(name);
+    const scope = this.get(annotateType);
     if (scope) {
       this.#activeScope = scope;
       this.#activeScope.activate(); // paper 전역이 이 scope를 바라보도록 함

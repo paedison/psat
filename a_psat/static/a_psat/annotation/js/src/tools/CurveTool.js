@@ -22,6 +22,7 @@ export default class CurveTool extends Tool {
   }
   
   handleMouseUp(event) {
+    this.pushStateIntoUndoStack();
     if (this.path) {
       this.path.simplify();
       this.path = null;

@@ -19,7 +19,7 @@ export default class EraserTool extends Tool {
 
   createEraserPath(event) {
     this.eraserPath = new this.scope.Path({
-      strokeColor: this.color,
+      strokeColor: this.strokeColor,
       strokeWidth: this.strokeWidth,
       strokeCap: this.strokeCap,
       blendMode: this.blendMode,
@@ -38,6 +38,7 @@ export default class EraserTool extends Tool {
   }
   
   handleMouseUp(event) {
+    this.pushStateIntoUndoStack();
     this.eraserPath = null;
   }
 }

@@ -1,28 +1,14 @@
 export default class Tool {
-  scope = null;
-  color = null;
-  strokeWidth = null;
-  blendMode = null;
-  emphasizeColor = 'red';
-  emphasizeStrokeWidth = 4;
-
-  defaultAttr = {};
-  
-  canvas = null;
-  path = null;
-  selectedPath = null;
-  originalAttr = {};
-  
-  tool = null;
-  
   constructor(scope, color, style) {
-    const {strokeWidth, strokeCap, blendMode} = style
-    
     this.scope = scope;
-    this.color = color;
+    
+    const {strokeWidth, strokeCap, blendMode, emphasizeStrokeColor, emphasizeStrokeWidth} = style
+    this.strokeColor = color;
     this.strokeWidth = strokeWidth;
     this.strokeCap = strokeCap;
     this.blendMode = blendMode;
+    this.emphasizeStrokeWidth = emphasizeStrokeWidth;
+    this.emphasizeStrokeColor = emphasizeStrokeColor;
     
     this.defaultAttr = {
       strokeColor: color,
@@ -32,6 +18,10 @@ export default class Tool {
     }
     
     this.canvas = scope.view.element;
+    this.path = null;
+    this.selectedPath = null;
+    this.originalAttr = {};
+    
     this.tool = new scope.Tool();
     
     this.initEvents();
@@ -92,12 +82,8 @@ export default class Tool {
     };
 
     // 강조 효과 적용
-    this.emphasizePath();
-  }
-
-  emphasizePath() {
     this.selectedPath.strokeWidth = this.emphasizeStrokeWidth;
-    this.selectedPath.strokeColor = this.emphasizeColor;
+    this.selectedPath.strokeColor = this.emphasizeStrokeColor;
   }
 
   deselectPath() {
@@ -115,7 +101,11 @@ export default class Tool {
   }
 
   updateColor(newColor) {
-    this.color = newColor;
+    this.strokeColor = newColor;
     this.defaultAttr.strokeColor = newColor;
+  }
+  
+  pushStateIntoUndoStack() {
+    if (this.path) this.scope.historyManager.pushState(this.path);
   }
 }

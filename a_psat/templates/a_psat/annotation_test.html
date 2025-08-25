@@ -22,7 +22,7 @@
                                     {% include 'a_psat/snippets/custom_icons.html' %}
                                 </div>
                                 <div class="ms-auto justify-content-end">
-                                    {% include 'a_psat/snippets/solve_container.html' %}
+                                    {% include 'a_psat/snippets/problem_detail_solve_container.html' %}
                                 </div>
                             </div>
                         </div>
@@ -80,7 +80,8 @@
         <img class="d-block mx-auto" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
     {% else %}
         {% if user.is_superuser %}
-            <div id="{{ annotate_type }}BtnContainer" class="d-flex align-items-center justify-content-center justify-content-md-between flex-wrap gap-3">
+            <div id="{{ annotate_type }}BtnContainer"
+                 class="d-flex align-items-center justify-content-center justify-content-md-between flex-wrap gap-3">
                 <div class="d-flex gap-1 align-items-center justify-content-center" role="group"
                      aria-label="필기 버튼 그룹">
                     <div class="{{ annotate_type }}-drawing-btn-container" data-annotate-container="drawing">
@@ -93,68 +94,88 @@
                         </span>
                     </div>
 
-                    <div class="{{ annotate_type }}-tool-btn-group d-flex text-nowrap gap-1" data-annotate-container="style">
-                        <button id="{{ annotate_type }}PenBtn" class="tool-btn" data-annotate-style="pen">
-                            <svg width="20px" height="20px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M290.74 93.24l128.02 128.02-277.99 277.99-114.14 12.6C11.35 513.54-1.56 500.62.14 485.34l12.7-114.22 277.9-277.88zm207.2-19.06l-60.11-60.11c-18.75-18.75-49.16-18.75-67.91 0l-56.55 56.55 128.02 128.02 56.55-56.55c18.75-18.76 18.75-49.16 0-67.91z" fill="currentColor"></path>
+                    <div class="{{ annotate_type }}-tool-btn-group d-flex text-nowrap gap-1"
+                         data-annotate-container="style">
+                        <button class="tool-btn" data-annotate-style="pen">
+                            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="currentColor"
+                                      d="M290.74 93.24l128.02 128.02-277.99 277.99-114.14 12.6C11.35 513.54-1.56 500.62.14 485.34l12.7-114.22 277.9-277.88zm207.2-19.06l-60.11-60.11c-18.75-18.75-49.16-18.75-67.91 0l-56.55 56.55 128.02 128.02 56.55-56.55c18.75-18.76 18.75-49.16 0-67.91z"></path>
                             </svg>
                         </button>
-                        <button id="{{ annotate_type }}HighlighterBtn" class="tool-btn" data-annotate-style="highlighter">
-                            <svg width="20px" height="20px" viewBox="0 -16 544 544" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M0 479.98L99.92 512l35.45-35.45-67.04-67.04L0 479.98zm124.61-240.01a36.592 36.592 0 0 0-10.79 38.1l13.05 42.83-50.93 50.94 96.23 96.23 50.86-50.86 42.74 13.08c13.73 4.2 28.65-.01 38.15-10.78l35.55-41.64-173.34-173.34-41.52 35.44zm403.31-160.7l-63.2-63.2c-20.49-20.49-53.38-21.52-75.12-2.35L190.55 183.68l169.77 169.78L530.27 154.4c19.18-21.74 18.15-54.63-2.35-75.13z" fill="currentColor"></path>
+                        <button class="tool-btn" data-annotate-style="highlighter">
+                            <svg viewBox="0 -16 544 544" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="currentColor"
+                                      d="M0 479.98L99.92 512l35.45-35.45-67.04-67.04L0 479.98zm124.61-240.01a36.592 36.592 0 0 0-10.79 38.1l13.05 42.83-50.93 50.94 96.23 96.23 50.86-50.86 42.74 13.08c13.73 4.2 28.65-.01 38.15-10.78l35.55-41.64-173.34-173.34-41.52 35.44zm403.31-160.7l-63.2-63.2c-20.49-20.49-53.38-21.52-75.12-2.35L190.55 183.68l169.77 169.78L530.27 154.4c19.18-21.74 18.15-54.63-2.35-75.13z"></path>
                             </svg>
                         </button>
-                        <button id="{{ annotate_type }}EraserBtn" class="tool-btn" data-annotate-style="eraser">
-                            <svg width="20px" height="20px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M497.941 273.941c18.745-18.745 18.745-49.137 0-67.882l-160-160c-18.745-18.745-49.136-18.746-67.883 0l-256 256c-18.745 18.745-18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12-5.373 12-12v-40c0-6.627-5.373-12-12-12H355.883l142.058-142.059zm-302.627-62.627l137.373 137.373L265.373 416H150.628l-80-80 124.686-124.686z" fill="currentColor"></path>
+                        <button class="tool-btn" data-annotate-style="eraser">
+                            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="currentColor"
+                                      d="M497.941 273.941c18.745-18.745 18.745-49.137 0-67.882l-160-160c-18.745-18.745-49.136-18.746-67.883 0l-256 256c-18.745 18.745-18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12-5.373 12-12v-40c0-6.627-5.373-12-12-12H355.883l142.058-142.059zm-302.627-62.627l137.373 137.373L265.373 416H150.628l-80-80 124.686-124.686z"></path>
                             </svg>
                         </button>
                     </div>
 
-                    <div class="{{ annotate_type }}-tool-btn-group d-flex text-nowrap gap-1" data-annotate-container="shape">
-                        <button id="{{ annotate_type }}CurveBtn" class="tool-btn" data-annotate-shape="curve">
-                            <svg height="20px" width="20px" viewBox="0 0 189.929 189.929" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M70.343,70.343c-30.554,30.553-44.806,72.7-39.102,115.635l-29.738,3.951C-5.442,137.659,11.917,86.34,49.129,49.13 C86.34,11.918,137.664-5.445,189.928,1.502l-3.95,29.738C143.041,25.54,100.895,39.789,70.343,70.343z"
-                                      fill="currentColor"></path>
+                    <div class="{{ annotate_type }}-tool-btn-group d-flex text-nowrap gap-1"
+                         data-annotate-container="shape">
+                        <button class="tool-btn" data-annotate-shape="curve">
+                            <svg viewBox="0 0 189.929 189.929" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="currentColor"
+                                      d="M70.343,70.343c-30.554,30.553-44.806,72.7-39.102,115.635l-29.738,3.951C-5.442,137.659,11.917,86.34,49.129,49.13 C86.34,11.918,137.664-5.445,189.928,1.502l-3.95,29.738C143.041,25.54,100.895,39.789,70.343,70.343z"></path>
                             </svg>
                         </button>
-                        <button id="{{ annotate_type }}LineBtn" class="tool-btn" data-annotate-shape="line">
-                            <svg height="20px" width="20px" viewBox="0 0 171.213 171.213" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M171.213,21.213l-150,150L0,150L150,0L171.213,21.213z" fill="currentColor"></path>
+                        <button class="tool-btn" data-annotate-shape="line">
+                            <svg viewBox="0 0 171.213 171.213" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="currentColor" d="M171.213,21.213l-150,150L0,150L150,0L171.213,21.213z"></path>
                             </svg>
                         </button>
                     </div>
                 </div>
 
-                <div class="{{ annotate_type }}-color-btn-group d-flex text-nowrap gap-1" role="group" data-annotate-container="color">
-                    <button class="color-btn" data-annotate-color="black"></button>
-                    <button class="color-btn" data-annotate-color="red"></button>
-                    <button class="color-btn" data-annotate-color="blue"></button>
-                    <button class="color-btn" data-annotate-color="green"></button>
-                    <button class="color-btn" data-annotate-color="yellow"></button>
-                </div>
+                <div class="d-flex gap-1 align-items-center justify-content-center" role="group"
+                     aria-label="색상 및 액션 버튼 그룹">
+                    <div class="{{ annotate_type }}-color-btn-group d-flex text-nowrap gap-1" role="group"
+                         data-annotate-container="color">
+                        <button class="color-btn" data-annotate-color="black"></button>
+                        <button class="color-btn" data-annotate-color="red"></button>
+                        <button class="color-btn" data-annotate-color="blue"></button>
+                        <button class="color-btn" data-annotate-color="green"></button>
+                        <button class="color-btn" data-annotate-color="yellow"></button>
+                    </div>
 
-                <div class="btn-group" role="group">
-                    <button id="{{ annotate_type }}UndoBtn" class="btn btn-outline-success"
-                            data-bs-toggle="tooltip" data-bs-title="되돌리기">
-                        <i class="fa-solid fa-rotate-left"></i>
-                    </button>
-                    <button id="{{ annotate_type }}RedoBtn" class="btn btn-outline-success"
-                            data-bs-toggle="tooltip" data-bs-title="되돌리기 취소">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                    <button id="{{ annotate_type }}LoadBtn" class="btn btn-outline-success"
-                            data-bs-toggle="tooltip" data-bs-title="불러오기">
-                        <i class="fa-solid fa-folder-open"></i>
-                    </button>
-                    <button id="{{ annotate_type }}SaveBtn" class="btn btn-outline-success"
-                            data-bs-toggle="tooltip" data-bs-title="저장">
-                        <i class="fa-solid fa-floppy-disk"></i>
-                    </button>
-                    <button id="{{ annotate_type }}ClearBtn" class="btn btn-danger"
-                            data-bs-toggle="tooltip" data-bs-title="전체 삭제">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+                    <div class="{{ annotate_type }}-action-btn-group d-flex text-nowrap gap-1" role="group"
+                         data-annotate-container="action">
+                        <button class="action-btn" data-annotate-action="undo" disabled>
+                            <svg fill="currentColor" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M250.6,66.8V0L136.7,111.3l113.9,111.3v-66.8c73.7,0,133.6,59.8,133.6,133.6c0,73.8-59.8,133.6-133.6,133.6 C176.9,423,117,363.2,117,289.4H28C28,412.3,127.7,512,250.6,512c123,0,222.6-99.7,222.6-222.6C473.2,166.4,373.6,66.8,250.6,66.8z"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-annotate-action="redo" disabled>
+                            <svg fill="currentColor" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M389.6,289.4c0,73.8-59.8,133.6-133.6,133.6c-73.7,0-133.6-59.8-133.6-133.6c0-73.8,59.8-133.6,133.6-133.6v66.8 l113.9-111.3L256,0v66.8c-122.9,0-222.6,99.7-222.6,222.6C33.4,412.3,133.1,512,256,512c122.9,0,222.6-99.7,222.6-222.6H389.6z"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-annotate-action="load">
+                            <svg fill="#currentColor" fill-rule="evenodd" viewBox="0 -2 30 30"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path transform="translate(-103.000000, -728.000000)"
+                                      d="M132,728 L104,728 C103.521,728 103,728.521 103,729 L103,736 C103,737.104 103.896,738 105,738 C106.104,738 107,737.104 107,736 L107,732 L129,732 L129,736 C129,737.104 129.896,738 131,738 C132.104,738 133,737.104 133,736 L133,729 C133,728.458 132.604,728 132,728 L132,728 Z M122,746 L120,746 L120,737 C120,735.896 119.104,735 118,735 C116.896,735 116,735.896 116,737 L116,746 L114,746 C113.608,746 112.705,745.905 112.313,746.3 C111.921,746.693 111.921,747.332 112.313,747.726 L117.255,753.717 C117.464,753.927 117.742,754.017 118.016,754.002 C118.29,754.017 118.567,753.927 118.776,753.717 L123.718,747.726 C124.11,747.332 124.11,746.693 123.718,746.3 C123.326,745.905 122.705,746 122,746 L122,746 Z"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-annotate-action="save">
+                            <svg fill="#currentColor" fill-rule="evenodd" viewBox="0 -2 30 30"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path transform="translate(-571.000000, -676.000000)"
+                                      d="M599,692 C597.896,692 597,692.896 597,694 L597,698 L575,698 L575,694 C575,692.896 574.104,692 573,692 C571.896,692 571,692.896 571,694 L571,701 C571,701.479 571.521,702 572,702 L600,702 C600.604,702 601,701.542 601,701 L601,694 C601,692.896 600.104,692 599,692 L599,692 Z M582,684 L584,684 L584,693 C584,694.104 584.896,695 586,695 C587.104,695 588,694.104 588,693 L588,684 L590,684 C590.704,684 591.326,684.095 591.719,683.7 C592.11,683.307 592.11,682.668 591.719,682.274 L586.776,676.283 C586.566,676.073 586.289,675.983 586.016,675.998 C585.742,675.983 585.465,676.073 585.256,676.283 L580.313,682.274 C579.921,682.668 579.921,683.307 580.313,683.7 C580.705,684.095 581.608,684 582,684 L582,684 Z"></path>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-annotate-action="clear">
+                            <svg fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"
+                                 viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.5 3L15.5 4H19V6H5V4H8.5L9.5 3H14.5ZM8 21C6.9 21 6 20.1 6 19V7H18V19C18 20.1 17.1 21 16 21H8ZM12 12.59L14.12 10.47L15.53 11.88L13.41 14L15.53 16.12L14.12 17.53L12 15.41L9.88 17.53L8.47 16.12L10.59 14L8.46 11.88L9.87 10.47L12 12.59Z"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         {% endif %}
@@ -162,7 +183,6 @@
         <div class="position-relative">
             <img id="{{ annotate_type }}Image" class="img-fluid" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
             <canvas id="{{ annotate_type }}Canvas" class="position-absolute top-0 start-0"
-                    tabindex="0"
                     style="z-index: 10; touch-action: none;"
                     data-annotate-url="{{ problem.get_annotate_url }}"></canvas>
         </div>

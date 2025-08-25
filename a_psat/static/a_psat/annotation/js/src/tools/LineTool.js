@@ -22,6 +22,7 @@ export default class LineTool extends Tool {
   }
 
   handleMouseUp(event) {
+    this.pushStateIntoUndoStack();
     if (this.#startPoint) return this.createPathFromPreviewLine();
   }
 

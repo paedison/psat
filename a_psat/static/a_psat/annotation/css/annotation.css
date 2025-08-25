@@ -141,3 +141,28 @@ input:checked + .slider::before {
 .drawing-btn.active {
   color: #4CAF50;
 }
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border: solid 2px #eeeeee;
+  border-radius: 25px;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  cursor: pointer;
+  color: #333; /* 기본 아이콘 색상 */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-btn[data-annotate-action="clear"] {
+  background-color: rgba(255, 0, 0, 0.4);
+  color: #fff;
+}

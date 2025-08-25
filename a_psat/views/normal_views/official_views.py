@@ -162,7 +162,7 @@ def official_rate_problem(request: HtmxHttpRequest, pk: int):
         return NormalUpdateContext(request=request, problem=problem).get_rate_problem_response(rating)
 
     context = update_context_data(problem=problem)
-    return render(request, 'a_psat/snippets/rate_modal.html', context)
+    return render(request, 'a_psat/snippets/problem_detail_rate_modal.html', context)
 
 
 @require_POST
@@ -171,7 +171,7 @@ def official_solve_problem(request: HtmxHttpRequest, pk: int):
     problem = get_object_or_404(models.Problem, pk=pk)
     context = update_context_data(
         **NormalUpdateContext(request=request, problem=problem).get_solve_problem_response_context(answer))
-    return render(request, 'a_psat/snippets/solve_modal.html', context)
+    return render(request, 'a_psat/snippets/problem_detail_solve_modal.html', context)
 
 
 def official_memo_problem(request: HtmxHttpRequest, pk: int):

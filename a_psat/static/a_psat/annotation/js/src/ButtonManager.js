@@ -3,15 +3,18 @@ export default class ButtonManager {
   #styleContainer = null;
   #shapeContainer = null;
   #colorContainer = null;
+  #actionContainer = null;
 
-  constructor(annotateType) {
-    this.annotateType = annotateType;
+  constructor(scope) {
+    this.scope = scope
+    this.annotateType = scope.annotateType;
 
     this.btnContainer = this.getElement('BtnContainer');
     this.#drawingContainer = this.getContainer('drawing');
     this.#styleContainer = this.getContainer('style');
     this.#shapeContainer = this.getContainer('shape');
     this.#colorContainer = this.getContainer('color');
+    this.#actionContainer = this.getContainer('action');
     
     this.drawingBtn = this.#drawingContainer.querySelector('input')
     this.drawingStatus = this.#drawingContainer.querySelector('.drawing-btn')
@@ -20,33 +23,46 @@ export default class ButtonManager {
       'status': this.drawingStatus,
     }
     
-    this.penBtn = this.getStyleButton('pen')
-    this.highlighterBtn = this.getStyleButton('highlighter')
-    this.eraserBtn = this.getStyleButton('eraser')
+    this.penBtn = this.getButton('style', 'pen')
+    this.highlighterBtn = this.getButton('style', 'highlighter')
+    this.eraserBtn = this.getButton('style', 'eraser')
     this.styleGroup = {
       'pen': this.penBtn,
       'highlighter': this.highlighterBtn,
       'eraser': this.eraserBtn,
     }
     
-    this.curveBtn = this.getShapeButton('curve')
-    this.lineBtn = this.getShapeButton('line')
+    this.curveBtn = this.getButton('shape', 'curve')
+    this.lineBtn = this.getButton('shape', 'line')
     this.shapeGroup = {
       'curve': this.curveBtn,
       'line': this.lineBtn,
     }
     
-    this.blackBtn = this.getColorButton( 'black')
-    this.redBtn = this.getColorButton( 'red')
-    this.blueBtn = this.getColorButton( 'blue')
-    this.greenBtn = this.getColorButton( 'green')
-    this.yellowBtn = this.getColorButton( 'yellow')
+    this.blackBtn = this.getButton('color',  'black')
+    this.redBtn = this.getButton('color',  'red')
+    this.blueBtn = this.getButton('color',  'blue')
+    this.greenBtn = this.getButton('color',  'green')
+    this.yellowBtn = this.getButton('color',  'yellow')
     this.colorGroup = {
       'black': this.blackBtn,
       'red': this.redBtn,
       'blue': this.blueBtn,
       'green': this.greenBtn,
       'yellow': this.yellowBtn,
+    }
+    
+    this.undoBtn = this.getButton('action', 'undo')
+    this.redoBtn = this.getButton('action', 'redo')
+    this.loadBtn = this.getButton('action', 'load')
+    this.saveBtn = this.getButton('action', 'save')
+    this.clearBtn = this.getButton('action', 'clear')
+    this.actionGroup = {
+      'undo': this.undoBtn,
+      'redo': this.redoBtn,
+      'load': this.loadBtn,
+      'save': this.saveBtn,
+      'clear': this.clearBtn,
     }
   }
 
@@ -57,17 +73,17 @@ export default class ButtonManager {
   getContainer(groupName) {
     return this.btnContainer.querySelector(`[data-annotate-container="${groupName}"]`);
   }
-
-  getStyleButton(buttonName) {
-    return this.#styleContainer.querySelector(`[data-annotate-style="${buttonName}"]`);
-  }
-
-  getShapeButton(buttonName) {
-    return this.#shapeContainer.querySelector(`[data-annotate-shape="${buttonName}"]`);
-  }
-
-  getColorButton(buttonName) {
-    return this.#colorContainer.querySelector(`[data-annotate-color="${buttonName}"]`);
+  
+  getButton(type, buttonName) {
+    const buttonMap = {
+      style: {container: this.#styleContainer, attribute: 'data-annotate-style'},
+      shape: {container: this.#shapeContainer, attribute: 'data-annotate-shape'},
+      color: {container: this.#colorContainer, attribute: 'data-annotate-color'},
+      action: {container: this.#actionContainer, attribute: 'data-annotate-action'},
+    }
+    const {container, attribute} = buttonMap[type];
+    
+    return container?.querySelector(`[${attribute}="${buttonName}"]`);
   }
 }
 

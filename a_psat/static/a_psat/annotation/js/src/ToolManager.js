@@ -5,12 +5,12 @@ import {colorToRgba} from './utils/ColorPalette.js';
 import {constants} from './Constants.js';
 
 export default class ToolManager {
-  scope = null;
-  currentTool = null;
-  currentColor = null;
-  
   constructor(scope) {
     this.scope = scope;
+    this.btnManager = scope.btnManager;
+    this.historyManager = scope.historyManager;
+    this.currentTool = null;
+    this.currentColor = null;
   }
   
   deactivateCurrentTool() {
@@ -20,8 +20,9 @@ export default class ToolManager {
   
   setTool(styleName, shapeName) {
     const style = constants.writingStyle[styleName];
+    console.log(style)
     
-    if (styleName === 'highlighter') style['strokeWidth'] = this.scope.canvas.width / 100;
+    if (styleName === 'highlighter') style['strokeWidth'] = style['emphasizeStrokeWidth'] = this.scope.canvas.width / 100;
     
     if (styleName === 'eraser') this.currentTool = new EraserTool(this.scope, this.currentColor, style);
     else {
