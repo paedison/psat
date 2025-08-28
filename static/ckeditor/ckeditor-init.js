@@ -1,50 +1,52 @@
 /* global CKEDITOR, django */
-;(function () {
-  var el = document.getElementById("ckeditor-init-script")
-  if (el && !window.CKEDITOR_BASEPATH) {
-    window.CKEDITOR_BASEPATH = el.getAttribute("data-ckeditor-basepath")
-  }
+function initCkeditor(scope = document) {
+  window.CKEDITOR_BASEPATH = '/static/ckeditor/ckeditor/';
 
-  function runInitialisers() {
+  function runInitializers() {
     if (!window.CKEDITOR) {
-      setTimeout(runInitialisers, 100)
-      return
+      setTimeout(runInitializers, 100);
+      return;
     }
 
-    initialiseCKEditor()
-    initialiseCKEditorInInlinedForms()
+    initializeCKEditor(scope);
+    initializeCKEditorInInlinedForms();
   }
+  
+  runInitializers();
 
-  if (document.readyState != "loading" && document.body) {
-    document.addEventListener("DOMContentLoaded", initialiseCKEditor)
-    runInitialisers()
-  } else {
-    document.addEventListener("DOMContentLoaded", runInitialisers)
-  }
-
-  function initialiseCKEditor() {
-    var textareas = Array.prototype.slice.call(
-      document.querySelectorAll("textarea[data-type=ckeditortype]"),
-    )
-    for (var i = 0; i < textareas.length; ++i) {
-      var t = textareas[i]
+  function initializeCKEditor(scope = document) {
+    const textAreas = Array.from(scope.querySelectorAll('textarea[data-type=ckeditortype]'));
+    for (const t of textAreas) {
       if (
-        t.getAttribute("data-processed") == "0" &&
-        t.id.indexOf("__prefix__") == -1
+        t.getAttribute("data-processed") === "0" &&
+        t.id.indexOf("__prefix__") === -1
       ) {
-        t.setAttribute("data-processed", "1")
-        var ext = JSON.parse(t.getAttribute("data-external-plugin-resources"))
-        for (var j = 0; j < ext.length; ++j) {
-          CKEDITOR.plugins.addExternal(ext[j][0], ext[j][1], ext[j][2])
-        }
-        CKEDITOR.replace(t.id, JSON.parse(t.getAttribute("data-config")))
+        t.setAttribute("data-processed", "1");
+        const ext = JSON.parse(t.getAttribute("data-external-plugin-resources"));
+        for (const [name, path, file] of ext) CKEDITOR.plugins.addExternal(name, path, file);
+        CKEDITOR.replace(t.id, JSON.parse(t.getAttribute("data-config")));
       }
     }
   }
 
-  function initialiseCKEditorInInlinedForms() {
+  function initializeCKEditorInInlinedForms() {
     if (typeof django === "object" && django.jQuery) {
-      django.jQuery(document).on("formset:added", initialiseCKEditor)
+      django.jQuery(document).on("formset:added", () => initializeCKEditor(scope))
     }
   }
-})()
+}
+
+window.addEventListener('load', () => initCkeditor(document));
+
+document.body.addEventListener('initCkeditor', (e) => {
+  const target = e.detail?.target || document;
+  initCkeditor(target);
+});
+
+document.body.addEventListener('htmx:beforeRequest', () => {
+  for (const instanceName in CKEDITOR.instances) {
+    if (CKEDITOR.instances.hasOwnProperty(instanceName)) {
+      CKEDITOR.instances[instanceName].destroy(true);
+    }
+  }
+});

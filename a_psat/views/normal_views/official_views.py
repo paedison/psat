@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.decorators import login_not_required
 from django.db import transaction
 from django.http import HttpResponse
@@ -144,7 +146,7 @@ def official_problem_detail_view(request: HtmxHttpRequest, pk: int):
         # reply_form=forms.ProblemCommentForm(),
     )
     response = render(request, 'a_psat/problem_detail.html', context)
-    response['HX-Trigger-After-Settle'] = 'initAnnotation'
+    response['HX-Trigger-After-Settle'] = json.dumps({"initAnnotation": True, "initCkeditor": True})
     return response
 
 
@@ -202,7 +204,9 @@ def official_memo_problem(request: HtmxHttpRequest, pk: int):
         else:
             update_base_form = forms.ProblemMemoForm(instance=latest_record)
             context = update_context_data(context, memo_form=update_base_form, my_memo=latest_record)
-            return render(request, 'a_psat/snippets/memo_container.html#update_form', context)  # noqa
+            response = render(request, 'a_psat/snippets/memo_container.html#update_form', context)  # noqa
+            response['HX-Trigger-After-Settle'] = json.dumps({"initCkeditor": True})
+            return response
 
     blank_form = forms.ProblemMemoForm()
     context = update_context_data(context, memo_form=blank_form)

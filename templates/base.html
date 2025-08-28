@@ -76,6 +76,11 @@
 <script src="{% static 'js/functions.js' %}" defer></script>
 <script type="module" src="{% static 'a_psat/annotation/js/src/main.js' %}"></script>
 
+<!-- CKEditor CSS/JS File -->
+<link href="{% static 'ckeditor/ckeditor.css' %}" media="all" rel="stylesheet">
+<script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}" defer></script>
+<script src="{% static 'ckeditor/ckeditor-init.js' %}" defer></script>
+
 {% block extra_head %}{% endblock extra_head %}
 </head>
 {% endif %}

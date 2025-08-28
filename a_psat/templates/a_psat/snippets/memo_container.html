@@ -31,7 +31,6 @@
                                 {{ icon_board.update|safe }} {% trans 'Update' %}
                             </button>
                             <button class="btn btn-sm btn-outline-danger"
-{#                                    hx-post=""#}
                                     hx-headers='{"View-Type":"delete"}'
                                     hx-post="{{ my_memo.get_memo_url }}"
                                     hx-confirm="{% trans 'Are you sure you wish to delete your memo?' %}"
@@ -48,8 +47,7 @@
 
 {% partialdef create_form %}
     <form hx-headers='{"View-Type":"create"}'
-          hx-post="{{ memo_url }}">
-        {{ memo_form.media }}
+          hx-post="{{ problem.get_memo_url }}">
         {{ memo_form.content }}
         <textarea id="content_memo" name="content" class="ckeditor-content" hidden></textarea>
         <div class="d-flex justify-content-end mt-2">

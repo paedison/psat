@@ -2,27 +2,23 @@ import ScopeManager from './ScopeManager.js';
 
 const scopeManager = new ScopeManager();
 
-window.addEventListener('load', totalInitAnnotation);
-document.body.addEventListener('initAnnotation', totalInitAnnotation);
+window.addEventListener('load', initAnnotation);
+document.body.addEventListener('initAnnotation', initAnnotation);
 
-function totalInitAnnotation() {
-  window.innerWidth < 992 ? initAnnotation('normal') : initAnnotation('wide');
+document.body.addEventListener('htmx:beforeRequest', () => delete scopeManager.scopes[getAnnotateType()]);
+
+window.addEventListener('resize', () => initAnnotation());
+
+function getAnnotateType() {
+  return window.innerWidth < 992 ? 'normal' : 'wide';
 }
 
-function initAnnotation(annotateType) {
+function initAnnotation() {
+  const annotateType = getAnnotateType();
   const canvas = document.getElementById(`${annotateType}Canvas`);
   const image = document.getElementById(`${annotateType}Image`);
   if (!canvas || !image) return;
   
   scopeManager.create(annotateType, canvas, image);
+  scopeManager.activate(annotateType)
 }
-
-window.addEventListener('resize', () => {
-  if (window.innerWidth < 992) {
-    if (!scopeManager.scopes.normal) initAnnotation('normal');
-    scopeManager.activate('normal')
-  } else {
-    if (!scopeManager.scopes.wide) initAnnotation('wide');
-    scopeManager.activate('wide')
-  }
-});

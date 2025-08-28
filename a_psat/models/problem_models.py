@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from ckeditor.fields import RichTextField
 from django.db import models
 from django.templatetags.static import static
 from django.urls import reverse_lazy
@@ -8,6 +7,7 @@ from taggit.managers import TaggableManager, _TaggableManager  # noqa
 from taggit.models import TaggedItemBase, TagBase
 
 from _config.settings.base import BASE_DIR
+from a_psat.form_field import CustomRichTextField
 from a_psat.models import choices
 from a_psat.models.queryset import official_queryset as queryset
 from common.constants import icon_set_new
@@ -262,6 +262,9 @@ class Problem(models.Model):
     def get_solve_url(self):
         return reverse_lazy('psat:solve-problem', args=[self.id])
 
+    def get_memo_url(self):
+        return reverse_lazy('psat:memo-problem', args=[self.id])
+
     def get_tag_url(self):
         return reverse_lazy('psat:tag-problem', args=[self.id])
 
@@ -387,7 +390,7 @@ class ProblemMemo(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='psat_problem_memos')
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
-    content = RichTextField(config_name='minimal')
+    content = CustomRichTextField(config_name='minimal')
 
     class Meta:
         verbose_name = verbose_name_plural = "[기출문제] 06_메모"

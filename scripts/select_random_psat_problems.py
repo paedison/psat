@@ -120,6 +120,7 @@ def run():
             save_pdf_files(output_sheet_folder, df, '손필기')
         elif _choice == 6:  # 추출된 문제 리스트 HWP 파일로 저장
             save_hwp_files(output_sheet_folder, df, '문제')
+            save_hwp_files(output_sheet_folder, df, '손필기')
         else:
             print('❌ 잘못된 입력입니다. 다시 선택해주세요.\n')
             return True
@@ -417,7 +418,7 @@ def save_hwp_files(output_sheet_folder: Path, df, hwp_type: str):
                     hwp.MoveRight()
                     hwp.DeleteBack()
                 hwp.find(answer)
-                hwp.CharShapeTextColorRed()
+                # hwp.CharShapeTextColorRed()
                 count['saved'] += 1
             else:
                 hwp.insert_file(str(BLANK_HWP))
