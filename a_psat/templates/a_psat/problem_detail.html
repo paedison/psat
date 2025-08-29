@@ -79,15 +79,17 @@
     {% if problem_img.alt == 'Preparing Image' %}
         <img class="d-block mx-auto" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
     {% else %}
-        {% if user.is_superuser %}
+        {% if user.is_authenticated %}
             {% include 'a_psat/snippets/problem_detail_annotate_buttons.html' %}
         {% endif %}
 
         <div class="position-relative">
             <img id="{{ annotate_type }}Image" class="img-fluid" alt="{{ problem_img.alt }}" src="{{ problem_img.src }}">
-            <canvas id="{{ annotate_type }}Canvas" class="position-absolute top-0 start-0"
-                    style="z-index: 10; touch-action: none"
-                    data-annotate-url="{{ problem.get_annotate_url }}"></canvas>
+            {% if user.is_authenticated %}
+                <canvas id="{{ annotate_type }}Canvas" class="position-absolute top-0 start-0"
+                        style="z-index: 10; touch-action: none"
+                        data-annotate-url="{{ problem.get_annotate_url }}"></canvas>
+            {% endif %}
         </div>
     {% endif %}
 {% endpartialdef %}

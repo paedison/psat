@@ -20,6 +20,7 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.templatetags.static import static
 from django.urls import reverse
 
@@ -243,39 +244,41 @@ class NormalAnnotateProblem:
     pk: int
 
     def __post_init__(self):
-        self.lookup_expr = {'problem_id': self.pk, 'user': self.request.user}
-        self.problem: _model.problem = _model.problem.objects.filter(pk=self.pk).first()
+        self.lookup_expr = {
+            'problem_id': self.pk,
+            'user': self.request.user,
+            'annotate_type': self.request.GET.get('annotate_type'),
+        }
 
     def process_post_request_to_save_annotation(self):
-        try:
-            data = json.loads(self.request.body)
-            self.lookup_expr['annotate_type'] = data.get('annotateType')
-            image_data = data.get('image')
-
-            if not image_data.startswith('data:image/png;base64,'):
-                return JsonResponse({'success': False, 'error': '이미지 형식이 잘못 설정되었습니다.'})
-
-            self.lookup_expr['image'] = self.get_image_file(image_data)
-            annotation = _model.annotation.objects.create(**self.lookup_expr)
-            return JsonResponse({'success': True, 'image_url': annotation.image.url})
-
-        except Exception as e:
-            print(e)
-            return JsonResponse({'success': False, 'error': str(e)})
-
-    def get_image_file(self, image_data):
+        problem = get_object_or_404(_model.problem, pk=self.pk)
+        data = json.loads(self.request.body)
+        image_data = data.get('image')
         fmt, imgstr = image_data.split(';base64,')
-        ext = fmt.split('/')[-1]
-        return ContentFile(base64.b64decode(imgstr), name=f'{self.problem.reference}_{uuid.uuid4()}.{ext}')
+
+        if not image_data.startswith('data:image/png;base64,'):
+            return JsonResponse({'success': False, 'error': '이미지 형식이 잘못 설정되었습니다.'})
+
+        try:
+            annotation = _model.annotation.objects.get(**self.lookup_expr)
+            filename = annotation.image.name.split('/')[-1]
+            annotation.image.delete(save=False)
+        except _model.annotation.DoesNotExist:
+            annotation = _model.annotation.objects.create(**self.lookup_expr)
+            ext = fmt.split('/')[-1]
+            filename = f'{problem.reference}_{uuid.uuid4()}.{ext}'
+
+        image_file = ContentFile(base64.b64decode(imgstr), name=filename)
+        annotation.image.save(filename, image_file, save=True)
+        return JsonResponse({'success': True, 'image_url': annotation.image.url})
 
     def process_get_request_to_load_annotation(self):
         try:
-            self.lookup_expr['annotate_type'] = self.request.GET.get('annotate_type')
-            annotation = _model.annotation.objects.filter(**self.lookup_expr).first()
-            if annotation and annotation.image:
+            try:
+                annotation = _model.annotation.objects.get(**self.lookup_expr)
                 return JsonResponse({'success': True, 'image_url': annotation.image.url})
-            else:
-                return JsonResponse({'success': False, 'error': 'No annotation found'})
+            except _model.annotation.DoesNotExist:
+                return JsonResponse({'success': False})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
 

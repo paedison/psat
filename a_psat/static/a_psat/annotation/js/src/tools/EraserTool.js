@@ -6,19 +6,23 @@ export default class EraserTool extends Tool {
     super(scope, color, style);
   }
   
+  isStrokeForEraser(result) {
+    return result.type !== 'pixel' && result.item.strokeType !== 'eraser'
+  }
+  
   handleMouseDown(event) {
     const hitResults = this.getHitResults(event);
     if (!hitResults.length) return this.createEraserPath(event);
     
     hitResults.forEach(result => {
       if (result.type === 'pixel') return this.createEraserPath(event);
-      result.item.remove();
-      this.scope.view.update();
+      if (this.isStrokeForEraser(result)) return result.item.remove();
     });
   }
 
   createEraserPath(event) {
     this.eraserPath = new this.scope.Path({
+      strokeType: 'eraser',
       strokeColor: this.strokeColor,
       strokeWidth: this.strokeWidth,
       strokeCap: this.strokeCap,
@@ -32,7 +36,7 @@ export default class EraserTool extends Tool {
     if (!hitResults.length) return;
 
     hitResults.forEach(result => {
-      if (result.type === 'stroke') return  result.item.remove();
+      if (this.isStrokeForEraser(result)) return result.item.remove();
       if (this.eraserPath) return this.eraserPath.add(event.point);
     });
   }

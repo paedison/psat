@@ -18,9 +18,11 @@ export default class ToolManager {
     this.currentTool = null;
   }
   
-  setTool(styleName, shapeName) {
+  setTool(styleName, shapeName, colorName) {
     const style = constants.writingStyle[styleName];
-    console.log(style)
+    
+    this.currentColor = colorToRgba(colorName, style.alpha);
+    if (this.currentTool) this.currentTool.updateColor(this.currentColor);
     
     if (styleName === 'highlighter') style['strokeWidth'] = style['emphasizeStrokeWidth'] = this.scope.canvas.width / 100;
     
@@ -30,12 +32,5 @@ export default class ToolManager {
       if (shapeName === 'line') this.currentTool = new LineTool(this.scope, this.currentColor, style);
     }
     this.currentTool.tool.activate();
-  }
-  
-  setColor(colorName) {
-    const alpha = 0.4;
-    this.currentColor = colorToRgba(colorName, alpha);
-
-    if (this.currentTool) this.currentTool.updateColor(this.currentColor);
   }
 }

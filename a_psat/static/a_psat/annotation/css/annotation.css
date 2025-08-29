@@ -2,24 +2,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
-  border: solid 2px #eeeeee;
+  background-color: #FFFFFF;
+  border: solid 2px #EEEEEE;
   border-radius: 25px;
   width: 36px;
   height: 36px;
   padding: 8px;
   cursor: pointer;
-  color: #333; /* 기본 아이콘 색상 */
+  color: #333333; /* 기본 아이콘 색상 */
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .tool-btn:hover {
-  background-color: #eeeeee;
+  background-color: #EEEEEE;
+  color: #000000;
 }
 
-.tool-btn.active {
-  background: #007bff;
-  color: #ffffff; /* 클릭 시 색상 (파란색) */
+.tool-btn.active[data-annotate-style="eraser"] {
+  background: #007BFF;
+  color: #FFFFFF;
 }
 
 
@@ -34,23 +35,28 @@
 }
 
 [data-annotate-color="black"] {
-  background-color: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.4);
+  color: #FFFFFF;
 }
 
 [data-annotate-color="red"] {
-  background-color: rgba(255, 0, 0, 0.4);
+  background: rgba(255, 0, 0, 0.4);
+  color: #FFFFFF;
 }
 
 [data-annotate-color="blue"] {
-  background-color: rgba(0, 0, 255, 0.4);
+  background: rgba(0, 0, 255, 0.4);
+  color: #FFFFFF;
 }
 
 [data-annotate-color="green"] {
-  background-color: rgba(0, 128, 0, 0.4);
+  background: rgba(0, 128, 0, 0.4);
+  color: #FFFFFF;
 }
 
 [data-annotate-color="yellow"] {
-  background-color: rgba(255, 255, 0, 0.4);
+  background: rgba(255, 255, 0, 0.4);
+  color: #000000;
 }
 
 .color-btn.active {
@@ -69,7 +75,7 @@
 }
 
 .color-btn[data-annotate-color="yellow"].active::after {
-  color: #333;
+  color: #333333;
 }
 
 /* 스위치 컨테이너 */
@@ -108,7 +114,7 @@
   width: 18px;
   left: 4px;
   bottom: 3.5px;
-  background-color: white;
+  background-color: #FFFFFF;
   transition: 0.4s;
   border-radius: 50%;
 }
@@ -119,15 +125,15 @@ input:checked + .slider.slider-drawing {
 }
 
 input:checked + .slider.slider-line {
-  background-color: #143acc;
+  background-color: #143ACC;
 }
 
 input:checked + .slider.slider-eraser {
-  background-color: #b01e1e;
+  background-color: #B01E1E;
 }
 
 input:checked + .slider.slider-highlighter {
-  background-color: #f3f308;
+  background-color: #F3F308;
 }
 
 input:checked + .slider::before {
@@ -146,14 +152,14 @@ input:checked + .slider::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
-  border: solid 2px #eeeeee;
+  background-color: #FFFFFF;
+  border: solid 2px #EEEEEE;
   border-radius: 25px;
   width: 36px;
   height: 36px;
   padding: 8px;
   cursor: pointer;
-  color: #333; /* 기본 아이콘 색상 */
+  color: #333333; /* 기본 아이콘 색상 */
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -164,5 +170,5 @@ input:checked + .slider::before {
 
 .action-btn[data-annotate-action="clear"] {
   background-color: rgba(255, 0, 0, 0.4);
-  color: #fff;
+  color: #FFFFFF;
 }

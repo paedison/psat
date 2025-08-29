@@ -57,9 +57,18 @@ export default class UIManager {
   
   // 필기 상태에서 필기 버튼을 클릭하는 경우 -> 필기 버튼 및 필기 상태가 비활성화됨
   // 최초 로딩 후 툴 버튼을 클릭하는 경우 -> 필기 버튼은 자동으로 활성화됨
+  // 지우개 버튼 클릭시 다른 툴 버튼들 배경색 흰색으로 초기화
   deactivateToolBtns() {
-    [this.styleBtnGroup, this.shapeBtnGroup, this.colorBtnGroup].forEach(group => {
-      Object.values(group).forEach(btn => btn.classList.remove('active'));
+    const btnGroupMap = {
+      styleBtnGroup: this.currentStyleName,
+      shapeBtnGroup: this.currentShapeName,
+      colorBtnGroup: this.currentColorName
+    };
+    Object.entries(btnGroupMap).forEach(([groupName, buttonName]) => {
+      Object.values(this[groupName]).forEach(btn => {
+        btn.classList.remove('active');
+        if (groupName !== 'colorBtnGroup') btn.dataset.annotateColor = '';
+      });
     });
     this.currentStyleName = this.currentShapeName = this.currentColorName = null;
     if (this.toolManager.currentTool) this.toolManager.deactivateCurrentTool();
@@ -101,15 +110,20 @@ export default class UIManager {
     
     // 각각의 툴 버튼마다 그룹별로 버튼 활성화 및 비활성화 재설정
     // 각 그룹별로 현재 클릭한 버튼만 활성화되고 나머지는 비활성화됨
+    // 버튼 활성화시 현재 선택된 색깔이 배경색으로 들어감
     // 지우개 버튼에는 적용되지 않으며 대신에 activateEraserBtn()가 적용됨
-    const activeMap = {
+    const btnGroupMap = {
       styleBtnGroup: this.currentStyleName,
       shapeBtnGroup: this.currentShapeName,
       colorBtnGroup: this.currentColorName
     };
-    Object.entries(activeMap).forEach(([groupName, buttonName]) => {
+    Object.entries(btnGroupMap).forEach(([groupName, buttonName]) => {
       Object.entries(this[groupName]).forEach(([name, btn]) => {
         btn.classList.toggle('active', name === buttonName);
+        if (groupName !== 'colorBtnGroup') {
+          if (btn.classList.contains('active')) btn.dataset.annotateColor = this.currentColorName;
+          else btn.dataset.annotateColor = '';
+        }
       });
     });
     
@@ -132,8 +146,7 @@ export default class UIManager {
   }
   
   initTool() {
-    this.toolManager.setTool(this.currentStyleName, this.currentShapeName);
-    this.toolManager.setColor(this.currentColorName);
+    this.toolManager.setTool(this.currentStyleName, this.currentShapeName, this.currentColorName);
   }
 
   clearAll() {
