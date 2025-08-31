@@ -148,6 +148,6 @@ urlpatterns = [
     path('official/', include(official_patterns)),
     # path('comment/', include(comment_patterns)),
     path('lecture/', include(lecture_patterns)),
-    path('predict/', include(predict_patterns)),
+    # path('predict/', include(predict_patterns)),
     path('study/', include(study_patterns)),
 ]

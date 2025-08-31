@@ -7,9 +7,9 @@
         {% if user.is_superuser %}{% partial menu_psat_admin %}{% endif %}
         {% partial menu_psat %}
         {% if user.is_superuser %}{% partial menu_leet_admin %}{% endif %}
-        {% partial menu_leet %}
-        {% partial menu_prime %}
-        {% partial menu_prime_leet %}
+{#        {% partial menu_leet %}#}
+{#        {% partial menu_prime %}#}
+{#        {% partial menu_prime_leet %}#}
         {% partial boardgame_set %}
         {% if user.is_superuser %}{% partial menu_schedule %}{% endif %}
         {% if user.is_superuser %}{% partial menu_predict %}{% endif %}
@@ -88,12 +88,12 @@
                     <i class="fa-regular fa-fw fa-square"></i> 기출문제
                 </a>
             </li>
-            <li>
-                <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="predict"
-                   href="{% url 'psat:predict-list' %}">
-                    <i class="fa-regular fa-fw fa-square"></i> 합격 예측
-                </a>
-            </li>
+{#            <li>#}
+{#                <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="predict"#}
+{#                   href="{% url 'psat:predict-list' %}">#}
+{#                    <i class="fa-regular fa-fw fa-square"></i> 합격 예측#}
+{#                </a>#}
+{#            </li>#}
             <li>
                 <a class="aside-nav-icon" data-menu-parent="psat" data-menu-self="lecture"
                    href="{% url 'psat:lecture-list' %}">
