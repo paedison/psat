@@ -791,7 +791,7 @@ class AdminUploadCurriculumContext:
     @staticmethod
     def get_student_dict() -> dict[tuple, models.StudyStudent]:
         student_dict = {}
-        for s in models.StudyCurriculum.objects.select_related(
+        for s in models.StudyStudent.objects.select_related(
                 'curriculum', 'curriculum__organization', 'curriculum__category'):
             student_dict[(
                 s.curriculum.organization.name, s.curriculum.year, s.curriculum.semester, s.serial
